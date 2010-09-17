@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.2 2010/09/16 13:07:09 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.3 2010/09/17 16:47:02 mansj Exp $
 //
 //
 
@@ -283,6 +283,9 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons, pat::JetCollection jet
   mNuR2->Fill( (vWR + muons.at(1).p4()).M() ) ; 
   mNuR2D->Fill( (vWR + muons.at(0).p4()).M(),(vWR + muons.at(1).p4()).M() ) ; 
 
+  mMuMu->Fill((muons.at(0).p4()+muons.at(1).p4()).M() );
+  mJJ->Fill((jets.at(0).p4()+jets.at(1).p4()).M() );
+
 
 }// end of fill()
 
@@ -358,6 +361,8 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {
   mNuR2->Fill( (vWR + hne.mu2->p4()).M() ) ; 
   mNuR2D->Fill( (vWR + hne.mu1->p4()).M(),(vWR + hne.mu2->p4()).M() ) ; 
 
+  mMuMu->Fill((hne.mu1->p4()+hne.mu2->p4()).M() );
+  mJJ->Fill((hne.j1->p4()+hne.j2->p4()).M() );
 
 }// end of fill()
 
