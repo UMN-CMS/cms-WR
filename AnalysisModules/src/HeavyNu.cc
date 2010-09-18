@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.3 2010/09/17 16:47:02 mansj Exp $
+// $Id: HeavyNu.cc,v 1.4 2010/09/17 17:58:52 mansj Exp $
 //
 //
 
@@ -100,6 +100,13 @@ private:
 
     TH1 *mWR, *mNuR1, *mNuR2, *mMuMu, *mJJ ; 
     TH2 *mNuR2D ; 
+
+    // Jeremy's crazy angles...
+    TH1* ctheta_mumu, *cthetaz_mumu;
+    TH1* ctheta_jj, *cthetaz_jj;
+    TH1* ctheta_mu1_jj, *cthetaz_mu1_jj;
+    TH1* ctheta_mu2_jj, *cthetaz_mu2_jj;
+
   };
 
   bool init_;
@@ -111,11 +118,14 @@ private:
     TH1 *jetPt, *jetEta, *jetPhi ; 
     HistPerDef noCuts ; 
     HistPerDef ptCuts;
+    HistPerDef massCut;
   } hists;
 
   struct CutsStruct {
-    double minimum_muon_pt;
+    double minimum_mu1_pt;
+    double minimum_mu2_pt;
     double minimum_jet_pt;
+    double minimum_mumu_mass;
   } cuts;
   
 };
@@ -205,7 +215,24 @@ void HeavyNu::HistPerDef::book(TFileDirectory td, const std::string& post) {
   title=std::string("M(jj)")+post;
   mJJ=td.make<TH1D>("mJJ",title.c_str(),50,0,2000);  
 
-
+  // crazy angles
+  title=std::string("cT(mumu)")+post;
+  ctheta_mumu=td.make<TH1D>("ctMM",title.c_str(),50,0,1);  
+  title=std::string("cT(jj)")+post;
+  ctheta_jj=td.make<TH1D>("ctJJ",title.c_str(),50,0,1);  
+  title=std::string("cT(mu1-jj)")+post;
+  ctheta_mu1_jj=td.make<TH1D>("ctM1JJ",title.c_str(),50,0,1);  
+  title=std::string("cT(mu2-jj)")+post;
+  ctheta_mu2_jj=td.make<TH1D>("ctM2JJ",title.c_str(),50,0,1);  
+  title=std::string("cTz(mumu)")+post;
+  cthetaz_mumu=td.make<TH1D>("ctzMM",title.c_str(),50,0,1);  
+  title=std::string("cTz(jj)")+post;
+  cthetaz_jj=td.make<TH1D>("ctzJJ",title.c_str(),50,0,1);  
+  title=std::string("cTz(mu1-jj)")+post;
+  cthetaz_mu1_jj=td.make<TH1D>("ctzM1JJ",title.c_str(),50,0,1);  
+  title=std::string("cTz(mu2-jj)")+post;
+  cthetaz_mu2_jj=td.make<TH1D>("ctzM2JJ",title.c_str(),50,0,1);  
+  
 }
 
 void HeavyNu::HistPerDef::fill(pat::MuonCollection muons, pat::JetCollection jets) {  
@@ -283,9 +310,11 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons, pat::JetCollection jet
   mNuR2->Fill( (vWR + muons.at(1).p4()).M() ) ; 
   mNuR2D->Fill( (vWR + muons.at(0).p4()).M(),(vWR + muons.at(1).p4()).M() ) ; 
 
-  mMuMu->Fill((muons.at(0).p4()+muons.at(1).p4()).M() );
-  mJJ->Fill((jets.at(0).p4()+jets.at(1).p4()).M() );
+  reco::Particle::LorentzVector mumu=muons.at(0).p4()+muons.at(1).p4();
+  reco::Particle::LorentzVector jj=jets.at(0).p4()+jets.at(1).p4();
 
+  mMuMu->Fill(mumu.M() );
+  mJJ->Fill(jj.M() );
 
 }// end of fill()
 
@@ -364,6 +393,15 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {
   mMuMu->Fill((hne.mu1->p4()+hne.mu2->p4()).M() );
   mJJ->Fill((hne.j1->p4()+hne.j2->p4()).M() );
 
+  ctheta_mumu->Fill(hne.ctheta_mumu);
+  ctheta_jj->Fill(hne.ctheta_jj);
+  ctheta_mu1_jj->Fill(hne.ctheta_mu1_jj);
+  ctheta_mu2_jj->Fill(hne.ctheta_mu2_jj);
+  cthetaz_mumu->Fill(hne.cthetaz_mumu);
+  cthetaz_jj->Fill(hne.cthetaz_jj);
+  cthetaz_mu1_jj->Fill(hne.cthetaz_mu1_jj);
+  cthetaz_mu2_jj->Fill(hne.cthetaz_mu2_jj);
+
 }// end of fill()
 
 //
@@ -394,13 +432,15 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.jetEta   = fs->make<TH1D>("jetEta","jet #eta distribution",50,-5,5) ; 
   hists.jetPhi   = fs->make<TH1D>("jetPhi","jet #phi distribution",60,-3.14159,3.14159) ; 
   hists.noCuts.book(fs->mkdir("noCuts"),"(no cuts)");
-  hists.ptCuts.book(fs->mkdir("ptcuts"),"(diobjects with ptcuts)");
+  hists.ptCuts.book(fs->mkdir("ptcuts"),"(diobjects with ptcuts:1)");
+  hists.massCut.book(fs->mkdir("masscut"),"(mumu mass cut:2)");
   init_=false;
 
 
-  cuts.minimum_muon_pt=20;
+  cuts.minimum_mu1_pt=60;
+  cuts.minimum_mu2_pt=15;
   cuts.minimum_jet_pt=40;
-
+  cuts.minimum_mumu_mass=140;
 }
   
 HeavyNu::~HeavyNu()
@@ -471,7 +511,7 @@ HeavyNu::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   // next, we look for valid muons and jets and put them into the Event
   for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
-    if ((*iM).pt()>cuts.minimum_muon_pt && (*iM).muonID("AllGlobalMuons")) {
+    if ((*iM).pt()>cuts.minimum_mu2_pt && (*iM).muonID("AllGlobalMuons")) {
       if (hnuEvent.mu1==0 || hnuEvent.mu1->pt()<(*iM).pt()) {
 	hnuEvent.mu2=hnuEvent.mu1;
 	hnuEvent.mu1=&(*iM);
@@ -493,8 +533,13 @@ HeavyNu::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   } 
   // require four objects
   if (hnuEvent.mu2==0 || hnuEvent.j2==0) return;
-  hnuEvent.regularize(); // calculate various details
+  if (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt) return; // apply the mu1 cut
+  hnuEvent.regularize(); // assign internal standards
+  hnuEvent.calculate(); // calculate various details
   hists.ptCuts.fill(hnuEvent);
+  if (hnuEvent.mumu.M()<cuts.minimum_mumu_mass) return;  // dimuon mass cut
+  hists.massCut.fill(hnuEvent);
+
 
 }
 
