@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.4 2010/09/17 17:58:52 mansj Exp $
+// $Id: HeavyNu.cc,v 1.5 2010/09/18 19:28:35 mansj Exp $
 //
 //
 
@@ -126,6 +126,7 @@ private:
     double minimum_mu2_pt;
     double minimum_jet_pt;
     double minimum_mumu_mass;
+    double minimum_muon_jet_dR;
   } cuts;
   
 };
@@ -441,6 +442,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   cuts.minimum_mu2_pt=15;
   cuts.minimum_jet_pt=40;
   cuts.minimum_mumu_mass=140;
+  cuts.minimum_muon_jet_dR=0.5;
 }
   
 HeavyNu::~HeavyNu()
@@ -510,17 +512,6 @@ HeavyNu::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   
   // next, we look for valid muons and jets and put them into the Event
-  for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
-    if ((*iM).pt()>cuts.minimum_mu2_pt && (*iM).muonID("AllGlobalMuons")) {
-      if (hnuEvent.mu1==0 || hnuEvent.mu1->pt()<(*iM).pt()) {
-	hnuEvent.mu2=hnuEvent.mu1;
-	hnuEvent.mu1=&(*iM);
-      } else 	if (hnuEvent.mu2==0 || hnuEvent.mu2->pt()<(*iM).pt()) {
-	hnuEvent.mu2=&(*iM);
-      }
-    }
-  }
-  
   for (iJ=pJets.begin(); iJ!=pJets.end(); iJ++) { 
     if ((*iJ).pt()>cuts.minimum_jet_pt) { // more later!
       if (hnuEvent.j1==0 || hnuEvent.j1->pt()<(*iJ).pt()) {
@@ -531,6 +522,21 @@ HeavyNu::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
     }
   } 
+
+  for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
+    double dr1=(hnuEvent.j1==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j1->eta(),hnuEvent.j1->phi()));
+    double dr2=(hnuEvent.j2==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j2->eta(),hnuEvent.j2->phi()));
+
+    if ((*iM).pt()>cuts.minimum_mu2_pt && (*iM).muonID("AllGlobalMuons") && std::min(dr1,dr2)>cuts.minimum_muon_jet_dR) {
+      if (hnuEvent.mu1==0 || hnuEvent.mu1->pt()<(*iM).pt()) {
+	hnuEvent.mu2=hnuEvent.mu1;
+	hnuEvent.mu1=&(*iM);
+      } else 	if (hnuEvent.mu2==0 || hnuEvent.mu2->pt()<(*iM).pt()) {
+	hnuEvent.mu2=&(*iM);
+      }
+    }
+  }
+  
   // require four objects
   if (hnuEvent.mu2==0 || hnuEvent.j2==0) return;
   if (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt) return; // apply the mu1 cut
