@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-#isMC=False
-isMC=True
+isMC=False
+#isMC=True
 
 process = cms.Process("PAT")
 
@@ -29,7 +29,7 @@ if (isMC):
     print "=================> MC FLAG IS SET <===================="
     process.GlobalTag.globaltag = cms.string('START36_V10::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_36X_V12::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
