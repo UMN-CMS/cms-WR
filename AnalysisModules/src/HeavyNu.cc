@@ -105,6 +105,9 @@ private:
     TH1 *mu1trackIso, *mu1hcalIso, *mu1ecalIso, *mu1caloIso, *mu1dB;
     TH1 *mu2trackIso, *mu2hcalIso, *mu2ecalIso, *mu2caloIso, *mu2dB;
 
+    TH1 *mu1trackRelIso, *mu1hcalRelIso, *mu1ecalRelIso, *mu1caloRelIso;
+    TH1 *mu2trackRelIso, *mu2hcalRelIso, *mu2ecalRelIso, *mu2caloRelIso;
+
     TH1 *mWR, *mNuR1, *mNuR2, *mMuMu, *mMuMuZoom, *mJJ ; 
     TH2 *mNuR2D ; 
 
@@ -204,6 +207,26 @@ void HeavyNu::HistPerDef::book(TFileDirectory td, const std::string& post) {
   mu2caloIso=td.make<TH1D>("mu2caloIso",title.c_str(),40,0.,200.);  
   title=std::string("Dxy(#mu_{2}) ")+post;
   mu2dB=td.make<TH1D>("mu2dB",title.c_str(),50,-5.,5.);  
+
+  title=std::string("trackRelIso(#mu_{1}) ")+post;
+  mu1trackRelIso=td.make<TH1D>("mu1trackRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("hcalRelIso(#mu_{1}) ")+post;
+  mu1hcalRelIso=td.make<TH1D>("mu1hcalRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("ecalRelIso(#mu_{1}) ")+post;
+  mu1ecalRelIso=td.make<TH1D>("mu1ecalRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("caloRelIso(#mu_{1}) ")+post;
+  mu1caloRelIso=td.make<TH1D>("mu1caloRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("Dxy(#mu_{1}) ")+post;
+
+  title=std::string("trackRelIso(#mu_{2}) ")+post;
+  mu2trackRelIso=td.make<TH1D>("mu2trackRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("hcalRelIso(#mu_{2}) ")+post;
+  mu2hcalRelIso=td.make<TH1D>("mu2hcalRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("ecalRelIso(#mu_{2}) ")+post;
+  mu2ecalRelIso=td.make<TH1D>("mu2ecalRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("caloRelIso(#mu_{2}) ")+post;
+  mu2caloRelIso=td.make<TH1D>("mu2caloRelIso",title.c_str(),50,0.,5.);  
+  title=std::string("Dxy(#mu_{2}) ")+post;
 
   // Jet histograms 
   title=std::string("p_{T}(j_{1}) ")+post;
@@ -316,6 +339,15 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   mu2ecalIso ->Fill(muons.at(1).ecalIso());
   mu2caloIso ->Fill(muons.at(1).caloIso());
   mu2dB      ->Fill(muons.at(1).dB());
+  
+  mu1trackRelIso->Fill(muons.at(0).trackIso()/muons.at(0).pt());
+  mu1hcalRelIso ->Fill(muons.at(0).hcalIso()/muons.at(0).pt());
+  mu1ecalRelIso ->Fill(muons.at(0).ecalIso()/muons.at(0).pt());
+  mu1caloRelIso ->Fill(muons.at(0).caloIso()/muons.at(0).pt());
+  mu2trackRelIso->Fill(muons.at(1).trackIso()/muons.at(1).pt());
+  mu2hcalRelIso ->Fill(muons.at(1).hcalIso()/muons.at(1).pt());
+  mu2ecalRelIso ->Fill(muons.at(1).ecalIso()/muons.at(1).pt());
+  mu2caloRelIso ->Fill(muons.at(1).caloIso()/muons.at(1).pt());
 
   if (isMC) {
     for (unsigned int i=0; i<2; i++) { 
@@ -377,6 +409,9 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   hptrelMu1->Fill( ptrelMu1 );
   hptrelMu2->Fill( ptrelMu2 );
 
+  ptrelVsdRminMu1jet->Fill(min(dRmu1jet1,dRmu1jet2),ptrelMu1);
+  ptrelVsdRminMu2jet->Fill(min(dRmu2jet1,dRmu1jet2),ptrelMu2);
+
   // Composite objects
   reco::Particle::LorentzVector vWR = jets.at(0).p4() + jets.at(1).p4() ; 
   WR = vWR + muons.at(0).p4() + muons.at(1).p4() ; 
@@ -422,6 +457,15 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {
   mu2ecalIso ->Fill(hne.mu2->ecalIso());
   mu2caloIso ->Fill(hne.mu2->caloIso());
   mu2dB      ->Fill(hne.mu2->dB());
+  
+  mu1trackRelIso->Fill(hne.mu1->trackIso()/hne.mu1->pt());
+  mu1hcalRelIso ->Fill(hne.mu1->hcalIso()/hne.mu1->pt());
+  mu1ecalRelIso ->Fill(hne.mu1->ecalIso()/hne.mu1->pt());
+  mu1caloRelIso ->Fill(hne.mu1->caloIso()/hne.mu1->pt());
+  mu2trackRelIso->Fill(hne.mu2->trackIso()/hne.mu2->pt());
+  mu2hcalRelIso ->Fill(hne.mu2->hcalIso()/hne.mu2->pt());
+  mu2ecalRelIso ->Fill(hne.mu2->ecalIso()/hne.mu2->pt());
+  mu2caloRelIso ->Fill(hne.mu2->caloIso()/hne.mu2->pt());
   
   if (hne.isMC) {
     for (unsigned int i=0; i<2; i++) { 
