@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.6 2010/09/27 16:51:04 mansj Exp $
+// $Id: HeavyNu.cc,v 1.8 2010/10/08 07:06:59 dudero Exp $
 //
 //
 
@@ -44,6 +44,7 @@
 #include "TVector3.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
 
 
 //////////////////////////////////////////////////////////////////
@@ -76,6 +77,7 @@ private:
   virtual void endJob() ;
   std::string currentFile_;
   bool dolog_;
+  HeavyNu_NNIF *nnif_;
 
   // ----------member data ---------------------------
   static const std::string muonQuality[] ; 
@@ -121,7 +123,7 @@ private:
 
   bool init_;
 
-  // gf set of histo for all Z definitios in a stack
+  // gf set of histo for all Z definitions in a stack
   struct HistStruct {
     TH1 *nelec, *nmu, *njet ;
     TH1 *muPt, *muEta, *muPhi ; 
@@ -552,6 +554,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
    //now do what ever initialization is needed
   dolog_=iConfig.getParameter<bool>("DoLog");
 
+  nnif_ = new HeavyNu_NNIF(iConfig);
+
   edm::Service<TFileService> fs;
   hists.nelec    = fs->make<TH1D>("nelec","N(e^{#pm})",10,-0.5,9.5);
   hists.nmu      = fs->make<TH1D>("nmu","N(#mu^{#pm})",10,-0.5,9.5);
@@ -687,6 +691,9 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if (hnuEvent.mMuMu<cuts.minimum_mumu_mass) return false;  // dimuon mass cut
   hists.massCut.fill(hnuEvent);
 
+  nnif_->fillvector(hnuEvent);
+  nnif_->print();
+
   if (iEvent.isRealData())
     std::cout << iEvent.id() << std::endl;
   return true;
@@ -695,11 +702,13 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void 
 HeavyNu::beginJob() {
+  nnif_->beginJob();
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 HeavyNu::endJob() {
+  nnif_->endJob();
 }
 
 //define this as a plug-in
