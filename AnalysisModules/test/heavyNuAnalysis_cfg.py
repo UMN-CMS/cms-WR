@@ -1,7 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-isMC=False
-#isMC=True
+#isMC=False
+isMC=True
+
+isSIGNAL=True
+#isSIGNAL=False
 
 process = cms.Process("PAT")
 
@@ -14,8 +17,8 @@ process.options = cms.untracked.PSet(
 )
 # source
 #process.source = cms.Source("PoolSource",      
-##    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu300/HeavyNuGenHLT_WR1000_nuRmu300_1-reco-pool.root" )
-#    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/S10/TTbar/GEN-SIM-RECO/START36_V9_S09-v1/0055/044B121D-9678-DF11-B39B-001E0B5F95B2.root')
+#    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu300/HeavyNuGenHLT_WR1000_nuRmu300_1-reco-pool.root" )
+##    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/S10/TTbar/GEN-SIM-RECO/START36_V9_S09-v1/0055/044B121D-9678-DF11-B39B-001E0B5F95B2.root')
 #)
 process.load('HeavyNu.AnalysisModules.in_cff')
 
@@ -27,7 +30,8 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
 if (isMC):
     print "=================> MC FLAG IS SET <===================="
-    process.GlobalTag.globaltag = cms.string('START36_V10::All')
+#    process.GlobalTag.globaltag = cms.string('START36_V10::All')
+    process.GlobalTag.globaltag = cms.string('START38_V12::All')
 else:
     process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
 
@@ -51,15 +55,19 @@ if not isMC:
 process.TFileService = cms.Service("TFileService",
        fileName = cms.string("anal.root"),
 )
-
 process.hNu = cms.EDFilter("HeavyNu",
-       DoLog        = cms.bool( True ),
-       minMu1pt     = cms.double(60.),
-       minMu2pt     = cms.double(15.),
-       minJetPt     = cms.double(40),
-       minMuMuMass  = cms.double(140),
-       minMuonJetdR = cms.double(0.3), # (0.5)
-)
+                           DoLog        = cms.bool( True ),
+                           minMu1pt     = cms.double(60.),
+                           minMu2pt     = cms.double(15.),
+                           minJetPt     = cms.double(40),
+                           minMuMuMass  = cms.double(140),
+                           minMuonJetdR = cms.double(0.3), # (0.5)
+                           trainingMode = cms.bool(True),
+                           isSignal     = cms.bool(False)
+                           )
+
+if isSIGNAL:
+    process.hNu.isSignal = cms.bool(True)
 
 process.myAnalysisPath = cms.Path(
     process.patDefaultSequence *
