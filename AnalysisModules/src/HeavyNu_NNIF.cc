@@ -1,11 +1,15 @@
+#include <string>
 #include <iostream>
 #include "HeavyNu_NNIF.h"
 
 HeavyNu_NNIF::HeavyNu_NNIF(const edm::ParameterSet& iConfig) :
-  trainingMode_(iConfig.getParameter<bool>("trainingMode")),
-  isSignal_    (iConfig.getParameter<bool>("isSignal"))
+  isSignal_        (iConfig.getParameter<bool>("isSignal")),
+  trainingFileName_(iConfig.getUntrackedParameter<std::string>("trainingFileName",""))
 {
-  netoutputs.push_back((float)isSignal_);
+  if (trainingFileName_.length()) {
+    trainingMode_ = true;
+    netoutputs_.push_back((float)isSignal_);
+  }
 }
 
 //======================================================================
@@ -13,19 +17,19 @@ HeavyNu_NNIF::HeavyNu_NNIF(const edm::ParameterSet& iConfig) :
 void
 HeavyNu_NNIF::fillvector(const HeavyNuEvent& hne)
 {
-  netinputs.clear();
+  netinputs_.clear();
 
   // This method maps the variables of interest into the neural net input vector
-  netinputs.push_back(hne.mu1->pt());
-  netinputs.push_back(hne.j1->pt());
-  netinputs.push_back(deltaPhi(hne.j1->phi(),hne.j2->phi()));
-  netinputs.push_back(hne.dRminMu1jet);
-  netinputs.push_back(hne.dRminMu2jet);
-  netinputs.push_back(hne.mWR);
-  netinputs.push_back(hne.mNuR1);
-  netinputs.push_back(hne.mNuR2);
-  netinputs.push_back(hne.mMuMu);
-  netinputs.push_back(hne.ctheta_mu1_jj);
+  netinputs_.push_back(hne.mu1->pt());
+  netinputs_.push_back(hne.j1->pt());
+  netinputs_.push_back(deltaPhi(hne.j1->phi(),hne.j2->phi()));
+  netinputs_.push_back(hne.dRminMu1jet);
+  netinputs_.push_back(hne.dRminMu2jet);
+  netinputs_.push_back(hne.mWR);
+  netinputs_.push_back(hne.mNuR1);
+  netinputs_.push_back(hne.mNuR2);
+  netinputs_.push_back(hne.mMuMu);
+  netinputs_.push_back(hne.ctheta_mu1_jj);
 }
 
 //======================================================================
@@ -37,15 +41,15 @@ HeavyNu_NNIF::print()
 
   if (!trainingMode_) return;
 
-  for (size_t i=0; i<netinputs.size(); i++) {
+  for (size_t i=0; i<netinputs_.size(); i++) {
     if (i) trainingFile_ << " ";
-    trainingFile_ << netinputs[i];
+    trainingFile_ << netinputs_[i];
   }
   trainingFile_ << endl;
 
-  for (size_t i=0; i<netoutputs.size(); i++) {
+  for (size_t i=0; i<netoutputs_.size(); i++) {
     if (i) trainingFile_ << " ";
-    trainingFile_ << netoutputs[i];
+    trainingFile_ << netoutputs_[i];
   }
   trainingFile_ << endl;
 }
@@ -56,7 +60,7 @@ void
 HeavyNu_NNIF::beginJob()
 {
   if (trainingMode_)
-    trainingFile_.open("heavynu_nntraining.txt");
+    trainingFile_.open(trainingFileName_.c_str());
 }
 
 //======================================================================

@@ -20,11 +20,13 @@ class HeavyNu_NNIF {
   void endJob();
 
  private:
-  bool trainingMode_;
   bool isSignal_;
-  std::vector<float> netinputs;
-  std::vector<float> netoutputs;
+  std::string trainingFileName_;
   std::ofstream trainingFile_;
+  bool trainingMode_;
+
+  std::vector<float> netinputs_;
+  std::vector<float> netoutputs_;
 };
 
 #endif
