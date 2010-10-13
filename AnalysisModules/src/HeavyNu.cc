@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.8 2010/10/08 07:06:59 dudero Exp $
+// $Id: HeavyNu.cc,v 1.9 2010/10/11 21:39:45 dudero Exp $
 //
 //
 
@@ -111,7 +111,7 @@ private:
     TH1 *mu2trackRelIso, *mu2hcalRelIso, *mu2ecalRelIso, *mu2caloRelIso;
 
     TH1 *mWR, *mNuR1, *mNuR2, *mMuMu, *mMuMuZoom, *mJJ ; 
-    TH2 *mNuR2D ; 
+    TH2 *mNuR2D, *jetPtvsNum ; 
 
     // Jeremy's crazy angles...
     TH1* ctheta_mumu, *cthetaz_mumu;
@@ -128,6 +128,7 @@ private:
     TH1 *nelec, *nmu, *njet ;
     TH1 *muPt, *muEta, *muPhi ; 
     TH1 *jetPt, *jetEta, *jetPhi ; 
+    TH2 *jetPtvsNum;
     HistPerDef noCuts ; 
     HistPerDef LLptCuts;
     HistPerDef LLJJptCuts;
@@ -138,6 +139,7 @@ private:
     double minimum_mu1_pt;
     double minimum_mu2_pt;
     double minimum_jet_pt;
+    double maximum_jet_abseta;
     double minimum_mumu_mass;
     double minimum_muon_jet_dR;
   } cuts;
@@ -448,7 +450,7 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {
   dEtaMu->Fill( fabs(hne.mu1->eta() - hne.mu2->eta()) ) ; 
   dEtaPhiMu->Fill(fabs(hne.mu1->eta()-hne.mu2->eta()),
 		  fabs(deltaPhi(hne.mu1->phi(),hne.mu2->phi()))) ; 
-  
+
   mu1trackIso->Fill(hne.mu1->trackIso());
   mu1hcalIso ->Fill(hne.mu1->hcalIso());
   mu1ecalIso ->Fill(hne.mu1->ecalIso());
@@ -566,17 +568,28 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.jetPt    = fs->make<TH1D>("jetPt","jet p_{T} distribution",100,0,1000) ; 
   hists.jetEta   = fs->make<TH1D>("jetEta","jet #eta distribution",50,-5,5) ; 
   hists.jetPhi   = fs->make<TH1D>("jetPhi","jet #phi distribution",60,-3.14159,3.14159) ; 
+  hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,1000.);
   hists.noCuts.book(fs->mkdir("noCuts"),"(no cuts)");
   hists.LLptCuts.book(fs->mkdir("LLptcuts"),"(dileptons with ptcuts:1)");
   hists.LLJJptCuts.book(fs->mkdir("LLJJptcuts"),"(4objects with ptcuts:1)");
   hists.massCut.book(fs->mkdir("masscut"),"(mumu mass cut:2)");
   init_=false;
 
-  cuts.minimum_mu1_pt=iConfig.getParameter<double>("minMu1pt");
-  cuts.minimum_mu2_pt=iConfig.getParameter<double>("minMu2pt");
-  cuts.minimum_jet_pt=iConfig.getParameter<double>("minJetPt");
-  cuts.minimum_mumu_mass=iConfig.getParameter<double>("minMuMuMass");
-  cuts.minimum_muon_jet_dR=iConfig.getParameter<double>("minMuonJetdR");
+  cuts.minimum_mu1_pt      = iConfig.getParameter<double>("minMu1pt");
+  cuts.minimum_mu2_pt      = iConfig.getParameter<double>("minMu2pt");
+  cuts.minimum_jet_pt      = iConfig.getParameter<double>("minJetPt");
+  cuts.maximum_jet_abseta  = iConfig.getParameter<double>("maxJetAbsEta");
+  cuts.minimum_mumu_mass   = iConfig.getParameter<double>("minMuMuMass");
+  cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
+
+  // For the record...
+  std::cout << "Configurable cut values applied:" << std::endl;
+  std::cout << "minMu1pt      = " << cuts.minimum_mu1_pt      << std::endl;
+  std::cout << "minMu2pt      = " << cuts.minimum_mu2_pt      << std::endl;
+  std::cout << "minJetPt      = " << cuts.minimum_jet_pt      << std::endl;
+  std::cout << "maxJetAbsEta  = " << cuts.maximum_jet_abseta  << std::endl;
+  std::cout << "minMuonJetdR  = " << cuts.minimum_muon_jet_dR << std::endl;
+  std::cout << "minMuMuMass   = " << cuts.minimum_mumu_mass   << std::endl;
 }
   
 HeavyNu::~HeavyNu()
@@ -629,10 +642,12 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.nmu->Fill(pMuons.size()) ;
   hists.njet->Fill(pJets.size()) ;
 
+  int njet=1;
   for (iJ=pJets.begin(); iJ!=pJets.end(); iJ++) { 
     hists.jetPt->Fill( (*iJ).pt() ) ; 
     hists.jetEta->Fill( (*iJ).eta() ) ; 
     hists.jetPhi->Fill( (*iJ).phi() ) ; 
+    hists.jetPtvsNum->Fill(njet++, (*iJ).pt() ) ; 
   }
   for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
     hists.muPt->Fill( (*iM).pt() ) ; 
@@ -648,7 +663,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   // next, we look for valid muons and jets and put them into the Event
   for (iJ=pJets.begin(); iJ!=pJets.end(); iJ++) { 
-    if ((*iJ).pt()>cuts.minimum_jet_pt) { // more later!
+    if (((*iJ).pt()        >cuts.minimum_jet_pt)   && // more later!
+	(fabs((*iJ).eta())<=cuts.maximum_jet_abseta) ) {
       if (hnuEvent.j1==0 || hnuEvent.j1->pt()<(*iJ).pt()) {
 	hnuEvent.j2=hnuEvent.j1;
 	hnuEvent.j1=&(*iJ);
@@ -656,7 +672,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	hnuEvent.j2=&(*iJ);
       }
     }
-  } 
+  }
 
   for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
     double dr1=(hnuEvent.j1==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j1->eta(),hnuEvent.j1->phi()));
