@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 # Reading configuration file from  runreg_7TeVCollisions10StreamExpress.cfg
-# You asked for the runreg info in the run range:132440-147454
+# You asked for the runreg info in the run range:132440-148058
 # for dataset: %Express%
 # with the following quality flags:
 # Muon GOOD
@@ -52,6 +52,8 @@ import FWCore.ParameterSet.Config as cms
  
 # Building up beam energy per run info... please wait it can be long
 # Retrieving energy from the RR run table and making some check....
+# WARNING: Something wrong with energies in run 147757
+# WARNING: Getting: 7864 from RR.Using default value of:3500.0
 # WARNING: Something wrong with energies in run 147048
 # WARNING: Getting: 7864 from RR.Using default value of:3500.0
 # WARNING: Something wrong with energies in run 143665
@@ -71,7 +73,7 @@ import FWCore.ParameterSet.Config as cms
 # Accessing DBS to get lumi mapping: this can be VERY long....
  
 # -------------------------------------------
-# Json file:  Cert_132440-147454_7TeV_StreamExpress_Collisions10_JSON.txt  written.
+# Json file:  Cert_132440-148058_7TeV_StreamExpress_Collisions10_JSON.txt  written.
 # -------------------------------------------
  
 # CFG snippet to select:
@@ -647,4 +649,15 @@ lumisToProcess.extend([
 	'147452:1-147452:44',
 	'147453:1-147453:146',
 	'147454:1-147454:97',
+	'147757:1-147757:363',
+	'147926:77-147926:548',
+	'147927:1-147927:152',
+	'147929:1-147929:266',
+	'147929:272-147929:643',
+	'148002:92-148002:203',
+	'148029:50-148029:483',
+	'148029:485-148029:569',
+	'148029:571-148029:571',
+	'148032:1-148032:199',
+	'148058:1-148058:97',
 ])
