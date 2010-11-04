@@ -30,9 +30,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   const char* finalVarHist="hNu/masscut/mWR";
 
   const double sig_scale_factor=info.xsec;
-  const double ttf_yield_mc=lumi*194.3*(0.11*0.11)*1417/70000; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
+  const double ttf_yield_mc=lumi*194.3*(0.11*0.11)*1664/70000; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
   //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
-  const double zj_yield_mc=lumi*4.0987*1989/55000;  //M180 mumu
+  const double zj_yield_mc=lumi*0.0405*1989/55000;  //M180 mumu (using truncated weight...)
   
   const double wj_yield_mc=lumi*53711.0*3/1.11e7;  
 
@@ -147,6 +147,11 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   SamplingDistribution* sd_sb=res->GetAltDistribution();
   SamplingDistribution* sd_b=res->GetNullDistribution();
 
+  double xobs=res->GetTestStatisticData();
+  xobs+=0.0001; // important for handling the "exactly zero data" case, irrelevant for all other purposes
+  double alt_obs_sb=sd_sb->Integral(-10000,xobs);
+  double alt_obs_b=sd_b->Integral(xobs,10000);
+
   double mean_sb=sd_sb->InverseCDFInterpolate(0.5);
   double mean_b=sd_b->InverseCDFInterpolate(0.5);
 
@@ -155,16 +160,19 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   
   //  printf("DETAIL : mean_sb=%f  mean_b=%f\n", mean_sb,mean_b);
   printf("SUMMARY  : LUMI=%.1f ipb MW=%.0f GeV  MNu=%.0f GeV  XSEC=%.2e pb \n",info.lumi,info.mwr,info.mnu,sig_scale_factor);
-  printf("SUMMARY2 : EXP(s+b)=%.3f OBS(s+b)=%.3f EXP(b)=%.3f OBS(b)=%.3f\n",expected_sb,res->CLsplusb(),expected_b,1.0-res->CLb());
-  info.cl_sb_obs = res->CLsplusb();
+  //  printf("SUMMARY2 : EXP(s+b)=%.3f OBS(s+b)=%.3f EXP(b)=%.3f OBS(b)=%.3f\n",expected_sb,res->CLsplusb(),expected_b,1.0-res->CLb());
+  printf("SUMMARY2 : EXP(s+b)=%.3f OBS(s+b)=%.3f EXP(b)=%.3f OBS(b)=%.3f\n",expected_sb,alt_obs_sb,expected_b,alt_obs_b);
+  //  info.cl_sb_obs = res->CLsplusb();
+  info.cl_sb_obs = alt_obs_sb;
   info.cl_sb_exp = expected_sb;
-  info.cl_b_obs = 1.0-res->CLb();
+  //  info.cl_b_obs = 1.0-res->CLb();
+  info.cl_b_obs = alt_obs_b;
   info.cl_b_exp = expected_b;
 
   info.cl_sb_exp_p1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5+0.3413));
-  info.cl_sb_exp_m1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.3413));
+  info.cl_sb_exp_m1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.3413)+0.0001);
   info.cl_sb_exp_p2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5+0.4773));
-  info.cl_sb_exp_m2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.4773));
+  info.cl_sb_exp_m2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.4773)+0.0001);
 
   printf("SUMMARY3 : EXP(s+b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_sb_exp_m2s,info.cl_sb_exp_m1s,info.cl_sb_exp_p1s,info.cl_sb_exp_p2s);
 
