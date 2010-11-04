@@ -14,7 +14,7 @@ struct LimitPointStruct {
   float cl_sb_exp_p2s, cl_sb_exp_m2s;
   float cl_b_exp_p1s, cl_b_exp_m1s;
   float cl_b_exp_p2s, cl_b_exp_m2s;
-
+  float signal, background, data;
 };
 
 void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info);

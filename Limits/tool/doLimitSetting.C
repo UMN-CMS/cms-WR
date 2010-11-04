@@ -30,14 +30,16 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   const char* finalVarHist="hNu/masscut/mWR";
 
   const double sig_scale_factor=info.xsec;
-  const double ttf_yield_mc=lumi*94.3*611/632010;
-  const double zj_yield_mc=lumi*2400.0*35/1647472;
+  const double ttf_yield_mc=lumi*194.3*(0.11*0.11)*1417/70000; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
+  //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
+  const double zj_yield_mc=lumi*4.0987*1989/55000;  //M180 mumu
+  
+  const double wj_yield_mc=lumi*53711.0*3/1.11e7;  
 
   RooWorkspace w("example");
-  w.factory("mwr[400,2000]"); // observable is called mwr
+  w.factory("mwr[520,2000]"); // observable is called mwr
   w.defineSet("obs","mwr");
 
-  TH1* dataHist=(TH1*)(dataf->Get(finalVarHist)->Clone("dataHist"));
 
   TH1* signalShape=(TH1*)(signal->Get(finalVarHist)->Clone("ss"));
   TH1* signalNorm=(TH1*)(signal->Get("hNu/njet"));
@@ -47,9 +49,12 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   
   signalShape->Scale(1.0/signalShape->Integral());
 
-  RooDataHist* data=new RooDataHist("data","data",RooArgList(*w.var("mwr")),dataHist) ;
+  TH1* dataHist=(TH1*)(dataf->Get(finalVarHist)->Clone("dataHist"));
 
-  data->Print();
+  RooDataHist* data=new RooDataHist("data","data",RooArgList(*w.var("mwr")),dataHist) ;
+  info.data=dataHist->Integral(dataHist->FindBin(520),dataHist->FindBin(2001));
+
+  //  data->Print();
 
   RooDataHist* signals=new RooDataHist("signals","signals",RooArgList(*w.var("mwr")),signalShape) ;
   RooHistPdf* signalPdf=new RooHistPdf("sig_pdf","sig_pdf",RooArgList(*w.var("mwr")),*signals);
@@ -60,25 +65,34 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 		       //  w.factory("Gaussian::sig_pdf(mwr,sig_mean[600],sig_sigma[10])");
 
   // ttbar background (from fit)
-  w.factory("Exponential::ttb_exp(mwr,-5e-3)");
+  w.factory("Exponential::ttb_exp(mwr,-5.22e-3)");
   w.factory("Uniform::ttb_lin(mwr)");
-  w.factory("SUM::bkg_ttb(6.78*ttb_exp,0.336*ttb_lin)");
+  w.factory("SUM::bkg_ttb(8.34*ttb_exp,1.192*ttb_lin)");
 
-  w.factory("Exponential::bkg_zj(mwr,-5.2e-3)");
+  w.factory("Exponential::bkg_zj(mwr,-3.64e-3)");
+
+  w.factory("Exponential::bkg_wj(mwr,-3e-3)");
   
-  w.factory("SUM::bkg_pdf(ttf_yield[20,0,300]*bkg_ttb,zj_yield[1,0,100]*bkg_zj)");
+  w.factory("SUM::bkg_pdf(ttf_yield[20,0,300]*bkg_ttb,zj_yield[1,0,100]*bkg_zj,wj_yield[1,0,100]*bkg_wj)");
 
   // total model with signal and background yields as parameters
   w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,bkg_scale[1,0,100]*bkg_pdf)");
 
-  w.var("ttf_yield")->setVal(611*ttf_yield_mc);
-  w.var("zj_yield")->setVal(35*zj_yield_mc);
+  w.var("ttf_yield")->setVal(ttf_yield_mc);
+  w.var("zj_yield")->setVal(zj_yield_mc);
+  w.var("wj_yield")->setVal(wj_yield_mc);
   double sig_yield_expected=signal_eff*sig_scale_factor*lumi;
+  info.background=wj_yield_mc+zj_yield_mc+ttf_yield_mc;
+  w.var("bkg_scale")->setVal(info.background);
+
 
   w.var("ttf_yield")->setConstant();
   w.var("zj_yield")->setConstant();
+  w.var("wj_yield")->setConstant();
   w.var("bkg_scale")->setConstant();
 
+
+  info.signal=sig_yield_expected;
   // The model for the control sample that constrains the background.
   //w.factory("Gaussian::control_pdf(control_meas[50],bkg_yield,10.)");
 
@@ -94,7 +108,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   //  w.defineSet("nuis","bkg_yield");
 
   //  RooDataSet* data = w.pdf("main_pdf")->generate(*w.set("obs"),RooFit::Extended());
-  data->Print();
+  //  data->Print();
 
   // D E F I N E  N U L L  &  A L T E R N A T I V E   H Y P O T H E S E S  
   ModelConfig b_model("B_model", &w);
@@ -119,6 +133,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   slrts.SetAltParameters(*sb_model.GetSnapshot());
 
   ToyMCSampler toymcsampler(slrts, ntoys);
+  toymcsampler.SetGenerateBinned(true);
 
   HybridCalculator myH2(*data,sb_model, b_model, &toymcsampler);
 
@@ -158,6 +173,8 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   info.cl_b_exp_p2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.4773),10000);
   info.cl_b_exp_m2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.4773),10000);
   printf("SUMMARY3 : EXP(b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_b_exp_m2s,info.cl_b_exp_m1s,info.cl_b_exp_p1s,info.cl_b_exp_p2s);
+  printf("SUMMARY4: %.2f background %.2f signal %d data\n",info.background,info.signal, info.data);
+
 
   
 #ifndef MAKE_MAIN
@@ -177,9 +194,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   c2->cd(4);
   RooPlot* mesframe = w.var("mwr")->frame() ;
 
-  w.pdf("bkg_pdf")->plotOn(mesframe);
-  w.pdf("main_pdf")->plotOn(mesframe);
   data->plotOn(mesframe);
+  //  w.pdf("bkg_pdf")->plotOn(mesframe);
+  w.pdf("main_pdf")->plotOn(mesframe);
 
 
   mesframe->Draw();
@@ -193,9 +210,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
 }
 
-void testLimitSetting(TFile* f0, TFile* f1) {
+void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0) {
   LimitPointStruct lps;
-  lps.xsec=0.7;
+  lps.xsec=xsec;
   lps.lumi=7.;
 
   doLimitSetting(f0,f1,400,lps);
