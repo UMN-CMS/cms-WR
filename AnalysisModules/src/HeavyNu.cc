@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.9 2010/10/11 21:39:45 dudero Exp $
+// $Id: HeavyNu.cc,v 1.10 2010/10/13 16:50:59 dudero Exp $
 //
 //
 
@@ -75,6 +75,9 @@ private:
   virtual void beginJob() ;
   virtual bool filter(edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
+  virtual bool isVBTFloose(const pat::Muon& m);
+  virtual bool isVBTFtight(const pat::Muon& m);
+
   std::string currentFile_;
   bool dolog_;
   HeavyNu_NNIF *nnif_;
@@ -604,6 +607,30 @@ HeavyNu::~HeavyNu()
 //
 // member functions
 //
+bool
+HeavyNu::isVBTFloose(const pat::Muon& m)
+{
+  return (m.muonID("AllGlobalMuons") &&
+	  (m.numberOfValidHits() > 10));
+}
+
+bool
+HeavyNu::isVBTFtight(const pat::Muon& m)
+{
+  assert(isVBTFloose(m));
+
+  reco::TrackRef gt = m.globalTrack();
+  if (gt.isNull()) {
+    std::cerr << "Mu1 global track reference is NULL" << std::endl;
+    return false;
+  }
+  return (m.muonID("AllTrackerMuons") &&
+	  (m.dB() < 0.2) &&
+	  (m.normChi2() < 10) &&
+	  (m.numberOfMatches() > 1) &&
+	  (gt->hitPattern().numberOfValidMuonHits()>0) &&
+	  (gt->hitPattern().numberOfValidPixelHits()>0) );
+}
 
 // ------------ method called to for each event  ------------
 bool
@@ -679,10 +706,10 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     double dr2=(hnuEvent.j2==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j2->eta(),hnuEvent.j2->phi()));
 
     if ((*iM).pt()>cuts.minimum_mu2_pt
-	&& (*iM).muonID("AllGlobalMuons")
+	&& isVBTFloose(*iM)
 	&& std::min(dr1,dr2)>cuts.minimum_muon_jet_dR) {
-      if (hnuEvent.mu1==0 ||
-	  hnuEvent.mu1->pt()<(*iM).pt()) {
+      if ( (hnuEvent.mu1==0) ||
+	   (hnuEvent.mu1->pt()<(*iM).pt()) ) {
 	hnuEvent.mu2=hnuEvent.mu1;
 	hnuEvent.mu1=&(*iM);
       } else 	if (hnuEvent.mu2==0 ||
@@ -692,15 +719,21 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
-  // require two leptons first
-  if (hnuEvent.mu2==0) return false;
+  // require two "loose" muons first
+  if (hnuEvent.mu2==0)            return false;
+
   hnuEvent.regularize(); // assign internal standards
   hnuEvent.calculateMuMu();
   hists.LLptCuts.fill(hnuEvent);
   
   // require four objects
   if (hnuEvent.mu2==0 || hnuEvent.j2==0) return false;
-  if (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt) return false; // apply the mu1 cut
+
+  // apply the mu1 cut
+  if ( !isVBTFtight(*(hnuEvent.mu1)) ||
+       (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt))
+      return false;
+
   hnuEvent.calculate(); // calculate various details
   hists.LLJJptCuts.fill(hnuEvent);
 
@@ -711,7 +744,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   nnif_->print();
 
   if (iEvent.isRealData())
-    std::cout << iEvent.id() << std::endl;
+    std::cout<<iEvent.id() << std::endl;
   return true;
 }
 
