@@ -1,26 +1,34 @@
 import FWCore.ParameterSet.Config as cms
+import sys
 
-#isMC=False
-isMC=True
+#isMC=sys.modules['__main__'].isMC
+#isSIGNAL=sys.modules['__main__'].isSIGNAL
+#process = sys.modules['__main__'].process
 
-isSIGNAL=True
-#isSIGNAL=False
+isMC=False
+isSIGNAL=False
 
 process = cms.Process("PAT")
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 10
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound'),
     wantSummary = cms.untracked.bool(True)
 )
 # source
-#process.source = cms.Source("PoolSource",      
+#process.source = cms.Source("PoolSource",
+#    fileNames=cms.untracked.vstring('file:/local/cms/user/dahmes/wr2010/run2010B/oct7/mySkim/mySkim-oct7_005001.root')
+#    fileNames=cms.untracked.vstring('/store/data/Run2010B/Mu/RECO/PromptReco-v2/000/148/829/9E1A7E3C-89E0-DF11-9CDF-000423D98B6C.root')
 #    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu300/HeavyNuGenHLT_WR1000_nuRmu300_1-reco-pool.root" )
-##    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/S10/TTbar/GEN-SIM-RECO/START36_V9_S09-v1/0055/044B121D-9678-DF11-B39B-001E0B5F95B2.root')
+##    fileNames=cms.untracked.vstring('/store/mc/S10/TTbar/GEN-SIM-RECO/START36_V9_S09-v1/0055/044B121D-9678-DF11-B39B-001E0B5F95B2.root')
 #)
 process.load('HeavyNu.AnalysisModules.in_cff')
+
+if not isMC:
+    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
+    process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -60,12 +68,15 @@ process.hNu = cms.EDFilter("HeavyNu",
                            minMu1pt     = cms.double(60.),
                            minMu2pt     = cms.double(15.),
                            minJetPt     = cms.double(40),
-                           minMuMuMass  = cms.double(140),
+                           maxJetAbsEta = cms.double(2.5),
+                           minMuMuMass  = cms.double(200),
                            minMuonJetdR = cms.double(0.3), # (0.5)
-                           trainingMode = cms.bool(True),
-                           isSignal     = cms.bool(False)
+                           isSignal     = cms.bool(False),
                            )
 
+if isMC:
+    process.hNu.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
+    
 if isSIGNAL:
     process.hNu.isSignal = cms.bool(True)
 
