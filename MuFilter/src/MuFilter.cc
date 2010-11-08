@@ -13,7 +13,7 @@
 //
 // Original Author:  Bryan Dahmes
 //         Created:  Wed Sep 22 04:49:56 CDT 2010
-// $Id$
+// $Id: MuFilter.cc,v 1.1 2010/10/04 15:40:19 bdahmes Exp $
 //
 //
 
@@ -31,6 +31,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
 
@@ -58,7 +60,7 @@ private:
   std::vector<std::string> triggerList_ ; // List of HLT paths used for filtering
 
   // Counters
-  int nEvt, nMu1, nMu2, nEB, nEE ; 
+  int nEvt, nMu1, nMu2, nEB, nEE, nJet ; 
 
 };
 
@@ -138,6 +140,28 @@ MuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (unsigned int i=0; i<eeSCs.size(); i++) 
     if ( eeSCs.at(i).energy()/cosh(eeSCs.at(i).eta()) >= minPt_ ) { nEE++ ; return true ; }
 
+  // Last chance: Look for a jet back-to-back with a muon
+  edm::Handle<pat::JetCollection> patJetCollection ; 
+  iEvent.getByLabel("patJets",patJetCollection) ; 
+  if (!patJetCollection.isValid()) return false ; 
+  pat::JetCollection pJets = *(patJetCollection.product()) ;
+
+  float piDiv2 = 1.570796327 ; 
+  // std::cout << pJets.size() << std::endl ; 
+  // for (unsigned int j=0; j<pJets.size(); j++) { 
+  //   std::cout << pJets.at(j).pt() << std::endl ; 
+  //   if ( pJets.at(j).pt() >= minPt_ ) { nJet++ ; return true ; }
+  // }
+  for (unsigned int i=0; i<pMuons.size(); i++) { 
+    if ( pMuons.at(i).pt() < minPt_ ) continue ; 
+    for (unsigned int j=0; j<pJets.size(); j++) { 
+      if ( pJets.at(j).pt() < minPt_ ) continue ; 
+      // Have a muon and a jet...are they "back to back" (loose requirements)?
+      float dPhi = fabs(deltaPhi(pJets.at(j).phi(),pMuons.at(i).phi())) ; 
+      if ( dPhi > piDiv2 ) { nJet++ ; return true ; }
+    }
+  }
+
   return false ;
 }
 
@@ -145,7 +169,7 @@ MuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 MuFilter::beginJob()
 {
-  nEvt = 0 ; nMu1 = 0 ; nMu2 = 0 ; nEB = 0 ; nEE = 0 ; 
+  nEvt = 0 ; nMu1 = 0 ; nMu2 = 0 ; nEB = 0 ; nEE = 0 ; nJet = 0 ; 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -157,6 +181,7 @@ MuFilter::endJob() {
   std::cout << "    " << nMu2 << " events two muons above min pT" << std::endl ; 
   std::cout << "    " << nEB << " events one muon, EB SC above min pT" << std::endl ; 
   std::cout << "    " << nEE << " events one muon, EE SC above min pT" << std::endl ; 
+  std::cout << "    " << nJet << " events one muon, one jet above min pT dPhi > pi/2" << std::endl ; 
 }
 
 //define this as a plug-in
