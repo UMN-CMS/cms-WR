@@ -71,6 +71,8 @@ process.hNu = cms.EDFilter("HeavyNu",
                            maxJetAbsEta = cms.double(2.5),
                            minMuMuMass  = cms.double(200),
                            minMuonJetdR = cms.double(0.3), # (0.5)
+                           muonTrackIsoLimitGeV = cms.double(3.0),
+
                            isSignal     = cms.bool(False),
                            )
 
