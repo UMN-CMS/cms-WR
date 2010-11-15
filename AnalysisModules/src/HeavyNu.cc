@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.10 2010/10/13 16:50:59 dudero Exp $
+// $Id: HeavyNu.cc,v 1.11 2010/11/05 19:59:59 dudero Exp $
 //
 //
 
@@ -145,6 +145,7 @@ private:
     double maximum_jet_abseta;
     double minimum_mumu_mass;
     double minimum_muon_jet_dR;
+    double muon_trackiso_limit;
   } cuts;
   
 };
@@ -584,15 +585,17 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   cuts.maximum_jet_abseta  = iConfig.getParameter<double>("maxJetAbsEta");
   cuts.minimum_mumu_mass   = iConfig.getParameter<double>("minMuMuMass");
   cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
+  cuts.muon_trackiso_limit = iConfig.getParameter<double>("muonTrackIsoLimitGeV");
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
-  std::cout << "minMu1pt      = " << cuts.minimum_mu1_pt      << std::endl;
-  std::cout << "minMu2pt      = " << cuts.minimum_mu2_pt      << std::endl;
-  std::cout << "minJetPt      = " << cuts.minimum_jet_pt      << std::endl;
+  std::cout << "minMu1pt      = " << cuts.minimum_mu1_pt      << " GeV" <<std::endl;
+  std::cout << "minMu2pt      = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
+  std::cout << "minJetPt      = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
   std::cout << "maxJetAbsEta  = " << cuts.maximum_jet_abseta  << std::endl;
   std::cout << "minMuonJetdR  = " << cuts.minimum_muon_jet_dR << std::endl;
-  std::cout << "minMuMuMass   = " << cuts.minimum_mumu_mass   << std::endl;
+  std::cout << "muonTrackIso  = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
+  std::cout << "minMuMuMass   = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
 }
   
 HeavyNu::~HeavyNu()
@@ -705,9 +708,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     double dr1=(hnuEvent.j1==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j1->eta(),hnuEvent.j1->phi()));
     double dr2=(hnuEvent.j2==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j2->eta(),hnuEvent.j2->phi()));
 
-    if ((*iM).pt()>cuts.minimum_mu2_pt
+    if (((*iM).pt()>cuts.minimum_mu2_pt)
 	&& isVBTFloose(*iM)
-	&& std::min(dr1,dr2)>cuts.minimum_muon_jet_dR) {
+	&& (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
+	&& ((*iM).trackIso()  < cuts.muon_trackiso_limit)
+	) {
       if ( (hnuEvent.mu1==0) ||
 	   (hnuEvent.mu1->pt()<(*iM).pt()) ) {
 	hnuEvent.mu2=hnuEvent.mu1;
