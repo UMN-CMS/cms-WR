@@ -78,7 +78,7 @@ print SRC <<"EOG";
 }
 
 float HeavyNuNetworks::evaluate(int mw, int mnu, const std::vector<float>& invalstd) {
-    float retval=-1000f;
+    float retval=-1000.0f;
     float inval[2]; 
     inval[0]=invalstd[0];    inval[1]=invalstd[1];
     
