@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.11 2010/11/05 19:59:59 dudero Exp $
+// $Id: HeavyNu.cc,v 1.12 2010/11/15 02:17:53 dudero Exp $
 //
 //
 
@@ -155,6 +155,8 @@ const int HeavyNu::muonQualityFlags = 3 ;
 
 void HeavyNu::HistPerDef::book(TFileDirectory td, const std::string& post) {
   std::string title;
+
+  TH1::SetDefaultSumw2();
 
   // Muon histograms 
   title=std::string("p_{T}(#mu_{1}) ")+post;
@@ -555,7 +557,6 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {
 // constructors and destructor
 //
 HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
-
 {
    //now do what ever initialization is needed
   dolog_=iConfig.getParameter<bool>("DoLog");
