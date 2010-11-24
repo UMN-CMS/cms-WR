@@ -24,6 +24,7 @@ class HeavyNu_NNIF {
   std::string trainingFileName_;
   std::ofstream trainingFile_;
   bool trainingMode_;
+  double mNuRnorm_;
 
   std::vector<float> netinputs_;
   std::vector<float> netoutputs_;
