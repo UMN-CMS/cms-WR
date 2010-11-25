@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.12 2010/11/15 02:17:53 dudero Exp $
+// $Id: HeavyNu.cc,v 1.13 2010/11/24 11:10:23 dudero Exp $
 //
 //
 
@@ -35,6 +35,7 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -60,6 +61,10 @@ class compare {
 public:
   template <class T> bool operator() (const T& a, const T& b) { return a.pt() > b.pt() ; } 
 };
+
+inline void outputCandidate(const reco::RecoCandidate *rc) {
+  std::cout<<"pt="<<rc->pt()<<" GeV, eta="<<rc->eta()<<", phi="<<rc->phi();
+}
 
 class HeavyNu : public edm::EDFilter {
 public:
@@ -135,7 +140,8 @@ private:
     HistPerDef noCuts ; 
     HistPerDef LLptCuts;
     HistPerDef LLJJptCuts;
-    HistPerDef massCut;
+    HistPerDef diLmassCut;
+    HistPerDef mWRmassCut;
   } hists;
 
   struct CutsStruct {
@@ -144,6 +150,7 @@ private:
     double minimum_jet_pt;
     double maximum_jet_abseta;
     double minimum_mumu_mass;
+    double minimum_mWR_mass;
     double minimum_muon_jet_dR;
     double muon_trackiso_limit;
   } cuts;
@@ -576,8 +583,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,1000.);
   hists.noCuts.book(fs->mkdir("noCuts"),"(no cuts)");
   hists.LLptCuts.book(fs->mkdir("LLptcuts"),"(dileptons with ptcuts:1)");
-  hists.LLJJptCuts.book(fs->mkdir("LLJJptcuts"),"(4objects with ptcuts:1)");
-  hists.massCut.book(fs->mkdir("masscut"),"(mumu mass cut:2)");
+  hists.LLJJptCuts.book(fs->mkdir("LLJJptcuts"),"(4objects with ptcuts:2)");
+  hists.diLmassCut.book(fs->mkdir("diLmasscut"),"(mumu mass cut:3)");
+  hists.mWRmassCut.book(fs->mkdir("mWRmasscut"),"(mumujj mass cut:4)");
   init_=false;
 
   cuts.minimum_mu1_pt      = iConfig.getParameter<double>("minMu1pt");
@@ -585,6 +593,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   cuts.minimum_jet_pt      = iConfig.getParameter<double>("minJetPt");
   cuts.maximum_jet_abseta  = iConfig.getParameter<double>("maxJetAbsEta");
   cuts.minimum_mumu_mass   = iConfig.getParameter<double>("minMuMuMass");
+  cuts.minimum_mWR_mass    = iConfig.getParameter<double>("min4objMass");
   cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
   cuts.muon_trackiso_limit = iConfig.getParameter<double>("muonTrackIsoLimitGeV");
 
@@ -744,13 +753,25 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.LLJJptCuts.fill(hnuEvent);
 
   if (hnuEvent.mMuMu<cuts.minimum_mumu_mass) return false;  // dimuon mass cut
-  hists.massCut.fill(hnuEvent);
+  hists.diLmassCut.fill(hnuEvent);
 
   nnif_->fillvector(hnuEvent);
   nnif_->print();
 
-  if (iEvent.isRealData())
-    std::cout<<iEvent.id() << std::endl;
+  if (iEvent.isRealData()) {
+    std::cout<<"\t"<<iEvent.id() << std::endl;
+    std::cout<<"\tM(W_R)  = "<<hnuEvent.mWR  <<" GeV";
+    std::cout<<", M(NuR1) = "<<hnuEvent.mNuR1<<" GeV";
+    std::cout<<", M(NuR2) = "<<hnuEvent.mNuR2<<" GeV"<<std::endl;
+    std::cout<<"\tJets:   j1 ";outputCandidate((reco::RecoCandidate *)hnuEvent.j1);
+    std::cout<<        ", j2 ";outputCandidate((reco::RecoCandidate *)hnuEvent.j2);  std::cout<<std::endl;
+    std::cout<<"\tMuons: mu1 ";outputCandidate((reco::RecoCandidate *)hnuEvent.mu1);
+    std::cout<<       ", mu2 ";outputCandidate((reco::RecoCandidate *)hnuEvent.mu2); std::cout<<std::endl;
+  }
+
+  if (hnuEvent.mWR<cuts.minimum_mWR_mass) return false;  // dimuon mass cut
+  hists.mWRmassCut.fill(hnuEvent);
+
   return true;
 }
 
