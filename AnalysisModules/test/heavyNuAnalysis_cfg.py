@@ -5,7 +5,7 @@ import sys
 #isSIGNAL=sys.modules['__main__'].isSIGNAL
 #process = sys.modules['__main__'].process
 
-isMC=False
+isMC=True
 isSIGNAL=False
 
 process = cms.Process("PAT")
@@ -37,10 +37,11 @@ process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
 if (isMC):
-    print "=================> MC FLAG IS SET <===================="
+    print "=================> MC flag is SET <===================="
 #    process.GlobalTag.globaltag = cms.string('START36_V10::All')
     process.GlobalTag.globaltag = cms.string('START38_V12::All')
 else:
+    print "=================> MC flag is NOT SET <===================="
     process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -70,10 +71,12 @@ process.hNu = cms.EDFilter("HeavyNu",
                            minJetPt     = cms.double(40),
                            maxJetAbsEta = cms.double(2.5),
                            minMuMuMass  = cms.double(200),
+                           min4objMass  = cms.double(520),
                            minMuonJetdR = cms.double(0.3), # (0.5)
                            muonTrackIsoLimitGeV = cms.double(3.0),
 
                            isSignal     = cms.bool(False),
+                           mNuRnormalization = cms.double(1000.0)
                            )
 
 if isMC:
