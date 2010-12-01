@@ -11,13 +11,14 @@
 ###############
 $checkout="nnbackeff";
 $checkoutllr="nnllr";
-$snnsTools="/home/jmmans/src/SNNS/SNNSv4.3/tools/bin/i686-pc-linux-gnu";
+#$snnsTools="/home/jmmans/src/SNNS/SNNSv4.3/tools/bin/i686-pc-linux-gnu";
+$snnsTools="/home/grad/dudero/dist/SNNSv4.3/tools/bin/i686-pc-linux-gnu";
 
 # defaults
 ##
 
 $sourcenetdef          =   "blank_network.net";
-$cutoffdef             =   "0.9";
+$cutoffdef             =   "0.8";
 $cyclesdef             =   "400";
 
 @backgrounds = ("madgraph_zmumujets_m180_reco385_nntraining.txt",
@@ -95,6 +96,23 @@ foreach $masspoint (@masspoints) {
 }
 
 print SRC "  return retval;\n}\n";
+   
+print SRC <<"EOG";
+
+std::vector<std::pair<int,int> > HeavyNuNetworks::getMassPoints() 
+{
+  std::vector<std::pair<int,int> > retvec;
+    
+EOG
+
+foreach $masspoint (@masspoints) {
+    $mw=sprintf("%d",$masspoint/10000);
+    $mnu=$masspoint%10000;
+    print SRC "  retvec.push_back(std::pair<int,int>(${mw},${mnu}));\n";
+}
+
+print SRC "  return retvec;\n}\n";
+
 close(SRC);
 
 
@@ -232,7 +250,7 @@ while CYCLES < $maxcycles and SIGNAL == 0 do
     testNet()
     saveResult("$resfile",1,PAT,FALSE,TRUE,"create")
     execute(testcmd,nbkg)
-    if (nbkg<oldnbkg) then
+    if (nbkg<oldnbkg) or (CYCLES < 15) then
       saveNet("$outNet");
       oldnbkg:=nbkg;
       print("(",CYCLES,") Saving at ",nbkg," background events...")
