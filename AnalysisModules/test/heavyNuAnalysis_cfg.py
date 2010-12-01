@@ -5,8 +5,9 @@ import sys
 #isSIGNAL=sys.modules['__main__'].isSIGNAL
 #process = sys.modules['__main__'].process
 
+Training=False
 isMC=True
-isSIGNAL=False
+isSIGNAL=True
 
 process = cms.Process("PAT")
 
@@ -73,13 +74,13 @@ process.hNu = cms.EDFilter("HeavyNu",
                            minMuMuMass  = cms.double(200),
                            min4objMass  = cms.double(520),
                            minMuonJetdR = cms.double(0.3), # (0.5)
-                           muonTrackIsoLimitGeV = cms.double(3.0),
+                           muonTrackIsoLimitGeV = cms.double(10.0),
 
                            isSignal     = cms.bool(False),
                            mNuRnormalization = cms.double(1000.0)
                            )
 
-if isMC:
+if Training:
     process.hNu.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
     
 if isSIGNAL:
