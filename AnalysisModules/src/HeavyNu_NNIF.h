@@ -3,6 +3,7 @@
 #define HeavyNu_NNIF_h_included
 
 #include <vector>
+#include <utility>
 #include <fstream>
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "HeavyNuEvent.h"
@@ -12,10 +13,14 @@
 */
 class HeavyNu_NNIF {
  public:
+
   explicit HeavyNu_NNIF(const edm::ParameterSet&);
 
+  inline
+  const std::vector<hNuMassHypothesis>& masspts() { return v_masspts_; }
+
   void fillvector(const HeavyNuEvent& e);
-  void print();
+  void output(std::vector<float>& v_outputs);
   void beginJob();
   void endJob();
 
@@ -25,6 +30,8 @@ class HeavyNu_NNIF {
   std::ofstream trainingFile_;
   bool trainingMode_;
   double mNuRnorm_;
+
+  std::vector<hNuMassHypothesis> v_masspts_;
 
   std::vector<float> netinputs_;
   std::vector<float> netoutputs_;

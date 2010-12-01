@@ -10,6 +10,8 @@
     a HeavyNuEvent and provide a simple way to pass this information
     between sections of the code.
 */
+typedef std::pair<int,int> hNuMassHypothesis;
+
 class HeavyNuEvent {
 public:
   HeavyNuEvent() { reset(); }
@@ -35,10 +37,11 @@ public:
   double ctheta_jj,   cthetaz_jj;
 
   double dRminMu1jet, dRminMu2jet;
-  double ptrelMu1, ptrelMu2;
+  double ptrelMu1,    ptrelMu2;
 
   double mWR, mJJ, mMuMu, mNuR1, mNuR2;
 
+  std::vector<float> nnoutputs;
 };
 
 #endif

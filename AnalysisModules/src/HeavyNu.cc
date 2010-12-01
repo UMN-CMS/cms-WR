@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.13 2010/11/24 11:10:23 dudero Exp $
+// $Id: HeavyNu.cc,v 1.14 2010/11/25 02:20:19 dudero Exp $
 //
 //
 
@@ -57,6 +57,12 @@ template <class T> const T& min ( const T& a, const T& b ) {
   return (b<a)?b:a;     
 }
 
+inline std::string int2str(int i) {
+  std::ostringstream ss;
+  ss << i;
+  return ss.str();
+}
+
 class compare {
 public:
   template <class T> bool operator() (const T& a, const T& b) { return a.pt() > b.pt() ; } 
@@ -93,11 +99,11 @@ private:
 
   struct HistPerDef {
     //book histogram set w/ common suffix inside the provided TFileDirectory
-    void book(TFileDirectory td, const std::string&) ;
+    void book(TFileDirectory, const std::string&, const std::vector<hNuMassHypothesis>&) ;
     // fill all histos of the set with the two electron candidates
     void fill(pat::MuonCollection muons, pat::JetCollection jets,bool isMC) ;
     // fill all histos of the set with the two electron candidates
-    void fill(const HeavyNuEvent& hne) ;
+    void fill(const HeavyNuEvent& hne, const std::vector<hNuMassHypothesis>&) ;
 
     TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2 ;  
     TH1 *etaMu1, *etaMu2, *etaJet1, *etaJet2 ;  
@@ -127,6 +133,7 @@ private:
     TH1* ctheta_mu1_jj, *cthetaz_mu1_jj;
     TH1* ctheta_mu2_jj, *cthetaz_mu2_jj;
 
+    TFileDirectory *nndir;
   };
 
   bool init_;
@@ -159,8 +166,15 @@ private:
 
 const std::string HeavyNu::muonQuality[] = {"AllGlobalMuons","AllStandAloneMuons","AllTrackerMuons"} ; 
 const int HeavyNu::muonQualityFlags = 3 ;
+inline std::string nnhistoname(int mwr,int mnu) {
+  return ("WR"+int2str(mwr)+"nuRmu"+int2str(mnu));
+}
 
-void HeavyNu::HistPerDef::book(TFileDirectory td, const std::string& post) {
+void
+HeavyNu::HistPerDef::book(TFileDirectory td,
+			  const std::string& post,
+			  const std::vector<hNuMassHypothesis>& v_masspts )
+{
   std::string title;
 
   TH1::SetDefaultSumw2();
@@ -319,7 +333,18 @@ void HeavyNu::HistPerDef::book(TFileDirectory td, const std::string& post) {
   cthetaz_mu1_jj=td.make<TH1D>("ctzM1JJ",title.c_str(),50,0,1);  
   title=std::string("cTz(mu2-jj)")+post;
   cthetaz_mu2_jj=td.make<TH1D>("ctzM2JJ",title.c_str(),50,0,1);  
-  
+
+  // Neural Net histograms
+  //
+  if (v_masspts.size()) {
+    nndir=new TFileDirectory(td.mkdir("_NNdata"));
+    for (size_t i=0; i<v_masspts.size(); i++) {
+      int mwr = v_masspts[i].first;
+      int mnu = v_masspts[i].second;
+      std::string name = nnhistoname(mwr,mnu);
+      nndir->make<TH1D>(name.c_str(),(name+post).c_str(),51,-0.01,1.01);
+    }
+  }
 }
 
 void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
@@ -447,8 +472,10 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
 
 }// end of fill()
 
-void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {  
-
+void
+HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
+			  const std::vector<hNuMassHypothesis>& v_masspts)
+{
   // Muons 
   ptMu1->Fill(hne.mu1->pt()) ; 
   ptMu2->Fill(hne.mu2->pt()) ; 
@@ -544,17 +571,32 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne) {
     ptrelVsdRminMu1jet->Fill(hne.dRminMu1jet,hne.ptrelMu1);
     ptrelVsdRminMu2jet->Fill(hne.dRminMu2jet,hne.ptrelMu2);
   }
+
   mMuMu->Fill( hne.mMuMu );
   mMuMuZoom->Fill( hne.mMuMu );
 
   ctheta_mumu->Fill(hne.ctheta_mumu);
   cthetaz_mumu->Fill(hne.cthetaz_mumu);
 
+  // Neural net histos
+  if (v_masspts.size()) {
+    TDirectory *nnrootdir = nndir->cd();
+    for (size_t i=0; i<v_masspts.size(); i++) {
+      int mwr = v_masspts[i].first;
+      int mnu = v_masspts[i].second;
+      std::string name = nnhistoname(mwr,mnu);
+      TH1D *nnh = (TH1D *)nnrootdir->Get(name.c_str());
+      assert(nnh);
+      nnh->Fill(hne.nnoutputs[i]);
+    }
+  }
+
 }// end of fill()
 
 //
 // constants, enums and typedefs
 //
+const std::vector<hNuMassHypothesis> v_null;
 
 //
 // static data member definitions
@@ -581,11 +623,11 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.jetEta   = fs->make<TH1D>("jetEta","jet #eta distribution",50,-5,5) ; 
   hists.jetPhi   = fs->make<TH1D>("jetPhi","jet #phi distribution",60,-3.14159,3.14159) ; 
   hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,1000.);
-  hists.noCuts.book(fs->mkdir("noCuts"),"(no cuts)");
-  hists.LLptCuts.book(fs->mkdir("LLptcuts"),"(dileptons with ptcuts:1)");
-  hists.LLJJptCuts.book(fs->mkdir("LLJJptcuts"),"(4objects with ptcuts:2)");
-  hists.diLmassCut.book(fs->mkdir("diLmasscut"),"(mumu mass cut:3)");
-  hists.mWRmassCut.book(fs->mkdir("mWRmasscut"),"(mumujj mass cut:4)");
+  hists.noCuts.book    (fs->mkdir("noCuts"),"(no cuts)",v_null);
+  hists.LLptCuts.book  (fs->mkdir("LLptcuts"),"(dileptons with ptcuts:1)",v_null);
+  hists.LLJJptCuts.book(fs->mkdir("LLJJptcuts"),"(4objects with ptcuts:2)",nnif_->masspts());
+  hists.diLmassCut.book(fs->mkdir("diLmasscut"),"(mumu mass cut:3)",nnif_->masspts());
+  hists.mWRmassCut.book(fs->mkdir("mWRmasscut"),"(mumujj mass cut:4)",nnif_->masspts());
   init_=false;
 
   cuts.minimum_mu1_pt      = iConfig.getParameter<double>("minMu1pt");
@@ -739,7 +781,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hnuEvent.regularize(); // assign internal standards
   hnuEvent.calculateMuMu();
-  hists.LLptCuts.fill(hnuEvent);
+  hists.LLptCuts.fill(hnuEvent,v_null);
   
   // require four objects
   if (hnuEvent.mu2==0 || hnuEvent.j2==0) return false;
@@ -747,16 +789,17 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // apply the mu1 cut
   if ( !isVBTFtight(*(hnuEvent.mu1)) ||
        (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt))
-      return false;
+    return false;
 
   hnuEvent.calculate(); // calculate various details
-  hists.LLJJptCuts.fill(hnuEvent);
-
-  if (hnuEvent.mMuMu<cuts.minimum_mumu_mass) return false;  // dimuon mass cut
-  hists.diLmassCut.fill(hnuEvent);
 
   nnif_->fillvector(hnuEvent);
-  nnif_->print();
+  nnif_->output(hnuEvent.nnoutputs);
+
+  hists.LLJJptCuts.fill(hnuEvent,nnif_->masspts());
+
+  if (hnuEvent.mMuMu<cuts.minimum_mumu_mass) return false;  // dimuon mass cut
+  hists.diLmassCut.fill(hnuEvent,nnif_->masspts());
 
   if (iEvent.isRealData()) {
     std::cout<<"\t"<<iEvent.id() << std::endl;
@@ -770,7 +813,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   if (hnuEvent.mWR<cuts.minimum_mWR_mass) return false;  // dimuon mass cut
-  hists.mWRmassCut.fill(hnuEvent);
+  hists.mWRmassCut.fill(hnuEvent,nnif_->masspts());
 
   return true;
 }

@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include "HeavyNu_NNIF.h"
+#include "HeavyNu/NeuralNets/interface/HeavyNuNetworks.h"
 
 HeavyNu_NNIF::HeavyNu_NNIF(const edm::ParameterSet& iConfig) :
   isSignal_        (iConfig.getParameter<bool>("isSignal")),
@@ -10,9 +11,13 @@ HeavyNu_NNIF::HeavyNu_NNIF(const edm::ParameterSet& iConfig) :
   if (mNuRnorm_ == 0.0)
     throw cms::Exception("mNuRnormalization parameter cannot be 0!!!");
 
+  v_masspts_ = HeavyNuNetworks::getMassPoints();
+
   if (trainingFileName_.length()) {
     trainingMode_ = true;
     netoutputs_.push_back((float)isSignal_);
+  } else {
+    netoutputs_.resize(v_masspts_.size(),-1.);
   }
 }
 
@@ -31,23 +36,34 @@ HeavyNu_NNIF::fillvector(const HeavyNuEvent& hne)
 //======================================================================
 
 void
-HeavyNu_NNIF::print()
+HeavyNu_NNIF::output(std::vector<float>& v_outputs)
 {
   using namespace std;
 
-  if (!trainingMode_) return;
+  if (!trainingMode_) {
 
-  for (size_t i=0; i<netinputs_.size(); i++) {
-    if (i) trainingFile_ << " ";
-    trainingFile_ << netinputs_[i];
-  }
-  trainingFile_ << endl;
+    for (size_t i=0; i<v_masspts_.size(); i++) {
+      int mwr = v_masspts_[i].first;
+      int mnu = v_masspts_[i].second;
+      netoutputs_[i] = HeavyNuNetworks::evaluate(mwr,mnu,netinputs_);
+    }
 
-  for (size_t i=0; i<netoutputs_.size(); i++) {
-    if (i) trainingFile_ << " ";
-    trainingFile_ << netoutputs_[i];
+  } else {
+
+    for (size_t i=0; i<netinputs_.size(); i++) {
+      if (i) trainingFile_ << " ";
+      trainingFile_ << netinputs_[i];
+    }
+    trainingFile_ << endl;
+    
+    for (size_t i=0; i<netoutputs_.size(); i++) {
+      if (i) trainingFile_ << " ";
+      trainingFile_ << netoutputs_[i];
+    }
+    trainingFile_ << endl;
   }
-  trainingFile_ << endl;
+
+  v_outputs = netoutputs_;
 }
 
 //======================================================================
