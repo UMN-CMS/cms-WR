@@ -3,6 +3,7 @@
 <use name=FWCore/ParameterSet>
 <use name=DataFormats/PatCandidates>
 <use name=CommonTools/UtilAlgos>
+<use name=HeavyNu/NeuralNets>
 <flags EDM_PLUGIN=1>
 <export>
    <lib name=HeavyNuAnalysisModules>
