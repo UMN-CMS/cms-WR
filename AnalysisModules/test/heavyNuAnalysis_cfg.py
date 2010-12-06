@@ -7,7 +7,7 @@ import sys
 
 Training=False
 isMC=True
-isSIGNAL=True
+isSIGNAL=False
 
 process = cms.Process("PAT")
 
@@ -25,11 +25,11 @@ process.options = cms.untracked.PSet(
 #    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu300/HeavyNuGenHLT_WR1000_nuRmu300_1-reco-pool.root" )
 ##    fileNames=cms.untracked.vstring('/store/mc/S10/TTbar/GEN-SIM-RECO/START36_V9_S09-v1/0055/044B121D-9678-DF11-B39B-001E0B5F95B2.root')
 #)
-process.load('HeavyNu.AnalysisModules.in_cff')
+#process.load('HeavyNu.AnalysisModules.in_cff')
 
-if not isMC:
-    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
-    process.source.lumisToProcess = lumisToProcess
+#if not isMC:
+#    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
+#    process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -67,6 +67,7 @@ process.TFileService = cms.Service("TFileService",
 )
 process.hNu = cms.EDFilter("HeavyNu",
                            DoLog        = cms.bool( True ),
+                           BtagName     = cms.string('jetProbabilityBJetTags'),
                            minMu1pt     = cms.double(60.),
                            minMu2pt     = cms.double(15.),
                            minJetPt     = cms.double(40),

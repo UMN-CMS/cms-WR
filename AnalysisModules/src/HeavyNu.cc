@@ -13,10 +13,9 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.14 2010/11/25 02:20:19 dudero Exp $
+// $Id: HeavyNu.cc,v 1.15 2010/12/01 00:29:52 dudero Exp $
 //
 //
-
 
 // system include files
 #include <memory>
@@ -71,6 +70,8 @@ public:
 inline void outputCandidate(const reco::RecoCandidate *rc) {
   std::cout<<"pt="<<rc->pt()<<" GeV, eta="<<rc->eta()<<", phi="<<rc->phi();
 }
+
+static std::string btagName;
 
 class HeavyNu : public edm::EDFilter {
 public:
@@ -127,6 +128,8 @@ private:
     TH1 *mWR, *mNuR1, *mNuR2, *mMuMu, *mMuMuZoom, *mJJ ; 
     TH2 *mNuR2D, *jetPtvsNum ; 
 
+    TH1* btagJet1, *btagJet2;
+
     // Jeremy's crazy angles...
     TH1* ctheta_mumu, *cthetaz_mumu;
     TH1* ctheta_jj, *cthetaz_jj;
@@ -149,6 +152,8 @@ private:
     HistPerDef LLJJptCuts;
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
+    HistPerDef oneBtag;
+    HistPerDef twoBtag;
   } hists;
 
   struct CutsStruct {
@@ -278,6 +283,10 @@ HeavyNu::HistPerDef::book(TFileDirectory td,
   dPhiJet=td.make<TH1D>("dPhiJet",title.c_str(),30,0,3.14159);  
   title=std::string("Jet #Delta#eta vs. #Delta#phi ")+post;
   dEtaPhiJet=td.make<TH2D>("dEtaPhiJet",title.c_str(),50,0,5,30,0,3.14159);  
+  title=std::string("btag(j_{1}) ")+post;
+  btagJet1=td.make<TH1D>("btagJet1",title.c_str(),40,0,5);  
+  title=std::string("btag(j_{2}) ")+post;
+  btagJet2=td.make<TH1D>("btagJet2",title.c_str(),40,0,5);  
 
   // Mu/Jet histograms
   title=std::string("Minimum #Delta R(#mu_{1},jet) ")+post;
@@ -422,6 +431,9 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   phiJet1->Fill(jets.at(0).phi()) ; 
   phiJet2->Fill(jets.at(1).phi()) ; 
 
+  btagJet1->Fill(jets.at(0).bDiscriminator(btagName));
+  btagJet1->Fill(jets.at(1).bDiscriminator(btagName));
+
   dPhiJet->Fill( fabs(deltaPhi(jets.at(0).phi(),jets.at(1).phi())) ) ; 
   dEtaJet->Fill( fabs(jets.at(0).eta() - jets.at(1).eta()) ) ; 
   dEtaPhiJet->Fill(fabs(jets.at(0).eta()-jets.at(1).eta()),
@@ -537,11 +549,13 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
     ptJet1->Fill(hne.j1->pt()) ; 
     etaJet1->Fill(hne.j1->eta()) ; 
     phiJet1->Fill(hne.j1->phi()) ; 
+    btagJet1->Fill(hne.j1->bDiscriminator(btagName));
 
     if (hne.j2) {
       ptJet2->Fill(hne.j2->pt()) ; 
       etaJet2->Fill(hne.j2->eta()) ; 
       phiJet2->Fill(hne.j2->phi()) ; 
+      btagJet2->Fill(hne.j2->bDiscriminator(btagName));
 
       dPhiJet->Fill( fabs(deltaPhi(hne.j1->phi(),hne.j2->phi())) ) ; 
       dEtaJet->Fill( fabs(hne.j1->eta() - hne.j2->eta()) ) ; 
@@ -609,6 +623,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
   dolog_=iConfig.getParameter<bool>("DoLog");
+
+  btagName=iConfig.getParameter<std::string>("BtagName");
 
   nnif_ = new HeavyNu_NNIF(iConfig);
 
