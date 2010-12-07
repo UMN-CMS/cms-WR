@@ -30,16 +30,16 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   const char* finalVarHist="hNu/masscut/mWR";
 
   const double sig_scale_factor=info.xsec;
-  const double ttf_yield_mc=lumi*194.3*(0.11*0.11)*1664/70000; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
+  const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
   //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
-  const double zj_yield_mc=lumi*0.0405*1989/55000;  //M180 mumu (using truncated weight...)
+  const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
   
-  const double wj_yield_mc=lumi*53711.0*3/1.11e7;  
+  const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // change from 3 to 1 with higher MLL cut
+  const double qcd_yield_data=lumi*0.06514/100/0.003923*exp(520*(-0.003923));
 
   RooWorkspace w("example");
   w.factory("mwr[520,2000]"); // observable is called mwr
   w.defineSet("obs","mwr");
-
 
   TH1* signalShape=(TH1*)(signal->Get(finalVarHist)->Clone("ss"));
   TH1* signalNorm=(TH1*)(signal->Get("hNu/njet"));
@@ -51,8 +51,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
   TH1* dataHist=(TH1*)(dataf->Get(finalVarHist)->Clone("dataHist"));
 
+
+  info.data=dataHist->Integral(int(dataHist->FindBin(520)),int(dataHist->FindBin(2001)));
   RooDataHist* data=new RooDataHist("data","data",RooArgList(*w.var("mwr")),dataHist) ;
-  info.data=dataHist->Integral(dataHist->FindBin(520),dataHist->FindBin(2001));
 
   //  data->Print();
 
@@ -72,23 +73,27 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   w.factory("Exponential::bkg_zj(mwr,-3.64e-3)");
 
   w.factory("Exponential::bkg_wj(mwr,-3e-3)");
+
+  w.factory("Exponential::bkg_qcd(mwr,-0.003923)");
   
-  w.factory("SUM::bkg_pdf(ttf_yield[20,0,300]*bkg_ttb,zj_yield[1,0,100]*bkg_zj,wj_yield[1,0,100]*bkg_wj)");
+  w.factory("SUM::bkg_pdf(ttb_yield[20,0,300]*bkg_ttb,zj_yield[1,0,100]*bkg_zj,wj_yield[1,0,100]*bkg_wj,qcd_yield[1,0,30]*bkg_qcd)");
 
   // total model with signal and background yields as parameters
   w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,bkg_scale[1,0,100]*bkg_pdf)");
 
-  w.var("ttf_yield")->setVal(ttf_yield_mc);
+  w.var("ttb_yield")->setVal(ttb_yield_mc);
   w.var("zj_yield")->setVal(zj_yield_mc);
   w.var("wj_yield")->setVal(wj_yield_mc);
+  w.var("qcd_yield")->setVal(qcd_yield_data);
   double sig_yield_expected=signal_eff*sig_scale_factor*lumi;
-  info.background=wj_yield_mc+zj_yield_mc+ttf_yield_mc;
+  info.background=(wj_yield_mc+zj_yield_mc+ttb_yield_mc+qcd_yield_data);
   w.var("bkg_scale")->setVal(info.background);
 
 
-  w.var("ttf_yield")->setConstant();
+  w.var("ttb_yield")->setConstant();
   w.var("zj_yield")->setConstant();
   w.var("wj_yield")->setConstant();
+  w.var("qcd_yield")->setConstant();
   w.var("bkg_scale")->setConstant();
 
 
@@ -181,7 +186,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   info.cl_b_exp_p2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.4773),10000);
   info.cl_b_exp_m2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.4773),10000);
   printf("SUMMARY3 : EXP(b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_b_exp_m2s,info.cl_b_exp_m1s,info.cl_b_exp_p1s,info.cl_b_exp_p2s);
-  printf("SUMMARY4: %.2f background %.2f signal %d data\n",info.background,info.signal, info.data);
+  printf("SUMMARY4: %.2f background %.2f signal %d data\n",info.background,info.signal, int(info.data));
 
 
   
@@ -221,7 +226,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0) {
   LimitPointStruct lps;
   lps.xsec=xsec;
-  lps.lumi=7.;
+  lps.lumi=34.0;
 
   doLimitSetting(f0,f1,400,lps);
 }

@@ -1,4 +1,4 @@
-CXXFLAGS := `root-config --cflags` -O2 -g
+CXXFLAGS := `root-config --cflags` -O2 -g -Wall
 
 LDFLAGS := `root-config --libs` -lRooFitCore -lRooStats -lRooFit -lMinuit -lFoam
 

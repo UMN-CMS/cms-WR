@@ -32,7 +32,11 @@ int main(int argc, char* argv[]) {
   if (!cardfile.requireEntry("SIGNALMC","Root file containing signal MC histogram")) return 2;
   if (!cardfile.requireEntry("LUMI","Luminosity in pb^-1")) return 2;
   
-  TFile fdata(cardfile.getItem("DATA").c_str());
+
+  std::string fdataFile=cardfile.getItem("DATA");
+  printf("Loading data from '%s'\n",fdataFile.c_str());
+  TFile fdata(fdataFile.c_str());
+  
   info.lumi=cardfile.getItemFloat("LUMI");
   int cycles=cardfile.getItemInt("CYCLES",0,500);
 
