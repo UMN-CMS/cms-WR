@@ -27,7 +27,7 @@ using namespace RooStats;
 void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info) {
   double lumi=info.lumi; // pb^-1
 
-  const char* finalVarHist="hNu/masscut/mWR";
+  const char* finalVarHist="hNu/diLmasscut/mWR";
 
   const double sig_scale_factor=info.xsec;
   const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
@@ -79,7 +79,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   w.factory("SUM::bkg_pdf(ttb_yield[20,0,300]*bkg_ttb,zj_yield[1,0,100]*bkg_zj,wj_yield[1,0,100]*bkg_wj,qcd_yield[1,0,30]*bkg_qcd)");
 
   // total model with signal and background yields as parameters
-  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,bkg_scale[1,0,100]*bkg_pdf)");
+  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,bkg_scale[1,0,1000]*bkg_pdf)");
 
   w.var("ttb_yield")->setVal(ttb_yield_mc);
   w.var("zj_yield")->setVal(zj_yield_mc);
@@ -186,31 +186,26 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   info.cl_b_exp_p2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.4773),10000);
   info.cl_b_exp_m2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.4773),10000);
   printf("SUMMARY3 : EXP(b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_b_exp_m2s,info.cl_b_exp_m1s,info.cl_b_exp_p1s,info.cl_b_exp_p2s);
-  printf("SUMMARY4: %.2f background %.2f signal %d data\n",info.background,info.signal, int(info.data));
+  printf("SUMMARY4: %.2f background / %.2f (%.2f%%) signal / %d data\n",info.background,info.signal,signal_eff*100, int(info.data));
 
 
   
 #ifndef MAKE_MAIN
   TCanvas* c2=new TCanvas("c2","c2",900,900);
-  c2->Divide(2,2);
+  c2->Divide(1,2);
+
   c2->cd(1);
-  //  data->Draw("mwr");
-
-  c2->cd(2);
-  dataHist->Draw("HIST");
-
-  c2->cd(3);
   // and make a plot. number of bins is optional (default: 100)
   HypoTestPlot *plot = new HypoTestPlot(*res, 80); 
   plot->Draw();
 
-  c2->cd(4);
+  c2->cd(2);
   RooPlot* mesframe = w.var("mwr")->frame() ;
 
   data->plotOn(mesframe);
   //  w.pdf("bkg_pdf")->plotOn(mesframe);
-  w.pdf("main_pdf")->plotOn(mesframe);
-
+  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background));
+  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background),Components("bkg_pdf"),LineStyle(kDashed));
 
   mesframe->Draw();
 
@@ -228,5 +223,5 @@ void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0) {
   lps.xsec=xsec;
   lps.lumi=34.0;
 
-  doLimitSetting(f0,f1,400,lps);
+  doLimitSetting(f0,f1,5000,lps);
 }
