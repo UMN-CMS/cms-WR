@@ -26,13 +26,16 @@ using namespace RooStats;
 
 void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info) {
   double lumi=info.lumi; // pb^-1
-
+  char temp[1024];
   const char* finalVarHist="hNu/diLmasscut/mWR";
 
   const double sig_scale_factor=info.xsec;
   const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
+  const double ttb_yield_ferror=0.40;
+  //  const double ttb_yield_ferror=0.01;
   //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
   const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
+  const double zj_yield_ferror=0.10; // fractional error
   
   const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // change from 3 to 1 with higher MLL cut
   const double qcd_yield_data=lumi*0.06514/100/0.003923*exp(520*(-0.003923));
@@ -76,10 +79,13 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
   w.factory("Exponential::bkg_qcd(mwr,-0.003923)");
   
-  w.factory("SUM::bkg_pdf(ttb_yield[20,0,300]*bkg_ttb,zj_yield[1,0,100]*bkg_zj,wj_yield[1,0,100]*bkg_wj,qcd_yield[1,0,30]*bkg_qcd)");
-
   // total model with signal and background yields as parameters
-  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,bkg_scale[1,0,1000]*bkg_pdf)");
+  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,ttb_yield[0.1,0,300]*bkg_ttb,zj_yield[0.1,0,100]*bkg_zj,wj_yield[0.1,0,100]*bkg_wj,qcd_yield[0.1,0,30]*bkg_qcd)");
+
+  sprintf(temp,"Gaussian::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_mc*ttb_yield_ferror);
+  w.factory(temp);
+  sprintf(temp,"Gaussian::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_mc*zj_yield_ferror);
+  w.factory(temp);
 
   w.var("ttb_yield")->setVal(ttb_yield_mc);
   w.var("zj_yield")->setVal(zj_yield_mc);
@@ -87,30 +93,33 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   w.var("qcd_yield")->setVal(qcd_yield_data);
   double sig_yield_expected=signal_eff*sig_scale_factor*lumi;
   info.background=(wj_yield_mc+zj_yield_mc+ttb_yield_mc+qcd_yield_data);
-  w.var("bkg_scale")->setVal(info.background);
+  //  w.var("bkg_scale")->setVal(info.background);
 
 
-  w.var("ttb_yield")->setConstant();
-  w.var("zj_yield")->setConstant();
+  //  w.var("ttb_yield")->setConstant();
+  //  w.var("zj_yield")->setConstant();
   w.var("wj_yield")->setConstant();
   w.var("qcd_yield")->setConstant();
-  w.var("bkg_scale")->setConstant();
+  //  w.var("bkg_scale")->setConstant();
 
 
   info.signal=sig_yield_expected;
   // The model for the control sample that constrains the background.
   //w.factory("Gaussian::control_pdf(control_meas[50],bkg_yield,10.)");
 
+  w.factory("PROD::control_pdf(ttb_xsec,zj_xsec)");
+  //sprintf(temp,"Gaussian::control_pdf(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_mc*ttb_yield_ferror);
+  //w.factory(temp);
   // The total model including the main measurement and the control sample
-  //w.factory("PROD::main_with_control(main_pdf,control_pdf)");
+  w.factory("PROD::main_with_control(main_pdf,control_pdf)");
 
   // choose which pdf you want to use
   RooAbsPdf* pdfToUse = w.pdf("main_pdf"); // only use main measurement
-  //RooAbsPdf* pdfToUse = w.pdf("main_with_control"); // also include control sample
+  //  RooAbsPdf* pdfToUse = w.pdf("main_with_control"); // also include control sample
   
   // define sets for reference later
   w.defineSet("poi","sig_yield");
-  //  w.defineSet("nuis","bkg_yield");
+  w.defineSet("nuis","ttb_yield,zj_yield");
 
   //  RooDataSet* data = w.pdf("main_pdf")->generate(*w.set("obs"),RooFit::Extended());
   //  data->Print();
@@ -120,7 +129,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   b_model.SetPdf(*pdfToUse);
   b_model.SetObservables(*w.set("obs"));
   b_model.SetParametersOfInterest(*w.set("poi"));
-  //  b_model.SetNuisanceParameters(*w.set("nuis")); 
+    b_model.SetNuisanceParameters(*w.set("nuis")); 
   w.var("sig_yield")->setVal(0.0);
   b_model.SetSnapshot(*w.set("poi"));  
 
@@ -128,7 +137,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   sb_model.SetPdf(*pdfToUse);
   sb_model.SetObservables(*w.set("obs"));
   sb_model.SetParametersOfInterest(*w.set("poi"));
-  // sb_model.SetNuisanceParameters(*w.set("nuis")); 
+   sb_model.SetNuisanceParameters(*w.set("nuis")); 
   w.var("sig_yield")->setVal(sig_yield_expected);
   sb_model.SetSnapshot(*w.set("poi"));
 
@@ -141,10 +150,10 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   toymcsampler.SetGenerateBinned(true);
 
   HybridCalculator myH2(*data,sb_model, b_model, &toymcsampler);
-
-  //  myH2.ForcePriorNuisanceNull(*w.pdf("control_pdf")); 
-  //  myH2.ForcePriorNuisanceAlt(*w.pdf("control_pdf")); 
-
+  
+  myH2.ForcePriorNuisanceNull(*w.pdf("control_pdf")); 
+  myH2.ForcePriorNuisanceAlt(*w.pdf("control_pdf")); 
+  
   HypoTestResult *res = myH2.GetHypoTest();
   //  res->Print(0);
 
@@ -204,8 +213,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
   data->plotOn(mesframe);
   //  w.pdf("bkg_pdf")->plotOn(mesframe);
+  //w.pdf("main_pdf")->plotOn(mesframe);
   w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background));
-  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background),Components("bkg_pdf"),LineStyle(kDashed));
+  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background),Components("bkg_ttb"),LineStyle(kDashed));
 
   mesframe->Draw();
 
@@ -223,5 +233,5 @@ void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0) {
   lps.xsec=xsec;
   lps.lumi=34.0;
 
-  doLimitSetting(f0,f1,5000,lps);
+  doLimitSetting(f0,f1,500,lps);
 }
