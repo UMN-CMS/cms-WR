@@ -26,11 +26,11 @@ using namespace RooFit;
 using namespace RooStats;
 
 void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info) {
-  double lumi=info.lumi; // pb^-1
+  double lumi=info.base.lumi; // pb^-1
   char temp[1024];
   const char* finalVarHist="hNu/diLmasscut/mWR";
 
-  const double sig_scale_factor=info.xsec;
+  const double sig_scale_factor=info.base.xsec;
   const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
   const double ttb_yield_ferror=0.40;
   //  const double ttb_yield_ferror=0.01;
@@ -56,7 +56,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   TH1* dataHist=(TH1*)(dataf->Get(finalVarHist)->Clone("dataHist"));
 
 
-  info.data=dataHist->Integral(int(dataHist->FindBin(520)),int(dataHist->FindBin(2001)));
+  info.base.data=dataHist->Integral(int(dataHist->FindBin(520)),int(dataHist->FindBin(2001)));
   RooDataHist* data=new RooDataHist("data","data",RooArgList(*w.var("mwr")),dataHist) ;
 
   //  data->Print();
@@ -93,7 +93,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   w.var("wj_yield")->setVal(wj_yield_mc);
   w.var("qcd_yield")->setVal(qcd_yield_data);
   double sig_yield_expected=signal_eff*sig_scale_factor*lumi;
-  info.background=(wj_yield_mc+zj_yield_mc+ttb_yield_mc+qcd_yield_data);
+  info.base.background=(wj_yield_mc+zj_yield_mc+ttb_yield_mc+qcd_yield_data);
   //  w.var("bkg_scale")->setVal(info.background);
 
 
@@ -104,7 +104,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   //  w.var("bkg_scale")->setConstant();
 
 
-  info.signal=sig_yield_expected;
+  info.base.signal=sig_yield_expected;
   // The model for the control sample that constrains the background.
   //w.factory("Gaussian::control_pdf(control_meas[50],bkg_yield,10.)");
 
@@ -200,12 +200,12 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   if (clmed>1.0 && clmed<1.001) clmed=1.0;
   if (clmed<0.0) clmed=0.0;
 
-  info.cls_obs=res->CLs();
-  info.cls_exp=clmed;
-  info.cls_exp_m2s=clmed_m2s;
-  info.cls_exp_m1s=clmed_m1s;
-  info.cls_exp_p1s=clmed_p1s;
-  info.cls_exp_p2s=clmed_p2s;
+  info.cls.obs=res->CLs();
+  info.cls.exp=clmed;
+  info.cls.exp_m2s=clmed_m2s;
+  info.cls.exp_m1s=clmed_m1s;
+  info.cls.exp_p1s=clmed_p1s;
+  info.cls.exp_p2s=clmed_p2s;
 
   
   // for (int i=0; i<20; i++) 
@@ -223,32 +223,32 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   double expected_b=sd_b->Integral(mean_sb,10000);
   
   //  printf("DETAIL : mean_sb=%f  mean_b=%f\n", mean_sb,mean_b);
-  printf("SUMMARY  : LUMI=%.1f ipb MW=%.0f GeV  MNu=%.0f GeV  XSEC=%.2e pb \n",info.lumi,info.mwr,info.mnu,sig_scale_factor);
+  printf("SUMMARY  : LUMI=%.1f ipb MW=%.0f GeV  MNu=%.0f GeV  XSEC=%.2e pb \n",info.base.lumi,info.base.mwr,info.base.mnu,sig_scale_factor);
   //  printf("SUMMARY2 : EXP(s+b)=%.3f OBS(s+b)=%.3f EXP(b)=%.3f OBS(b)=%.3f\n",expected_sb,res->CLsplusb(),expected_b,1.0-res->CLb());
   printf("SUMMARY2 : EXP(s+b)=%.3f OBS(s+b)=%.3f EXP(b)=%.3f OBS(b)=%.3f\n",expected_sb,alt_obs_sb,expected_b,alt_obs_b);
   //  info.cl_sb_obs = res->CLsplusb();
-  info.cl_sb_obs = alt_obs_sb;
-  info.cl_sb_exp = expected_sb;
+  info.cl_sb.obs = alt_obs_sb;
+  info.cl_sb.exp = expected_sb;
   //  info.cl_b_obs = 1.0-res->CLb();
-  info.cl_b_obs = alt_obs_b;
-  info.cl_b_exp = expected_b;
+  info.cl_b.obs = alt_obs_b;
+  info.cl_b.exp = expected_b;
 
-  info.cl_sb_exp_p1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5+0.3413));
-  info.cl_sb_exp_m1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.3413)+0.0001);
-  info.cl_sb_exp_p2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5+0.4773));
-  info.cl_sb_exp_m2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.4773)+0.0001);
+  info.cl_sb.exp_p1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5+0.3413));
+  info.cl_sb.exp_m1s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.3413)+0.0001);
+  info.cl_sb.exp_p2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5+0.4773));
+  info.cl_sb.exp_m2s = sd_sb->Integral(-10000,sd_b->InverseCDFInterpolate(0.5-0.4773)+0.0001);
 
-  printf("SUMMARY3 : EXP(s+b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_sb_exp_m2s,info.cl_sb_exp_m1s,info.cl_sb_exp_p1s,info.cl_sb_exp_p2s);
+  printf("SUMMARY3 : EXP(s+b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_sb.exp_m2s,info.cl_sb.exp_m1s,info.cl_sb.exp_p1s,info.cl_sb.exp_p2s);
 
-  info.cl_b_exp_p1s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.3413),10000);
-  info.cl_b_exp_m1s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.3413),10000);
-  info.cl_b_exp_p2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.4773),10000);
-  info.cl_b_exp_m2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.4773),10000);
-  printf("SUMMARY3 : EXP(b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_b_exp_m2s,info.cl_b_exp_m1s,info.cl_b_exp_p1s,info.cl_b_exp_p2s);
+  info.cl_b.exp_p1s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.3413),10000);
+  info.cl_b.exp_m1s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.3413),10000);
+  info.cl_b.exp_p2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.4773),10000);
+  info.cl_b.exp_m2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.4773),10000);
+  printf("SUMMARY3 : EXP(b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_b.exp_m2s,info.cl_b.exp_m1s,info.cl_b.exp_p1s,info.cl_b.exp_p2s);
   printf("SUMMARY3 : CLS %f | %f %f %f %f %f\n",res->CLs(),clmed,clmed_p2s,clmed_p1s,clmed_m1s,clmed_m2s);
 
 
-  printf("SUMMARY4: %.2f background / %.2f (%.2f%%) signal / %d data\n",info.background,info.signal,signal_eff*100, int(info.data));
+  printf("SUMMARY4: %.2f background / %.2f (%.2f%%) signal / %d data\n",info.base.background,info.base.signal,signal_eff*100, int(info.base.data));
 
 
   
@@ -267,8 +267,8 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   data->plotOn(mesframe);
   //  w.pdf("bkg_pdf")->plotOn(mesframe);
   //w.pdf("main_pdf")->plotOn(mesframe);
-  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background));
-  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.background),Components("bkg_ttb"),LineStyle(kDashed));
+  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.base.background));
+  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.base.background),Components("bkg_ttb"),LineStyle(kDashed));
 
   mesframe->Draw();
 
@@ -283,8 +283,8 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
 void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0) {
   LimitPointStruct lps;
-  lps.xsec=xsec;
-  lps.lumi=34.0;
+  lps.base.xsec=xsec;
+  lps.base.lumi=34.0;
 
   doLimitSetting(f0,f1,2000,lps);
 }

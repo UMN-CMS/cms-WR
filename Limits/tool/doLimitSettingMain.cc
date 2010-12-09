@@ -37,14 +37,17 @@ int main(int argc, char* argv[]) {
   printf("Loading data from '%s'\n",fdataFile.c_str());
   TFile fdata(fdataFile.c_str());
   
-  info.lumi=cardfile.getItemFloat("LUMI");
+  info.base.lumi=cardfile.getItemFloat("LUMI");
   int cycles=cardfile.getItemInt("CYCLES",0,500);
 
 
   if (cardfile.hasEntry("TUPLEFILE")) {
     rootOutFile=new TFile(cardfile.getItem("TUPLEFILE").c_str(),"RECREATE");
     rootOutTree=new TTree("WRLimit","WR-HeavyNu Limits");
-    rootOutTree->Branch("info",&info,"lumi/F:mwr:mnu:xsec:cl_sb_obs:cl_sb_exp:cl_b_obs:cl_b_exp:cl_sb_exp_p1s:cl_sb_exp_m1s:cl_sb_exp_p2s:cl_sb_exp_m2s:cl_b_exp_p1s:cl_b_exp_m1s:cl_b_exp_p2s:cl_b_exp_m2s:cls_obs:cls_exp:cls_exp_p1s:cls_exp_m1s:cls_exp_p2s:cls_exp_m2s:signal:background:data");
+    rootOutTree->Branch("info",&(info.base),"lumi/F:mwr:mnu:xsec:signal:background:data");
+    rootOutTree->Branch("cl_sb",&(info.cl_sb),"obs/F:exp:exp_p1s:exp_m1s:exp_p2s:exp_m2s");
+    rootOutTree->Branch("cl_b",&(info.cl_b),"obs/F:exp:exp_p1s:exp_m1s:exp_p2s:exp_m2s");
+    rootOutTree->Branch("cls",&(info.cls),"obs/F:exp:exp_p1s:exp_m1s:exp_p2s:exp_m2s");
   }
 
   std::vector<std::string> sigFiles;
@@ -60,8 +63,8 @@ int main(int argc, char* argv[]) {
     int iw=0,inu=0;
     sscanf(strstr(sigFile.c_str(),"WR"),"WR%d_nuRmu%d",&iw,&inu);
     
-    info.mwr=iw;
-    info.mnu=inu;
+    info.base.mwr=iw;
+    info.base.mnu=inu;
     
     std::vector<float> points;
     
@@ -90,7 +93,7 @@ int main(int argc, char* argv[]) {
     
     int ipoint=1;
     for (std::vector<float>::const_iterator ip=points.begin(); ip!=points.end(); ip++) {
-      info.xsec=*ip;
+      info.base.xsec=*ip;
       //      printf("%d xsec=%f\n",ipoint,info.xsec);
       doLimitSetting(&fdata,&fsignal,cycles,info);
       ipoint++;
