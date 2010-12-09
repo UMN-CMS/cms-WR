@@ -14,6 +14,9 @@ struct LimitPointStruct {
   float cl_sb_exp_p2s, cl_sb_exp_m2s;
   float cl_b_exp_p1s, cl_b_exp_m1s;
   float cl_b_exp_p2s, cl_b_exp_m2s;
+  float cls_obs, cls_exp;
+  float cls_exp_p1s, cls_exp_m1s;
+  float cls_exp_p2s, cls_exp_m2s;
   float signal, background, data;
 };
 

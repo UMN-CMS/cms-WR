@@ -20,6 +20,7 @@
 #include "TCanvas.h"
 #include "TFile.h"
 #include "doLimitSetting.hh"
+#include <algorithm>
 
 using namespace RooFit;
 using namespace RooStats;
@@ -161,6 +162,55 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   SamplingDistribution* sd_sb=res->GetAltDistribution();
   SamplingDistribution* sd_b=res->GetNullDistribution();
 
+  //  printf("Sizes: %d %d %f\n",sd_b->GetSize(),sd_sb->GetSize());
+
+  std::vector<double> sampl_sb=sd_sb->GetSamplingDistribution();
+  std::vector<double> sampl_b=sd_b->GetSamplingDistribution();
+
+  std::sort(sampl_sb.begin(),sampl_sb.end(),std::less<double>());
+  std::sort(sampl_b.begin(),sampl_b.end(),std::less<double>());
+  int lim=int(sampl_b.size());
+
+  //  double median=sampl_b[sampl_b.size()/2];
+  double clmed=-1,clmed_m2s=-1,clmed_m1s=-1,clmed_p1s=-1,clmed_p2s=-1;
+
+  int m1s_pos = int(lim*(1.0-0.3173/2.0)+0.5)+1;
+  int p1s_pos = int(lim*(    0.3173/2.0)+0.5)+1;
+  int m2s_pos = int(lim*(1.0-0.0455/2.0)+0.5)+1;
+  int p2s_pos = int(lim*(    0.0455/2.0)+0.5)+1;
+
+  float val=sampl_b[lim/2];
+  for (int i=0; i<lim; i++) {
+    if (sampl_sb[i]>=val && clmed<0) {
+      clmed=std::max(0.0f,float(i)/(lim/2));
+      //      printf("CLMED %d %f %f %f\n",i,clmed,sampl_sb[i],val);
+    }
+    if (sampl_sb[i]>=sampl_b[m1s_pos] && clmed_m1s<0) clmed_m1s=std::max(0.0f,float(i)/(lim/2));
+    if (sampl_sb[i]>=sampl_b[m2s_pos] && clmed_m2s<0) clmed_m2s=std::max(0.0f,float(i)/(lim/2));
+    if (sampl_sb[i]>=sampl_b[p1s_pos] && clmed_p1s<0) clmed_p1s=std::max(0.0f,float(i)/(lim/2));
+    if (sampl_sb[i]>=sampl_b[p2s_pos] && clmed_p2s<0) clmed_p2s=std::max(0.0f,float(i)/(lim/2));
+  }
+  //  printf("%f %f %f %f %f %f \n",val,sampl_b[m2s_pos],sampl_b[m1s_pos],sampl_b[p1s_pos],sampl_b[p2s_pos]);
+  if (clmed==-1.0 || clmed>1) clmed=1.0;
+  if (clmed_m1s==-1.0 || clmed_m1s > 1) clmed_m1s=1.0;
+  if (clmed_m2s==-1.0 || clmed_m2s > 1) clmed_m2s=1.0;
+  if (clmed_p1s==-1.0 || clmed_p1s > 1) clmed_p1s=1.0;
+  if (clmed_p2s==-1.0 || clmed_p2s > 1) clmed_p2s=1.0;
+  
+  if (clmed>1.0 && clmed<1.001) clmed=1.0;
+  if (clmed<0.0) clmed=0.0;
+
+  info.cls_obs=res->CLs();
+  info.cls_exp=clmed;
+  info.cls_exp_m2s=clmed_m2s;
+  info.cls_exp_m1s=clmed_m1s;
+  info.cls_exp_p1s=clmed_p1s;
+  info.cls_exp_p2s=clmed_p2s;
+
+  
+  // for (int i=0; i<20; i++) 
+  //  printf("%3d %f %f \n",i,sampl_sb[i],sampl_b[i]);
+
   double xobs=res->GetTestStatisticData();
   xobs+=0.0001; // important for handling the "exactly zero data" case, irrelevant for all other purposes
   double alt_obs_sb=sd_sb->Integral(-10000,xobs);
@@ -195,6 +245,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   info.cl_b_exp_p2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5+0.4773),10000);
   info.cl_b_exp_m2s = sd_b->Integral(sd_sb->InverseCDFInterpolate(0.5-0.4773),10000);
   printf("SUMMARY3 : EXP(b) (-2s,-1s,1s,2s) %.3f %.3f %.3f %.3f\n",info.cl_b_exp_m2s,info.cl_b_exp_m1s,info.cl_b_exp_p1s,info.cl_b_exp_p2s);
+  printf("SUMMARY3 : CLS %f | %f %f %f %f %f\n",res->CLs(),clmed,clmed_p2s,clmed_p1s,clmed_m1s,clmed_m2s);
+
+
   printf("SUMMARY4: %.2f background / %.2f (%.2f%%) signal / %d data\n",info.background,info.signal,signal_eff*100, int(info.data));
 
 
@@ -233,5 +286,5 @@ void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0) {
   lps.xsec=xsec;
   lps.lumi=34.0;
 
-  doLimitSetting(f0,f1,500,lps);
+  doLimitSetting(f0,f1,2000,lps);
 }
