@@ -5,7 +5,7 @@ import sys
 #isSIGNAL=sys.modules['__main__'].isSIGNAL
 #process = sys.modules['__main__'].process
 
-Training=False
+Training=True
 isMC=True
 isSIGNAL=False
 
@@ -25,7 +25,7 @@ process.options = cms.untracked.PSet(
 #    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu300/HeavyNuGenHLT_WR1000_nuRmu300_1-reco-pool.root" )
 ##    fileNames=cms.untracked.vstring('/store/mc/S10/TTbar/GEN-SIM-RECO/START36_V9_S09-v1/0055/044B121D-9678-DF11-B39B-001E0B5F95B2.root')
 #)
-#process.load('HeavyNu.AnalysisModules.in_cff')
+process.load('HeavyNu.AnalysisModules.in_cff')
 
 #if not isMC:
 #    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
@@ -39,11 +39,10 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
-#    process.GlobalTag.globaltag = cms.string('START36_V10::All')
-    process.GlobalTag.globaltag = cms.string('START38_V12::All')
+    process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
     print "=================> MC flag is NOT SET <===================="
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
@@ -58,9 +57,6 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 #process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
 ##
-if not isMC:
-    from PhysicsTools.PatAlgos.tools.coreTools import *
-    removeMCMatching(process, ['All'])
 
 process.TFileService = cms.Service("TFileService",
        fileName = cms.string("anal.root"),
@@ -93,13 +89,14 @@ process.myAnalysisPath = cms.Path(
 )
 
 if not isMC:
-    process.output = cms.OutputModule("PoolOutputModule",
-                                      fileName = cms.untracked.string('heavynu_candevents.root'),
+    process.out = cms.OutputModule("PoolOutputModule",
+                                   fileName = cms.untracked.string('heavynu_candevents.root'),
     # save only events passing the full path
-                                      SelectEvents=cms.untracked.PSet(SelectEvents=cms.vstring('myAnalysisPath')),
-                                  
-                                      #outputCommands = cms.untracked.vstring("keep *")
-                                      )
-    process.out_step = cms.EndPath(process.output)
+                                   SelectEvents=cms.untracked.PSet(SelectEvents=cms.vstring('myAnalysisPath')),
+                                   outputCommands = cms.untracked.vstring("keep *")
+                                   )
+    from PhysicsTools.PatAlgos.tools.coreTools import *
+    removeMCMatching(process, ['All'])
+    process.outstep  = cms.EndPath(process.out)
     process.schedule = cms.Schedule(process.myAnalysisPath,
-                                    process.out_step)
+                                    process.outstep)
