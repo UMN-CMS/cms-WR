@@ -38,7 +38,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
   const double zj_yield_ferror=0.10; // fractional error
   
-  const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // change from 3 to 1 with higher MLL cut
+  //  const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // No W+jet after fix of Jet ID
   const double qcd_yield_data=lumi*0.06514/100/0.003923*exp(520*(-0.003923));
 
   RooWorkspace w("example");
@@ -76,30 +76,28 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
   w.factory("Exponential::bkg_zj(mwr,-3.64e-3)");
 
-  w.factory("Exponential::bkg_wj(mwr,-3e-3)");
-
   w.factory("Exponential::bkg_qcd(mwr,-0.003923)");
   
-  // total model with signal and background yields as parameters
-  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,ttb_yield[0.1,0,300]*bkg_ttb,zj_yield[0.1,0,100]*bkg_zj,wj_yield[0.1,0,100]*bkg_wj,qcd_yield[0.1,0,30]*bkg_qcd)");
+  // total model with signal and background yields as parameters ( *beware when changing luminosity* )
+  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,ttb_yield[0.1,1e-5,10]*bkg_ttb,zj_yield[0.1,1e-5,10]*bkg_zj,qcd_yield[0.1,1e-5,10]*bkg_qcd)");
 
-  sprintf(temp,"Gaussian::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_mc*ttb_yield_ferror);
+  // note the "+1" required for the defintion of K! ( K - 1   = [fractional error] )
+  sprintf(temp,"Lognormal::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_ferror/10+1);
   w.factory(temp);
-  sprintf(temp,"Gaussian::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_mc*zj_yield_ferror);
+  sprintf(temp,"Lognormal::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_ferror/10+1);
   w.factory(temp);
 
   w.var("ttb_yield")->setVal(ttb_yield_mc);
   w.var("zj_yield")->setVal(zj_yield_mc);
-  w.var("wj_yield")->setVal(wj_yield_mc);
   w.var("qcd_yield")->setVal(qcd_yield_data);
   double sig_yield_expected=signal_eff*sig_scale_factor*lumi;
-  info.base.background=(wj_yield_mc+zj_yield_mc+ttb_yield_mc+qcd_yield_data);
+  info.base.background=(zj_yield_mc+ttb_yield_mc+qcd_yield_data);
   //  w.var("bkg_scale")->setVal(info.background);
 
 
   //  w.var("ttb_yield")->setConstant();
   //  w.var("zj_yield")->setConstant();
-  w.var("wj_yield")->setConstant();
+  //  w.var("wj_yield")->setConstant();
   w.var("qcd_yield")->setConstant();
   //  w.var("bkg_scale")->setConstant();
 
@@ -115,8 +113,8 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   w.factory("PROD::main_with_control(main_pdf,control_pdf)");
 
   // choose which pdf you want to use
-  RooAbsPdf* pdfToUse = w.pdf("main_pdf"); // only use main measurement
-  //  RooAbsPdf* pdfToUse = w.pdf("main_with_control"); // also include control sample
+  //RooAbsPdf* pdfToUse = w.pdf("main_pdf"); // only use main measurement
+  RooAbsPdf* pdfToUse = w.pdf("main_with_control"); // also include control sample
   
   // define sets for reference later
   w.defineSet("poi","sig_yield");
