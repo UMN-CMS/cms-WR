@@ -31,11 +31,13 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   const char* finalVarHist="hNu/diLmasscut/mWR";
 
   const double sig_scale_factor=info.base.xsec;
-  const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
+  //  const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
+  const double ttb_yield_mc=lumi*1.1/34.1; // from Phil (using CMS XSEC)
   const double ttb_yield_ferror=0.40;
   //  const double ttb_yield_ferror=0.01;
   //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
-  const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
+  //  const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
+  const double zj_yield_mc=lumi*0.24815/34.1;  //M180 mumu (Match to data)
   const double zj_yield_ferror=0.10; // fractional error
   
   //  const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // No W+jet after fix of Jet ID
@@ -70,11 +72,12 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 		       //  w.factory("Gaussian::sig_pdf(mwr,sig_mean[600],sig_sigma[10])");
 
   // ttbar background (from fit)
-  w.factory("Exponential::ttb_exp(mwr,-5.22e-3)");
-  w.factory("Uniform::ttb_lin(mwr)");
-  w.factory("SUM::bkg_ttb(8.34*ttb_exp,1.192*ttb_lin)");
+  w.factory("Exponential::bkg_ttb(mwr,-4.277e-3)");
+  //  w.factory("Exponential::ttb_exp(mwr,-5.22e-3)");
+  //  w.factory("Uniform::ttb_lin(mwr)");
+  //w.factory("SUM::bkg_ttb(8.34*ttb_exp,1.192*ttb_lin)");
 
-  w.factory("Exponential::bkg_zj(mwr,-3.64e-3)");
+  w.factory("Exponential::bkg_zj(mwr,-4.00e-3)");
 
   w.factory("Exponential::bkg_qcd(mwr,-0.003923)");
   
@@ -82,9 +85,9 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,ttb_yield[0.1,1e-5,10]*bkg_ttb,zj_yield[0.1,1e-5,10]*bkg_zj,qcd_yield[0.1,1e-5,10]*bkg_qcd)");
 
   // note the "+1" required for the defintion of K! ( K - 1   = [fractional error] )
-  sprintf(temp,"Lognormal::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_ferror/10+1);
+  sprintf(temp,"Lognormal::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_ferror+1);
   w.factory(temp);
-  sprintf(temp,"Lognormal::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_ferror/10+1);
+  sprintf(temp,"Lognormal::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_ferror+1);
   w.factory(temp);
 
   w.var("ttb_yield")->setVal(ttb_yield_mc);
