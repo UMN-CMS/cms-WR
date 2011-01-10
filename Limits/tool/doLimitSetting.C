@@ -44,6 +44,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   const double qcd_yield_data=lumi*0.06514/100/0.003923*exp(520*(-0.003923));
 
   RooWorkspace w("example");
+
   w.factory("mwr[520,2000]"); // observable is called mwr
   w.defineSet("obs","mwr");
 
@@ -52,7 +53,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
   //  signalShape->Print();
   double signal_eff=signalShape->Integral()*1.0/signalNorm->GetEntries();
-  
+
   signalShape->Scale(1.0/signalShape->Integral());
 
   TH1* dataHist=(TH1*)(dataf->Get(finalVarHist)->Clone("dataHist"));
@@ -274,6 +275,10 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   mesframe->Draw();
 
 #endif
+
+  delete sd_sb;
+  delete sd_b;
+  delete res;
 
   delete dataHist;
   delete signalShape;
