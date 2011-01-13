@@ -14,16 +14,15 @@ typedef std::pair<int,int> hNuMassHypothesis;
 
 class HeavyNuEvent {
 public:
-  HeavyNuEvent() { reset(); }
-  void reset();
+  HeavyNuEvent() {}
   void regularize();
   void calculate();
   void calculateMuMu();
 
   bool isMC;
 
-  const pat::Muon *mu1, *mu2, *mu[2];
-  const pat::Jet  *j1, *j2, *j[2];
+  pat::MuonRef mu1, mu2, mu[2];
+  pat::JetRef  j1,  j2,  j[2];
 
   reco::Particle::LorentzVector vMuMu;
   reco::Particle::LorentzVector vJJ;
@@ -32,6 +31,8 @@ public:
 
   double ctheta_mu1_jj, cthetaz_mu1_jj;
   double ctheta_mu2_jj, cthetaz_mu2_jj;
+
+  double czeta_mumu; // cosine of 3D angle between the muon 3-mom vectors
 
   double ctheta_mumu, cthetaz_mumu;
   double ctheta_jj,   cthetaz_jj;

@@ -1,18 +1,6 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "TVector3.h"
 
-void HeavyNuEvent::reset() {
-  mu1=0;
-  mu2=0;
-  mu[0]=0;
-  mu[1]=0;
-  j1=0;
-  j2=0;
-  j[0]=0;
-  j[1]=0;
-}
-
-
 void HeavyNuEvent::regularize() {
   mu[0]=mu1;
   mu[1]=mu2;
@@ -31,16 +19,18 @@ static double planeCosAngle(const reco::Particle::Vector& plane1,
 
 void HeavyNuEvent::calculateMuMu() {
   vMuMu  = mu1->p4()+mu2->p4();
+  czeta_mumu   =mu1->momentum().unit().Dot(mu2->momentum().unit());
   ctheta_mumu  =planeCosAngle(mu1->momentum(),mu2->momentum(),reco::Particle::Vector(0,0,1));
   mMuMu = vMuMu.M();
 }
-
 
 void HeavyNuEvent::calculate() {
 
   vMuMu  = mu1->p4()+mu2->p4();
   vJJ    = j1->p4()+j2->p4();
   lv_evt = vMuMu+vJJ;
+
+  czeta_mumu   =fabs(mu1->momentum().unit().Dot(mu2->momentum().unit()));
 
   ctheta_mumu  =planeCosAngle(mu1->momentum(),mu2->momentum(),reco::Particle::Vector(0,0,1));
   ctheta_jj    =planeCosAngle(j1->momentum(),j2->momentum(),reco::Particle::Vector(0,0,1));
@@ -70,7 +60,7 @@ void HeavyNuEvent::calculate() {
   dRminMu2jet = std::min(dRmu2jet1,dRmu2jet2);
 
   // what are the muon transverse momenta relative to the closest jets?
-  const pat::Jet  *j4mu1, *j4mu2;
+  pat::JetRef  j4mu1, j4mu2;
   j4mu1 = (dRminMu1jet == dRmu1jet1) ? j1 : j2;
   j4mu2 = (dRminMu2jet == dRmu2jet1) ? j1 : j2;
 
