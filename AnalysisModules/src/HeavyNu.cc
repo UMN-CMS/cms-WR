@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.16 2010/12/06 22:43:18 mansj Exp $
+// $Id: HeavyNu.cc,v 1.17 2010/12/27 12:39:17 dudero Exp $
 //
 //
 
@@ -52,6 +52,7 @@
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 
 
 //////////////////////////////////////////////////////////////////
@@ -63,7 +64,8 @@ template <class T> const T& min ( const T& a, const T& b ) {
   return (b<a)?b:a;
 }
 
-inline std::string int2str(int i) {
+template <class T>
+inline std::string int2str(T i) {
   std::ostringstream ss;
   ss << i;
   return ss.str();
@@ -78,7 +80,7 @@ public:
 
 //============================================================
 
-inline void outputCandidate(const reco::RecoCandidate *rc) {
+inline void outputCandidate(const reco::CandidateBaseRef& rc) {
   std::cout<<"pt="<<rc->pt()<<" GeV, eta="<<rc->eta()<<", phi="<<rc->phi();
 }
 
@@ -141,10 +143,24 @@ private:
   virtual void endJob() ;
   virtual bool isVBTFloose(const pat::Muon& m);
   virtual bool isVBTFtight(const pat::Muon& m);
+  virtual TH1 *bookRunHisto(uint32_t runNumber);
+  
+  inline bool inZmassWindow( double mMuMu ) {
+    return (mMuMu <= ZwinMaxGeV_) && (mMuMu >= ZwinMinGeV_);
+  }
+
+  edm::InputTag muonTag_;
+  edm::InputTag jetTag_;
+  edm::InputTag elecTag_;
+
+  double ZwinMinGeV_, ZwinMaxGeV_;
 
   std::string currentFile_;
   bool dolog_;
   HeavyNu_NNIF *nnif_;
+  HeavyNuTrigger *trig_;
+
+  std::map<uint32_t,TH1 *> m_runHistos_;
 
   // ----------member data ---------------------------
   static const std::string muonQuality[] ; 
@@ -152,13 +168,13 @@ private:
 
   struct HistPerDef {
     //book histogram set w/ common suffix inside the provided TFileDirectory
-    void book(TFileDirectory, const std::string&, const std::vector<hNuMassHypothesis>&) ;
+    void book(TFileDirectory *, const std::string&, const std::vector<hNuMassHypothesis>&) ;
     // fill all histos of the set with the two electron candidates
     void fill(pat::MuonCollection muons, pat::JetCollection jets,bool isMC) ;
     // fill all histos of the set with the two electron candidates
     void fill(const HeavyNuEvent& hne, const std::vector<hNuMassHypothesis>&) ;
 
-    TH1 *ptMu1, *ptMu2, *ptJet1unc, *ptJet2unc, *ptJet1cor, *ptJet2cor ;
+    TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2;
     TH1 *etaMu1, *etaMu2, *etaJet1, *etaJet2 ;
     TH1 *phiMu1, *phiMu2, *phiJet1, *phiJet2 ;
     TH1 *dEtaMu, *dPhiMu, *dEtaJet, *dPhiJet ;
@@ -183,12 +199,16 @@ private:
 
     TH1* btagJet1, *btagJet2;
 
+    TH1* czeta_mumu;
+    TH1* czeta_mumu_zoom;
+
     // Jeremy's crazy angles...
     TH1* ctheta_mumu, *cthetaz_mumu;
     TH1* ctheta_jj, *cthetaz_jj;
     TH1* ctheta_mu1_jj, *cthetaz_mu1_jj;
     TH1* ctheta_mu2_jj, *cthetaz_mu2_jj;
 
+    TFileDirectory *mydir;
     TFileDirectory *nndir;
   };
 
@@ -198,10 +218,15 @@ private:
   struct HistStruct {
     TH1 *nelec, *nmu, *njet ;
     TH1 *muPt, *muEta, *muPhi ; 
-    TH1 *jetPtUnc, *jetPtCor, *jetEta, *jetPhi, *jetID ; 
+    TH1 *jetPt, *jetEta, *jetPhi, *jetID ; 
     TH2 *jetPtvsNum;
+    TFileDirectory *rundir;
     HistPerDef noCuts ; 
     HistPerDef LLptCuts;
+    HistPerDef Mu1tightCuts;
+    HistPerDef Mu1trigMatch;
+    HistPerDef Mu1tightInZwin;
+    HistPerDef Mu1trigMatchInZwin;
     HistPerDef LLJJptCuts;
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
@@ -213,6 +238,7 @@ private:
     double minimum_mu1_pt;
     double minimum_mu2_pt;
     double minimum_jet_pt;
+    double maximum_mu1_abseta;
     double maximum_jet_abseta;
     double minimum_mumu_mass;
     double minimum_mWR_mass;
@@ -227,13 +253,13 @@ private:
 const std::string HeavyNu::muonQuality[] = {"AllGlobalMuons","AllStandAloneMuons","AllTrackerMuons"} ; 
 const int HeavyNu::muonQualityFlags = 3 ;
 inline std::string nnhistoname(int mwr,int mnu) {
-  return ("WR"+int2str(mwr)+"nuRmu"+int2str(mnu));
+  return ("WR"+int2str<int>(mwr)+"nuRmu"+int2str<int>(mnu));
 }
 
 //======================================================================
 
 void
-HeavyNu::HistPerDef::book(TFileDirectory td,
+HeavyNu::HistPerDef::book(TFileDirectory *td,
 			  const std::string& post,
 			  const std::vector<hNuMassHypothesis>& v_masspts )
 {
@@ -241,29 +267,31 @@ HeavyNu::HistPerDef::book(TFileDirectory td,
   
   TH1::SetDefaultSumw2();
 
+  mydir = td;
+
   // ----------  Muon histograms  ----------
 
-  t="p_{T}(#mu_{1}) "+post;   ptMu1=td.make<TH1D>("ptMu1",t.c_str(),50,0.,1000.);
-  t="p_{T}(#mu_{2}) "+post;   ptMu2=td.make<TH1D>("ptMu2",t.c_str(),50,0.,500.);
-  t="#eta(#mu_{1}) " +post;  etaMu1=td.make<TH1D>("etaMu1",t.c_str(),40,-2.5,2.5);
-  t="#eta(#mu_{2}) " +post;  etaMu2=td.make<TH1D>("etaMu2",t.c_str(),40,-2.5,2.5);
-  t="#phi(#mu_{1}) " +post;  phiMu1=td.make<TH1D>("phiMu1",t.c_str(),30,-3.14159,3.14159);
-  t="#phi(#mu_{2}) " +post;  phiMu2=td.make<TH1D>("phiMu2",t.c_str(),30,-3.14159,3.14159);
+  t="p_{T}(#mu_{1}) "+post;   ptMu1=td->make<TH1D>("ptMu1",t.c_str(),50,0.,1000.);
+  t="p_{T}(#mu_{2}) "+post;   ptMu2=td->make<TH1D>("ptMu2",t.c_str(),50,0.,500.);
+  t="#eta(#mu_{1}) " +post;  etaMu1=td->make<TH1D>("etaMu1",t.c_str(),40,-2.5,2.5);
+  t="#eta(#mu_{2}) " +post;  etaMu2=td->make<TH1D>("etaMu2",t.c_str(),40,-2.5,2.5);
+  t="#phi(#mu_{1}) " +post;  phiMu1=td->make<TH1D>("phiMu1",t.c_str(),30,-3.14159,3.14159);
+  t="#phi(#mu_{2}) " +post;  phiMu2=td->make<TH1D>("phiMu2",t.c_str(),30,-3.14159,3.14159);
 
   // delta angles
 
-  t="#Delta#eta(#mu_{1},#mu_{2}) "  +post;    dEtaMu=td.make<TH1D>("dEtaMu",t.c_str(),40,0,5);
-  t="#Delta#phi(#mu_{1},#mu_{2}) "  +post;    dPhiMu=td.make<TH1D>("dPhiMu",t.c_str(),30,0,3.14159);
-  t="#Delta p_{T}(#mu_{1},gen) "    +post; dptMu1gen=td.make<TH1D>("dptMu1gen",t.c_str(),50,-0.50,0.50);
-  t="#Delta p_{T}(#mu_{2},gen) "    +post; dptMu2gen=td.make<TH1D>("dptMu2gen",t.c_str(),50,-0.50,0.50);
-  t="#Delta R(#mu_{1},gen) "        +post;  dRMu1gen=td.make<TH1D>("dRMu1gen", t.c_str(),50,0,0.01);
-  t="#Delta R(#mu_{2},gen) "        +post;  dRMu2gen=td.make<TH1D>("dRMu2gen", t.c_str(),50,0,0.01);
+  t="#Delta#eta(#mu_{1},#mu_{2}) "  +post;    dEtaMu=td->make<TH1D>("dEtaMu",t.c_str(),40,0,5);
+  t="#Delta#phi(#mu_{1},#mu_{2}) "  +post;    dPhiMu=td->make<TH1D>("dPhiMu",t.c_str(),30,0,3.14159);
+  t="#Delta p_{T}(#mu_{1},gen) "    +post; dptMu1gen=td->make<TH1D>("dptMu1gen",t.c_str(),50,-0.50,0.50);
+  t="#Delta p_{T}(#mu_{2},gen) "    +post; dptMu2gen=td->make<TH1D>("dptMu2gen",t.c_str(),50,-0.50,0.50);
+  t="#Delta R(#mu_{1},gen) "        +post;  dRMu1gen=td->make<TH1D>("dRMu1gen", t.c_str(),50,0,0.01);
+  t="#Delta R(#mu_{2},gen) "        +post;  dRMu2gen=td->make<TH1D>("dRMu2gen", t.c_str(),50,0,0.01);
   t="#mu #Delta#eta vs. #Delta#phi "+post;
-  t+=  ";#Delta#eta; #Delta#phi";          dEtaPhiMu=td.make<TH2D>("dEtaPhiMu",t.c_str(),
+  t+=  ";#Delta#eta; #Delta#phi";          dEtaPhiMu=td->make<TH2D>("dEtaPhiMu",t.c_str(),
 								   50,0,5,30,0,3.14159);
 
-  t="Quality (#mu_{1}) "+post; qualMu1=td.make<TH1D>("qualMu1",t.c_str(),muonQualityFlags,0,muonQualityFlags);
-  t="Quality (#mu_{2}) "+post; qualMu2=td.make<TH1D>("qualMu2",t.c_str(),muonQualityFlags,0,muonQualityFlags);
+  t="Quality (#mu_{1}) "+post; qualMu1=td->make<TH1D>("qualMu1",t.c_str(),muonQualityFlags,0,muonQualityFlags);
+  t="Quality (#mu_{2}) "+post; qualMu2=td->make<TH1D>("qualMu2",t.c_str(),muonQualityFlags,0,muonQualityFlags);
   for (int i=0; i<muonQualityFlags; i++) {
     qualMu1->GetXaxis()->SetBinLabel(i+1,muonQuality[i].c_str()) ;
     qualMu2->GetXaxis()->SetBinLabel(i+1,muonQuality[i].c_str()) ;
@@ -271,96 +299,97 @@ HeavyNu::HistPerDef::book(TFileDirectory td,
 
   // isolation
 
-  t=   "trackIso(#mu_{1}) "+post;    mu1trackIso=td.make<TH1D>("mu1trackIso",   t.c_str(),40,0.,200.);
-  t=    "hcalIso(#mu_{1}) "+post;     mu1hcalIso=td.make<TH1D>("mu1hcalIso",    t.c_str(),40,0.,200.);
-  t=    "ecalIso(#mu_{1}) "+post;     mu1ecalIso=td.make<TH1D>("mu1ecalIso",    t.c_str(),40,0.,200.);
-  t=    "caloIso(#mu_{1}) "+post;     mu1caloIso=td.make<TH1D>("mu1caloIso",    t.c_str(),40,0.,200.);
-  t=        "Dxy(#mu_{1}) "+post;          mu1dB=td.make<TH1D>("mu1dB",         t.c_str(),50,-5.,5.);
+  t=   "trackIso(#mu_{1}) "+post;    mu1trackIso=td->make<TH1D>("mu1trackIso",   t.c_str(),40,0.,200.);
+  t=    "hcalIso(#mu_{1}) "+post;     mu1hcalIso=td->make<TH1D>("mu1hcalIso",    t.c_str(),40,0.,200.);
+  t=    "ecalIso(#mu_{1}) "+post;     mu1ecalIso=td->make<TH1D>("mu1ecalIso",    t.c_str(),40,0.,200.);
+  t=    "caloIso(#mu_{1}) "+post;     mu1caloIso=td->make<TH1D>("mu1caloIso",    t.c_str(),40,0.,200.);
+  t=        "Dxy(#mu_{1}) "+post;          mu1dB=td->make<TH1D>("mu1dB",         t.c_str(),50,-5.,5.);
 
-  t=   "trackIso(#mu_{2}) "+post;    mu2trackIso=td.make<TH1D>("mu2trackIso",   t.c_str(),40,0.,200.);
-  t=    "hcalIso(#mu_{2}) "+post;     mu2hcalIso=td.make<TH1D>("mu2hcalIso",    t.c_str(),40,0.,200.);
-  t=    "ecalIso(#mu_{2}) "+post;     mu2ecalIso=td.make<TH1D>("mu2ecalIso",    t.c_str(),40,0.,200.);
-  t=    "caloIso(#mu_{2}) "+post;     mu2caloIso=td.make<TH1D>("mu2caloIso",    t.c_str(),40,0.,200.);
-  t=        "Dxy(#mu_{2}) "+post;          mu2dB=td.make<TH1D>("mu2dB",         t.c_str(),50,-5.,5.);
+  t=   "trackIso(#mu_{2}) "+post;    mu2trackIso=td->make<TH1D>("mu2trackIso",   t.c_str(),40,0.,200.);
+  t=    "hcalIso(#mu_{2}) "+post;     mu2hcalIso=td->make<TH1D>("mu2hcalIso",    t.c_str(),40,0.,200.);
+  t=    "ecalIso(#mu_{2}) "+post;     mu2ecalIso=td->make<TH1D>("mu2ecalIso",    t.c_str(),40,0.,200.);
+  t=    "caloIso(#mu_{2}) "+post;     mu2caloIso=td->make<TH1D>("mu2caloIso",    t.c_str(),40,0.,200.);
+  t=        "Dxy(#mu_{2}) "+post;          mu2dB=td->make<TH1D>("mu2dB",         t.c_str(),50,-5.,5.);
 
-  t="trackRelIso(#mu_{1}) "+post; mu1trackRelIso=td.make<TH1D>("mu1trackRelIso",t.c_str(),50,0.,5.);
-  t= "hcalRelIso(#mu_{1}) "+post;  mu1hcalRelIso=td.make<TH1D>("mu1hcalRelIso", t.c_str(),50,0.,5.);
-  t= "ecalRelIso(#mu_{1}) "+post;  mu1ecalRelIso=td.make<TH1D>("mu1ecalRelIso", t.c_str(),50,0.,5.);
-  t= "caloRelIso(#mu_{1}) "+post;  mu1caloRelIso=td.make<TH1D>("mu1caloRelIso", t.c_str(),50,0.,5.);
+  t="trackRelIso(#mu_{1}) "+post; mu1trackRelIso=td->make<TH1D>("mu1trackRelIso",t.c_str(),50,0.,5.);
+  t= "hcalRelIso(#mu_{1}) "+post;  mu1hcalRelIso=td->make<TH1D>("mu1hcalRelIso", t.c_str(),50,0.,5.);
+  t= "ecalRelIso(#mu_{1}) "+post;  mu1ecalRelIso=td->make<TH1D>("mu1ecalRelIso", t.c_str(),50,0.,5.);
+  t= "caloRelIso(#mu_{1}) "+post;  mu1caloRelIso=td->make<TH1D>("mu1caloRelIso", t.c_str(),50,0.,5.);
 
-  t="trackRelIso(#mu_{2}) "+post; mu2trackRelIso=td.make<TH1D>("mu2trackRelIso",t.c_str(),50,0.,5.);
-  t= "hcalRelIso(#mu_{2}) "+post;  mu2hcalRelIso=td.make<TH1D>("mu2hcalRelIso", t.c_str(),50,0.,5.);
-  t= "ecalRelIso(#mu_{2}) "+post;  mu2ecalRelIso=td.make<TH1D>("mu2ecalRelIso", t.c_str(),50,0.,5.);
-  t= "caloRelIso(#mu_{2}) "+post;  mu2caloRelIso=td.make<TH1D>("mu2caloRelIso", t.c_str(),50,0.,5.);
+  t="trackRelIso(#mu_{2}) "+post; mu2trackRelIso=td->make<TH1D>("mu2trackRelIso",t.c_str(),50,0.,5.);
+  t= "hcalRelIso(#mu_{2}) "+post;  mu2hcalRelIso=td->make<TH1D>("mu2hcalRelIso", t.c_str(),50,0.,5.);
+  t= "ecalRelIso(#mu_{2}) "+post;  mu2ecalRelIso=td->make<TH1D>("mu2ecalRelIso", t.c_str(),50,0.,5.);
+  t= "caloRelIso(#mu_{2}) "+post;  mu2caloRelIso=td->make<TH1D>("mu2caloRelIso", t.c_str(),50,0.,5.);
 
   // ----------  Jet histograms ----------
 
-  t="p_{T}(j_{1}) (uncorrected) " +post;  ptJet1unc=td.make<TH1D>("ptJet1unc",t.c_str(),50,0.,500.);
-  t="p_{T}(j_{2}) (uncorrected) " +post;  ptJet2unc=td.make<TH1D>("ptJet2unc",t.c_str(),50,0.,500.);
-  t="p_{T}(j_{1}) (corrected) "   +post;  ptJet1cor=td.make<TH1D>("ptJet1cor",t.c_str(),50,0.,500.);
-  t="p_{T}(j_{2}) (corrected) "   +post;  ptJet2cor=td.make<TH1D>("ptJet2cor",t.c_str(),50,0.,500.);
-  t= "#eta(j_{1}) "               +post;    etaJet1=td.make<TH1D>("etaJet1",  t.c_str(),40,-5,5);
-  t= "#eta(j_{2}) "               +post;    etaJet2=td.make<TH1D>("etaJet2",  t.c_str(),40,-5,5);
-  t= "#phi(j_{1}) "               +post;    phiJet1=td.make<TH1D>("phiJet1",t.c_str(),30,-3.14159,3.14159);
-  t= "#phi(j_{2}) "               +post;    phiJet2=td.make<TH1D>("phiJet2",t.c_str(),30,-3.14159,3.14159);
+  t="p_{T}(j_{1}) "            +post;     ptJet1=td->make<TH1D>("ptJet1",  t.c_str(),50,0.,500.);
+  t="p_{T}(j_{2}) "            +post;     ptJet2=td->make<TH1D>("ptJet2",  t.c_str(),50,0.,500.);
+  t= "#eta(j_{1}) "            +post;    etaJet1=td->make<TH1D>("etaJet1", t.c_str(),40,-5,5);
+  t= "#eta(j_{2}) "            +post;    etaJet2=td->make<TH1D>("etaJet2", t.c_str(),40,-5,5);
+  t= "#phi(j_{1}) "            +post;    phiJet1=td->make<TH1D>("phiJet1", t.c_str(),30,-3.14159,3.14159);
+  t= "#phi(j_{2}) "            +post;    phiJet2=td->make<TH1D>("phiJet2", t.c_str(),30,-3.14159,3.14159);
 
-  t="#Delta#eta(j_{1},j_{2}) "    +post;    dEtaJet=td.make<TH1D>("dEtaJet",  t.c_str(),40,0,5);
-  t="#Delta#phi(j_{1},j_{2}) "    +post;    dPhiJet=td.make<TH1D>("dPhiJet",  t.c_str(),30,0,3.14159);
+  t="#Delta#eta(j_{1},j_{2}) " +post;    dEtaJet=td->make<TH1D>("dEtaJet", t.c_str(),40,0,5);
+  t="#Delta#phi(j_{1},j_{2}) " +post;    dPhiJet=td->make<TH1D>("dPhiJet", t.c_str(),30,0,3.14159);
 
-  t= "btag(j_{1}) "               +post;   btagJet1=td.make<TH1D>("btagJet1", t.c_str(),40,0,5);
-  t= "btag(j_{2}) "               +post;   btagJet2=td.make<TH1D>("btagJet2", t.c_str(),40,0,5);
+  t= "btag(j_{1}) "            +post;    btagJet1=td->make<TH1D>("btagJet1",t.c_str(),40,0,5);
+  t= "btag(j_{2}) "            +post;    btagJet2=td->make<TH1D>("btagJet2",t.c_str(),40,0,5);
 
   t ="Jet #Delta#eta vs. #Delta#phi ";
-  t+= post+";#Delta#eta; #Delta#phi";    dEtaPhiJet=td.make<TH2D>("dEtaPhiJet",t.c_str(),
-								  50,0,5,30,0,3.14159);
+  t+= post+";#Delta#eta; #Delta#phi";  dEtaPhiJet=td->make<TH2D>("dEtaPhiJet",t.c_str(),
+								50,0,5,30,0,3.14159);
   t ="Jet ID(j_{2}) vs. ID(j_{1}) ";
-  t+=post+"; ID(j_{1}); ID(j_{2})";         jetID2d=td.make<TH2I>("jetID2d",t.c_str(),3,0,3,3,0,3);
+  t+=post+"; ID(j_{1}); ID(j_{2})";         jetID2d=td->make<TH2I>("jetID2d",t.c_str(),3,0,3,3,0,3);
   labelJetIDaxis(jetID2d->GetXaxis());
   labelJetIDaxis(jetID2d->GetYaxis());
 
   // ----------  Mu/Jet histograms  ----------
 
-  t="Minimum #Delta R(#mu_{1},jet) "+post;  dRminMu1jet=td.make<TH1D>("dRminMu1jet",t.c_str(),50,0,5.);
-  t="Minimum #Delta R(#mu_{2},jet) "+post;  dRminMu2jet=td.make<TH1D>("dRminMu2jet",t.c_str(),50,0,5.);
+  t="Minimum #Delta R(#mu_{1},jet) "+post;  dRminMu1jet=td->make<TH1D>("dRminMu1jet",t.c_str(),50,0,5.);
+  t="Minimum #Delta R(#mu_{2},jet) "+post;  dRminMu2jet=td->make<TH1D>("dRminMu2jet",t.c_str(),50,0,5.);
 
-  t="p_{T,rel}(#mu_{1},jet)"+post;            hptrelMu1=td.make<TH1D>("ptrelMu1",t.c_str(),50,0,1000.);
-  t="p_{T,rel}(#mu_{2},jet)"+post;            hptrelMu2=td.make<TH1D>("ptrelMu2",t.c_str(),50,0,1000.);
+  t="p_{T,rel}(#mu_{1},jet)"+post;            hptrelMu1=td->make<TH1D>("ptrelMu1",t.c_str(),50,0,1000.);
+  t="p_{T,rel}(#mu_{2},jet)"+post;            hptrelMu2=td->make<TH1D>("ptrelMu2",t.c_str(),50,0,1000.);
 
   t="p_{T,rel}(#mu_{1},jet) vs #Delta R(#mu_{1},jet)"+post;
-  t+="; #Delta R(#mu_{1},jet); p_{T,rel}(#mu_{1},jet)"; ptrelVsdRminMu1jet=td.make<TH2D>("ptrelVsdRminMu1jet",
+  t+="; #Delta R(#mu_{1},jet); p_{T,rel}(#mu_{1},jet)"; ptrelVsdRminMu1jet=td->make<TH2D>("ptrelVsdRminMu1jet",
 											 t.c_str(),
 											 50,0,5.,50,0,1000);
   t="p_{T,rel}(#mu_{2},jet) vs #Delta R(#mu_{2},jet)"+post;
-  t+="; #Delta R(#mu_{2},jet); p_{T,rel}(#mu_{2},jet)"; ptrelVsdRminMu2jet=td.make<TH2D>("ptrelVsdRminMu2jet",
+  t+="; #Delta R(#mu_{2},jet); p_{T,rel}(#mu_{2},jet)"; ptrelVsdRminMu2jet=td->make<TH2D>("ptrelVsdRminMu2jet",
 											 t.c_str(),
 											 50,0,5.,50,0,1000);
   
   // ----------  Composite histograms  ----------
 
-  t="M(W_{R}) "                    +post;       mWR=td.make<TH1D>("mWR",   t.c_str(),50,0,2000);
-  t="M(N_{R}) with #mu_{1} "       +post;     mNuR1=td.make<TH1D>("mNuR1", t.c_str(),50,0,2000);
-  t="M(N_{R}) with #mu_{2} "       +post;     mNuR2=td.make<TH1D>("mNuR2", t.c_str(),50,0,1000);
-  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;    mNuR2D=td.make<TH2D>("mNuR2D",t.c_str(),50,0,2000,50,0,1000);
+  t="M(W_{R}) "                    +post;       mWR=td->make<TH1D>("mWR",   t.c_str(),50,0,2500);
+  t="M(N_{R}) with #mu_{1} "       +post;     mNuR1=td->make<TH1D>("mNuR1", t.c_str(),50,0,2500);
+  t="M(N_{R}) with #mu_{2} "       +post;     mNuR2=td->make<TH1D>("mNuR2", t.c_str(),50,0,1000);
+  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;    mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),50,0,2500,50,0,1000);
 
-  t="M(#mu #mu)"                   +post;     mMuMu=td.make<TH1D>("mMuMu",    t.c_str(),50,0,2000);
-  t="M(#mu #mu)"                   +post; mMuMuZoom=td.make<TH1D>("mMuMuZoom",t.c_str(),50,0,200);
-  t="M(jj)"                        +post;       mJJ=td.make<TH1D>("mJJ",      t.c_str(),50,0,2000);
+  t="M(#mu #mu)"                   +post;     mMuMu=td->make<TH1D>("mMuMu",    t.c_str(),50,0,2500);
+  t="M(#mu #mu)"                   +post; mMuMuZoom=td->make<TH1D>("mMuMuZoom",t.c_str(),50,0,200);
+  t="M(jj)"                        +post;       mJJ=td->make<TH1D>("mJJ",      t.c_str(),50,0,2500);
+
+  t="cZeta(mumu)"                 +post; czeta_mumu=td->make<TH1D>("czMM",    t.c_str(),100,-1,1);
+  t="cZeta(mumu) Zoom"       +post; czeta_mumu_zoom=td->make<TH1D>("czMMzoom",t.c_str(),100,-1,-0.9);
 
   // crazy angles
-  t="cT(mumu)"    +post;     ctheta_mumu=td.make<TH1D>("ctMM",   t.c_str(),50,0,1);
-  t="cT(jj)"      +post;       ctheta_jj=td.make<TH1D>("ctJJ",   t.c_str(),50,0,1);
-  t="cT(mu1-jj)"  +post;   ctheta_mu1_jj=td.make<TH1D>("ctM1JJ", t.c_str(),50,0,1);
-  t="cT(mu2-jj)"  +post;   ctheta_mu2_jj=td.make<TH1D>("ctM2JJ", t.c_str(),50,0,1);
+  t="cT(mumu)"    +post;     ctheta_mumu=td->make<TH1D>("ctMM",   t.c_str(),50,0,1);
+  t="cT(jj)"      +post;       ctheta_jj=td->make<TH1D>("ctJJ",   t.c_str(),50,0,1);
+  t="cT(mu1-jj)"  +post;   ctheta_mu1_jj=td->make<TH1D>("ctM1JJ", t.c_str(),50,0,1);
+  t="cT(mu2-jj)"  +post;   ctheta_mu2_jj=td->make<TH1D>("ctM2JJ", t.c_str(),50,0,1);
 
-  t="cTz(mumu)"   +post;    cthetaz_mumu=td.make<TH1D>("ctzMM",  t.c_str(),50,0,1);
-  t="cTz(jj)"     +post;      cthetaz_jj=td.make<TH1D>("ctzJJ",  t.c_str(),50,0,1);
-  t="cTz(mu1-jj)" +post;  cthetaz_mu1_jj=td.make<TH1D>("ctzM1JJ",t.c_str(),50,0,1);
-  t="cTz(mu2-jj)" +post;  cthetaz_mu2_jj=td.make<TH1D>("ctzM2JJ",t.c_str(),50,0,1);
+  t="cTz(mumu)"   +post;    cthetaz_mumu=td->make<TH1D>("ctzMM",  t.c_str(),50,0,1);
+  t="cTz(jj)"     +post;      cthetaz_jj=td->make<TH1D>("ctzJJ",  t.c_str(),50,0,1);
+  t="cTz(mu1-jj)" +post;  cthetaz_mu1_jj=td->make<TH1D>("ctzM1JJ",t.c_str(),50,0,1);
+  t="cTz(mu2-jj)" +post;  cthetaz_mu2_jj=td->make<TH1D>("ctzM2JJ",t.c_str(),50,0,1);
 
   // ----------  Neural Net histograms  ----------
 
   if (v_masspts.size()) {
-    nndir=new TFileDirectory(td.mkdir("_NNdata"));
+    nndir= new TFileDirectory(td->mkdir("_NNdata"));
     for (size_t i=0; i<v_masspts.size(); i++) {
       int mwr = v_masspts[i].first;
       int mnu = v_masspts[i].second;
@@ -438,11 +467,8 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   }
 
   // Jets 
-  ptJet1unc->Fill(jets.at(0).pt()) ; 
-  ptJet2unc->Fill(jets.at(1).pt()) ; 
-
-  ptJet1cor->Fill(jets.at(0).correctedJet("Uncorrected").pt()) ; 
-  ptJet2cor->Fill(jets.at(1).correctedJet("Uncorrected").pt()) ; 
+  ptJet1->Fill(jets.at(0).pt()) ; 
+  ptJet2->Fill(jets.at(1).pt()) ; 
 
   etaJet1->Fill(jets.at(0).eta()) ; 
   etaJet2->Fill(jets.at(1).eta()) ; 
@@ -571,18 +597,16 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
   int jet2id = 0;
 
   // Jets 
-  if (hne.j1) {
+  if (hne.j1.isAvailable()) {
     jet1id = jetID(*(hne.j1));
 
-    ptJet1unc->Fill(hne.j1->pt()) ; 
-    ptJet1cor->Fill(hne.j1->correctedJet("Uncorrected").pt()) ; 
+    ptJet1->Fill(hne.j1->pt()) ; 
     etaJet1->Fill(hne.j1->eta()) ; 
     phiJet1->Fill(hne.j1->phi()) ; 
     btagJet1->Fill(hne.j1->bDiscriminator(btagName));
 
-    if (hne.j2) {
-      ptJet2unc->Fill(hne.j2->pt()) ; 
-      ptJet2cor->Fill(hne.j2->correctedJet("Uncorrected").pt()) ; 
+    if (hne.j2.isAvailable()) {
+      ptJet2->Fill(hne.j2->pt()) ; 
       etaJet2->Fill(hne.j2->eta()) ; 
       phiJet2->Fill(hne.j2->phi()) ; 
       btagJet2->Fill(hne.j2->bDiscriminator(btagName));
@@ -623,6 +647,8 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
   mMuMu->Fill( hne.mMuMu );
   mMuMuZoom->Fill( hne.mMuMu );
 
+  czeta_mumu->Fill(hne.czeta_mumu);
+  czeta_mumu_zoom->Fill(hne.czeta_mumu);
   ctheta_mumu->Fill(hne.ctheta_mumu);
   cthetaz_mumu->Fill(hne.cthetaz_mumu);
 
@@ -660,50 +686,77 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
    //now do what ever initialization is needed
   dolog_=iConfig.getParameter<bool>("DoLog");
 
+  muonTag_ = iConfig.getParameter< edm::InputTag >( "muonTag" );
+  jetTag_  = iConfig.getParameter< edm::InputTag >( "jetTag"  );
+  elecTag_ = iConfig.getParameter< edm::InputTag >( "electronTag" );
+
   btagName=iConfig.getParameter<std::string>("BtagName");
 
   nnif_ = new HeavyNu_NNIF(iConfig);
 
+  trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
+
   edm::Service<TFileService> fs;
-  hists.nelec    = fs->make<TH1D>("nelec","N(e^{#pm})",10,-0.5,9.5);
-  hists.nmu      = fs->make<TH1D>("nmu","N(#mu^{#pm})",10,-0.5,9.5);
-  hists.njet     = fs->make<TH1D>("njet","N(Jet)",50,-0.5,49.5);
-  hists.muPt     = fs->make<TH1D>("muPt","#mu p_{T} distribution",100,0,1000) ; 
-  hists.muEta    = fs->make<TH1D>("muEta","#mu #eta distribution",50,-2.5,2.5) ; 
-  hists.muPhi    = fs->make<TH1D>("muPhi","#mu #phi distribution",60,-3.14159,3.14159) ; 
-  hists.jetPtUnc = fs->make<TH1D>("jetPtUnc","jet p_{T} distribution (uncorrected)",100,0,1000) ; 
-  hists.jetPtCor = fs->make<TH1D>("jetPtCor","jet p_{T} distribution (corrected)",100,0,1000) ; 
+  hists.nelec    = fs->make<TH1D>("nelec", "N(e^{#pm})",10,-0.5,9.5);
+  hists.nmu      = fs->make<TH1D>("nmu",   "N(#mu^{#pm})",10,-0.5,9.5);
+  hists.njet     = fs->make<TH1D>("njet",  "N(Jet)",50,-0.5,49.5);
+  hists.muPt     = fs->make<TH1D>("muPt",  "#mu p_{T} distribution",100,0,1000) ; 
+  hists.muEta    = fs->make<TH1D>("muEta", "#mu #eta distribution",50,-2.5,2.5) ; 
+  hists.muPhi    = fs->make<TH1D>("muPhi", "#mu #phi distribution",60,-3.14159,3.14159) ; 
+  hists.jetPt    = fs->make<TH1D>("jetPt", "jet p_{T} distribution",100,0,1000) ; 
   hists.jetEta   = fs->make<TH1D>("jetEta","jet #eta distribution",50,-5,5) ; 
   hists.jetPhi   = fs->make<TH1D>("jetPhi","jet #phi distribution",60,-3.14159,3.14159) ; 
+  hists.jetID    = fs->make<TH1I>("jetID", "Jet ID",3,0,3);
   hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,1000.);
-  hists.jetID    = fs->make<TH1I>("jetID","Jet ID",3,0,3);
   labelJetIDaxis(hists.jetID->GetXaxis());
 
-  hists.noCuts.book    (fs->mkdir("noCuts"),"(no cuts)",v_null);
-  hists.LLptCuts.book  (fs->mkdir("LLptcuts"),"(dileptons with ptcuts:1)",v_null);
-  hists.LLJJptCuts.book(fs->mkdir("LLJJptcuts"),"(4objects with ptcuts:2)",nnif_->masspts());
-  hists.diLmassCut.book(fs->mkdir("diLmasscut"),"(mumu mass cut:3)",nnif_->masspts());
-  hists.mWRmassCut.book(fs->mkdir("mWRmasscut"),"(mumujj mass cut:4)",nnif_->masspts());
+  hists.noCuts.book      ( new TFileDirectory(fs->mkdir("noCuts")),      "(no cuts)",                v_null );
+  hists.LLptCuts.book    ( new TFileDirectory(fs->mkdir("LLptcuts")),    "(dileptons with ptcuts:1)",v_null );
+  hists.Mu1tightCuts.book( new TFileDirectory(fs->mkdir("Mu1tightCuts")),"(Mu1 tight cuts:2)",       v_null );
+  hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("LLJJptcuts")),  "(4objects with ptcuts:4)", nnif_->masspts() );
+  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("diLmasscut")),  "(mumu mass cut:5)",        nnif_->masspts() );
+  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("mWRmasscut")),  "(mumujj mass cut:6)",      nnif_->masspts() );
+
+  if (trig_->matchingEnabled()) {
+    hists.Mu1tightInZwin.book    ( new TFileDirectory(fs->mkdir("Mu1tightInZwin")),    "(Mu1 tight in Z mass Window)",        v_null );
+    hists.Mu1trigMatch.book      ( new TFileDirectory(fs->mkdir("Mu1trigMatch")),      "(Mu1 trigger match:3)",               v_null );
+    hists.Mu1trigMatchInZwin.book( new TFileDirectory(fs->mkdir("Mu1trigMatchInZwin")),"(Mu1 trigger match in Z mass Window)",v_null );
+    trig_->book(*(hists.Mu1trigMatch.mydir));
+  }
+
+  hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
+
   init_=false;
 
   cuts.minimum_mu1_pt      = iConfig.getParameter<double>("minMu1pt");
   cuts.minimum_mu2_pt      = iConfig.getParameter<double>("minMu2pt");
   cuts.minimum_jet_pt      = iConfig.getParameter<double>("minJetPt");
+  cuts.maximum_mu1_abseta  = iConfig.getParameter<double>("maxMu1AbsEta");
   cuts.maximum_jet_abseta  = iConfig.getParameter<double>("maxJetAbsEta");
   cuts.minimum_mumu_mass   = iConfig.getParameter<double>("minMuMuMass");
   cuts.minimum_mWR_mass    = iConfig.getParameter<double>("min4objMass");
   cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
   cuts.muon_trackiso_limit = iConfig.getParameter<double>("muonTrackIsoLimitGeV");
 
+  ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
+  ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
+
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
-  std::cout << "minMu1pt      = " << cuts.minimum_mu1_pt      << " GeV" <<std::endl;
-  std::cout << "minMu2pt      = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
-  std::cout << "minJetPt      = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
-  std::cout << "maxJetAbsEta  = " << cuts.maximum_jet_abseta  << std::endl;
-  std::cout << "minMuonJetdR  = " << cuts.minimum_muon_jet_dR << std::endl;
-  std::cout << "muonTrackIso  = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
-  std::cout << "minMuMuMass   = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
+  std::cout << "muonTag        = " << muonTag_                 << std::endl;
+  std::cout << "jetTag         = " << jetTag_                  << std::endl;
+  std::cout << "electronTag    = " << elecTag_                 << std::endl;
+  std::cout << "ZmassWinMinGeV = " << ZwinMinGeV_              << " GeV" << std::endl;
+  std::cout << "ZmassWinMaxGeV = " << ZwinMaxGeV_              << " GeV" << std::endl;
+  std::cout << "minMu1pt       = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
+  std::cout << "minMu2pt       = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
+  std::cout << "minJetPt       = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
+  std::cout << "maxMu1AbsEta   = " << cuts.maximum_mu1_abseta  << std::endl;
+  std::cout << "maxJetAbsEta   = " << cuts.maximum_jet_abseta  << std::endl;
+  std::cout << "minMuonJetdR   = " << cuts.minimum_muon_jet_dR << std::endl;
+  std::cout << "muonTrackIso   = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
+  std::cout << "minMuMuMass    = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
+  std::cout << "min4objMass    = " << cuts.minimum_mWR_mass    << " GeV" << std::endl;
 }
   
 HeavyNu::~HeavyNu()
@@ -743,6 +796,13 @@ HeavyNu::isVBTFtight(const pat::Muon& m)
 	  (gt->hitPattern().numberOfValidPixelHits()>0) );
 }
 
+TH1 *
+HeavyNu::bookRunHisto(uint32_t runNumber)
+{
+  std::string runstr = int2str<uint32_t>(runNumber);
+  return hists.rundir->make <TH1I> (runstr.c_str(), runstr.c_str(),1,1,2);
+}
+
 // ------------ method called to for each event  ------------
 bool
 HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -750,110 +810,136 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace edm;
   HeavyNuEvent hnuEvent;
 
+
   hnuEvent.isMC = !iEvent.isRealData();
 
-  edm::Handle<pat::MuonCollection> patMuonCollection ; 
-  iEvent.getByLabel("patMuons",patMuonCollection) ; 
+  if (iEvent.isRealData())
+  {
+    uint32_t runn = iEvent.id().run();
+    std::map<uint32_t,TH1 *>::const_iterator it = m_runHistos_.find(runn);
+    TH1 *runh;
+    if (it == m_runHistos_.end()) {
+      runh = bookRunHisto(runn);
+      m_runHistos_[runn] = runh;
+    } else
+      runh = it->second;
+    runh->Fill(1);
+  }
 
-  edm::Handle<pat::ElectronCollection> patElectronCollection ;
-  iEvent.getByLabel("patElectrons", patElectronCollection) ;
+  edm::Handle<pat::MuonCollection> pMuons ; 
+  iEvent.getByLabel(muonTag_,pMuons) ; 
 
-  edm::Handle<pat::JetCollection> patJetCollection ;
-  iEvent.getByLabel("patJets", patJetCollection) ;
+  edm::Handle<pat::ElectronCollection> pElecs ;
+  iEvent.getByLabel(elecTag_, pElecs) ;
 
-  if ( !patElectronCollection.isValid() || 
-       !patMuonCollection.isValid() || 
-       !patJetCollection.isValid() ) {
+  edm::Handle<pat::JetCollection> pJets ;
+  iEvent.getByLabel(jetTag_, pJets) ;
+
+  if ( !pElecs.isValid() || 
+       !pMuons.isValid() || 
+       !pJets.isValid() ) {
     std::cout << "Exiting as valid PAT objects not found" << std::endl ;
     return false; 
   }
 
-  const pat::ElectronCollection& pElecs = *(patElectronCollection.product()) ;
-  const pat::MuonCollection& pMuons = *(patMuonCollection.product()) ;
-  const pat::JetCollection& pJets = *(patJetCollection.product()) ;
+  pat::JetRef  iJ;
+  pat::MuonRef iM;
 
-  pat::ElectronCollection::const_iterator iE ;
-  pat::MuonCollection::const_iterator iM ;
-  pat::JetCollection::const_iterator iJ ;
-
-  hists.nelec->Fill(pElecs.size()) ;
-  hists.nmu->Fill(pMuons.size()) ;
-  hists.njet->Fill(pJets.size()) ;
+  hists.nelec->Fill(pElecs->size()) ;
+  hists.nmu->Fill(pMuons->size()) ;
+  hists.njet->Fill(pJets->size()) ;
 
   int njet=1;
-  for (iJ=pJets.begin(); iJ!=pJets.end(); iJ++) { 
-    hists.jetPtUnc->Fill( (*iJ).pt() ) ; 
-    hists.jetPtCor->Fill( iJ->correctedJet("Uncorrected").pt() ) ; 
+  for (size_t iJet=0; iJet<pJets->size(); iJet++) { 
+    iJ=pat::JetRef(pJets,iJet);
+    hists.jetPt->Fill( (*iJ).pt() ) ; 
     hists.jetEta->Fill( (*iJ).eta() ) ; 
     hists.jetPhi->Fill( (*iJ).phi() ) ; 
     hists.jetPtvsNum->Fill(njet++, (*iJ).pt() ) ; 
     hists.jetID->Fill(jetID(*iJ));
   }
-  for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
+  for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) { 
+    iM=pat::MuonRef(pMuons,iMuon);
     hists.muPt->Fill( (*iM).pt() ) ; 
     hists.muEta->Fill( (*iM).eta() ) ; 
     hists.muPhi->Fill( (*iM).phi() ) ; 
   }
 
   // Basic selection requirements: Require at least two muons, two jets
-  if ( pMuons.size() >= 2 && pJets.size() >= 2 ) {
-    hists.noCuts.fill( pMuons,pJets, hnuEvent.isMC ) ; 
+  if ( pMuons->size() >= 2 && pJets->size() >= 2 ) {
+    hists.noCuts.fill( *pMuons,*pJets, hnuEvent.isMC ) ; 
   } else return false;
 
   // next, we look for valid muons and jets and put them into the Event
-  for (iJ=pJets.begin(); iJ!=pJets.end(); iJ++) {
-    float jptCor = iJ->correctedJet("Uncorrected").pt();
-    if ((jptCor > cuts.minimum_jet_pt)   && // more later!
+  for (size_t iJet=0; iJet<pJets->size(); iJet++) {
+    iJ=pat::JetRef(pJets,iJet);
+    float jpt = (*iJ).pt();
+    if ((jpt > cuts.minimum_jet_pt)   && // more later!
 	(fabs((*iJ).eta())<=cuts.maximum_jet_abseta) ) {
-      if        ((hnuEvent.j1==0) || (hnuEvent.j1->correctedJet("Uncorrected").pt() < jptCor)) {
+      if        ((hnuEvent.j1.isNull()) || (hnuEvent.j1->pt() < jpt)) {
 	hnuEvent.j2=hnuEvent.j1;
-	hnuEvent.j1=&(*iJ);
-      } else if ((hnuEvent.j2==0) || (hnuEvent.j2->correctedJet("Uncorrected").pt() < jptCor)) {
-	hnuEvent.j2=&(*iJ);
+	hnuEvent.j1=iJ;
+      } else if ((hnuEvent.j2.isNull()) || (hnuEvent.j2->pt() < jpt)) {
+	hnuEvent.j2=iJ;
       }
     }
   }
 
-  for (iM=pMuons.begin(); iM!=pMuons.end(); iM++) { 
-    double dr1=(hnuEvent.j1==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j1->eta(),hnuEvent.j1->phi()));
-    double dr2=(hnuEvent.j2==0)?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j2->eta(),hnuEvent.j2->phi()));
+  for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
+    iM=pat::MuonRef(pMuons,iMuon);
+    double dr1=(hnuEvent.j1.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j1->eta(),hnuEvent.j1->phi()));
+    double dr2=(hnuEvent.j2.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hnuEvent.j2->eta(),hnuEvent.j2->phi()));
 
     if (((*iM).pt()>cuts.minimum_mu2_pt)
 	&& isVBTFloose(*iM)
 	&& (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
 	&& ((*iM).trackIso()  < cuts.muon_trackiso_limit)
 	) {
-      if ( (hnuEvent.mu1==0) ||
+      if ( (hnuEvent.mu1.isNull()) ||
 	   (hnuEvent.mu1->pt()<(*iM).pt()) ) {
 	hnuEvent.mu2=hnuEvent.mu1;
-	hnuEvent.mu1=&(*iM);
-      } else 	if (hnuEvent.mu2==0 ||
+	hnuEvent.mu1=iM;
+      } else 	if (hnuEvent.mu2.isNull() ||
 		    hnuEvent.mu2->pt()<(*iM).pt()) {
-	hnuEvent.mu2=&(*iM);
+	hnuEvent.mu2=iM;
       }
     }
   }
 
   // require two "loose" muons first
-  if (hnuEvent.mu2==0)            return false;
+  if (hnuEvent.mu2.isNull())
+    return false;
 
   hnuEvent.regularize(); // assign internal standards
   hnuEvent.calculateMuMu();
   hists.LLptCuts.fill(hnuEvent,v_null);
   
+  // apply the mu1 cut
+  if ( !isVBTFtight(*(hnuEvent.mu1)) ||
+       (fabs(hnuEvent.mu1->eta())>cuts.maximum_mu1_abseta) ||
+       (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt) )
+    return false;
+
+  hists.Mu1tightCuts.fill( hnuEvent,v_null );
+
+  // split out trigger matching requirement to study trigger eff.
+  if (trig_->matchingEnabled()) {
+    if ( inZmassWindow( hnuEvent.mMuMu ) ) hists.Mu1tightInZwin.fill( hnuEvent,v_null );
+    if ( !trig_->isTriggerMatched( hnuEvent.mu1, iEvent ) )
+      return false;
+    if ( inZmassWindow( hnuEvent.mMuMu ) ) hists.Mu1trigMatchInZwin.fill( hnuEvent,v_null );
+
+    hists.Mu1trigMatch.fill( hnuEvent,v_null );
+  }
+  
   // require four objects
   // require also the selected jets to pass loose ID,
   // per JetMET recommendation
   //
-  if ( (        hnuEvent.mu2 == 0) ||
-       (        hnuEvent.j2  == 0) ||
-       (jetID(*(hnuEvent.j1)) < 1) || 
-       (jetID(*(hnuEvent.j2)) < 1)) return false;
-  
-  // apply the mu1 cut
-  if ( !isVBTFtight(*(hnuEvent.mu1)) ||
-       (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt))
-    return false;
+  if ( (        hnuEvent.mu2.isNull()) ||
+       (        hnuEvent.j2.isNull())  ||
+       (jetID(*(hnuEvent.j1)) < 1)     || 
+       (jetID(*(hnuEvent.j2)) < 1) ) return false;
 
   hnuEvent.calculate(); // calculate various details
 
@@ -872,10 +958,10 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::cout<<"\tM(W_R)  = "<<hnuEvent.mWR  <<" GeV";
     std::cout<<", M(NuR1) = "<<hnuEvent.mNuR1<<" GeV";
     std::cout<<", M(NuR2) = "<<hnuEvent.mNuR2<<" GeV"<<std::endl;
-    std::cout<<"\tJets:   j1 ";outputCandidate((reco::RecoCandidate *)hnuEvent.j1);
-    std::cout<<        ", j2 ";outputCandidate((reco::RecoCandidate *)hnuEvent.j2);  std::cout<<std::endl;
-    std::cout<<"\tMuons: mu1 ";outputCandidate((reco::RecoCandidate *)hnuEvent.mu1);
-    std::cout<<       ", mu2 ";outputCandidate((reco::RecoCandidate *)hnuEvent.mu2); std::cout<<std::endl;
+    std::cout<<"\tJets:   j1 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.j1));
+    std::cout<<        ", j2 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.j2));  std::cout<<std::endl;
+    std::cout<<"\tMuons: mu1 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.mu1));
+    std::cout<<       ", mu2 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.mu2)); std::cout<<std::endl;
   }
 
   if (hnuEvent.mWR<cuts.minimum_mWR_mass) return false;  // dimuon mass cut
@@ -894,6 +980,7 @@ HeavyNu::beginJob() {
 void 
 HeavyNu::endJob() {
   nnif_->endJob();
+  trig_->endJob();
 }
 
 //define this as a plug-in
