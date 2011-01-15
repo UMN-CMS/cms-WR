@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.17 2010/12/27 12:39:17 dudero Exp $
+// $Id: HeavyNu.cc,v 1.18 2011/01/13 12:40:23 dudero Exp $
 //
 //
 
@@ -210,6 +210,8 @@ private:
 
     TFileDirectory *mydir;
     TFileDirectory *nndir;
+
+    HeavyNuTrigger::trigHistos_t trigHistos;
   };
 
   bool init_;
@@ -221,12 +223,14 @@ private:
     TH1 *jetPt, *jetEta, *jetPhi, *jetID ; 
     TH2 *jetPtvsNum;
     TFileDirectory *rundir;
-    HistPerDef noCuts ; 
+    HistPerDef noCuts; 
     HistPerDef LLptCuts;
-    HistPerDef Mu1tightCuts;
-    HistPerDef Mu1trigMatch;
-    HistPerDef Mu1tightInZwin;
-    HistPerDef Mu1trigMatchInZwin;
+    HistPerDef MuTightCuts;
+    HistPerDef TrigMatches;
+    HistPerDef Mu1TrigMatchesInZwin;
+    HistPerDef Mu2TrigMatchesInZwin;
+    HistPerDef Mu1Mu2TrigMatchesInZwin;
+    HistPerDef MuTightInZwin;
     HistPerDef LLJJptCuts;
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
@@ -238,7 +242,7 @@ private:
     double minimum_mu1_pt;
     double minimum_mu2_pt;
     double minimum_jet_pt;
-    double maximum_mu1_abseta;
+    double maximum_mu_abseta;
     double maximum_jet_abseta;
     double minimum_mumu_mass;
     double minimum_mWR_mass;
@@ -271,8 +275,8 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
 
   // ----------  Muon histograms  ----------
 
-  t="p_{T}(#mu_{1}) "+post;   ptMu1=td->make<TH1D>("ptMu1",t.c_str(),50,0.,1000.);
-  t="p_{T}(#mu_{2}) "+post;   ptMu2=td->make<TH1D>("ptMu2",t.c_str(),50,0.,500.);
+  t="p_{T}(#mu_{1}) "+post;   ptMu1=td->make<TH1D>("ptMu1",t.c_str(),100,0.,1000.);
+  t="p_{T}(#mu_{2}) "+post;   ptMu2=td->make<TH1D>("ptMu2",t.c_str(),100,0.,1000.);
   t="#eta(#mu_{1}) " +post;  etaMu1=td->make<TH1D>("etaMu1",t.c_str(),40,-2.5,2.5);
   t="#eta(#mu_{2}) " +post;  etaMu2=td->make<TH1D>("etaMu2",t.c_str(),40,-2.5,2.5);
   t="#phi(#mu_{1}) " +post;  phiMu1=td->make<TH1D>("phiMu1",t.c_str(),30,-3.14159,3.14159);
@@ -700,28 +704,32 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.nelec    = fs->make<TH1D>("nelec", "N(e^{#pm})",10,-0.5,9.5);
   hists.nmu      = fs->make<TH1D>("nmu",   "N(#mu^{#pm})",10,-0.5,9.5);
   hists.njet     = fs->make<TH1D>("njet",  "N(Jet)",50,-0.5,49.5);
-  hists.muPt     = fs->make<TH1D>("muPt",  "#mu p_{T} distribution",100,0,1000) ; 
-  hists.muEta    = fs->make<TH1D>("muEta", "#mu #eta distribution",50,-2.5,2.5) ; 
-  hists.muPhi    = fs->make<TH1D>("muPhi", "#mu #phi distribution",60,-3.14159,3.14159) ; 
-  hists.jetPt    = fs->make<TH1D>("jetPt", "jet p_{T} distribution",100,0,1000) ; 
-  hists.jetEta   = fs->make<TH1D>("jetEta","jet #eta distribution",50,-5,5) ; 
-  hists.jetPhi   = fs->make<TH1D>("jetPhi","jet #phi distribution",60,-3.14159,3.14159) ; 
+  hists.muPt     = fs->make<TH1D>("muPt",  "#mu p_{T} distribution",100,0,2000);
+  hists.muEta    = fs->make<TH1D>("muEta", "#mu #eta distribution",50,-2.5,2.5);
+  hists.muPhi    = fs->make<TH1D>("muPhi", "#mu #phi distribution",60,-3.14159,3.14159);
+  hists.jetPt    = fs->make<TH1D>("jetPt", "jet p_{T} distribution",100,0,2000);
+  hists.jetEta   = fs->make<TH1D>("jetEta","jet #eta distribution",50,-5,5);
+  hists.jetPhi   = fs->make<TH1D>("jetPhi","jet #phi distribution",60,-3.14159,3.14159);
   hists.jetID    = fs->make<TH1I>("jetID", "Jet ID",3,0,3);
-  hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,1000.);
+  hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,2000.);
   labelJetIDaxis(hists.jetID->GetXaxis());
 
-  hists.noCuts.book      ( new TFileDirectory(fs->mkdir("noCuts")),      "(no cuts)",                v_null );
-  hists.LLptCuts.book    ( new TFileDirectory(fs->mkdir("LLptcuts")),    "(dileptons with ptcuts:1)",v_null );
-  hists.Mu1tightCuts.book( new TFileDirectory(fs->mkdir("Mu1tightCuts")),"(Mu1 tight cuts:2)",       v_null );
-  hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("LLJJptcuts")),  "(4objects with ptcuts:4)", nnif_->masspts() );
-  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("diLmasscut")),  "(mumu mass cut:5)",        nnif_->masspts() );
-  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("mWRmasscut")),  "(mumujj mass cut:6)",      nnif_->masspts() );
+  hists.noCuts.book      ( new TFileDirectory(fs->mkdir("cut0_none")),    "(no cuts)",                v_null );
+  hists.LLptCuts.book    ( new TFileDirectory(fs->mkdir("cut1_LLpt")),    "(dileptons with ptcuts:1)",v_null );
+  hists.MuTightCuts.book ( new TFileDirectory(fs->mkdir("cut2_MuTight")), "(Mu tight cuts:2)",        v_null );
+  hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("cut4_LLJJpt")),  "(4objects with ptcuts:4)", nnif_->masspts() );
+  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)",        nnif_->masspts() );
+  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)",      nnif_->masspts() );
 
   if (trig_->matchingEnabled()) {
-    hists.Mu1tightInZwin.book    ( new TFileDirectory(fs->mkdir("Mu1tightInZwin")),    "(Mu1 tight in Z mass Window)",        v_null );
-    hists.Mu1trigMatch.book      ( new TFileDirectory(fs->mkdir("Mu1trigMatch")),      "(Mu1 trigger match:3)",               v_null );
-    hists.Mu1trigMatchInZwin.book( new TFileDirectory(fs->mkdir("Mu1trigMatchInZwin")),"(Mu1 trigger match in Z mass Window)",v_null );
-    trig_->book(*(hists.Mu1trigMatch.mydir));
+    hists.TrigMatches.book            ( new TFileDirectory(fs->mkdir("cut3_TrigMatches")),       "(Trigger match:3)",               v_null );
+
+    hists.MuTightInZwin.book          ( new TFileDirectory(fs->mkdir("MuTightInZwin")),          "(Mu1 tight in Z mass Window)",    v_null );
+    hists.Mu1TrigMatchesInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1TrigMatchesInZwin")),   "(#mu1 trigger match in Z mass Window)",v_null );
+    hists.Mu2TrigMatchesInZwin.book   ( new TFileDirectory(fs->mkdir("Mu2TrigMatchesInZwin")),   "(#mu2 Trigger match in Z mass Window)",v_null );
+    hists.Mu1Mu2TrigMatchesInZwin.book( new TFileDirectory(fs->mkdir("Mu1Mu2TrigMatchesInZwin")),"(#mu1,#mu2 Trigger match in Z mass Window)",v_null );
+    trig_->book(*(hists.Mu1TrigMatchesInZwin.mydir), &(hists.Mu1TrigMatchesInZwin.trigHistos));
+    trig_->book(*(hists.Mu2TrigMatchesInZwin.mydir), &(hists.Mu2TrigMatchesInZwin.trigHistos));
   }
 
   hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -731,7 +739,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   cuts.minimum_mu1_pt      = iConfig.getParameter<double>("minMu1pt");
   cuts.minimum_mu2_pt      = iConfig.getParameter<double>("minMu2pt");
   cuts.minimum_jet_pt      = iConfig.getParameter<double>("minJetPt");
-  cuts.maximum_mu1_abseta  = iConfig.getParameter<double>("maxMu1AbsEta");
+  cuts.maximum_mu_abseta   = iConfig.getParameter<double>("maxMuAbsEta");
   cuts.maximum_jet_abseta  = iConfig.getParameter<double>("maxJetAbsEta");
   cuts.minimum_mumu_mass   = iConfig.getParameter<double>("minMuMuMass");
   cuts.minimum_mWR_mass    = iConfig.getParameter<double>("min4objMass");
@@ -751,7 +759,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   std::cout << "minMu1pt       = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
   std::cout << "minMu2pt       = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
   std::cout << "minJetPt       = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
-  std::cout << "maxMu1AbsEta   = " << cuts.maximum_mu1_abseta  << std::endl;
+  std::cout << "maxMuAbsEta    = " << cuts.maximum_mu_abseta   << std::endl;
   std::cout << "maxJetAbsEta   = " << cuts.maximum_jet_abseta  << std::endl;
   std::cout << "minMuonJetdR   = " << cuts.minimum_muon_jet_dR << std::endl;
   std::cout << "muonTrackIso   = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
@@ -781,11 +789,11 @@ HeavyNu::isVBTFloose(const pat::Muon& m)
 bool
 HeavyNu::isVBTFtight(const pat::Muon& m)
 {
-  assert(isVBTFloose(m));
+  if (!isVBTFloose(m)) return false;
 
   reco::TrackRef gt = m.globalTrack();
   if (gt.isNull()) {
-    std::cerr << "Mu1 global track reference is NULL" << std::endl;
+    std::cerr << "Mu global track reference is NULL" << std::endl;
     return false;
   }
   return (m.muonID("AllTrackerMuons") &&
@@ -892,6 +900,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if (((*iM).pt()>cuts.minimum_mu2_pt)
 	&& isVBTFloose(*iM)
+	&& (fabs((*iM).eta()) < cuts.maximum_mu_abseta)
 	&& (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
 	&& ((*iM).trackIso()  < cuts.muon_trackiso_limit)
 	) {
@@ -914,22 +923,49 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hnuEvent.calculateMuMu();
   hists.LLptCuts.fill(hnuEvent,v_null);
   
-  // apply the mu1 cut
-  if ( !isVBTFtight(*(hnuEvent.mu1)) ||
-       (fabs(hnuEvent.mu1->eta())>cuts.maximum_mu1_abseta) ||
-       (hnuEvent.mu1->pt()<=cuts.minimum_mu1_pt) )
+  // Require mu1.OR.mu2 meets tight requirements
+  //
+  bool mu1isTight = isVBTFtight(*(hnuEvent.mu1));
+  bool mu2isTight = isVBTFtight(*(hnuEvent.mu2));
+
+  if ( !mu1isTight && !mu2isTight )
     return false;
 
-  hists.Mu1tightCuts.fill( hnuEvent,v_null );
+  hists.MuTightCuts.fill( hnuEvent,v_null );
 
   // split out trigger matching requirement to study trigger eff.
-  if (trig_->matchingEnabled()) {
-    if ( inZmassWindow( hnuEvent.mMuMu ) ) hists.Mu1tightInZwin.fill( hnuEvent,v_null );
-    if ( !trig_->isTriggerMatched( hnuEvent.mu1, iEvent ) )
-      return false;
-    if ( inZmassWindow( hnuEvent.mMuMu ) ) hists.Mu1trigMatchInZwin.fill( hnuEvent,v_null );
+  if ( trig_->matchingEnabled() ) {
+    if ( inZmassWindow( hnuEvent.mMuMu ) )
+      hists.MuTightInZwin.fill( hnuEvent,v_null );
 
-    hists.Mu1trigMatch.fill( hnuEvent,v_null );
+    // require that one muon be BOTH tight and trigger-matched
+    //
+    bool mu1matches = mu1isTight &&
+      trig_->isTriggerMatched( hnuEvent.mu1, iEvent,
+			       &(hists.Mu1TrigMatchesInZwin.trigHistos));
+
+    bool mu2matches = mu2isTight &&
+      trig_->isTriggerMatched( hnuEvent.mu2, iEvent,
+			       &(hists.Mu2TrigMatchesInZwin.trigHistos));
+
+    if ( !mu1matches && !mu2matches )
+      return false;
+
+    hists.TrigMatches.fill( hnuEvent,v_null );
+
+    // histos for trigger efficiency study:
+    //
+    if ( inZmassWindow( hnuEvent.mMuMu ) ) {
+      if ( mu1matches ) {
+	hists.Mu1TrigMatchesInZwin.fill     ( hnuEvent,v_null );
+	if ( mu2matches ) {
+	  hists.Mu2TrigMatchesInZwin.fill   ( hnuEvent,v_null );
+	  hists.Mu1Mu2TrigMatchesInZwin.fill( hnuEvent,v_null );
+	}
+      }
+      else // mu2matches
+	hists.Mu2TrigMatchesInZwin.fill     ( hnuEvent,v_null );
+    }
   }
   
   // require four objects
@@ -943,29 +979,29 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hnuEvent.calculate(); // calculate various details
 
-  //dumpJetCorInfo(*(hnuEvent.j1));
+  //dumpJetCorInfo( *(hnuEvent.j1) );
 
-  nnif_->fillvector(hnuEvent);
-  nnif_->output(hnuEvent.nnoutputs);
+  nnif_->fillvector( hnuEvent );
+  nnif_->output( hnuEvent.nnoutputs );
 
-  hists.LLJJptCuts.fill(hnuEvent,nnif_->masspts());
+  hists.LLJJptCuts.fill( hnuEvent,nnif_->masspts() );
 
-  if (hnuEvent.mMuMu<cuts.minimum_mumu_mass) return false;  // dimuon mass cut
-  hists.diLmassCut.fill(hnuEvent,nnif_->masspts());
+  if ( hnuEvent.mMuMu<cuts.minimum_mumu_mass ) return false;  // dimuon mass cut
+  hists.diLmassCut.fill( hnuEvent,nnif_->masspts() );
 
-  if (iEvent.isRealData()) {
+  if ( iEvent.isRealData() ) {
     std::cout<<"\t"<<iEvent.id() << std::endl;
     std::cout<<"\tM(W_R)  = "<<hnuEvent.mWR  <<" GeV";
     std::cout<<", M(NuR1) = "<<hnuEvent.mNuR1<<" GeV";
     std::cout<<", M(NuR2) = "<<hnuEvent.mNuR2<<" GeV"<<std::endl;
-    std::cout<<"\tJets:   j1 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.j1));
-    std::cout<<        ", j2 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.j2));  std::cout<<std::endl;
-    std::cout<<"\tMuons: mu1 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.mu1));
-    std::cout<<       ", mu2 ";outputCandidate(reco::CandidateBaseRef(hnuEvent.mu2)); std::cout<<std::endl;
+    std::cout<<"\tJets:   j1 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.j1  ) );
+    std::cout<<        ", j2 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.j2  ) ); std::cout<<std::endl;
+    std::cout<<"\tMuons: mu1 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.mu1 ) );
+    std::cout<<       ", mu2 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.mu2 ) ); std::cout<<std::endl;
   }
 
-  if (hnuEvent.mWR<cuts.minimum_mWR_mass) return false;  // dimuon mass cut
-  hists.mWRmassCut.fill(hnuEvent,nnif_->masspts());
+  if ( hnuEvent.mWR<cuts.minimum_mWR_mass ) return false;  // 4-object mass cut
+  hists.mWRmassCut.fill( hnuEvent,nnif_->masspts() );
 
   return true;
 }
