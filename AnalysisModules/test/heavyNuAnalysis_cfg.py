@@ -5,10 +5,10 @@ import FWCore.ParameterSet.Config as cms
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=False
+isMC=True
 isMCsignal=False
-Training=False
-isRun2010LoLumi=True
+Training=True
+isRun2010LoLumi=False
 
 isData=not isMC
 
@@ -30,8 +30,8 @@ process.options = cms.untracked.PSet(
 )
 # source
 #process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('file:/local/cms/user/dahmes/wr2010/run2010B/oct7/mySkim/mySkim-oct7_005001.root')
-#    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
+#    fileNames=cms.untracked.vstring('file:/local/cms/user/dahmes/wr2010/muSCjetSkim/run2010B/nov7/mySkim/mySkim-nov7_056005.root')
+##    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
 #)
 process.load('HeavyNu.AnalysisModules.in_cff')
 
@@ -151,10 +151,10 @@ process.hNu = cms.EDFilter(
     jetTag       = cms.InputTag( 'selectedPatJets' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
     BtagName     = cms.string('jetProbabilityBJetTags'),
-    minMu1pt     = cms.double(60.),
-    minMu2pt     = cms.double(15.),
+    minMu1pt     = cms.double(20.),
+    minMu2pt     = cms.double(20.),
     minJetPt     = cms.double(40),
-    maxMu1AbsEta = cms.double(2.1),
+    maxMuAbsEta  = cms.double(2.4),
     maxJetAbsEta = cms.double(2.5),
     minMuMuMass  = cms.double(200),
     min4objMass  = cms.double(520),
