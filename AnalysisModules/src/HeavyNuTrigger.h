@@ -23,24 +23,27 @@
 class HeavyNuTrigger {
  public:
 
+  struct trigHistos_t {
+    TH2D *trigMatchPtCorrel;
+    TH1D *trigMatchDR2;
+    TH2D *trigMatchDRDPt;
+    TH2D *trigMatchDetaPhi;
+  };
+
   explicit HeavyNuTrigger(const edm::ParameterSet & iConfig);
-  void book(const TFileDirectory& tdir);
+  void book(const TFileDirectory& tdir, trigHistos_t *thist);
 
   inline bool matchingEnabled() { return matchingEnabled_; }
 
   bool isTriggerMatched(const pat::MuonRef & muon,
-			const edm::Event   & iEvent);
+			const edm::Event   & iEvent,
+			trigHistos_t *thist = NULL);
 
   void endJob();
 
  private:
 
   bool matchingEnabled_;
-
-  TH2D *trigMatchPtCorrel;
-  TH1D *trigMatchDR2;
-  TH2D *trigMatchDRDPt;
-  TH2D *trigMatchDetaPhi;
 
   edm::InputTag trigEventTag_;
   std::string   muonMatch_;

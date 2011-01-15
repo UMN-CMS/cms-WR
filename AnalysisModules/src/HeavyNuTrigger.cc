@@ -2,15 +2,12 @@
 
 #include "PhysicsTools/PatUtils/interface/TriggerHelper.h"
 
-#include "TMath.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 
-//using namespace pat;
-//using namespace pat::helper;
-//using namespace TMath;
+//======================================================================
 
 HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   trigEventTag_( iConfig.getParameter< edm::InputTag >( "trigEventTag" ) ),
@@ -23,36 +20,52 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
 
   if (!matchingEnabled_)
     std::cout << "Trigger matching is === DISABLED ===" << std::endl;
-}
 
-void HeavyNuTrigger::book(const TFileDirectory& tdir)
+}                                      // HeavyNuTrigger::HeavyNuTrigger
+
+//======================================================================
+
+void
+HeavyNuTrigger::book(const TFileDirectory& tdir, trigHistos_t *thist)
 {
   if (!matchingEnabled_) return;
 
-  trigMatchPtCorrel = tdir.make< TH2D >( "h2d_trigMatchPtCorrel","", 60,0.,300.,60,0.,300. );
-  trigMatchPtCorrel->SetTitle ( "#mu_{1} vs. #mu_{trig} p_{T} (GeV)" );
-  trigMatchPtCorrel->SetXTitle( "p_{T}(#mu_{1}) (GeV)" );
-  trigMatchPtCorrel->SetYTitle( "p_{T}(#mu_{trig}) (GeV)" );
+  assert(thist);
 
-  trigMatchDR2      = tdir.make< TH1D >( "h1d_trigMatchDR2", "",50,0.,0.25 );
-  trigMatchDR2      ->SetTitle ( "(#Delta R(#mu_{1}, #mu_{trig}))^{2}" );
-  trigMatchDR2      ->SetXTitle( "(#Delta R(#mu_{1}, #mu_{trig}))^{2}" );
+  thist->trigMatchPtCorrel = tdir.make< TH2D >( "h2d_trigMatchPtCorrel","", 60,0.,300.,60,0.,300. );
+  thist->trigMatchPtCorrel->SetTitle ( "#mu_{reco} vs. #mu_{trig} p_{T} (GeV)" );
+  thist->trigMatchPtCorrel->SetXTitle( "p_{T}(#mu_{reco}) (GeV)" );
+  thist->trigMatchPtCorrel->SetYTitle( "p_{T}(#mu_{trig}) (GeV)" );
 
-  trigMatchDRDPt    = tdir.make< TH2D >( "h2d_trigMatchDRDPt","",50,0.,0.25,50,0.,0.5 );
-  trigMatchDRDPt    ->SetTitle ( "(#Delta R(#mu_{1}, #mu_{trig}))^{2} vs #Delta p_{T}_{rel}(#mu_{1}, #mu_{trig})" );
-  trigMatchDRDPt    ->SetXTitle( "(#Delta R(#mu_{1}, #mu_{trig}))^{2}" );
-  trigMatchDRDPt    ->SetYTitle( "#Delta p_{T}_{rel}(#mu_{1}, #mu_{trig})" );
+  thist->trigMatchDR2      = tdir.make< TH1D >( "h1d_trigMatchDR2", "",50,0.,0.25 );
+  thist->trigMatchDR2      ->SetTitle ( "(#Delta R(#mu_{reco}, #mu_{trig}))^{2}" );
+  thist->trigMatchDR2      ->SetXTitle( "(#Delta R(#mu_{reco}, #mu_{trig}))^{2}" );
 
-  trigMatchDetaPhi  = tdir.make< TH2D >( "h2d_trigMatchDetaPhi","",50,0.,0.25,50,0.,0.25 );
-  trigMatchDetaPhi  ->SetTitle ( "#Delta #phi(#mu_{1}, #mu_{trig}) vs #Delta #eta(#mu_{1}, #mu_{trig})" );
-  trigMatchDetaPhi  ->SetXTitle( "#Delta #eta(#mu_{1}, #mu_{trig})" );
-  trigMatchDetaPhi  ->SetYTitle( "#Delta #phi(#mu_{1}, #mu_{trig})" );
-}
+  thist->trigMatchDRDPt    = tdir.make< TH2D >( "h2d_trigMatchDRDPt","",50,0.,0.25,50,-0.5,0.5 );
+  thist->trigMatchDRDPt    ->SetTitle ( "(#Delta R(#mu_{reco}, #mu_{trig}))^{2} vs #Delta p_{T}_{rel}(#mu_{reco}, #mu_{trig})" );
+  thist->trigMatchDRDPt    ->SetXTitle( "(#Delta R(#mu_{reco}, #mu_{trig}))^{2}" );
+  thist->trigMatchDRDPt    ->SetYTitle( "#Delta p_{T}_{rel}(#mu_{reco}, #mu_{trig})" );
 
-bool HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
-				      const edm::Event& iEvent)
+  thist->trigMatchDetaPhi  = tdir.make< TH2D >( "h2d_trigMatchDetaPhi","",50,-0.25,0.25,50,-0.25,0.25 );
+  thist->trigMatchDetaPhi  ->SetTitle ( "#Delta #phi(#mu_{reco}, #mu_{trig}) vs #Delta #eta(#mu_{reco}, #mu_{trig})" );
+  thist->trigMatchDetaPhi  ->SetXTitle( "#Delta #eta(#mu_{reco}, #mu_{trig})" );
+  thist->trigMatchDetaPhi  ->SetYTitle( "#Delta #phi(#mu_{reco}, #mu_{trig})" );
+
+}                                                // HeavyNuTrigger::book
+
+//======================================================================
+
+bool
+HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
+				 const edm::Event& iEvent,
+				 trigHistos_t *thist)
 {
   if (!matchingEnabled_) return false;
+
+  // muon trigger matching is only allowed within |eta|<2.1
+  //
+  if (fabs(m->eta()) >= 2.1)
+    return false;
 
   // PAT trigger information
   edm::Handle< pat::TriggerEvent > triggerEvent;
@@ -73,20 +86,24 @@ bool HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
   // fill histograms
   if ( trigRef.isAvailable() ) {
     std::cout << "We got one!!!" << std::endl;
-    double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>(*m,*trigRef);
-    double dphi = reco::deltaPhi(m->phi(),trigRef->phi());
-    double deta = m->eta() - trigRef->eta();
-    double dpt  = 1.-(trigRef->pt()/m->pt());
-
-    trigMatchPtCorrel->Fill(m->pt(),trigRef->pt());
-    trigMatchDR2     ->Fill(dr2);
-    trigMatchDRDPt   ->Fill(dr2,dpt);
-    trigMatchDetaPhi ->Fill(deta,dphi);
+    if (thist) {
+      double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>(*m,*trigRef);
+      double dphi = reco::deltaPhi(m->phi(),trigRef->phi());
+      double deta = m->eta() - trigRef->eta();
+      double dpt  = 1.-(trigRef->pt()/m->pt());
+      
+      thist->trigMatchPtCorrel->Fill(m->pt(),trigRef->pt());
+      thist->trigMatchDR2     ->Fill(dr2);
+      thist->trigMatchDRDPt   ->Fill(dr2,dpt);
+      thist->trigMatchDetaPhi ->Fill(deta,dphi);
+    }
     return true;
   }
 
   return false;
-}
+}                                    // HeavyNuTrigger::isTriggerMatched
+
+//======================================================================
 
 void HeavyNuTrigger::endJob()
 {
