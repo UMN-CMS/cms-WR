@@ -89,6 +89,21 @@ if isData:
     removeMCMatching(process, ['All'])
 
 ########################################
+# PAT Jet Energy Corrections - MC vs Data
+########################################
+# 
+
+from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
+if isMC:
+    switchJetCollection( process,
+                         jetCollection=cms.InputTag('ak5CaloJets'),
+                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute']))
+else:
+    switchJetCollection( process,
+                         jetCollection=cms.InputTag('ak5CaloJets'),
+                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute','L2L3Residual']))
+
+########################################
 # PAT Trigger matching
 ########################################
 # imported directly from PhysicsTools/PatExamples/test/analyzePatTrigger_onTheFly_cfg.py
@@ -104,7 +119,7 @@ process.muonTriggerMatchHLTMuons = cms.EDProducer (
     filterLabels   = cms.vstring( '*' ),
     pathNames      = cms.vstring(),
     collectionTags = cms.vstring( '*' ),
-    maxDPtRel      = cms.double( 0.5 ),
+    maxDPtRel      = cms.double( 1.0 ),
     maxDeltaR      = cms.double( 0.2 ),
     maxDeltaEta    = cms.double( 0.2 ), # no effect here
     resolveAmbiguities    = cms.bool( True ),
