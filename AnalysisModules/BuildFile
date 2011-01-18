@@ -2,7 +2,9 @@
 <use name=FWCore/PluginManager>
 <use name=FWCore/ParameterSet>
 <use name=DataFormats/PatCandidates>
+<use name=CondFormats/JetMETObjects>
 <use name=CommonTools/UtilAlgos>
+<use name=JetMETCorrections/Objects>
 <use name=PhysicsTools/SelectorUtils>
 <use name=PhysicsTools/PatUtils>
 <use name=HeavyNu/NeuralNets>
