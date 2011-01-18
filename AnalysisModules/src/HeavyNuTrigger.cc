@@ -51,6 +51,18 @@ HeavyNuTrigger::book(const TFileDirectory& tdir, trigHistos_t *thist)
   thist->trigMatchDetaPhi  ->SetXTitle( "#Delta #eta(#mu_{reco}, #mu_{trig})" );
   thist->trigMatchDetaPhi  ->SetYTitle( "#Delta #phi(#mu_{reco}, #mu_{trig})" );
 
+  thist->trigUnmatchedPt   = tdir.make< TH1D >( "h1d_trigUnmatchedPt","", 200,0,2000 );
+  thist->trigUnmatchedPt   ->SetTitle( "Unmatched muon p_{T}; #mu p_{T} (GeV)" );
+
+  thist->trigAllCandMuPt   = tdir.make< TH1D >( "h1d_trigAllCandMuPt","", 200,0,2000 );
+  thist->trigAllCandMuPt   ->SetTitle( "All trigger-match muon candidates p_{T}; #mu p_{T} (GeV)" );
+
+  thist->trigUnmatchedEtaPhi = tdir.make< TH2D >( "h2d_trigUnmatchEtaPhi","", 50,-2.5,2.5,63,0.,6.3 );
+  thist->trigUnmatchedEtaPhi ->SetTitle( "Unmatched muon #eta/#phi; #mu #eta; #mu #phi" );
+
+  thist->trigAllCandMuEtaPhi = tdir.make< TH2D >( "h2d_trigAllCandMuEtaPhi","", 50,-2.5,2.5,63,0.,6.3 );
+  thist->trigAllCandMuEtaPhi ->SetTitle( "All trigger-match muon candidates; #mu #eta; #mu #phi" );
+
 }                                                // HeavyNuTrigger::book
 
 //======================================================================
@@ -60,47 +72,51 @@ HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
 				 const edm::Event& iEvent,
 				 trigHistos_t *thist)
 {
-  if (!matchingEnabled_) return false;
+  bool matched=false;
 
   // muon trigger matching is only allowed within |eta|<2.1
   //
-  if (fabs(m->eta()) >= 2.1)
-    return false;
+  if ( matchingEnabled_ &&(fabs(m->eta()) < 2.1) ) {
+    // PAT trigger information
+    edm::Handle< pat::TriggerEvent > triggerEvent;
 
-  // PAT trigger information
-  edm::Handle< pat::TriggerEvent > triggerEvent;
-
-  iEvent.getByLabel( trigEventTag_, triggerEvent );
-  if (!triggerEvent.isValid()) {
-    std::cerr << "triggerEvent not found " << std::endl;
-    return false;
-  }
-
-  // PAT trigger helper for trigger matching information
-  const pat::helper::TriggerMatchHelper matchHelper;
-
-  const pat::TriggerObjectRef
-    trigRef( matchHelper.triggerMatchObject(reco::CandidateBaseRef(m),
-					    muonMatch_,iEvent,*triggerEvent) );
-
-  // fill histograms
-  if ( trigRef.isAvailable() ) {
-    std::cout << "We got one!!!" << std::endl;
-    if (thist) {
-      double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>(*m,*trigRef);
-      double dphi = reco::deltaPhi(m->phi(),trigRef->phi());
-      double deta = m->eta() - trigRef->eta();
-      double dpt  = 1.-(trigRef->pt()/m->pt());
-      
-      thist->trigMatchPtCorrel->Fill(m->pt(),trigRef->pt());
-      thist->trigMatchDR2     ->Fill(dr2);
-      thist->trigMatchDRDPt   ->Fill(dr2,dpt);
-      thist->trigMatchDetaPhi ->Fill(deta,dphi);
+    iEvent.getByLabel( trigEventTag_, triggerEvent );
+    if ( !triggerEvent.isValid() ) {
+      std::cerr << "triggerEvent not found " << std::endl;
+      return false;
     }
-    return true;
+
+    // PAT trigger helper for trigger matching information
+    const pat::helper::TriggerMatchHelper matchHelper;
+
+    const pat::TriggerObjectRef
+      trigRef( matchHelper.triggerMatchObject( reco::CandidateBaseRef(m),
+					       muonMatch_,iEvent,*triggerEvent) );
+
+    // fill histograms
+    if ( trigRef.isAvailable() ) {
+      std::cout << "We got one!!!" << std::endl;
+      if (thist) {
+	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( *m,*trigRef );
+	double dphi = reco::deltaPhi( m->phi(),trigRef->phi() );
+	double deta = m->eta() - trigRef->eta();
+	double dpt  = 1.-(trigRef->pt()/m->pt());
+      
+	thist->trigMatchPtCorrel->Fill( m->pt(),trigRef->pt() );
+	thist->trigMatchDR2     ->Fill( dr2 );
+	thist->trigMatchDRDPt   ->Fill( dr2,dpt );
+	thist->trigMatchDetaPhi ->Fill( deta,dphi );
+      }
+      matched = true;
+    } else {
+      thist->trigUnmatchedPt->Fill( m->pt() );
+      thist->trigUnmatchedEtaPhi->Fill( m->eta(),m->phi() );
+    }
+    thist->trigAllCandMuPt->Fill( m->pt() );
+    thist->trigAllCandMuEtaPhi->Fill( m->eta(),m->phi() );
   }
 
-  return false;
+  return matched;
 }                                    // HeavyNuTrigger::isTriggerMatched
 
 //======================================================================

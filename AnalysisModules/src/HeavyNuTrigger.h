@@ -28,6 +28,10 @@ class HeavyNuTrigger {
     TH1D *trigMatchDR2;
     TH2D *trigMatchDRDPt;
     TH2D *trigMatchDetaPhi;
+    TH1D *trigUnmatchedPt;
+    TH1D *trigAllCandMuPt;
+    TH2D *trigUnmatchedEtaPhi;
+    TH2D *trigAllCandMuEtaPhi;
   };
 
   explicit HeavyNuTrigger(const edm::ParameterSet & iConfig);
