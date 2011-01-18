@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.18 2011/01/13 12:40:23 dudero Exp $
+// $Id: HeavyNu.cc,v 1.19 2011/01/15 05:45:20 dudero Exp $
 //
 //
 
@@ -32,7 +32,7 @@
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"
-
+#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -43,6 +43,11 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
+
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+//#include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -138,12 +143,13 @@ private:
     currentFile_=fb.fileName();
   }
   
-  virtual void beginJob() ;
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
-  virtual bool isVBTFloose(const pat::Muon& m);
-  virtual bool isVBTFtight(const pat::Muon& m);
-  virtual TH1 *bookRunHisto(uint32_t runNumber);
+  virtual void beginJob          ();
+  virtual bool filter            ( edm::Event&, const edm::EventSetup& );
+  virtual void endJob            ();
+  virtual bool isVBTFloose       ( const pat::Muon& m );
+  virtual bool isVBTFtight       ( const pat::Muon& m );
+  virtual void fillBasicMuHistos ( const pat::Muon& m );
+  virtual TH1 *bookRunHisto      ( uint32_t runNumber );
   
   inline bool inZmassWindow( double mMuMu ) {
     return (mMuMu <= ZwinMaxGeV_) && (mMuMu >= ZwinMinGeV_);
@@ -163,8 +169,6 @@ private:
   std::map<uint32_t,TH1 *> m_runHistos_;
 
   // ----------member data ---------------------------
-  static const std::string muonQuality[] ; 
-  static const int muonQualityFlags ; 
 
   struct HistPerDef {
     //book histogram set w/ common suffix inside the provided TFileDirectory
@@ -220,6 +224,12 @@ private:
   struct HistStruct {
     TH1 *nelec, *nmu, *njet ;
     TH1 *muPt, *muEta, *muPhi ; 
+
+    // Muon quality histos as a function of Pt
+    TH2 *muNvalidHitsVsPt, *mudBvsPt, *muNormChi2vsPt, *muQualVsPt;
+    TH2 *muNmatchesVsPt, *muNvalidMuonHitsVsPt, *muNvalidPixelHitsVsPt;
+    TH2 *muTrckIsoVsPt, *muHcalIsoVsPt, *muEcalIsoVsPt, *muCaloIsoVsPt;
+
     TH1 *jetPt, *jetEta, *jetPhi, *jetID ; 
     TH2 *jetPtvsNum;
     TFileDirectory *rundir;
@@ -254,8 +264,19 @@ private:
 
 //======================================================================
 
-const std::string HeavyNu::muonQuality[] = {"AllGlobalMuons","AllStandAloneMuons","AllTrackerMuons"} ; 
-const int HeavyNu::muonQualityFlags = 3 ;
+const int muonQualityFlags = 4 ;
+const std::string muonQuality[] = {
+  "All","AllGlobalMuons","AllStandAloneMuons","AllTrackerMuons"
+};
+
+inline void labelMuonQualAxis(TAxis *ax)
+{
+  for (int i=0; i<muonQualityFlags; i++) {
+    ax->SetBinLabel(i+1,muonQuality[i].c_str()) ;
+    ax->SetBinLabel(i+1,muonQuality[i].c_str()) ;
+  }
+}
+
 inline std::string nnhistoname(int mwr,int mnu) {
   return ("WR"+int2str<int>(mwr)+"nuRmu"+int2str<int>(mnu));
 }
@@ -296,10 +317,8 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
 
   t="Quality (#mu_{1}) "+post; qualMu1=td->make<TH1D>("qualMu1",t.c_str(),muonQualityFlags,0,muonQualityFlags);
   t="Quality (#mu_{2}) "+post; qualMu2=td->make<TH1D>("qualMu2",t.c_str(),muonQualityFlags,0,muonQualityFlags);
-  for (int i=0; i<muonQualityFlags; i++) {
-    qualMu1->GetXaxis()->SetBinLabel(i+1,muonQuality[i].c_str()) ;
-    qualMu2->GetXaxis()->SetBinLabel(i+1,muonQuality[i].c_str()) ;
-  }
+  labelMuonQualAxis(qualMu1->GetXaxis());
+  labelMuonQualAxis(qualMu2->GetXaxis());
 
   // isolation
 
@@ -714,6 +733,37 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,2000.);
   labelJetIDaxis(hists.jetID->GetXaxis());
 
+  //  Muon quality variables vs muon p_T
+  //
+  hists.muNvalidHitsVsPt      = fs->make<TH2D>("muNvalidHitsVsPt",
+					       "#mu # Valid hits vs p_{T}; p_{T}(#mu) (GeV); # Tracker+Pixel Hits",
+					       150,0,3000,50,0,50);
+  hists.mudBvsPt              = fs->make<TH2D>("mudBvsPt",
+					       "#mu dXY vs p_{T}; p_{T}(#mu) (GeV); dXY(#mu)",
+					       150,0,3000,50,0.,10.);
+  hists.muNormChi2vsPt        = fs->make<TH2D>("muNormChi2vsPt",
+					       "#mu Norm #chi^{2} vs p_{T}; p_{T}(#mu) (GeV); norm #chi^{2}",
+					       150,0,3000,25,0,50);
+  hists.muQualVsPt            = fs->make<TH2D>("muIDvsPt",
+					       "Qual(#mu) vs p_{T}(#mu); p_{T}(#mu) (GeV)",
+					       150,0,3000,4,0,4);
+  hists.muNmatchesVsPt        = fs->make<TH2D>("muNmatchesVsPt",
+					       "#mu # Matches vs p_{T}; p_{T}(#mu) (GeV); # Matches",
+					       150,0,3000,10,0,10);
+  hists.muNvalidMuonHitsVsPt  = fs->make<TH2D>("muNvalidMuonHitsVsPt",
+					       "# Valid Muon hits vs p_{T}; p_{T}(#mu) (GeV); # Valid Muon Hits",
+					       150,0,3000,50,0,50);
+  hists.muNvalidPixelHitsVsPt = fs->make<TH2D>("muNvalidPixelHitsVsPt",
+					       "# Valid Pixel hits vs p_{T}; p_{T}(#mu) (GeV); # Valid Pixel Hits",
+					       150,0,3000,10,0,10);
+
+  labelMuonQualAxis(hists.muQualVsPt->GetYaxis());
+
+  hists.muTrckIsoVsPt=fs->make<TH2D>("muTrckIsoVsPt","trackIso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);trackIso (GeV)",150,0.,3000.,30,0.,300.);
+  hists.muHcalIsoVsPt=fs->make<TH2D>("muHcalIsoVsPt","HCAL Iso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);HCAL Iso (GeV)",150,0.,3000.,30,0.,300.);
+  hists.muEcalIsoVsPt=fs->make<TH2D>("muEcalIsoVsPt","ECAL Iso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);ECAL Iso (GeV)",150,0.,3000.,30,0.,300.);
+  hists.muCaloIsoVsPt=fs->make<TH2D>("muCaloIsoVsPt","Calo Iso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);Calo Iso (GeV)",150,0.,3000.,30,0.,300.);
+
   hists.noCuts.book      ( new TFileDirectory(fs->mkdir("cut0_none")),    "(no cuts)",                v_null );
   hists.LLptCuts.book    ( new TFileDirectory(fs->mkdir("cut1_LLpt")),    "(dileptons with ptcuts:1)",v_null );
   hists.MuTightCuts.book ( new TFileDirectory(fs->mkdir("cut2_MuTight")), "(Mu tight cuts:2)",        v_null );
@@ -804,6 +854,37 @@ HeavyNu::isVBTFtight(const pat::Muon& m)
 	  (gt->hitPattern().numberOfValidPixelHits()>0) );
 }
 
+void
+HeavyNu::fillBasicMuHistos(const pat::Muon& m)
+{
+  double mupt = m.pt();
+  hists.muPt->Fill( mupt ) ; 
+  hists.muEta->Fill( m.eta() ) ; 
+  hists.muPhi->Fill( m.phi() ) ; 
+
+  if (isVBTFloose(m)) {
+    hists.muNvalidHitsVsPt->Fill     ( mupt, m.numberOfValidHits() );
+    hists.mudBvsPt->Fill             ( mupt, m.dB() );
+    hists.muNormChi2vsPt->Fill       ( mupt, m.normChi2() );
+    hists.muNmatchesVsPt->Fill       ( mupt, m.numberOfMatches() );
+    
+    reco::TrackRef gt = m.globalTrack();
+    //if (gt.isNonnull()) {
+    hists.muNvalidMuonHitsVsPt->Fill ( mupt, gt->hitPattern().numberOfValidMuonHits() );
+    hists.muNvalidPixelHitsVsPt->Fill( mupt, gt->hitPattern().numberOfValidPixelHits() );
+    //}
+  }
+  hists.muQualVsPt->Fill( mupt, 0 );
+  for (int i=1; i<muonQualityFlags; i++)
+    if (m.muonID(muonQuality[i]))
+      hists.muQualVsPt->Fill( mupt, i ) ; 
+    
+  hists.muTrckIsoVsPt->Fill( mupt, m.trackIso() );
+  hists.muHcalIsoVsPt->Fill( mupt, m.hcalIso()  );
+  hists.muEcalIsoVsPt->Fill( mupt, m.ecalIso()  );
+  hists.muCaloIsoVsPt->Fill( mupt, m.caloIso()  );
+}
+
 TH1 *
 HeavyNu::bookRunHisto(uint32_t runNumber)
 {
@@ -850,6 +931,18 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false; 
   }
 
+  // handle the jet corrector parameters collection,
+  // get the jet corrector parameters collection from the global tag
+  //
+  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+  iSetup.get<JetCorrectionsRecord>().get("AK5Calo",JetCorParColl);
+
+  // get the uncertainty parameters from the collection,
+  // instantiate the jec uncertainty object
+  //
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+  JetCorrectionUncertainty jecUnc(JetCorPar);
+
   pat::JetRef  iJ;
   pat::MuonRef iM;
 
@@ -866,11 +959,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.jetPtvsNum->Fill(njet++, (*iJ).pt() ) ; 
     hists.jetID->Fill(jetID(*iJ));
   }
+
   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) { 
     iM=pat::MuonRef(pMuons,iMuon);
-    hists.muPt->Fill( (*iM).pt() ) ; 
-    hists.muEta->Fill( (*iM).eta() ) ; 
-    hists.muPhi->Fill( (*iM).phi() ) ; 
+    if (!iM.isAvailable()) continue;
+    fillBasicMuHistos(*iM);
   }
 
   // Basic selection requirements: Require at least two muons, two jets
@@ -954,8 +1047,13 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.TrigMatches.fill( hnuEvent,v_null );
 
     // histos for trigger efficiency study:
+    // - for the study both muons have to be in trigger
+    //   matching region regardless of whether they matched.
     //
-    if ( inZmassWindow( hnuEvent.mMuMu ) ) {
+    bool inTMregion = ( (fabs(hnuEvent.mu1->eta())<2.1) &&
+			(fabs(hnuEvent.mu2->eta())<2.1) );
+
+    if ( inZmassWindow( hnuEvent.mMuMu ) && inTMregion ) {
       if ( mu1matches ) {
 	hists.Mu1TrigMatchesInZwin.fill     ( hnuEvent,v_null );
 	if ( mu2matches ) {
