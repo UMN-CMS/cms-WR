@@ -5,10 +5,10 @@ import FWCore.ParameterSet.Config as cms
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=True
+isMC=False
 isMCsignal=False
-Training=True
-isRun2010LoLumi=False
+Training=False
+isRun2010LoLumi=True
 
 isData=not isMC
 
@@ -31,6 +31,7 @@ process.options = cms.untracked.PSet(
 # source
 #process.source = cms.Source("PoolSource",
 #    fileNames=cms.untracked.vstring('file:/local/cms/user/dahmes/wr2010/muSCjetSkim/run2010B/nov7/mySkim/mySkim-nov7_056005.root')
+#     fileNames=cms.untracked.vstring('/store/mc/Fall10/Z1Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola/GEN-SIM-RECO/START38_V12-v2/0018/027050CA-D50B-E011-91DD-00261894391C.root')
 ##    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
 #)
 process.load('HeavyNu.AnalysisModules.in_cff')
@@ -179,6 +180,8 @@ process.hNu = cms.EDFilter(
     ZmassWinMinGeV= cms.double(84.),
     ZmassWinMaxGeV= cms.double(98.),
 
+    applyJECUsign = cms.int32(0),
+
     isSignal     = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)
     )
@@ -195,3 +198,14 @@ if isMCsignal:
     process.hNu.isSignal = cms.bool(True)
 
 process.p += process.hNu
+
+# JEC uncertainty application
+# applyJECUsign=0 means don't apply it, which is the default
+#
+process.hNuJECUhi = process.hNu.clone(applyJECUsign = cms.int32(1))
+process.hNuJECUlo = process.hNu.clone(applyJECUsign = cms.int32(-1))
+
+process.pJECUhi = cms.Path(process.hNuJECUhi)
+process.pJECUlo = cms.Path(process.hNuJECUlo)
+
+process.s = cms.Schedule(process.p,process.pJECUhi,process.pJECUlo)
