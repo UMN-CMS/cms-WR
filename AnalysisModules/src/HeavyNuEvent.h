@@ -24,6 +24,12 @@ public:
   pat::MuonRef mu1, mu2, mu[2];
   pat::JetRef  j1,  j2,  j[2];
 
+  // separately stored for JEC Uncertainty studies
+  // (saves space and time not copying whole jet objects,
+  //  particularly during the jet selection)
+  //
+  float j1scale, j2scale;
+
   reco::Particle::LorentzVector vMuMu;
   reco::Particle::LorentzVector vJJ;
   reco::Particle::LorentzVector lv_evt;
