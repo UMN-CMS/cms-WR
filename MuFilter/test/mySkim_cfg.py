@@ -10,9 +10,10 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 # source
-process.source = cms.Source("PoolSource",      
-    fileNames=cms.untracked.vstring(  )
-)
+#process.source = cms.Source("PoolSource",      
+#    fileNames=cms.untracked.vstring(  )
+#)
+process.load("HeavyNu.MuFilter.in_cff")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -32,8 +33,6 @@ process.load('Configuration.StandardSequences.Services_cff')
 ## pat sequences to be loaded:
 #process.load("PhysicsTools.PFCandProducer.PF2PAT_cff")
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
-from PhysicsTools.PatAlgos.tools.coreTools import *
-removeMCMatching(process, ['All'])
 process.patCandidateSummary.candidates = cms.VInputTag( cms.InputTag("patMuons"),cms.InputTag("patJets") )
 process.patCandidates      = cms.Sequence( process.makePatMuons + process.makePatJets + process.patCandidateSummary )
 process.patDefaultSequence = cms.Sequence( process.patCandidates )
@@ -49,12 +48,16 @@ process.mySkimPath = cms.Path(
     process.muFilter 
 )
 
-process.wrOutputModule = cms.OutputModule( "PoolOutputModule",
+process.out = cms.OutputModule( "PoolOutputModule",
    fileName = cms.untracked.string(""),
    maxSize = cms.untracked.int32(3000000),
    SelectEvents = cms.untracked.PSet(
       SelectEvents = cms.vstring('mySkimPath'),
-   )
+   ),
+   outputCommands = cms.untracked.vstring("keep *")
 )
 
-process.outpath = cms.EndPath(process.wrOutputModule)
+process.outpath = cms.EndPath(process.out)
+
+from PhysicsTools.PatAlgos.tools.coreTools import *
+runOnData(process, ['All'])
