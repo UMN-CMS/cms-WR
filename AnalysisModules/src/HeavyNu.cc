@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.20 2011/01/18 11:20:16 dudero Exp $
+// $Id: HeavyNu.cc,v 1.21 2011/01/20 06:33:13 dudero Exp $
 //
 //
 
@@ -359,13 +359,13 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
   t=    "hcalIso(#mu_{1}) "+post;     mu1hcalIso=td->make<TH1D>("mu1hcalIso",    t.c_str(),40,0.,200.);
   t=    "ecalIso(#mu_{1}) "+post;     mu1ecalIso=td->make<TH1D>("mu1ecalIso",    t.c_str(),40,0.,200.);
   t=    "caloIso(#mu_{1}) "+post;     mu1caloIso=td->make<TH1D>("mu1caloIso",    t.c_str(),40,0.,200.);
-  t=        "Dxy(#mu_{1}) "+post;          mu1dB=td->make<TH1D>("mu1dB",         t.c_str(),50,-5.,5.);
+  t=        "Dxy(#mu_{1}) "+post;          mu1dB=td->make<TH1D>("mu1dB",         t.c_str(),50,0.,1.);
 
   t=   "trackIso(#mu_{2}) "+post;    mu2trackIso=td->make<TH1D>("mu2trackIso",   t.c_str(),40,0.,200.);
   t=    "hcalIso(#mu_{2}) "+post;     mu2hcalIso=td->make<TH1D>("mu2hcalIso",    t.c_str(),40,0.,200.);
   t=    "ecalIso(#mu_{2}) "+post;     mu2ecalIso=td->make<TH1D>("mu2ecalIso",    t.c_str(),40,0.,200.);
   t=    "caloIso(#mu_{2}) "+post;     mu2caloIso=td->make<TH1D>("mu2caloIso",    t.c_str(),40,0.,200.);
-  t=        "Dxy(#mu_{2}) "+post;          mu2dB=td->make<TH1D>("mu2dB",         t.c_str(),50,-5.,5.);
+  t=        "Dxy(#mu_{2}) "+post;          mu2dB=td->make<TH1D>("mu2dB",         t.c_str(),50,0.,1.);
 
   t="trackRelIso(#mu_{1}) "+post; mu1trackRelIso=td->make<TH1D>("mu1trackRelIso",t.c_str(),50,0.,5.);
   t= "hcalRelIso(#mu_{1}) "+post;  mu1hcalRelIso=td->make<TH1D>("mu1hcalRelIso", t.c_str(),50,0.,5.);
@@ -776,7 +776,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 					       150,0,3000,50,0,50);
   hists.mudBvsPt              = fs->make<TH2D>("mudBvsPt",
 					       "#mu dXY vs p_{T}; p_{T}(#mu) (GeV); dXY(#mu)",
-					       150,0,3000,50,0.,10.);
+					       150,0,3000,40,0.,20.);
   hists.muNormChi2vsPt        = fs->make<TH2D>("muNormChi2vsPt",
 					       "#mu Norm #chi^{2} vs p_{T}; p_{T}(#mu) (GeV); norm #chi^{2}",
 					       150,0,3000,25,0,50);
@@ -907,7 +907,8 @@ HeavyNu::isVBTFtight(const pat::Muon& m)
 	  (m.numberOfMatches() > 1) &&
 	  (gt->hitPattern().numberOfValidMuonHits()>0) &&
 	  (gt->hitPattern().numberOfValidPixelHits()>0) );
-}
+
+}                                                // HeavyNu::isVBTFtight
 
 //======================================================================
 
@@ -919,17 +920,17 @@ HeavyNu::fillBasicMuHistos(const pat::Muon& m)
   hists.muEta->Fill( m.eta() ) ; 
   hists.muPhi->Fill( m.phi() ) ; 
 
+  hists.mudBvsPt->Fill( mupt, m.dB() );
+
   if (isVBTFloose(m)) {
     hists.muNvalidHitsVsPt->Fill     ( mupt, m.numberOfValidHits() );
-    hists.mudBvsPt->Fill             ( mupt, m.dB() );
     hists.muNormChi2vsPt->Fill       ( mupt, m.normChi2() );
     hists.muNmatchesVsPt->Fill       ( mupt, m.numberOfMatches() );
     
     reco::TrackRef gt = m.globalTrack();
-    //if (gt.isNonnull()) {
+    // gt.isNonnull() guaranteed at this point?
     hists.muNvalidMuonHitsVsPt->Fill ( mupt, gt->hitPattern().numberOfValidMuonHits() );
     hists.muNvalidPixelHitsVsPt->Fill( mupt, gt->hitPattern().numberOfValidPixelHits() );
-    //}
   }
   hists.muQualVsPt->Fill( mupt, 0 );
   for (int i=1; i<muonQualityFlags; i++)
@@ -940,7 +941,8 @@ HeavyNu::fillBasicMuHistos(const pat::Muon& m)
   hists.muHcalIsoVsPt->Fill( mupt, m.hcalIso()  );
   hists.muEcalIsoVsPt->Fill( mupt, m.ecalIso()  );
   hists.muCaloIsoVsPt->Fill( mupt, m.caloIso()  );
-}
+
+}                                          // HeavyNu::fillBasicMuHistos
 
 //======================================================================
 
@@ -974,7 +976,7 @@ HeavyNu::fillBasicJetHistos( const pat::Jet& j,
   } else if( applyJECUsign_<0 ){
     hists.jecUncLo->Fill( jecuLo ); hists.jecUncLoVsEtaPt->Fill( jeta,j.pt(),(double)jecuLo );
   }
-}
+}                                         // HeavyNu::fillBasicJetHistos
 
 //======================================================================
 
@@ -1059,7 +1061,7 @@ HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
       }
     }
   }
-}
+}                                                // HeavyNu::selectMuons
 
 //======================================================================
 
