@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.21 2011/01/20 06:33:13 dudero Exp $
+// $Id: HeavyNu.cc,v 1.22 2011/01/21 00:08:34 dudero Exp $
 //
 //
 
@@ -193,6 +193,8 @@ private:
 
   std::string currentFile_;
   bool dolog_;
+  bool firstEvent_;
+
   HeavyNu_NNIF *nnif_;
   HeavyNuTrigger *trig_;
   JetCorrectionUncertainty *jecuObj_;
@@ -1104,17 +1106,20 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false; 
   }
 
-  // handle the jet corrector parameters collection,
-  // get the jet corrector parameters collection from the global tag
-  //
-  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-  iSetup.get<JetCorrectionsRecord>().get("AK5Calo",JetCorParColl);
-
-  // get the uncertainty parameters from the collection,
-  // instantiate the jec uncertainty object
-  //
-  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  jecuObj_ = new JetCorrectionUncertainty(JetCorPar);
+  if (firstEvent_) {
+    // handle the jet corrector parameters collection,
+    // get the jet corrector parameters collection from the global tag
+    //
+    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+    iSetup.get<JetCorrectionsRecord>().get("AK5Calo",JetCorParColl);
+    
+    // get the uncertainty parameters from the collection,
+    // instantiate the jec uncertainty object
+    //
+    JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+    jecuObj_    = new JetCorrectionUncertainty(JetCorPar);
+    firstEvent_ = false;
+  }
 
   hists.nelec->Fill(pElecs->size()) ;
   hists.nmu  ->Fill(pMuons->size()) ;
@@ -1241,6 +1246,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 HeavyNu::beginJob() {
   nnif_->beginJob();
+  firstEvent_ = true;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
