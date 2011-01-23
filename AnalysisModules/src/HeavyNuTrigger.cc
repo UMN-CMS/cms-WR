@@ -11,15 +11,19 @@
 
 HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   trigEventTag_( iConfig.getParameter< edm::InputTag >( "trigEventTag" ) ),
-  muonMatch_   ( iConfig.getParameter< std::string >  ( "muonMatch"    ) )
+  muonMatch_   ( iConfig.getParameter< std::string >  ( "muonMatch"    ) ),
+  johnnyApple_ ( iConfig.getParameter< int >          ( "randomSeed"   ) )
 {
   matchingEnabled_ = false;
   if (trigEventTag_.label().size() &&
       muonMatch_.size())
     matchingEnabled_ = true;
 
-  if (!matchingEnabled_)
+  if (!matchingEnabled_) {
     std::cout << "Trigger matching is === DISABLED ===" << std::endl;
+    std::cout << "   (Trigger sim. random seed = "<<johnnyApple_<<")"<<std::endl;
+    triggerRandom_ = new TRandom(johnnyApple_);
+  }
 
 }                                      // HeavyNuTrigger::HeavyNuTrigger
 
@@ -118,6 +122,25 @@ HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
 
   return matched;
 }                                    // HeavyNuTrigger::isTriggerMatched
+
+//======================================================================
+
+bool
+HeavyNuTrigger::simulateForMC(double pt)
+{
+  if (matchingEnabled_)
+    throw cms::Exception("invalid trigger configuration");
+
+  // determined from data
+  const double effs[]  = {0.898,0.903,0.909,0.913,0.916,0.916};
+  const double upedge[]= {   30,   40,   50,   60, 3500,   -1};
+    
+  int i;
+  for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
+  double eff=effs[i];
+    
+  return (triggerRandom_->Uniform()<eff);
+}
 
 //======================================================================
 

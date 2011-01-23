@@ -19,6 +19,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TRandom.h"
 
 class HeavyNuTrigger {
  public:
@@ -43,14 +44,17 @@ class HeavyNuTrigger {
 			const edm::Event   & iEvent,
 			trigHistos_t *thist = NULL);
 
+  bool simulateForMC(double pt);
+
   void endJob();
 
  private:
 
-  bool matchingEnabled_;
-
+  bool          matchingEnabled_;
+  TRandom      *triggerRandom_;
   edm::InputTag trigEventTag_;
   std::string   muonMatch_;
+  int           johnnyApple_;
 };
 
 #endif

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.22 2011/01/21 00:08:34 dudero Exp $
+// $Id: HeavyNu.cc,v 1.23 2011/01/22 13:17:27 dudero Exp $
 //
 //
 
@@ -629,7 +629,7 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
   mu2hcalRelIso ->Fill(hne.mu2->hcalIso() /hne.mu2->pt());
   mu2ecalRelIso ->Fill(hne.mu2->ecalIso() /hne.mu2->pt());
   mu2caloRelIso ->Fill(hne.mu2->caloIso() /hne.mu2->pt());
-  
+
   if (hne.isMC) {
     for (unsigned int i=0; i<2; i++) { 
       if ( hne.mu[i]->genLepton() != 0 ) {
@@ -722,7 +722,6 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
       nnh->Fill(hne.nnoutputs[i]);
     }
   }
-
 }// end of fill()
 
 //======================================================================
@@ -804,16 +803,16 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
   // Histos per cut:
   //
-  hists.noCuts.book      ( new TFileDirectory(fs->mkdir("cut0_none")),    "(no cuts)",                v_null );
-  hists.LLptCuts.book    ( new TFileDirectory(fs->mkdir("cut1_LLpt")),    "(dileptons with ptcuts:1)",v_null );
-  hists.MuTightCuts.book ( new TFileDirectory(fs->mkdir("cut2_MuTight")), "(Mu tight cuts:2)",        v_null );
-  hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("cut4_LLJJpt")),  "(4objects with ptcuts:4)", nnif_->masspts() );
-  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)",        nnif_->masspts() );
-  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)",      nnif_->masspts() );
+  hists.noCuts.book      ( new TFileDirectory(fs->mkdir("cut0_none")),       "(no cuts)",                v_null );
+  hists.LLptCuts.book    ( new TFileDirectory(fs->mkdir("cut1_LLpt")),       "(dileptons with ptcuts:1)",v_null );
+  hists.MuTightCuts.book ( new TFileDirectory(fs->mkdir("cut2_MuTight")),    "(Mu tight cuts:2)",        v_null );
+  hists.TrigMatches.book ( new TFileDirectory(fs->mkdir("cut3_TrigMatches")),"(Trigger match:3)",        v_null );
+  hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("cut4_LLJJpt")),     "(4objects with ptcuts:4)", nnif_->masspts() );
+  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("cut5_diLmass")),    "(mumu mass cut:5)",        nnif_->masspts() );
+  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("cut6_mWRmass")),    "(mumujj mass cut:6)",      nnif_->masspts() );
+
 
   if (trig_->matchingEnabled()) {
-    hists.TrigMatches.book            ( new TFileDirectory(fs->mkdir("cut3_TrigMatches")),       "(Trigger match:3)",               v_null );
-
     hists.MuTightInZwin.book          ( new TFileDirectory(fs->mkdir("MuTightInZwin")),          "(Mu1 tight in Z mass Window)",    v_null );
     hists.Mu1TrigMatchesInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1TrigMatchesInZwin")),   "(#mu1 trigger match in Z mass Window)",v_null );
     hists.Mu2TrigMatchesInZwin.book   ( new TFileDirectory(fs->mkdir("Mu2TrigMatchesInZwin")),   "(#mu2 Trigger match in Z mass Window)",v_null );
@@ -1164,26 +1163,36 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hists.MuTightCuts.fill( hnuEvent,v_null );
 
+  bool mu1trig=mu1isTight;
+  bool mu2trig=mu2isTight;
+
   // split out trigger matching requirement to study trigger eff.
-  if ( trig_->matchingEnabled() ) {
+  if ( trig_->matchingEnabled() &&
+       iEvent.isRealData() ) {
     if ( inZmassWindow( hnuEvent.mMuMu ) )
       hists.MuTightInZwin.fill( hnuEvent,v_null );
 
     // require that one muon be BOTH tight and trigger-matched
     //
-    bool mu1matches = mu1isTight &&
+    mu1trig = mu1trig &&
       trig_->isTriggerMatched( hnuEvent.mu1, iEvent,
 			       &(hists.Mu1TrigMatchesInZwin.trigHistos));
 
-    bool mu2matches = mu2isTight &&
+    mu2trig = mu2trig &&
       trig_->isTriggerMatched( hnuEvent.mu2, iEvent,
 			       &(hists.Mu2TrigMatchesInZwin.trigHistos));
 
-    if ( !mu1matches && !mu2matches )
-      return false;
+  } else if (!iEvent.isRealData()) {
+    mu1trig = mu1trig &&  trig_->simulateForMC( hnuEvent.mu1->pt() );
+    mu2trig = mu2trig &&  trig_->simulateForMC( hnuEvent.mu2->pt() );
+  }
 
-    hists.TrigMatches.fill( hnuEvent,v_null );
+  if( !mu1trig && !mu2trig )
+    return false;
 
+  hists.TrigMatches.fill( hnuEvent,v_null );
+
+  if (iEvent.isRealData()) {
     // histos for trigger efficiency study:
     // - for the study both muons have to be in trigger
     //   matching region regardless of whether they matched.
@@ -1192,26 +1201,28 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			(fabs(hnuEvent.mu2->eta())<2.1) );
 
     if ( inZmassWindow( hnuEvent.mMuMu ) && inTMregion ) {
-      if ( mu1matches ) {
+      if ( mu1trig ) {
 	hists.Mu1TrigMatchesInZwin.fill     ( hnuEvent,v_null );
-	if ( mu2matches ) {
+	if ( mu2trig ) {
 	  hists.Mu2TrigMatchesInZwin.fill   ( hnuEvent,v_null );
 	  hists.Mu1Mu2TrigMatchesInZwin.fill( hnuEvent,v_null );
 	}
       }
-      else // mu2matches
+      else // mu2trig
 	hists.Mu2TrigMatchesInZwin.fill     ( hnuEvent,v_null );
     }
   }
   
-  // require four objects
-  // require also the selected jets to pass loose ID,
-  // per JetMET recommendation
+  // - require two jets + two muons already required
+  // - require at least one muon (mu1 since it has already been
+  //   sorted w.r.t. mu2) above the higher min pt threshold
+  // - require also the selected jets to pass loose ID,
+  //   per JetMET recommendation
   //
-  if ( (        hnuEvent.mu2.isNull()) ||
-       (        hnuEvent.j2.isNull())  ||
+  if ( (        hnuEvent.j2.isNull())  ||
        (jetID(*(hnuEvent.j1)) < 1)     || 
-       (jetID(*(hnuEvent.j2)) < 1) ) return false;
+       (jetID(*(hnuEvent.j2)) < 1)     ||
+       (        hnuEvent.mu1->pt() < cuts.minimum_mu1_pt) ) return false;
 
   hnuEvent.calculate(); // calculate various details
 
