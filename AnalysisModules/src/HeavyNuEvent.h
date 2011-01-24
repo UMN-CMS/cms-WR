@@ -17,7 +17,7 @@ public:
   HeavyNuEvent() {}
   void regularize();
   void calculate();
-  void calculateMuMu();
+  void calculateMuMu(double muptfactor);
 
   bool isMC;
 
@@ -29,6 +29,8 @@ public:
   //  particularly during the jet selection)
   //
   float j1scale, j2scale;
+
+  float MESscale;
 
   reco::Particle::LorentzVector vMuMu;
   reco::Particle::LorentzVector vJJ;

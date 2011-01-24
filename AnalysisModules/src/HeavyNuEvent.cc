@@ -17,17 +17,21 @@ static double planeCosAngle(const reco::Particle::Vector& plane1,
   return rv;
 }
 
-void HeavyNuEvent::calculateMuMu() {
-  vMuMu  = mu1->p4()+mu2->p4();
+void HeavyNuEvent::calculateMuMu(double muptfactor) {
+  MESscale = muptfactor;
+  vMuMu    = MESscale*(mu1->p4()+mu2->p4());
+  mMuMu    = vMuMu.M();
   czeta_mumu   =mu1->momentum().unit().Dot(mu2->momentum().unit());
   ctheta_mumu  =planeCosAngle(mu1->momentum(),mu2->momentum(),reco::Particle::Vector(0,0,1));
-  mMuMu = vMuMu.M();
 }
 
 void HeavyNuEvent::calculate() {
 
   reco::Particle::LorentzVector j1p4 = j1->p4();
   reco::Particle::LorentzVector j2p4 = j2->p4();
+
+  reco::Particle::LorentzVector mu1p4 = mu1->p4();
+  reco::Particle::LorentzVector mu2p4 = mu2->p4();
 
   // if doing JECU studies, apply scaling factor here
   //
@@ -37,22 +41,29 @@ void HeavyNuEvent::calculate() {
   reco::Particle::Vector j1mom = j1p4.Vect();
   reco::Particle::Vector j2mom = j2p4.Vect();
 
-  vMuMu  = mu1->p4()+mu2->p4();
+  // if doing MES studies, apply scaling factor here
+  //
+  if( MESscale != 1.0 ) { mu1p4 *= MESscale; mu2p4 *= MESscale; }
+
+  reco::Particle::Vector mu1mom = mu1p4.Vect();
+  reco::Particle::Vector mu2mom = mu2p4.Vect();
+
+  vMuMu  = mu1p4+mu2p4;
   vJJ    = j1p4+j2p4;
   lv_evt = vMuMu+vJJ;
 
-  czeta_mumu   =fabs(mu1->momentum().unit().Dot(mu2->momentum().unit()));
+  czeta_mumu   =fabs(mu1mom.unit().Dot(mu2mom.unit()));
 
-  ctheta_mumu  =planeCosAngle(mu1->momentum(),mu2->momentum(),reco::Particle::Vector(0,0,1));
+  ctheta_mumu  =planeCosAngle(mu1mom,mu2mom,reco::Particle::Vector(0,0,1));
   ctheta_jj    =planeCosAngle(j1mom,j2mom,reco::Particle::Vector(0,0,1));
-  ctheta_mu1_jj=planeCosAngle(j1mom,j2mom,mu1->momentum());
-  ctheta_mu2_jj=planeCosAngle(j1mom,j2mom,mu2->momentum());
+  ctheta_mu1_jj=planeCosAngle(j1mom,j2mom,mu1mom);
+  ctheta_mu2_jj=planeCosAngle(j1mom,j2mom,mu2mom);
 
   // LorentzVector of just the Z deboost.
   reco::Particle::LorentzVector deboostz(0,0,-lv_evt.pz(),lv_evt.pz());
   
-  reco::Particle::LorentzVector mu1z=mu1->p4()+deboostz;
-  reco::Particle::LorentzVector mu2z=mu2->p4()+deboostz;
+  reco::Particle::LorentzVector mu1z=mu1p4+deboostz;
+  reco::Particle::LorentzVector mu2z=mu2p4+deboostz;
   reco::Particle::LorentzVector j1z=j1p4+deboostz;
   reco::Particle::LorentzVector j2z=j2p4+deboostz;
   
@@ -74,8 +85,8 @@ void HeavyNuEvent::calculate() {
   reco::Particle::Vector jmom4mu1 = (dRminMu1jet == dRmu1jet1) ? j1mom : j2mom;
   reco::Particle::Vector jmom4mu2 = (dRminMu2jet == dRmu2jet1) ? j1mom : j2mom;
 
-  TVector3 mu1vec( mu1->momentum().X(), mu1->momentum().Y(), mu1->momentum().Z() );
-  TVector3 mu2vec( mu2->momentum().X(), mu2->momentum().Y(), mu2->momentum().Z() );
+  TVector3 mu1vec( mu1mom.X(), mu1mom.Y(), mu1mom.Z() );
+  TVector3 mu2vec( mu2mom.X(), mu2mom.Y(), mu2mom.Z() );
 
   TVector3 jt4mu1vec( jmom4mu1.X(), jmom4mu1.Y(), jmom4mu1.Z() );
   TVector3 jt4mu2vec( jmom4mu2.X(), jmom4mu2.Y(), jmom4mu2.Z() );
@@ -89,6 +100,6 @@ void HeavyNuEvent::calculate() {
 
   mWR   = lv_evt.M();
 
-  mNuR1 = (vJJ + mu1->p4()).M();
-  mNuR2 = (vJJ + mu2->p4()).M();
+  mNuR1 = (vJJ + mu1p4).M();
+  mNuR2 = (vJJ + mu2p4).M();
 }
