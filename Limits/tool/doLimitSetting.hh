@@ -18,7 +18,7 @@ struct LimitPointStruct {
   } cl_sb, cl_b, cls;
 };
 
-void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info);
+void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info, bool doSyst);
 
 
 #endif // doLimitSetting_hh_included

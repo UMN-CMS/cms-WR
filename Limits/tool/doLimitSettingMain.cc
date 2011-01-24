@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
     printf("Cardfile format\n");
     printf(" Required\n");
     printf("  DATA     : <filename>\n");
+    printf("  DOSYST   : <yes|no> (default no)\n");
     printf("  SIGNALMC : <filename> (more than one is possible)\n");
     printf("  LUMI     : <lumi in pb^-1>\n");
     printf(" Modes (choose one)\n");
@@ -40,6 +41,12 @@ int main(int argc, char* argv[]) {
   info.base.lumi=cardfile.getItemFloat("LUMI");
   int cycles=cardfile.getItemInt("CYCLES",0,500);
 
+  bool doSyst=false;
+  if (cardfile.hasEntry("DOSYST")) {
+    doSyst=cardfile.getItem("DOSYST")=="yes";
+  }
+  if (doSyst) printf("Running systematic uncertainties\n");
+  else printf("Not running systematic uncertainties\n");
 
   if (cardfile.hasEntry("TUPLEFILE")) {
     rootOutFile=new TFile(cardfile.getItem("TUPLEFILE").c_str(),"RECREATE");
@@ -95,7 +102,7 @@ int main(int argc, char* argv[]) {
     for (std::vector<float>::const_iterator ip=points.begin(); ip!=points.end(); ip++) {
       info.base.xsec=*ip;
       //      printf("%d xsec=%f\n",ipoint,info.xsec);
-      doLimitSetting(&fdata,&fsignal,cycles,info);
+      doLimitSetting(&fdata,&fsignal,cycles,info,doSyst);
       ipoint++;
 
       if (rootOutTree!=0) rootOutTree->Fill();
