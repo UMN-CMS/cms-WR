@@ -38,7 +38,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   //  const double ttb_yield_ferror=0.01;
   //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
   //  const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
-  const double zj_yield_mc=lumi*0.59/36.145;  //M180 mumu (Match to data)
+  const double zj_yield_mc=lumi*0.86/36.145;  //M180 mumu (Match to data)
   const double zj_yield_ferror=0.10; // fractional error
   
   //  const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // No W+jet after fix of Jet ID
