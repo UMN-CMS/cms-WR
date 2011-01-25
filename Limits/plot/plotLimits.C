@@ -3,7 +3,9 @@ double getSignalXSec(int mw, int mnu) {
   FILE *ff=fopen("signalXSec.csv","r");
   char buffer[100];
   double rv=-1;
-  const double kfactor=1.13;
+  
+  double kfactor=1.30;
+  kfactor-=0.03/(1500-1000)*(mw-1000); // slow downslope
   float ax;
   int rmw,rmnu;
 
@@ -21,10 +23,11 @@ double getSignalXSec(int mw, int mnu) {
   
 
 }
+#include "plots/tdrstyle.C"
+#include "plots/heavynuStandard.C"
 
 void plotLimits(const char* f,int mw) {
-
-  gROOT->SetStyle("Plain");
+  setTDRStyle();
 
   int n=0;
   double mn[50],obs[50],exp[50],exp_p1s[50],exp_p2s[50],exp_m1s[50],exp_m2s[50];
@@ -109,7 +112,7 @@ void plotLimits(const char* f,int mw) {
   dummy->Draw();
 
   graphExp2s->SetFillColor(kYellow);
-  graphExp2s->Draw("SAMEF");
+  //  graphExp2s->Draw("SAMEF");
 
   graphExp1s->SetFillColor(kGreen);
   graphExp1s->Draw("SAMEF");
@@ -131,13 +134,17 @@ void plotLimits(const char* f,int mw) {
   TLegend* tl=new TLegend(0.6,0.98,0.98,0.75,text);
   tl->AddEntry(graphExp,"95% CL Expected Limit","L");
   tl->AddEntry(graphExp1s,"#pm1#sigma Expected Limit","F");
-  tl->AddEntry(graphExp2s,"#pm2#sigma Expected Limit","F");
+  //  tl->AddEntry(graphExp2s,"#pm2#sigma Expected Limit","F");
   tl->AddEntry(graphObs,"95% CL Observed Limit","L");
   tl->AddEntry(graphTh,"Pythia Signal Xsec","L");
   tl->Draw();
 
+  label_Prelim(0.4,0.2,0.4,0.18);
+
   char ofn[120];
-  sprintf(ofn,"lim_mw%d.png",mw);
+  sprintf(ofn,"lim_mmjj_mw%d.png",mw);
+  c1->Print(ofn);
+  sprintf(ofn,"lim_mmjj_mw%d.eps",mw);
   c1->Print(ofn);
 
 }
