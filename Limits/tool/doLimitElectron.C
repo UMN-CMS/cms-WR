@@ -25,38 +25,28 @@
 using namespace RooFit;
 using namespace RooStats;
 
-void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info, bool doSyst) {
+void doLimitElectron(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info, bool doSyst) {
   double lumi=info.base.lumi; // pb^-1
   char temp[1024];
-  const char* finalVarHist="hNu/mWRmasscut/mWR";
+  const char* finalVarHistData="Data";
+  const char* finalVarHistSig="Signal";
 
   const double sig_scale_factor=info.base.xsec;
-  //  const double ttb_yield_mc=lumi*194.3*(0.11*0.11)*(3818+6)/193317; // XSEC from CMS 194 ± 72 (stat) ± 24 (syst) ± 21 (lumi), plus W->mu nu
-  const double ttb_yield_mc=lumi*1.56/36.145; // from Phil (using CMS XSEC)
-  const double ttb_yield_ferror=0.40;
-  //  const double ttb_yield_ferror=0.01;
-  //  const double zj_yield_mc=lumi*5454.0*37/1647472;  // XSEC from P. Dudero
-  //  const double zj_yield_mc=lumi*(4.5/7)*(3353+18)/92291;  //M180 mumu (Match to data)
-  const double zj_yield_mc=lumi*0.59/36.145;  //M180 mumu (Match to data)
-  const double zj_yield_ferror=0.10; // fractional error
-  
-  //  const double wj_yield_mc=lumi*53711.0*1/1.11e7;   // No W+jet after fix of Jet ID
-  const double qcd_yield_data=lumi*0.0026;
-
-  RooWorkspace w("mumujj");
+  RooWorkspace w("eejj");
 
   w.factory("mwr[520,2000]"); // observable is called mwr
   w.defineSet("obs","mwr");
 
-  TH1* signalShape=(TH1*)(signal->Get(finalVarHist)->Clone("ss"));
-  TH1* signalNorm=(TH1*)(signal->Get("hNu/njet"));
+  TH1* signalShape=(TH1*)(signal->Get(finalVarHistSig)->Clone("ss"));
+  //  TH1* signalNorm=(TH1*)(signal->Get("hNu/njet"));
 
   //  signalShape->Print();
-  double signal_eff=signalShape->Integral()*1.0/signalNorm->GetEntries();
+  //  double signal_eff=signalShape->Integral()*1.0/signalNorm->GetEntries();
 
-  signalShape->Scale(1.0/signalShape->Integral());
+  double signal_eff=signalShape->Integral()/34.0;
+  //  signalShape->Scale(1.0/(34.0));
 
-  TH1* dataHist=(TH1*)(dataf->Get(finalVarHist)->Clone("dataHist"));
+  TH1* dataHist=(TH1*)(dataf->Get(finalVarHistData)->Clone("dataHist"));
 
   info.base.data=dataHist->Integral(int(dataHist->FindBin(520)),int(dataHist->FindBin(2001)));
   RooDataHist* data=new RooDataHist("data","data",RooArgList(*w.var("mwr")),dataHist) ;
@@ -71,37 +61,38 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   //  w.import(*datardh);
 		       //  w.factory("Gaussian::sig_pdf(mwr,sig_mean[600],sig_sigma[10])");
 
-  // ttbar background (from fit)
-  w.factory("Exponential::bkg_ttb(mwr,-5.08e-3)"); // Jan 24
 
-  w.factory("Exponential::bkg_zj(mwr,-4.35e-3)"); // Jan 24
+    // Constant                  =     1.2754          ±     0.13397
+  // Slope                     =     -0.005042       ±     0.00013223
 
-  w.factory("Exponential::bkg_qcd(mwr,-0.003923)"); // Jan 24
-  
+  w.factory("Exponential::bkg_all(mwr,-0.005042)");
+  const double bkg_yield_total=1.64;
+
   // total model with signal and background yields as parameters ( *beware when changing luminosity* )
-  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,ttb_yield[0.1,1e-5,10]*bkg_ttb,zj_yield[0.1,1e-5,10]*bkg_zj,qcd_yield[0.1,1e-5,10]*bkg_qcd)");
+  w.factory("SUM::main_pdf(sig_yield[20,0,3000]*sig_pdf,bkg_yield[0.1,1e-5,10]*bkg_all)");
 
   if (doSyst) {
     // note the "+1" required for the defintion of K! ( K - 1   = [fractional error] )
-    sprintf(temp,"Lognormal::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_ferror+1);
-    w.factory(temp);
-    sprintf(temp,"Lognormal::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_ferror+1);
-    w.factory(temp);
+    //    sprintf(temp,"Lognormal::ttb_xsec(ttb_estimate[%f],ttb_yield,%f)",ttb_yield_mc,ttb_yield_ferror+1);
+    //  w.factory(temp);
+    // sprintf(temp,"Lognormal::zj_xsec(zj_estimate[%f],zj_yield,%f)",zj_yield_mc,zj_yield_ferror+1);
+    //w.factory(temp);
   }
 
-  w.var("ttb_yield")->setVal(ttb_yield_mc);
-  w.var("zj_yield")->setVal(zj_yield_mc);
-  w.var("qcd_yield")->setVal(qcd_yield_data);
+  w.var("bkg_yield")->setVal(bkg_yield_total);
+  //  w.var("zj_yield")->setVal(zj_yield_mc);
+  //  w.var("qcd_yield")->setVal(qcd_yield_data);
   double sig_yield_expected=signal_eff*sig_scale_factor*lumi;
   //  printf("Components: %f %f %f \n",signal_eff,sig_scale_factor,lumi);
-  info.base.background=(zj_yield_mc+ttb_yield_mc+qcd_yield_data);
+  info.base.background=bkg_yield_total;
   //  w.var("bkg_scale")->setVal(info.background);
 
   if (!doSyst) {
-    w.var("ttb_yield")->setConstant();
-    w.var("zj_yield")->setConstant();
+    w.var("bkg_yield")->setConstant();
+    //    w.var("ttb_yield")->setConstant();
+    //    w.var("zj_yield")->setConstant();
   }
-  w.var("qcd_yield")->setConstant();
+  //  w.var("qcd_yield")->setConstant();
   //  w.var("bkg_scale")->setConstant();
 
   info.base.signal=sig_yield_expected;
@@ -277,7 +268,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
   //  w.pdf("bkg_pdf")->plotOn(mesframe);
   //w.pdf("main_pdf")->plotOn(mesframe);
   w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.base.background));
-  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.base.background),Components("bkg_ttb"),LineStyle(kDashed));
+  w.pdf("main_pdf")->plotOn(mesframe,Normalization(sig_yield_expected+info.base.background),Components("bkg_all"),LineStyle(kDashed));
 
   mesframe->Draw();
 
@@ -294,10 +285,10 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
 }
 
-void testLimitSetting(TFile* f0, TFile* f1, double xsec=1.0, bool doSyst=true) {
+void testLimitElectron(TFile* f0, TFile* f1, double xsec=1.0, bool doSyst=true) {
   LimitPointStruct lps;
   lps.base.xsec=xsec;
   lps.base.lumi=34.0;
 
-  doLimitSetting(f0,f1,2000,lps,doSyst);
+  doLimitElectron(f0,f1,2000,lps,doSyst);
 }
