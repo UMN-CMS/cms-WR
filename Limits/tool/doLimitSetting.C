@@ -18,6 +18,7 @@
 #include "RooStats/HypoTestPlot.h"
 #include "RooStats/HypoTestResult.h"
 #include "TCanvas.h"
+#include "TROOT.h"
 #include "TFile.h"
 #include "doLimitSetting.hh"
 #include <algorithm>
@@ -262,6 +263,7 @@ void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& in
 
   
 #ifndef MAKE_MAIN
+  gROOT->SetStyle("Plain");
   TCanvas* c2=new TCanvas("c2","c2",900,900);
   c2->Divide(1,2);
 
