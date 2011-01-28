@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.25 2011/01/24 23:15:18 dudero Exp $
+// $Id: HeavyNu.cc,v 1.26 2011/01/28 22:47:09 bdahmes Exp $
 //
 //
 
@@ -23,12 +23,17 @@
 #include <algorithm>
 #include <vector>
 
+// See https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID 
+// Order valid for 38X only.  Can be moved after Frameworkfwd.h in 39X
+#include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
+
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/EventSetup.h"
+// Needed for 39X
+// #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -43,7 +48,6 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
-#include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
