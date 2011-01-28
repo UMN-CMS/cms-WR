@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.24 2011/01/23 06:20:14 dudero Exp $
+// $Id: HeavyNu.cc,v 1.25 2011/01/24 23:15:18 dudero Exp $
 //
 //
 
@@ -23,17 +23,12 @@
 #include <algorithm>
 #include <vector>
 
-// According to
-// https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
-// this must be included before Frameworkfwd.h
-//
-#include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
-
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -48,6 +43,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -1122,7 +1118,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false; 
   }
 
-  if (firstEvent_) {
+  if (firstEvent_) { 
     // handle the jet corrector parameters collection,
     // get the jet corrector parameters collection from the global tag
     //
