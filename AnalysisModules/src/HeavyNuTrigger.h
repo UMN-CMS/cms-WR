@@ -44,7 +44,7 @@ class HeavyNuTrigger {
 			const edm::Event   & iEvent,
 			trigHistos_t *thist = NULL);
 
-  bool simulateForMC(double pt);
+  bool simulateForMC(double pt,int signOfError2apply=0);
 
   void endJob();
 

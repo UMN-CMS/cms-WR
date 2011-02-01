@@ -126,15 +126,21 @@ HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
 //======================================================================
 
 bool
-HeavyNuTrigger::simulateForMC(double pt)
+HeavyNuTrigger::simulateForMC(double pt,int signOfError2apply)
 {
   if (matchingEnabled_)
     throw cms::Exception("invalid trigger configuration");
 
   // determined from data
-  const double effs[]  = {0.898,0.903,0.909,0.913,0.916,0.916};
+  const double effslo[]  = {0.896,0.902,0.909,0.909,0.910,0.910};
+  const double effsnom[] = {0.902,0.906,0.913,0.916,0.919,0.919};
+  const double effshi[]  = {0.908,0.910,0.916,0.924,0.928,0.928};
   const double upedge[]= {   30,   40,   50,   60, 3500,   -1};
-    
+
+  const double *effs = effsnom;
+  if( signOfError2apply )
+    effs = (signOfError2apply > 0) ? effshi : effslo;
+
   int i;
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
   double eff=effs[i];
