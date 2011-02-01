@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.26 2011/01/28 22:47:09 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.27 2011/01/28 22:58:08 bdahmes Exp $
 //
 //
 
@@ -176,9 +176,15 @@ private:
 				   int jetnum );
   virtual void selectJets        ( edm::Handle<pat::JetCollection>& pJets,
 				   HeavyNuEvent& hne );
+  virtual bool muPassesSelection ( const pat::Muon& m,
+				   const pat::JetRef& j1,
+				   const pat::JetRef& j2 );
   virtual void selectMuons       ( edm::Handle<pat::MuonCollection>& pMuons,
 				   HeavyNuEvent& hne );
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
+
+  virtual void studyMuonSelectionEff( edm::Handle<pat::MuonCollection>& pMuons,
+				      const HeavyNuEvent& hne );
   
   inline bool inZmassWindow( double mMuMu ) {
     return (mMuMu <= ZwinMaxGeV_) && (mMuMu >= ZwinMinGeV_);
@@ -191,6 +197,7 @@ private:
   double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
   int    applyJECUsign_;              // for Jet Energy Correction Uncertainty studies
   double applyMESfactor_;             // for Muon Energy Scale studies
+  double applyTrigEffsign_;           // for Trigger Efficiency studies
 
   std::string currentFile_;
   bool dolog_;
@@ -213,6 +220,7 @@ private:
     void fill(const HeavyNuEvent& hne, const std::vector<hNuMassHypothesis>&) ;
 
     TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2;
+    TH2 *ptMu1VsPtMu2ss,  *ptMu1VsPtMu2os;
     TH1 *etaMu1, *etaMu2, *etaJet1, *etaJet2 ;
     TH1 *phiMu1, *phiMu2, *phiJet1, *phiJet2 ;
     TH1 *dEtaMu, *dPhiMu, *dEtaJet, *dPhiJet ;
@@ -232,7 +240,8 @@ private:
     TH1 *mu1trackRelIso, *mu1hcalRelIso, *mu1ecalRelIso, *mu1caloRelIso;
     TH1 *mu2trackRelIso, *mu2hcalRelIso, *mu2ecalRelIso, *mu2caloRelIso;
 
-    TH1 *mWR, *mNuR1, *mNuR2, *mMuMu, *mMuMuZoom, *mJJ ; 
+    TH1 *mMuMu, *mMuMuOS, *mMuMuSS, *mMuMuZoom, *mMuMuGenZoom;
+    TH1 *mWR, *mNuR1, *mNuR2, *mJJ ; 
     TH2 *mNuR2D, *jetPtvsNum ; 
 
     TH1* btagJet1, *btagJet2;
@@ -273,15 +282,25 @@ private:
     HistPerDef LLptCuts;
     HistPerDef MuTightCuts;
     HistPerDef TrigMatches;
-    HistPerDef Mu1TrigMatchesInZwin;
-    HistPerDef Mu2TrigMatchesInZwin;
-    HistPerDef Mu1Mu2TrigMatchesInZwin;
     HistPerDef MuTightInZwin;
     HistPerDef LLJJptCuts;
+    HistPerDef VertexCuts;
+    HistPerDef Mu1HighPtCut;
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
     HistPerDef oneBtag;
     HistPerDef twoBtag;
+    // efficiency studies:
+    HistPerDef Mu1passesLooseInZwin;
+    HistPerDef Mu2passesLooseInZwin;
+    HistPerDef Mu1Mu2passesLooseInZwin;
+    HistPerDef Mu1passesTightInZwin;
+    HistPerDef Mu2passesTightInZwin;
+    HistPerDef Mu1Mu2passesTightInZwin;
+    HistPerDef Mu1TrigMatchesInZwin;
+    HistPerDef Mu2TrigMatchesInZwin;
+    HistPerDef Mu1Mu2TrigMatchesInZwin;
+
   } hists;
 
   struct CutsStruct {
@@ -294,7 +313,7 @@ private:
     double minimum_mWR_mass;
     double minimum_muon_jet_dR;
     double muon_trackiso_limit;
-    double dimuon_maxVertexZsep;
+    double maxVertexZsep;
   } cuts;
   
 };
@@ -339,6 +358,14 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
   t="#eta(#mu_{2}) " +post;  etaMu2=td->make<TH1D>("etaMu2",t.c_str(),40,-2.5,2.5);
   t="#phi(#mu_{1}) " +post;  phiMu1=td->make<TH1D>("phiMu1",t.c_str(),30,-3.14159,3.14159);
   t="#phi(#mu_{2}) " +post;  phiMu2=td->make<TH1D>("phiMu2",t.c_str(),30,-3.14159,3.14159);
+
+  t="p_{T}(#mu_{1}) vs. p_{T}(#mu_{2}) (SS) "+post+";p_{T}(#mu_{1})(GeV);p_{T}(#mu_{2}(GeV))";
+
+  ptMu1VsPtMu2ss=td->make<TH2D>("ptMu1VsPtMu2ss",t.c_str(),50,0.,2000.,50,0.,2000);
+
+  t="p_{T}(#mu_{1}) vs. p_{T}(#mu_{2}) (OS) "+post+";p_{T}(#mu_{1})(GeV);p_{T}(#mu_{2}(GeV))";
+
+  ptMu1VsPtMu2os=td->make<TH2D>("ptMu1VsPtMu2os",t.c_str(),50,0.,2000.,50,0.,2000);
 
   // delta angles
 
@@ -428,9 +455,12 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
   t="M(N_{R}) with #mu_{2} "       +post;     mNuR2=td->make<TH1D>("mNuR2", t.c_str(),50,0,1000);
   t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;    mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),50,0,2000,50,0,1000);
 
-  t="M(#mu #mu)"                   +post;     mMuMu=td->make<TH1D>("mMuMu",    t.c_str(),50,0,2000);
-  t="M(#mu #mu)"                   +post; mMuMuZoom=td->make<TH1D>("mMuMuZoom",t.c_str(),50,0,200);
-  t="M(jj)"                        +post;       mJJ=td->make<TH1D>("mJJ",      t.c_str(),50,0,2000);
+  t="M(jj)"                        +post;          mJJ=td->make<TH1D>("mJJ",         t.c_str(),50,0,2000);
+  t="M(#mu #mu)"                   +post;        mMuMu=td->make<TH1D>("mMuMu",       t.c_str(),50,0,2000);
+  t="M(#mu #mu)(OS)"               +post;      mMuMuOS=td->make<TH1D>("mMuMuOS",     t.c_str(),50,0,2000);
+  t="M(#mu #mu)(SS)"               +post;      mMuMuSS=td->make<TH1D>("mMuMuSS",     t.c_str(),50,0,2000);
+  t="M(#mu #mu)"                   +post;    mMuMuZoom=td->make<TH1D>("mMuMuZoom",   t.c_str(),50,0,200);
+  t="M(#mu #mu)(generated)"        +post; mMuMuGenZoom=td->make<TH1D>("mMuMuGenZoom",t.c_str(),50,0,200);
 
   t="cZeta(mumu)"                 +post; czeta_mumu=td->make<TH1D>("czMM",    t.c_str(),100,-1,1);
   t="cZeta(mumu) Zoom"       +post; czeta_mumu_zoom=td->make<TH1D>("czMMzoom",t.c_str(),100,-1,-0.9);
@@ -470,40 +500,43 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
 
   reco::Particle::LorentzVector WR ; 
 
+  const pat::Muon& m0=muons.at(0);
+  const pat::Muon& m1=muons.at(1);
+
   // Muons 
-  ptMu1->Fill(muons.at(0).pt()) ; 
-  ptMu2->Fill(muons.at(1).pt()) ; 
+  ptMu1->Fill(m0.pt()) ; 
+  ptMu2->Fill(m1.pt()) ; 
 
-  etaMu1->Fill(muons.at(0).eta()) ; 
-  etaMu2->Fill(muons.at(1).eta()) ; 
+  etaMu1->Fill(m0.eta()) ; 
+  etaMu2->Fill(m1.eta()) ; 
 
-  phiMu1->Fill(muons.at(0).phi()) ; 
-  phiMu2->Fill(muons.at(1).phi()) ; 
+  phiMu1->Fill(m0.phi()) ; 
+  phiMu2->Fill(m1.phi()) ; 
 
-  dPhiMu->Fill( fabs(deltaPhi(muons.at(0).phi(),muons.at(1).phi())) ) ; 
-  dEtaMu->Fill( fabs(muons.at(0).eta() - muons.at(1).eta()) ) ; 
-  dEtaPhiMu->Fill(fabs(muons.at(0).eta()-muons.at(1).eta()),
-		  fabs(deltaPhi(muons.at(0).phi(),muons.at(1).phi()))) ; 
+  dPhiMu->Fill( fabs(deltaPhi(m0.phi(),m1.phi())) ) ; 
+  dEtaMu->Fill( fabs(m0.eta() - m1.eta()) ) ; 
+  dEtaPhiMu->Fill(fabs(m0.eta()-m1.eta()),
+		  fabs(deltaPhi(m0.phi(),m1.phi()))) ; 
   
-  mu1trackIso->Fill(muons.at(0).trackIso());
-  mu1hcalIso ->Fill(muons.at(0).hcalIso());
-  mu1ecalIso ->Fill(muons.at(0).ecalIso());
-  mu1caloIso ->Fill(muons.at(0).caloIso());
-  mu1dB      ->Fill(muons.at(0).dB());
-  mu2trackIso->Fill(muons.at(1).trackIso());
-  mu2hcalIso ->Fill(muons.at(1).hcalIso());
-  mu2ecalIso ->Fill(muons.at(1).ecalIso());
-  mu2caloIso ->Fill(muons.at(1).caloIso());
-  mu2dB      ->Fill(muons.at(1).dB());
+  mu1trackIso->Fill(m0.trackIso());
+  mu1hcalIso ->Fill(m0.hcalIso());
+  mu1ecalIso ->Fill(m0.ecalIso());
+  mu1caloIso ->Fill(m0.caloIso());
+  mu1dB      ->Fill(m0.dB());
+  mu2trackIso->Fill(m1.trackIso());
+  mu2hcalIso ->Fill(m1.hcalIso());
+  mu2ecalIso ->Fill(m1.ecalIso());
+  mu2caloIso ->Fill(m1.caloIso());
+  mu2dB      ->Fill(m1.dB());
   
-  mu1trackRelIso->Fill(muons.at(0).trackIso()/muons.at(0).pt());
-  mu1hcalRelIso ->Fill(muons.at(0).hcalIso() /muons.at(0).pt());
-  mu1ecalRelIso ->Fill(muons.at(0).ecalIso() /muons.at(0).pt());
-  mu1caloRelIso ->Fill(muons.at(0).caloIso() /muons.at(0).pt());
-  mu2trackRelIso->Fill(muons.at(1).trackIso()/muons.at(1).pt());
-  mu2hcalRelIso ->Fill(muons.at(1).hcalIso() /muons.at(1).pt());
-  mu2ecalRelIso ->Fill(muons.at(1).ecalIso() /muons.at(1).pt());
-  mu2caloRelIso ->Fill(muons.at(1).caloIso() /muons.at(1).pt());
+  mu1trackRelIso->Fill(m0.trackIso()/m0.pt());
+  mu1hcalRelIso ->Fill(m0.hcalIso() /m0.pt());
+  mu1ecalRelIso ->Fill(m0.ecalIso() /m0.pt());
+  mu1caloRelIso ->Fill(m0.caloIso() /m0.pt());
+  mu2trackRelIso->Fill(m1.trackIso()/m1.pt());
+  mu2hcalRelIso ->Fill(m1.hcalIso() /m1.pt());
+  mu2ecalRelIso ->Fill(m1.ecalIso() /m1.pt());
+  mu2caloRelIso ->Fill(m1.caloIso() /m1.pt());
 
   if (isMC) {
     for (unsigned int i=0; i<2; i++) { 
@@ -520,43 +553,52 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
 	}
       }
     }
+    if( (m0.genLepton() != 0) &&
+	(m1.genLepton() != 0) ) {
+      reco::Particle::LorentzVector mu1gp4 = m0.genLepton()->p4();
+      reco::Particle::LorentzVector mu2gp4 = m1.genLepton()->p4();
+      mMuMuGenZoom->Fill( (mu1gp4+mu2gp4).M() );
+    }
   }
   for (int i=0; i<muonQualityFlags; i++) { 
-    if (muons.at(0).muonID(muonQuality[i])) qualMu1->Fill( i ) ; 
-    if (muons.at(1).muonID(muonQuality[i])) qualMu2->Fill( i ) ; 
+    if (m0.muonID(muonQuality[i])) qualMu1->Fill( i ) ; 
+    if (m1.muonID(muonQuality[i])) qualMu2->Fill( i ) ; 
   }
 
   // Jets 
-  ptJet1->Fill(jets.at(0).pt()) ; 
-  ptJet2->Fill(jets.at(1).pt()) ; 
+  const pat::Jet& j0 = jets.at(0);
+  const pat::Jet& j1 = jets.at(1);
 
-  etaJet1->Fill(jets.at(0).eta()) ; 
-  etaJet2->Fill(jets.at(1).eta()) ; 
+  ptJet1->Fill(j0.pt()) ; 
+  ptJet2->Fill(j1.pt()) ; 
 
-  phiJet1->Fill(jets.at(0).phi()) ; 
-  phiJet2->Fill(jets.at(1).phi()) ; 
+  etaJet1->Fill(j0.eta()) ; 
+  etaJet2->Fill(j1.eta()) ; 
 
-  btagJet1->Fill(jets.at(0).bDiscriminator(btagName));
-  btagJet1->Fill(jets.at(1).bDiscriminator(btagName));
+  phiJet1->Fill(j0.phi()) ; 
+  phiJet2->Fill(j1.phi()) ; 
 
-  dPhiJet->Fill( fabs(deltaPhi(jets.at(0).phi(),jets.at(1).phi())) ) ; 
-  dEtaJet->Fill( fabs(jets.at(0).eta() - jets.at(1).eta()) ) ; 
-  dEtaPhiJet->Fill(fabs(jets.at(0).eta()-jets.at(1).eta()),
-		   fabs(deltaPhi(jets.at(0).phi(),jets.at(1).phi()))) ;
+  btagJet1->Fill(j0.bDiscriminator(btagName));
+  btagJet1->Fill(j1.bDiscriminator(btagName));
 
-  jetID2d->Fill(jetID(jets.at(0)),jetID(jets.at(1)));
+  dPhiJet->Fill( fabs(deltaPhi(j0.phi(),j1.phi())) ) ; 
+  dEtaJet->Fill( fabs(j0.eta() - j1.eta()) ) ; 
+  dEtaPhiJet->Fill( fabs(j0.eta()-j1.eta()),
+		    fabs(deltaPhi(j0.phi(),j1.phi())) ) ;
+
+  jetID2d->Fill(jetID(j0),jetID(j1));
 
   // Muon-Jet plots
-  float dRmu1jet1 = deltaR(muons.at(0).eta(),muons.at(0).phi(),jets.at(0).eta(),jets.at(0).phi()) ; 
-  float dRmu1jet2 = deltaR(muons.at(0).eta(),muons.at(0).phi(),jets.at(1).eta(),jets.at(1).phi()) ; 
-  float dRmu2jet1 = deltaR(muons.at(1).eta(),muons.at(1).phi(),jets.at(0).eta(),jets.at(0).phi()) ; 
-  float dRmu2jet2 = deltaR(muons.at(1).eta(),muons.at(1).phi(),jets.at(1).eta(),jets.at(1).phi()) ; 
+  float dRmu1jet1 = deltaR(m0.eta(),m0.phi(),j0.eta(),j0.phi()) ; 
+  float dRmu1jet2 = deltaR(m0.eta(),m0.phi(),j1.eta(),j1.phi()) ; 
+  float dRmu2jet1 = deltaR(m1.eta(),m1.phi(),j0.eta(),j0.phi()) ; 
+  float dRmu2jet2 = deltaR(m1.eta(),m1.phi(),j1.eta(),j1.phi()) ; 
 
-  const pat::Jet&  j4mu1 = (dRmu1jet1 < dRmu1jet2) ? jets.at(0) : jets.at(1);
-  const pat::Jet&  j4mu2 = (dRmu2jet1 < dRmu2jet2) ? jets.at(0) : jets.at(1);
+  const pat::Jet&  j4mu1 = (dRmu1jet1 < dRmu1jet2) ? j0 : j1;
+  const pat::Jet&  j4mu2 = (dRmu2jet1 < dRmu2jet2) ? j0 : j1;
 
-  TVector3 mu1vec(muons.at(0).momentum().X(), muons.at(0).momentum().Y(), muons.at(0).momentum().Z());
-  TVector3 mu2vec(muons.at(1).momentum().X(), muons.at(1).momentum().Y(), muons.at(1).momentum().Z());
+  TVector3 mu1vec(m0.momentum().X(), m0.momentum().Y(), m0.momentum().Z());
+  TVector3 mu2vec(m1.momentum().X(), m1.momentum().Y(), m1.momentum().Z());
 
   TVector3 jt1vec(j4mu1.p4().Vect().X(), j4mu1.p4().Vect().Y(), j4mu1.p4().Vect().Z() );
   TVector3 jt2vec(j4mu2.p4().Vect().X(), j4mu2.p4().Vect().Y(), j4mu2.p4().Vect().Z() );
@@ -574,18 +616,27 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   ptrelVsdRminMu2jet->Fill(min(dRmu2jet1,dRmu1jet2),ptrelMu2);
 
   // Composite objects
-  reco::Particle::LorentzVector vWR = jets.at(0).p4() + jets.at(1).p4() ; 
-  WR = vWR + muons.at(0).p4() + muons.at(1).p4() ; 
+  reco::Particle::LorentzVector vWR = j0.p4() + j1.p4() ; 
+  WR = vWR + m0.p4() + m1.p4() ; 
 
   mWR->Fill(WR.M()) ; 
-  mNuR1->Fill( (vWR + muons.at(0).p4()).M() ) ; 
-  mNuR2->Fill( (vWR + muons.at(1).p4()).M() ) ; 
-  mNuR2D->Fill( (vWR + muons.at(0).p4()).M(),(vWR + muons.at(1).p4()).M() ) ; 
+  mNuR1 ->Fill( (vWR + m0.p4()).M() ) ; 
+  mNuR2 ->Fill( (vWR + m1.p4()).M() ) ; 
+  mNuR2D->Fill( (vWR + m0.p4()).M(),(vWR + m1.p4()).M() ) ; 
 
-  reco::Particle::LorentzVector mumu=muons.at(0).p4()+muons.at(1).p4();
-  reco::Particle::LorentzVector jj=jets.at(0).p4()+jets.at(1).p4();
+  reco::Particle::LorentzVector mumu=m0.p4()+m1.p4();
+  reco::Particle::LorentzVector jj=j0.p4()+j1.p4();
 
   mMuMu->Fill(mumu.M() );
+  if (m0.charge() == m1.charge()) {
+    mMuMuSS->Fill( mumu.M() );
+    ptMu1VsPtMu2ss->Fill( m0.pt(), m1.pt() );
+  }
+  else {
+    mMuMuOS->Fill( mumu.M() );
+    ptMu1VsPtMu2os->Fill( m0.pt(), m1.pt() );
+  }
+
   mMuMuZoom->Fill(mumu.M() );
   mJJ->Fill(jj.M() );
 
@@ -635,13 +686,13 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
   mu2ecalRelIso ->Fill(hne.mu2->ecalIso() /mu2pt);
   mu2caloRelIso ->Fill(hne.mu2->caloIso() /mu2pt);
 
-  if (hne.isMC) {
-    for (unsigned int i=0; i<2; i++) { 
-      if ( hne.mu[i]->genLepton() != 0 ) {
+  if( hne.isMC ) {
+    for( unsigned int i=0; i<2; i++ ) { 
+      if( hne.mu[i]->genLepton() != 0 ) {
 	float dpt = (hne.MESscale*hne.mu[i]->pt())-hne.mu[i]->genLepton()->pt() ; 
 	float dR  = deltaR(hne.mu[i]->eta(),hne.mu[i]->phi(),
 			   hne.mu[i]->genLepton()->eta(),hne.mu[i]->genLepton()->phi()) ; 
-	if ( i == 0 ) { 
+	if( i == 0 ) { 
 	  dptMu1gen->Fill(dpt/hne.mu[i]->genLepton()->pt()) ; 
 	  dRMu1gen->Fill(dR) ; 
 	} else { 
@@ -649,6 +700,12 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 	  dRMu2gen->Fill(dR) ; 
 	}
       }
+    }
+    if( (hne.mu1->genLepton() != 0) &&
+	(hne.mu2->genLepton() != 0) ) {
+      reco::Particle::LorentzVector mu1gp4 = hne.mu1->genLepton()->p4();
+      reco::Particle::LorentzVector mu2gp4 = hne.mu2->genLepton()->p4();
+      mMuMuGenZoom->Fill( (mu1gp4+mu2gp4).M() );
     }
   }
   for (int i=0; i<muonQualityFlags; i++) { 
@@ -708,6 +765,15 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
   jetID2d->Fill(jet1id,jet2id);
 
   mMuMu->Fill( hne.mMuMu );
+
+  if (hne.mu1->charge() == hne.mu2->charge()) {
+    mMuMuSS->Fill( hne.mMuMu );
+    ptMu1VsPtMu2ss->Fill( hne.mu1->pt(), hne.mu2->pt() );
+  }  else {
+    mMuMuOS->Fill( hne.mMuMu );
+    ptMu1VsPtMu2os->Fill( hne.mu1->pt(), hne.mu2->pt() );
+  }
+
   mMuMuZoom->Fill( hne.mMuMu );
 
   czeta_mumu->Fill(hne.czeta_mumu);
@@ -817,9 +883,10 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.MuTightCuts.book ( new TFileDirectory(fs->mkdir("cut2_MuTight")),    "(Mu tight cuts:2)",        v_null );
   hists.TrigMatches.book ( new TFileDirectory(fs->mkdir("cut3_TrigMatches")),"(Trigger match:3)",        v_null );
   hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("cut4_LLJJpt")),     "(4objects with ptcuts:4)", nnif_->masspts() );
-  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("cut5_diLmass")),    "(mumu mass cut:5)",        nnif_->masspts() );
-  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("cut6_mWRmass")),    "(mumujj mass cut:6)",      nnif_->masspts() );
-
+  hists.VertexCuts.book  ( new TFileDirectory(fs->mkdir("cut5_Vertex")),     "(vertex requirements:5)",  nnif_->masspts() );
+  hists.Mu1HighPtCut.book( new TFileDirectory(fs->mkdir("cut6_Mu1HighPt")),  "(Mu1 High pt cut:6)",      nnif_->masspts() );
+  hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("cut7_diLmass")),    "(mumu mass cut:7)",        nnif_->masspts() );
+  hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("cut8_mWRmass")),    "(mumujj mass cut:8)",      nnif_->masspts() );
 
   if (trig_->matchingEnabled()) {
     hists.MuTightInZwin.book          ( new TFileDirectory(fs->mkdir("MuTightInZwin")),          "(Mu1 tight in Z mass Window)",    v_null );
@@ -829,6 +896,13 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     trig_->book(*(hists.Mu1TrigMatchesInZwin.mydir), &(hists.Mu1TrigMatchesInZwin.trigHistos));
     trig_->book(*(hists.Mu2TrigMatchesInZwin.mydir), &(hists.Mu2TrigMatchesInZwin.trigHistos));
   }
+
+  hists.Mu1passesLooseInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1passesLooseInZwin")),   "(#mu1 passes Loose crit. in Z mass Window)",v_null );
+  hists.Mu2passesLooseInZwin.book   ( new TFileDirectory(fs->mkdir("Mu2passesLooseInZwin")),   "(#mu2 passes Loose crit. in Z mass Window)",v_null );
+  hists.Mu1Mu2passesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu1Mu2passesLooseInZwin")),"(#mu1,#mu2 passes Loose crit. in Z mass Window)",v_null );
+  hists.Mu1passesTightInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1passesTightInZwin")),   "(#mu1 passes Tight crit. in Z mass Window)",v_null );
+  hists.Mu2passesTightInZwin.book   ( new TFileDirectory(fs->mkdir("Mu2passesTightInZwin")),   "(#mu2 passes Tight crit. in Z mass Window)",v_null );
+  hists.Mu1Mu2passesTightInZwin.book( new TFileDirectory(fs->mkdir("Mu1Mu2passesTightInZwin")),"(#mu1,#mu2 passes Tight crit. in Z mass Window)",v_null );
 
   hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
 
@@ -843,7 +917,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   cuts.minimum_mWR_mass     = iConfig.getParameter<double>("min4objMass");
   cuts.minimum_muon_jet_dR  = iConfig.getParameter<double>("minMuonJetdR");
   cuts.muon_trackiso_limit  = iConfig.getParameter<double>("muonTrackIsoLimitGeV");
-  cuts.dimuon_maxVertexZsep = iConfig.getParameter<double>("dimuonMaxVertexZsepCM");
+  cuts.maxVertexZsep        = iConfig.getParameter<double>("maxVertexZsepCM");
 
   ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
   ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
@@ -863,24 +937,29 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 						 50,-2.5,2.5,100,0,1000);
   }
 
+  applyTrigEffsign_ = iConfig.getParameter<int>("applyTrigEffsign");
+  if (applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
+
+
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
-  std::cout << "muonTag        = " << muonTag_                 << std::endl;
-  std::cout << "jetTag         = " << jetTag_                  << std::endl;
-  std::cout << "electronTag    = " << elecTag_                 << std::endl;
-  std::cout << "ZmassWinMinGeV = " << ZwinMinGeV_              << " GeV" << std::endl;
-  std::cout << "ZmassWinMaxGeV = " << ZwinMaxGeV_              << " GeV" << std::endl;
-  std::cout << "minMu1pt       = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
-  std::cout << "minMu2pt       = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
-  std::cout << "minJetPt       = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
-  std::cout << "maxMuAbsEta    = " << cuts.maximum_mu_abseta   << std::endl;
-  std::cout << "maxJetAbsEta   = " << cuts.maximum_jet_abseta  << std::endl;
-  std::cout << "minMuonJetdR   = " << cuts.minimum_muon_jet_dR << std::endl;
-  std::cout << "muonTrackIso   = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
-  std::cout << "minMuMuMass    = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
-  std::cout << "min4objMass    = " << cuts.minimum_mWR_mass    << " GeV" << std::endl;
-  std::cout << "applyJECUsign  = " << applyJECUsign_           << std::endl;
-  std::cout << "applyMESfactor = " << applyMESfactor_          << std::endl;
+  std::cout << "muonTag          = " << muonTag_                 << std::endl;
+  std::cout << "jetTag           = " << jetTag_                  << std::endl;
+  std::cout << "electronTag      = " << elecTag_                 << std::endl;
+  std::cout << "ZmassWinMinGeV   = " << ZwinMinGeV_              << " GeV" << std::endl;
+  std::cout << "ZmassWinMaxGeV   = " << ZwinMaxGeV_              << " GeV" << std::endl;
+  std::cout << "minMu1pt         = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
+  std::cout << "minMu2pt         = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
+  std::cout << "minJetPt         = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
+  std::cout << "maxMuAbsEta      = " << cuts.maximum_mu_abseta   << std::endl;
+  std::cout << "maxJetAbsEta     = " << cuts.maximum_jet_abseta  << std::endl;
+  std::cout << "minMuonJetdR     = " << cuts.minimum_muon_jet_dR << std::endl;
+  std::cout << "muonTrackIso     = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
+  std::cout << "minMuMuMass      = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
+  std::cout << "min4objMass      = " << cuts.minimum_mWR_mass    << " GeV" << std::endl;
+  std::cout << "applyJECUsign    = " << applyJECUsign_           << std::endl;
+  std::cout << "applyMESfactor   = " << applyMESfactor_          << std::endl;
+  std::cout << "applyTrigEffsign = " << applyTrigEffsign_        << std::endl;
 }
   
 HeavyNu::~HeavyNu()
@@ -1049,22 +1128,93 @@ HeavyNu::selectJets(edm::Handle<pat::JetCollection>& pJets,
 
 //======================================================================
 
+bool
+HeavyNu::muPassesSelection(const pat::Muon& m,
+			   const pat::JetRef& j1,
+			   const pat::JetRef& j2)
+{
+  double mupt = applyMESfactor_*m.pt();
+  double dr1=(j1.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j1->eta(),j1->phi()));
+  double dr2=(j2.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j2->eta(),j2->phi()));
+
+  return( (mupt > cuts.minimum_mu2_pt)
+	  && isVBTFloose(m)
+	  && (fabs(m.eta()) < cuts.maximum_mu_abseta)
+	  && (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
+	  && (m.trackIso()  < cuts.muon_trackiso_limit) );
+}                                          // HeavyNu::muPassesSelection
+
+//======================================================================
+
+void
+HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
+			       const HeavyNuEvent& hne)
+{
+  // require jets for the study
+  //
+  if (hne.j1.isNull() || hne.j2.isNull())
+    return;
+
+  // study ID/isolation efficiency,
+  //
+  pat::MuonRef m0 = pat::MuonRef(pMuons,0);
+  pat::MuonRef m1 = pat::MuonRef(pMuons,1);
+  assert(m0.isAvailable() && m1.isAvailable());
+
+  pat::MuonRef m2;
+  assert (m0->pt() >= m1->pt());
+  if (pMuons->size()>2) {
+    m2 = pat::MuonRef(pMuons,2);
+    if (m2.isAvailable())
+      assert (m1->pt() >= m2->pt());
+  }
+
+  pat::JetCollection jets;
+  jets.push_back(*(hne.j1));
+  jets.push_back(*(hne.j2));
+
+  if( m2.isNull() || (m2->pt() < cuts.minimum_mu2_pt) ) {
+    // pre-requisites for the study - only portions of the initial selection are
+    //   of interest
+
+    double dr1m0=deltaR(m0->eta(),m0->phi(),hne.j1->eta(),hne.j1->phi());
+    double dr2m0=deltaR(m0->eta(),m0->phi(),hne.j2->eta(),hne.j2->phi());
+    double dr1m1=deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
+    double dr2m1=deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
+
+    if( (m1->pt() > cuts.minimum_mu2_pt) // by inference m0 must also pass this
+	&& (fabs(m0->eta()) < cuts.maximum_mu_abseta)
+	&& (fabs(m1->eta()) < cuts.maximum_mu_abseta)
+	&& (std::min(dr1m0,dr2m0) > cuts.minimum_muon_jet_dR)
+	&& (std::min(dr1m1,dr2m1) > cuts.minimum_muon_jet_dR)
+	&& inZmassWindow((m0->p4()+m1->p4()).M()) ) { // we have a candidate for study
+
+      bool m0passed = muPassesSelection(*m0,hne.j1,hne.j2);
+      bool m1passed = muPassesSelection(*m1,hne.j1,hne.j2);
+      if ( m0passed ) {
+	hists.Mu1passesLooseInZwin.fill( *pMuons, jets, hne.isMC );
+	if ( m1passed ) {
+	  hists.Mu2passesLooseInZwin.fill   ( *pMuons, jets, hne.isMC );
+	  hists.Mu1Mu2passesLooseInZwin.fill( *pMuons, jets, hne.isMC );
+	}
+      }
+      else // m1passed
+	hists.Mu2passesLooseInZwin.fill     ( *pMuons, jets, hne.isMC );
+    }
+  } // else don't bother with 3 or more muons
+
+}                                      // HeavyNu::studyMuonSelectionEff
+
+//======================================================================
+
 void
 HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
 		     HeavyNuEvent& hne)
 {
   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
-    double dr1=(hne.j1.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hne.j1->eta(),hne.j1->phi()));
-    double dr2=(hne.j2.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hne.j2->eta(),hne.j2->phi()));
 
-    double mupt = applyMESfactor_*(*iM).pt();
-    if( (mupt > cuts.minimum_mu2_pt)
-	&& isVBTFloose(*iM)
-	&& (fabs((*iM).eta()) < cuts.maximum_mu_abseta)
-	&& (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
-	&& ((*iM).trackIso()  < cuts.muon_trackiso_limit)
-	) {
+    if( muPassesSelection(*iM,hne.j1,hne.j2) ) {
       if( (hne.mu1.isNull()) ||
 	  (hne.mu1->pt()<(*iM).pt()) ) { // simple factor won't change this relation
 	hne.mu2=hne.mu1;
@@ -1122,7 +1272,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false; 
   }
 
-  if (firstEvent_) { 
+  if (firstEvent_) {
     // handle the jet corrector parameters collection,
     // get the jet corrector parameters collection from the global tag
     //
@@ -1159,7 +1309,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // next, we look for valid muons and jets and put them into the Event
 
-  selectJets ( pJets,  hnuEvent );
+  selectJets ( pJets,  hnuEvent ); studyMuonSelectionEff( pMuons,hnuEvent );
   selectMuons( pMuons, hnuEvent );
 
   // require two "loose" muons first
@@ -1167,7 +1317,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   //
   if( hnuEvent.mu2.isNull() ||
       (fabs(hnuEvent.mu1->vertex().Z()-
-	    hnuEvent.mu2->vertex().Z()) >= cuts.dimuon_maxVertexZsep) )
+	    hnuEvent.mu2->vertex().Z()) >= cuts.maxVertexZsep) )
     return false;
 
   hnuEvent.regularize(); // assign internal standards
@@ -1178,6 +1328,18 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   //
   bool mu1isTight = isVBTFtight(*(hnuEvent.mu1));
   bool mu2isTight = isVBTFtight(*(hnuEvent.mu2));
+
+  if( inZmassWindow(hnuEvent.mMuMu) ) {
+    if( mu1isTight ) {
+      hists.Mu1passesTightInZwin.fill( hnuEvent, v_null );
+      if( mu2isTight ) {
+	hists.Mu2passesTightInZwin.fill   ( hnuEvent, v_null );
+	hists.Mu1Mu2passesTightInZwin.fill( hnuEvent, v_null );
+      }
+    }
+    else // mu2isTight
+      hists.Mu2passesTightInZwin.fill     ( hnuEvent, v_null );
+  }
 
   if ( !mu1isTight && !mu2isTight )
     return false;
@@ -1204,8 +1366,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			       &(hists.Mu2TrigMatchesInZwin.trigHistos));
 
   } else if (!iEvent.isRealData()) {
-    mu1trig = mu1trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt() );
-    mu2trig = mu2trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu2->pt() );
+    mu1trig = mu1trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt(), applyTrigEffsign_ );
+    mu2trig = mu2trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu2->pt(), applyTrigEffsign_ );
   }
 
   if( !mu1trig && !mu2trig )
@@ -1242,8 +1404,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   //
   if ( (        hnuEvent.j2.isNull())  ||
        (jetID(*(hnuEvent.j1)) < 1)     || 
-       (jetID(*(hnuEvent.j2)) < 1)     ||
-       ((applyMESfactor_*hnuEvent.mu1->pt()) < cuts.minimum_mu1_pt) )
+       (jetID(*(hnuEvent.j2)) < 1)   )
     return false;
 
   hnuEvent.calculate(); // calculate various details
@@ -1254,6 +1415,23 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   nnif_->output( hnuEvent.nnoutputs );
 
   hists.LLJJptCuts.fill( hnuEvent,nnif_->masspts() );
+
+  // Impose vertex requirement here as well
+  //
+  float deltaVzJ1J2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.j2->vertex().Z());
+  float deltaVzJ1M1 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu1->vertex().Z());
+  float deltaVzJ2M2 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu2->vertex().Z());
+  if((deltaVzJ1J2 >= cuts.maxVertexZsep) ||
+     (deltaVzJ1M1 >= cuts.maxVertexZsep) ||
+     (deltaVzJ2M2 >= cuts.maxVertexZsep)   )
+    return false;
+
+  hists.VertexCuts.fill( hnuEvent,nnif_->masspts() );
+
+  if( (applyMESfactor_*hnuEvent.mu1->pt()) < cuts.minimum_mu1_pt )
+    return false;
+
+  hists.Mu1HighPtCut.fill( hnuEvent,nnif_->masspts() );
 
   if ( hnuEvent.mMuMu<cuts.minimum_mumu_mass ) return false;  // dimuon mass cut
   hists.diLmassCut.fill( hnuEvent,nnif_->masspts() );
