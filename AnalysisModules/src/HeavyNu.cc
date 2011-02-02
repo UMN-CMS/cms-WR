@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.27 2011/01/28 22:58:08 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.28 2011/02/01 21:41:02 dudero Exp $
 //
 //
 
@@ -197,7 +197,7 @@ private:
   double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
   int    applyJECUsign_;              // for Jet Energy Correction Uncertainty studies
   double applyMESfactor_;             // for Muon Energy Scale studies
-  double applyTrigEffsign_;           // for Trigger Efficiency studies
+  int    applyTrigEffsign_;           // for Trigger Efficiency studies
 
   std::string currentFile_;
   bool dolog_;
