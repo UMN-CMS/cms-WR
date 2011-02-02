@@ -22,13 +22,14 @@ hNu = cms.EDFilter(
     minMuonJetdR = cms.double(0.3), # (0.5)
     
     muonTrackIsoLimitGeV  = cms.double(10.0),
-    dimuonMaxVertexZsepCM = cms.double(0.03),
+    maxVertexZsepCM       = cms.double(0.03),
     
     ZmassWinMinGeV= cms.double(84.),
     ZmassWinMaxGeV= cms.double(98.),
 
-    applyJECUsign  = cms.int32(0),
-    applyMESfactor = cms.double(1.0),
+    applyJECUsign    = cms.int32(0),
+    applyTrigEffsign = cms.int32(0),
+    applyMESfactor   = cms.double(1.0),
 
     isSignal     = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)
