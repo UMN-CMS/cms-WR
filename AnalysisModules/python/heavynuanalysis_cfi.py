@@ -27,9 +27,11 @@ hNu = cms.EDFilter(
     ZmassWinMinGeV= cms.double(84.),
     ZmassWinMaxGeV= cms.double(98.),
 
-    applyJECUsign    = cms.int32(0),
-    applyTrigEffsign = cms.int32(0),
-    applyMESfactor   = cms.double(1.0),
+    applyJECUsign     = cms.int32(0),
+    applyTrigEffsign  = cms.int32(0),
+    applyLooseEffsign = cms.int32(0),
+    applyMESfactor    = cms.double(1.0),
+    randomSeed        = cms.int32( 0 ),  # for MC
 
     isSignal     = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)
