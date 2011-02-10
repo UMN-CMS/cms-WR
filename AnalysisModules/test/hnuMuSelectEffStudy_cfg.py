@@ -8,7 +8,7 @@ import os
 #process = sys.modules['__main__'].process
 
 isMC=True
-isMCsignal=True
+isMCsignal=False
 Training=False
 isRun2010LoLumi=False
 
@@ -144,7 +144,6 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
-process.hNu.minJetPt = cms.double(20)
 
 if isData:
     # turn on trigger match requirement
@@ -161,3 +160,14 @@ if isMCsignal:
     process.hNu.isSignal = cms.bool(True)
 
 process.p += process.hNu
+
+# Loose selection efficiency application
+# applyLooseEffsign=0 means don't apply it, which is the default
+#
+process.hNuLooseEffhi = process.hNu.clone(applyLooseEffsign = cms.int32(1))
+process.hNuLooseEfflo = process.hNu.clone(applyLooseEffsign = cms.int32(-1))
+
+process.pLooseEffhi = cms.Path(process.hNuLooseEffhi)
+process.pLooseEfflo = cms.Path(process.hNuLooseEfflo)
+
+process.s = cms.Schedule(process.p,process.pLooseEffhi,process.pLooseEfflo)
