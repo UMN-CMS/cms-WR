@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.28 2011/02/01 21:41:02 dudero Exp $
+// $Id: HeavyNu.cc,v 1.29 2011/02/02 19:11:55 dudero Exp $
 //
 //
 
@@ -55,6 +55,7 @@
 #include "TH2.h"
 #include "TProfile2D.h"
 #include "TVector3.h"
+#include "TRandom.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
@@ -169,16 +170,17 @@ private:
   virtual void beginJob          ();
   virtual bool filter            ( edm::Event&, const edm::EventSetup& );
   virtual void endJob            ();
-  virtual bool isVBTFloose       ( const pat::Muon& m );
+  virtual bool isVBTFloose       ( const pat::Muon& m, bool isMC );
   virtual bool isVBTFtight       ( const pat::Muon& m );
-  virtual void fillBasicMuHistos ( const pat::Muon& m );
+  virtual void fillBasicMuHistos ( const pat::Muon& m, bool isMC );
   virtual void fillBasicJetHistos( const pat::Jet& j,
 				   int jetnum );
   virtual void selectJets        ( edm::Handle<pat::JetCollection>& pJets,
 				   HeavyNuEvent& hne );
   virtual bool muPassesSelection ( const pat::Muon& m,
 				   const pat::JetRef& j1,
-				   const pat::JetRef& j2 );
+				   const pat::JetRef& j2,
+				   bool isMC );
   virtual void selectMuons       ( edm::Handle<pat::MuonCollection>& pMuons,
 				   HeavyNuEvent& hne );
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
@@ -198,10 +200,13 @@ private:
   int    applyJECUsign_;              // for Jet Energy Correction Uncertainty studies
   double applyMESfactor_;             // for Muon Energy Scale studies
   int    applyTrigEffsign_;           // for Trigger Efficiency studies
+  int    applyLooseEffsign_;          // for Muon Loose ID Efficiency studies
 
   std::string currentFile_;
   bool dolog_;
   bool firstEvent_;
+
+  TRandom *looseRandom_;
 
   HeavyNu_NNIF *nnif_;
   HeavyNuTrigger *trig_;
@@ -940,26 +945,31 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   applyTrigEffsign_ = iConfig.getParameter<int>("applyTrigEffsign");
   if (applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
 
+  applyLooseEffsign_ = iConfig.getParameter<int>("applyLooseEffsign");
+  if (applyLooseEffsign_) applyLooseEffsign_ /= abs(applyLooseEffsign_); // ensure -1,0,+1
+
+  looseRandom_ = new TRandom( iConfig.getParameter<int>( "randomSeed" ) );
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
-  std::cout << "muonTag          = " << muonTag_                 << std::endl;
-  std::cout << "jetTag           = " << jetTag_                  << std::endl;
-  std::cout << "electronTag      = " << elecTag_                 << std::endl;
-  std::cout << "ZmassWinMinGeV   = " << ZwinMinGeV_              << " GeV" << std::endl;
-  std::cout << "ZmassWinMaxGeV   = " << ZwinMaxGeV_              << " GeV" << std::endl;
-  std::cout << "minMu1pt         = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
-  std::cout << "minMu2pt         = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
-  std::cout << "minJetPt         = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
-  std::cout << "maxMuAbsEta      = " << cuts.maximum_mu_abseta   << std::endl;
-  std::cout << "maxJetAbsEta     = " << cuts.maximum_jet_abseta  << std::endl;
-  std::cout << "minMuonJetdR     = " << cuts.minimum_muon_jet_dR << std::endl;
-  std::cout << "muonTrackIso     = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
-  std::cout << "minMuMuMass      = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
-  std::cout << "min4objMass      = " << cuts.minimum_mWR_mass    << " GeV" << std::endl;
-  std::cout << "applyJECUsign    = " << applyJECUsign_           << std::endl;
-  std::cout << "applyMESfactor   = " << applyMESfactor_          << std::endl;
-  std::cout << "applyTrigEffsign = " << applyTrigEffsign_        << std::endl;
+  std::cout << "muonTag           = " << muonTag_                 << std::endl;
+  std::cout << "jetTag            = " << jetTag_                  << std::endl;
+  std::cout << "electronTag       = " << elecTag_                 << std::endl;
+  std::cout << "ZmassWinMinGeV    = " << ZwinMinGeV_              << " GeV" << std::endl;
+  std::cout << "ZmassWinMaxGeV    = " << ZwinMaxGeV_              << " GeV" << std::endl;
+  std::cout << "minMu1pt          = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
+  std::cout << "minMu2pt          = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
+  std::cout << "minJetPt          = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
+  std::cout << "maxMuAbsEta       = " << cuts.maximum_mu_abseta   << std::endl;
+  std::cout << "maxJetAbsEta      = " << cuts.maximum_jet_abseta  << std::endl;
+  std::cout << "minMuonJetdR      = " << cuts.minimum_muon_jet_dR << std::endl;
+  std::cout << "muonTrackIso      = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
+  std::cout << "minMuMuMass       = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
+  std::cout << "min4objMass       = " << cuts.minimum_mWR_mass    << " GeV" << std::endl;
+  std::cout << "applyJECUsign     = " << applyJECUsign_           << std::endl;
+  std::cout << "applyMESfactor    = " << applyMESfactor_          << std::endl;
+  std::cout << "applyTrigEffsign  = " << applyTrigEffsign_        << std::endl;
+  std::cout << "applyLooseEffsign = " << applyLooseEffsign_       << std::endl;
 }
   
 HeavyNu::~HeavyNu()
@@ -976,16 +986,23 @@ HeavyNu::~HeavyNu()
 // member functions
 //
 bool
-HeavyNu::isVBTFloose(const pat::Muon& m)
+HeavyNu::isVBTFloose(const pat::Muon& m, bool isMC)
 {
-  return (m.muonID("AllGlobalMuons") &&
-	  (m.numberOfValidHits() > 10));
+  bool isLoose = m.muonID("AllGlobalMuons")&&(m.numberOfValidHits()>10);
+
+  // Add additional ID inefficiency based on MC/data differences
+  //
+  double eff = 0.9919 + (applyLooseEffsign_*0.0047);
+
+  if (isMC) isLoose = isLoose && (looseRandom_->Uniform() < eff);
+
+  return isLoose;
 }
 
 bool
 HeavyNu::isVBTFtight(const pat::Muon& m)
 {
-  if (!isVBTFloose(m)) return false;
+  if( !isVBTFloose(m,false) ) return false; // this should already have been checked.
 
   reco::TrackRef gt = m.globalTrack();
   if (gt.isNull()) {
@@ -1004,7 +1021,7 @@ HeavyNu::isVBTFtight(const pat::Muon& m)
 //======================================================================
 
 void
-HeavyNu::fillBasicMuHistos(const pat::Muon& m)
+HeavyNu::fillBasicMuHistos(const pat::Muon& m, bool isMC)
 {
   double mupt = m.pt();
   hists.muPt->Fill( applyMESfactor_*mupt ) ; 
@@ -1014,7 +1031,7 @@ HeavyNu::fillBasicMuHistos(const pat::Muon& m)
   if (applyMESfactor_==1.0) {
     hists.mudBvsPt->Fill( mupt, m.dB() );
 
-    if (isVBTFloose(m)) {
+    if (isVBTFloose(m,isMC)) {
       hists.muNvalidHitsVsPt->Fill     ( mupt, m.numberOfValidHits() );
       hists.muNormChi2vsPt->Fill       ( mupt, m.normChi2() );
       hists.muNmatchesVsPt->Fill       ( mupt, m.numberOfMatches() );
@@ -1131,14 +1148,15 @@ HeavyNu::selectJets(edm::Handle<pat::JetCollection>& pJets,
 bool
 HeavyNu::muPassesSelection(const pat::Muon& m,
 			   const pat::JetRef& j1,
-			   const pat::JetRef& j2)
+			   const pat::JetRef& j2,
+			   bool isMC)
 {
   double mupt = applyMESfactor_*m.pt();
   double dr1=(j1.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j1->eta(),j1->phi()));
   double dr2=(j2.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j2->eta(),j2->phi()));
 
   return( (mupt > cuts.minimum_mu2_pt)
-	  && isVBTFloose(m)
+	  && isVBTFloose(m,isMC)
 	  && (fabs(m.eta()) < cuts.maximum_mu_abseta)
 	  && (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
 	  && (m.trackIso()  < cuts.muon_trackiso_limit) );
@@ -1189,8 +1207,8 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
 	&& (std::min(dr1m1,dr2m1) > cuts.minimum_muon_jet_dR)
 	&& inZmassWindow((m0->p4()+m1->p4()).M()) ) { // we have a candidate for study
 
-      bool m0passed = muPassesSelection(*m0,hne.j1,hne.j2);
-      bool m1passed = muPassesSelection(*m1,hne.j1,hne.j2);
+      bool m0passed = muPassesSelection(*m0,hne.j1,hne.j2,hne.isMC);
+      bool m1passed = muPassesSelection(*m1,hne.j1,hne.j2,hne.isMC);
       if ( m0passed ) {
 	hists.Mu1passesLooseInZwin.fill( *pMuons, jets, hne.isMC );
 	if ( m1passed ) {
@@ -1214,7 +1232,7 @@ HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
 
-    if( muPassesSelection(*iM,hne.j1,hne.j2) ) {
+    if( muPassesSelection(*iM,hne.j1,hne.j2,hne.isMC) ) {
       if( (hne.mu1.isNull()) ||
 	  (hne.mu1->pt()<(*iM).pt()) ) { // simple factor won't change this relation
 	hne.mu2=hne.mu1;
@@ -1299,7 +1317,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) { 
     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
     if (!iM.isAvailable()) continue;
-    fillBasicMuHistos(*iM);
+    fillBasicMuHistos(*iM, hnuEvent.isMC);
   }
 
   // Basic selection requirements: Require at least two muons, two jets
