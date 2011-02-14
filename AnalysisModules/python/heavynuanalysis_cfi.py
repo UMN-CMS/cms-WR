@@ -19,7 +19,7 @@ hNu = cms.EDFilter(
     maxJetAbsEta = cms.double(2.5),
     minMuMuMass  = cms.double(200),
     min4objMass  = cms.double(520),
-    minMuonJetdR = cms.double(0.3), # (0.5)
+    minMuonJetdR = cms.double(0.5),
     
     muonTrackIsoLimitGeV  = cms.double(10.0),
     maxVertexZsepCM       = cms.double(0.03),
