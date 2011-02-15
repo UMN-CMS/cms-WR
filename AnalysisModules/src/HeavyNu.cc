@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.29 2011/02/02 19:11:55 dudero Exp $
+// $Id: HeavyNu.cc,v 1.30 2011/02/10 19:45:44 dudero Exp $
 //
 //
 
@@ -992,7 +992,7 @@ HeavyNu::isVBTFloose(const pat::Muon& m, bool isMC)
 
   // Add additional ID inefficiency based on MC/data differences
   //
-  double eff = 0.9919 + (applyLooseEffsign_*0.0047);
+  double eff = 0.9959 + min(1.0,(applyLooseEffsign_*0.0084));
 
   if (isMC) isLoose = isLoose && (looseRandom_->Uniform() < eff);
 
