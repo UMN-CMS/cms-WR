@@ -21,7 +21,7 @@ hNu = cms.EDFilter(
     min4objMass  = cms.double(520),
     minMuonJetdR = cms.double(0.5),
     
-    muonTrackIsoLimitGeV  = cms.double(10.0),
+    muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
     maxVertexZsepCM       = cms.double(0.03),
     
     ZmassWinMinGeV= cms.double(84.),
@@ -29,9 +29,8 @@ hNu = cms.EDFilter(
 
     applyJECUsign     = cms.int32(0),
     applyTrigEffsign  = cms.int32(0),
-    applyLooseEffsign = cms.int32(0),
+    studyMuSelectEff  = cms.bool(False),
     applyMESfactor    = cms.double(1.0),
-    randomSeed        = cms.int32( 0 ),  # for MC
 
     isSignal     = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)
