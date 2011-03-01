@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.32 2011/02/15 19:18:07 dudero Exp $
+// $Id: HeavyNu.cc,v 1.33 2011/02/22 21:41:12 dudero Exp $
 //
 //
 
@@ -1364,6 +1364,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   bool mu1isTight = isVBTFtight(*(hnuEvent.mu1));
   bool mu2isTight = isVBTFtight(*(hnuEvent.mu2));
 
+  if ( !mu1isTight && !mu2isTight )
+    return false;
+
+  hists.MuTightCuts.fill( hnuEvent,v_null );
+
   if( studyMuonSelectionEff_ &&
       inZmassWindow(hnuEvent.mMuMu) ) {
     if( mu1isTight ) {
@@ -1376,11 +1381,6 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     else // mu2isTight
       hists.Mu2passesTightInZwin.fill     ( hnuEvent, v_null );
   }
-
-  if ( !mu1isTight && !mu2isTight )
-    return false;
-
-  hists.MuTightCuts.fill( hnuEvent,v_null );
 
   bool mu1trig=mu1isTight;
   bool mu2trig=mu2isTight;
@@ -1419,7 +1419,10 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     bool inTMregion = ( (fabs(hnuEvent.mu1->eta())<2.1) &&
 			(fabs(hnuEvent.mu2->eta())<2.1) );
 
-    if ( inZmassWindow( hnuEvent.mMuMu ) && inTMregion ) {
+    // study preconditions:
+    if ( mu1isTight && mu2isTight
+	 && inZmassWindow( hnuEvent.mMuMu )
+	 && inTMregion ) {
       if ( mu1trig ) {
 	hists.Mu1TrigMatchesInZwin.fill     ( hnuEvent,v_null );
 	if ( mu2trig ) {
@@ -1427,7 +1430,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  hists.Mu1Mu2TrigMatchesInZwin.fill( hnuEvent,v_null );
 	}
       }
-      else // mu2trig
+      else if( mu2trig )
+	// guaranteed at this point
 	hists.Mu2TrigMatchesInZwin.fill     ( hnuEvent,v_null );
     }
   }

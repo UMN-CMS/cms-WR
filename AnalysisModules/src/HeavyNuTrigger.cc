@@ -132,9 +132,9 @@ HeavyNuTrigger::simulateForMC(double pt,int signOfError2apply)
     throw cms::Exception("invalid trigger configuration");
 
   // determined from data
-  const double effslo[]  = {0.897,0.901,0.911,0.910,0.911,0.911};
-  const double effsnom[] = {0.903,0.906,0.914,0.918,0.920,0.920};
-  const double effshi[]  = {0.910,0.910,0.918,0.925,0.930,0.930};
+  const double effslo[]  = {0.913,0.920,0.924,0.923,0.919,0.919};
+  const double effsnom[] = {0.919,0.924,0.927,0.930,0.928,0.928};
+  const double effshi[]  = {0.925,0.928,0.931,0.937,0.938,0.938};
   const double upedge[]= {   30,   40,   50,   60, 3500,   -1};
 
   const double *effs = effsnom;
