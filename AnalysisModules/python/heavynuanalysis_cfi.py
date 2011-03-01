@@ -24,8 +24,8 @@ hNu = cms.EDFilter(
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
     maxVertexZsepCM       = cms.double(0.03),
     
-    ZmassWinMinGeV= cms.double(84.),
-    ZmassWinMaxGeV= cms.double(98.),
+    ZmassWinMinGeV= cms.double(86.),
+    ZmassWinMaxGeV= cms.double(96.),
 
     applyJECUsign     = cms.int32(0),
     applyTrigEffsign  = cms.int32(0),
