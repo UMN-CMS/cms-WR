@@ -5,6 +5,7 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 
 /** The purpose of this class is contain the key items for
     a HeavyNuEvent and provide a simple way to pass this information
@@ -23,6 +24,8 @@ public:
 
   pat::MuonRef mu1, mu2, mu[2];
   pat::JetRef  j1,  j2,  j[2];
+
+  pat::METRef met1;
 
   // separately stored for JEC Uncertainty studies
   // (saves space and time not copying whole jet objects,
