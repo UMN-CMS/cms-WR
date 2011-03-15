@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.34 2011/03/01 07:50:03 dudero Exp $
+// $Id: HeavyNu.cc,v 1.35 2011/03/09 23:04:52 dudero Exp $
 //
 //
 
@@ -287,6 +287,8 @@ private:
     TH1 *jetPt, *jetEta, *jetPhi, *jetID, *jecUncHi, *jecUncLo, *met ; 
     TH2 *jetPtvsNum;
     TProfile2D *jecUncHiVsEtaPt,*jecUncLoVsEtaPt;
+
+    TH1 *trkIsoStudy;
 
     TFileDirectory *rundir;
     HistPerDef noCuts; 
@@ -936,6 +938,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
   labelJetIDaxis(hists.jetID->GetXaxis());
 
+  hists.trkIsoStudy = fs->make<TH1D>("trkIsoStudy",";Tracker Relative Isolation", 100,0.,1.);
+
   if (applyMESfactor_==1.0) { // otherwise don't bother
 
     // Loose/Tight vs Pt
@@ -1274,19 +1278,30 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
 	&& (std::min(drj1m1,drj2m1) > cuts.minimum_muon_jet_dR)
 	&& inZmassWindow((m0->p4()+m1->p4()).M()) ) { // we have a candidate for study
 
-      bool m0passed = muPassesSelection(*m0,hne.j1,hne.j2);
-      bool m1passed = muPassesSelection(*m1,hne.j1,hne.j2);
-      if( m0passed && m0tight ) {
-	hists.Mu1tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC );
-	if ( m1passed )
-	  hists.Mu1tagMu2passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC );
+      if( m0tight && ((drj1m0 < 0.8) || (drj2m0 < 0.8)) ) {
+	double trkIso = m0->trackIso()/m0->pt();
+	hists.trkIsoStudy->Fill(trkIso);
       }
-      if( m1passed && m1tight ) {
-	hists.Mu2tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC );
-	if( m0passed )
-	  hists.Mu2tagMu1passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC );
+      if( m1tight && ((drj1m1 < 0.8) || (drj2m1 < 0.8)) ) {
+	double trkIso = m1->trackIso()/m1->pt();
+	hists.trkIsoStudy->Fill(trkIso);
       }
-    }
+
+      if (!hne.isMC) {
+	bool m0passed = muPassesSelection(*m0,hne.j1,hne.j2);
+	bool m1passed = muPassesSelection(*m1,hne.j1,hne.j2);
+	if( m0passed && m0tight ) {
+	  hists.Mu1tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC );
+	  if ( m1passed )
+	    hists.Mu1tagMu2passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC );
+	}
+	if( m1passed && m1tight ) {
+	  hists.Mu2tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC );
+	  if( m0passed )
+	    hists.Mu2tagMu1passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC );
+	}
+      } // if !isMC
+    } // if candidate for study
   } // else don't bother with 3 or more muons
 
 }                                      // HeavyNu::studyMuonSelectionEff
@@ -1444,7 +1459,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hists.MuTightCuts.fill( hnuEvent,v_null );
 
-  if( studyMuonSelectionEff_ &&
+  if( iEvent.isRealData() &&
+      studyMuonSelectionEff_ &&
       inZmassWindow(hnuEvent.mMuMu) ) {
     if( mu1isTight ) {
       hists.Mu1passesTightInZwin.fill( hnuEvent, v_null );
