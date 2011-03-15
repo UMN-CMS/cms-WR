@@ -57,9 +57,9 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
-    process.GlobalTag.globaltag = cms.string('START39_V8::All')
+    process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_39X_V5::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
@@ -145,6 +145,9 @@ process.TFileService = cms.Service("TFileService",
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 
+# also turn on muon selection efficiency study/histos/folders
+process.hNu.studyMuSelectEff = cms.bool(True)
+
 if isData:
     # turn on trigger match requirement
     process.hNu.trigMatchPset.trigEventTag=cms.InputTag("patTriggerEvent")
@@ -161,13 +164,14 @@ if isMCsignal:
 
 process.p += process.hNu
 
-# Loose selection efficiency application
-# applyLooseEffsign=0 means don't apply it, which is the default
-#
-process.hNuLooseEffhi = process.hNu.clone(applyLooseEffsign = cms.int32(1))
-process.hNuLooseEfflo = process.hNu.clone(applyLooseEffsign = cms.int32(-1))
+# if isMC:
+#     # Loose selection efficiency application
+#     # applyLooseEffsign=0 means don't apply it, which is the default
+#     #
+#     process.hNuLooseEffhi = process.hNu.clone(applyLooseEffsign = cms.int32(1))
+#     process.hNuLooseEfflo = process.hNu.clone(applyLooseEffsign = cms.int32(-1))
 
-process.pLooseEffhi = cms.Path(process.hNuLooseEffhi)
-process.pLooseEfflo = cms.Path(process.hNuLooseEfflo)
+#     process.pLooseEffhi = cms.Path(process.hNuLooseEffhi)
+#     process.pLooseEfflo = cms.Path(process.hNuLooseEfflo)
 
-process.s = cms.Schedule(process.p,process.pLooseEffhi,process.pLooseEfflo)
+#     process.s = cms.Schedule(process.p,process.pLooseEffhi,process.pLooseEfflo)
