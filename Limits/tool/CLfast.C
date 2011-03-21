@@ -185,7 +185,7 @@ void CLfast(double signal, double bkgd, double data, CLpoint& CLs, int its=10000
 
 static double func(double sig, double back) {
   static CLpoint pt;
-  CLfast(sig,back,0,pt,10000);
+  CLfast(sig,back,0,pt,50000);
   return pt.clmed-0.95;
 }
 
@@ -282,7 +282,7 @@ double CLfast_goalSeek(double signal, double background) {
 	 func(signal*high_factor,background)
 	 );
   */
-  double factor=zriddr(low_factor,high_factor,signal,background,0.01);
+  double factor=zriddr(low_factor,high_factor,signal,background,0.005);
   //  printf("%f %f\n",factor,func(signal*factor,background));
 
   return factor;
