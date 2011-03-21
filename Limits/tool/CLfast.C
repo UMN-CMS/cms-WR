@@ -56,9 +56,6 @@ struct CLpoint {
 
 double calculateLLR(double signal, double bkgd, double data) {
   double llr;
-  if (bkgd<1e-6) llr=-signal+data*log(1+signal*1e6);
-  else llr=-signal+data*log(1+signal/bkgd);
-
   double ztests,npreds,npredb,ls,lb;
 
   ztests=data;
@@ -70,6 +67,18 @@ double calculateLLR(double signal, double bkgd, double data) {
   llr=lb-ls;
 
   return llr;
+}
+
+static int Knuth_Poisson(double mu, TRandom* aRand) {
+  double L=exp(-mu);
+  int k=0;
+  double p=1,u;
+  do {
+    k=k+1;
+    u=(1.0-aRand->Rndm());
+    p=p*u;
+  } while (p>L);
+  return k-1;
 }
 
 void CLfast(double signal, double bkgd, double data, CLpoint& CLs, int its=100000, TRandom* aRand=0) {
@@ -86,7 +95,7 @@ void CLfast(double signal, double bkgd, double data, CLpoint& CLs, int its=10000
   
   int numer=0;
   int denom=0;
-  
+
   llr_d=calculateLLR(signal,bkgd,data);
 
   sblike=signal+bkgd;
@@ -103,11 +112,13 @@ void CLfast(double signal, double bkgd, double data, CLpoint& CLs, int its=10000
   double zback,zsig,zback2;
   for (i=0; i<5*its && denom<its; i++) {
     if (bkgd>0) {
-      zback=m_rand->Poisson(bkgd);
+      //      zback=m_rand->Poisson(bkgd+0.1);
+      zback=Knuth_Poisson(bkgd,m_rand);
       zback2=zback;
     } else { zback=0; zback2=0; }
     if (signal>0) {
-      zsig=m_rand->Poisson(signal);
+      //      zsig=m_rand->Poisson(signal);
+      zsig=Knuth_Poisson(signal,m_rand);
     } else zsig=0;
     sblike=zback+zsig;
     blike=zback2;
@@ -185,8 +196,10 @@ void CLfast(double signal, double bkgd, double data, CLpoint& CLs, int its=10000
 
 static double func(double sig, double back) {
   static CLpoint pt;
-  CLfast(sig,back,0,pt,50000);
-  return pt.clmed-0.95;
+  static TRandom3 myRand(10291);
+  CLfast(sig,back,back,pt,50000,&myRand);
+  //  return pt.clmed-0.95;
+  return pt.clobs-0.95;
 }
 
 static void bracket(double& x1, double& x2, double sig, double back) {
@@ -231,7 +244,7 @@ static float zriddr(float x1, float x2, double signal, double bkgd, float acc) {
       xm=0.5*(xl+xh);
       fm=func(xm*signal,bkgd);
       s=sqrt(fm*fm-fl*fh);
-      //      printf("   CBR: got %.2f%% at %.4e (%f)\n",fm*100.0,xm,s);
+      //           printf("   CBR: got %.2f%% at %.4e (%f)\n",fm*100.0,xm,s);
       if (s==0.0) return ans;
       xnew=xm+(xm-xl)*((fl>=fh?1.0:-1.0)*fm/s);
       //                      if (fabs(xnew-ans)<=xacc) return ans;
@@ -265,7 +278,7 @@ double CLfast_goalSeek(double signal, double background) {
 
   
   while (func(signal*low_factor,background)<0)  {    
-    //    printf("LF %f %f\n",low_factor,func(signal*low_factor,background));
+    //printf("LF %f %f\n",low_factor,func(signal*low_factor,background));
     low_factor*=2.0;
   }
 
@@ -276,7 +289,9 @@ double CLfast_goalSeek(double signal, double background) {
 
 
   bracket(low_factor,high_factor,signal,background);
-  /*
+
+  if (high_factor<low_factor) std::swap(high_factor,low_factor);
+  /*  
   printf("brackets: %f %f %f %f\n",low_factor,high_factor,
 	 func(signal*low_factor,background),
 	 func(signal*high_factor,background)
