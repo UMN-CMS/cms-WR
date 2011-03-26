@@ -218,9 +218,9 @@ void multiscale(const char* filewithpaths,
 
   int time2sleep = (int)max(5.0,0.5*v_rootfiles.size());
 
-  for (int i=time2sleep; i>=0; i--) {
-    cout << i;
-    if (!(i%30) || i==15 || i<5) {cout << "..." << flush; sleep(1); }
+  for (int i=time2sleep; i>0; i--) {
+    if (!(i%30) || i==15 || i<5) cout<<i<< "..."<<flush;
+    sleep(1);
   }
   cout << endl;
     
