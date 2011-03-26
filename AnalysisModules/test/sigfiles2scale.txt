@@ -1,0 +1,116 @@
+# path cross-section(pb) nevents  [k-factor(or other multiplicative factor)] [nrebin]
+#
+heavyNuReco_WR700_nuRmu100_001-heavyNuAnalysis.root		3.745		10000	1.32
+heavyNuReco_WR700_nuRmu200_001-heavyNuAnalysis.root		3.332		10000	1.32
+heavyNuReco_WR700_nuRmu300_001-heavyNuAnalysis.root		2.798		10000	1.32
+heavyNuReco_WR700_nuRmu400_001-heavyNuAnalysis.root		2.026		10000	1.32
+heavyNuReco_WR700_nuRmu500_001-heavyNuAnalysis.root		1.169		10000	1.32
+heavyNuReco_WR700_nuRmu600_001-heavyNuAnalysis.root		3.946E-1	10000	1.32
+#
+heavyNuReco_WR800_nuRmu100_001-heavyNuAnalysis.root		2.100		10000	1.32
+heavyNuReco_WR800_nuRmu200_001-heavyNuAnalysis.root		1.923		10000	1.32
+heavyNuReco_WR800_nuRmu300_001-heavyNuAnalysis.root		1.662		10000	1.32
+heavyNuReco_WR800_nuRmu400_001-heavyNuAnalysis.root		1.348		10000	1.32
+heavyNuReco_WR800_nuRmu500_001-heavyNuAnalysis.root		9.480E-1	10000	1.32
+heavyNuReco_WR800_nuRmu600_001-heavyNuAnalysis.root		5.358E-1	10000	1.32
+heavyNuReco_WR800_nuRmu700_001-heavyNuAnalysis.root		1.737E-1	10000	1.32
+##
+heavyNuReco_WR900_nuRmu100_001-heavyNuAnalysis.root		1.238		10000	1.32
+heavyNuReco_WR900_nuRmu200_001-heavyNuAnalysis.root		1.154		10000	1.32
+heavyNuReco_WR900_nuRmu300_001-heavyNuAnalysis.root		1.024		10000	1.32
+heavyNuReco_WR900_nuRmu400_001-heavyNuAnalysis.root		8.700E-1	10000	1.32
+heavyNuReco_WR900_nuRmu500_001-heavyNuAnalysis.root		6.825E-1	10000	1.32
+heavyNuReco_WR900_nuRmu600_001-heavyNuAnalysis.root		4.759E-1	10000	1.32
+heavyNuReco_WR900_nuRmu700_001-heavyNuAnalysis.root		2.552E-1	10000	1.32
+heavyNuReco_WR900_nuRmu800_001-heavyNuAnalysis.root		8.271E-2	10000	1.32
+##
+heavyNuReco_WR1000_nuRmu100_1-heavyNuAnalysis.root		7.394E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu200_1-heavyNuAnalysis.root		7.007E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu300_1-heavyNuAnalysis.root		6.359E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu400_001-heavyNuAnalysis.root		5.620E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu500_1-heavyNuAnalysis.root		4.724E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu600_001-heavyNuAnalysis.root		3.583E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu700_1-heavyNuAnalysis.root		2.405E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu800_1-heavyNuAnalysis.root		1.281E-1	10000	1.31
+heavyNuReco_WR1000_nuRmu900_1-heavyNuAnalysis.root		4.142E-2	10000	1.31
+##
+heavyNuReco_WR1100_nuRmu100_1-heavyNuAnalysis.root		4.624E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu200_1-heavyNuAnalysis.root		4.405E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu300_001-heavyNuAnalysis.root		4.081E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu400_1-heavyNuAnalysis.root		3.704E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu500_001-heavyNuAnalysis.root		3.184E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu600_1-heavyNuAnalysis.root		2.629E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu700_001-heavyNuAnalysis.root		1.967E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu800_1-heavyNuAnalysis.root		1.296E-1	10000	1.30
+heavyNuReco_WR1100_nuRmu900_1-heavyNuAnalysis.root		6.833E-2	10000	1.30
+heavyNuReco_WR1100_nuRmu1000_1-heavyNuAnalysis.root		2.150E-2	10000	1.30
+##
+heavyNuReco_WR1200_nuRmu100_1-heavyNuAnalysis.root		2.968E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu200_1-heavyNuAnalysis.root		2.810E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu300_1-heavyNuAnalysis.root		2.639E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu400_001-heavyNuAnalysis.root		2.426E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu500_1-heavyNuAnalysis.root		2.141E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu600_001-heavyNuAnalysis.root		1.828E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu700_1-heavyNuAnalysis.root		1.477E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu800_001-heavyNuAnalysis.root		1.106E-1	10000	1.30
+heavyNuReco_WR1200_nuRmu900_1-heavyNuAnalysis.root		7.154E-2	10000	1.30
+heavyNuReco_WR1200_nuRmu1000_1-heavyNuAnalysis.root		3.732E-2	10000	1.30
+heavyNuReco_WR1200_nuRmu1100_1-heavyNuAnalysis.root		1.170E-2	10000	1.30
+##
+heavyNuReco_WR1300_nuRmu100_1-heavyNuAnalysis.root		1.890E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu200_1-heavyNuAnalysis.root		1.820E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu300_001-heavyNuAnalysis.root		1.711E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu400_1-heavyNuAnalysis.root		1.586E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu500_001-heavyNuAnalysis.root		1.442E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu600_1-heavyNuAnalysis.root		1.277E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu700_001-heavyNuAnalysis.root		1.060E-1	10000	1.29
+heavyNuReco_WR1300_nuRmu800_1-heavyNuAnalysis.root		8.495E-2	10000	1.29
+heavyNuReco_WR1300_nuRmu900_001-heavyNuAnalysis.root		6.152E-2	10000	1.29
+heavyNuReco_WR1300_nuRmu1000_1-heavyNuAnalysis.root		4.052E-2	10000	1.29
+heavyNuReco_WR1300_nuRmu1100_1-heavyNuAnalysis.root		2.080E-2	10000	1.29
+heavyNuReco_WR1300_nuRmu1200_1-heavyNuAnalysis.root		6.482E-3	10000	1.29
+##
+heavyNuReco_WR1400_nuRmu100_1-heavyNuAnalysis.root		1.254E-1	10000	1.28
+heavyNuReco_WR1400_nuRmu200_1-heavyNuAnalysis.root		1.209E-1	10000	1.28
+heavyNuReco_WR1400_nuRmu300_1-heavyNuAnalysis.root		1.154E-1	10000	1.28
+heavyNuReco_WR1400_nuRmu400_001-heavyNuAnalysis.root		1.059E-1	10000	1.28
+heavyNuReco_WR1400_nuRmu500_1-heavyNuAnalysis.root		9.789E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu600_001-heavyNuAnalysis.root		8.614E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu700_1-heavyNuAnalysis.root		7.595E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu800_001-heavyNuAnalysis.root		6.310E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu900_1-heavyNuAnalysis.root		4.999E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu1000_001-heavyNuAnalysis.root		3.616E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu1100_1-heavyNuAnalysis.root		2.317E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu1200_1-heavyNuAnalysis.root		1.169E-2	10000	1.28
+heavyNuReco_WR1400_nuRmu1300_1-heavyNuAnalysis.root		3.658E-3	10000	1.28
+##
+heavyNuReco_WR1500_nuRmu100_1-heavyNuAnalysis.root		8.357E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu200_1-heavyNuAnalysis.root		7.963E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu300_001-heavyNuAnalysis.root		7.591E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu400_1-heavyNuAnalysis.root		7.111E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu500_001-heavyNuAnalysis.root		6.571E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu600_1-heavyNuAnalysis.root		6.007E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu700_001-heavyNuAnalysis.root		5.250E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu800_1-heavyNuAnalysis.root		4.543E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu900_001-heavyNuAnalysis.root		3.777E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu1000_1-heavyNuAnalysis.root		2.965E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu1100_001-heavyNuAnalysis.root		2.129E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu1200_1-heavyNuAnalysis.root		1.350E-2	10000	1.28
+heavyNuReco_WR1500_nuRmu1300_1-heavyNuAnalysis.root		6.783E-3	10000	1.28
+heavyNuReco_WR1500_nuRmu1400_1-heavyNuAnalysis.root		2.138E-3	10000	1.28
+##
+heavyNuReco_WR1600_nuRmu100_1-heavyNuAnalysis.root		5.563E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu200_1-heavyNuAnalysis.root		5.365E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu300_1-heavyNuAnalysis.root		5.080E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu400_001-heavyNuAnalysis.root		4.837E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu500_1-heavyNuAnalysis.root		4.487E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu600_001-heavyNuAnalysis.root		4.143E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu700_1-heavyNuAnalysis.root		3.698E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu800_001-heavyNuAnalysis.root		3.304E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu900_1-heavyNuAnalysis.root		2.812E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu1000_001-heavyNuAnalysis.root		2.267E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu1100_1-heavyNuAnalysis.root		1.781E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu1200_001-heavyNuAnalysis.root		1.259E-2	10000	1.28
+heavyNuReco_WR1600_nuRmu1300_1-heavyNuAnalysis.root		7.799E-3	10000	1.28
+heavyNuReco_WR1600_nuRmu1400_1-heavyNuAnalysis.root		3.936E-3	10000	1.28
+heavyNuReco_WR1600_nuRmu1500_1-heavyNuAnalysis.root		1.248E-3	10000	1.28
