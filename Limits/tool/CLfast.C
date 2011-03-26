@@ -6,52 +6,34 @@ template <class T>
 inline const T& MAXof(const T& a, const T& b) { return (a>b)?a:b; }
 
 struct CLpoint {
-  
-  /// observed confidence level for signal (from data)
-  double clobs;
-  /// background confidence level
-  double clb;
-  /// median expected confidence level in the presence of signal
-  double clmed;
-  /// +1 sigma deviation in the median expected confidence level in the presence of signal
-  double clmed_p1s;
-  /// +2 sigma deviation in the median expected confidence level in the presence of signal
-  double clmed_p2s;
-  /// -1 sigma deviation in the median expected confidence level in the presence of signal
-  double clmed_m1s;
-  /// -2 sigma deviation in the median expected confidence level in the presence of signal
-  double clmed_m2s;
 
-  /// observed log-likelihood ratio (from data)
-  double llrobs;
-  /// expected log-likelihood ratio in the absence of signal
-  double llrb;
-  /// +1 sigma deviation in the expected log-likelihood ratio in the absence of signal
-  double llrb_p1s;
-  /// +2 sigma deviation in the expected log-likelihood ratio in the absence of signal
-  double llrb_p2s;
-  /// -1 sigma deviation in the expected log-likelihood ratio in the absence of signal
-  double llrb_m1s;
-  /// -2 sigma deviation in the expected log-likelihood ratio in the absence of signal
-  double llrb_m2s;
+  double clobs;      /// observed confidence level for signal (from data)
+  double clb;        /// background confidence level
+  double clmed;      /// median expected confidence level in the presence of signal
+  double clmed_p1s;  /// +1 sigma deviation in the median expected confidence level in the presence of signal
+  double clmed_p2s;  /// +2 sigma deviation in the median expected confidence level in the presence of signal
+  double clmed_m1s;  /// -1 sigma deviation in the median expected confidence level in the presence of signal
+  double clmed_m2s;  /// -2 sigma deviation in the median expected confidence level in the presence of signal
 
-  /// expected log-likelihood ratio in the presence of signal
-  double llrsb;
-  /// +1 sigma deviation in the expected log-likelihood ratio in the presence of signal
-  double llrsb_p1s;
-  /// +2 sigma deviation in the expected log-likelihood ratio in the presence of signal
-  double llrsb_p2s;
-  /// -1 sigma deviation in the expected log-likelihood ratio in the presence of signal
-  double llrsb_m1s;
-  /// -2 sigma deviation in the expected log-likelihood ratio in the presence of signal
-  double llrsb_m2s;
 
-  /// confidence level sought for in CrossSectionLimit code
-  double xsec_cl;
-  /// factor which the signal must be scaled by to obtain an observed limit of [xsec_cl]
-  double xsec_obsfactor;
-  /// factor which the signal must be scaled by to obtain a median expected limit of [xsec_cl]
-  double xsec_medfactor;
+  double llrobs;     /// observed log-likelihood ratio (from data)
+  double llrb;       /// expected log-likelihood ratio in the absence of signal
+  double llrb_p1s;   /// +1 sigma deviation in the expected log-likelihood ratio in the absence of signal
+  double llrb_p2s;   /// +2 sigma deviation in the expected log-likelihood ratio in the absence of signal
+  double llrb_m1s;   /// -1 sigma deviation in the expected log-likelihood ratio in the absence of signal
+  double llrb_m2s;   /// -2 sigma deviation in the expected log-likelihood ratio in the absence of signal
+
+
+  double llrsb;      /// expected log-likelihood ratio in the presence of signal
+  double llrsb_p1s;  /// +1 sigma deviation in the expected log-likelihood ratio in the presence of signal
+  double llrsb_p2s;  /// +2 sigma deviation in the expected log-likelihood ratio in the presence of signal
+  double llrsb_m1s;  /// -1 sigma deviation in the expected log-likelihood ratio in the presence of signal
+  double llrsb_m2s;  /// -2 sigma deviation in the expected log-likelihood ratio in the presence of signal
+
+
+  double xsec_cl;         /// confidence level sought for in CrossSectionLimit code
+  double xsec_obsfactor;  /// factor which the signal must be scaled by to obtain an observed limit of [xsec_cl]
+  double xsec_medfactor;  /// factor which the signal must be scaled by to obtain a median expected limit of [xsec_cl]
 };
 
 double calculateLLR(double signal, double bkgd, double data) {
@@ -111,6 +93,10 @@ void CLfast(double signal, double bkgd, double data, CLpoint& CLs, int its=10000
   int i;
   double zback,zsig,zback2;
   for (i=0; i<5*its && denom<its; i++) {
+
+    if ((i%100==0))
+      llr_d=calculateLLR(signal,bkgd,data+m_rand->Gaus(0.0,0.2));
+
     if (bkgd>0) {
       //      zback=m_rand->Poisson(bkgd+0.1);
       zback=Knuth_Poisson(bkgd,m_rand);
