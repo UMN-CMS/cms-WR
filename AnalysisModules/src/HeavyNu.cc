@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.35 2011/03/09 23:04:52 dudero Exp $
+// $Id: HeavyNu.cc,v 1.36 2011/03/15 00:52:34 dudero Exp $
 //
 //
 
@@ -33,7 +33,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 // Needed for 39X
-// #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
