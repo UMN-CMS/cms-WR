@@ -35,11 +35,11 @@ struct optVars_t {
 };
 
 struct mWRscanPerMasspt_t {
-  double mwr,mnu;
-  int minclfactbin;
+  double mwr,mnu;       // masspoint
+  int minclfactbin;     // index into v_vars for CLs-optimized variables
   optVars_t v_vars[27]; // (1600-520)/40 = 27
-  optVars_t minclfact;
-  optVars_t maxsignif;
+  optVars_t minclfact;  // variables yielding minimized CLs factor
+  optVars_t maxsignif;  // variables yielding maximized significance (s/sqrt(s+b))
 };
 
 struct mLLscanPerMasspt_t {
@@ -74,10 +74,6 @@ const double myqcdp0 = log(qcd_mllcutsurvivalweightfactor*bryansqcdp0);
 const double wjp0 = -1.729 + log(0.022/0.14);
 const double wjp1 = -0.006617; // from chi2 fit of mWR histo after cut4_LLJJpt
 
-const double optmwrcuts[] = {
-  //760, 800, 880,1000,1080,1160,1240
-  520,600,640,720,800,880,960,1040,1120,1200
-};
 const double binwidthGeV=40.0;
 const double zoombinwidthGeV=4.0;
 
@@ -94,8 +90,13 @@ void fitndraw(wTH1 *wth1,const char *fitoption)
 {
   gStyle->SetOptStat(110010);
   gStyle->SetOptFit(1);
+  gStyle->SetStatFont(42);
+  gStyle->SetStatFontSize(0.03);
+
   gPad->SetLogy(1);
+  gPad->SetRightMargin(0.05);
   wth1->SetStats(true,0,.6,.7,.99,.99);
+  wth1->histo()->GetXaxis()->SetNdivisions(505);
   wth1->Draw("HIST");
   gPad->Update();
   wth1->DrawFits("same",fitoption);
@@ -129,13 +130,16 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   TGraph *grs = new TGraph(vxs,vys);  grs->SetMarkerStyle(24);
   TGraph *grb = new TGraph(vxb,vyb);  grb->SetMarkerStyle(25);
 
+  TVectorD newvyf(vyf);
+  newvyf *= 0.2; // significance/5
+
   double sbmin=9e99, sigclfmin=9e99;
   double sbmax=9e-99,sigclfmax=9e-99;;
   for (int i=0; i<vxb.GetNoElements(); i++) {
     sbmin =min(sbmin,min(vyb[i],vys[i]));
     sbmax =max(sbmax,max(vyb[i],vys[i]));
-    sigclfmin=min(sigclfmin,min(vyc[i],vyf[i]));
-    sigclfmax=max(sigclfmax,max(vyc[i],vyf[i]));
+    sigclfmin=min(sigclfmin,min(vyc[i],newvyf[i]));
+    sigclfmax=max(sigclfmax,max(vyc[i],newvyf[i]));
   }
   //grs->GetYaxis()->SetRangeUser( pow10floor(sbmin),
                                  //pow10ceil (sbmax) );
@@ -163,8 +167,8 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   gPad->Update();
 
   // Draw alternative y axis on the right for clfactor
-  float rightmin = 0.8*sigclfmin;
-  float rightmax = 1.3*sigclfmax;
+  float rightmin = 0.0; // 0.8*sigclfmin;
+  float rightmax = 1.0; // 1.3*sigclfmax;
   float scale    = (gPad->GetUymax()-gPad->GetUymin())/(rightmax-rightmin);
 
 #if 0
@@ -183,9 +187,8 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   grc->SetMarkerStyle(29);
   grc->SetMarkerColor(kRed);
   grc->SetMarkerSize(1.5);
-  grc->Draw("P");
+  //grc->Draw("P");
 
-  TVectorD newvyf(vyf);
   newvyf -= rightmin;
   newvyf *=  scale;
   newvyf += gPad->GetUymin();
@@ -204,17 +207,18 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   grc->Fit(f1,"RQ");
   optgev         = f1->GetMinimumX(fitrangemin,fitrangemax);
   double optval  = f1->Eval(optgev);
-  optgevhi       = f1->GetX(1.10*optval,optgev,fitrangemax);
-  optgevlo       = f1->GetX(1.10*optval,fitrangemin,optgev);
+  optgevhi       = max(optgev+40.,f1->GetX(1.10*optval,optgev,fitrangemax));
+  optgevlo       = min(optgev-40.,f1->GetX(1.10*optval,fitrangemin,optgev));
 
-  TLine cutloline(optgevlo,0,optgevlo,1.10*optval); cutloline.SetLineColor(kRed);
-  TLine cuthiline(optgevhi,0,optgevhi,1.10*optval); cuthiline.SetLineColor(kRed);
+  TLine *cuthiline = new TLine(); cuthiline->SetLineColor(kRed);
+  TLine *cutloline = new TLine(); cutloline->SetLineColor(kRed);
 
-  cutloline.Draw();
-  cuthiline.Draw();
+  //cutloline->DrawLine(optgevlo,0,optgevlo,optval*1.10);
+  //cuthiline->DrawLine(optgevhi,0,optgevhi,optval*1.10);
+  gPad->Update();
 
-  leg->AddEntry(grc,"CL factor","P");
-  leg->AddEntry(grf,"Significance","P");
+  //leg->AddEntry(grc,"CL factor","P");
+  leg->AddEntry(grf,"Significance/5","P");
   leg->AddEntry(grb,"#Sigma Background","P");
 
   sprintf(s,"(W_{R},N_{R})=(%.0f,%.0f)",mwr,mnu);
@@ -236,8 +240,8 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   axis->SetLabelFont(42);
   axis->SetLabelSize(.05);
   axis->SetLabelOffset(0.007);
-  axis->SetLineColor(kRed);
-  axis->SetTitle("CL factor, Signif.");
+  axis->SetLineColor(kBlue); //kRed);
+  axis->SetTitle("Signif./5"); // CL factor, Signif./5");
   axis->Draw();
   gPad->Update();
 }                                                           // drawGraph
@@ -332,8 +336,11 @@ void drawMLLcutGeVgraph(TVectorD& vx, const TVectorD& vy,
 //======================================================================
 
 void loadMWRFits(map<string,wTH1*>&  m_wth1,
-		 optFits_t& fits)
+		 optFits_t& fits,
+		 bool write2file=false)
 {
+  cout << "===> loadMWRFits <===" << endl;
+
   wTH1 *ttbar = m_wth1["ttjets_m4"];fits.tt = new TF1("ttfit","expo",650,2000); ttbar->loadFitFunction(fits.tt);
   wTH1 *zjets = m_wth1["zjets_m4"]; fits.zj = new TF1("zjfit","expo",650,2000); zjets->loadFitFunction(fits.zj);
   wTH1 *vv    = m_wth1["vv_m4"];    fits.vv = new TF1("vvfit","expo",650,2000); vv   ->loadFitFunction(fits.vv);
@@ -365,8 +372,8 @@ void loadMWRFits(map<string,wTH1*>&  m_wth1,
   fits.wj->SetParameter(0,wjp0);
   fits.wj->SetParameter(1,wjp1);
 
-  TCanvas *c1=new TCanvas("bgfits","bgfits",500,400);
-  c1->Divide(3,2);
+  TCanvas *c1=new TCanvas("bgfits","bgfits",700,700);
+  c1->Divide(2,2);
 
   c1->cd(1); fitndraw(zjets,"LL"); // "LL" actually not done correctly by ROOT
   c1->cd(2); fitndraw(ttbar,"LL"); // (the fit parameter errors are all wrong)
@@ -376,31 +383,48 @@ void loadMWRFits(map<string,wTH1*>&  m_wth1,
 
   c1->SaveAs("optMWRscanBGfits.png");
 
-  printf("%-9s%10s%10s%10s\n", "Sample","p0","p1", "chi2/ndof");
-  printf("%-9s%10.4f%10.4f%10.4g/%d\n","TTJets",
-	 fits.tt->GetParameter(0),fits.tt->GetParameter(1),
-	 fits.tt->GetChisquare(),fits.tt->GetNDF());
-  printf("%-9s%10.4f%10.4f%10.4g/%d\n","ZJets",
-	 fits.zj->GetParameter(0),fits.zj->GetParameter(1),
-	 fits.zj->GetChisquare(),fits.zj->GetNDF());
-  printf("%-9s%10.4f%10.4f%10.4g/%d\n","VV",
-	 fits.vv->GetParameter(0),fits.vv->GetParameter(1),
-	 fits.vv->GetChisquare(),fits.vv->GetNDF());
-  printf("%-9s%10.4f%10.4f%10.4g/%d\n","TW",
-	 fits.tw->GetParameter(0),fits.tw->GetParameter(1),
-	 fits.tw->GetChisquare(),fits.tw->GetNDF());
-#if 0
-  printf("%-9s%10.4f%10.4f%10.4g/%d\n","WJets",
-	 fits.wj->GetParameter(0),fits.wj->GetParameter(1),
-	 fits.wj->GetChisquare(),fits.wj->GetNDF());
-#endif
+  if (write2file) {
+    FILE *fp = fopen("optMWRfitpars.h","w");
+
+    const char *fmt = "const double %3sfitpars[] = {%10.4f, %10.4e, %8.4g, %3d, %6.1f, %6.1f};\n";
+    fprintf(fp,"// arrays contain:                fitp0,      fitp1,   fitchi2, fitndf, fitxmin, fitxmax\n");
+    fprintf(fp,fmt,"tt",
+	    fits.tt->GetParameter(0),fits.tt->GetParameter(1),
+	    fits.tt->GetChisquare(),fits.tt->GetNDF(),
+	    fits.tt->GetXmin(),fits.tt->GetXmax());
+    fprintf(fp,fmt,"zj",
+	    fits.zj->GetParameter(0),fits.zj->GetParameter(1),
+	    fits.zj->GetChisquare(),fits.zj->GetNDF(),
+	    fits.zj->GetXmin(),fits.zj->GetXmax());
+    fprintf(fp,fmt,"vv",
+	    fits.vv->GetParameter(0),fits.vv->GetParameter(1),
+	    fits.vv->GetChisquare(),fits.vv->GetNDF(),
+	    fits.vv->GetXmin(),fits.vv->GetXmax());
+    fprintf(fp,fmt,"tw",
+	    fits.tw->GetParameter(0),fits.tw->GetParameter(1),
+	    fits.tw->GetChisquare(),fits.tw->GetNDF(),
+	    fits.tw->GetXmin(),fits.tw->GetXmax());
+    fprintf(fp,fmt,"wj",
+	    fits.wj->GetParameter(0),fits.wj->GetParameter(1),
+	    fits.wj->GetChisquare(),fits.wj->GetNDF(),
+	    fits.wj->GetXmin(),fits.wj->GetXmax());
+    fprintf(fp,fmt,"qcd",
+	    fits.qcd->GetParameter(0),fits.qcd->GetParameter(1),
+	    fits.qcd->GetChisquare(),fits.qcd->GetNDF(),
+	    fits.qcd->GetXmin(),fits.qcd->GetXmax());
+    
+    fclose(fp);
+  }
 }                                                         // loadMWRFits
 
 //======================================================================
 
 void loadMLLFits(map<string,wTH1*>&  m_wth1,
-		 optFits_t& fits)
+		 optFits_t& fits,
+		 bool write2file=false)
 {
+  cout << "===> loadMLLFits <===" << endl;
+
   wTH1 *ttbar = m_wth1["ttjets_m2"];
   wTH1 *zjets = m_wth1["zjets_m2"];
   wTH1 *wjets = m_wth1["wjets_m2"];
@@ -426,6 +450,9 @@ void loadMLLFits(map<string,wTH1*>&  m_wth1,
   // Scale zjets according to Z-peak fit:
   zjets->histo()->Scale(zjet_scale);
   zjets->histo()->Rebin(rebinMLLval);
+
+  TCanvas *c1=new TCanvas("bgfits","bgfits",700,700);
+  c1->Divide(3,2);
 
   fitndraw(tw,"LL");
   fitndraw(zjets,"LL");
@@ -462,28 +489,35 @@ void loadMLLFits(map<string,wTH1*>&  m_wth1,
   fits.vv->SetRange(120,1000);
   fits.tw->SetRange(120,1000);
 
-  printf("%-9s%10s%10s%10s%10s%10s\n", "Sample","p0","p1","chi2/ndof","xmin","xmax");
-  printf("%-9s%10.4f%10.4f%10.4g/%d%10.0f%10.0f\n","TTJets",
-	 fits.tt->GetParameter(0),fits.tt->GetParameter(1),
-	 fits.tt->GetChisquare(),fits.tt->GetNDF(),
-	 fits.tt->GetXmin(),fits.tt->GetXmax());
-  printf("%-9s%10.4f%10.4f%10.4g/%d%10.0f%10.0f\n","ZJets",
-	 fits.zj->GetParameter(0),fits.zj->GetParameter(1),
-	 fits.zj->GetChisquare(),fits.zj->GetNDF(),
-	 fits.zj->GetXmin(),fits.zj->GetXmax());
-  printf("%-9s%10.4f%10.4f%10.4g/%d%10.0f%10.0f\n","VV",
-	 fits.vv->GetParameter(0),fits.vv->GetParameter(1),
-	 fits.vv->GetChisquare(),fits.vv->GetNDF(),
-	 fits.vv->GetXmin(),fits.vv->GetXmax());
-  printf("%-9s%10.4f%10.4f%10.4g/%d%10.0f%10.0f\n","TW",
-	 fits.tw->GetParameter(0),fits.tw->GetParameter(1),
-	 fits.tw->GetChisquare(),fits.tw->GetNDF(),
-	 fits.tw->GetXmin(),fits.tw->GetXmax());
-  printf("%-9s%10.4f%10.4f%10.4g/%d%10.0f%10.0f\n","WJets",
-	 fits.wj->GetParameter(0),fits.wj->GetParameter(1),
-	 fits.wj->GetChisquare(),fits.wj->GetNDF(),
-	 fits.wj->GetXmin(),fits.wj->GetXmax());
+  if (write2file) {
+    FILE *fp = fopen("optMLLfitpars.h","w");
 
+    const char *fmt = "const double %3sfitpars[] = {%10.4f, %10.4e, %8.4g, %3d, %6.1f, %6.1f};\n";
+    fprintf(fp,"// arrays contain:                fitp0,      fitp1,   fitchi2, fitndf, fitxmin, fitxmax\n");
+
+    fprintf(fp,fmt,"tt",
+	    fits.tt->GetParameter(0),fits.tt->GetParameter(1),
+	    fits.tt->GetChisquare(),fits.tt->GetNDF(),
+	    fits.tt->GetXmin(),fits.tt->GetXmax());
+    fprintf(fp,fmt,"zj",
+	    fits.zj->GetParameter(0),fits.zj->GetParameter(1),
+	    fits.zj->GetChisquare(),fits.zj->GetNDF(),
+	    fits.zj->GetXmin(),fits.zj->GetXmax());
+    fprintf(fp,fmt,"vv",
+	    fits.vv->GetParameter(0),fits.vv->GetParameter(1),
+	    fits.vv->GetChisquare(),fits.vv->GetNDF(),
+	    fits.vv->GetXmin(),fits.vv->GetXmax());
+    fprintf(fp,fmt,"tw",
+	    fits.tw->GetParameter(0),fits.tw->GetParameter(1),
+	    fits.tw->GetChisquare(),fits.tw->GetNDF(),
+	    fits.tw->GetXmin(),fits.tw->GetXmax());
+    fprintf(fp,fmt,"wj",
+	    fits.wj->GetParameter(0),fits.wj->GetParameter(1),
+	    fits.wj->GetChisquare(),fits.wj->GetNDF(),
+	    fits.wj->GetXmin(),fits.wj->GetXmax());
+
+    fclose(fp);
+  }
 }                                                         // loadMLLFits
 
 //======================================================================
@@ -529,6 +563,8 @@ void putvars(const char *fmt, double mwr, double mnu, const optVars_t& v)
 void scanMWRCutValsSave2tree(map<string,wTH1*>&  m_wth1,
 			     const optFits_t& fits)
 {
+  cout << "===> scanMWRCutValsSave2tree <===" << endl;
+
   mWRscanPerMasspt_t scanpt;
 
   TFile f("mwrscantree.root","RECREATE");
@@ -589,6 +625,8 @@ void scanMWRCutValsSave2tree(map<string,wTH1*>&  m_wth1,
 
 void scanMWRCutValsReadTreePutResults()
 {
+  cout << "===> scanMWRCutValsReadTreePutResults <===" << endl;
+
   TFile f("mwrscantree.root");
 
   TTree *tree = (TTree *)f.Get("mytree");
@@ -666,6 +704,7 @@ void scanMWRCutValsReadTreePutResults()
     double optgev, optgevlo,optgevhi;
     int polorder = min(6,2*((int)(scanpt->mwr) - 600)/100);
     sprintf (s,"pol%d",polorder);
+    string fitfn(s);
 
     if (scanpt->mwr != oldmwr) {
       if (oldmwr>1.0) {
@@ -686,7 +725,7 @@ void scanMWRCutValsReadTreePutResults()
     c1->cd((int)scanpt->mnu/100);
 
     drawGraph(scanpt->mwr,scanpt->mnu, 
-	      s,520,scanpt->mwr,
+	      fitfn.c_str(),520,scanpt->mwr,
 	      "M(W_{R}) Cut Value (GeV)",
 	      vxc.GetSub(0,j-1),vyc.GetSub(0,j-1),
 	      vxb.GetSub(0,j-1),vyb.GetSub(0,j-1),
@@ -694,10 +733,26 @@ void scanMWRCutValsReadTreePutResults()
 	      vxf.GetSub(0,j-1),vyf.GetSub(0,j-1),
 	      optgev,optgevlo,optgevhi);
 
+    if ((scanpt->mwr == 1300) &&
+	(scanpt->mnu == 700) ) { // save separately as an example
+      sprintf( s, "WR%.0f_nuRmu%.0f",scanpt->mwr,scanpt->mnu );
+      string name(s);
+      TCanvas *c2 = new TCanvas(name.c_str(),name.c_str(),500,450);
+      drawGraph(scanpt->mwr,scanpt->mnu,
+		fitfn.c_str(),520,scanpt->mwr,
+		"M(W_{R}) Cut Value (GeV)",
+		vxc.GetSub(0,j-1),vyc.GetSub(0,j-1),
+		vxb.GetSub(0,j-1),vyb.GetSub(0,j-1),
+		vxs.GetSub(0,j-1),vys.GetSub(0,j-1),
+		vxf.GetSub(0,j-1),vyf.GetSub(0,j-1),
+	      optgev,optgevlo,optgevhi);
+      c2->SaveAs((name+".png").c_str());
+    }
+
     // now doing a fit, use fit results
     vyclf  [i]=optgev;
-    veyhclf[i]=max(40.0,optgevhi-optgev);
-    veylclf[i]=max(40.0,optgev-optgevlo);
+    veyhclf[i]=optgevhi-optgev;
+    veylclf[i]=optgev-optgevlo;
 
     putvars("%-9.0f%9.0f%10.0f%10.3f%10.3f%10.3f%10.3f%10.3f%10.3f%10.3f%10.3f%10.3f(*)%7.3f\n",
 	    scanpt->mwr,scanpt->mnu,scanpt->maxsignif);
@@ -881,6 +936,21 @@ void scanMLLCutValsReadTreePutResults()
 	      vxc,vyc,vxb,vyb,vxs,vys,vxf,vyf,
 	      optgev, optgevlo, optgevhi);
 
+    if ((scanpt->mwr == 1100) &&
+	(scanpt->mnu == 500) ) { // save separately as an example
+      sprintf( s, "WR%.0f_nuRmu%.0f",scanpt->mwr,scanpt->mnu );
+      string name(s);
+      TCanvas *c2 = new TCanvas(name.c_str(),name.c_str(),500,450);
+      drawGraph(scanpt->mwr,scanpt->mnu,
+		"pol6",120,400,
+		"M_{#mu#mu} Cut Value (GeV)",
+		vxc,vyc,vxb,vyb,vxs,vys,vxf,vyf,
+		optgev, optgevlo, optgevhi);
+
+      c2->SaveAs((name+".png").c_str());
+      break;
+    }
+
     // now doing a fit, use fit results
     vyclf  [i]=optgev;
     veyhclf[i]=optgevhi-optgev;
@@ -901,44 +971,6 @@ void scanMLLCutValsReadTreePutResults()
 
   delete tree;
 }                                    // scanMLLCutValsReadTreePutResults
-
-//======================================================================
-
-void printDanilaTable(map<string,wTH1*>&  m_wth1,
-		      const optFits_t& fits)
-{
-  printf("MWR\tMNu\tL1Pt\tL2Pt\tL1Eta\tL2Eta\tMll\tMwr_cut\t");
-  printf("S_nw\tS_eff\tBG_nw\tQCD_nw\tTTb_nw\tZJ_nw\tWJ_nw\tVV_nw\ttW_nw\n");
-
-  for (int i=0; i<10; i++) {
-    double mwr = 700. + i*100.;
-    optVars_t v;
-    v.cutgev = optmwrcuts[i];
-
-    cout<<"==============================================================";
-    cout<<"=============================================================="<<endl;
-
-    calcBack(fits,v,rebinMWRval);
-
-    for (double mnu=100; mnu<mwr; mnu+=100) {
-      // get signal histo for this masspoint from the input map
-      char s[80];
-      sprintf( s, "WR%.0f_nuRmu%.0f",mwr,mnu );
-      string name(s);
-
-      if (!m_wth1[name]) continue;
-
-      TH1 *sighist   = m_wth1[name]->histo();
-
-      calcSig (sighist,v);
-
-      printf("%4.0f\t%4.0f\t60.0\t20.0\t2.1\t2.4\t200\t%4.0f\t",mwr,mnu,v.cutgev);
-      printf("%6.3f\t%5.3f\t%6.3f\t%6.4f\t%6.3f\t%6.3f\t%6.4f\t%6.4f\t%6.4f\n",
-	     v.sumsig,v.sigeff,v.sumback,v.qcdint,v.ttint,v.zjint,v.wjint,v.vvint,v.twint);
-
-    } // mnu loop
-  } // mwr loop
-}                                                    // printDanilaTable
 
 //======================================================================
 
@@ -968,6 +1000,13 @@ void opticut( int mode )
   switch( mode ) {
     // ==========> MWR SCANS <==========
   case 0:
+    {
+      getHistosFromRE("optimMWR.root",".*",m_wth1);
+      bool write2file=true;
+      loadMWRFits(m_wth1,fits,write2file);
+    }
+    break;
+  case 1:
     cout << "This'll take a while, are you sure?" << endl;
     cin >> input;
     if (tolower(input[0]) == 'y') {
@@ -976,16 +1015,24 @@ void opticut( int mode )
       scanMWRCutValsSave2tree(m_wth1,fits);
     }
     break;
-  case 1:
+  case 2:
     scanMWRCutValsReadTreePutResults();
     break;
-  case 2:
+#if 0
+  case 3:
     getHistosFromRE("optimMWR.root",".*",m_wth1);
-    loadMWRFits(m_wth1,fits);
     printDanilaTable(m_wth1,fits);    // For when a set of MWR cuts has been decided on
     break;
+#endif
     // ==========> MLL SCANS <==========
   case 3:
+    {
+      getHistosFromRE("optimMLL.root",".*",m_wth1);
+      bool write2file=true;
+      loadMLLFits(m_wth1,fits,write2file);
+    }
+    break;
+  case 4:
     cout << "This'll take a while, are you sure?" << endl;
     cin >> input;
     if (tolower(input[0]) == 'y') {
@@ -994,7 +1041,7 @@ void opticut( int mode )
       scanMLLCutValsSave2tree(m_wth1,fits);
     }
     break;
-  case 4:
+  case 5:
     scanMLLCutValsReadTreePutResults();
     break;
   default:
