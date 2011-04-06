@@ -61,7 +61,6 @@ struct optFits_t {
 //const double zjet_scale = 1.57;
 //const double zjet_scale = 1.46;
 const double zjet_scale = 1.15;
-const double qcd_mllcutsurvivalweightfactor = 0.1;
 
 // Bryan uses p0*exp(p1*x)
 const double bryansqcdp0 = 0.1149;     // constant
@@ -69,6 +68,7 @@ const double bryansqcdp1 = -0.008046;  // slope
 
 // I/Root uses expo(p0 + p1*x)
 //
+const double qcd_mllcutsurvivalweightfactor = 0.1;
 const double myqcdp0 = log(qcd_mllcutsurvivalweightfactor*bryansqcdp0);
 
 const double wjp0 = -1.729 + log(0.022/0.14);
@@ -117,21 +117,23 @@ double pow10ceil(double x) {
 void drawGraph(double mwr, double mnu, const char *fitfn,
 	       double fitrangemin,double fitrangemax,
 	       const char *xtitle,
-	       const TVectorD& vxc, const TVectorD& vyc,
-	       const TVectorD& vxb, const TVectorD& vyb,
-	       const TVectorD& vxs, const TVectorD& vys,
-	       const TVectorD& vxf, const TVectorD& vyf,
+	       const TVectorD& vxc, const TVectorD& vyc, // CLfactor vectors, Victor.
+	       const TVectorD& vxb, const TVectorD& vyb, // background vectors
+	       const TVectorD& vxs, const TVectorD& vys, // signal vectors
+	       const TVectorD& vxf, const TVectorD& vyf, // significance vectors
 	       double& optgev, double& optgevlo, double& optgevhi)
 {
   char s[80];
   sprintf( s, "WR%.0f",mwr );
   string name(s);
 
-  TGraph *grs = new TGraph(vxs,vys);  grs->SetMarkerStyle(24);
-  TGraph *grb = new TGraph(vxb,vyb);  grb->SetMarkerStyle(25);
+  TGraph *grs = new TGraph(vxs,vys);  grs->SetMarkerStyle(24); // signal TGraph
+  TGraph *grb = new TGraph(vxb,vyb);  grb->SetMarkerStyle(25); // background TGraph
 
   TVectorD newvyf(vyf);
   newvyf *= 0.2; // significance/5
+
+  // Determine optimum scaling of the y-axes
 
   double sbmin=9e99, sigclfmin=9e99;
   double sbmax=9e-99,sigclfmax=9e-99;;
@@ -159,6 +161,8 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   leg->SetLineWidth(1);
   leg->SetNColumns(1);
 
+  // Draw signal
+
   string title=name+"; "+string(xtitle);
   grs->SetTitle(title.c_str());
   grs->GetXaxis()->SetNdivisions(505);
@@ -167,6 +171,10 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   gPad->Update();
 
   // Draw alternative y axis on the right for clfactor
+  // CAUTION: the left y-axis controls, the right is just for display.
+  //          this gets totally messed up if you switch to log scale,
+  //          or zoom in y, or do just about anything else with the plot!
+  //
   float rightmin = 0.0; // 0.8*sigclfmin;
   float rightmax = 1.0; // 1.3*sigclfmax;
   float scale    = (gPad->GetUymax()-gPad->GetUymin())/(rightmax-rightmin);
@@ -176,6 +184,9 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
 	  sigclfmin,sigclfmax,rightmin,rightmax,
 	  gPad->GetUymin(),gPad->GetUymax(),scale);
 #endif
+
+  // Overlay CLfactor graph
+
   TVectorD newvyc(vyc);
   newvyc -= rightmin;
   newvyc *=  scale;
@@ -188,6 +199,8 @@ void drawGraph(double mwr, double mnu, const char *fitfn,
   grc->SetMarkerColor(kRed);
   grc->SetMarkerSize(1.5);
   //grc->Draw("P");
+
+  // Overlay significance graph
 
   newvyf -= rightmin;
   newvyf *=  scale;
@@ -454,7 +467,7 @@ void loadMLLFits(map<string,wTH1*>&  m_wth1,
   TCanvas *c1=new TCanvas("bgfits","bgfits",700,700);
   c1->Divide(3,2);
 
-  fitndraw(tw,"LL");
+  fitndraw(tw,"LL");   // see notes on "LL" fits above
   fitndraw(zjets,"LL");
   fitndraw(ttbar,"LL");
   fitndraw(vv,"LL");
@@ -663,10 +676,11 @@ void scanMWRCutValsReadTreePutResults()
     sprintf( s, "WR%.0f_nuRmu%.0f",scanpt->mwr,scanpt->mnu );
     //cout << "Read "<< string(s) << endl;
 
-    TVectorD vxb(27),vyb(27);
-    TVectorD vxc(27),vyc(27);
-    TVectorD vxs(27),vys(27);
-    TVectorD vxf(27),vyf(27);
+    // Vectors for graphing
+    TVectorD vxb(27),vyb(27); // background vectors
+    TVectorD vxc(27),vyc(27); // CLfactor vectors, Victor.
+    TVectorD vxs(27),vys(27); // signal vectors
+    TVectorD vxf(27),vyf(27); // significance vectors
     int j;
     for( j=0; j<27; j++ ) {
       optVars_t& vars = scanpt->v_vars[j];
@@ -702,6 +716,11 @@ void scanMWRCutValsReadTreePutResults()
     veylclf[i]=scanpt->minclfact.cutgev-vxc[lobin];
 #endif
     double optgev, optgevlo,optgevhi;
+
+    // Set the order of the fitted polynomial as follows:
+    // 700: polorder=2, 800: polorder=3, 900: polorder=4
+    // up to a maximum of 6 starting at 1100.
+    //
     int polorder = min(6,2*((int)(scanpt->mwr) - 600)/100);
     sprintf (s,"pol%d",polorder);
     string fitfn(s);
@@ -891,10 +910,10 @@ void scanMLLCutValsReadTreePutResults()
     sprintf( s, "WR%.0f_nuRmu%.0f",scanpt->mwr,scanpt->mnu );
     //cout << "Read "<< string(s) << endl;
 
-    TVectorD vxb(30),vyb(30);
-    TVectorD vxc(30),vyc(30);
-    TVectorD vxs(30),vys(30);
-    TVectorD vxf(30),vyf(30);
+    TVectorD vxb(30),vyb(30); // background vectors
+    TVectorD vxc(30),vyc(30); // CLfactor vectors, Victor.
+    TVectorD vxs(30),vys(30); // signal vectors
+    TVectorD vxf(30),vyf(30); // significance vectors
 
     for( int j=0; j<30; j++ ) {
       optVars_t& vars = scanpt->v_vars[j];
