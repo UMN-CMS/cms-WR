@@ -1,3 +1,9 @@
+#include <assert.h>
+#include <map>
+#include <vector>
+#include <sstream>
+#include <string>
+#include <cstdlib>
 #include "TKey.h"
 #include "TRegexp.h"
 #include "TObjArray.h"
@@ -10,16 +16,16 @@
 
 static bool gl_verbose=true;
 
-inline unsigned int str2int(const string& str) {
+inline unsigned int str2int(const std::string& str) {
   return (unsigned int)strtoul(str.c_str(),NULL,0);
 }
 
-inline float str2flt(const string& str) {
+inline float str2flt(const std::string& str) {
   return (float)strtod(str.c_str(),NULL);
 }
 
-inline string int2str(int i) {
-  ostringstream ss;
+inline std::string int2str(int i) {
+  std::ostringstream ss;
   ss << i;
   return ss.str();
 }
@@ -34,12 +40,12 @@ bool ci_equal(char ch1, char ch2)
           toupper((unsigned char)ch2));
 }
 
-size_t ci_find(const string& str1, const string& str2)
+size_t ci_find(const std::string& str1, const std::string& str2)
 {
-  string::const_iterator pos = search(str1.begin(), str1.end(),
+  std::string::const_iterator pos = search(str1.begin(), str1.end(),
 				      str2.begin(), str2.end(), ci_equal);
   if (pos == str1.end())
-    return string::npos;
+    return std::string::npos;
   else
     return (pos-str1.begin());
 }
@@ -48,29 +54,29 @@ size_t ci_find(const string& str1, const string& str2)
 // Got this from
 // http://oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
 
-void Tokenize(const string& str,
-	      vector<string>& tokens,
-	      const string& delimiters = " ",
+void Tokenize(const std::string& str,
+	      std::vector<std::string>& tokens,
+	      const std::string& delimiters = " ",
 	      bool include_delimiters=false)
 {
-  string src=str;
+  std::string src=str;
   tokens.clear();
 
   // Skip delimiters at beginning.
-  string::size_type lastPos = src.find_first_not_of(delimiters, 0);
+  std::string::size_type lastPos = src.find_first_not_of(delimiters, 0);
   if (include_delimiters && lastPos>0)
     tokens.push_back(src.substr(0,lastPos));
 
   // Find first "non-delimiter".
-  string::size_type pos = src.find_first_of(delimiters, lastPos);
+  std::string::size_type pos = src.find_first_of(delimiters, lastPos);
 
-  while (string::npos != pos || string::npos != lastPos) {
+  while (std::string::npos != pos || std::string::npos != lastPos) {
     // Found a token, add it to the vector.
     tokens.push_back(src.substr(lastPos, pos - lastPos));
 
     lastPos = src.find_first_not_of(delimiters, pos);
 
-    if (include_delimiters && pos!=string::npos) {
+    if (include_delimiters && pos!=std::string::npos) {
       tokens.push_back(src.substr(pos, lastPos-pos));
     } //else skip delimiters.
 
@@ -91,13 +97,13 @@ void regexMatchHisto( TObject    *obj,
     TObjString *sre = (TObjString *)(*Args)[i];
     TRegexp re(sre->GetString(),kFALSE);
     if (re.Status() != TRegexp::kOK) {
-      cerr << "The regexp " << sre->GetString() << " is invalid, Status() = ";
-      cerr << re.Status() << endl;
+      std::cerr << "The regexp " << sre->GetString() << " is invalid, Status() = ";
+      std::cerr << re.Status() << std::endl;
       exit(-1);
     }
 
-    TString path( (char*)strstr( dir->GetPath(), ":" ) );
-    path.Remove( 0, 2 ); // gets rid of ":/"
+    //TString path( (char*)strstr( dir->GetPath(), ":" ) );
+    //path.Remove( 0, 2 ); // gets rid of ":/"
 
     TString fullspec = TString(dir->GetPath()) + "/" + obj->GetName();
 
@@ -134,7 +140,7 @@ void recurseDirs( TDirectory *thisdir,
 
     if ( obj->IsA()->InheritsFrom( "TDirectory" ) ) {
       // it's a subdirectory, recurse
-      //cout << "Checking path: " << ((TDirectory *)obj)->GetPath() << endl;
+      //std::cout << "Checking path: " << ((TDirectory *)obj)->GetPath() << std::endl;
       recurseDirs( (TDirectory *)obj, doFunc, Args, Output );
     } else {
       doFunc(obj, thisdir, Args, Output);
@@ -144,15 +150,15 @@ void recurseDirs( TDirectory *thisdir,
 
 //======================================================================
 
-void getHistosFromRE(const string&   filepath,
-		     const string&   sre,
-		     map<string,wTH1*>&  m_wth1)
+void getHistosFromRE(const std::string&   filepath,
+		     const std::string&   sre,
+		     std::map<std::string,wTH1*>&  m_wth1)
 {
   if (gl_verbose)
-    cout<<"Searching for regexp "<<sre<<" in "<<filepath;
+    std::cout<<"Searching for regexp "<<sre<<" in "<<filepath;
 
   // allow for multiple regexes in OR combination
-  vector<string> v_regexes;
+  std::vector<std::string> v_regexes;
   Tokenize(sre,v_regexes,"|");
   if (!v_regexes.size())
     v_regexes.push_back(sre);
@@ -162,8 +168,8 @@ void getHistosFromRE(const string&   filepath,
   for (size_t i=0; i<v_regexes.size(); i++) {
     TRegexp re(v_regexes[i].c_str(),kTRUE);
     if (re.Status() != TRegexp::kOK) {
-      cerr << "The regexp " << v_regexes[i] << " is invalid, Status() = ";
-      cerr << re.Status() << endl;
+      std::cerr << "The regexp " << v_regexes[i] << " is invalid, Status() = ";
+      std::cerr << re.Status() << std::endl;
       exit(-1);
     }
     else {
@@ -174,7 +180,7 @@ void getHistosFromRE(const string&   filepath,
   TFile *rootfile = new TFile(filepath.c_str());
 
   if (rootfile->IsZombie()) {
-    cerr << "File failed to open, " << filepath << endl;
+    std::cerr << "File failed to open, " << filepath << std::endl;
     Args->Delete();
     delete Args;
     return;
@@ -190,13 +196,13 @@ void getHistosFromRE(const string&   filepath,
   // 2. the object whose path matched
   //
   int nx2matches = Matches->GetEntriesFast();
-  if (gl_verbose) cout << "... " << nx2matches/2 << " match(es) found.";
+  if (gl_verbose) std::cout << "... " << nx2matches/2 << " match(es) found.";
 
   for (int i=0; i<nx2matches; i+=2) {
     TString fullspec = ((TObjString *)(*Matches)[i])->GetString();
     wTH1 *wth1 = new wTH1((TH1 *)((*Matches)[i+1]));
-    m_wth1[string(wth1->histo()->GetName())] = wth1;
-    m_wth1[string(wth1->histo()->GetName())] = wth1;
+    m_wth1[std::string(wth1->histo()->GetName())] = wth1;
+    m_wth1[std::string(wth1->histo()->GetName())] = wth1;
 
     wth1->ShutUpAlready(); // also quiets the fitting function
     wth1->histo()->UseCurrentStyle();
@@ -206,5 +212,5 @@ void getHistosFromRE(const string&   filepath,
   //Matches->Delete(); // need the histos!
   delete Matches;
 
-  if (gl_verbose) cout << endl;
+  if (gl_verbose) std::cout << std::endl;
 }                                                     // getHistosFromRE

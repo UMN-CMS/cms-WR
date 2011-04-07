@@ -731,13 +731,13 @@ void scanMWRCutValsReadTreePutResults()
 	c1->SaveAs((string(c1->GetName())+".eps").c_str());
 	c1->SaveAs((string(c1->GetName())+".C").c_str());
       }
-      char s[80];
-      sprintf( s, "WR%.0f",scanpt->mwr );
-      string name(s);
+      char news[80];
+      sprintf( news, "WR%.0f",scanpt->mwr );
+      string newname(s);
 
       int nrows = ((int)scanpt->mwr/100)-1; nrows = (nrows%4) ? (1+nrows/4) : nrows/4;
 
-      c1 = new TCanvas(name.c_str(),name.c_str(),4*300,min(750,(nrows*250)));// 500,450);
+      c1 = new TCanvas(newname.c_str(),newname.c_str(),4*300,min(750,(nrows*250)));// 500,450);
       c1->Divide(4,nrows);
       oldmwr = scanpt->mwr;
     }
