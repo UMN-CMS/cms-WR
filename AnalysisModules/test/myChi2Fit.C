@@ -91,7 +91,7 @@ double computeChi2(TH1 *h1, TH1 *h2,int ifirst,int ilast)
   return chi2;
 }
 
-const double luminvpb = 36.145;
+const double luminvpb = 36.1;
 #if 0
 // MC->MC matching, reco level (sucks)
 //const int rebinx=5;
@@ -137,7 +137,7 @@ const double ymax    = 500;
 const double h1sf    = 1.0;
 const double nevents = 1647472.0;
 const string format  = "#sigma = %4.0f+/-%4.0fpb\n";
-const string str1    = "/Mu, Run2010A+B, 36.145/pb";
+const string str1    = "/Mu, Run2010A+B, 36.1/pb";
 const string str2    = "Summer10 Z+Jets Madgraph";
 void myChi2Fit(const char *filename1="bryansNewMuSkim_Run2010AandBcombinedNov19JSON_hnu-anal.root",
 	       const char *filename2="summer10_zjets_7tev_madgraph_start36_v10-v2_hnu-anal.root",
@@ -150,13 +150,14 @@ void myChi2Fit(const char *filename1="bryansNewMuSkim_Run2010AandBcombinedNov19J
 #elif 1
 // Alpgen binned MC->data matching
 const int    rebinx  = 2;
-const double ymin    = 5e-2;
+const double ymin    = 5e-1;
 const double ymax    = 1000;
 const double h1sf    = 1.0;
-const double h2presf = 1.28;
+//const double h2presf = 1.28;
+const double h2presf = 1.0;
 const double nevents = luminvpb;
 const string format  = "multiplier = %4.2f+/-%4.2f\n";
-const string str1    = "/Mu, Run2010A+B, 36.145/pb";
+const string str1    = "/Mu, Run2010A+B, 36.1/pb";
 const string str2    = "Fall10 Z+Jets Alpgen";
 
 const string str3    = "Other background";
@@ -165,10 +166,10 @@ const string str3    = "Other background";
 //const double h3sf    = luminvpb*bkxsec/bknev;
 const double h3sf    = 1.0;
 
-void myChi2Fit(double ctr_xsecpb=1.11,
+void myChi2Fit(double ctr_xsecpb=1.15,
 	       double xsecincpb=0.01,
 	       const string& refpath="data.root:hNu/cut5_Vertex/mMuMuZoom",
-	       const string& path2scale="fall10zjetsLO.root:hNu/cut5_Vertex/mMuMuZoom",
+	       const string& path2scale="fall10zjets.root:hNu/cut5_Vertex/mMuMuZoom",
 	       const string& otherbckgrnd="zpeakbackgrnd.root:sumback_mMuMuZoom",
 	       double minMLL=72.0,
 	       double maxMLL=112.0)
@@ -183,7 +184,7 @@ const double h1sf    = 1.0;
 const double h2presf = 0.94;
 const double nevents = luminvpb;
 const string format  = "multiplier = %4.2f+/-%4.2f\n";
-const string str1    = "Run2010A+B, 36.145/pb";
+const string str1    = "Run2010A+B, 36.1/pb";
 const string str2    = "Fall10 Z+Jets Alpgen";
 
 const string str3    = "Other background";
@@ -309,7 +310,7 @@ void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
   //gr->SetTitle("#chi^{2} Minimization of Z+jets MC to Data");
   gr->GetXaxis()->SetTitle("Multiplier for NNLO Z+jets #sigma");
   gr->GetYaxis()->SetTitle("#chi^{2}");
-  //gr->GetYaxis()->SetTitleOffset(1.6);
+  gr->GetYaxis()->SetTitleOffset(1.1);
   //gr->SetMarkerStyle(4);
 
   gr->Draw("AP");
