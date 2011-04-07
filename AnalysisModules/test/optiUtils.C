@@ -1,13 +1,16 @@
+#include <algorithm>
 #include <assert.h>
 #include <map>
 #include <vector>
 #include <sstream>
 #include <string>
 #include <cstdlib>
+#include "TClass.h"
 #include "TKey.h"
 #include "TRegexp.h"
 #include "TObjArray.h"
 #include "TObject.h"
+#include "TObjString.h"
 #include "TString.h"
 
 #include "MyHistoWrapper.cc"
