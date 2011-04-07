@@ -1003,7 +1003,7 @@ void opticut( int mode )
 
   // preload map so I don't have to do finds and inserts
   //
-  for( double mwr=700; mwr<=1600; mwr+=1000 ) {
+  for( double mwr=700; mwr<=1600; mwr+=100 ) {
     for( double mnu=100; mnu<mwr; mnu+=100 ) {
       char s[80];
       sprintf( s, "WR%.0f_nuRmu%.0f",mwr,mnu );
