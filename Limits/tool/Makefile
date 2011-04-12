@@ -1,6 +1,6 @@
 CXXFLAGS := `root-config --cflags` -O2 -g -Wall
 
-LDFLAGS := `root-config --libs` -lRooFitCore -lRooStats -lRooFit -lMinuit -lFoam
+LDFLAGS := `root-config --libs` -lRooFitCore -lRooStats -lRooFit -lMinuit -lFoam -lMathMore
 
 SOURCES := SimpleCardfile.cc doLimitSetting.C doLimitSettingMain.cc doLimitElectron.cc doLimitElectronMain.cc
 
@@ -22,7 +22,7 @@ doLimitSetting.exe: SimpleCardfile.o doLimitSetting.o doLimitSettingMain.o
 doLimitElectron.exe: SimpleCardfile.o doLimitElectron.o doLimitElectronMain.o
 	${CXX} -g -o $@ $^  ${LDFLAGS}
 
-doLimitSetting.o: doLimitSetting.hh
+doLimitSetting.o: doLimitSetting.hh hnuanalinput.h
 
 doLimitSettingMain.o: SimpleCardfile.hh doLimitSetting.hh
 

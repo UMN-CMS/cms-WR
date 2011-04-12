@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "TFile.h"
 #include "TTree.h"
 #include "SimpleCardfile.hh"
@@ -17,8 +18,8 @@ int main(int argc, char* argv[]) {
     printf("  LUMI     : <lumi in pb^-1>\n");
     printf(" Modes (choose one)\n");
     printf("  POINT    : (list of XSEC points to scan)\n");
-    printf("  SCAN     : LINEAR <min> <max> <number of points>\n");
-    printf("  SCAN     : LOG <min> <max> <number of points>\n");
+    printf("  SCAN     : LINEAR <min XSEC pb> <max XSEC pb> <number of points (at least 2)>\n");
+    printf("  SCAN     : LOG    <min XSEC pb> <max XSEC pb> <number of points (at least 2)>\n");
     printf(" Optional:\n");
     printf("  CYCLES  : <number of MC cycles>\n");
     return 1;
@@ -29,9 +30,9 @@ int main(int argc, char* argv[]) {
   TFile* rootOutFile=0;
   TTree* rootOutTree=0;
 
-  if (!cardfile.requireEntry("DATA","Root file containing data histogram")) return 2;
-  if (!cardfile.requireEntry("SIGNALMC","Root file containing signal MC histogram")) return 2;
-  if (!cardfile.requireEntry("LUMI","Luminosity in pb^-1")) return 2;
+  if (!cardfile.requireEntry("DATA",    "Root file containing data histogram")) return 2;
+  if (!cardfile.requireEntry("SIGNALMC","Root file containing UNSCALED signal MC histogram")) return 2;
+  if (!cardfile.requireEntry("LUMI",    "Luminosity in pb^-1")) return 2;
   
 
   std::string fdataFile=cardfile.getItem("DATA");
@@ -62,7 +63,10 @@ int main(int argc, char* argv[]) {
     for (int it=0; it<cardfile.getItemCount("SIGNALMC",il); it++) 
       sigFiles.push_back(cardfile.getItem("SIGNALMC",il,it));
 
-  for (std::vector<std::string>::const_iterator ifile=sigFiles.begin(); ifile!=sigFiles.end(); ifile++) {
+  for (std::vector<std::string>::const_iterator ifile
+	 =sigFiles.begin();
+       ifile!=sigFiles.end();
+       ifile++) {
 
     std::string sigFile=*ifile;
     TFile fsignal(sigFile.c_str());
@@ -73,33 +77,44 @@ int main(int argc, char* argv[]) {
     info.base.mwr=iw;
     info.base.mnu=inu;
     
-    std::vector<float> points;
+    std::vector<float> xsecpoints;
     
     if (cardfile.hasEntry("POINT")) {
       for (int il=0; il<cardfile.getLineCount("POINT"); il++) {
 	for (int it=0; it<cardfile.getItemCount("POINT",il); it++) {
-	  points.push_back(cardfile.getItemFloat("POINT",il,it,0));
+	  xsecpoints.push_back(cardfile.getItemFloat("POINT",il,it,0));
 	}
       }
     } else if (cardfile.hasEntry("SCAN")) {
-      if (cardfile.getItem("SCAN",0)=="LINEAR"  && cardfile.getItemCount("SCAN",0)==4) {
-	double min=cardfile.getItemFloat("SCAN",1);
-	double max=cardfile.getItemFloat("SCAN",2);
+
+      // Linear scan:
+      if (cardfile.getItem("SCAN",0)=="LINEAR"  &&
+	  cardfile.getItemCount("SCAN",0)==4) {
+	double xsecminpb=cardfile.getItemFloat("SCAN",1);
+	double xsecmaxpb=cardfile.getItemFloat("SCAN",2);
 	int np=cardfile.getItemInt("SCAN",3);
+	assert(np > 1);
 	for (int i=0; i<np; i++) 
-	  points.push_back(min+(max-min)/(np-1)*i);    
-      } else if (cardfile.getItem("SCAN",0)=="LOG" && cardfile.getItemCount("SCAN",0)==4) {
-	double min=cardfile.getItemFloat("SCAN",1);
-	double max=cardfile.getItemFloat("SCAN",2);
+	  xsecpoints.push_back(xsecminpb+(xsecmaxpb-xsecminpb)/(np-1)*i);
+
+      // Log scan:
+      } else if (cardfile.getItem("SCAN",0)=="LOG" &&
+		 cardfile.getItemCount("SCAN",0)==4) {
+	double xsecminpb=cardfile.getItemFloat("SCAN",1);
+	double xsecmaxpb=cardfile.getItemFloat("SCAN",2);
 	int np=cardfile.getItemInt("SCAN",3);
-	double factor=pow(max/min,1.0/(np-1));
+	assert(np > 1);
+	double factor=pow(xsecmaxpb/xsecminpb,1.0/(np-1));
 	for (int i=0; i<np; i++) 
-	  points.push_back(min*pow(factor,i));
+	  xsecpoints.push_back(xsecminpb*pow(factor,i));
       }
     }
     
     int ipoint=1;
-    for (std::vector<float>::const_iterator ip=points.begin(); ip!=points.end(); ip++) {
+    for (std::vector<float>::const_iterator ip
+	   =xsecpoints.begin();
+	 ip!=xsecpoints.end();
+	 ip++) {
       info.base.xsec=*ip;
       //      printf("%d xsec=%f\n",ipoint,info.xsec);
       doLimitSetting(&fdata,&fsignal,cycles,info,doSyst);
