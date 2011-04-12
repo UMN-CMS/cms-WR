@@ -3,19 +3,22 @@
 
 class TFile;
 
+struct CLInfo {
+  float obs, exp;
+  float exp_p1s, exp_m1s;
+  float exp_p2s, exp_m2s;
+};
+struct BaseInfo {
+  float lumi;
+  float mwr;
+  float mnu;    
+  float xsec;
+  float signal, background, data;
+  float signal_eff;
+};
 struct LimitPointStruct {
-  struct BaseInfo {
-    float lumi;
-    float mwr;
-    float mnu;    
-    float xsec;
-    float signal, background, data;
-  } base;
-  struct CLInfo {
-    float obs, exp;
-    float exp_p1s, exp_m1s;
-    float exp_p2s, exp_m2s;
-  } cl_sb, cl_b, cls;
+  struct BaseInfo base;
+  struct CLInfo cl_sb, cl_b, cls;
 };
 
 void doLimitSetting(TFile* dataf, TFile* signal, int ntoys, LimitPointStruct& info, bool doSyst);
