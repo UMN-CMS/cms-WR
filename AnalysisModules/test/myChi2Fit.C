@@ -20,89 +20,53 @@
 #include "tdrstyle.C"
 #include "drawStandardTexts.C"
 
+#include "hnuUtils.C" // getHisto
+
 using namespace std;
 
 //======================================================================
-// Got this from
-// http://oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
 
-void Tokenize(const string& str,
-	      vector<string>& tokens,
-	      const string& delimiters = " ",
-	      bool include_delimiters=false)
-{
-  tokens.clear();
-
-  // Skip delimiters at beginning.
-  string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-  if (include_delimiters && lastPos>0)
-    tokens.push_back(str.substr(0,lastPos));
-
-  // Find first "non-delimiter".
-  string::size_type pos = str.find_first_of(delimiters, lastPos);
-
-  while (string::npos != pos || string::npos != lastPos) {
-    // Found a token, add it to the vector.
-    tokens.push_back(str.substr(lastPos, pos - lastPos));
-
-    lastPos = str.find_first_not_of(delimiters, pos);
-
-    if (include_delimiters && pos!=string::npos) {
-      tokens.push_back(str.substr(pos, lastPos-pos));
-    } //else skip delimiters.
-
-    // Find next delimiter
-    pos = str.find_first_of(delimiters, lastPos);
-  }
-}                                                            // Tokenize
-
-//======================================================================
-
-TH1 *getHisto(const string& path)
-{
-  TH1 *h(0);
-  vector<string> v_tokens;
-  Tokenize(path,v_tokens,":");
-  if (v_tokens.size() != 2) return h;
-
-  TFile *f = new TFile(v_tokens[0].c_str());
-  if (f->IsZombie()) {
-    cerr << "File failed to open, " << string(v_tokens[0]) << endl;
-  } else
-    h = (TH1 *)f->Get(v_tokens[1].c_str());
-
-  return h;
-}
-
-//======================================================================
-
-double computeChi2(TH1 *h1, TH1 *h2,int ifirst,int ilast)
+double computeChi2(TH1 *h1mc, TH1 *h2dt,int ifirst,int ilast)
 {
   double chi2=0.;
+  //printf("bin bin1  bin2  bin1e bin2e chi2\n");
   for (int ibin=ifirst; ibin<=ilast; ibin++) {
-    double bin1  = h1->GetBinContent(ibin);
-    double bin2  = h2->GetBinContent(ibin);
-    double bin1e = h1->GetBinError  (ibin);
-    double bin2e = h2->GetBinError  (ibin);
+    double bin1  = h1mc->GetBinContent(ibin);
+    double bin2  = h2dt->GetBinContent(ibin);
+    double bin1e = h1mc->GetBinError  (ibin);
+    double bin2e = h2dt->GetBinError  (ibin);
+
+    // if data statistics are too low, take the estimate of the error
+    // from the MC number;
+    //
+    if (bin2<4.0)
+      bin2e = max(bin2e,sqrt(bin1));
+
     chi2 += (bin1-bin2)*(bin1-bin2)/((bin1e*bin1e)+(bin2e*bin2e));
-    //cout << bin1 << " " << bin2 << "; ";
+    //printf("%3d %5.3g %5.3g %5.3g %5.3g %5.3g\n",ibin,bin1,bin2,bin1e,bin2e,chi2);
   }
-  //cout << endl;
+
   return chi2;
 }
 
+//======================================================================
+
 const double luminvpb = 36.1;
+//const double luminvpb = 16.944;
+
 #if 0
 // MC->MC matching, reco level (sucks)
 //const int rebinx=5;
-const int rebinx=0;
-const double ymin    = 5e-5;
-const double ymax    = 20.;
-const double h1sf    = luminvpb * 3740/1647472.0;
-const double nevents = 92291.;
-const string format  = "#sigma = %4.2f+/-%4.2fpb\n";
-const string str1    = "Summer10 Z+Jets Madgraph";
-const string str2    = "Z#rightarrow#mu#mu+Jets Madgraph, UMN";
+const int rebinx      = 0;
+const double plotxmin = 64;
+const double plotxmax = 112;
+const double plotymin = 5e-5;
+const double plotymax = 20.;
+const double h1sf     = luminvpb * 3740/1647472.0;
+const double nevents  = 92291.;
+const string format   = "#sigma = %4.2f+/-%4.2fpb\n";
+const string str1     = "Summer10 Z+Jets Madgraph";
+const string str2     = "Z#rightarrow#mu#mu+Jets Madgraph, UMN";
 void myChi2Fit(const char *filename1="summer10_zjets_7tev_madgraph_start36_v10-v2_hnu-anal.root",
 	       const char *filename2="madgraph_zmumujets_m180_reco385_hnu-anal.root",
 	       const char *bckgrndfn="",
@@ -113,14 +77,16 @@ void myChi2Fit(const char *filename1="summer10_zjets_7tev_madgraph_start36_v10-v
 	       double xsecincpb=.02)
 #elif 0
 // MC->MC matching, gen level (much better)
-const int rebinx=5;
-const double ymin    = 1e-2;
-const double ymax    = 1e5;
-const double h1sf    = 1.0;
-const double nevents = 92291.;
-const string format  = "#sigma = %4.2f+/-%4.2fpb\n";
-const string str1    = "Summer10 Z+Jets Madgraph";
-const string str2    = "Z#rightarrow#mu#mu+Jets Madgraph, UMN";
+const int rebinx      = 5;
+const double plotxmin = 64;
+const double plotxmax = 112;
+const double plotymin = 1e-2;
+const double plotymax = 1e5;
+const double h1sf     = 1.0;
+const double nevents  = 92291.;
+const string format   = "#sigma = %4.2f+/-%4.2fpb\n";
+const string str1     = "Summer10 Z+Jets Madgraph";
+const string str2     = "Z#rightarrow#mu#mu+Jets Madgraph, UMN";
 void myChi2Fit(const char *filename1="grendanal_summer10_zjets_7tev_madgraph.root",
 	       const char *filename2="grendanal_madgraph_zmumujets_m10_reco385.root",
 	       const char *bckgrndfn="",
@@ -131,14 +97,16 @@ void myChi2Fit(const char *filename1="grendanal_summer10_zjets_7tev_madgraph.roo
 	       double xsecincpb=0.5)
 #elif 0
 // Pythia MC->data matching
-const int    rebinx  = 0;
-const double ymin    = 5e-2;
-const double ymax    = 500;
-const double h1sf    = 1.0;
-const double nevents = 1647472.0;
-const string format  = "#sigma = %4.0f+/-%4.0fpb\n";
-const string str1    = "/Mu, Run2010A+B, 36.1/pb";
-const string str2    = "Summer10 Z+Jets Madgraph";
+const int    rebinx   = 0;
+const double plotxmin = 64;
+const double plotxmax = 112;
+const double plotymin = 5e-2;
+const double plotymax = 500;
+const double h1sf     = 1.0;
+const double nevents  = 1647472.0;
+const string format   = "#sigma = %4.0f+/-%4.0fpb\n";
+const string str1     = "/Mu, Run2010A+B, 36.1/pb";
+const string str2     = "Summer10 Z+Jets Madgraph";
 void myChi2Fit(const char *filename1="bryansNewMuSkim_Run2010AandBcombinedNov19JSON_hnu-anal.root",
 	       const char *filename2="summer10_zjets_7tev_madgraph_start36_v10-v2_hnu-anal.root",
 	       const char *bckgrndfn="",
@@ -149,46 +117,74 @@ void myChi2Fit(const char *filename1="bryansNewMuSkim_Run2010AandBcombinedNov19J
 	       double xsecincpb=30.)
 #elif 1
 // Alpgen binned MC->data matching
-const int    rebinx  = 2;
-const double ymin    = 5e-1;
-const double ymax    = 1000;
-const double h1sf    = 1.0;
-//const double h2presf = 1.28;
-const double h2presf = 1.0;
-const double nevents = luminvpb;
-const string format  = "multiplier = %4.2f+/-%4.2f\n";
-const string str1    = "/Mu, Run2010A+B, 36.1/pb";
-const string str2    = "Fall10 Z+Jets Alpgen";
+const int    rebinx   = 2;
+const double plotxmin = 64;
+const double plotxmax = 112;
+const double plotymin = 5e-1;
+const double plotymax = 1000;
+const double h1sf     = 1.0;
+//const double h2presf = 1.28; // how much to prescale the MC before doing the minimization
+//const double h2presf = 16.944/36.145;
+const double h2presf  = 1.0;
+const double nevents  = luminvpb;
+const string format   = "multiplier = %4.2f+/-%4.2f\n";
+const string str1     = "/Mu, Run2010A+B, 36.1/pb";
+const string str2     = "Fall10 Z+Jets Alpgen";
 
-const string str3    = "Other background";
+const string str3     = "Other background";
 //const double bkxsec  = 167;
 //const double bknev   = 1165716;
 //const double h3sf    = luminvpb*bkxsec/bknev;
-const double h3sf    = 1.0;
+//const double h3sf    = 1.0;
+const double h3sf     = h2presf;
 
-void myChi2Fit(double ctr_xsecpb=1.15,
-	       double xsecincpb=0.01,
+void myChi2Fit(
+#if 0
+	       //
+	       // For tail fitting and comparison,
+	       // to get shape variation systematic
+	       // 
+	       double ctr_xsecpb=1.12,
+	       double xsecincpb=0.1,
+//	       const string& refpath="data2011-mar31-pileup.root:hNu/cut5_Vertex/mMuMuZoom",
 	       const string& refpath="data.root:hNu/cut5_Vertex/mMuMuZoom",
 	       const string& path2scale="fall10zjets.root:hNu/cut5_Vertex/mMuMuZoom",
-	       const string& otherbckgrnd="zpeakbackgrnd.root:sumback_mMuMuZoom",
+	       const string& otherbckgrnd="zpeakbackgrnd.root:sumback_mMuMuZoom_cut5",
+	       double minMLL=120.0,
+	       double maxMLL=176.0)
+#else
+	       //
+	       // For peak fitting
+	       // to get the normalization factor
+	       //
+	       double ctr_xsecpb=1.12,
+	       double xsecincpb=0.01,
+//	       const string& refpath="data2011-mar31-pileup.root:hNu/cut6_Vertex/mMuMuZoom",
+	       const string& refpath="data.root:hNu/cut6_Mu1HighPt/mMuMuZoom",
+	       const string& path2scale="fall10zjets.root:hNu/cut6_Mu1HighPt/mMuMuZoom",
+	       const string& otherbckgrnd="zpeakbackgrnd.root:sumback_mMuMuZoom_cut6",
+//	       const string& otherbckgrnd="zpeakbackgrnd2011.root:sumback_mMuMuZoom_cut6",
 	       double minMLL=72.0,
 	       double maxMLL=112.0)
+#endif
 //double minMLL=84.0,
 //double maxMLL=100.0)
 #else
 // Alpgen binned MC->data matching for Electron channel
-const int    rebinx  = 2;
-const double ymin    = 5e-2;
-const double ymax    = 1000;
-const double h1sf    = 1.0;
-const double h2presf = 0.94;
-const double nevents = luminvpb;
-const string format  = "multiplier = %4.2f+/-%4.2f\n";
-const string str1    = "Run2010A+B, 36.1/pb";
-const string str2    = "Fall10 Z+Jets Alpgen";
+const int    rebinx   = 2;
+const double plotxmin = 70;
+const double plotxmax = 110;
+const double plotymin = 5e-2;
+const double plotymax = 1000;
+const double h1sf     = 1.0;
+const double h2presf  = 0.94;
+const double nevents  = luminvpb;
+const string format   = "multiplier = %4.2f+/-%4.2f\n";
+const string str1     = "Run2010A+B, 36.1/pb";
+const string str2     = "Fall10 Z+Jets Alpgen";
 
-const string str3    = "Other background";
-const double h3sf    = 1.0;
+const string str3     = "Other background";
+const double h3sf     = 1.0;
 
 void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
 	       double xsecincpb=0.01,
@@ -247,15 +243,12 @@ void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
   // and calculate chi2, minimize.
   //============================================================
 
-  //const double ctr_xsecpb = (2204.0/0.44);
-
   int istart=-12;
   int iend=12;
   int npoints=iend-istart+1;
   TVectorD vx(npoints), vy(npoints);
 
   TAxis *xax = h2mc->GetXaxis();
-  xax->SetRangeUser(40,150); //(minMLL,maxMLL);
   int ifirst=xax->FindBin(minMLL);
   int ilast=xax->FindBin(maxMLL);
   ilast--;
@@ -301,17 +294,13 @@ void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
   // Pad 1, plot the chi2 parabola and error estimate
 
   c1->cd(1);
-  //gPad->SetRightMargin(0.05);
-  //gPad->SetLeftMargin(0.15);
 
-  //gStyle->SetFillColor(10);
   TGraph *gr = new TGraph(vx,vy);
   gr->UseCurrentStyle();
-  //gr->SetTitle("#chi^{2} Minimization of Z+jets MC to Data");
+
   gr->GetXaxis()->SetTitle("Multiplier for NNLO Z+jets #sigma");
   gr->GetYaxis()->SetTitle("#chi^{2}");
   gr->GetYaxis()->SetTitleOffset(1.1);
-  //gr->SetMarkerStyle(4);
 
   gr->Draw("AP");
   gPad->Update();
@@ -354,10 +343,7 @@ void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
 
   c1->cd(2);
   gPad->SetRightMargin(0.05);
-  //gPad->SetTopMargin(0.1);
   gPad->SetLogy(1);
-  //gPad->SetGridx(1);
-  //gPad->SetGridy(1);
 
   TLegend *leg = new TLegend(.4,.8,.95,.95);
 
@@ -380,19 +366,14 @@ void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
 
   sum->Draw("HIST F");
 
-  sum->GetXaxis()->SetRangeUser(70., 110.);
-  //sum->GetYaxis()->SetRangeUser(.01, 100.);
-
-  //sum->SetStats(0);
-  sum->GetYaxis()->SetLimits(ymin,ymax);
-  sum->GetYaxis()->SetRangeUser(ymin,ymax);
-  sum->GetXaxis()->SetTitle("M(#mu#mu) (GeV)");
+  // Stacks are *so* annoying - can't do this until it's drawn
   //sum->GetXaxis()->SetTitle("M(ee) (GeV)");
+  sum->GetXaxis()->SetTitle("M(#mu#mu) (GeV)");
   sum->GetYaxis()->SetTitle(Form("dN/%d GeV",rebinx ? (rebinx*4) : 4));
-  //sum->GetYaxis()->SetTitleOffset(1.3);
-  //sum->SetLineColor(2);
 
-  //sum->Draw();
+  sum->GetXaxis()->SetRangeUser(plotxmin,plotxmax);
+  sum->GetYaxis()->SetRangeUser(plotymin,plotymax);
+
   gPad->Update();
 
   leg->AddEntry(h1ref,str1.c_str(),"PE");
@@ -406,7 +387,6 @@ void myChi2Fit(double ctr_xsecpb=0.95, // 1.02,
   leg->Draw("same");
   leg->SetFillColor(10);
   leg->SetBorderSize(1);
-  //leg->SetTextSize(.035);
   leg->Print();
   gPad->Update();
 
