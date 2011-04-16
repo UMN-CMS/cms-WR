@@ -1,0 +1,409 @@
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{listings}
+\usepackage[a4paper]{geometry}
+\geometry{top=1.0in,bottom=1.0in,left=1.0in,right=1.0in}
+
+\begin{document}
+
+\title{README instructions for analysis}
+\author{P. Dudero}
+\date{April 2011}
+\maketitle
+
+\lstset{basicstyle=\small}
+
+%% ======================================================================
+\section{2010 analysis procedures}
+%% ======================================================================
+
+%%--------------------------------------------------
+\subsection{Storage}
+\begin{itemize}
+\item Due to its superior performance all samples were migrated to hadoop
+(/hdfs/cms/...) as much as possible. Phedexed samples were migrated to
+/hdfs/cms/phedex by Jeremy, whereas mu skims of data and large background
+samples were put under /hdfs/cms/skim/mu, and signal samples were put under
+/hdfs/cms/user/heavynu/HeavyNuRecoFromHLT/38X.
+\item Analysis output was stored in various directories under
+\verb#/local/cms/user/dudero#. Typically the directory was named after
+the configuration file that was run, with ``\_cfg.py'' stripped from
+the name.  Lots of other analysis flotsam and jetsam, some worthwhile
+and some ancient history, can probably also be found under these
+directories...
+\end{itemize}
+
+%%--------------------------------------------------
+\subsection{MC Scaling to Lumi}
+Subsequent sections of this README presume that MC samples are scaled to
+some luminosity prior to execution of subsequent steps. In fact, historically
+the MC samples were always scaled immediately after completion of execution.
+This strategy may be revisited and altered as necessary; in any case the
+raw MC samples were always kept around as well, as backup.
+
+The multiscale.C script is checked in to CVS and provides capability to
+scale all the histograms in many files at once. It takes a text file
+appropriately formatted, as well as other formal parameters as shown
+below.
+
+The downside of this implementation is the number of times one has to rescale,
+since every study indicated below leads to a new set of files, the number
+of ``files2scale.txt'' files themselves proliferated.
+
+\subsubsection{Preparation}
+\begin{enumerate}
+\item edit a ``files2scale.txt'' file with the appropriate information
+(see the one checked in to CVS already).
+\end{enumerate}
+\subsubsection{Synopsis}
+\begin{lstlisting}
+root [0] .L multiscale.C+
+root [1] multiscale("files2scale.txt",36.1,"NLO")
+\end{lstlisting}
+
+%%--------------------------------------------------
+\subsection{Signature}
+\begin{lstlisting}
+void multiscale(const char* filewithpaths,
+		float integluminvpb,
+		const char* csordersuffix="",
+		bool writeErrors=false)
+\end{lstlisting}
+
+%%--------------------------------------------------
+\subsection{Formal Parameter Inputs}
+\begin{tabular}{|l|l|}
+\hline
+filewithpaths & space or tab-separated columns with filename, cross-section,  \\
+              & number of events, and optional k-factors                      \\ \hline
+integluminvpb & pretty self explanatory, what lumi to scale to                \\ \hline
+csordersuffix & suffix to affix to the output files, e.g. ``NLO'', ``Meas'', etc. \\ \hline
+writeErrors   & optional argument to turn on errors (if they haven't been already) \\
+              & and an attempt at handling them correctly during scaling      \\ \hline
+\end{tabular}
+
+%% ======================================================================
+\section{Z+Jets normalization}
+%% ======================================================================
+
+%%--------------------------------------------------
+\subsection{Preparation}
+\begin{enumerate}
+\item Make data and Z+Jets MC histograms available
+\item Create the ``other backgrounds'' root file containing the sum of backgrounds to be considered
+   (both ttbar and VV are minimally required). This is currently done with a superPlot config file:
+\begin{lstlisting}
+root [0] .L superPlot.C+
+root [1] superPlot("addback2zpeak.cfg")
+\end{lstlisting}
+\item CAREFULLY adjust the parameters defined below in myChi2Fit.C
+\end{enumerate}
+
+%%--------------------------------------------------
+\subsection{Synopsis}
+\begin{lstlisting}
+root [0] .L myChi2Fit.C+
+root [1] myChi2Fit()
+\end{lstlisting}
+
+%%--------------------------------------------------
+\subsection{Signature}
+\begin{lstlisting}
+void myChi2Fit(double ctr_xsecpb=1.12,
+	       double xsecincpb=0.01,
+	       const string& refpath="data.root:hNu/cut6_Mu1HighPt/mMuMuZoom",
+	       const string& path2scale="fall10zjets.root:hNu/cut6_Mu1HighPt/mMuMuZoom",
+	       const string& otherbckgrnd="zpeakbackgrnd.root:sumback_mMuMuZoom_cut6",
+	       double minMLL=72.0,
+	       double maxMLL=112.0)
+\end{lstlisting}
+
+%%--------------------------------------------------
+\subsection{Formal Parameter Inputs}
+\begin{tabular}{|l|l|}
+\hline
+ctr\_xsecpb   & where the multiplier value is expected; the scan is centered here \\
+              &  (the scan was historically done in xsec space)                   \\ \hline
+xsecincpb     & how much to increment the scan by for each iteration              \\ \hline
+refpath       & the histogram path for the "reference" (data) histogram           \\ \hline
+path2scale    & path to the histogram to be scaled (MC)                           \\ \hline
+otherbckgrnd  & path to the histogram containing "other background"               \\ \hline
+minMLL,maxMLL & defines the Z-peak window over which to do the normalization      \\ \hline
+\end{tabular}
+
+%%--------------------------------------------------
+\subsection{Global Parameter Inputs}
+\begin{tabular}{|l|l|}
+\hline
+h1sf,h2presf,h3sf   & prescale factors for reference (perhaps another MC), MC and other \\ \hline
+rebinx              & rebinning on the x-axis to boost per-bin statistics, 0=none       \\ \hline
+luminvpb,nevents    & required for doing the scan in xsec space; can be set trivially to \\ 
+                    & accomplish a unitless normalization                                \\ \hline
+\end{tabular}
+
+%% ======================================================================
+\section{Trigger Efficiency studies}
+%% ======================================================================
+
+%%--------------------------------------------------
+\subsection{On Data}
+\subsubsection{Preparation}
+\begin{enumerate}
+\item All data samples available
+\item Configure trigger matching on data samples with proper parameters \\
+ (\verb#HeavyNu/AnalysisModules/python/hnutrigmatch_cfi.py#)
+\end{enumerate}
+
+\subsubsection{Synopsis}
+\begin{enumerate}
+%
+\item \verb#cmsRun heavyNuAnalysis_cfg.py# on data, trigger efficiency is collected in folders
+MuTightInZwin, Mu1TrigMatchesInZwin, Mu2TrigMatchesInZwin, Mu1Mu2TrigMatchesInZwin
+%
+\item use superPlot to generate plots, print trigger eff. bin info in xterm window
+(contents of \verb#~/.rootrc# contains path to superPlot source:
+\begin{lstlisting}
+ACLiC.IncludePaths:     -Imypath -I$(ROOTSYS)/include
+\end{lstlisting}
+\begin{lstlisting}
+root [0] .L superPlot.C+
+root [1] superPlot("hnutrigEffAsymOfficial.cfg")
+\end{lstlisting}
+%
+\end{enumerate}
+
+%%--------------------------------------------------
+\subsection{On MC background}
+\subsubsection{Preparation}
+\begin{enumerate}
+%
+\item All MC background samples available and scaled to the appropriate lumi
+%
+\item Adjust code in HeavyNuTrigger::simulateForMC with new bin info from run on data
+\end{enumerate}
+
+\subsubsection{Synopsis}
+\begin{enumerate}
+%
+\item \verb#cmsRun hnuTrigEffStudy_cfg.py# on all MC samples
+%
+\item Use superPlot to print final statistics (also scales Z histos according to Z norm)
+\begin{lstlisting}
+root [0] .L superPlot.C+
+root [1] superPlot("finalstatsTrigEffback.cfg",false,false) # suppresses diagnostics
+\end{lstlisting}
+%
+\item Calculate manually from the numbers printed what the up/down fluctuation is.
+\end{enumerate}
+
+%%--------------------------------------------------
+\subsection{On MC signal}
+
+Same as for background except as noted. Given the number of signal
+files, some more automation is needed. \verb#spDriver.C# is a script
+that invokes \verb#superPlot# a number of times using a text file as
+input to configure variables such as filename.  It takes the input
+configuration script (which presumably contains unresolved aliii -
+plural of alias in my book) and for each line in the ``.drv'' file it
+writes a new fully resolved config file to the {\tt /tmp} directory
+and executes \verb#superPlot# on that temporary config file.
+%
+\begin{enumerate}
+%
+\item Run spDriver:
+\begin{lstlisting}
+root [0] .L spDriver.C+
+root [1] spDriver("finalstatsTrigEffSig.cfg","signalfiles.drv",false,false)
+\end{lstlisting}
+%
+\item To save the output to a file, ROOT syntax allows 
+\verb# root[0] myscript(); >myoutputfile.txt#
+%
+\item Throw the text file into a spreadsheet - since the text here is
+formatted for human readability and not spreadsheet parseability, one
+can overcome the problem by including the following characters besides
+space, tab and comma, as ``text csv'' separators: (\%) and set ``merge
+delimiters'' to true (oocalc).  An example ``.ods'' spreadsheet
+(\verb#finalstats_trigeffunc_signal.ods#) has been checked in to CVS
+(with subsequent formatting) for perusal.
+%
+\end{enumerate}
+
+%% ======================================================================
+\section{Muon ID/Isolation Efficiency studies}
+%% ======================================================================
+
+In contrast to the trigger studies, these are comparison studies between
+MC and data, so the same steps apply to both initially:
+
+%%--------------------------------------------------
+\subsection{Preparation}
+%
+\begin{enumerate}
+\item Data and Z+Jets MC samples available
+\end{enumerate}
+
+%%--------------------------------------------------
+\subsection{Synopsis}
+%
+\begin{enumerate}
+%
+\item \verb#cmsRun hnuMuSelectEffStudy_cfg.py# on data and Z+Jets MC
+samples, muon loose and tight selection and isolation efficiencies are
+collected in folders Mu1tagInZwin, Mu2tagInZwin,
+Mu1tagMu2passesLooseInZwin, Mu2tagMu1passesLooseInZwin,
+Mu1passesTightInZwin, Mu2passesTightInZwin, Mu1Mu2passesTightInZwin.
+%
+\item use superPlot to generate plots
+%
+\begin{lstlisting}
+root [0] .L superPlot.C+
+root [1] superPlot("hnuMuSelectEffAsymOfficial.cfg")
+\end{lstlisting}
+%
+\item Edit hnuMuSelectEffAsymOfficial.cfg to switch between loose and
+tight plots (comment/uncomment aliii at the top), repeat previous
+step.
+%
+\item Another ``.cfg'' file is in CVS that shows more detail,
+ ``hnuMuSelectEffAsymDetailed.cfg''
+\end{enumerate}
+
+Since the last study performed on 2010 data showed no substantial
+difference between MC and data, no further computation was required,
+although the machinery for it is commented out in the python config
+file, and is probably buried in CVS history for the source.
+
+%% ======================================================================
+\section{Cut Optimization}
+%% ======================================================================
+
+%%--------------------------------------------------
+\subsection{Preparation}
+%
+\begin{enumerate}
+\item run ``savehistos.C'', which extracts histograms from all of the
+background and signal MC samples and saves them to a local file.
+%
+\begin{lstlisting}
+root [0] .L savehistos.C+
+root [1] savehistos("files2optim.list","optimMWR.root")
+\end{lstlisting}
+%
+File ``files2optim.list'' contains the list of histograms to pull
+and a second column that indicates shortened unique names to give them
+in the new flat root file (otherwise there would be over a hundred
+versions of the same histogram ``mwr''); ``optimMWR.root'' is the
+name of the output file to be generated.
+%
+\end{enumerate}
+
+%%--------------------------------------------------
+\subsection{Synopsis}
+%
+To scan for optimal MWR cut values,
+\begin{lstlisting}
+root [0] .L opticut.C+
+root [1] opticut(0) # mode 0 => saves bkgrnd fit parameters to a ".h" file
+root [2] opticut(1) # mode 1 => scans MWR cut values, saves results to "mwrscantree.root"
+root [3] opticut(2) # mode 2 => reads tree, prints results table & tons of plots
+\end{lstlisting}
+%
+To scan for optimal MLL cut values, modes 3,4, and 5 do the same thing
+for MLL (must have optimMLL.root prepared).
+
+%% ======================================================================
+\section{Final Statistics, Background}
+%% ======================================================================
+
+%%--------------------------------------------------
+\subsection{Cut Flow Table}
+
+\subsubsection{Synopsis}
+%
+To get a cut flow table for background, run spDriver as follows:
+%
+\begin{lstlisting}
+root [0] .L spDriver.C+
+root [1] spDriver("cuttable.cfg","cuttable.drv",false,false)
+\end{lstlisting}
+
+This now produces latex-formatted output that can be captured as
+described above and then inserted directly into a tabular environment
+within a latex document. Some further editing is still required to
+add total background numbers, errors, etc.
+
+%%--------------------------------------------------
+\subsection{Systematics and total errors, Background}
+
+Currently it is necessary to determine total systematics
+for background process by using the ``spreadsheet of power''.
+This handles correlated and uncorrelated errors correctly,
+and totals uncorrelated errors in quadrature. A number of
+rows at the top of the spreadsheet are reserved for cutflow
+numbers and final numbers after optimization. Any of these
+rows can be copied into the top row, which is used to calculate
+the total error for the final number on the far right. The
+error shows up in red at the bottom right.
+
+%%--------------------------------------------------
+\subsection{Final numbers with optimized cuts, Background}
+
+\subsubsection{Preparation}
+%
+\begin{enumerate}
+\item Run Cut Optimization, which generates information necessary to
+decide what the optimal cuts (MLL, MWR) should be for the analysis.
+This will also produce files in preparation for use in this step.
+\end{enumerate}
+
+%% ======================================================================
+\section{Final Statistics, Signal}
+%% ======================================================================
+
+One ROOT script puts out all final yields, systematic errors, and total
+errors, once each for every mass point hypothesis.:
+
+
+%%--------------------------------------------------
+\subsection{Preparation}
+
+\begin{itemize}
+\item File ``optimMWR.root'' must be ready to go, as described above.
+\item Make sure the optimized cut values and total ``other'' uncertainty
+numbers at the top of the script are as you want them to be.
+\end{itemize}
+
+%%--------------------------------------------------
+\subsection{Synopsis}
+%
+\begin{lstlisting}
+root [0] .L sigtable.C+
+root [1] sigtable()
+\end{lstlisting}
+
+This file spits out a table that currently looks like this:
+%
+\begin{verbatim}
+MWR   MNu  Cut     Ssig   Serr  JES(%) MES(%) MC(%) Tot(%)
+==============================================================
+ 700  100  560 |  16.58   1.86   9.2%   1.3%   3.3%  11.2%
+ 700  200  560 |  44.16   3.70   6.1%   0.7%   1.9%   8.4%
+ 700  300  560 |  48.66   3.36   3.8%   1.0%   1.6%   6.9%
+ 700  400  560 |  36.50   2.47   3.6%   0.9%   1.6%   6.8%
+ 700  500  560 |  19.79   1.31   3.3%   1.1%   1.6%   6.6%
+ 700  600  560 |   4.66   0.32   2.9%   2.2%   1.9%   6.8%
+==============================================================
+ 800  100  640 |   7.79   0.81   8.0%   2.1%   3.5%  10.5%
+ 800  200  640 |  26.62   1.94   4.5%   0.6%   1.8%   7.3%
+ 800  300  640 |  30.65   2.04   3.4%   0.7%   1.6%   6.6%
+...
+...
+...
+\end{verbatim}
+
+where Ssig = total signal yield, Serr = total signal error;
+the subsequent columns break down the percentage uncertainties.
+
+\end{document}
