@@ -3,13 +3,14 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cmath>
 #include "TFile.h"
 #include "TH1D.h"
 #include "TF1.h"
 #include "TROOT.h"
 #include "TStyle.h"
 
-#include "optiUtils.C"
+#include "hnuUtils.C"
 
 using namespace std;
 
@@ -21,11 +22,15 @@ const double optmwrcuts[] = {
 
 #define sqr(_x) ((_x)*(_x))
 
-const double othuncsqr = sqr(.01)+sqr(.005)+sqr(.02)+sqr(.04); // MES,trigeff,muid,pdf
+const double othuncsqr = 
+  sqr(.005)+ // trigeff
+  sqr(.02)+  // muid
+  sqr(.03)+  // isr/fsr
+  sqr(.04);  // pdf
 
 //======================================================================
 
-double calcErrFromJES(TH1 *hsignm, TH1 *hsighi, TH1 *hsiglo)
+double calcErrFromJESorMES(TH1 *hsignm, TH1 *hsighi, TH1 *hsiglo)
 {
   const double optmwrcut = 520;
 
@@ -40,7 +45,7 @@ double calcErrFromJES(TH1 *hsignm, TH1 *hsighi, TH1 *hsiglo)
   double sigfrcdevlo = (sumsiglo-sumsignm)/sumsignm;
 
   return max(fabs(sigfrcdevhi),fabs(sigfrcdevlo));
-}                                                      // calcErrFromJES
+}                                                 // calcErrFromJESorMES
 
 //======================================================================
 
@@ -58,40 +63,67 @@ void calcSig(TH1 *sighist,double cutgev,
 void
 printTable(map<string,wTH1*>&  m_wth1)
 {
-  printf("MWR   MNu  Cut     Ssig   Serr  JES(%%)  MC(%%) Tot(%%)\n");
+  FILE *systerrfp = fopen("sigsysterr.h","w");
 
+  printf("MWR   MNu  Cut     Ssig   Serr  JES(%%) MES(%%) MC(%%) Tot(%%)\n");
+
+  fprintf(systerrfp,"float fracerrPerMasspt[][16] = {\n");
+  fprintf(systerrfp,"  /* MNu = ");
+  for (int mnu=100;mnu<=1600;mnu+=100)
+    fprintf (systerrfp,"\t%d",mnu);
+  fprintf(systerrfp,"*/\n");
   for (int i=0; i<10; i++) {
     double mwr = 700. + i*100.;
     cout<<"=============================================================="<<endl;
+
+    fprintf(systerrfp,"/*MWR=%4.0f*/{ ", mwr);
 
     double optmwrcut = optmwrcuts[i];
 
     for (double mnu=100; mnu<mwr; mnu+=100) {
       char s[80];
-      sprintf( s, "WR%.0f_nuRmu%.0f",mwr,mnu );    string signm(s);
-      sprintf( s, "WR%.0f_nuRmu%.0f_hi",mwr,mnu ); string sighi(s);
-      sprintf( s, "WR%.0f_nuRmu%.0f_lo",mwr,mnu ); string siglo(s);
+      sprintf( s, "WR%.0f_nuRmu%.0f",      mwr,mnu ); string signom(s);
+      sprintf( s, "WR%.0f_nuRmu%.0f_jeshi",mwr,mnu ); string sigjhi(s);
+      sprintf( s, "WR%.0f_nuRmu%.0f_jeslo",mwr,mnu ); string sigjlo(s);
+      sprintf( s, "WR%.0f_nuRmu%.0f_meshi",mwr,mnu ); string sigmhi(s);
+      sprintf( s, "WR%.0f_nuRmu%.0f_meslo",mwr,mnu ); string sigmlo(s);
 
-      assert (m_wth1[signm]);
-      assert (m_wth1[sighi]);
-      assert (m_wth1[siglo]);
+      assert (m_wth1[signom]);
+      assert (m_wth1[sigjhi]);
+      assert (m_wth1[sigjlo]);
+      assert (m_wth1[sigmhi]);
+      assert (m_wth1[sigmlo]);
 
-      TH1   *hsignm   = m_wth1[signm]->histo();
-      TH1   *hsighi   = m_wth1[sighi]->histo();
-      TH1   *hsiglo   = m_wth1[siglo]->histo();
+      TH1   *hsignom  = m_wth1[signom]->histo();
+      TH1   *hsigjhi  = m_wth1[sigjhi]->histo();
+      TH1   *hsigjlo  = m_wth1[sigjlo]->histo();
+      TH1   *hsigmhi  = m_wth1[sigmhi]->histo();
+      TH1   *hsigmlo  = m_wth1[sigmlo]->histo();
 
-      double jesunc = calcErrFromJES(hsignm,hsighi,hsiglo);
+      double jesunc = calcErrFromJESorMES(hsignom,hsigjhi,hsigjlo);
+      double mesunc = calcErrFromJESorMES(hsignom,hsigmhi,hsigmlo);
       double totsig, mcstatunc;
-      calcSig(hsignm,optmwrcut, totsig,mcstatunc);
+      calcSig(hsignom,optmwrcut,totsig,mcstatunc);
 
-      double totunc = sqrt(sqr(jesunc)+sqr(mcstatunc)+othuncsqr);
+      double totunc = sqrt(sqr(jesunc)+sqr(mesunc)+sqr(mcstatunc)+othuncsqr);
       double toterr = totsig*totunc;
 
       printf("%4.0f %4.0f %4.0f | ",mwr,mnu,optmwrcut);
-      printf("%6.2f %6.2f %5.1f%% %5.1f%% %5.1f%%\n",
-	     totsig,toterr,jesunc*100,mcstatunc*100,totunc*100);
+      printf("%6.2f %6.2f %5.1f%% %5.1f%% %5.1f%% %5.1f%%\n",
+	     totsig,toterr,jesunc*100,mesunc*100,mcstatunc*100,totunc*100);
+
+      fprintf(systerrfp,"%.3g, ", totunc);
+
     } // mnu loop
+
+    for (double mnu=mwr; mnu<=1600; mnu+=100)
+      fprintf(systerrfp,"\t-1,");
+    fprintf(systerrfp,"},\n");
+
   } // mwr loop
+
+  fprintf(systerrfp,"};\n");
+  fclose(systerrfp);
 }                                                          // printTable
 
 //======================================================================
