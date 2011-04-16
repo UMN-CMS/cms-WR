@@ -19,7 +19,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TTree.h"
 
-#include "optiUtils.C"
+#include "hnuUtils.C"
 #include "CLfast.C"
 
 using namespace std;
@@ -88,7 +88,7 @@ const int nmassptsMLL = 84;
 
 void fitndraw(wTH1 *wth1,const char *fitoption)
 {
-  gStyle->SetOptStat(110010);
+  gStyle->SetOptStat(110011);
   gStyle->SetOptFit(1);
   gStyle->SetStatFont(42);
   gStyle->SetStatFontSize(0.03);
@@ -1001,20 +1001,6 @@ void opticut( int mode )
   setTDRStyle();
   gROOT->ForceStyle();
 
-  // preload map so I don't have to do finds and inserts
-  //
-  for( double mwr=700; mwr<=1600; mwr+=100 ) {
-    for( double mnu=100; mnu<mwr; mnu+=100 ) {
-      char s[80];
-      sprintf( s, "WR%.0f_nuRmu%.0f",mwr,mnu );
-      string name(s);
-      m_wth1[name] = NULL;
-
-      name += "_zoom";
-      m_wth1[name] = NULL;
-    }
-  }
-
   string input;
   switch( mode ) {
     // ==========> MWR SCANS <==========
@@ -1037,12 +1023,6 @@ void opticut( int mode )
   case 2:
     scanMWRCutValsReadTreePutResults();
     break;
-#if 0
-  case 3:
-    getHistosFromRE("optimMWR.root",".*",m_wth1);
-    printDanilaTable(m_wth1,fits);    // For when a set of MWR cuts has been decided on
-    break;
-#endif
     // ==========> MLL SCANS <==========
   case 3:
     {
@@ -1063,6 +1043,12 @@ void opticut( int mode )
   case 5:
     scanMLLCutValsReadTreePutResults();
     break;
+#if 0
+  case 6:
+    getHistosFromRE("optimMWR.root",".*",m_wth1);
+    printDanilaTable(m_wth1,fits);    // For when a set of MWR cuts has been decided on
+    break;
+#endif
   default:
     cerr << "Unknown mode " << mode << endl;
     exit(-1);
