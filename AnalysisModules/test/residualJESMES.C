@@ -4,22 +4,19 @@
 //  Attaching file fall10zjets.root as _file0...
 //  root [1] .x residualJESMES.C(_file0)"
 //
-void residualJESMES(TFile* zjetsf0)
+void residualJESMES(TFile* zjetsf0,const char *which = "JES") // or "MES"
 {
-  // To get one or the other, global replace JES <-> MES
-  // from here on down and re-execute
-  //
   TH1* hnm6 = zjetsf0->Get("hNu/cut6_Mu1HighPt/mMuMuZoom");
-  TH1* hhi6 = zjetsf0->Get("hNuJEShi/cut6_Mu1HighPt/mMuMuZoom");
-  TH1* hlo6 = zjetsf0->Get("hNuJESlo/cut6_Mu1HighPt/mMuMuZoom");
+  TH1* hhi6 = zjetsf0->Get(Form("hNu%shi/cut6_Mu1HighPt/mMuMuZoom",which));
+  TH1* hlo6 = zjetsf0->Get(Form("hNu%slo/cut6_Mu1HighPt/mMuMuZoom",which));
 
   TH1* hnm7 = zjetsf0->Get("hNu/cut7_diLmass/mMuMu");
-  TH1* hhi7 = zjetsf0->Get("hNuJEShi/cut7_diLmass/mMuMu");
-  TH1* hlo7 = zjetsf0->Get("hNuJESlo/cut7_diLmass/mMuMu");
+  TH1* hhi7 = zjetsf0->Get(Form("hNu%shi/cut7_diLmass/mMuMu",which));
+  TH1* hlo7 = zjetsf0->Get(Form("hNu%slo/cut7_diLmass/mMuMu",which));
 
   TH1* hnm8 = zjetsf0->Get("hNu/cut8_mWRmass/mMuMu");
-  TH1* hhi8 = zjetsf0->Get("hNuJEShi/cut8_mWRmass/mMuMu");
-  TH1* hlo8 = zjetsf0->Get("hNuJESlo/cut8_mWRmass/mMuMu");
+  TH1* hhi8 = zjetsf0->Get(Form("hNu%shi/cut8_mWRmass/mMuMu",which));
+  TH1* hlo8 = zjetsf0->Get(Form("hNu%slo/cut8_mWRmass/mMuMu",which));
 
   // Integrals of nominal/hi/lo at cut levels 6,7,8
   //
@@ -47,7 +44,7 @@ void residualJESMES(TFile* zjetsf0)
   //     as well as the Zpeak before the MLL cut (cut7) of 200GeV;
   //     it is the Zpeak we would use to normalize to data.
   // 
-  printf("cut:   IntNom\tJESlo\t(lo/nom) (cutn/cut6)\tJEShi\t(hi/nom) (cutn/cut6)\n");
+  printf("cut:   IntNom\t%slo\t(lo/nom) (cutn/cut6)\t%shi\t(hi/nom) (cutn/cut6)\n",which,which);
 
   printf("6  :   %6.1f\t%6.1f\t(%6.4f)\t\t%6.1f\t(%6.4f)\n",
 	 cut6nm,cut6lo,rLo2nom6,cut6hi,rHi2nom6);
