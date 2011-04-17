@@ -295,18 +295,32 @@ file, and is probably buried in CVS history for the source.
 JES and MES fluctuated copies of all analysis histograms are
 collected in folders hNuJEShi,hNuJESlo,hNuMEShi,hNuMESlo
 %
-\item use superPlot to generate tables of numbers for background
+\item For all MC background EXCEPT Z+Jets, use superPlot to generate
+tables of numbers for background
 %
 \begin{lstlisting}
 root [0] .L superPlot.C+
-root [1] superPlot("finalstatsJESMESback.cfg",false,false)
+root [1] superPlot("finalstatsJESMESback.cfg",false,false); >jesmesback.txt
+\end{lstlisting}
+%
+\item For all Z+Jets MC background, use residualJESMES.C to generate
+tables of numbers for background - read the comments in the source
+file, probably the best documented script for this whole analysis.
+Maybe that's not saying as much as I would like...
+%
+\begin{lstlisting}
+dudero@zebra02 test]$ root fall10zjets.root
+root [0] 
+Attaching file fall10zjets.root as _file0...
+root [1] .x residualJESMES(_file0)
+root [2] .x residualJESMES(_file0,"MES")
 \end{lstlisting}
 %
 \item use spDriver to generate tables of numbers for signal
 %
 \begin{lstlisting}
 root [0] .L spDriver.C+
-root [1] spDriver("finalstatsJESMESsig.cfg","signalfiles.drv",false,false)
+root [1] spDriver("finalstatsJESMESsig.cfg","signalfiles.drv",false,false); >jesmessig.txt
 \end{lstlisting}
 %
 \end{enumerate}
