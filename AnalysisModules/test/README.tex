@@ -54,7 +54,7 @@ of ``files2scale.txt'' files themselves proliferated.
 \subsubsection{Preparation}
 \begin{enumerate}
 \item edit a ``files2scale.txt'' file with the appropriate information
-(see the one checked in to CVS already).
+(see the one checked in to CVS already for signal, ``sigfiles2scale.txt'').
 \end{enumerate}
 \subsubsection{Synopsis}
 \begin{lstlisting}
@@ -274,6 +274,47 @@ Since the last study performed on 2010 data showed no substantial
 difference between MC and data, no further computation was required,
 although the machinery for it is commented out in the python config
 file, and is probably buried in CVS history for the source.
+
+%% ======================================================================
+\section{JES/MES studies}
+%% ======================================================================
+
+%%--------------------------------------------------
+\subsection{Preparation}
+%
+\begin{enumerate}
+\item All scaled MC samples available
+\end{enumerate}
+
+%%--------------------------------------------------
+\subsection{Synopsis}
+%
+\begin{enumerate}
+%
+\item \verb#cmsRun hnuJESMESstudy_cfg.py# on all samples,
+JES and MES fluctuated copies of all analysis histograms are
+collected in folders hNuJEShi,hNuJESlo,hNuMEShi,hNuMESlo
+%
+\item use superPlot to generate tables of numbers for background
+%
+\begin{lstlisting}
+root [0] .L superPlot.C+
+root [1] superPlot("finalstatsJESMESback.cfg",false,false)
+\end{lstlisting}
+%
+\item use spDriver to generate tables of numbers for signal
+%
+\begin{lstlisting}
+root [0] .L spDriver.C+
+root [1] spDriver("finalstatsJESMESsig.cfg","signalfiles.drv",false,false)
+\end{lstlisting}
+%
+\end{enumerate}
+
+Often I'll put these tables into a spreadsheet to help with final
+computation. See notes on importing saved text output into oocalc under
+trigger efficiency studies, and see ``jesmessig.ods'' and ``jesmesback.ods''
+in CVS.
 
 %% ======================================================================
 \section{Cut Optimization}
