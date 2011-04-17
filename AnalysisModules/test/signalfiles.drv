@@ -1,4 +1,6 @@
 ALIAS.sigmcfile							DRIVER.prefix
+# next line for JESMES specifically, comment out with # otherwise:
+^Masspt		Nominal		JEShi		JESlo		MEShi		MESlo
 heavyNuReco_WR700_nuRmu100_001-@anal_36ipbNLO.root	700,100 
 heavyNuReco_WR700_nuRmu200_001-@anal_36ipbNLO.root	700,200 
 heavyNuReco_WR700_nuRmu300_001-@anal_36ipbNLO.root	700,300 
