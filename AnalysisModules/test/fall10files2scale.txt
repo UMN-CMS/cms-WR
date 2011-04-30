@@ -1,0 +1,67 @@
+# path cross-section(pb) nevents 
+#Fall10_WW2anything_TuneZ2_7TeV-pythia6-tauola-heavyNuAnalysis.root 27.79   2061760
+#Fall10_WZ2anything_TuneZ2_7TeV-pythia6-tauola-heavyNuAnalysis.root 10.4    2194752
+#Fall10_ZZ2anything_TuneZ2_7TeV-pythia6-tauola-heavyNuAnalysis.root  4.297  2113368
+#Fall10_WW2anything_TuneZ2_7TeV-pythia6-tauola-heavyNuAnalysis.root   43     2061760
+#Fall10_WZ2anything_TuneZ2_7TeV-pythia6-tauola-heavyNuAnalysis.root   18.2   2194752
+#Fall10_ZZ2anything_TuneZ2_7TeV-pythia6-tauola-heavyNuAnalysis.root    5.9   2113368
+#
+#Fall10_TTJets_TuneZ2_7TeV-madgraph-tauola-heavyNuAnalysis.root	167	1165716
+#
+#Fall10_TW_dr_7TeV-mcatnlo-heavyNuAnalysis.root			0.1835	871720
+#
+Fall10_TToBLNu_TuneZ2_tW-channel_7TeV-madgraph-heavyNuAnalysis.root 10.56	494961
+#
+#Fall10_Z0Jets_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root		   1.929e+03  1435909	1.28
+#
+#Fall10_Z1Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    3.808e+02  317567	1.28
+#Fall10_Z2Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    1.035e+02  118361	1.28
+#Fall10_Z3Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    2.289e+01  55037	1.28
+#Fall10_Z4Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    4.619e+00  44432	1.28
+#Fall10_Z5Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    1.135e+00  10934	1.28
+#
+#Fall10_Z1Jets_ptZ-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  8.721e+00  265406	1.28
+#Fall10_Z2Jets_ptZ-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  8.534e+00  129106	1.28
+#Fall10_Z3Jets_ptZ-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  3.951e+00  55058	1.28
+#Fall10_Z4Jets_ptZ-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  1.298e+00  44276	1.28
+#Fall10_Z5Jets_ptZ-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  4.758e-01  10563	1.28
+#
+#Fall10_Z1Jets_ptZ-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  7.386e-02  110308	1.28
+#Fall10_Z2Jets_ptZ-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  1.151e-01  109393	1.28
+#Fall10_Z3Jets_ptZ-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  8.344e-02  54262	1.28
+#Fall10_Z4Jets_ptZ-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  3.935e-02  10874	1.28
+#Fall10_Z5Jets_ptZ-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  1.946e-02  11146	1.28
+#
+#Fall10_Z1Jets_ptZ-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 1.374e-04  32549	1.28
+#Fall10_Z2Jets_ptZ-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 3.023e-04  11040	1.28
+#Fall10_Z3Jets_ptZ-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 2.480e-04  11328	1.28
+#Fall10_Z4Jets_ptZ-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 1.394e-04  10622	1.28
+#Fall10_Z5Jets_ptZ-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 7.195e-05  11172	1.28
+#####
+# k=1.236 gets you 31314pb for total NNLO cross section quoted on StandardModelCrossSections twiki page
+#
+##Fall10_W0Jets_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root		    2.024e+04  4199091	1.236
+#
+#Fall10_W1Jets_ptW-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    3.693e+03  883023	1.236
+#Fall10_W2Jets_ptW-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    9.434e+02  804034	1.236
+#Fall10_W3Jets_ptW-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    2.087e+02  405167	1.236
+#Fall10_W4Jets_ptW-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    4.446e+01  87081	1.236
+#Fall10_W5Jets_ptW-0to100_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root    1.111e+01  10793	1.236
+#
+#Fall10_W1Jets_ptW-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  7.197e+01  200743	1.236
+#Fall10_W2Jets_ptW-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  6.718e+01  144201	1.236
+#Fall10_W3Jets_ptW-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  3.243e+01  65817	1.236
+#Fall10_W4Jets_ptW-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  1.138e+01  10364	1.236
+#Fall10_W5Jets_ptW-100to300_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  3.789e+00  11249	1.236
+#
+#Fall10_W1Jets_ptW-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  5.658e-01  98524	1.236
+#Fall10_W2Jets_ptW-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  8.553e-01  63995	1.236
+#Fall10_W3Jets_ptW-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  6.229e-01  31629	1.236
+#Fall10_W4Jets_ptW-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  2.950e-01  11204	1.236
+#Fall10_W5Jets_ptW-300to800_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root  1.565e-01  10841	1.236
+#
+#Fall10_W1Jets_ptW-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 1.090e-03  97576	1.236
+#Fall10_W2Jets_ptW-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 2.200e-03  22222	1.236
+#Fall10_W3Jets_ptW-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 1.974e-03  10913	1.236
+#Fall10_W4Jets_ptW-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 1.025e-03  11200	1.236
+#Fall10_W5Jets_ptW-800to1600_TuneZ2_7TeV-alpgen-tauola-heavyNuAnalysis.root 5.881e-04  9423	1.236
