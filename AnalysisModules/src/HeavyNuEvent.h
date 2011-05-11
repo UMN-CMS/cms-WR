@@ -15,7 +15,7 @@ typedef std::pair<int,int> hNuMassHypothesis;
 
 class HeavyNuEvent {
 public:
-  HeavyNuEvent() {}
+  HeavyNuEvent() { eventWgt = 1.0 ; }
   void regularize();
   void calculate();
   void calculateMuMu(double muptfactor);
@@ -24,6 +24,7 @@ public:
 
   pat::MuonRef mu1, mu2, mu[2];
   pat::JetRef  j1,  j2,  j[2];
+  pat::ElectronRef e1, e2, e[2]; 
 
   pat::METRef met1;
 
@@ -34,6 +35,8 @@ public:
   float j1scale, j2scale;
 
   float MESscale;
+
+  double eventWgt ; 
 
   reco::Particle::LorentzVector vMuMu;
   reco::Particle::LorentzVector vJJ;

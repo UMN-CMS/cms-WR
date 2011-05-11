@@ -11,6 +11,7 @@ isMC=True
 isMCsignal=False
 Training=False
 isRun2010LoLumi=False
+isRun2011=True
 
 isData=not isMC
 
@@ -31,13 +32,10 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 # source
-#process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('file:/local/cms/user/dahmes/wr2010/muSCjetSkim/run2010B/nov7/mySkim/mySkim-nov7_056005.root')
-#This file is AT FNAL:
-#    fileNames=cms.untracked.vstring('/store/mc/Fall10/Z1Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola/GEN-SIM-RECO/START38_V12-v2/0018/027050CA-D50B-E011-91DD-00261894391C.root')
-#    fileNames=cms.untracked.vstring( "file:/hdfs/cms/user/heavynu/HeavyNuRecoFromHLT/38X/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
-#)
-process.load('HeavyNu.AnalysisModules.in_cff')
+process.source = cms.Source("PoolSource",
+    fileNames=cms.untracked.vstring('file:input.root')
+)
+# process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
     if isRun2010LoLumi:
@@ -125,6 +123,10 @@ process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
 removeCleaning( process, isData )
 
+## Special change for saving good products in data
+if isData:
+    process.out.outputCommands = cms.untracked.vstring("keep *")
+
 ## --
 ## Switch on PAT trigger - but only for data!
 ## --
@@ -144,6 +146,14 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
+if isRun2011:
+    process.hNu.minMu2pt = cms.double(30.)
+    process.hNu.jecEra   = cms.int32(3)
+    if isMC:
+        process.hNu.applyMuIDEffcorr = cms.bool(True)
+else:
+    process.hNu.minMu2pt = cms.double(20.)
+    process.hNu.jecEra   = cms.int32(0)
 
 if isData:
     # turn on trigger match requirement
@@ -158,5 +168,6 @@ if Training:
     
 if isMCsignal:
     process.hNu.isSignal = cms.bool(True)
+
 
 process.p += process.hNu

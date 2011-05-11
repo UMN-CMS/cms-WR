@@ -113,11 +113,15 @@ HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
       }
       matched = true;
     } else {
-      thist->trigUnmatchedPt->Fill( m->pt() );
-      thist->trigUnmatchedEtaPhi->Fill( m->eta(),m->phi() );
+      if ( thist ) {
+	thist->trigUnmatchedPt->Fill( m->pt() );
+	thist->trigUnmatchedEtaPhi->Fill( m->eta(),m->phi() );
+      }
     }
-    thist->trigAllCandMuPt->Fill( m->pt() );
-    thist->trigAllCandMuEtaPhi->Fill( m->eta(),m->phi() );
+    if ( thist ) { 
+      thist->trigAllCandMuPt->Fill( m->pt() );
+      thist->trigAllCandMuEtaPhi->Fill( m->eta(),m->phi() );
+    }
   }
 
   return matched;
@@ -131,11 +135,17 @@ HeavyNuTrigger::simulateForMC(double pt,int signOfError2apply)
   if (matchingEnabled_)
     throw cms::Exception("invalid trigger configuration");
 
-  // determined from data
-  const double effslo[]  = {0.913,0.920,0.924,0.923,0.919,0.919};
-  const double effsnom[] = {0.919,0.924,0.927,0.930,0.928,0.928};
-  const double effshi[]  = {0.925,0.928,0.931,0.937,0.938,0.938};
-  const double upedge[]= {   30,   40,   50,   60, 3500,   -1};
+  // determined from 2010 data
+  // const double effslo[]  = {0.913,0.920,0.924,0.923,0.919,0.919};
+  // const double effsnom[] = {0.919,0.924,0.927,0.930,0.928,0.928};
+  // const double effshi[]  = {0.925,0.928,0.931,0.937,0.938,0.938};
+  // const double upedge[]= {   30,   40,   50,   60, 3500,   -1};
+
+  // determined from 2011 data (153/pb)
+  const double effslo[]  = {0.920,0.921,0.919,0.921,0.889,0.889};
+  const double effsnom[] = {0.921,0.923,0.923,0.928,0.899,0.899};
+  const double effshi[]  = {0.923,0.924,0.926,0.935,0.909,0.909};
+  const double upedge[]  = {40,   50,   60,   70,  3500, -1};
 
   const double *effs = effsnom;
   if( signOfError2apply )

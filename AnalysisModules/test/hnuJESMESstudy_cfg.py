@@ -11,6 +11,7 @@ isMC=True
 isMCsignal=False
 Training=False
 isRun2010LoLumi=False
+isRun2011=True
 
 isData=not isMC
 
@@ -31,12 +32,10 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 # source
-#process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('file:/local/cms/user/dahmes/wr2010/muSCjetSkim/run2010B/nov7/mySkim/mySkim-nov7_056005.root')
-#     fileNames=cms.untracked.vstring('/store/mc/Fall10/Z1Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola/GEN-SIM-RECO/START38_V12-v2/0018/027050CA-D50B-E011-91DD-00261894391C.root')
-#    fileNames=cms.untracked.vstring( "file:/local/cms/user/dudero/HeavyNuRecoFromHLT/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
-#)
-process.load('HeavyNu.AnalysisModules.in_cff')
+process.source = cms.Source("PoolSource",
+    fileNames=cms.untracked.vstring('file:input.root')
+)
+# process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
     if isRun2010LoLumi:
@@ -143,6 +142,14 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
+if isRun2011:
+    process.hNu.minMu2pt = cms.double(30.)
+    process.hNu.jecEra   = cms.int32(3)
+    if isMC:
+        process.hNu.applyMuIDEffcorr = cms.bool(True)
+else:
+    process.hNu.minMu2pt = cms.double(20.)
+    process.hNu.jecEra   = cms.int32(0)
 
 if isData:
     # turn on trigger match requirement
@@ -184,6 +191,18 @@ process.pMESlo = cms.Path(process.hNuMESlo)
 
 ##########################################
 
+# MuID uncertainty application
+# applyMESfactor=1.0 is the obvious default
+#
+process.hNuMuIDhi = process.hNu.clone(applyMuIDEffSign = cms.int32(1))
+process.hNuMuIDlo = process.hNu.clone(applyMuIDEffSign = cms.int32(-1))
+
+process.pMuIDhi = cms.Path(process.hNuMuIDhi)
+process.pMuIDlo = cms.Path(process.hNuMuIDlo)
+
+##########################################
+
 process.s = cms.Schedule(process.p,
                          process.pJEShi,process.pJESlo,
-                         process.pMEShi,process.pMESlo)
+                         process.pMEShi,process.pMESlo,)
+                         process.pMuIDhi,process.pMuIDlo)
