@@ -17,14 +17,13 @@
 class HeavyNuID {
  public:
 
-  explicit HeavyNuID(const edm::ParameterSet & iConfig);
+  explicit HeavyNuID();
   double   weightForMC(double pt,int signOfError2apply=0);
 
   void endJob();
 
  private:
 
-  bool    applyIDCorrections_ ; 
 };
 
 #endif

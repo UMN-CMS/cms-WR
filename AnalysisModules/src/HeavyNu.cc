@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.37 2011/04/01 12:31:37 dudero Exp $
+// $Id: HeavyNu.cc,v 1.38 2011/05/11 10:07:01 bdahmes Exp $
 //
 //
 
@@ -959,7 +959,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
   nnif_ = new HeavyNu_NNIF(iConfig);
   trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
-  muid_ = new HeavyNuID(iConfig.getParameter<edm::ParameterSet>("muIDPset"));
+  muid_ = new HeavyNuID();
   // ==================== Book the histos ====================
   //
   edm::Service<TFileService> fs;
@@ -1621,20 +1621,20 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.LLJJptCuts.fill( hnuEvent,nnif_->masspts() );
 
   // Impose vertex requirement here as well
-  //
-  float deltaVzJ1J2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.j2 ->vertex().Z());
-  float deltaVzJ1M1 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu1->vertex().Z());
-  float deltaVzJ2M2 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu2->vertex().Z());
-  float deltaVzJ1M2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu2->vertex().Z());
-  float deltaVzJ2M1 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu1->vertex().Z());
-  if((deltaVzJ1J2 >= cuts.maxVertexZsep) ||
-     (deltaVzJ1M1 >= cuts.maxVertexZsep) ||
-     (deltaVzJ2M2 >= cuts.maxVertexZsep) ||
-     (deltaVzJ1M2 >= cuts.maxVertexZsep) ||
-     (deltaVzJ2M1 >= cuts.maxVertexZsep)   )
-    return false;
+  // Note: Vertex cut removed!!!
+  // float deltaVzJ1J2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.j2 ->vertex().Z());
+  // float deltaVzJ1M1 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu1->vertex().Z());
+  // float deltaVzJ2M2 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu2->vertex().Z());
+  // float deltaVzJ1M2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu2->vertex().Z());
+  // float deltaVzJ2M1 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu1->vertex().Z());
+  // if((deltaVzJ1J2 >= cuts.maxVertexZsep) ||
+  //    (deltaVzJ1M1 >= cuts.maxVertexZsep) ||
+  //    (deltaVzJ2M2 >= cuts.maxVertexZsep) ||
+  //    (deltaVzJ1M2 >= cuts.maxVertexZsep) ||
+  //    (deltaVzJ2M1 >= cuts.maxVertexZsep)   )
+  //   return false;
 
-  hists.VertexCuts.fill( hnuEvent,nnif_->masspts() );
+  // hists.VertexCuts.fill( hnuEvent,nnif_->masspts() );
 
   if( (applyMESfactor_*hnuEvent.mu1->pt()) < cuts.minimum_mu1_pt )
     return false;

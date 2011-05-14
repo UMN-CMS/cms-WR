@@ -6,8 +6,7 @@
 
 //======================================================================
 
-HeavyNuID::HeavyNuID(const edm::ParameterSet & iConfig) :
-  applyIDCorrections_ ( iConfig.getParameter< bool > ( "applyMuIDCorrections" ) )
+HeavyNuID::HeavyNuID()
 {
 }                                      // HeavyNuID::HeavyNuID
 
@@ -16,8 +15,6 @@ HeavyNuID::HeavyNuID(const edm::ParameterSet & iConfig) :
 double
 HeavyNuID::weightForMC(double pt,int signOfError2apply)
 {
-  if ( !applyIDCorrections_ ) return 1.0 ; 
-
   // determined from 2011 data...corrections for loose+iso efficiency only
   const double scalelo[]  = {0.9935,0.9919,0.9901,0.9808,0.9862,0.9649,0.8927,0.8927};
   const double scalenom[] = {0.9951,0.9930,0.9925,0.9857,0.9957,0.9756,0.9492,0.9492};

@@ -2,9 +2,6 @@ import FWCore.ParameterSet.Config as cms
 
 hNu = cms.EDFilter(
     "HeavyNu",
-    muIDPset = cms.PSet(
-    applyMuIDCorrections = cms.bool( False ),
-    ),
     trigMatchPset = cms.PSet(
     trigEventTag = cms.InputTag( "" ),
     muonMatch    = cms.string( '' ),
