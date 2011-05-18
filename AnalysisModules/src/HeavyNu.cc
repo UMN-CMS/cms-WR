@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.38 2011/05/11 10:07:01 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.39 2011/05/14 17:22:16 bdahmes Exp $
 //
 //
 
@@ -501,10 +501,10 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
   
   // ----------  Composite histograms  ----------
 
-  t="M(W_{R}) "                    +post;       mWR=td->make<TH1D>("mWR",   t.c_str(),50,0,2000);
-  t="M(N_{R}) with #mu_{1} "       +post;     mNuR1=td->make<TH1D>("mNuR1", t.c_str(),50,0,2000);
-  t="M(N_{R}) with #mu_{2} "       +post;     mNuR2=td->make<TH1D>("mNuR2", t.c_str(),50,0,1000);
-  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;    mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),50,0,2000,50,0,1000);
+  t="M(W_{R}) "                    +post;       mWR=td->make<TH1D>("mWR",   t.c_str(),70,0,2800);
+  t="M(N_{R}) with #mu_{1} "       +post;     mNuR1=td->make<TH1D>("mNuR1", t.c_str(),70,0,2800);
+  t="M(N_{R}) with #mu_{2} "       +post;     mNuR2=td->make<TH1D>("mNuR2", t.c_str(),70,0,1400);
+  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;    mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),70,0,2800,70,0,1400);
 
   t="M(jj) "                       +post;          mJJ=td->make<TH1D>("mJJ",         t.c_str(),50,0,2000);
   t="M(#mu #mu) "                  +post;        mMuMu=td->make<TH1D>("mMuMu",       t.c_str(),50,0,2000);

@@ -204,5 +204,5 @@ process.pMuIDlo = cms.Path(process.hNuMuIDlo)
 
 process.s = cms.Schedule(process.p,
                          process.pJEShi,process.pJESlo,
-                         process.pMEShi,process.pMESlo,)
+                         process.pMEShi,process.pMESlo,
                          process.pMuIDhi,process.pMuIDlo)
