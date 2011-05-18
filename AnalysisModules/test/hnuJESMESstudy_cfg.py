@@ -194,8 +194,8 @@ process.pMESlo = cms.Path(process.hNuMESlo)
 # MuID uncertainty application
 # applyMESfactor=1.0 is the obvious default
 #
-process.hNuMuIDhi = process.hNu.clone(applyMuIDEffSign = cms.int32(1))
-process.hNuMuIDlo = process.hNu.clone(applyMuIDEffSign = cms.int32(-1))
+process.hNuMuIDhi = process.hNu.clone(applyMuIDEffsign = cms.int32(1))
+process.hNuMuIDlo = process.hNu.clone(applyMuIDEffsign = cms.int32(-1))
 
 process.pMuIDhi = cms.Path(process.hNuMuIDhi)
 process.pMuIDlo = cms.Path(process.hNuMuIDlo)
