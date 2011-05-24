@@ -73,15 +73,8 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 ########################################
 
 if isData:
-    process.out = cms.OutputModule("PoolOutputModule",
-                                   fileName = cms.untracked.string('heavynu_candevents.root'),
-    # save only events passing the full path
-                                   SelectEvents=cms.untracked.PSet(SelectEvents=cms.vstring('p')),
-                                   outputCommands = cms.untracked.vstring("keep *")
-                                   )
-    process.outpath  = cms.EndPath(process.out)
     from PhysicsTools.PatAlgos.tools.coreTools import *
-    removeMCMatching(process, ['All'])
+    removeMCMatching(process, ['All'], outputInProcess = False)
 
 ########################################
 # PAT Jet Energy Corrections - MC vs Data
@@ -114,19 +107,15 @@ process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 ## Switch to selected PAT objects in the main work flow
 ## --
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
-removeCleaning( process, isData )
-
-## Special change for saving good products in data
-if isData:
-    process.out.outputCommands = cms.untracked.vstring("keep *")
+removeCleaning( process, False )
 
 ## --
 ## Switch on PAT trigger - but only for data!
 ## --
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
-    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ] )
-    removeCleaningFromTriggerMatching( process )
+    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
+    removeCleaningFromTriggerMatching( process, outputModule = '' )
     if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu9')
     else:               process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu15_v1')
 
