@@ -175,7 +175,7 @@ process.hNuCalo = cms.EDFilter("MuJetBackground",
         randomSeed   = cms.int32( 0 ),  # for MC
         year         = cms.int32( 2011 )  # for MC
     ),
-    DoLog        = cms.bool( True ),
+    DoLog        = cms.bool( False ),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
     jetTag       = cms.InputTag( 'selectedPatJets' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),

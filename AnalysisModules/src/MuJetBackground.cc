@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.25 2011/01/24 23:15:18 dudero Exp $
+// $Id: MuJetBackground.cc,v 1.1 2011/05/05 13:18:39 bdahmes Exp $
 //
 //
 
@@ -1497,30 +1497,30 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		    //std::cout << "One of the muons passes tight+trigger requirements" << std::endl ; 
 		    hists.FourJetTightTrigCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
 		  		    
-		    bool commonVertex = ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.mu2->vertex().Z()) 
-					  < cuts.maxVertexZsep ) ; 
-		    commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.j1->vertex().Z()) 
-						     < cuts.maxVertexZsep ) ; 
-		    commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.j2->vertex().Z()) 
-						     < cuts.maxVertexZsep ) ; 
-		    commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu2->vertex().Z()-hnuEvent4jet.j1->vertex().Z()) 
-						     < cuts.maxVertexZsep ) ; 
-		    commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu2->vertex().Z()-hnuEvent4jet.j2->vertex().Z()) 
-						     < cuts.maxVertexZsep ) ; 
-		    commonVertex = commonVertex && ( fabs(hnuEvent4jet.j1->vertex().Z()-hnuEvent4jet.j2->vertex().Z()) 
-						     < cuts.maxVertexZsep ) ; 		    
-		    if ( commonVertex ) { 
+		    // bool commonVertex = ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.mu2->vertex().Z()) 
+		    // 			  < cuts.maxVertexZsep ) ; 
+		    // commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.j1->vertex().Z()) 
+		    // 				     < cuts.maxVertexZsep ) ; 
+		    // commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.j2->vertex().Z()) 
+		    // 				     < cuts.maxVertexZsep ) ; 
+		    // commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu2->vertex().Z()-hnuEvent4jet.j1->vertex().Z()) 
+		    // 				     < cuts.maxVertexZsep ) ; 
+		    // commonVertex = commonVertex && ( fabs(hnuEvent4jet.mu2->vertex().Z()-hnuEvent4jet.j2->vertex().Z()) 
+		    // 				     < cuts.maxVertexZsep ) ; 
+		    // commonVertex = commonVertex && ( fabs(hnuEvent4jet.j1->vertex().Z()-hnuEvent4jet.j2->vertex().Z()) 
+		    // 				     < cuts.maxVertexZsep ) ; 		    
+		    // if ( commonVertex ) { 
 		      //std::cout << "Event passes vertex requirement" << std::endl ; 
-		      hists.FourJetVertexCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
+		    // hists.FourJetVertexCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
 
-		      if ( hnuEvent4jet.mu1->pt() > cuts.minimum_mu1_pt ) {
-			//std::cout << "Event passes all quality + pT requirements" << std::endl ; 
-			hists.FourJetMu1PtCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
+		    if ( hnuEvent4jet.mu1->pt() > cuts.minimum_mu1_pt ) {
+		      //std::cout << "Event passes all quality + pT requirements" << std::endl ; 
+		      hists.FourJetMu1PtCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
 
-			if ( hnuEvent4jet.mMuMu > cuts.minimum_mumu_mass ) { // dimuon mass rqmt
-			  //std::cout << "Event passes mumu mass requirement" << std::endl ; 
-			  hists.FourJetZMassCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
-			}
+		      if ( hnuEvent4jet.mMuMu > cuts.minimum_mumu_mass ) { // dimuon mass rqmt
+			//std::cout << "Event passes mumu mass requirement" << std::endl ; 
+			hists.FourJetZMassCuts.fill( hnuEvent4jet,mu1scaleFactor,mu2scaleFactor ) ; 
+			//			}
 		      }
 		    }
 		  }
@@ -1565,17 +1565,17 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 						 rwLowPtbin,rwHighPtbin,rwLoose) ; 
 
 	    // Establish common vertex for the events
-	    bool commonVertex = ( fabs(hnuEvent3jet.mu1->vertex().Z()-hnuEvent3jet.j1->vertex().Z()) 
-				  < cuts.maxVertexZsep ) ; 
-	    commonVertex = commonVertex && ( fabs(hnuEvent3jet.mu1->vertex().Z()-hnuEvent3jet.j2->vertex().Z()) 
-					     < cuts.maxVertexZsep ) ; 
-	    commonVertex = commonVertex && ( fabs(hnuEvent3jet.j1->vertex().Z()-hnuEvent3jet.j2->vertex().Z()) 
-					     < cuts.maxVertexZsep ) ; 
+	    // bool commonVertex = ( fabs(hnuEvent3jet.mu1->vertex().Z()-hnuEvent3jet.j1->vertex().Z()) 
+	    // 			  < cuts.maxVertexZsep ) ; 
+	    // commonVertex = commonVertex && ( fabs(hnuEvent3jet.mu1->vertex().Z()-hnuEvent3jet.j2->vertex().Z()) 
+	    // 				     < cuts.maxVertexZsep ) ; 
+	    // commonVertex = commonVertex && ( fabs(hnuEvent3jet.j1->vertex().Z()-hnuEvent3jet.j2->vertex().Z()) 
+	    // 				     < cuts.maxVertexZsep ) ; 
 
-	    if ( commonVertex ) { 
-	      if ( mu1trig ) hists.LJJJTightCuts.fill( hnuEvent3jet, mu1scaleFactor ) ; 
-	      if ( !mu1isTight ) hists.LJJJLooseCuts.fill( hnuEvent3jet, mu1scaleFactor ) ; 
-	    }
+	    // if ( commonVertex ) { 
+	    if ( mu1trig ) hists.LJJJTightCuts.fill( hnuEvent3jet, mu1scaleFactor ) ; 
+	    if ( !mu1isTight ) hists.LJJJLooseCuts.fill( hnuEvent3jet, mu1scaleFactor ) ; 
+	      //	    }
 	  }
 	}
       }
@@ -1629,20 +1629,20 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 						 rwLowPtbin,rwHighPtbin,rwLoose) ; 
 
 	    // Establish common vertex for the events
-	    bool commonVertex = ( fabs(hnuEvent2jet.mu1->vertex().Z()-hnuEvent2jet.j1->vertex().Z()) 
-				  < cuts.maxVertexZsep ) ; 
-	    commonVertex = commonVertex && ( fabs(hnuEvent2jet.mu1->vertex().Z()-hnuEvent2jet.j2->vertex().Z()) 
-					     < cuts.maxVertexZsep ) ; 
-	    commonVertex = commonVertex && ( fabs(hnuEvent2jet.j1->vertex().Z()-hnuEvent2jet.j2->vertex().Z()) 
-					     < cuts.maxVertexZsep ) ; 
-	    if ( commonVertex ) { 
-	      if ( mu1trig ) hists.LJJTightCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
-	      if ( !mu1isTight ) hists.LJJLooseCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
+	    // bool commonVertex = ( fabs(hnuEvent2jet.mu1->vertex().Z()-hnuEvent2jet.j1->vertex().Z()) 
+	    // 			  < cuts.maxVertexZsep ) ; 
+	    // commonVertex = commonVertex && ( fabs(hnuEvent2jet.mu1->vertex().Z()-hnuEvent2jet.j2->vertex().Z()) 
+	    // 				     < cuts.maxVertexZsep ) ; 
+	    // commonVertex = commonVertex && ( fabs(hnuEvent2jet.j1->vertex().Z()-hnuEvent2jet.j2->vertex().Z()) 
+	    // 				     < cuts.maxVertexZsep ) ; 
+	    // if ( commonVertex ) { 
+	    if ( mu1trig ) hists.LJJTightCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
+	    if ( !mu1isTight ) hists.LJJLooseCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
 
-	      if ( !zMuMu ) { 
-		if ( mu1trig ) hists.LJJZrejTightCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
-		if ( !mu1isTight ) hists.LJJZrejLooseCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
-	      }
+	    if ( !zMuMu ) { 
+	      if ( mu1trig ) hists.LJJZrejTightCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
+	      if ( !mu1isTight ) hists.LJJZrejLooseCuts.fill( hnuEvent2jet,mu1scaleFactor ) ; 
+	      //	      }
 	    }
 	  }
 	}
