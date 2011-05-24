@@ -57,14 +57,18 @@ namespace hnu {
   }
 
 
-/* 
-    double caloJetVertex(const reco::pat::Jet &pJet, const reco::JPTJetCollection &jptJets, double maxDeltaVR=1.0){
+    double caloJetVertex(const pat::Jet &pJet, const reco::JPTJetCollection &jptJets, double maxDeltaVR){
 
         // Find best match jptjets
-        reco::JPTJetCollection::const_iterator tjet=jptJets->end();
+        reco::JPTJetCollection::const_iterator tJet=jptJets.end();
+        for (reco::JPTJetCollection::const_iterator i=jptJets.begin(); i != jptJets.end(); i++){
+            if (tJet == jptJets.end() || ROOT::Math::VectorUtil::DeltaR(pJet.p4(),i->p4()) < ROOT::Math::VectorUtil::DeltaR(pJet.p4(),tJet->p4())){
+                tJet =i;
+            }
+        }
 
-        for (reco::JPTJetCollection::const_iterator i=jptJets->begin(); i != 
-
+        // Return Vert
+        return avgVertex(*tJet, maxDeltaVR);
     }
-*/
+
 }
