@@ -38,6 +38,7 @@ hNu = cms.EDFilter(
     applyMuIDEffcorr  = cms.bool(False),
     applyMuIDEffsign  = cms.int32(0),
 
+    studyScaleFactor  = cms.bool(False),
     highestPtTriggerOnly = cms.bool(False),
     isSignal     = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)
