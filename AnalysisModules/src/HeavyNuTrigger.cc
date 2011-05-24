@@ -12,7 +12,8 @@
 HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   trigEventTag_( iConfig.getParameter< edm::InputTag >( "trigEventTag" ) ),
   muonMatch_   ( iConfig.getParameter< std::string >  ( "muonMatch"    ) ),
-  johnnyApple_ ( iConfig.getParameter< int >          ( "randomSeed"   ) )
+  johnnyApple_ ( iConfig.getParameter< int >          ( "randomSeed"   ) ),
+  year_        ( iConfig.getParameter< int >          ( "year"         ) )
 {
   matchingEnabled_ = false;
   if (trigEventTag_.label().size() &&
@@ -23,6 +24,7 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
     std::cout << "Trigger matching is === DISABLED ===" << std::endl;
     std::cout << "   (Trigger sim. random seed = "<<johnnyApple_<<")"<<std::endl;
     triggerRandom_ = new TRandom(johnnyApple_);
+    std::cout << "   (Trigger year             = "<<year_<<")"<<std::endl;
   }
 
 }                                      // HeavyNuTrigger::HeavyNuTrigger
@@ -136,22 +138,25 @@ HeavyNuTrigger::simulateForMC(double pt,int signOfError2apply)
     throw cms::Exception("invalid trigger configuration");
 
   // determined from 2010 data
-  // const double effslo[]  = {0.913,0.920,0.924,0.923,0.919,0.919};
-  // const double effsnom[] = {0.919,0.924,0.927,0.930,0.928,0.928};
-  // const double effshi[]  = {0.925,0.928,0.931,0.937,0.938,0.938};
-  // const double upedge[]= {   30,   40,   50,   60, 3500,   -1};
+  const double effslo2010[]  = {0.913,0.920,0.924,0.923,0.919,0.919};
+  const double effsnom2010[] = {0.919,0.924,0.927,0.930,0.928,0.928};
+  const double effshi2010[]  = {0.925,0.928,0.931,0.937,0.938,0.938};
+  const double upedge2010[]= {   30,   40,   50,   60, 3500,   -1};
 
   // determined from 2011 data (153/pb)
-  const double effslo[]  = {0.920,0.921,0.919,0.921,0.889,0.889};
-  const double effsnom[] = {0.921,0.923,0.923,0.928,0.899,0.899};
-  const double effshi[]  = {0.923,0.924,0.926,0.935,0.909,0.909};
-  const double upedge[]  = {40,   50,   60,   70,  3500, -1};
+  const double effslo2011[]  = {0.920,0.921,0.919,0.921,0.889,0.889};
+  const double effsnom2011[] = {0.921,0.923,0.923,0.928,0.899,0.899};
+  const double effshi2011[]  = {0.923,0.924,0.926,0.935,0.909,0.909};
+  const double upedge2011[]  = {40,   50,   60,   70,  3500, -1};
 
-  const double *effs = effsnom;
-  if( signOfError2apply )
-    effs = (signOfError2apply > 0) ? effshi : effslo;
+  const double *effs = ( (year_ == 2010) ? effsnom2010 : effsnom2011 );
+  if ( signOfError2apply ) {
+    if ( year_ == 2010 ) effs = (signOfError2apply > 0) ? effshi2010 : effslo2010;
+    else                 effs = (signOfError2apply > 0) ? effshi2011 : effslo2011;
+  }
 
   int i;
+  const double *upedge = ( (year_ == 2010) ? upedge2010 : upedge2011 );
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
   double eff=effs[i];
     

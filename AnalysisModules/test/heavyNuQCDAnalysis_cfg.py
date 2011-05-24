@@ -172,7 +172,8 @@ process.hNuCalo = cms.EDFilter("MuJetBackground",
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
         muonMatch    = cms.string( '' ),
-        randomSeed   = cms.int32( 0 )  # for MC
+        randomSeed   = cms.int32( 0 ),  # for MC
+        year         = cms.int32( 2011 )  # for MC
     ),
     DoLog        = cms.bool( True ),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),

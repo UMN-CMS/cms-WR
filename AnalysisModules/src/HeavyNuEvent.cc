@@ -3,7 +3,9 @@
 
 void HeavyNuEvent::regularize() {
   mu[0]=mu1;
-  mu[1]=mu2;
+  if (!mu2.isNull()) mu[1] = mu2 ; 
+  if (!e1.isNull()) e[1] = e1 ; 
+  // mu[1]=mu2;
   j[0]=j1;
   j[1]=j2;
 }
@@ -25,13 +27,21 @@ void HeavyNuEvent::calculateMuMu(double muptfactor) {
   ctheta_mumu  =planeCosAngle(mu1->momentum(),mu2->momentum(),reco::Particle::Vector(0,0,1));
 }
 
-void HeavyNuEvent::calculate() {
+void HeavyNuEvent::calculateMuE(double muptfactor,double elefactor) {
+  MESscale = muptfactor;
+  EEScale  = elefactor;
+  vMuMu    = MESscale*mu1->p4() + EEScale*e1->p4();
+  mMuMu    = vMuMu.M();
+}
+
+void HeavyNuEvent::calculate(int nMu) {
 
   reco::Particle::LorentzVector j1p4 = j1->p4();
   reco::Particle::LorentzVector j2p4 = j2->p4();
 
   reco::Particle::LorentzVector mu1p4 = mu1->p4();
-  reco::Particle::LorentzVector mu2p4 = mu2->p4();
+  reco::Particle::LorentzVector mu2p4 = ( (nMu == 2) ? mu2->p4() : e1->p4() );
+  // reco::Particle::LorentzVector mu2p4 = mu2->p4();
 
   // if doing JECU studies, apply scaling factor here
   //
@@ -43,7 +53,12 @@ void HeavyNuEvent::calculate() {
 
   // if doing MES studies, apply scaling factor here
   //
-  if( MESscale != 1.0 ) { mu1p4 *= MESscale; mu2p4 *= MESscale; }
+  if ( nMu == 2 ) {
+    if ( MESscale != 1.0 ) { mu1p4 *= MESscale; mu2p4 *= MESscale; }
+  } else { 
+    if ( MESscale != 1.0 ) mu1p4 *= MESscale;  
+    if ( EEScale != 1.0 )  mu2p4 *= EEScale; 
+  }
 
   reco::Particle::Vector mu1mom = mu1p4.Vect();
   reco::Particle::Vector mu2mom = mu2p4.Vect();
@@ -74,9 +89,13 @@ void HeavyNuEvent::calculate() {
 
   float dRmu1jet1 = deltaR( mu1->eta(), mu1->phi(), j1->eta(), j1->phi() ) ; 
   float dRmu1jet2 = deltaR( mu1->eta(), mu1->phi(), j2->eta(), j2->phi() ) ; 
-  float dRmu2jet1 = deltaR( mu2->eta(), mu2->phi(), j1->eta(), j1->phi() ) ; 
-  float dRmu2jet2 = deltaR( mu2->eta(), mu2->phi(), j2->eta(), j2->phi() ) ; 
-
+  float dRmu2jet1 = (( e1.isNull() ) ? 
+ 		     (deltaR( mu2->eta(), mu2->phi(), j1->eta(), j1->phi() )) : 
+ 		     (deltaR( e1->eta(), e1->phi(), j1->eta(), j1->phi() ))) ; 
+  float dRmu2jet2 = (( e1.isNull() ) ? 
+ 		     (deltaR( mu2->eta(), mu2->phi(), j2->eta(), j2->phi() )) : 
+ 		     (deltaR( e1->eta(), e1->phi(), j2->eta(), j2->phi() ))) ; 
+  
   // find the closest jets
   dRminMu1jet = std::min( dRmu1jet1,dRmu1jet2 );
   dRminMu2jet = std::min( dRmu2jet1,dRmu2jet2 );

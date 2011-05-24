@@ -55,6 +55,7 @@ class HeavyNuTrigger {
   edm::InputTag trigEventTag_;
   std::string   muonMatch_;
   int           johnnyApple_;
+  int           year_;
 };
 
 #endif

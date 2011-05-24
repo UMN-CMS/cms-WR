@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
 // Package:    HeavyNu
-// Class:      HeavyNu
+// Class:      HeavyNuTop
 // 
-/**\class HeavyNu HeavyNu.cc HeavyNu/AnalyzerModules/src/HeavyNu.cc
+/**\class HeavyNuTop HeavyNuTop.cc HeavyNu/AnalyzerModules/src/HeavyNuTop.cc
 
  Description: [one line class summary]
 
@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.40 2011/05/18 08:05:31 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.40 2011/05/18 08:05:31 bdahmes Exp $
 //
 //
 
@@ -81,38 +81,16 @@ inline std::string int2str(T i) {
 
 //============================================================
 
-class compare {
+class comparePt {
 public:
   template <class T> bool operator() (const T& a, const T& b) { return a.pt() > b.pt() ; } 
 };
 
 //============================================================
-
-inline void outputCandidate(const reco::CandidateBaseRef& rc) {
-  std::cout<<"pt="<<rc->pt()<<" GeV, eta="<<rc->eta()<<", phi="<<rc->phi();
-}
-
-//============================================================
-
-inline void dumpJetCorInfo(const pat::Jet& j) {
-  std::cout << "Available JEC sets and levels:\n";
-  const std::vector<std::string> jecsets = j.availableJECSets();
-  for (size_t i=0; i<jecsets.size(); i++) {
-    std::cout << jecsets[i]<<":";
-    const std::vector<std::string> jeclevs = j.availableJECLevels(i);
-    for (size_t j=0; j<jeclevs.size(); j++)
-      std::cout << " " << jeclevs[i];
-    std::cout << std::endl;
-  }
-  std::cout << "current JEC set   : " << j.currentJECSet()    << std::endl;
-  std::cout << "current JEC level : " << j.currentJECLevel()  << std::endl;
-  std::cout << "current JEC flavor: " << j.currentJECFlavor() << std::endl;
-}
-
 //============================================================
 
 // Returns 0=neither, 1=loose or 2=tight, -1 if tight but not loose (!)
-int jetID(const pat::Jet& j)
+int jetIDemu(const pat::Jet& j)
 {
   JetIDSelectionFunctor jetIDloose(JetIDSelectionFunctor::PURE09,JetIDSelectionFunctor::LOOSE);
   JetIDSelectionFunctor jetIDtight(JetIDSelectionFunctor::PURE09,JetIDSelectionFunctor::TIGHT);
@@ -123,69 +101,17 @@ int jetID(const pat::Jet& j)
   return (tight ? (loose ? 2 : -1) : (loose ? 1 : 0));
 }
 
-inline void labelJetIDaxis(TAxis *ax)
-{
-  ax->SetBinLabel(1,"Neither");
-  ax->SetBinLabel(2,"PURE09 Loose");
-  ax->SetBinLabel(3,"PURE09 Tight");
-}
-
 //============================================================
-// From the JetEnergyScale twiki:
-//
-inline float sqr(float x) { return x*x; }
-//const float unc4bjetScale2 = sqr(0.05f);
-//const float unc4pileup2    = sqr(0.01f);
-const float unc4calib2     = sqr(0.015f);
-const float unc4ecalCalib2 = sqr(0.025f) ; 
-const float pileup2010A    = 1.2 ; 
-const float pileup2010B    = 2.2 ; 
-const float pileup2011A    = 5.0 ; 
-//const float totalOtherUnc2 = unc4bjetScale2+unc4pileup2+unc4calib2;
-
-float jecTotalUncertainty(float jpt, float jeta,
-			  JetCorrectionUncertainty *jecuObj,
-			  int correctEra,
-			  bool isBjet, 
-			  bool directionIsUp)
-{
-  float offunc; // the "official" eta/pt dependent uncertainty
-
-  jecuObj->setJetPt ( (float)jpt  );
-  jecuObj->setJetEta( (float)jeta );
-  offunc = jecuObj->getUncertainty(directionIsUp);
-
-  float pileupCorrection = ( 2 * 0.75 * 0.8 ) / jpt ;     
-  if ( correctEra == 1 ) pileupCorrection *= pileup2010A ; 
-  else if ( correctEra == 2 ) pileupCorrection *= pileup2010B ; 
-  else if ( correctEra == 3 ) pileupCorrection *= pileup2011A ; 
-  else { // Merge 2010A and 2010B corrections
-    float pileup2010 = ( (3.18 * pileup2010A) + (32.96 * pileup2010B) ) / 36.14 ;
-    pileupCorrection *= pileup2010 ; 
-  }
-  float unc4pileup2 = sqr( pileupCorrection ) ; 
-
-  float uncBjetScale2 = 0. ; 
-  if ( isBjet ) { 
-    if ( jpt > 50. && jpt < 200. && fabs(jeta) < 2.0 ) uncBjetScale2 = sqr( 0.04 ) ; 
-    else uncBjetScale2 = sqr( 0.06 ) ;
-  }
-
-  // Calculations taken from https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC, version 23
-  float totalUnc = sqrt( sqr(offunc) + unc4calib2 + unc4pileup2 + uncBjetScale2 ) ; 
-  return totalUnc ; 
-}
-
 //============================================================
 
 
 static std::string btagName;
 static double      minBtagDiscVal; // for discriminating B-tagged jets.
 
-class HeavyNu : public edm::EDFilter {
+class HeavyNuTop : public edm::EDFilter {
 public:
-  explicit HeavyNu(const edm::ParameterSet&);
-  ~HeavyNu();
+  explicit HeavyNuTop(const edm::ParameterSet&);
+  ~HeavyNuTop();
 
 
 private:
@@ -205,35 +131,27 @@ private:
 				   HeavyNuEvent& hne );
   virtual bool muPassesSelection ( const pat::Muon& m,
 				   const HeavyNuEvent& hne ) ; 
+  virtual bool elePassesSelection ( const pat::Electron& e );
   virtual void selectMuons       ( edm::Handle<pat::MuonCollection>& pMuons,
 				   HeavyNuEvent& hne );
+  virtual void selectElectrons   ( edm::Handle<pat::ElectronCollection>& pElecs,
+				   HeavyNuEvent& hne );
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
-
-  virtual void studyMuonSelectionEff( edm::Handle<pat::MuonCollection>& pMuons,
-				      edm::Handle<pat::JetCollection>&  pJets,
-				      edm::Handle<pat::METCollection>&  pMET,
-				      const HeavyNuEvent& hne );
   
-  inline bool inZmassWindow( double mMuMu ) {
-    return (mMuMu <= ZwinMaxGeV_) && (mMuMu >= ZwinMinGeV_);
-  }
-
   edm::InputTag muonTag_;
   edm::InputTag jetTag_;
   edm::InputTag metTag_;
   edm::InputTag elecTag_;
 
-  double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
-
-  int    jecVal_ ;                    // Jet correction eras: 0 = 2010(A+B), 1 = 2010A, 2 = 2010B, 3 = 2011A
-  int    applyJECUsign_;              // for Jet Energy Correction Uncertainty studies
   double applyMESfactor_;             // for Muon Energy Scale studies
   int    applyTrigEffsign_;           // for Trigger Efficiency studies
-  bool   highestPtTriggerOnly_ ;  
   bool   applyMuIDCorrections_ ; 
-  int    applyMuIDEffsign_;           // for Loose+Iso efficiency correction  
-  bool   studyMuonSelectionEff_;      // for Muon Loose ID Efficiency studies
+  bool   applyEleScaleCorrections_ ; 
+  bool   applyEleIDWeightFactor_ ; 
   bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
+
+  double EBscalefactor_, EEscalefactor_ ; 
+  double ebIDwgt_, eeIDwgt_ ; 
 
   std::string currentFile_;
   bool dolog_;
@@ -253,6 +171,7 @@ private:
     void book(TFileDirectory *, const std::string&, const std::vector<hNuMassHypothesis>&) ;
     // fill all histos of the set with the two electron candidates
     void fill(pat::MuonCollection muons, 
+	      pat::ElectronCollection electrons,
 	      pat::JetCollection jets,
 	      pat::METCollection metc,
 	      bool isMC,
@@ -302,7 +221,6 @@ private:
     TFileDirectory *mydir;
     TFileDirectory *nndir;
 
-    HeavyNuTrigger::trigHistos_t trigHistos;
   };
 
   bool init_;
@@ -328,7 +246,6 @@ private:
     HistPerDef LLptCuts;
     HistPerDef MuTightCuts;
     HistPerDef TrigMatches;
-    HistPerDef MuTightInZwin;
     HistPerDef LLJJptCuts;
     HistPerDef VertexCuts;
     HistPerDef Mu1HighPtCut;
@@ -340,19 +257,6 @@ private:
     HistPerDef Mu1Pt100GeVCut;
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
-    HistPerDef oneBtag;
-    HistPerDef twoBtag;
-    // efficiency studies:
-    HistPerDef Mu1tagInZwin;
-    HistPerDef Mu2tagInZwin;
-    HistPerDef Mu1tagMu2passesLooseInZwin;
-    HistPerDef Mu2tagMu1passesLooseInZwin;
-    HistPerDef Mu1passesTightInZwin;
-    HistPerDef Mu2passesTightInZwin;
-    HistPerDef Mu1Mu2passesTightInZwin;
-    HistPerDef Mu1TrigMatchesInZwin;
-    HistPerDef Mu2TrigMatchesInZwin;
-    HistPerDef Mu1Mu2TrigMatchesInZwin;
 
   } hists;
 
@@ -393,7 +297,7 @@ inline std::string nnhistoname(int mwr,int mnu) {
 //======================================================================
 
 void
-HeavyNu::HistPerDef::book(TFileDirectory *td,
+HeavyNuTop::HistPerDef::book(TFileDirectory *td,
 			  const std::string& post,
 			  const std::vector<hNuMassHypothesis>& v_masspts )
 {
@@ -483,8 +387,12 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
 								50,0,5,30,0,3.14159);
   t ="Jet ID(j_{2}) vs. ID(j_{1}) ";
   t+=post+"; ID(j_{1}); ID(j_{2})";         jetID2d=td->make<TH2I>("jetID2d",t.c_str(),3,0,3,3,0,3);
-  labelJetIDaxis(jetID2d->GetXaxis());
-  labelJetIDaxis(jetID2d->GetYaxis());
+  jetID2d->GetXaxis()->SetBinLabel(1,"Neither");
+  jetID2d->GetXaxis()->SetBinLabel(2,"PURE09 Loose");
+  jetID2d->GetXaxis()->SetBinLabel(3,"PURE09 Tight");
+  jetID2d->GetYaxis()->SetBinLabel(1,"Neither");
+  jetID2d->GetYaxis()->SetBinLabel(2,"PURE09 Loose");
+  jetID2d->GetYaxis()->SetBinLabel(3,"PURE09 Tight");
 
   // ----------  MET histograms     ----------
 
@@ -554,19 +462,21 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
 
 //======================================================================
 
-void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
-			       pat::JetCollection  jets,
-			       pat::METCollection  metc,
-			       bool isMC,
-			       double wgt)
+void HeavyNuTop::HistPerDef::fill(pat::MuonCollection muons,
+				  pat::ElectronCollection electrons,
+				  pat::JetCollection  jets,
+				  pat::METCollection  metc,
+				  bool isMC,
+				  double wgt)
 {  
-  std::sort(muons.begin(),muons.end(),compare()) ; 
-  std::sort(jets.begin(),jets.end(),compare()) ; 
+  std::sort(muons.begin(),muons.end(),comparePt()) ; 
+  std::sort(electrons.begin(),electrons.end(),comparePt()) ; 
+  std::sort(jets.begin(),jets.end(),comparePt()) ; 
 
   reco::Particle::LorentzVector vWR; 
 
   const pat::Muon& m0=muons.at(0);
-  const pat::Muon& m1=muons.at(1);
+  const pat::Electron& m1=electrons.at(0); //kluge
 
   // Muons 
   ptMu1->Fill(m0.pt(),wgt) ; 
@@ -605,31 +515,8 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   mu2ecalRelIso ->Fill(m1.ecalIso() /m1.pt(),wgt);
   mu2caloRelIso ->Fill(m1.caloIso() /m1.pt(),wgt);
 
-  if (isMC) {
-    for (unsigned int i=0; i<2; i++) { 
-      if ( muons.at(i).genLepton() != 0 ) {
-	float dpt = muons.at(i).pt()-muons.at(i).genLepton()->pt() ; 
-	float dR = deltaR(muons.at(i).eta(),muons.at(i).phi(),
-			  muons.at(i).genLepton()->eta(),muons.at(i).genLepton()->phi()) ; 
-	if ( i == 0 ) { 
-	  dptMu1gen->Fill(dpt/muons.at(i).genLepton()->pt()) ; 
-	  dRMu1gen->Fill(dR) ; 
-	} else { 
-	  dptMu2gen->Fill(dpt/muons.at(i).genLepton()->pt()) ; 
-	  dRMu2gen->Fill(dR) ; 
-	}
-      }
-    }
-    if( (m0.genLepton() != 0) &&
-	(m1.genLepton() != 0) ) {
-      reco::Particle::LorentzVector mu1gp4 = m0.genLepton()->p4();
-      reco::Particle::LorentzVector mu2gp4 = m1.genLepton()->p4();
-      mMuMuGenZoom->Fill( (mu1gp4+mu2gp4).M() );
-    }
-  }
   for (int i=0; i<muonQualityFlags; i++) { 
     if (m0.muonID(muonQuality[i])) qualMu1->Fill( i,wgt ) ; 
-    if (m1.muonID(muonQuality[i])) qualMu2->Fill( i,wgt ) ; 
   }
 
   // Jets 
@@ -662,7 +549,7 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   dEtaPhiJet->Fill( fabs(j0.eta()-j1.eta()),
 		    fabs(deltaPhi(j0.phi(),j1.phi())),wgt ) ;
 
-  jetID2d->Fill(jetID(j0),jetID(j1),wgt);
+  jetID2d->Fill(jetIDemu(j0),jetIDemu(j1),wgt);
 
   // met
   if( metc.size() )
@@ -729,74 +616,51 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
 //======================================================================
 
 void
-HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
+HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
 			  const std::vector<hNuMassHypothesis>& v_masspts)
 {
   double wgt = hne.eventWgt ;
 
   // Muons 
   double mu1pt = hne.MESscale*hne.mu1->pt();
-  double mu2pt = hne.MESscale*hne.mu2->pt();
+  double e1pt  = hne.EEScale*hne.e1->pt();
 
   ptMu1->Fill(mu1pt,wgt) ; 
-  ptMu2->Fill(mu2pt,wgt) ; 
+  ptMu2->Fill(e1pt,wgt) ; 
 
   etaMu1->Fill(hne.mu1->eta(),wgt) ; 
-  etaMu2->Fill(hne.mu2->eta(),wgt) ; 
+  etaMu2->Fill(hne.e1->eta(),wgt) ; 
 
   phiMu1->Fill(hne.mu1->phi(),wgt) ; 
-  phiMu2->Fill(hne.mu2->phi(),wgt) ; 
+  phiMu2->Fill(hne.e1->phi(),wgt) ; 
 
-  dPhiMu->Fill( fabs(deltaPhi(hne.mu1->phi(),hne.mu2->phi())),wgt ) ; 
-  dEtaMu->Fill( fabs(hne.mu1->eta() - hne.mu2->eta()),wgt ) ; 
-  dEtaPhiMu->Fill(fabs(hne.mu1->eta()-hne.mu2->eta()),
-		  fabs(deltaPhi(hne.mu1->phi(),hne.mu2->phi())),wgt) ; 
+  dPhiMu->Fill( fabs(deltaPhi(hne.mu1->phi(),hne.e1->phi())),wgt ) ; 
+  dEtaMu->Fill( fabs(hne.mu1->eta() - hne.e1->eta()),wgt ) ; 
+  dEtaPhiMu->Fill(fabs(hne.mu1->eta()-hne.e1->eta()),
+		  fabs(deltaPhi(hne.mu1->phi(),hne.e1->phi())),wgt) ; 
 
   mu1trackIso->Fill(hne.mu1->trackIso(),wgt);
   mu1hcalIso ->Fill(hne.mu1->hcalIso(),wgt);
   mu1ecalIso ->Fill(hne.mu1->ecalIso(),wgt);
   mu1caloIso ->Fill(hne.mu1->caloIso(),wgt);
   mu1dB      ->Fill(hne.mu1->dB(),wgt);
-  mu2trackIso->Fill(hne.mu2->trackIso(),wgt);
-  mu2hcalIso ->Fill(hne.mu2->hcalIso(),wgt);
-  mu2ecalIso ->Fill(hne.mu2->ecalIso(),wgt);
-  mu2caloIso ->Fill(hne.mu2->caloIso(),wgt);
-  mu2dB      ->Fill(hne.mu2->dB(),wgt);
+  mu2trackIso->Fill(hne.e1->trackIso(),wgt);
+  mu2hcalIso ->Fill(hne.e1->hcalIso(),wgt);
+  mu2ecalIso ->Fill(hne.e1->ecalIso(),wgt);
+  mu2caloIso ->Fill(hne.e1->caloIso(),wgt);
+  mu2dB      ->Fill(hne.e1->dB(),wgt);
   
   mu1trackRelIso->Fill(hne.mu1->trackIso()/mu1pt,wgt);
   mu1hcalRelIso ->Fill(hne.mu1->hcalIso() /mu1pt,wgt);
   mu1ecalRelIso ->Fill(hne.mu1->ecalIso() /mu1pt,wgt);
   mu1caloRelIso ->Fill(hne.mu1->caloIso() /mu1pt,wgt);
-  mu2trackRelIso->Fill(hne.mu2->trackIso()/mu2pt,wgt);
-  mu2hcalRelIso ->Fill(hne.mu2->hcalIso() /mu2pt,wgt);
-  mu2ecalRelIso ->Fill(hne.mu2->ecalIso() /mu2pt,wgt);
-  mu2caloRelIso ->Fill(hne.mu2->caloIso() /mu2pt,wgt);
+  mu2trackRelIso->Fill(hne.e1->trackIso()/e1pt,wgt);
+  mu2hcalRelIso ->Fill(hne.e1->hcalIso() /e1pt,wgt);
+  mu2ecalRelIso ->Fill(hne.e1->ecalIso() /e1pt,wgt);
+  mu2caloRelIso ->Fill(hne.e1->caloIso() /e1pt,wgt);
 
-  if( hne.isMC ) {
-    for( unsigned int i=0; i<2; i++ ) { 
-      if( hne.mu[i]->genLepton() != 0 ) {
-	float dpt = (hne.MESscale*hne.mu[i]->pt())-hne.mu[i]->genLepton()->pt() ; 
-	float dR  = deltaR(hne.mu[i]->eta(),hne.mu[i]->phi(),
-			   hne.mu[i]->genLepton()->eta(),hne.mu[i]->genLepton()->phi()) ; 
-	if( i == 0 ) { 
-	  dptMu1gen->Fill(dpt/hne.mu[i]->genLepton()->pt()) ; 
-	  dRMu1gen->Fill(dR) ; 
-	} else { 
-	  dptMu2gen->Fill(dpt/hne.mu[i]->genLepton()->pt()) ; 
-	  dRMu2gen->Fill(dR) ; 
-	}
-      }
-    }
-    if( (hne.mu1->genLepton() != 0) &&
-	(hne.mu2->genLepton() != 0) ) {
-      reco::Particle::LorentzVector mu1gp4 = hne.mu1->genLepton()->p4();
-      reco::Particle::LorentzVector mu2gp4 = hne.mu2->genLepton()->p4();
-      mMuMuGenZoom->Fill( (mu1gp4+mu2gp4).M() );
-    }
-  }
   for (int i=0; i<muonQualityFlags; i++) { 
     if (hne.mu1->muonID(muonQuality[i])) qualMu1->Fill( i,wgt ) ; 
-    if (hne.mu2->muonID(muonQuality[i])) qualMu2->Fill( i,wgt ) ; 
   }
 
   int jet1id = 0;
@@ -804,7 +668,7 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
   // Jets 
   if (hne.j1.isAvailable()) {
-    jet1id = jetID(*(hne.j1));
+    jet1id = jetIDemu(*(hne.j1));
 
     double j1bdisc = hne.j1->bDiscriminator(btagName);
 
@@ -827,7 +691,7 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 	       (j2bdisc >= minBtagDiscVal)   )    numBjets->Fill(1.,wgt);
       else                                        numBjets->Fill(0.,wgt);
 
-      jet2id = jetID(*(hne.j2));
+      jet2id = jetIDemu(*(hne.j2));
 
       dPhiJet->Fill( fabs(deltaPhi(hne.j1->phi(),hne.j2->phi())),wgt ) ; 
       dEtaJet->Fill( fabs(hne.j1->eta() - hne.j2->eta()),wgt ) ; 
@@ -868,17 +732,17 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
   mMuMu->Fill( hne.mMuMu,wgt );
 
-  if (hne.mu1->charge() == hne.mu2->charge()) {
+  if (hne.mu1->charge() == hne.e1->charge()) {
     mMuMuSS->Fill( hne.mMuMu,wgt );
-    ptMu1VsPtMu2ss->Fill( hne.mu1->pt(), hne.mu2->pt(),wgt );
+    ptMu1VsPtMu2ss->Fill( hne.mu1->pt(), hne.e1->pt(),wgt );
   }  else {
     mMuMuOS->Fill( hne.mMuMu,wgt );
-    ptMu1VsPtMu2os->Fill( hne.mu1->pt(), hne.mu2->pt(),wgt );
+    ptMu1VsPtMu2os->Fill( hne.mu1->pt(), hne.e1->pt(),wgt );
   }
 
   mMuMuZoom->Fill( hne.mMuMu,wgt );
 
-  diMuCharge->Fill(0.5*hne.mu1->charge()*hne.mu2->charge(),wgt);
+  diMuCharge->Fill(0.5*hne.mu1->charge()*hne.e1->charge(),wgt);
 
   czeta_mumu->Fill(hne.czeta_mumu,wgt);
   czeta_mumu_zoom->Fill(hne.czeta_mumu,wgt);
@@ -918,7 +782,7 @@ const std::vector<hNuMassHypothesis> v_null;
 //
 // constructors and destructor
 //
-HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
+HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 {
   // ==================== Get all parameters ====================
   //
@@ -943,25 +807,18 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   cuts.muon_trackiso_limit  = iConfig.getParameter<double>("muonTrackRelIsoLimit");
   cuts.maxVertexZsep        = iConfig.getParameter<double>("maxVertexZsepCM");
 
-  ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
-  ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
+  EBscalefactor_ = iConfig.getParameter<double>("EBscalefactor") ; 
+  EEscalefactor_ = iConfig.getParameter<double>("EEscalefactor") ; 
+  ebIDwgt_ = iConfig.getParameter<double>("EBidWgt") ; 
+  eeIDwgt_ = iConfig.getParameter<double>("EEidWgt") ; 
 
-  jecVal_ = iConfig.getParameter<int>("jecEra");
+  applyMESfactor_ = 1.0 ; // Hardcoded for Top studies
+  applyTrigEffsign_ = 0. ; // Hardcoded for Top studies 
 
-  applyJECUsign_ = iConfig.getParameter<int>("applyJECUsign");
-  if (applyJECUsign_) applyJECUsign_ /= abs(applyJECUsign_); // ensure -1,0,+1
-
-  applyMESfactor_ = iConfig.getParameter<double>("applyMESfactor");
-
+  applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
+  applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ; 
   applyMuIDCorrections_ = iConfig.getParameter<bool>("applyMuIDEffcorr");
-  applyMuIDEffsign_ = iConfig.getParameter<int>("applyMuIDEffsign");
-  if (applyMuIDEffsign_) applyMuIDEffsign_ /= abs(applyMuIDEffsign_); // ensure -1,0,+1
 
-  highestPtTriggerOnly_ = iConfig.getParameter<bool>("highestPtTriggerOnly");
-  applyTrigEffsign_ = iConfig.getParameter<int>("applyTrigEffsign");
-  if (applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
-
-  studyMuonSelectionEff_ = iConfig.getParameter<bool>("studyMuSelectEff");
 
   studyScaleFactorEvolution_ = iConfig.getParameter<bool>("studyScaleFactor");
 
@@ -990,47 +847,12 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.jetID    = fs->make<TH1I>("jetID",     "Jet ID",3,0,3);
   hists.jetPtvsNum=fs->make<TH2D>("jetPtvsNum","Jet P_{T} vs. Jet # ",11,-0.5,10.5,200,0.,2000.);
 
-  labelJetIDaxis(hists.jetID->GetXaxis());
+  hists.jetID->GetXaxis()->SetBinLabel(1,"Neither");
+  hists.jetID->GetXaxis()->SetBinLabel(2,"PURE09 Loose");
+  hists.jetID->GetXaxis()->SetBinLabel(3,"PURE09 Tight");
 
   hists.trkIsoStudy = fs->make<TH1D>("trkIsoStudy",";Tracker Relative Isolation", 100,0.,1.);
 
-  if (applyMESfactor_==1.0) { // otherwise don't bother
-
-    // Loose/Tight vs Pt
-    hists.looseMuPt             = fs->make<TH1D>("looseMuPt","#mu p_{T}, passes VBTF Loose", 100,0,2000);
-    hists.tightMuPt             = fs->make<TH1D>("tightMuPt","#mu p_{T}, passes VBTF Tight", 100,0,2000);
-
-    //  Muon quality variables vs muon p_T
-    //
-    hists.muNvalidHitsVsPt      = fs->make<TH2D>("muNvalidHitsVsPt",
-						 "#mu # Valid hits vs p_{T}; p_{T}(#mu) (GeV); # Tracker+Pixel Hits",
-						 150,0,3000,50,0,50);
-    hists.mudBvsPt              = fs->make<TH2D>("mudBvsPt",
-						 "#mu dXY vs p_{T}; p_{T}(#mu) (GeV); dXY(#mu)",
-						 150,0,3000,40,0.,20.);
-    hists.muNormChi2vsPt        = fs->make<TH2D>("muNormChi2vsPt",
-						 "#mu Norm #chi^{2} vs p_{T}; p_{T}(#mu) (GeV); norm #chi^{2}",
-						 150,0,3000,25,0,50);
-    hists.muQualVsPt            = fs->make<TH2D>("muIDvsPt",
-						 "Qual(#mu) vs p_{T}(#mu); p_{T}(#mu) (GeV)",
-						 150,0,3000,4,0,4);
-    hists.muNmatchesVsPt        = fs->make<TH2D>("muNmatchesVsPt",
-						 "#mu # Matches vs p_{T}; p_{T}(#mu) (GeV); # Matches",
-						 150,0,3000,10,0,10);
-    hists.muNvalidMuonHitsVsPt  = fs->make<TH2D>("muNvalidMuonHitsVsPt",
-						 "# Valid Muon hits vs p_{T}; p_{T}(#mu) (GeV); # Valid Muon Hits",
-						 150,0,3000,50,0,50);
-    hists.muNvalidPixelHitsVsPt = fs->make<TH2D>("muNvalidPixelHitsVsPt",
-						 "# Valid Pixel hits vs p_{T}; p_{T}(#mu) (GeV); # Valid Pixel Hits",
-						 150,0,3000,10,0,10);
-    
-    labelMuonQualAxis(hists.muQualVsPt->GetYaxis());
-    
-    hists.muTrckIsoVsPt=fs->make<TH2D>("muTrckIsoVsPt","trackIso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);trackIso (GeV)",150,0.,3000.,30,0.,300.);
-    hists.muHcalIsoVsPt=fs->make<TH2D>("muHcalIsoVsPt","HCAL Iso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);HCAL Iso (GeV)",150,0.,3000.,30,0.,300.);
-    hists.muEcalIsoVsPt=fs->make<TH2D>("muEcalIsoVsPt","ECAL Iso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);ECAL Iso (GeV)",150,0.,3000.,30,0.,300.);
-    hists.muCaloIsoVsPt=fs->make<TH2D>("muCaloIsoVsPt","Calo Iso(#mu) vs p_{T}(#mu);p_{T}(#mu)(GeV);Calo Iso (GeV)",150,0.,3000.,30,0.,300.);
-  }
 
   // Histos per cut:
   //
@@ -1053,40 +875,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     hists.Mu1Pt100GeVCut.book( new TFileDirectory(fs->mkdir("Mu1Pt100GeV")), "(Mu1 100 GeV pt cut)", nnif_->masspts() );
   }
 
-  if (trig_->matchingEnabled()) {
-    hists.MuTightInZwin.book          ( new TFileDirectory(fs->mkdir("MuTightInZwin")),          "(#mu1 tight in Z mass Window)",    v_null );
-    hists.Mu1TrigMatchesInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1TrigMatchesInZwin")),   "(#mu1 trigger match in Z mass Window)",v_null );
-    hists.Mu2TrigMatchesInZwin.book   ( new TFileDirectory(fs->mkdir("Mu2TrigMatchesInZwin")),   "(#mu2 Trigger match in Z mass Window)",v_null );
-    hists.Mu1Mu2TrigMatchesInZwin.book( new TFileDirectory(fs->mkdir("Mu1Mu2TrigMatchesInZwin")),"(#mu1,#mu2 Trigger match in Z mass Window)",v_null );
-    trig_->book(*(hists.Mu1TrigMatchesInZwin.mydir), &(hists.Mu1TrigMatchesInZwin.trigHistos));
-    trig_->book(*(hists.Mu2TrigMatchesInZwin.mydir), &(hists.Mu2TrigMatchesInZwin.trigHistos));
-  }
-
-  if (studyMuonSelectionEff_) {
-    hists.Mu1tagInZwin.book              ( new TFileDirectory(fs->mkdir("Mu1tagInZwin")),               "(#mu1 tag in Z mass Window)",v_null );
-    hists.Mu2tagInZwin.book              ( new TFileDirectory(fs->mkdir("Mu2tagInZwin")),               "(#mu2 tag in Z mass Window)",v_null );
-    hists.Mu1tagMu2passesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu1tagMu2passesLooseInZwin")), "(#mu2 passes Loose crit. in Z mass Window)",v_null );
-    hists.Mu2tagMu1passesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu2tagMu1passesLooseInZwin")), "(#mu1 passes Loose crit. in Z mass Window)",v_null );
-    hists.Mu1passesTightInZwin.book      ( new TFileDirectory(fs->mkdir("Mu1passesTightInZwin")),       "(#mu1 passes Tight crit. in Z mass Window)",v_null );
-    hists.Mu2passesTightInZwin.book      ( new TFileDirectory(fs->mkdir("Mu2passesTightInZwin")),       "(#mu2 passes Tight crit. in Z mass Window)",v_null );
-    hists.Mu1Mu2passesTightInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1Mu2passesTightInZwin")),    "(#mu1,#mu2 passes Tight crit. in Z mass Window)",v_null );
-  }
-
   hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
 
   init_=false;
-
-  if (applyJECUsign_>0) {
-    hists.jecUncHi = fs->make<TH1F>("jecUncHi","JEC Uncertainty (high); Uncertainty (%)", 100,0,10);
-    hists.jecUncHiVsEtaPt = fs->make<TProfile2D>("jecUncHiVsEtaPt",
-						 "JEC Uncertainty (high)(%);Jet #eta;Jet p_{T} (GeV)",
-						 50,-2.5,2.5,100,0,1000);
-  } else if (applyJECUsign_<0) {
-    hists.jecUncLo = fs->make<TH1F>("jecUncLo","JEC Uncertainty (low);  Uncertainty (%)", 100,0,10);
-    hists.jecUncLoVsEtaPt = fs->make<TProfile2D>("jecUncLoVsEtaPt",
-						 "JEC Uncertainty (low)(%);Jet #eta;Jet p_{T} (GeV)",
-						 50,-2.5,2.5,100,0,1000);
-  }
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
@@ -1096,8 +887,6 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   std::cout << "electronTag       = " << elecTag_                   << std::endl;
   std::cout << "btagName          = " << btagName                   << std::endl;
   std::cout << "minBtagDiscr      = " << minBtagDiscVal             << std::endl;
-  std::cout << "ZmassWinMinGeV    = " << ZwinMinGeV_                << " GeV" << std::endl;
-  std::cout << "ZmassWinMaxGeV    = " << ZwinMaxGeV_                << " GeV" << std::endl;
   std::cout << "minMu1pt          = " << cuts.minimum_mu1_pt        << " GeV" << std::endl;
   std::cout << "minMu2pt          = " << cuts.minimum_mu2_pt        << " GeV" << std::endl;
   std::cout << "minJetPt          = " << cuts.minimum_jet_pt        << " GeV" << std::endl;
@@ -1107,17 +896,32 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   std::cout << "muonTrackRelIso   = " << cuts.muon_trackiso_limit   << std::endl;
   std::cout << "minMuMuMass       = " << cuts.minimum_mumu_mass     << " GeV" << std::endl;
   std::cout << "min4objMass       = " << cuts.minimum_mWR_mass      << " GeV" << std::endl;
-  std::cout << "jecEra            = " << jecVal_                    << std::endl;
-  std::cout << "applyJECUsign     = " << applyJECUsign_             << std::endl;
-  std::cout << "applyMESfactor    = " << applyMESfactor_            << std::endl;
   std::cout << "applyMuIDEffcorr  = " << applyMuIDCorrections_      << std::endl;
-  std::cout << "applyMuIDEffsign  = " << applyMuIDEffsign_          << std::endl;
-  std::cout << "applyTrigEffsign  = " << applyTrigEffsign_          << std::endl;
-  std::cout << "studyMuSelectEff  = " << studyMuonSelectionEff_     << std::endl;
+  std::cout << "applyEleEScale    = " << applyEleScaleCorrections_  << std::endl ; 
+  std::cout << "EB scale factor   = " << EBscalefactor_             << std::endl ; 
+  std::cout << "EE scale factor   = " << EEscalefactor_             << std::endl ; 
+  std::cout << "applyEleIDweight  = " << applyEleIDWeightFactor_    << std::endl ; 
+  std::cout << "EB weight         = " << ebIDwgt_                   << std::endl ; 
+  std::cout << "EE weight         = " << eeIDwgt_                   << std::endl ; 
+
+
+  ebIDwgt_ = iConfig.getParameter<double>("EBidWgt") ; 
+  eeIDwgt_ = iConfig.getParameter<double>("EEidWgt") ; 
+
+  applyMESfactor_ = 1.0 ; // Hardcoded for Top studies
+  applyTrigEffsign_ = 0. ; // Hardcoded for Top studies 
+
+  applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
+  applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ; 
+
+
   std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
 }
   
-HeavyNu::~HeavyNu()
+
+
+
+HeavyNuTop::~HeavyNuTop()
 {
   
   // do anything here that needs to be done at destruction time
@@ -1131,13 +935,13 @@ HeavyNu::~HeavyNu()
 // member functions
 //
 bool
-HeavyNu::isVBTFloose(const pat::Muon& m)
+HeavyNuTop::isVBTFloose(const pat::Muon& m)
 {
   return m.muonID("AllGlobalMuons")&&(m.numberOfValidHits()>10);
 }
 
 bool
-HeavyNu::isVBTFtight(const pat::Muon& m)
+HeavyNuTop::isVBTFtight(const pat::Muon& m)
 {
   if( !isVBTFloose(m) ) return false; // this should already have been checked.
 
@@ -1153,88 +957,38 @@ HeavyNu::isVBTFtight(const pat::Muon& m)
 	  (gt->hitPattern().numberOfValidMuonHits()>0) &&
 	  (gt->hitPattern().numberOfValidPixelHits()>0) );
 
-}                                                // HeavyNu::isVBTFtight
+}                                                // HeavyNuTop::isVBTFtight
 
 //======================================================================
 
 void
-HeavyNu::fillBasicMuHistos(const pat::Muon& m)
+HeavyNuTop::fillBasicMuHistos(const pat::Muon& m)
 {
   double mupt = m.pt();
   hists.muPt->Fill( applyMESfactor_*mupt ) ; 
   hists.muEta->Fill( m.eta() ) ; 
   hists.muPhi->Fill( m.phi() ) ; 
-
-  if (applyMESfactor_==1.0) {
-    hists.mudBvsPt->Fill( mupt, m.dB() );
-
-    if( isVBTFloose( m ) ) {
-      hists.looseMuPt        ->Fill( mupt );
-      hists.muNvalidHitsVsPt ->Fill( mupt, m.numberOfValidHits() );
-      hists.muNormChi2vsPt   ->Fill( mupt, m.normChi2() );
-      hists.muNmatchesVsPt   ->Fill( mupt, m.numberOfMatches() );
-      
-      reco::TrackRef gt = m.globalTrack();
-      // gt.isNonnull() guaranteed at this point?
-      hists.muNvalidMuonHitsVsPt ->Fill( mupt, gt->hitPattern().numberOfValidMuonHits() );
-      hists.muNvalidPixelHitsVsPt->Fill( mupt, gt->hitPattern().numberOfValidPixelHits() );
-
-      if( isVBTFtight( m ) ) hists.tightMuPt->Fill( mupt );
-    }
-    hists.muQualVsPt->Fill( mupt, 0 );
-    for (int i=1; i<muonQualityFlags; i++)
-      if (m.muonID(muonQuality[i]))
-	hists.muQualVsPt->Fill( mupt, i ) ; 
-    
-    hists.muTrckIsoVsPt->Fill( mupt, m.trackIso() );
-    hists.muHcalIsoVsPt->Fill( mupt, m.hcalIso()  );
-    hists.muEcalIsoVsPt->Fill( mupt, m.ecalIso()  );
-    hists.muCaloIsoVsPt->Fill( mupt, m.caloIso()  );
-  }
-}                                          // HeavyNu::fillBasicMuHistos
+}                                          // HeavyNuTop::fillBasicMuHistos
 
 //======================================================================
 
 void
-HeavyNu::fillBasicJetHistos( const pat::Jet& j,
-			     int jetnum )
+HeavyNuTop::fillBasicJetHistos( const pat::Jet& j,
+				int jetnum )
 {
   double jpt=j.pt(),jeta=j.eta();
-  float totalunc = 0.0f;
-
-  int jpdgId      = 0 ; 
-  if ( j.genParton() ) jpdgId = j.genParton()->pdgId() ; 
-  bool isBjet = ( abs(jpdgId) == 5 ) ; 
-
-  float jecuHi=jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,true );
-  float jecuLo=jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,false );
-
-  if( applyJECUsign_ ) {
-    totalunc = (applyJECUsign_>0) ? jecuHi : jecuLo;
-    jpt *= (1.0 + (applyJECUsign_*totalunc));
-  }
 
   hists.jetPt ->Fill( jpt  ) ; 
   hists.jetEta->Fill( jeta ) ; 
   hists.jetPhi->Fill( j.phi() ) ; 
-  hists.jetID ->Fill( jetID( j ) );
+  hists.jetID ->Fill( jetIDemu( j ) );
   hists.jetPtvsNum->Fill( jetnum, jpt ) ; 
-
-  jecuHi *= 100.f;
-  jecuLo *= 100.f;
-  if (jecuHi != jecuLo) std::cout<<jeta<<"\t"<<jpt<<"\t"<<jecuHi<<"\t"<<jecuLo<<std::endl;
-
-  if( applyJECUsign_>0 ) {
-    hists.jecUncHi->Fill( jecuHi ); hists.jecUncHiVsEtaPt->Fill( jeta,j.pt(),(double)jecuHi );
-  } else if( applyJECUsign_<0 ){
-    hists.jecUncLo->Fill( jecuLo ); hists.jecUncLoVsEtaPt->Fill( jeta,j.pt(),(double)jecuLo );
-  }
-}                                         // HeavyNu::fillBasicJetHistos
+}                                         // HeavyNuTop::fillBasicJetHistos
 
 //======================================================================
 
 TH1 *
-HeavyNu::bookRunHisto(uint32_t runNumber)
+HeavyNuTop::bookRunHisto(uint32_t runNumber)
 {
   std::string runstr = int2str<uint32_t>(runNumber);
   return hists.rundir->make <TH1I> (runstr.c_str(), runstr.c_str(),1,1,2);
@@ -1243,24 +997,20 @@ HeavyNu::bookRunHisto(uint32_t runNumber)
 //======================================================================
 
 void
-HeavyNu::selectJets(edm::Handle<pat::JetCollection>& pJets,
+HeavyNuTop::selectJets(edm::Handle<pat::JetCollection>& pJets,
 		    HeavyNuEvent& hne)
 {
   for (size_t iJet=0; iJet<pJets->size(); iJet++) {
     pat::JetRef iJ=pat::JetRef( pJets,iJet );
     float jpt       = (*iJ).pt();
     float jeta      = (*iJ).eta();
-    int jpdgId      = 0 ; 
-    if ( iJ->genParton() ) jpdgId = iJ->genParton()->pdgId() ; 
-    bool isBjet = ( abs(jpdgId) == 5 ) ; 
+
     float jecuscale = 1.0f;
-    if( applyJECUsign_ ) {
-      float jecu = jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,(applyJECUsign_>0) );
-      jecuscale  = (1 + (applyJECUsign_*jecu));
-      jpt       *= jecuscale;
-    }
+
+    double dRej = deltaR( hne.e1->eta(),hne.e1->phi(),jeta,(*iJ).phi() ) ; 
     if( (jpt       > cuts.minimum_jet_pt)   && // more later!
-	(fabs(jeta)<=cuts.maximum_jet_abseta) ) {
+	(fabs(jeta)<=cuts.maximum_jet_abseta) && 
+	(dRej > cuts.minimum_muon_jet_dR) ) { 
 
       if(hne.j1.isNull()) {
 	hne.j2=hne.j1;
@@ -1288,12 +1038,12 @@ HeavyNu::selectJets(edm::Handle<pat::JetCollection>& pJets,
       } // if jet supplants one of the jets selected so far
     } // if jet passes pt/eta cuts
   } // jet loop
-}                                                  //HeavyNu::selectJets
+}                                                  //HeavyNuTop::selectJets
 
 //======================================================================
 
 bool
-HeavyNu::muPassesSelection(const pat::Muon& m, const HeavyNuEvent& hne)
+HeavyNuTop::muPassesSelection(const pat::Muon& m, const HeavyNuEvent& hne)
 {
   const pat::JetRef& j1 = hne.j1 ; 
   const pat::JetRef& j2 = hne.j2 ; 
@@ -1308,83 +1058,53 @@ HeavyNu::muPassesSelection(const pat::Muon& m, const HeavyNuEvent& hne)
 	  && (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
 	  && ((m.trackIso()/mupt)  < cuts.muon_trackiso_limit) );
 
-}                                          // HeavyNu::muPassesSelection
+}                                          // HeavyNuTop::muPassesSelection
 
 //======================================================================
 
-void
-HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
-			       edm::Handle<pat::JetCollection>&  pJets,
-			       edm::Handle<pat::METCollection>&  pMET,
-			       const HeavyNuEvent& hne)
+bool
+HeavyNuTop::elePassesSelection(const pat::Electron& e) 
 {
-  // study ID/isolation efficiency,
-  //
-  pat::MuonRef m0 = pat::MuonRef(pMuons,0);
-  pat::MuonRef m1 = pat::MuonRef(pMuons,1);
-  assert(m0.isAvailable() && m1.isAvailable());
 
-  pat::MuonRef m2;
-  assert (m0->pt() >= m1->pt());
-  if (pMuons->size()>2) {
-    m2 = pat::MuonRef(pMuons,2);
-    if (m2.isAvailable())
-      assert (m1->pt() >= m2->pt());
+  if ( !e.ecalDriven() ) return false ; 
+  double ept = e.superCluster()->energy() / cosh(e.superCluster()->eta()) ; 
+
+  if ( fabs(e.superCluster()->eta()) < 1.442 ) ept *= EBscalefactor_ ; 
+  else ept *= EEscalefactor_ ; 
+
+  if ( ept > cuts.minimum_mu2_pt &&
+       fabs(e.eta()) < 2.5 ) { // Hardcoded limit on electron position
+
+    // Calculate a few quantities
+    bool HoE = ( e.hadronicOverEm() < 0.05 ) ; 
+    bool dPhiIn = ( e.deltaPhiSuperClusterTrackAtVtx() < 0.09 ) ; 
+    double ecalIso  = e.dr03EcalRecHitSumEt() ; 
+    double hcalIso1 = e.dr03HcalDepth1TowerSumEt() ; 
+    double hcalIso2 = e.dr03HcalDepth2TowerSumEt() ; 
+
+    if ( fabs(e.superCluster()->eta()) < 1.442 ) { // ECAL Barrel 
+      bool goodShape = ( e.e2x5Max() / e.e5x5() > 0.94 ) || ( e.e1x5() / e.e5x5() > 0.83 ) ; 
+      bool dEtaIn = ( e.deltaEtaSuperClusterTrackAtVtx() < 0.005 ) ; 
+      double threshold = 2. + 0.03 * ept ; 
+      bool caloIso = ( (ecalIso + hcalIso1) < threshold ) ; 
+      bool trkIso = ( e.dr03TkSumPt() < 7.5 ) ; 
+      if ( HoE && goodShape && dEtaIn && dPhiIn && caloIso && trkIso ) return true ; 
+    } else if ( fabs(e.superCluster()->eta()) > 1.56 ) { // ECAL endcap
+      bool goodShape = ( e.sigmaIetaIeta() < 0.03 ) ; 
+      bool dEtaIn = ( e.deltaEtaSuperClusterTrackAtVtx() < 0.007 ) ; 
+      double threshold = ( ept < 50. ) ? (2.5) : (2.5 + 0.03 * (ept-50)) ; 
+      bool caloIso = ( ((ecalIso + hcalIso1) < threshold) && (hcalIso2 < 0.5) ) ; 
+      bool trkIso = ( e.dr03TkSumPt() < 15. ) ; 
+      if ( HoE && goodShape && dEtaIn && dPhiIn && caloIso && trkIso ) return true ; 
+    }
   }
-
-  // Require 2 and only 2 muons above the pt threshold
-  if( m2.isNull() || (m2->pt() < cuts.minimum_mu2_pt) ) {
-    // pre-requisites for the study - only portions of the initial selection are
-    //   of interest
-
-    double drj1m0=(hne.j1.isNull())?(10.0):deltaR(m0->eta(),m0->phi(),hne.j1->eta(),hne.j1->phi());
-    double drj2m0=(hne.j2.isNull())?(10.0):deltaR(m0->eta(),m0->phi(),hne.j2->eta(),hne.j2->phi());
-    double drj1m1=(hne.j1.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
-    double drj2m1=(hne.j2.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
-
-    bool m0tight=isVBTFtight(*m0);
-    bool m1tight=isVBTFtight(*m1);
-
-    if( (m0tight || m1tight) &&
-	(m1->pt() > cuts.minimum_mu2_pt) // by inference m0 must also pass this
-	&& (fabs(m0->eta()) < cuts.maximum_mu_abseta)
-	&& (fabs(m1->eta()) < cuts.maximum_mu_abseta)
-	&& (std::min(drj1m0,drj2m0) > cuts.minimum_muon_jet_dR)
-	&& (std::min(drj1m1,drj2m1) > cuts.minimum_muon_jet_dR)
-	&& inZmassWindow((m0->p4()+m1->p4()).M()) ) { // we have a candidate for study
-
-      if( m0tight && ((drj1m0 < 0.8) || (drj2m0 < 0.8)) ) {
-	double trkIso = m0->trackIso()/m0->pt();
-	hists.trkIsoStudy->Fill(trkIso);
-      }
-      if( m1tight && ((drj1m1 < 0.8) || (drj2m1 < 0.8)) ) {
-	double trkIso = m1->trackIso()/m1->pt();
-	hists.trkIsoStudy->Fill(trkIso);
-      }
-
-      if (!hne.isMC) {
-	bool m0passed = muPassesSelection(*m0,hne);
-	bool m1passed = muPassesSelection(*m1,hne);
-	if( m0passed && m0tight ) {
-	  hists.Mu1tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	  if ( m1passed )
-	    hists.Mu1tagMu2passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	}
-	if( m1passed && m1tight ) {
-	  hists.Mu2tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	  if( m0passed )
-	    hists.Mu2tagMu1passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	}
-      } // if !isMC
-    } // if candidate for study
-  } // else don't bother with 3 or more muons
-
-}                                      // HeavyNu::studyMuonSelectionEff
+  return false ; 
+}                                          // HeavyNu::elePassesSelection
 
 //======================================================================
 
 void
-HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
+HeavyNuTop::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
 		     HeavyNuEvent& hne)
 {
   double mu1wgt = 1.0 ; 
@@ -1401,28 +1121,65 @@ HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
 	hne.mu1=iM;
 	if ( applyMuIDCorrections_ && hne.isMC ) {
 	  mu2wgt = mu1wgt ; 
-	  mu1wgt = muid_->weightForMC( mupt,applyMuIDEffsign_ ) ; 
+	  mu1wgt = muid_->weightForMC( mupt,0 ) ; 
 	}
       } else 	if (hne.mu2.isNull() ||
 		    hne.mu2->pt()<(*iM).pt()) { // or this
 	hne.mu2=iM;
 	if ( applyMuIDCorrections_ && hne.isMC ) 
-	  mu2wgt = muid_->weightForMC( mupt,applyMuIDEffsign_ ) ;
+	  mu2wgt = muid_->weightForMC( mupt,0 ) ;
       }
     }
   }
   // Due to muon ID differences between data/MC, need to apply 
   // a weight factor to events based on muon pt
   if ( applyMuIDCorrections_ && hne.isMC ) {
-    hne.eventWgt = mu1wgt * mu2wgt ; 
+    hne.eventWgt *= mu1wgt ; // Only mu1 weight matters
+    if ( dolog_ ) std::cout << "Mu weight: " << mu1wgt << " " << hne.eventWgt << std::endl ; 
   }
-}                                                // HeavyNu::selectMuons
+}                                                // HeavyNuTop::selectMuons
+
+void
+HeavyNuTop::selectElectrons(edm::Handle<pat::ElectronCollection>& pElecs,
+			 HeavyNuEvent& hne)
+{
+  double weight = 1.0 ; 
+  
+  for (size_t iEle=0; iEle<pElecs->size(); iEle++) {
+    pat::ElectronRef iE=pat::ElectronRef(pElecs,iEle);
+
+    if( elePassesSelection(*iE) ) {
+      bool isEB = (fabs((*iE).superCluster()->eta()) < 1.442) ; 
+      double ept = (*iE).superCluster()->energy() / cosh((*iE).superCluster()->eta()) ; 
+
+      if (hne.e1.isNull()) { 
+	hne.e1=iE ;
+	if (isEB) hne.EEScale = EBscalefactor_ ; 
+	else      hne.EEScale = EEscalefactor_ ; 
+	weight = ( isEB ? ebIDwgt_ : eeIDwgt_ ) ; 
+      } else {
+	bool e1isEB = (fabs(hne.e1->superCluster()->eta()) < 1.442) ; 
+	double e1pt = hne.e1->superCluster()->energy() / cosh(hne.e1->superCluster()->eta()) ; 
+	if ( e1isEB ) e1pt *= EBscalefactor_ ;
+	else          e1pt *= EEscalefactor_ ;
+	if (e1pt<ept) { 
+	  hne.e1=iE;
+	  if (isEB) hne.EEScale = EBscalefactor_ ; 
+	  else      hne.EEScale = EEscalefactor_ ; 
+	  weight = ( isEB ? ebIDwgt_ : eeIDwgt_ ) ; 
+	}
+      }
+    }
+  }
+  hne.eventWgt *= weight ; 
+  if ( dolog_ ) std::cout << "Electron weight: " << weight << " " << hne.eventWgt << std::endl ; 
+}                                                // HeavyNuTop::selectElectrons
 
 //======================================================================
 
 // ------------ method called to for each event  ------------
 bool
-HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
   HeavyNuEvent hnuEvent;
@@ -1431,8 +1188,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   if (iEvent.isRealData())
   {
-    if( (applyMESfactor_ != 1.0) ||
-	(applyJECUsign_  != 0.0) )
+    if( (applyMESfactor_ != 1.0) ) 
       throw cms::Exception( "Energy scale studies not allowed on data currently");
 
     uint32_t runn = iEvent.id().run();
@@ -1515,115 +1271,61 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.nmuTight->Fill(ntight) ;
 
   // Basic selection requirements: Require at least two muons, two jets
-  if ( pMuons->size() >= 2 && pJets->size() >= 2 ) {
-    hists.noCuts.fill( *pMuons,*pJets,*pMET, hnuEvent.isMC, hnuEvent.eventWgt ) ; 
+  if ( pMuons->size() >= 1 && pElecs->size() >= 1 && pJets->size() >= 2 ) {
+    hists.noCuts.fill( *pMuons,*pElecs,*pJets,*pMET, hnuEvent.isMC, hnuEvent.eventWgt ) ; 
   } else return false;
 
-  // next, we look for valid muons and jets and put them into the Event
+  if ( dolog_ ) std::cout << "Found an event with " << pMuons->size() << " muons and " 
+			  << pElecs->size() << " electrons, and " << pJets->size() << " jets" << std::endl ; 
+
+  // next, we look for valid electrons, muons and jets and put them into the Event
+  selectElectrons( pElecs, hnuEvent );
+  if ( hnuEvent.e1.isNull() ) return false ; // No electrons
 
   selectJets ( pJets,  hnuEvent );
-
-  if (studyMuonSelectionEff_)
-    studyMuonSelectionEff( pMuons,pJets,pMET,hnuEvent );
+  if ( hnuEvent.j2.isNull() ) return false ; // No jets
 
   selectMuons( pMuons, hnuEvent );
+  if ( hnuEvent.mu1.isNull() ) return false ; // No muons
 
   // require two "loose" muons first
   // Impose vertex requirement here as well
   //
-  if( hnuEvent.mu2.isNull() ||
+  if( hnuEvent.mu1.isNull() || hnuEvent.e1.isNull() ||
       (fabs(hnuEvent.mu1->vertex().Z()-
-	    hnuEvent.mu2->vertex().Z()) >= cuts.maxVertexZsep) )
+	    hnuEvent.e1->vertex().Z()) >= cuts.maxVertexZsep) )
     return false;
 
   if (pMET->size())
     hnuEvent.met1 = pat::METRef(pMET,0);
 
   hnuEvent.regularize(); // assign internal standards
-  hnuEvent.calculateMuMu(applyMESfactor_);
+  double elefactor = ((fabs(hnuEvent.e1->eta()) < 1.442) ? EBscalefactor_ : EEscalefactor_) ; 
+  hnuEvent.calculateMuE(applyMESfactor_,elefactor);
   hists.LLptCuts.fill(hnuEvent,v_null);
   
-  // Require mu1.OR.mu2 meets tight requirements
+  // Require mu1 meets tight requirements
   //
   bool mu1isTight = isVBTFtight(*(hnuEvent.mu1));
-  bool mu2isTight = isVBTFtight(*(hnuEvent.mu2));
-
-  if ( !mu1isTight && !mu2isTight )
-    return false;
+  if ( !mu1isTight ) return false;
 
   hists.MuTightCuts.fill( hnuEvent,v_null );
 
-  if( iEvent.isRealData() &&
-      studyMuonSelectionEff_ &&
-      inZmassWindow(hnuEvent.mMuMu) ) {
-    if( mu1isTight ) {
-      hists.Mu1passesTightInZwin.fill( hnuEvent, v_null );
-      if( mu2isTight ) {
-	hists.Mu2passesTightInZwin.fill   ( hnuEvent, v_null );
-	hists.Mu1Mu2passesTightInZwin.fill( hnuEvent, v_null );
-      }
-    }
-    else // mu2isTight
-      hists.Mu2passesTightInZwin.fill     ( hnuEvent, v_null );
-  }
-
   bool mu1trig=mu1isTight;
-  bool mu2trig=mu2isTight;
 
-  // split out trigger matching requirement to study trigger eff.
-  if ( trig_->matchingEnabled() &&
-       iEvent.isRealData() ) {
-    if ( inZmassWindow( hnuEvent.mMuMu ) )
-      hists.MuTightInZwin.fill( hnuEvent,v_null );
-
-    // require that one muon be BOTH tight and trigger-matched
-    //
+  // require that one muon be BOTH tight and trigger-matched
+  if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
     mu1trig = mu1trig &&
-      trig_->isTriggerMatched( hnuEvent.mu1, iEvent,
-			       &(hists.Mu1TrigMatchesInZwin.trigHistos));
-
-    mu2trig = mu2trig &&
-      trig_->isTriggerMatched( hnuEvent.mu2, iEvent,
-			       &(hists.Mu2TrigMatchesInZwin.trigHistos));
-
+      trig_->isTriggerMatched( hnuEvent.mu1, iEvent ) ; 
   } else if (!iEvent.isRealData()) {
-    mu1trig = mu1trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt(), applyTrigEffsign_ );
-    mu2trig = mu2trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu2->pt(), applyTrigEffsign_ );
+    mu1trig = mu1trig &&  
+      trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt(), 0 );
   }
 
-  if ( highestPtTriggerOnly_ ) {
-    if ( !mu1trig ) return false ;
-  } else { 
-    if ( !mu1trig && !mu2trig ) return false;
-  }
+  if( !mu1trig ) return false;
 
   hists.TrigMatches.fill( hnuEvent,v_null );
 
-  if (iEvent.isRealData() && trig_->matchingEnabled()) {
-    // histos for trigger efficiency study:
-    // - for the study both muons have to be in trigger
-    //   matching region regardless of whether they matched.
-    //
-    bool inTMregion = ( (fabs(hnuEvent.mu1->eta())<2.1) &&
-			(fabs(hnuEvent.mu2->eta())<2.1) );
-
-    // study preconditions:
-    if ( mu1isTight && mu2isTight
-	 && inZmassWindow( hnuEvent.mMuMu )
-	 && inTMregion ) {
-      if ( mu1trig ) {
-	hists.Mu1TrigMatchesInZwin.fill     ( hnuEvent,v_null );
-	if ( mu2trig ) {
-	  hists.Mu2TrigMatchesInZwin.fill   ( hnuEvent,v_null );
-	  hists.Mu1Mu2TrigMatchesInZwin.fill( hnuEvent,v_null );
-	}
-      }
-      else if( mu2trig )
-	// guaranteed at this point
-	hists.Mu2TrigMatchesInZwin.fill     ( hnuEvent,v_null );
-    }
-  }
-  
   // - require two jets + two muons already required
   // - require at least one muon (mu1 since it has already been
   //   sorted w.r.t. mu2) above the higher min pt threshold
@@ -1631,11 +1333,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   //   per JetMET recommendation
   //
   if ( (        hnuEvent.j2.isNull())  ||
-       (jetID(*(hnuEvent.j1)) < 1)     || 
-       (jetID(*(hnuEvent.j2)) < 1)   )
+       (jetIDemu(*(hnuEvent.j1)) < 1)  || 
+       (jetIDemu(*(hnuEvent.j2)) < 1)   )
     return false;
 
-  hnuEvent.calculate(); // calculate various details
+  hnuEvent.calculate(1); // calculate various details
 
   //dumpJetCorInfo( *(hnuEvent.j1) );
 
@@ -1644,33 +1346,19 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hists.LLJJptCuts.fill( hnuEvent,nnif_->masspts() );
 
-  // Impose vertex requirement here as well
-  // Note: Vertex cut removed!!!
-  // float deltaVzJ1J2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.j2 ->vertex().Z());
-  // float deltaVzJ1M1 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu1->vertex().Z());
-  // float deltaVzJ2M2 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu2->vertex().Z());
-  // float deltaVzJ1M2 = fabs(hnuEvent.j1->vertex().Z()-hnuEvent.mu2->vertex().Z());
-  // float deltaVzJ2M1 = fabs(hnuEvent.j2->vertex().Z()-hnuEvent.mu1->vertex().Z());
-  // if((deltaVzJ1J2 >= cuts.maxVertexZsep) ||
-  //    (deltaVzJ1M1 >= cuts.maxVertexZsep) ||
-  //    (deltaVzJ2M2 >= cuts.maxVertexZsep) ||
-  //    (deltaVzJ1M2 >= cuts.maxVertexZsep) ||
-  //    (deltaVzJ2M1 >= cuts.maxVertexZsep)   )
-  //   return false;
-
-  // hists.VertexCuts.fill( hnuEvent,nnif_->masspts() );
-
+  double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
+  double e1pt  = hnuEvent.EEScale*hnuEvent.e1->superCluster()->energy() / cosh(hnuEvent.e1->superCluster()->eta()) ; 
+  double highestPt = ( (mu1pt > e1pt) ? mu1pt : e1pt ) ; 
   if ( studyScaleFactorEvolution_ ) { 
-    double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
-    if ( mu1pt > 30. )  hists.Mu1Pt30GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 40. )  hists.Mu1Pt40GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 50. )  hists.Mu1Pt50GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 60. )  hists.Mu1Pt60GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 80. )  hists.Mu1Pt80GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 100. ) hists.Mu1Pt100GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( highestPt > 30. )  hists.Mu1Pt30GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( highestPt > 40. )  hists.Mu1Pt40GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( highestPt > 50. )  hists.Mu1Pt50GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( highestPt > 60. )  hists.Mu1Pt60GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( highestPt > 80. )  hists.Mu1Pt80GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( highestPt > 100. ) hists.Mu1Pt100GeVCut.fill( hnuEvent,nnif_->masspts() );
   }
 
-  if( (applyMESfactor_*hnuEvent.mu1->pt()) < cuts.minimum_mu1_pt )
+  if( highestPt < cuts.minimum_mu1_pt )
     return false;
 
   hists.Mu1HighPtCut.fill( hnuEvent,nnif_->masspts() );
@@ -1685,10 +1373,16 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::cout<<", M(NuR2) = "<<hnuEvent.mNuR2<<" GeV"<<std::endl;
     std::cout<<"\tM(mumu) = "<<hnuEvent.mMuMu<<" GeV"; 
     std::cout<<", M(JJ) = "  <<hnuEvent.mJJ<<" GeV"<<std::endl; 
-    std::cout<<"\tJets:   j1 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.j1  ) );
-    std::cout<<        ", j2 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.j2  ) ); std::cout<<std::endl;
-    std::cout<<"\tMuons: mu1 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.mu1 ) );
-    std::cout<<       ", mu2 ";outputCandidate( reco::CandidateBaseRef( hnuEvent.mu2 ) ); std::cout<<std::endl;
+    std::cout<<"\tJets:   j1 "
+	     <<"pt="<<hnuEvent.j1->pt()<<" GeV, eta="<<hnuEvent.j1->eta()<<", phi="<<hnuEvent.j1->phi();
+    std::cout<<        ", j2 " 
+	     <<"pt="<<hnuEvent.j2->pt()<<" GeV, eta="<<hnuEvent.j2->eta()<<", phi="<<hnuEvent.j2->phi();
+    std::cout<<std::endl;
+    std::cout<<"\tLeptons: mu1 "
+	     <<"pt="<<hnuEvent.mu1->pt()<<" GeV, eta="<<hnuEvent.mu1->eta()<<", phi="<<hnuEvent.mu1->phi();
+    std::cout<<          ", e1 " 
+	     <<"pt="<<hnuEvent.e1->pt()<<" GeV, eta="<<hnuEvent.e1->eta()<<", phi="<<hnuEvent.e1->phi();
+    std::cout<<std::endl;
   }
 
   // Change the final logic of the filter based on LQ meeting discussion:
@@ -1702,18 +1396,18 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-HeavyNu::beginJob() {
+HeavyNuTop::beginJob() {
   nnif_->beginJob();
   firstEvent_ = true;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-HeavyNu::endJob() {
+HeavyNuTop::endJob() {
   nnif_->endJob();
   trig_->endJob();
   muid_->endJob();
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(HeavyNu);
+DEFINE_FWK_MODULE(HeavyNuTop);

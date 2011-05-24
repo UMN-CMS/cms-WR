@@ -17,8 +17,10 @@ class HeavyNuEvent {
 public:
   HeavyNuEvent() { eventWgt = 1.0 ; }
   void regularize();
-  void calculate();
+  void calculate(int nMu);
+  void calculate() { return calculate(2) ; }
   void calculateMuMu(double muptfactor);
+  void calculateMuE(double muptfactor,double elefactor);
 
   bool isMC;
 
@@ -35,6 +37,7 @@ public:
   float j1scale, j2scale;
 
   float MESscale;
+  float EEScale;
 
   double eventWgt ; 
 

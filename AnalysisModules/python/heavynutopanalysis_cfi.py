@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hNu = cms.EDFilter(
-    "HeavyNu",
+hNuTop = cms.EDFilter(
+    "HeavyNuTop",
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
         muonMatch    = cms.string( '' ),
@@ -19,6 +19,7 @@ hNu = cms.EDFilter(
     minMu2pt     = cms.double(20.),
     minJetPt     = cms.double(40),
     maxMuAbsEta  = cms.double(2.4),
+    maxEleAbsEta = cms.double(2.5),
     maxJetAbsEta = cms.double(2.5),
     minMuMuMass  = cms.double(200),
     min4objMass  = cms.double(520),
@@ -27,18 +28,14 @@ hNu = cms.EDFilter(
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
     maxVertexZsepCM       = cms.double(0.03),
     
-    ZmassWinMinGeV= cms.double(86.),
-    ZmassWinMaxGeV= cms.double(96.),
-
-    jecEra            = cms.int32(0),
-    applyJECUsign     = cms.int32(0),
-    applyTrigEffsign  = cms.int32(0),
-    studyMuSelectEff  = cms.bool(False),
-    applyMESfactor    = cms.double(1.0),
-    applyMuIDEffcorr  = cms.bool(False),
-    applyMuIDEffsign  = cms.int32(0),
-
-    highestPtTriggerOnly = cms.bool(False),
-    isSignal     = cms.bool(False),
+    applyEleEScale    = cms.bool(False),
+    EBscalefactor     = cms.double(1.0),
+    EEscalefactor     = cms.double(1.0),
+    applyEleIDweight  = cms.bool(False),
+    EBidWgt           = cms.double(1.0),
+    EEidWgt           = cms.double(1.0),
+    applyMuIDEffcorr  = cms.bool(True),
+    studyScaleFactor  = cms.bool(True),
+    isSignal          = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)
-    )
+)
