@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.40 2011/05/18 08:05:31 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.1 2011/05/24 13:16:37 bdahmes Exp $
 //
 //
 
@@ -1077,21 +1077,21 @@ HeavyNuTop::elePassesSelection(const pat::Electron& e)
 
     // Calculate a few quantities
     bool HoE = ( e.hadronicOverEm() < 0.05 ) ; 
-    bool dPhiIn = ( e.deltaPhiSuperClusterTrackAtVtx() < 0.09 ) ; 
+    bool dPhiIn = ( fabs(e.deltaPhiSuperClusterTrackAtVtx()) < 0.09 ) ; 
     double ecalIso  = e.dr03EcalRecHitSumEt() ; 
     double hcalIso1 = e.dr03HcalDepth1TowerSumEt() ; 
     double hcalIso2 = e.dr03HcalDepth2TowerSumEt() ; 
 
     if ( fabs(e.superCluster()->eta()) < 1.442 ) { // ECAL Barrel 
       bool goodShape = ( e.e2x5Max() / e.e5x5() > 0.94 ) || ( e.e1x5() / e.e5x5() > 0.83 ) ; 
-      bool dEtaIn = ( e.deltaEtaSuperClusterTrackAtVtx() < 0.005 ) ; 
+      bool dEtaIn = ( fabs(e.deltaEtaSuperClusterTrackAtVtx()) < 0.005 ) ; 
       double threshold = 2. + 0.03 * ept ; 
       bool caloIso = ( (ecalIso + hcalIso1) < threshold ) ; 
       bool trkIso = ( e.dr03TkSumPt() < 7.5 ) ; 
       if ( HoE && goodShape && dEtaIn && dPhiIn && caloIso && trkIso ) return true ; 
     } else if ( fabs(e.superCluster()->eta()) > 1.56 ) { // ECAL endcap
       bool goodShape = ( e.sigmaIetaIeta() < 0.03 ) ; 
-      bool dEtaIn = ( e.deltaEtaSuperClusterTrackAtVtx() < 0.007 ) ; 
+      bool dEtaIn = ( fabs(e.deltaEtaSuperClusterTrackAtVtx()) < 0.007 ) ; 
       double threshold = ( ept < 50. ) ? (2.5) : (2.5 + 0.03 * (ept-50)) ; 
       bool caloIso = ( ((ecalIso + hcalIso1) < threshold) && (hcalIso2 < 0.5) ) ; 
       bool trkIso = ( e.dr03TkSumPt() < 15. ) ; 

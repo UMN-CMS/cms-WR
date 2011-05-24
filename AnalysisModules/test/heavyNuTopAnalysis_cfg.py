@@ -47,7 +47,7 @@ if isData:
     
     process.source.lumisToProcess = lumisToProcess
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
