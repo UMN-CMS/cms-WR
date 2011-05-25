@@ -3,15 +3,16 @@
 #include <stdlib.h>
 
 int main(int argc, char* argv[]) {
-  if (argc<5) {
-    printf("Usage: makeLimitFile2011 [lumi] [data file] [signal file] [outfilename]\n");
+  if (argc<6) {
+    printf("Usage: makeLimitFile2011 [lumi] [mwr] [data file] [signal file] [outfilename]\n");
     return 1;
   }
   float lumi=atof(argv[1]);
-  TFile df(argv[2]);
-  TFile sf(argv[3]);
+  int mwr=atoi(argv[2]);
+  TFile df(argv[3]);
+  TFile sf(argv[4]);
 
-  makeLimitFile2011(lumi,&df,&sf,argv[4]);
+  makeLimitFile2011(lumi,mwr,&df,&sf,argv[5]);
 
   return 0;
 }

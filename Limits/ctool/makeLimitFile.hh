@@ -8,6 +8,7 @@ static const int i_OTHER=3;
 
 #include "TFile.h"
 #include <vector>
+#include <string>
 
 struct PerBinInfo {
   double lumi;
@@ -15,20 +16,21 @@ struct PerBinInfo {
   int data;
   double lowEdge, highEdge;
   int year;
+  std::string binName;
 };
 
 
 void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileName);
 
-std::vector<PerBinInfo> makeLimitContent2010(TFile* dataf, TFile* signalf);
+std::vector<PerBinInfo> makeLimitContent2010(int mwr, TFile* dataf, TFile* signalf);
 
-void makeLimitFile2010(TFile* dataf, TFile* signalf, const char* limitFileName);
+void makeLimitFile2010(int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
 
-std::vector<PerBinInfo> makeLimitContent2011(double lumi, TFile* dataf, TFile* signalf);
+std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf, TFile* signalf);
 
-void makeLimitFile2011(double lumi, TFile* dataf, TFile* signalf, const char* limitFileName);
+void makeLimitFile2011(double lumi, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
 
-void makeLimitFileTwoYear(double lumi11, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName);
+void makeLimitFileTwoYear(double lumi11, int mwr, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName);
 
 
 #endif // MAKE_LIMIT_FILE 1

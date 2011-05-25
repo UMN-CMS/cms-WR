@@ -1,20 +1,38 @@
 #!/usr/bin/perl
 
+use Getopt::Long;
+
+$toys=100;
+$method="MarkovChainMC";
+$jobBase="default";
+
+
+GetOptions("toys=i" => \$toys,
+	   "method=s" => \$method,
+	   "jobname=s" => \$jobBase);
+
+
+
 $pwd=`pwd`;
 chomp($pwd);
 $exe=$pwd."/scanPoint.sh";
 $workloc="/local/cms/user/".$ENV{"USER"}."/heavyNuLimits";
+if ($jobBase ne "default") {
+    $workloc=$workloc."/${jobBase}";
+}
 
 $data2010="/local/cms/user/dudero/heavyNuAnalysis/dirTrackRelIso+MinDR=0.5/bryansNewMuSkimRun2010A+BcombinedDec22rereco_heavyNuAnalysis.root";
 $signal2010="/local/cms/user/dudero/heavyNuAnalysis/dirTrackRelIso+MinDR=0.5/dirSignal";
 
-$data2011="/local/cms/user/dahmes/wr2011/MuResults/GoodRuns/may13-191ipb/heavyNuAnalysis/data2011_191ipb.root";
+#$data2011="/local/cms/user/dahmes/wr2011/MuResults/GoodRuns/may13-191ipb/heavyNuAnalysis/data2011_191ipb.root";
+$data2011="/local/cms/user/dahmes/wr2011/MuResults/GoodRuns/may17-191ipb-loDiL/heavyNuAnalysis/data2011_loDiL_191ipb.root";
 $signal2011="/local/cms/user/pastika/heavyNuAnalysis_2011";
 
 $lumi2011=191;
 
 $fileLoc=$workloc."/input";
 system("mkdir -p $fileLoc");
+system("rm -rf ${workloc}/roostats*");
 
 # We use the 2011 as the master list of points
 open(PLIST,"ls $signal2011 |");
@@ -47,22 +65,24 @@ foreach $dir11 (@dirs) {
 	print "2011 only $mw $mn\n";
 	
 	$ofname="$fileLoc/limit_".$mw."_".$mn;
-	$cmd="./makeLimitFile2011.exe $lumi2011 $data2011 $s11 $ofname";
+	$cmd="./makeLimitFile2011.exe $lumi2011 $mw $data2011 $s11 $ofname";
     } else {
 	print "2010/2011 $mw $mn\n";
 
 	$ofname="$fileLoc/limit_".$mw."_".$mn;
-	$cmd="./makeLimitFile2Y.exe $lumi2011 $data2011 $s11 $data2010 $s10 $ofname";
+	$cmd="./makeLimitFile2Y.exe $mw $lumi2011 $data2011 $s11 $data2010 $s10 $ofname";
     }
     
     system($cmd);
 
     $mass=sprintf("%04d%04d",$mw,$mn);
 
-    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${mw}_${mn}.log\n";
+    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${mw}_${mn}.log ${method} ${toys}\n";
     print CONDOR "Queue \n";
     
 }
     
 close(CONDOR);
 system("condor_submit for_condor.txt");
+
+
