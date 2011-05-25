@@ -53,11 +53,14 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
+#
+# Use 38X for MC, 39X for data
+#
 if (isMC):
     print "=================> MC flag is SET <===================="
     process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
