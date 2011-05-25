@@ -7,7 +7,7 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=True
+isMC=False
 isMCsignal=False
 Training=False
 isRun2010LoLumi=False
@@ -32,10 +32,14 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 # source
-process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:input.root')
-)
-# process.load('HeavyNu.AnalysisModules.in_cff')
+
+#process.source = cms.Source("PoolSource",
+#    fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/39X/Dec22ReReco/Run2010B/Mu_Run2010B_Dec22ReReco_v1_AOD_068-muSkim-pool.root')
+#This file is AT FNAL:
+#    fileNames=cms.untracked.vstring('/store/mc/Fall10/Z1Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola/GEN-SIM-RECO/START38_V12-v2/0018/027050CA-D50B-E011-91DD-00261894391C.root')
+#    fileNames=cms.untracked.vstring( "file:/hdfs/cms/user/heavynu/HeavyNuRecoFromHLT/38X/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
+#)
+process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
     if isRun2010LoLumi:
@@ -55,9 +59,9 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    process.GlobalTag.globaltag = cms.string('START39_V8::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_39X_V5::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 

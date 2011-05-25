@@ -7,10 +7,10 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=True
+isMC=False
 isMCsignal=False
 Training=False
-isRun2010LoLumi=False
+isRun2010LoLumi=True
 
 isData=not isMC
 

@@ -170,10 +170,11 @@ process.p += process.hNu
 # Trigger Efficiency uncertainty application
 # applyTrigEffsign=0 means don't apply it, which is the default
 #
-process.hNuTrigEffhi = process.hNu.clone(applyTrigEffsign = cms.int32(1))
-process.hNuTrigEfflo = process.hNu.clone(applyTrigEffsign = cms.int32(-1))
+if isMC:
+    process.hNuTrigEffhi = process.hNu.clone(applyTrigEffsign = cms.int32(1))
+    process.hNuTrigEfflo = process.hNu.clone(applyTrigEffsign = cms.int32(-1))
 
-process.pTrigEffhi = cms.Path(process.hNuTrigEffhi)
-process.pTrigEfflo = cms.Path(process.hNuTrigEfflo)
+    process.pTrigEffhi = cms.Path(process.hNuTrigEffhi)
+    process.pTrigEfflo = cms.Path(process.hNuTrigEfflo)
 
-process.s = cms.Schedule(process.p,process.pTrigEffhi,process.pTrigEfflo)
+    process.s = cms.Schedule(process.p,process.pTrigEffhi,process.pTrigEfflo)
