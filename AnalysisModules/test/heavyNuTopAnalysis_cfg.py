@@ -10,7 +10,7 @@ import os
 isMC=False
 isMCsignal=False
 Training=False
-isRun2010LoLumi=True
+isRun2010LoLumi=False
 isRun2011=False
 
 isData=not isMC
@@ -53,11 +53,14 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
+#
+# Use 38X for MC, 39X for data
+#
 if (isMC):
     print "=================> MC flag is SET <===================="
     process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
@@ -73,20 +76,8 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 ########################################
 
 if isData:
-<<<<<<< heavyNuTopAnalysis_cfg.py
-#     process.out = cms.OutputModule("PoolOutputModule",
-#                                    fileName = cms.untracked.string('heavynu_candevents.root'),
-#     # save only events passing the full path
-#                                    SelectEvents=cms.untracked.PSet(SelectEvents=cms.vstring('p')),
-#                                    outputCommands = cms.untracked.vstring("keep *")
-#                                    )
-#     process.outpath  = cms.EndPath(process.out)
-      from PhysicsTools.PatAlgos.tools.coreTools import *
-      removeMCMatching(process, ['All'], outputInProcess = False)
-=======
     from PhysicsTools.PatAlgos.tools.coreTools import *
     removeMCMatching(process, ['All'], outputInProcess = False)
->>>>>>> 1.3
 
 ########################################
 # PAT Jet Energy Corrections - MC vs Data
@@ -119,28 +110,15 @@ process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 ## Switch to selected PAT objects in the main work flow
 ## --
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
-<<<<<<< heavyNuTopAnalysis_cfg.py
 removeCleaning( process, False )
-
-## Special change for saving good products in data
-#if isData:
-#    process.out.outputCommands = cms.untracked.vstring("keep *")
-=======
-removeCleaning( process, False )
->>>>>>> 1.3
 
 ## --
 ## Switch on PAT trigger - but only for data!
 ## --
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
-<<<<<<< heavyNuTopAnalysis_cfg.py
-    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule='' )
-    removeCleaningFromTriggerMatching( process, outputModule='' )
-=======
     switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
     removeCleaningFromTriggerMatching( process, outputModule = '' )
->>>>>>> 1.3
     if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu9')
     else:               process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu15_v1')
 
