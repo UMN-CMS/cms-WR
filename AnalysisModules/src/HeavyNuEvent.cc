@@ -8,6 +8,8 @@ void HeavyNuEvent::regularize() {
   // mu[1]=mu2;
   j[0]=j1;
   j[1]=j2;
+  tjV[0]=tjV1;
+  tjV[1]=tjV2;
 }
 
 static double planeCosAngle(const reco::Particle::Vector& plane1,

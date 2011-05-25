@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.40 2011/05/18 08:05:31 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.41 2011/05/24 13:16:37 bdahmes Exp $
 //
 //
 
@@ -61,6 +61,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
 
 //////////////////////////////////////////////////////////////////
@@ -196,8 +197,6 @@ private:
   virtual void beginJob          ();
   virtual bool filter            ( edm::Event&, const edm::EventSetup& );
   virtual void endJob            ();
-  virtual bool isVBTFloose       ( const pat::Muon& m );
-  virtual bool isVBTFtight       ( const pat::Muon& m );
   virtual void fillBasicMuHistos ( const pat::Muon& m );
   virtual void fillBasicJetHistos( const pat::Jet& j,
 				   int jetnum );
@@ -888,9 +887,9 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
   // Neural net histos
   if (v_masspts.size()) {
     // CMSSW_3X
-    TDirectory *nnrootdir = nndir->cd();
+    //TDirectory *nnrootdir = nndir->cd();
     // CMSSW_4X
-    // TDirectory *nnrootdir = nndir->getBareDirectory("");
+    TDirectory *nnrootdir = nndir->getBareDirectory("");
     for (size_t i=0; i<v_masspts.size(); i++) {
       int mwr = v_masspts[i].first;
       int mnu = v_masspts[i].second;
@@ -1130,30 +1129,6 @@ HeavyNu::~HeavyNu()
 //
 // member functions
 //
-bool
-HeavyNu::isVBTFloose(const pat::Muon& m)
-{
-  return m.muonID("AllGlobalMuons")&&(m.numberOfValidHits()>10);
-}
-
-bool
-HeavyNu::isVBTFtight(const pat::Muon& m)
-{
-  if( !isVBTFloose(m) ) return false; // this should already have been checked.
-
-  reco::TrackRef gt = m.globalTrack();
-  if (gt.isNull()) {
-    std::cerr << "Mu global track reference is NULL" << std::endl;
-    return false;
-  }
-  return (m.muonID("AllTrackerMuons") &&
-	  (m.dB() < 0.2) &&
-	  (m.normChi2() < 10) &&
-	  (m.numberOfMatches() > 1) &&
-	  (gt->hitPattern().numberOfValidMuonHits()>0) &&
-	  (gt->hitPattern().numberOfValidPixelHits()>0) );
-
-}                                                // HeavyNu::isVBTFtight
 
 //======================================================================
 
@@ -1168,7 +1143,7 @@ HeavyNu::fillBasicMuHistos(const pat::Muon& m)
   if (applyMESfactor_==1.0) {
     hists.mudBvsPt->Fill( mupt, m.dB() );
 
-    if( isVBTFloose( m ) ) {
+    if( hnu::isVBTFloose( m ) ) {
       hists.looseMuPt        ->Fill( mupt );
       hists.muNvalidHitsVsPt ->Fill( mupt, m.numberOfValidHits() );
       hists.muNormChi2vsPt   ->Fill( mupt, m.normChi2() );
@@ -1179,7 +1154,7 @@ HeavyNu::fillBasicMuHistos(const pat::Muon& m)
       hists.muNvalidMuonHitsVsPt ->Fill( mupt, gt->hitPattern().numberOfValidMuonHits() );
       hists.muNvalidPixelHitsVsPt->Fill( mupt, gt->hitPattern().numberOfValidPixelHits() );
 
-      if( isVBTFtight( m ) ) hists.tightMuPt->Fill( mupt );
+      if( hnu::isVBTFtight( m ) ) hists.tightMuPt->Fill( mupt );
     }
     hists.muQualVsPt->Fill( mupt, 0 );
     for (int i=1; i<muonQualityFlags; i++)
@@ -1303,7 +1278,7 @@ HeavyNu::muPassesSelection(const pat::Muon& m, const HeavyNuEvent& hne)
   double dr2=(j2.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j2->eta(),j2->phi()));
 
   return( (mupt > cuts.minimum_mu2_pt)
-	  && isVBTFloose(m)
+	  && hnu::isVBTFloose(m)
 	  && (fabs(m.eta()) < cuts.maximum_mu_abseta)
 	  && (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
 	  && ((m.trackIso()/mupt)  < cuts.muon_trackiso_limit) );
@@ -1342,8 +1317,8 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
     double drj1m1=(hne.j1.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
     double drj2m1=(hne.j2.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
 
-    bool m0tight=isVBTFtight(*m0);
-    bool m1tight=isVBTFtight(*m1);
+    bool m0tight=hnu::isVBTFtight(*m0);
+    bool m1tight=hnu::isVBTFtight(*m1);
 
     if( (m0tight || m1tight) &&
 	(m1->pt() > cuts.minimum_mu2_pt) // by inference m0 must also pass this
@@ -1446,6 +1421,9 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     runh->Fill(1);
   }
 
+  edm::Handle<reco::JPTJetCollection> jptJets;
+  iEvent.getByLabel("JetPlusTrackZSPCorJetAntiKt5", jptJets); // Some day we should make this readable from the cfg file
+
   edm::Handle<pat::MuonCollection> pMuons ; 
   iEvent.getByLabel(muonTag_,pMuons) ; 
 
@@ -1505,9 +1483,9 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
     if( !iM.isAvailable() ) continue;
     fillBasicMuHistos( *iM );
-    if( isVBTFloose(*iM) ) {
+    if( hnu::isVBTFloose(*iM) ) {
       nloose++;
-      if( isVBTFtight(*iM) )
+      if( hnu::isVBTFtight(*iM) )
 	ntight++;
     }
   }
@@ -1545,8 +1523,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   // Require mu1.OR.mu2 meets tight requirements
   //
-  bool mu1isTight = isVBTFtight(*(hnuEvent.mu1));
-  bool mu2isTight = isVBTFtight(*(hnuEvent.mu2));
+  bool mu1isTight = hnu::isVBTFtight(*(hnuEvent.mu1));
+  bool mu2isTight = hnu::isVBTFtight(*(hnuEvent.mu2));
 
   if ( !mu1isTight && !mu2isTight )
     return false;
@@ -1634,6 +1612,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        (jetID(*(hnuEvent.j1)) < 1)     || 
        (jetID(*(hnuEvent.j2)) < 1)   )
     return false;
+
+  // Alex's code goes here...
+  hnuEvent.tjV1 = hnu::caloJetVertex(*(hnuEvent.j1), *jptJets); 
+  hnuEvent.tjV1 = hnu::caloJetVertex(*(hnuEvent.j2), *jptJets); 
+  // End Alex's code
 
   hnuEvent.calculate(); // calculate various details
 

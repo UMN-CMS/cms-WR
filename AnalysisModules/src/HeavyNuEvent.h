@@ -28,6 +28,9 @@ public:
   pat::JetRef  j1,  j2,  j[2];
   pat::ElectronRef e1, e2, e[2]; 
 
+  double tjV1, tjV2, tjV[2];
+  int n_primary_vertex;
+
   pat::METRef met1;
 
   // separately stored for JEC Uncertainty studies
