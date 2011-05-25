@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.41 2011/05/24 13:16:37 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.42 2011/05/25 18:40:25 gude Exp $
 //
 //
 
@@ -62,6 +62,8 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
+
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 
 //////////////////////////////////////////////////////////////////
@@ -1435,6 +1437,22 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle<pat::METCollection> pMET ;
   iEvent.getByLabel(metTag_, pMET) ;
+  
+  int Npue;  //number of pile up events
+  if(hnuEvent.isMC)
+  {
+  	edm::Handle<std::vector<PileupSummaryInfo> > pPU;
+  	iEvent.getByLabel("addPileupInfo", pPU);
+  	if(pPU.isValid() && pPU->size() > 0)
+  	{
+  		Npue = pPU->at(0).getPU_NumInteractions();
+  	}
+  	else
+  	{
+  		Npue = -1;
+  		std::cout << "NO VALID Pileup Summary found!" << std::endl;
+  	}
+  }
 
   if ( !pElecs.isValid() || 
        !pMuons.isValid() || 
