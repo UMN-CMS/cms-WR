@@ -44,11 +44,10 @@ process.load('HeavyNu.AnalysisModules.in_cff')
 if isData:
     if isRun2010LoLumi:
         print "===========> Flag is SET for LOW luminosity data <============"
-        from HeavyNu.AnalysisModules.run2010loLumiRunList_cfi import lumisToProcess
     else:
         print "===========> Flag is SET for HIGH luminosity data <============"
-        from HeavyNu.AnalysisModules.run2010hiLumiRunList_cfi import lumisToProcess
     
+    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -57,11 +56,14 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
+#
+# Use 38X for MC, 39X for data
+#
 if (isMC):
     print "=================> MC flag is SET <===================="
-    process.GlobalTag.globaltag = cms.string('START39_V8::All')
+    process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_39X_V5::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
