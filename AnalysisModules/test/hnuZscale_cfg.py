@@ -128,7 +128,8 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
-process.hNu.minMu2pt = cms.double(30.)
+process.hNu.minMu2pt         = cms.double(30.)
+process.hNu.studyScaleFactor = cms.bool(True)
 if isMC:
     process.hNu.applyMuIDEffcorr = cms.bool(True)
 else:
