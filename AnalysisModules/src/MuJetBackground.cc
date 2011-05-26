@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.1 2011/05/05 13:18:39 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.2 2011/05/24 13:46:08 bdahmes Exp $
 //
 //
 
@@ -733,6 +733,14 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   rwHighPtbin = iConfig.getParameter< std::vector<double> >("reweightPtHigh") ; 
   rwLoose     = iConfig.getParameter< std::vector<double> >("reweightLoose") ; 
   rwTight     = iConfig.getParameter< std::vector<double> >("reweightTight") ; 
+
+  // Special check: Make sure all vectors are of the same size
+  unsigned int vecsize = rwLowPtbin.size() ; 
+  if ( ( doClosure_ || doQuadJet_ ) && 
+       ( rwHighPtbin.size() != vecsize ||
+	 rwLoose.size() != vecsize ||
+	 rwTight.size() != vecsize ) )
+       throw cms::Exception( "Please ensure that all QCD reweighting vectors are equal size");
 
   ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
   ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
@@ -1461,10 +1469,12 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  bool mu1isTight = isVBTFtight(*(hnuEvent4jet.mu1));
 	  bool mu2isTight = isVBTFtight(*(hnuEvent4jet.mu2));
 	  double mu1scaleFactor, mu2scaleFactor ; 
+	  // std::cout << "About to apply scale factor for mu1: " << hnuEvent4jet.mu1->pt() << std::endl ; 
 	  if ( mu1isTight ) mu1scaleFactor = qcdScaleFactor(hnuEvent4jet.mu1->pt(),
 							    rwLowPtbin,rwHighPtbin,rwTight) ; 
 	  else mu1scaleFactor = qcdScaleFactor(hnuEvent4jet.mu1->pt(),
 					       rwLowPtbin,rwHighPtbin,rwLoose) ; 
+	  // std::cout << "About to apply scale factor for mu2: " << hnuEvent4jet.mu2->pt() << std::endl ; 
 	  if ( mu2isTight ) mu2scaleFactor = qcdScaleFactor(hnuEvent4jet.mu2->pt(),
 							    rwLowPtbin,rwHighPtbin,rwTight) ; 
 	  else mu2scaleFactor = qcdScaleFactor(hnuEvent4jet.mu2->pt(),
@@ -1473,6 +1483,8 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  // std::cout << "BMD: 4 hnu1 mass = " << hnuEvent4jet.mNuR1 << std::endl ; 
 	  // std::cout << "BMD: 4 wr   mass = " << hnuEvent4jet.mWR << std::endl ; 
 	  	  
+	  // std::cout << "mu1scalefactor: " << mu1scaleFactor << ", mu2scalefactor: " << mu2scaleFactor << std::endl ; 
+	  
 	  if ( fabs(hnuEvent4jet.mu1->vertex().Z()-hnuEvent4jet.mu2->vertex().Z()) 
 	       < cuts.maxVertexZsep ) {
 	    

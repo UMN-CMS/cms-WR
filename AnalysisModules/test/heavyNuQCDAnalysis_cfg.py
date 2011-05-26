@@ -215,7 +215,7 @@ process.hNuCalo = cms.EDFilter("MuJetBackground",
     # reweightPtLow   = cms.vdouble( 0,10,15,20,25,30,40,60,100,200,400),
     # reweightPtHigh  = cms.vdouble( 10,15,20,25,30,40,60,100,200,400,1000),
     # reweightLoose   = cms.vdouble( 0.226356,0.104505,0.058554,0.0505105,0.0554867,0.0587291,0.0769231,0.152395,0.263158,0.5,1 ),
-    # reweightTight   = cms.vdouble( 0.0581472,0.0357932,0.063638,0.0628168,0.0629979,0.0587147,0.0646372,0.0949227,0.135135,1 ),
+    # reweightTight   = cms.vdouble( 0.0581472,0.0357932,0.063638,0.0628168,0.0629979,0.0587147,0.0646372,0.0949227,0.135135,1,1 ),
     #--- New results, 43.4/pb from 2011 data ---# 
     reweightPtLow  = cms.vdouble( 20,25,30,40,60,100 ),
     reweightPtHigh = cms.vdouble( 25,30,40,60,100,1000 ),
