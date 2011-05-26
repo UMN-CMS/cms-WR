@@ -1438,18 +1438,17 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<pat::METCollection> pMET ;
   iEvent.getByLabel(metTag_, pMET) ;
   
-  int Npue;  //number of pile up events
   if(hnuEvent.isMC)
   {
   	edm::Handle<std::vector<PileupSummaryInfo> > pPU;
   	iEvent.getByLabel("addPileupInfo", pPU);
   	if(pPU.isValid() && pPU->size() > 0)
   	{
-  		Npue = pPU->at(0).getPU_NumInteractions();
+  		hnuEvent.n_pue = pPU->at(0).getPU_NumInteractions();
   	}
   	else
   	{
-  		Npue = -1;
+  		hnuEvent.n_pue = -1;
   		std::cout << "NO VALID Pileup Summary found!" << std::endl;
   	}
   }

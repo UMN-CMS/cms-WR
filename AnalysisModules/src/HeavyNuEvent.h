@@ -29,7 +29,7 @@ public:
   pat::ElectronRef e1, e2, e[2]; 
 
   double tjV1, tjV2, tjV[2];
-  int n_primary_vertex;
+  int n_primary_vertex, n_pue;
 
   pat::METRef met1;
 
