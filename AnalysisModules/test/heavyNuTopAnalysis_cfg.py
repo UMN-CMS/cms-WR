@@ -131,7 +131,8 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
-process.hNuTop.minMu2pt = cms.double(30.)
+process.hNuTop.minMu2pt         = cms.double(30.)
+process.hNuTop.studyScaleFactor = cms.bool(True)
 if isMC:
     process.hNuTop.applyMuIDEffcorr = cms.bool(True)
     process.hNuTop.applyEleEScale = cms.bool(False) 

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.1 2011/05/24 13:16:37 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.2 2011/05/24 16:08:39 bdahmes Exp $
 //
 //
 
@@ -61,6 +61,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
 
 //////////////////////////////////////////////////////////////////
@@ -218,6 +219,9 @@ private:
     TH1* ctheta_mu1_jj, *cthetaz_mu1_jj;
     TH1* ctheta_mu2_jj, *cthetaz_mu2_jj;
 
+    // Vertex plots
+    TH1* vtx_mumu, *vtx_jj, *vtx_mu1jmin, *vtx_mu2jmin ; 
+
     TFileDirectory *mydir;
     TFileDirectory *nndir;
 
@@ -255,6 +259,9 @@ private:
     HistPerDef Mu1Pt60GeVCut;
     HistPerDef Mu1Pt80GeVCut;
     HistPerDef Mu1Pt100GeVCut;
+    HistPerDef Mu1HighPtCutVtxEq1;
+    HistPerDef Mu1HighPtCutVtx2to5;
+    HistPerDef Mu1HighPtCutVtxGt5;
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
 
@@ -426,8 +433,8 @@ HeavyNuTop::HistPerDef::book(TFileDirectory *td,
   t="M(#mu #mu) "                  +post;        mMuMu=td->make<TH1D>("mMuMu",       t.c_str(),50,0,2000);
   t="M(#mu #mu)(OS) "              +post;      mMuMuOS=td->make<TH1D>("mMuMuOS",     t.c_str(),50,0,2000);
   t="M(#mu #mu)(SS) "              +post;      mMuMuSS=td->make<TH1D>("mMuMuSS",     t.c_str(),50,0,2000);
-  t="M(#mu #mu) "                  +post;    mMuMuZoom=td->make<TH1D>("mMuMuZoom",   t.c_str(),50,0,200);
-  t="M(#mu #mu)(generated) "       +post; mMuMuGenZoom=td->make<TH1D>("mMuMuGenZoom",t.c_str(),50,0,200);
+  t="M(#mu #mu) "                  +post;    mMuMuZoom=td->make<TH1D>("mMuMuZoom",   t.c_str(),75,0,300);
+  t="M(#mu #mu)(generated) "       +post; mMuMuGenZoom=td->make<TH1D>("mMuMuGenZoom",t.c_str(),75,0,300);
   t="DiMuon Charge "               +post;   diMuCharge=td->make<TH1D>("diMuCharge",  t.c_str(),2,-1,1);
 
   diMuCharge->GetXaxis()->SetBinLabel(1,"OS");
@@ -446,6 +453,12 @@ HeavyNuTop::HistPerDef::book(TFileDirectory *td,
   t="cTz(jj) "    +post;      cthetaz_jj=td->make<TH1D>("ctzJJ",  t.c_str(),50,0,1);
   t="cTz(mu1-jj) "+post;  cthetaz_mu1_jj=td->make<TH1D>("ctzM1JJ",t.c_str(),50,0,1);
   t="cTz(mu2-jj) "+post;  cthetaz_mu2_jj=td->make<TH1D>("ctzM2JJ",t.c_str(),50,0,1);
+
+  // vertex histograms 
+  t="mumu vtx DeltaZ "    +post; vtx_mumu=td->make<TH1D>("vtxMM", t.c_str(),100,0.,1.);
+  t="jj vtx DeltaZ "      +post; vtx_jj=td->make<TH1D>("vtxJJ", t.c_str(),100,0.,1.);
+  t="m1j vtx min DeltaZ " +post; vtx_mu1jmin=td->make<TH1D>("vtxM1Jmin", t.c_str(),100,0.,1.);
+  t="m2j vtx min DeltaZ " +post; vtx_mu2jmin=td->make<TH1D>("vtxM2Jmin", t.c_str(),100,0.,1.);
 
   // ----------  Neural Net histograms  ----------
 
@@ -659,6 +672,8 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
   mu2ecalRelIso ->Fill(hne.e1->ecalIso() /e1pt,wgt);
   mu2caloRelIso ->Fill(hne.e1->caloIso() /e1pt,wgt);
 
+  vtx_mumu->Fill(fabs(hne.mu1->vertex().Z()-hne.e1->vertex().Z()),wgt);
+
   for (int i=0; i<muonQualityFlags; i++) { 
     if (hne.mu1->muonID(muonQuality[i])) qualMu1->Fill( i,wgt ) ; 
   }
@@ -710,6 +725,12 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
       cthetaz_jj->Fill(hne.cthetaz_jj,wgt);
       cthetaz_mu1_jj->Fill(hne.cthetaz_mu1_jj,wgt);
       cthetaz_mu2_jj->Fill(hne.cthetaz_mu2_jj,wgt);
+
+      vtx_jj->Fill(fabs(hne.tjV1-hne.tjV2),wgt);
+      vtx_mu1jmin->Fill(min(fabs(hne.mu1->vertex().Z()-hne.tjV1),
+			    fabs(hne.mu1->vertex().Z()-hne.tjV2)),wgt);
+      vtx_mu2jmin->Fill(min(fabs(hne.e1->vertex().Z()-hne.tjV1),
+			    fabs(hne.e1->vertex().Z()-hne.tjV2)),wgt);
     }
 
     dRminMu1jet->Fill(hne.dRminMu1jet,wgt);
@@ -873,6 +894,10 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     hists.Mu1Pt60GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt60GeV")),  "(Mu1 60 GeV pt cut)",  nnif_->masspts() );
     hists.Mu1Pt80GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt80GeV")),  "(Mu1 80 GeV pt cut)",  nnif_->masspts() );
     hists.Mu1Pt100GeVCut.book( new TFileDirectory(fs->mkdir("Mu1Pt100GeV")), "(Mu1 100 GeV pt cut)", nnif_->masspts() );
+
+    hists.Mu1HighPtCutVtxEq1.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxEq1")), "(Mu1 60 GeV pt cut, 1 vtx)", nnif_->masspts() );
+    hists.Mu1HighPtCutVtx2to5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtx2to5")), "(Mu1 60 GeV pt cut, 2-5 vtx)", nnif_->masspts() );
+    hists.Mu1HighPtCutVtxGt5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxGt5")), "(Mu1 60 GeV pt cut, 6+ vtx)", nnif_->masspts() );
   }
 
   hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -1202,6 +1227,9 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     runh->Fill(1);
   }
 
+  edm::Handle<reco::JPTJetCollection> jptJets;
+  iEvent.getByLabel("JetPlusTrackZSPCorJetAntiKt5", jptJets); // Some day we should make this readable from the cfg file
+
   edm::Handle<pat::MuonCollection> pMuons ; 
   iEvent.getByLabel(muonTag_,pMuons) ; 
 
@@ -1213,6 +1241,23 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle<pat::METCollection> pMET ;
   iEvent.getByLabel(metTag_, pMET) ;
+
+  //count verticies
+  int nvertex = 0 ; 
+  edm::Handle<reco::VertexCollection> pvHandle;
+  iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
+
+  const reco::VertexCollection& vertices = *pvHandle.product();
+  static const int minNDOF = 4;
+  static const double maxAbsZ = 15.0;
+  static const double maxd0 = 2.0;
+
+  for(reco::VertexCollection::const_iterator vit=vertices.begin(); vit!=vertices.end(); ++vit) {
+    if ( vit->ndof() > minNDOF && 
+	 (fabs(vit->z()) <= maxAbsZ) && 
+	 (fabs(vit->position().rho()) <= maxd0) ) nvertex++ ;
+  }
+  hnuEvent.n_primary_vertex = nvertex ; 
 
   if ( !pElecs.isValid() || 
        !pMuons.isValid() || 
@@ -1337,6 +1382,9 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        (jetIDemu(*(hnuEvent.j2)) < 1)   )
     return false;
 
+  hnuEvent.tjV1 = hnu::caloJetVertex(*(hnuEvent.j1), *jptJets); 
+  hnuEvent.tjV2 = hnu::caloJetVertex(*(hnuEvent.j2), *jptJets); 
+
   hnuEvent.calculate(1); // calculate various details
 
   //dumpJetCorInfo( *(hnuEvent.j1) );
@@ -1361,10 +1409,18 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if( highestPt < cuts.minimum_mu1_pt )
     return false;
 
+  if ( studyScaleFactorEvolution_ ) { 
+    if ( hnuEvent.n_primary_vertex == 1 ) 
+      hists.Mu1HighPtCutVtxEq1.fill( hnuEvent,nnif_->masspts() );
+    else if ( hnuEvent.n_primary_vertex <= 5 ) 
+      hists.Mu1HighPtCutVtx2to5.fill( hnuEvent,nnif_->masspts() );
+    else if ( hnuEvent.n_primary_vertex > 5 ) 
+      hists.Mu1HighPtCutVtxGt5.fill( hnuEvent,nnif_->masspts() );
+  }
   hists.Mu1HighPtCut.fill( hnuEvent,nnif_->masspts() );
 
-  if ( hnuEvent.mMuMu<cuts.minimum_mumu_mass ) return false;  // dimuon mass cut
-  hists.diLmassCut.fill( hnuEvent,nnif_->masspts() );
+  if ( hnuEvent.mMuMu>=cuts.minimum_mumu_mass ) 
+    hists.diLmassCut.fill( hnuEvent,nnif_->masspts() );
 
   if ( iEvent.isRealData() ) {
     std::cout<<"\t"<<iEvent.id() << std::endl;
@@ -1385,10 +1441,9 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::cout<<std::endl;
   }
 
-  // Change the final logic of the filter based on LQ meeting discussion:
-  // Interest in seeing events that pass the dilepton mass requirement
-  // if ( hnuEvent.mWR<cuts.minimum_mWR_mass ) return false;  // 4-object mass cut
-  if ( hnuEvent.mWR>=cuts.minimum_mWR_mass )
+  // Change the final logic of the filter for e/mu studies:
+  // Keep anything passing the 60 GeV lepton 1 cut
+  if ( hnuEvent.mMuMu>=cuts.minimum_mumu_mass && hnuEvent.mWR>=cuts.minimum_mWR_mass )
     hists.mWRmassCut.fill( hnuEvent,nnif_->masspts() );
 
   return true;
