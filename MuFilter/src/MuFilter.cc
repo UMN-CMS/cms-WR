@@ -13,7 +13,7 @@
 //
 // Original Author:  Bryan Dahmes
 //         Created:  Wed Sep 22 04:49:56 CDT 2010
-// $Id: MuFilter.cc,v 1.1 2010/10/04 15:40:19 bdahmes Exp $
+// $Id: MuFilter.cc,v 1.2 2010/11/08 10:31:52 bdahmes Exp $
 //
 //
 
@@ -57,6 +57,7 @@ private:
   
   // ----------member data ---------------------------
   double minPt_ ; // minimum pT cut on skimming objects
+  bool keepJets_ ; // Decide to include jets in the skim
   std::vector<std::string> triggerList_ ; // List of HLT paths used for filtering
 
   // Counters
@@ -79,6 +80,7 @@ MuFilter::MuFilter(const edm::ParameterSet& iConfig)
 {
   //now do what ever initialization is needed
   minPt_       = iConfig.getParameter<double>("minPt") ;
+  keepJets_    = iConfig.getParameter<bool>("keepJets") ; 
   triggerList_ = iConfig.getParameter< std::vector<std::string> >("HLTpaths") ; 
 }
 
@@ -141,24 +143,26 @@ MuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( eeSCs.at(i).energy()/cosh(eeSCs.at(i).eta()) >= minPt_ ) { nEE++ ; return true ; }
 
   // Last chance: Look for a jet back-to-back with a muon
-  edm::Handle<pat::JetCollection> patJetCollection ; 
-  iEvent.getByLabel("patJets",patJetCollection) ; 
-  if (!patJetCollection.isValid()) return false ; 
-  pat::JetCollection pJets = *(patJetCollection.product()) ;
+  if ( keepJets_ ) { 
+    edm::Handle<pat::JetCollection> patJetCollection ; 
+    iEvent.getByLabel("patJets",patJetCollection) ; 
+    if (!patJetCollection.isValid()) return false ; 
+    pat::JetCollection pJets = *(patJetCollection.product()) ;
 
-  float piDiv2 = 1.570796327 ; 
-  // std::cout << pJets.size() << std::endl ; 
-  // for (unsigned int j=0; j<pJets.size(); j++) { 
-  //   std::cout << pJets.at(j).pt() << std::endl ; 
-  //   if ( pJets.at(j).pt() >= minPt_ ) { nJet++ ; return true ; }
-  // }
-  for (unsigned int i=0; i<pMuons.size(); i++) { 
-    if ( pMuons.at(i).pt() < minPt_ ) continue ; 
-    for (unsigned int j=0; j<pJets.size(); j++) { 
-      if ( pJets.at(j).pt() < minPt_ ) continue ; 
-      // Have a muon and a jet...are they "back to back" (loose requirements)?
-      float dPhi = fabs(deltaPhi(pJets.at(j).phi(),pMuons.at(i).phi())) ; 
-      if ( dPhi > piDiv2 ) { nJet++ ; return true ; }
+    float piDiv2 = 1.570796327 ; 
+    // std::cout << pJets.size() << std::endl ; 
+    // for (unsigned int j=0; j<pJets.size(); j++) { 
+    //   std::cout << pJets.at(j).pt() << std::endl ; 
+    //   if ( pJets.at(j).pt() >= minPt_ ) { nJet++ ; return true ; }
+    // }
+    for (unsigned int i=0; i<pMuons.size(); i++) { 
+      if ( pMuons.at(i).pt() < minPt_ ) continue ; 
+      for (unsigned int j=0; j<pJets.size(); j++) { 
+	if ( pJets.at(j).pt() < minPt_ ) continue ; 
+	// Have a muon and a jet...are they "back to back" (loose requirements)?
+	float dPhi = fabs(deltaPhi(pJets.at(j).phi(),pMuons.at(i).phi())) ; 
+	if ( dPhi > piDiv2 ) { nJet++ ; return true ; }
+      }
     }
   }
 

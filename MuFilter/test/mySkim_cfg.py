@@ -10,25 +10,25 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 # source
-#process.source = cms.Source("PoolSource",      
-#    fileNames=cms.untracked.vstring(  )
-#)
-process.load("HeavyNu.MuFilter.in_cff")
+process.source = cms.Source("PoolSource",      
+    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2011A/SingleMu/AOD/PromptReco-v1/000/161/311/022A00D0-BA57-E011-A712-0030487CD76A.root')
+)
+# process.load("HeavyNu.MuFilter.in_cff")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-## global tags:
-process.GlobalTag.globaltag = cms.string('GR_R_39X_V5::All')
+## global tags: note that V16 used for Mar31, V17 used for apr18
+process.GlobalTag.globaltag = cms.string('GR_P_V17::All')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
 
 ################################################################################################
 ###    P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D  ###
-################################################################################################
+ ################################################################################################
 
 ## pat sequences to be loaded:
 #process.load("PhysicsTools.PFCandProducer.PF2PAT_cff")
@@ -38,7 +38,9 @@ process.patCandidates      = cms.Sequence( process.makePatMuons + process.makePa
 process.patDefaultSequence = cms.Sequence( process.patCandidates )
 
 process.muFilter = cms.EDFilter("MuFilter",
-    minPt = cms.double( 15.0 ),
+    minPt    = cms.double( 20.0 ),
+    keepJets = cms.bool( False ),
+    #--- Included, but we ignore this parameter ---#
     HLTpaths = cms.vstring( 'HLT_Mu9','HLT_Mu11' )
 )
 
