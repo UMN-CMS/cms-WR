@@ -11,17 +11,21 @@ process.options = cms.untracked.PSet(
 )
 # source
 process.source = cms.Source("PoolSource",      
-    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2011A/SingleMu/AOD/PromptReco-v1/000/161/311/022A00D0-BA57-E011-A712-0030487CD76A.root')
+    fileNames=cms.untracked.vstring('/store/data/Run2011A/SingleMu/AOD/May10ReReco-v1/0000/0059CA13-877D-E011-BBC1-1CC1DE1CDD02.root')
 )
-# process.load("HeavyNu.MuFilter.in_cff")
+#process.load("HeavyNu.MuFilter.in_cff")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+
 ## global tags: note that V16 used for Mar31, V17 used for apr18
-process.GlobalTag.globaltag = cms.string('GR_P_V17::All')
+#process.GlobalTag.globaltag = cms.string('GR_R_39X_V5::All')
+#process.GlobalTag.globaltag = cms.string('GR_P_V17::All')
+process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
+
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
@@ -38,7 +42,7 @@ process.patCandidates      = cms.Sequence( process.makePatMuons + process.makePa
 process.patDefaultSequence = cms.Sequence( process.patCandidates )
 
 process.muFilter = cms.EDFilter("MuFilter",
-    minPt    = cms.double( 20.0 ),
+    minPt    = cms.double( 15.0 ),
     keepJets = cms.bool( False ),
     #--- Included, but we ignore this parameter ---#
     HLTpaths = cms.vstring( 'HLT_Mu9','HLT_Mu11' )
@@ -51,7 +55,7 @@ process.mySkimPath = cms.Path(
 )
 
 process.out = cms.OutputModule( "PoolOutputModule",
-   fileName = cms.untracked.string(""),
+   fileName = cms.untracked.string("poolout.root"),
    maxSize = cms.untracked.int32(3000000),
    SelectEvents = cms.untracked.PSet(
       SelectEvents = cms.vstring('mySkimPath'),
@@ -63,3 +67,9 @@ process.outpath = cms.EndPath(process.out)
 
 from PhysicsTools.PatAlgos.tools.coreTools import *
 runOnData(process, ['All'])
+
+#
+# kluge for 42X, because L2L3Residual corrections not yet available.
+#
+if 'L2L3Residual' in process.patJetCorrFactors.levels:
+   process.patJetCorrFactors.levels.remove('L2L3Residual')
