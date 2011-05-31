@@ -142,9 +142,9 @@ if isMC:
 else:
     process.hNuTop.applyMuIDEffcorr = cms.bool(False)
     process.hNuTop.applyEleIDweight = cms.bool(False) 
-    process.hNuTop.applyEleEScale = cms.bool(True) 
-    process.hNuTop.EBscalefactor = cms.double( 1.0 ) 
-    process.hNuTop.EEscalefactor = cms.double( 1.04 ) 
+    process.hNuTop.applyEleEScale = cms.bool(False) 
+    # process.hNuTop.EBscalefactor = cms.double( 1.0 ) 
+    # process.hNuTop.EEscalefactor = cms.double( 1.04 ) 
 
 if isData:
     # turn on trigger match requirement
