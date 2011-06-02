@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.44 2011/05/26 14:29:49 pastika Exp $
+// $Id: HeavyNu.cc,v 1.45 2011/05/26 14:37:46 bdahmes Exp $
 //
 //
 
@@ -244,6 +244,8 @@ private:
   HeavyNuTrigger *trig_;
   HeavyNuID *muid_ ; 
   JetCorrectionUncertainty *jecuObj_;
+
+  std::vector<double> MCweightByVertex_;
 
   std::map<uint32_t,TH1 *> m_runHistos_;
 
@@ -909,10 +911,13 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
   // Neural net histos
   if (v_masspts.size()) {
-    // CMSSW_3X
+    // defines in HeavyNuCommon.h
+#ifdef CMSSW_4XX
+    TDirectory *nnrootdir = nndir->getBareDirectory("");
+#endif
+#ifdef CMSSW_3XX 
     TDirectory *nnrootdir = nndir->cd();
-    // CMSSW_4X
-    // TDirectory *nnrootdir = nndir->getBareDirectory("");
+#endif
     for (size_t i=0; i<v_masspts.size(); i++) {
       int mwr = v_masspts[i].first;
       int mnu = v_masspts[i].second;
@@ -1113,6 +1118,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 						 "JEC Uncertainty (low)(%);Jet #eta;Jet p_{T} (GeV)",
 						 50,-2.5,2.5,100,0,1000);
   }
+
+  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data());
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
@@ -1416,7 +1423,7 @@ HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
   // Due to muon ID differences between data/MC, need to apply 
   // a weight factor to events based on muon pt
   if ( applyMuIDCorrections_ && hne.isMC ) {
-    hne.eventWgt = mu1wgt * mu2wgt ; 
+    hne.eventWgt *= mu1wgt * mu2wgt ; 
   }
 }                                                // HeavyNu::selectMuons
 
@@ -1474,8 +1481,12 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   	else
   	{
   		hnuEvent.n_pue = -1;
-  		std::cout << "NO VALID Pileup Summary found!" << std::endl;
+		//  		std::cout << "NO VALID Pileup Summary found!" << std::endl;
   	}
+
+	// reweighting by vertex
+	if (hnuEvent.n_pue>=0) 
+	  hnuEvent.eventWgt*=MCweightByVertex_[hnuEvent.n_pue];
   }
 
   //count verticies

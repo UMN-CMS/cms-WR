@@ -71,4 +71,42 @@ namespace hnu {
         return avgVertex(*tJet, maxDeltaVR);
     }
 
+  std::vector<double> generate_flat10_weights(const std::vector<double>& dataDist){
+    // see SimGeneral/MixingModule/python/mix_E7TeV_FlatDist10_2011EarlyData_inTimeOnly_cfi.py; copy and paste from there:
+    const double npu_probs[25] = {0.0698146584, 0.0698146584, 0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584 /* <-- 10*/,
+				  0.0630151648,0.0526654164,0.0402754482,0.0292988928,0.0194384503,0.0122016783,0.007207042,0.004003637,0.0020278322,
+				  0.0010739954,0.0004595759,0.0002229748,0.0001028162,4.58337152809607E-05 /* <-- 24 */};
+    std::vector<double> result(25);
+    double s = 0.0;
+    for(int npu=0; npu<25; ++npu){
+      double npu_estimated = dataDist[npu];
+      result[npu] = npu_estimated / npu_probs[npu];
+      s += npu_estimated;
+    }
+    // normalize weights such that the total sum of weights over thw whole sample is 1.0, i.e., sum_i  result[i] * npu_probs[i] should be 1.0 (!)
+    for(int npu=0; npu<25; ++npu){
+      result[npu] /= s;
+    }
+    return result;
+  }
+
+
+  std::vector<double> get_standard_pileup_data() {
+    const int npt=50;
+    const double may10_json[]= {
+      3920760.81, 6081805.28, 13810357.99, 22505758.94, 28864043.84, 30917427.86, 28721324.56, 23746403.90, 17803439.77, 12274902.61, 
+      7868110.47, 4729915.40, 2686011.14, 1449831.56, 747892.03, 370496.38, 177039.19, 81929.35, 36852.78, 16164.45, 
+      6932.97, 2914.39, 1202.92, 488.15, 194.93, 76.64, 29.66, 11.30, 4.24, 1.56, 
+      0.57, 0.20, 0.07, 0.02, 0.01, 0.00, 0.00, 0.00, 0.00, 0.00, 
+      0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+      0.00 };
+
+    std::vector<double> retval;
+    retval.reserve(npt);
+    for (int i=0; i<npt; i++)
+      retval.push_back(may10_json[i]);
+    return retval;
+  }
+
+ 
 }

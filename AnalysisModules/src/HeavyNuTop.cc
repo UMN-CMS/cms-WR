@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.2 2011/05/24 16:08:39 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.3 2011/05/26 14:37:46 bdahmes Exp $
 //
 //
 
@@ -772,10 +772,14 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
 
   // Neural net histos
   if (v_masspts.size()) {
-    // CMSSW_3X
+    // defines in HeavyNuCommon.h
+#ifdef CMSSW_4XX
+    TDirectory *nnrootdir = nndir->getBareDirectory("");
+#endif
+#ifdef CMSSW_3XX 
     TDirectory *nnrootdir = nndir->cd();
-    // CMSSW_4X
-    // TDirectory *nnrootdir = nndir->getBareDirectory("");
+#endif
+
     for (size_t i=0; i<v_masspts.size(); i++) {
       int mwr = v_masspts[i].first;
       int mnu = v_masspts[i].second;

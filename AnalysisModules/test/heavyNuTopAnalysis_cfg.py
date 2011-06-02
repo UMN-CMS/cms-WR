@@ -7,11 +7,12 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=False
+isMC=True
 isMCsignal=False
 Training=False
 isRun2010LoLumi=False
 isRun2011=False
+isPileupMC=True
 
 isData=not isMC
 
@@ -32,11 +33,11 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)
 )
 # source
-#process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/39X/Dec22ReReco/Run2010B/HiLumi/pool_1_1_4Cv.root')
+process.source = cms.Source("PoolSource",
+    fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/39X/Dec22ReReco/Run2010B/HiLumi/pool_1_1_4Cv.root')
 #    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/Fall10/TTJets_TuneZ2_7TeV-madgraph-tauola/GEN-SIM-RECO/START38_V12-v3/0001/02D6EA60-9D02-E011-A091-90E6BA442F11.root')
-#)
-process.load('HeavyNu.AnalysisModules.in_cff')
+)
+#process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
     if isRun2010LoLumi:
@@ -58,7 +59,11 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #
 if (isMC):
     print "=================> MC flag is SET <===================="
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    if (isPileupMC):
+        process.GlobalTag.globaltag=cms.string('START311_V1G1::All')
+        print "=============> isPileupMC flag is SET <================"
+    else:
+        process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
     process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
 
