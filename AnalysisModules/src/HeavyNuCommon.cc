@@ -91,8 +91,13 @@ namespace hnu {
   }
 
 
-  std::vector<double> get_standard_pileup_data() {
+  std::vector<double> get_standard_pileup_data(int era) {
     const int npt=50;
+    const double default_pd[] = { 100, 100, 100, 0, 0, 0, 0, 0, 0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  };
     const double may10_json[]= {
       3920760.81, 6081805.28, 13810357.99, 22505758.94, 28864043.84, 30917427.86, 28721324.56, 23746403.90, 17803439.77, 12274902.61, 
       7868110.47, 4729915.40, 2686011.14, 1449831.56, 747892.03, 370496.38, 177039.19, 81929.35, 36852.78, 16164.45, 
@@ -101,10 +106,14 @@ namespace hnu {
       0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
       0.00 };
 
+    const double* pileupDist=default_pd;
+
+    if (era>=20110 && era<=20112) pileupDist=may10_json;
+
     std::vector<double> retval;
     retval.reserve(npt);
     for (int i=0; i<npt; i++)
-      retval.push_back(may10_json[i]);
+      retval.push_back(pileupDist[i]);
     return retval;
   }
 

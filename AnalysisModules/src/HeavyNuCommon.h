@@ -20,7 +20,7 @@ namespace hnu {
 
     std::vector<double> generate_flat10_weights(const std::vector<double>& dataDist);
 
-    std::vector<double> get_standard_pileup_data(); 
+    std::vector<double> get_standard_pileup_data(int pileupEra); 
 
 }
 

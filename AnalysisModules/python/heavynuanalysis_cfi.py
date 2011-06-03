@@ -30,6 +30,9 @@ hNu = cms.EDFilter(
     ZmassWinMinGeV= cms.double(86.),
     ZmassWinMaxGeV= cms.double(96.),
 
+    pileupEra         = cms.int32(20110),
+    disableTriggerCorrection = cms.bool(False),
+
     jecEra            = cms.int32(0),
     applyJECUsign     = cms.int32(0),
     applyTrigEffsign  = cms.int32(0),

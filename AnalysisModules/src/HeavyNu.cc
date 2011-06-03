@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.45 2011/05/26 14:37:46 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.46 2011/06/02 15:29:36 mansj Exp $
 //
 //
 
@@ -235,6 +235,9 @@ private:
   int    applyMuIDEffsign_;           // for Loose+Iso efficiency correction  
   bool   studyMuonSelectionEff_;      // for Muon Loose ID Efficiency studies
   bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
+
+  bool   disableTriggerCorrection_; // turn off the trigger emulator
+  int    pileupEra_;
 
   std::string currentFile_;
   bool dolog_;
@@ -975,6 +978,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
   jecVal_ = iConfig.getParameter<int>("jecEra");
 
+  pileupEra_ = iConfig.getParameter<int>("pileupEra");
+  disableTriggerCorrection_=iConfig.getParameter<bool>("DisableTriggerCorrection");
+
   applyJECUsign_ = iConfig.getParameter<int>("applyJECUsign");
   if (applyJECUsign_) applyJECUsign_ /= abs(applyJECUsign_); // ensure -1,0,+1
 
@@ -1119,7 +1125,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 						 50,-2.5,2.5,100,0,1000);
   }
 
-  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data());
+  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data(pileupEra_));
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
@@ -1148,6 +1154,10 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   std::cout << "applyTrigEffsign  = " << applyTrigEffsign_          << std::endl;
   std::cout << "studyMuSelectEff  = " << studyMuonSelectionEff_     << std::endl;
   std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
+
+  std::cout << "pileup era = " << pileupEra_ << std::endl;
+  std::cout << "disableTriggerCorrection = " << disableTriggerCorrection_ << std::endl;
+
 }
   
 HeavyNu::~HeavyNu()
@@ -1634,7 +1644,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       trig_->isTriggerMatched( hnuEvent.mu2, iEvent,
 			       &(hists.Mu2TrigMatchesInZwin.trigHistos));
 
-  } else if (!iEvent.isRealData()) {
+  } else if (!iEvent.isRealData() && !disableTriggerCorrection_) {
     mu1trig = mu1trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt(), applyTrigEffsign_ );
     mu2trig = mu2trig &&  trig_->simulateForMC( applyMESfactor_*hnuEvent.mu2->pt(), applyTrigEffsign_ );
   }
