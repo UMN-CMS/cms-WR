@@ -21,7 +21,11 @@ isData=not isMC
 ## was active and unprescaled, (uncertified) run range 133446 - 147116. Certification
 ## restricts this run range further.
 ##
-isRun2010HiLumi=not isRun2010LoLumi
+if not isRun2011:
+    isRun2010HiLumi=not isRun2010LoLumi
+else:
+    isRun2010HiLumi = False 
+    isRun2010LoLumi = False 
 
 process = cms.Process("PAT");
 
@@ -32,23 +36,24 @@ process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('ProductNotFound'),
     wantSummary = cms.untracked.bool(True)
 )
-# source
 
+# source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/39X/Dec22ReReco/Run2010B/Mu_Run2010B_Dec22ReReco_v1_AOD_068-muSkim-pool.root')
-#This file is AT FNAL:
-#    fileNames=cms.untracked.vstring('/store/mc/Fall10/Z1Jets_ptZ-0to100_TuneZ2_7TeV-alpgen-tauola/GEN-SIM-RECO/START38_V12-v2/0018/027050CA-D50B-E011-91DD-00261894391C.root')
-#    fileNames=cms.untracked.vstring( "file:/hdfs/cms/user/heavynu/HeavyNuRecoFromHLT/38X/WR1000_nuRmu100/HeavyNuGenHLT_WR1000_nuRmu100_1-reco-pool.root" )
+    fileNames=cms.untracked.vstring('file:input.root')
 )
-#process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
-    if isRun2010LoLumi:
-        print "===========> Flag is SET for LOW luminosity data <============"
+    if isRun2011:
+        print "===========> Flag is SET for 2011 luminosity data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_may10rereco_2011_mu24x_cfi import lumisToProcess
     else:
-        print "===========> Flag is SET for HIGH luminosity data <============"
-    
-    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
+        if isRun2010LoLumi:
+            print "===========> Flag is SET for 2010 LOW luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi.py import lumisToProcess
+        else:
+            print "===========> Flag is SET for 2010 HIGH luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi.py import lumisToProcess    
+
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -63,12 +68,14 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 if (isMC):
     print "=================> MC flag is SET <===================="
     if (isPileupMC):
-        process.GlobalTag.globaltag=cms.string('START311_V1G1::All')
+        process.GlobalTag.globaltag=cms.string('START41_V0::All')
         print "=============> isPileupMC flag is SET <================"
     else:
+        print "========> Fall10 MC with Spring10 JEC applied <========"
         process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
+    print "===============> Running on DATA <===================="
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
@@ -110,11 +117,11 @@ from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
 if isMC:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 else:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute','L2L3Residual']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 
 ########################################
 # PAT Trigger matching
@@ -145,8 +152,11 @@ from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
     switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ] )
     removeCleaningFromTriggerMatching( process )
-    if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu9')
-    else:               process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu15_v1')
+    if isRun2011:
+        process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*" )' )
+    else:
+        if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu9" )' )
+        else:               process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu15_v1" )' )
 
 ##########################################
 ## Add analysis
@@ -159,12 +169,10 @@ process.TFileService = cms.Service("TFileService",
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 if isRun2011:
     process.hNu.minMu2pt = cms.double(30.)
-    process.hNu.jecEra   = cms.int32(3)
-    if isMC:
-        process.hNu.applyMuIDEffcorr = cms.bool(True)
+    process.hNu.studyMuSelectEff = cms.bool(True)
 else:
     process.hNu.minMu2pt = cms.double(20.)
-    process.hNu.jecEra   = cms.int32(0)
+    process.hNu.studyMuSelectEff = cms.bool(True)
 
 if isData:
     # turn on trigger match requirement

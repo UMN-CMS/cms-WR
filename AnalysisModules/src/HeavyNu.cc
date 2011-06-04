@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.46 2011/06/02 15:29:36 mansj Exp $
+// $Id: HeavyNu.cc,v 1.47 2011/06/03 19:18:06 mansj Exp $
 //
 //
 
@@ -1225,10 +1225,11 @@ HeavyNu::fillBasicJetHistos( const pat::Jet& j,
   if ( j.genParton() ) jpdgId = j.genParton()->pdgId() ; 
   bool isBjet = ( abs(jpdgId) == 5 ) ; 
 
-  float jecuHi=jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,true );
-  float jecuLo=jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,false );
+  float jecuHi = 0. ; float jecuLo = 0. ; 
 
   if( applyJECUsign_ ) {
+    jecuHi=jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,true );
+    jecuLo=jecTotalUncertainty( jpt,jeta,jecuObj_,jecVal_,isBjet,false );
     totalunc = (applyJECUsign_>0) ? jecuHi : jecuLo;
     jpt *= (1.0 + (applyJECUsign_*totalunc));
   }
@@ -1533,9 +1534,10 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     // get the uncertainty parameters from the collection,
     // instantiate the jec uncertainty object
-    JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-    jecuObj_    = new JetCorrectionUncertainty(JetCorPar);
-
+    if ( applyJECUsign_ ) {
+      JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+      jecuObj_    = new JetCorrectionUncertainty(JetCorPar);
+    }
     // For Fall10 corrections...not yet applied
     // edm::FileInPath corrFile("HeavyNu/AnalysisModules/test/Jec10V3_Uncertainty_AK5Calo.txt") ;
     // jecuObj_ = new JetCorrectionUncertainty(corrFile.fullPath()) ; 
