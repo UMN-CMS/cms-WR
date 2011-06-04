@@ -49,10 +49,10 @@ if isData:
     else:
         if isRun2010LoLumi:
             print "===========> Flag is SET for 2010 LOW luminosity data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi.py import lumisToProcess
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi import lumisToProcess
         else:
             print "===========> Flag is SET for 2010 HIGH luminosity data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi.py import lumisToProcess    
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi import lumisToProcess    
 
     process.source.lumisToProcess = lumisToProcess
 
