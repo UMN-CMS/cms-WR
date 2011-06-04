@@ -167,12 +167,11 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
+# process.hNu.studyMuSelectEff = cms.bool(True)
 if isRun2011:
     process.hNu.minMu2pt = cms.double(30.)
-    process.hNu.studyMuSelectEff = cms.bool(True)
 else:
     process.hNu.minMu2pt = cms.double(20.)
-    process.hNu.studyMuSelectEff = cms.bool(True)
 
 if isData:
     # turn on trigger match requirement
