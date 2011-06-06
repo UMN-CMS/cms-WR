@@ -137,17 +137,17 @@ HeavyNuTrigger::simulateForMC(double pt,int signOfError2apply)
   if (matchingEnabled_)
     throw cms::Exception("invalid trigger configuration");
 
-  // determined from 2010 data
-  const double effslo2010[]  = {0.913,0.920,0.924,0.923,0.919,0.919};
-  const double effsnom2010[] = {0.919,0.924,0.927,0.930,0.928,0.928};
-  const double effshi2010[]  = {0.925,0.928,0.931,0.937,0.938,0.938};
+  // determined from 2010 re-reco data
+  const double effslo2010[]  = {0.910,0.925,0.923,0.914,0.922,0.922};
+  const double effsnom2010[] = {0.916,0.929,0.927,0.922,0.931,0.931};
+  const double effshi2010[]  = {0.923,0.932,0.930,0.930,0.941,0.941};
   const double upedge2010[]= {   30,   40,   50,   60, 3500,   -1};
 
-  // determined from 2011 data (153/pb)
-  const double effslo2011[]  = {0.920,0.921,0.919,0.921,0.889,0.889};
-  const double effsnom2011[] = {0.921,0.923,0.923,0.928,0.899,0.899};
-  const double effshi2011[]  = {0.923,0.924,0.926,0.935,0.909,0.909};
-  const double upedge2011[]  = {40,   50,   60,   70,  3500, -1};
+  // determined from 2011 re-reco data 
+  const double effslo2011[]  = {0.918,0.917,0.921,0.910,0.868,0.868};
+  const double effsnom2011[] = {0.920,0.919,0.924,0.916,0.881,0.881};
+  const double effshi2011[]  = {0.921,0.920,0.927,0.922,0.895,0.895};
+  const double upedge2011[]  = {40,   50,   60,   80,  3500, -1};
 
   const double *effs = ( (year_ == 2010) ? effsnom2010 : effsnom2011 );
   if ( signOfError2apply ) {
