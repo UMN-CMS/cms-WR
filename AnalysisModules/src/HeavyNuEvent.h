@@ -23,6 +23,8 @@ public:
   void calculateMuE(double muptfactor,double elefactor);
 
   bool isMC;
+  // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau
+  int mc_class;
 
   pat::MuonRef mu1, mu2, mu[2];
   pat::JetRef  j1,  j2,  j[2];
