@@ -7,6 +7,21 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 
+#include <memory>
+
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "TH1F.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+
+
 /** The purpose of this class is contain the key items for
     a HeavyNuEvent and provide a simple way to pass this information
     between sections of the code.
@@ -21,6 +36,7 @@ public:
   void calculate() { return calculate(2) ; }
   void calculateMuMu(double muptfactor);
   void calculateMuE(double muptfactor,double elefactor);
+  void decayID(HepMC::GenEvent::vertex_const_iterator vtex);
 
   bool isMC;
   // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau

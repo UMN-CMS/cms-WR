@@ -124,3 +124,32 @@ void HeavyNuEvent::calculate(int nMu) {
   mNuR1 = (vJJ + mu1p4).M();
   mNuR2 = (vJJ + mu2p4).M();
 }
+
+void HeavyNuEvent::decayID(HepMC::GenEvent::vertex_const_iterator vtex) {
+  HepMC::GenVertex::particles_out_const_iterator Pout;
+
+  if(((*vtex)->particles_in_size())==1){ // We want a decay, not collision
+    if(abs((*((*vtex)->particles_in_const_begin()))->pdg_id())==9900024){ // Is a WR
+      for(Pout=(*vtex)->particles_out_const_begin(); Pout!=(*vtex)->particles_out_const_end(); Pout++){
+        int pdf_id = abs((*Pout)->pdg_id());
+        switch ( pdf_id ) {
+          case 11:	// e
+            mc_class = 1;
+            break;
+
+          case 13:	// mu
+            mc_class = 2;
+            break;
+
+          case 15:  // tau
+            mc_class = 3;
+            break;
+
+          default:	// else
+            mc_class = 0;
+            break;
+        }				
+      }
+    }
+  }
+}
