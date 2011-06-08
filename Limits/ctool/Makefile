@@ -32,6 +32,10 @@ makeLimitFileELEC2011.exe: makeLimitFileELEC.o makeLimitFile2011.o
 makeLimitFileELEC2Y.exe: makeLimitFileELEC.o makeLimitFile2Y.o
 	${CXX} -g -o $@ $^  ${LDFLAGS}
 
+makeLimitFileSimple2Y.exe: makeLimitFileSimple.o makeLimitFileSimple2Y.o
+	${CXX} -g -o $@ $^  ${LDFLAGS}
+
+
 makeLimitFile.o: systematics.h
 
 makeLimitFileELEC.o: systematicsELEC.h
