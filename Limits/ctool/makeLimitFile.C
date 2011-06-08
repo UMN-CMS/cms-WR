@@ -20,7 +20,7 @@ const char* data_hist_name = "hNu/cut8_mWRmass/mWR";
 const char* signal_hist_name = "hNu/cut8_mWRmass/mWR";
 const char* signal_norm_hist = "hNu/nelec";
 // functional parameters for ttbar (total per ipb, exponential slope)
-const BShape bkgd_tt2010(1.03/36.1, -5.53e-3);
+const BShape bkgd_tt2010(1.03/36.1, -5.10e-3);
 const BShape bkgd_tt2011(5.17/191, -4.94e-3);
 // functional parameters for z+jets (total per ipb, exponential slope)
 const BShape bkgd_zj2010(0.85/36.1, -4.63e-3);
@@ -78,7 +78,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileNa
   fprintf(limitFile,"bin            ");
   for (int ibin=0; ibin<nbins; ibin++) fprintf(limitFile,"%4s ",pbi[ibin].binName.c_str());
   fprintf(limitFile,"\nobservation    ");
-  for (int ibin=0; ibin<nbins; ibin++) fprintf(limitFile,"% 3d ",pbi[ibin].data);
+  for (int ibin=0; ibin<nbins; ibin++) fprintf(limitFile," %3d ",pbi[ibin].data);
   fprintf(limitFile,"\n\n");
 
   // these are the signal and background loops
@@ -125,7 +125,7 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signal
   TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
   double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
-  double min_level_abs=minimum_signal_content*sigh->Integral();
+  // double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<PerBinInfo> pbi;
 
@@ -180,7 +180,7 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
   TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
   double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
-  double min_level_abs=minimum_signal_content*sigh->Integral();
+  //  double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<PerBinInfo> pbi;
 

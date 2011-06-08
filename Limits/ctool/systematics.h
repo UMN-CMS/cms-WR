@@ -42,6 +42,8 @@ void loadSystematics() {
 
 
   systematics10[i_OTHER]["LUMI"]=1.04;
+  systematics10[i_OTHER]["ISRPDF"]=1+sqrt(pow(0.08,2)+pow(0.05,2)+
+					  pow(0.08,2));
   systematics10[i_OTHER]["UNCOTHER"]=1.22;
 
   // copy 2010 -> 2011
@@ -62,6 +64,9 @@ void loadSystematics() {
   systematics10[i_ZJ]["RECOCAL10"]=1+sqrt(pow(0.04,2)+pow(0.02,2)+
 					   pow(0.005,2)+pow(0.02,2)+
 					   pow(0.005,2));
+  systematics10[i_OTHER]["RECOCAL10"]=1+sqrt(pow(0.11,2)+pow(0.04,2)+
+					   pow(0.005,2)+pow(0.02,2)+
+					   pow(0.005,2));
 
 
   systematics11[i_SIGNAL]["RECOCAL11"]=1+sqrt(pow(0.10,2)+pow(0.02,2)+
@@ -73,6 +78,9 @@ void loadSystematics() {
   systematics11[i_ZJ]["RECOCAL11"]=1+sqrt(pow(0.03,2)+pow(0.03,2)+
 					   pow(0.002,2)+pow(0.003,2)+
 					   pow(0.005,2));
+  systematics11[i_OTHER]["RECOCAL11"]=1+sqrt(pow(0.10,2)+pow(0.04,2)+
+					   pow(0.002,2)+pow(0.004,2)+
+					   pow(0.002,2));
 
 
 }
