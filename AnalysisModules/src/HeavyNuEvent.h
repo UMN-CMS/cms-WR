@@ -20,7 +20,7 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
-
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 /** The purpose of this class is contain the key items for
     a HeavyNuEvent and provide a simple way to pass this information
@@ -36,7 +36,7 @@ public:
   void calculate() { return calculate(2) ; }
   void calculateMuMu(double muptfactor);
   void calculateMuE(double muptfactor,double elefactor);
-  void decayID(const HepMC::GenEvent& genE);
+  void decayID(const reco::GenParticleCollection& gpc);
 
   bool isMC;
   // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau

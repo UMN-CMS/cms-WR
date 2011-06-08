@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Alexander Gude
 //         Created:  Thu May 12 11:15:22 CDT 2011
-// $Id: HeavyNuGenLevel.cc,v 1.1 2011/05/24 19:09:54 gude Exp $
+// $Id: HeavyNuGenLevel.cc,v 1.1 2011/06/03 03:35:31 mansj Exp $
 //
 //
 
@@ -36,6 +36,7 @@ Implementation:
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"

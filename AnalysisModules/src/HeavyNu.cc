@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.48 2011/06/04 14:03:32 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.49 2011/06/08 21:27:28 mansj Exp $
 //
 //
 
@@ -1511,9 +1511,10 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  hnuEvent.eventWgt*=MCweightByVertex_[hnuEvent.n_pue];
 
 	// generator information
-	  edm::Handle<edm::HepMCProduct> hepMCEvt;
-	  iEvent.getByLabel("generator",hepMCEvt);
-	  hnuEvent.decayID(*(hepMCEvt->GetEvent()));
+	edm::Handle<reco::GenParticleCollection> genInfo;
+	if (iEvent.getByLabel("genParticles",genInfo)) {
+	  hnuEvent.decayID(*genInfo);
+	} 
   }
 
   //count verticies

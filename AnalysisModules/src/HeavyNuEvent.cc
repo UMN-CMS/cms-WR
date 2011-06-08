@@ -124,7 +124,7 @@ void HeavyNuEvent::calculate(int nMu) {
   mNuR1 = (vJJ + mu1p4).M();
   mNuR2 = (vJJ + mu2p4).M();
 }
-
+/*
 void HeavyNuEvent::decayID(const HepMC::GenEvent& genE) {
 
   HepMC::GenEvent::vertex_const_iterator vtex;
@@ -184,5 +184,33 @@ void HeavyNuEvent::decayID(const HepMC::GenEvent& genE) {
       }
     }
 
+  }
+}
+*/
+void HeavyNuEvent::decayID(const reco::GenParticleCollection& gpp) {
+  mc_class=0;
+
+  reco::GenParticleCollection::const_iterator i;
+  for (i=gpp.begin(); i!=gpp.end(); i++) {
+    if (abs(i->pdgId())==9900024 && i->numberOfDaughters()>=2) {
+      int apid=abs(i->daughter(0)->pdgId());
+      if (apid==11) mc_class=1;
+      if (apid==13) mc_class=2;
+      if (apid==15) mc_class=3;
+      break;
+    }
+    if (abs(i->pdgId())==23 && i->numberOfDaughters()>=2) {
+      int apid=abs(i->daughter(0)->pdgId());
+      if (apid==11) mc_class=11;
+      if (apid==13) mc_class=12;
+      if (apid==15) mc_class=13;
+      break;
+      /*
+      std::cout << i->pdgId() << " " << i->numberOfDaughters() << "  ";
+      for (unsigned int j=0; j<i->numberOfDaughters(); j++)
+	std::cout  << i->daughter(j)->pdgId() << " " ;
+      std::cout << std::endl;
+      */
+    }
   }
 }
