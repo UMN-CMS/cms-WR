@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.47 2011/06/03 19:18:06 mansj Exp $
+// $Id: HeavyNu.cc,v 1.48 2011/06/04 14:03:32 bdahmes Exp $
 //
 //
 
@@ -312,6 +312,10 @@ private:
     TFileDirectory *nndir;
 
     HeavyNuTrigger::trigHistos_t trigHistos;
+    
+    // mc type
+    TH1* mc_type;
+
   };
 
   bool init_;
@@ -320,6 +324,7 @@ private:
   struct HistStruct {
     TH1 *nelec, *njet, *nmet, *nmuAll, *nmuLoose, *nmuTight;
     TH1 *muPt, *muEta, *muPhi, *looseMuPt, *tightMuPt ; 
+    TH1* mc_type;
 
     // Muon quality histos as a function of Pt
     TH2 *muNvalidHitsVsPt, *mudBvsPt, *muNormChi2vsPt, *muQualVsPt;
@@ -501,6 +506,9 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
   // ----------  MET histograms     ----------
 
   t="MET distribution "             +post;          met=td->make<TH1D>("met",t.c_str(),100,0,2000);
+
+
+  t="MC Type "+post;          mc_type  = td->make<TH1D>("mc_type","MC Type Code",100,-0.5,99.5);
 
   // ----------  Mu/Jet histograms  ----------
 
@@ -753,6 +761,8 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 {
   double wgt = hne.eventWgt ;
 
+  mc_type->Fill (hne.mc_class, wgt);
+      
   // Muons 
   double mu1pt = hne.MESscale*hne.mu1->pt();
   double mu2pt = hne.MESscale*hne.mu2->pt();
@@ -860,7 +870,7 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
       mNuR2->Fill ( hne.mNuR2,wgt ) ; 
       mNuR2D->Fill( hne.mNuR1, hne.mNuR2,wgt );
       mJJ->Fill   ( hne.mJJ,wgt   );
-      
+
       ctheta_jj->Fill(hne.ctheta_jj,wgt);
       ctheta_mu1_jj->Fill(hne.ctheta_mu1_jj,wgt);
       ctheta_mu2_jj->Fill(hne.ctheta_mu2_jj,wgt);
@@ -1007,6 +1017,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   // ==================== Book the histos ====================
   //
   edm::Service<TFileService> fs;
+  hists.mc_type  = fs->make<TH1D>("mc_type","MC Type Code",100,-0.5,99.5);
   hists.nelec    = fs->make<TH1D>("nelec",     "N(e^{#pm})",10,-0.5,9.5);
   hists.nmuAll   = fs->make<TH1D>("nmuAll",    "N(#mu^{#pm})",10,-0.5,9.5);
   hists.nmuLoose = fs->make<TH1D>("nmuLoose",  "N(#mu^{#pm}) passes Loose",10,-0.5,9.5);
@@ -1498,6 +1509,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	// reweighting by vertex
 	if (hnuEvent.n_pue>=0) 
 	  hnuEvent.eventWgt*=MCweightByVertex_[hnuEvent.n_pue];
+
+	// generator information
+	  edm::Handle<edm::HepMCProduct> hepMCEvt;
+	  iEvent.getByLabel("generator",hepMCEvt);
+	  hnuEvent.decayID(*(hepMCEvt->GetEvent()));
   }
 
   //count verticies
@@ -1545,6 +1561,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     firstEvent_ = false;
   }
 
+  hists.mc_type->Fill(hnuEvent.mc_class);
   hists.nelec ->Fill(pElecs->size()) ;
   hists.nmuAll->Fill(pMuons->size()) ;
   hists.njet  ->Fill(pJets->size()) ;

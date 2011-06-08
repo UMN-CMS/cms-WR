@@ -36,7 +36,7 @@ public:
   void calculate() { return calculate(2) ; }
   void calculateMuMu(double muptfactor);
   void calculateMuE(double muptfactor,double elefactor);
-  void decayID(HepMC::GenEvent::vertex_const_iterator vtex);
+  void decayID(const HepMC::GenEvent& genE);
 
   bool isMC;
   // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau
