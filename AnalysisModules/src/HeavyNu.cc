@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.50 2011/06/08 22:41:44 mansj Exp $
+// $Id: HeavyNu.cc,v 1.51 2011/06/08 22:54:13 bdahmes Exp $
 //
 //
 
@@ -355,6 +355,8 @@ private:
     HistPerDef Mu1HighPtCutVtxEq1;
     HistPerDef Mu1HighPtCutVtx2to5;
     HistPerDef Mu1HighPtCutVtxGt5;
+    HistPerDef Mu1HighPtCutNoJets;   
+    HistPerDef Mu1HighPtCut1Jet;   
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
     HistPerDef oneBtag;
@@ -1099,6 +1101,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     hists.Mu1HighPtCutVtxEq1.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxEq1")), "(Mu1 60 GeV pt cut, 1 vtx)", nnif_->masspts() );
     hists.Mu1HighPtCutVtx2to5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtx2to5")), "(Mu1 60 GeV pt cut, 2-5 vtx)", nnif_->masspts() );
     hists.Mu1HighPtCutVtxGt5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxGt5")), "(Mu1 60 GeV pt cut, 6+ vtx)", nnif_->masspts() );
+
+    hists.Mu1HighPtCutNoJets.book( new TFileDirectory(fs->mkdir("Mu1HighPtNoJets")), "(Mu1 60 GeV pt cut, no jets)", nnif_->masspts() );
+    hists.Mu1HighPtCut1Jet.book(   new TFileDirectory(fs->mkdir("Mu1HighPt1Jet")), "(Mu1 60 GeV pt cut, 1 jet)", nnif_->masspts() );
   }
 
   if (trig_->matchingEnabled()) {
@@ -1702,6 +1707,15 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
   
+  if ( studyScaleFactorEvolution_ ) { 
+    double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
+
+    if ( mu1pt >= cuts.minimum_mu1_pt ) {
+        if ( hnuEvent.j1.isNull() ) hists.Mu1HighPtCutNoJets.fill(hnuEvent,nnif_->masspts()) ; 
+        if ( hnuEvent.j2.isNull() ) hists.Mu1HighPtCut1Jet.fill(hnuEvent,nnif_->masspts()) ;    
+    }
+  }
+    
   // - require two jets + two muons already required
   // - require at least one muon (mu1 since it has already been
   //   sorted w.r.t. mu2) above the higher min pt threshold

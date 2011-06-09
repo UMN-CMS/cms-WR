@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.1 2011/05/05 13:18:39 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.4 2011/06/06 12:20:54 bdahmes Exp $
 //
 //
 
@@ -1514,8 +1514,8 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		  mu1trig = mu1trig && trig_->isTriggerMatched( hnuEvent4jet.mu1, iEvent) ; 
 		  mu2trig = mu2trig && trig_->isTriggerMatched( hnuEvent4jet.mu2, iEvent) ; 
 		} else if ( !iEvent.isRealData() ) {
-		  mu1trig = mu1trig && trig_->simulateForMC( hnuEvent4jet.mu1->pt(), 0 );
-		  mu2trig = mu2trig && trig_->simulateForMC( hnuEvent4jet.mu2->pt(), 0 );
+		  mu1trig = mu1trig && trig_->simulateForMC( hnuEvent4jet.mu1->pt(),hnuEvent4jet.mu1->eta(),0 );
+		  mu2trig = mu2trig && trig_->simulateForMC( hnuEvent4jet.mu2->pt(),hnuEvent4jet.mu2->eta(),0 );
 		}
 
 		if ( mu1trig || mu2trig ) { 		  
@@ -1575,7 +1575,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
 	    mu1trig = mu1trig && trig_->isTriggerMatched( hnuEvent3jet.mu1, iEvent) ; 
 	  } else if (!iEvent.isRealData()) {
-	    mu1trig = mu1trig &&  trig_->simulateForMC( hnuEvent3jet.mu1->pt(), 0 );
+	    mu1trig = mu1trig &&  trig_->simulateForMC( hnuEvent3jet.mu1->pt(),hnuEvent3jet.mu1->eta(),0 );
 	  }
 	  if ( (qcdJetID(*(hnuEvent3jet.j1)) >= 1) &&   
 	       (qcdJetID(*(hnuEvent3jet.j2)) >= 1) ) {
@@ -1641,7 +1641,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
 	    mu1trig = mu1trig && trig_->isTriggerMatched( hnuEvent2jet.mu1, iEvent) ; 
 	  } else if (!iEvent.isRealData()) {
-	    mu1trig = mu1trig && trig_->simulateForMC( hnuEvent2jet.mu1->pt(), 0 ) ; 
+	    mu1trig = mu1trig && trig_->simulateForMC( hnuEvent2jet.mu1->pt(),hnuEvent2jet.mu1->eta(),0 ) ; 
 	  }
 	  if ( (qcdJetID(*(hnuEvent2jet.j1)) >= 1) &&   
 	       (qcdJetID(*(hnuEvent2jet.j2)) >= 1) ) {

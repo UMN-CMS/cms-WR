@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.3 2011/05/26 14:37:46 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.4 2011/06/02 15:29:36 mansj Exp $
 //
 //
 
@@ -262,6 +262,8 @@ private:
     HistPerDef Mu1HighPtCutVtxEq1;
     HistPerDef Mu1HighPtCutVtx2to5;
     HistPerDef Mu1HighPtCutVtxGt5;
+    HistPerDef Mu1HighPtCutNoJets;   
+    HistPerDef Mu1HighPtCut1Jet;   
     HistPerDef diLmassCut;
     HistPerDef mWRmassCut;
 
@@ -899,6 +901,9 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     hists.Mu1Pt80GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt80GeV")),  "(Mu1 80 GeV pt cut)",  nnif_->masspts() );
     hists.Mu1Pt100GeVCut.book( new TFileDirectory(fs->mkdir("Mu1Pt100GeV")), "(Mu1 100 GeV pt cut)", nnif_->masspts() );
 
+    hists.Mu1HighPtCutNoJets.book( new TFileDirectory(fs->mkdir("Mu1HighPtNoJets")), "(Mu1 60 GeV pt cut, no jets)", nnif_->masspts() );
+    hists.Mu1HighPtCut1Jet.book(   new TFileDirectory(fs->mkdir("Mu1HighPt1Jet")), "(Mu1 60 GeV pt cut, 1 jet)", nnif_->masspts() );
+
     hists.Mu1HighPtCutVtxEq1.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxEq1")), "(Mu1 60 GeV pt cut, 1 vtx)", nnif_->masspts() );
     hists.Mu1HighPtCutVtx2to5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtx2to5")), "(Mu1 60 GeV pt cut, 2-5 vtx)", nnif_->masspts() );
     hists.Mu1HighPtCutVtxGt5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxGt5")), "(Mu1 60 GeV pt cut, 6+ vtx)", nnif_->masspts() );
@@ -1368,12 +1373,21 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       trig_->isTriggerMatched( hnuEvent.mu1, iEvent ) ; 
   } else if (!iEvent.isRealData()) {
     mu1trig = mu1trig &&  
-      trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt(), 0 );
+      trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1->pt(),hnuEvent.mu1->eta(),0 );
   }
 
   if( !mu1trig ) return false;
 
   hists.TrigMatches.fill( hnuEvent,v_null );
+
+  if ( studyScaleFactorEvolution_ ) { 
+    double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
+
+    if ( mu1pt >= cuts.minimum_mu1_pt ) {
+        if ( hnuEvent.j1.isNull() ) hists.Mu1HighPtCutNoJets.fill(hnuEvent,nnif_->masspts()) ; 
+        if ( hnuEvent.j2.isNull() ) hists.Mu1HighPtCut1Jet.fill(hnuEvent,nnif_->masspts()) ;    
+    }
+  }
 
   // - require two jets + two muons already required
   // - require at least one muon (mu1 since it has already been

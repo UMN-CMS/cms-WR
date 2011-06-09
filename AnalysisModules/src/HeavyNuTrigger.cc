@@ -132,11 +132,14 @@ HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
 //======================================================================
 
 bool
-HeavyNuTrigger::simulateForMC(double pt,int signOfError2apply)
+HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
 {
   if (matchingEnabled_)
     throw cms::Exception("invalid trigger configuration");
 
+  // Triggers outside |eta| < 2.1 not allowed
+  if ( fabs(eta) >= 2.1 ) return false ; 
+  
   // determined from 2010 re-reco data
   const double effslo2010[]  = {0.910,0.925,0.923,0.914,0.922,0.922};
   const double effsnom2010[] = {0.916,0.929,0.927,0.922,0.931,0.931};
