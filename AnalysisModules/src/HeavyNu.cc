@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.51 2011/06/08 22:54:13 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.52 2011/06/09 19:16:32 bdahmes Exp $
 //
 //
 
@@ -1373,32 +1373,33 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
     // pre-requisites for the study - only portions of the initial selection are
     //   of interest
 
-    double drj1m0=(hne.j1.isNull())?(10.0):deltaR(m0->eta(),m0->phi(),hne.j1->eta(),hne.j1->phi());
-    double drj2m0=(hne.j2.isNull())?(10.0):deltaR(m0->eta(),m0->phi(),hne.j2->eta(),hne.j2->phi());
-    double drj1m1=(hne.j1.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
-    double drj2m1=(hne.j2.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
+    // At least two jets in the event that pass our requirements
+    if ( !hne.j1.isNull() && !hne.j2.isNull() ) { 
+      double drj1m0=deltaR(m0->eta(),m0->phi(),hne.j1->eta(),hne.j1->phi());
+      double drj2m0=deltaR(m0->eta(),m0->phi(),hne.j2->eta(),hne.j2->phi());
+      double drj1m1=deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
+      double drj2m1=deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
 
-    bool m0tight=hnu::isVBTFtight(*m0);
-    bool m1tight=hnu::isVBTFtight(*m1);
+      bool m0tight=hnu::isVBTFtight(*m0);
+      bool m1tight=hnu::isVBTFtight(*m1);
 
-    if( (m0tight || m1tight) &&
-	(m1->pt() > cuts.minimum_mu2_pt) // by inference m0 must also pass this
-	&& (fabs(m0->eta()) < cuts.maximum_mu_abseta)
-	&& (fabs(m1->eta()) < cuts.maximum_mu_abseta)
-	&& (std::min(drj1m0,drj2m0) > cuts.minimum_muon_jet_dR)
-	&& (std::min(drj1m1,drj2m1) > cuts.minimum_muon_jet_dR)
-	&& inZmassWindow((m0->p4()+m1->p4()).M()) ) { // we have a candidate for study
+      if ( (m0tight || m1tight) &&
+           (m1->pt() > cuts.minimum_mu2_pt) // by inference m0 must also pass this
+           && (fabs(m0->eta()) < cuts.maximum_mu_abseta)
+           && (fabs(m1->eta()) < cuts.maximum_mu_abseta)
+           && (std::min(drj1m0,drj2m0) > cuts.minimum_muon_jet_dR)
+           && (std::min(drj1m1,drj2m1) > cuts.minimum_muon_jet_dR)
+           && inZmassWindow((m0->p4()+m1->p4()).M()) ) { // we have a candidate for study
 
-      if( m0tight && ((drj1m0 < 0.8) || (drj2m0 < 0.8)) ) {
-	double trkIso = m0->trackIso()/m0->pt();
-	hists.trkIsoStudy->Fill(trkIso);
-      }
-      if( m1tight && ((drj1m1 < 0.8) || (drj2m1 < 0.8)) ) {
-	double trkIso = m1->trackIso()/m1->pt();
-	hists.trkIsoStudy->Fill(trkIso);
-      }
+        if ( m0tight && ((drj1m0 < 0.8) || (drj2m0 < 0.8)) ) {
+	  double trkIso = m0->trackIso()/m0->pt();
+          hists.trkIsoStudy->Fill(trkIso);
+        }
+        if ( m1tight && ((drj1m1 < 0.8) || (drj2m1 < 0.8)) ) {
+	  double trkIso = m1->trackIso()/m1->pt();
+          hists.trkIsoStudy->Fill(trkIso);
+        }
 
-      if (!hne.isMC) {
 	bool m0passed = muPassesSelection(*m0,hne);
 	bool m1passed = muPassesSelection(*m1,hne);
 	if( m0passed && m0tight ) {
@@ -1411,8 +1412,8 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
 	  if( m0passed )
 	    hists.Mu2tagMu1passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
 	}
-      } // if !isMC
-    } // if candidate for study
+      } // if candidate for study
+    } // at least two good jets in the event
   } // else don't bother with 3 or more muons
 
 }                                      // HeavyNu::studyMuonSelectionEff
