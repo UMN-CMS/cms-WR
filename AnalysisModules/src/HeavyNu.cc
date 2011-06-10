@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.53 2011/06/10 17:46:07 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.54 2011/06/10 18:04:38 bdahmes Exp $
 //
 //
 
@@ -1171,8 +1171,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   std::cout << "studyMuSelectEff  = " << studyMuonSelectionEff_     << std::endl;
   std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
 
-  std::cout << "pileup era = " << pileupEra_ << std::endl;
-  std::cout << "disableTriggerCorrection = " << disableTriggerCorrection_ << std::endl;
+  std::cout << "pileup era        = " << pileupEra_ << std::endl;
+  std::cout << "DisableTriggerCorrection = " << disableTriggerCorrection_ << std::endl;
 
 }
   
@@ -1375,10 +1375,10 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
 
     // At least two jets in the event that pass our requirements
     // if ( !hne.j1.isNull() && !hne.j2.isNull() ) { 
-    double drj1m0=deltaR(m0->eta(),m0->phi(),hne.j1->eta(),hne.j1->phi());
-    double drj2m0=deltaR(m0->eta(),m0->phi(),hne.j2->eta(),hne.j2->phi());
-    double drj1m1=deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
-    double drj2m1=deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
+    double drj1m0=(hne.j1.isNull())?(10.0):deltaR(m0->eta(),m0->phi(),hne.j1->eta(),hne.j1->phi());
+    double drj2m0=(hne.j2.isNull())?(10.0):deltaR(m0->eta(),m0->phi(),hne.j2->eta(),hne.j2->phi());
+    double drj1m1=(hne.j1.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j1->eta(),hne.j1->phi());
+    double drj2m1=(hne.j2.isNull())?(10.0):deltaR(m1->eta(),m1->phi(),hne.j2->eta(),hne.j2->phi());
     
     bool m0tight=hnu::isVBTFtight(*m0);
     bool m1tight=hnu::isVBTFtight(*m1);
