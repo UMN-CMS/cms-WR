@@ -107,11 +107,11 @@ from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
 if isMC:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 else:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute','L2L3Residual']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 
 ########################################
 # PAT Trigger matching
@@ -208,6 +208,8 @@ if isMC:
     process.hNu2011Top30 = process.hNuTop.clone(minMu2pt = cms.double(30.))
     process.hNu2010Top20 = process.hNuTop.clone(minMu2pt = cms.double(20.))
     process.hNu2010Top30 = process.hNuTop.clone(minMu2pt = cms.double(30.))
+    process.hNu2010Top20.pileupEra = cms.int32(20100)
+    process.hNu2010Top30.pileupEra = cms.int32(20100)
     process.hNu2010Top20.muIDPset.eraForId  = cms.int32(2010)
     process.hNu2010Top30.muIDPset.eraForId  = cms.int32(2010)
     process.hNu2010Top20.trigMatchPset.year = cms.int32(2010)
