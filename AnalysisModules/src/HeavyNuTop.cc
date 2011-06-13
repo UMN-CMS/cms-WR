@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.4 2011/06/02 15:29:36 mansj Exp $
+// $Id: HeavyNuTop.cc,v 1.5 2011/06/09 19:16:32 bdahmes Exp $
 //
 //
 
@@ -45,6 +45,10 @@
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include "RecoEgamma/EgammaElectronProducers/plugins/CorrectedGsfElectronProducer.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
@@ -63,6 +67,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 //////////////////////////////////////////////////////////////////
 // generic maximum/minimum
@@ -139,6 +144,8 @@ private:
 				   HeavyNuEvent& hne );
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
   
+  double GetCorrectedPt ( const pat::Electron& e );
+
   edm::InputTag muonTag_;
   edm::InputTag jetTag_;
   edm::InputTag metTag_;
@@ -151,6 +158,8 @@ private:
   bool   applyEleIDWeightFactor_ ; 
   bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
 
+  int    pileupEra_;
+
   double EBscalefactor_, EEscalefactor_ ; 
   double ebIDwgt_, eeIDwgt_ ; 
 
@@ -162,6 +171,8 @@ private:
   HeavyNuTrigger *trig_;
   HeavyNuID *muid_ ; 
   JetCorrectionUncertainty *jecuObj_;
+
+  std::vector<double> MCweightByVertex_;
 
   std::map<uint32_t,TH1 *> m_runHistos_;
 
@@ -834,6 +845,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   cuts.muon_trackiso_limit  = iConfig.getParameter<double>("muonTrackRelIsoLimit");
   cuts.maxVertexZsep        = iConfig.getParameter<double>("maxVertexZsepCM");
 
+  pileupEra_ = iConfig.getParameter<int>("pileupEra");
+
   EBscalefactor_ = iConfig.getParameter<double>("EBscalefactor") ; 
   EEscalefactor_ = iConfig.getParameter<double>("EEscalefactor") ; 
   ebIDwgt_ = iConfig.getParameter<double>("EBidWgt") ; 
@@ -854,7 +867,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
   nnif_ = new HeavyNu_NNIF(iConfig);
   trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
-  muid_ = new HeavyNuID();
+  muid_ = new HeavyNuID(iConfig.getParameter<edm::ParameterSet>("muIDPset"));
+
   // ==================== Book the histos ====================
   //
   edm::Service<TFileService> fs;
@@ -913,6 +927,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
   init_=false;
 
+  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data(pileupEra_));
+
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
   std::cout << "muonTag           = " << muonTag_                   << std::endl;
@@ -938,6 +954,7 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   std::cout << "EB weight         = " << ebIDwgt_                   << std::endl ; 
   std::cout << "EE weight         = " << eeIDwgt_                   << std::endl ; 
 
+  std::cout << "pileup era        = " << pileupEra_ << std::endl;
 
   ebIDwgt_ = iConfig.getParameter<double>("EBidWgt") ; 
   eeIDwgt_ = iConfig.getParameter<double>("EEidWgt") ; 
@@ -1021,6 +1038,11 @@ HeavyNuTop::fillBasicJetHistos( const pat::Jet& j,
 
 //======================================================================
 
+double HeavyNuTop::GetCorrectedPt(const pat::Electron& e ) {
+  double pt = e.superCluster()->energy() / cosh(e.superCluster()->eta()) ; 
+  return pt ; 
+}
+
 TH1 *
 HeavyNuTop::bookRunHisto(uint32_t runNumber)
 {
@@ -1101,7 +1123,8 @@ HeavyNuTop::elePassesSelection(const pat::Electron& e)
 {
 
   if ( !e.ecalDriven() ) return false ; 
-  double ept = e.superCluster()->energy() / cosh(e.superCluster()->eta()) ; 
+  double ept = GetCorrectedPt(e) ; 
+  // double ept = e.superCluster()->energy() / cosh(e.superCluster()->eta()) ; 
 
   if ( fabs(e.superCluster()->eta()) < 1.442 ) ept *= EBscalefactor_ ; 
   else ept *= EEscalefactor_ ; 
@@ -1175,7 +1198,7 @@ HeavyNuTop::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
 
 void
 HeavyNuTop::selectElectrons(edm::Handle<pat::ElectronCollection>& pElecs,
-			 HeavyNuEvent& hne)
+			    HeavyNuEvent& hne)
 {
   double weight = 1.0 ; 
   
@@ -1184,7 +1207,8 @@ HeavyNuTop::selectElectrons(edm::Handle<pat::ElectronCollection>& pElecs,
 
     if( elePassesSelection(*iE) ) {
       bool isEB = (fabs((*iE).superCluster()->eta()) < 1.442) ; 
-      double ept = (*iE).superCluster()->energy() / cosh((*iE).superCluster()->eta()) ; 
+      // double ept = (*iE).superCluster()->energy() / cosh((*iE).superCluster()->eta()) ; 
+      double ept = GetCorrectedPt(*iE) ; 
 
       if (hne.e1.isNull()) { 
 	hne.e1=iE ;
@@ -1193,7 +1217,7 @@ HeavyNuTop::selectElectrons(edm::Handle<pat::ElectronCollection>& pElecs,
 	weight = ( isEB ? ebIDwgt_ : eeIDwgt_ ) ; 
       } else {
 	bool e1isEB = (fabs(hne.e1->superCluster()->eta()) < 1.442) ; 
-	double e1pt = hne.e1->superCluster()->energy() / cosh(hne.e1->superCluster()->eta()) ; 
+	double e1pt = GetCorrectedPt(*hne.e1) ; 
 	if ( e1isEB ) e1pt *= EBscalefactor_ ;
 	else          e1pt *= EEscalefactor_ ;
 	if (e1pt<ept) { 
@@ -1250,6 +1274,31 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle<pat::METCollection> pMET ;
   iEvent.getByLabel(metTag_, pMET) ;
+
+  if(hnuEvent.isMC)
+  {
+  	edm::Handle<std::vector<PileupSummaryInfo> > pPU;
+  	iEvent.getByLabel("addPileupInfo", pPU);
+  	if(pPU.isValid() && pPU->size() > 0)
+  	{
+  		hnuEvent.n_pue = pPU->at(0).getPU_NumInteractions();
+  	}
+  	else
+  	{
+  		hnuEvent.n_pue = -1;
+		//  		std::cout << "NO VALID Pileup Summary found!" << std::endl;
+  	}
+
+	// reweighting by vertex
+	if (hnuEvent.n_pue>=0) 
+	  hnuEvent.eventWgt*=MCweightByVertex_[hnuEvent.n_pue];
+
+	// generator information
+	edm::Handle<reco::GenParticleCollection> genInfo;
+	if (iEvent.getByLabel("genParticles",genInfo)) {
+	  hnuEvent.decayID(*genInfo);
+	} 
+  }
 
   //count verticies
   int nvertex = 0 ; 
@@ -1413,7 +1462,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.LLJJptCuts.fill( hnuEvent,nnif_->masspts() );
 
   double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
-  double e1pt  = hnuEvent.EEScale*hnuEvent.e1->superCluster()->energy() / cosh(hnuEvent.e1->superCluster()->eta()) ; 
+  double e1pt  = GetCorrectedPt(*hnuEvent.e1) ; 
   double highestPt = ( (mu1pt > e1pt) ? mu1pt : e1pt ) ; 
   if ( studyScaleFactorEvolution_ ) { 
     if ( highestPt > 30. )  hists.Mu1Pt30GeVCut.fill( hnuEvent,nnif_->masspts() );

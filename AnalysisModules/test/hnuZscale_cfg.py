@@ -7,11 +7,12 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=False
+isMC=True
 isMCsignal=False
 Training=False
 isRun2010LoLumi=False
-isRun2011=False
+isRun2011=True
+isPileupMC=True
 
 isData=not isMC
 
@@ -20,7 +21,11 @@ isData=not isMC
 ## was active and unprescaled, (uncertified) run range 133446 - 147116. Certification
 ## restricts this run range further.
 ##
-isRun2010HiLumi=not isRun2010LoLumi
+if not isRun2011:
+    isRun2010HiLumi=not isRun2010LoLumi
+else:
+    isRun2010HiLumi = False 
+    isRun2010LoLumi = False 
 
 process = cms.Process("PAT");
 
@@ -33,18 +38,21 @@ process.options = cms.untracked.PSet(
 )
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/39X/Dec22ReReco/Run2010B/HiLumi/pool_1_1_4Cv.root')
-#    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/Fall10/TTJets_TuneZ2_7TeV-madgraph-tauola/GEN-SIM-RECO/START38_V12-v3/0001/02D6EA60-9D02-E011-A091-90E6BA442F11.root')
+    fileNames=cms.untracked.vstring('file:input.root')
 )
-#process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
-    if isRun2010LoLumi:
-        print "===========> Flag is SET for LOW luminosity data <============"
+    if isRun2011:
+        print "===========> Flag is SET for 2011 luminosity data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_may10rereco_2011_mu24x_cfi import lumisToProcess
     else:
-        print "===========> Flag is SET for HIGH luminosity data <============"
-    
-    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
+        if isRun2010LoLumi:
+            print "===========> Flag is SET for 2010 LOW luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi import lumisToProcess
+        else:
+            print "===========> Flag is SET for 2010 HIGH luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi import lumisToProcess    
+
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -58,9 +66,15 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #
 if (isMC):
     print "=================> MC flag is SET <===================="
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    if (isPileupMC):
+        process.GlobalTag.globaltag=cms.string('START41_V0::All')
+        print "=============> isPileupMC flag is SET <================"
+    else:
+        print "========> Fall10 MC with Spring10 JEC applied <========"
+        process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
+    print "===============> Running on DATA <===================="
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
@@ -88,11 +102,11 @@ from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
 if isMC:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 else:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute','L2L3Residual']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 
 ########################################
 # PAT Trigger matching
@@ -117,10 +131,13 @@ removeCleaning( process, False )
 ## --
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
-    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
+    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ] )
     removeCleaningFromTriggerMatching( process, outputModule = '' )
-    if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu9')
-    else:               process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu15_v1')
+    if isRun2011:
+        process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*" )' )
+    else:
+        if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu9" )' )
+        else:               process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu15_v1" )' )
 
 ##########################################
 ## Add analysis
@@ -133,8 +150,9 @@ process.TFileService = cms.Service("TFileService",
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 process.hNu.minMu2pt         = cms.double(30.)
 process.hNu.studyScaleFactor = cms.bool(True)
+
 if isMC:
-    process.hNu.applyMuIDEffcorr = cms.bool(True)
+    process.hNu.applyMuIDEffcorr = cms.bool(True) # applied for both years now
 else:
     process.hNu.applyMuIDEffcorr = cms.bool(False)
 
@@ -155,30 +173,68 @@ if Training:
 if isMC:
     process.hNu2011Z20 = process.hNu.clone(minMu2pt = cms.double(20.))
     process.hNu2011Z30 = process.hNu.clone(minMu2pt = cms.double(30.))
+    process.hNu2011Z40 = process.hNu.clone(minMu2pt = cms.double(40.))
+    process.hNu2011Z50 = process.hNu.clone(minMu2pt = cms.double(50.))
+    process.hNu2011Z60 = process.hNu.clone(minMu2pt = cms.double(60.))
     process.hNu2010Z20 = process.hNu.clone(minMu2pt = cms.double(20.))
     process.hNu2010Z30 = process.hNu.clone(minMu2pt = cms.double(30.))
-    process.hNu2010Z20.applyMuIDEffcorr     = cms.bool(False)
-    process.hNu2010Z20.trigMatchPset.year   = cms.int32(2010)
-    process.hNu2010Z30.applyMuIDEffcorr     = cms.bool(False)
-    process.hNu2010Z30.trigMatchPset.year   = cms.int32(2010)
+    process.hNu2010Z40 = process.hNu.clone(minMu2pt = cms.double(40.))
+    process.hNu2010Z50 = process.hNu.clone(minMu2pt = cms.double(50.))
+    process.hNu2010Z60 = process.hNu.clone(minMu2pt = cms.double(60.))
+    process.hNu2010Z20.pileupEra = cms.int32(20100)
+    process.hNu2010Z30.pileupEra = cms.int32(20100)
+    process.hNu2010Z40.pileupEra = cms.int32(20100)
+    process.hNu2010Z50.pileupEra = cms.int32(20100)
+    process.hNu2010Z60.pileupEra = cms.int32(20100)
+    process.hNu2010Z20.muIDPset.eraForId = cms.int32(2010)
+    process.hNu2010Z30.muIDPset.eraForId = cms.int32(2010)
+    process.hNu2010Z40.muIDPset.eraForId = cms.int32(2010)
+    process.hNu2010Z50.muIDPset.eraForId = cms.int32(2010)
+    process.hNu2010Z60.muIDPset.eraForId = cms.int32(2010)
+    process.hNu2010Z20.trigMatchPset.year = cms.int32(2010)
+    process.hNu2010Z30.trigMatchPset.year = cms.int32(2010)
+    process.hNu2010Z40.trigMatchPset.year = cms.int32(2010)
+    process.hNu2010Z50.trigMatchPset.year = cms.int32(2010)
+    process.hNu2010Z60.trigMatchPset.year = cms.int32(2010)
     process.hNu2011Z20.highestPtTriggerOnly = cms.bool(True)
 else:
     process.hNu20 = process.hNu.clone(minMu2pt = cms.double(20.))
     if isRun2011:
         process.hNu20.highestPtTriggerOnly = cms.bool(True)
     process.hNu30 = process.hNu.clone(minMu2pt = cms.double(30.))
+    process.hNu40 = process.hNu.clone(minMu2pt = cms.double(40.))
+    process.hNu50 = process.hNu.clone(minMu2pt = cms.double(50.))
+    process.hNu60 = process.hNu.clone(minMu2pt = cms.double(60.))
 
 if isMC:
     process.p2010Z20 = cms.Path(process.patDefaultSequence+process.hNu2010Z20)
     process.p2010Z30 = cms.Path(process.patDefaultSequence+process.hNu2010Z30)
+    process.p2010Z40 = cms.Path(process.patDefaultSequence+process.hNu2010Z40)
+    process.p2010Z50 = cms.Path(process.patDefaultSequence+process.hNu2010Z50)
+    process.p2010Z60 = cms.Path(process.patDefaultSequence+process.hNu2010Z60)
     process.p2011Z20 = cms.Path(process.patDefaultSequence+process.hNu2011Z20)
     process.p2011Z30 = cms.Path(process.patDefaultSequence+process.hNu2011Z30)
+    process.p2011Z40 = cms.Path(process.patDefaultSequence+process.hNu2011Z40)
+    process.p2011Z50 = cms.Path(process.patDefaultSequence+process.hNu2011Z50)
+    process.p2011Z60 = cms.Path(process.patDefaultSequence+process.hNu2011Z60)
     process.s = cms.Schedule(process.p2010Z20,
                              process.p2010Z30,
+                             process.p2010Z40,
+                             process.p2010Z50,
+                             process.p2010Z60,
                              process.p2011Z20,
-                             process.p2011Z30)
+                             process.p2011Z30,
+                             process.p2011Z40,
+                             process.p2011Z50,
+                             process.p2011Z60)
 else:
     process.pZ20 = cms.Path(process.patDefaultSequence+process.hNu20)
     process.pZ30 = cms.Path(process.patDefaultSequence+process.hNu30)
+    process.pZ40 = cms.Path(process.patDefaultSequence+process.hNu40)
+    process.pZ50 = cms.Path(process.patDefaultSequence+process.hNu50)
+    process.pZ60 = cms.Path(process.patDefaultSequence+process.hNu60)
     process.s = cms.Schedule(process.pZ20,
-                             process.pZ30)
+                             process.pZ30,
+                             process.pZ40,
+                             process.pZ50,
+                             process.pZ60)

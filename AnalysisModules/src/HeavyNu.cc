@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.54 2011/06/10 18:04:38 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.55 2011/06/10 19:25:56 bdahmes Exp $
 //
 //
 
@@ -1015,7 +1015,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
   nnif_ = new HeavyNu_NNIF(iConfig);
   trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
-  muid_ = new HeavyNuID();
+  muid_ = new HeavyNuID(iConfig.getParameter<edm::ParameterSet>("muIDPset"));
   // ==================== Book the histos ====================
   //
   edm::Service<TFileService> fs;
@@ -1447,6 +1447,12 @@ HeavyNu::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
       }
     }
   }
+
+  // Check 
+  // if ( mu1wgt != 1.0 && mu2wgt != 1.0 ) 
+  //   std::cout << mu1wgt << "(" << hne.mu1->pt() << ") :" 
+  // 	      << mu2wgt << "(" << hne.mu2->pt() << ")" << std::endl ; 
+
   // Due to muon ID differences between data/MC, need to apply 
   // a weight factor to events based on muon pt
   if ( applyMuIDCorrections_ && hne.isMC ) {
@@ -1636,8 +1642,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   hists.MuTightCuts.fill( hnuEvent,v_null );
 
-  if( iEvent.isRealData() &&
-      studyMuonSelectionEff_ &&
+  if( studyMuonSelectionEff_ &&
       inZmassWindow(hnuEvent.mMuMu) ) {
     if( mu1isTight ) {
       hists.Mu1passesTightInZwin.fill( hnuEvent, v_null );
@@ -1711,8 +1716,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
 
     if ( mu1pt >= cuts.minimum_mu1_pt ) {
-        if ( hnuEvent.j1.isNull() ) hists.Mu1HighPtCutNoJets.fill(hnuEvent,nnif_->masspts()) ; 
-        if ( hnuEvent.j2.isNull() ) hists.Mu1HighPtCut1Jet.fill(hnuEvent,nnif_->masspts()) ;    
+      if ( hnuEvent.j1.isNull() ) hists.Mu1HighPtCutNoJets.fill(hnuEvent,v_null) ; 
+      if ( hnuEvent.j2.isNull() ) hists.Mu1HighPtCut1Jet.fill(hnuEvent,v_null) ;    
     }
   }
     
@@ -1759,12 +1764,12 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   if ( studyScaleFactorEvolution_ ) { 
     double mu1pt = applyMESfactor_*hnuEvent.mu1->pt() ;
-    if ( mu1pt > 30. )  hists.Mu1Pt30GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 40. )  hists.Mu1Pt40GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 50. )  hists.Mu1Pt50GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 60. )  hists.Mu1Pt60GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 80. )  hists.Mu1Pt80GeVCut.fill( hnuEvent,nnif_->masspts() );
-    if ( mu1pt > 100. ) hists.Mu1Pt100GeVCut.fill( hnuEvent,nnif_->masspts() );
+    if ( mu1pt > 30. )  hists.Mu1Pt30GeVCut.fill( hnuEvent,v_null );
+    if ( mu1pt > 40. )  hists.Mu1Pt40GeVCut.fill( hnuEvent,v_null );
+    if ( mu1pt > 50. )  hists.Mu1Pt50GeVCut.fill( hnuEvent,v_null );
+    if ( mu1pt > 60. )  hists.Mu1Pt60GeVCut.fill( hnuEvent,v_null );
+    if ( mu1pt > 80. )  hists.Mu1Pt80GeVCut.fill( hnuEvent,v_null );
+    if ( mu1pt > 100. ) hists.Mu1Pt100GeVCut.fill( hnuEvent,v_null );
   }
 
   if( (applyMESfactor_*hnuEvent.mu1->pt()) < cuts.minimum_mu1_pt )
@@ -1772,11 +1777,11 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   if ( studyScaleFactorEvolution_ ) { 
     if ( hnuEvent.n_primary_vertex == 1 ) 
-      hists.Mu1HighPtCutVtxEq1.fill( hnuEvent,nnif_->masspts() );
+      hists.Mu1HighPtCutVtxEq1.fill( hnuEvent,v_null );
     else if ( hnuEvent.n_primary_vertex <= 5 ) 
-      hists.Mu1HighPtCutVtx2to5.fill( hnuEvent,nnif_->masspts() );
+      hists.Mu1HighPtCutVtx2to5.fill( hnuEvent,v_null );
     else if ( hnuEvent.n_primary_vertex > 5 ) 
-      hists.Mu1HighPtCutVtxGt5.fill( hnuEvent,nnif_->masspts() );
+      hists.Mu1HighPtCutVtxGt5.fill( hnuEvent,v_null );
   }
   hists.Mu1HighPtCut.fill( hnuEvent,nnif_->masspts() );
 

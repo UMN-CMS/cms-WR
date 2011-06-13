@@ -8,6 +8,9 @@ hNu = cms.EDFilter(
         randomSeed   = cms.int32( 0 ),  # for MC
         year         = cms.int32( 2011 ) # for MC
     ),
+    muIDPset = cms.PSet(
+        eraForId     = cms.int32( 2011 )
+    ),
     DoLog        = cms.bool( False ),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
     jetTag       = cms.InputTag( 'selectedPatJets' ),
@@ -36,12 +39,12 @@ hNu = cms.EDFilter(
     jecEra            = cms.int32(0),
     applyJECUsign     = cms.int32(0),
     applyTrigEffsign  = cms.int32(0),
-    studyMuSelectEff  = cms.bool(False),
+    studyMuSelectEff  = cms.bool(True),
     applyMESfactor    = cms.double(1.0),
     applyMuIDEffcorr  = cms.bool(False),
     applyMuIDEffsign  = cms.int32(0),
 
-    studyScaleFactor  = cms.bool(False),
+    studyScaleFactor  = cms.bool(True),
     highestPtTriggerOnly = cms.bool(False),
     isSignal     = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)

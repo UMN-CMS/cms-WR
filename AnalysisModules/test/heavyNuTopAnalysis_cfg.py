@@ -11,7 +11,7 @@ isMC=True
 isMCsignal=False
 Training=False
 isRun2010LoLumi=False
-isRun2011=False
+isRun2011=True
 isPileupMC=True
 
 isData=not isMC
@@ -21,7 +21,11 @@ isData=not isMC
 ## was active and unprescaled, (uncertified) run range 133446 - 147116. Certification
 ## restricts this run range further.
 ##
-isRun2010HiLumi=not isRun2010LoLumi
+if not isRun2011:
+    isRun2010HiLumi=not isRun2010LoLumi
+else:
+    isRun2010HiLumi = False 
+    isRun2010LoLumi = False 
 
 process = cms.Process("PAT");
 
@@ -34,18 +38,21 @@ process.options = cms.untracked.PSet(
 )
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/39X/Dec22ReReco/Run2010B/HiLumi/pool_1_1_4Cv.root')
-#    fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/Fall10/TTJets_TuneZ2_7TeV-madgraph-tauola/GEN-SIM-RECO/START38_V12-v3/0001/02D6EA60-9D02-E011-A091-90E6BA442F11.root')
+    fileNames=cms.untracked.vstring('file:input.root')
 )
-#process.load('HeavyNu.AnalysisModules.in_cff')
 
 if isData:
-    if isRun2010LoLumi:
-        print "===========> Flag is SET for LOW luminosity data <============"
+    if isRun2011:
+        print "===========> Flag is SET for 2011 luminosity data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_may10rereco_2011_mu24x_cfi import lumisToProcess
     else:
-        print "===========> Flag is SET for HIGH luminosity data <============"
-    
-    from HeavyNu.AnalysisModules.goodRunList_cfi import lumisToProcess
+        if isRun2010LoLumi:
+            print "===========> Flag is SET for 2010 LOW luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi import lumisToProcess
+        else:
+            print "===========> Flag is SET for 2010 HIGH luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi import lumisToProcess    
+
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -60,12 +67,14 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 if (isMC):
     print "=================> MC flag is SET <===================="
     if (isPileupMC):
-        process.GlobalTag.globaltag=cms.string('START311_V1G1::All')
+        process.GlobalTag.globaltag=cms.string('START41_V0::All')
         print "=============> isPileupMC flag is SET <================"
     else:
+        print "========> Fall10 MC with Spring10 JEC applied <========"
         process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_39X_V6::All')
+    print "===============> Running on DATA <===================="
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
@@ -73,8 +82,13 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 ###    P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D  ###
 ################################################################################################
 
+# to activate new corrections
+## process.load("RecoEgamma.EgammaElectronProducers.correctedGsfElectrons_cfi")
+## process.correctedGsfElectrons.applyEtaCorrection = cms.bool(True)
+
 ## pat sequences to be loaded:
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
+## process.makePatElectrons = cms.Sequence(process.correctedGsfElectrons * process.electronMatch * process.patElectrons) 
 
 ########################################
 # Output module - has to be defined before PAT python tools will work
@@ -122,10 +136,13 @@ removeCleaning( process, False )
 ## --
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
-    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
+    switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ] )
     removeCleaningFromTriggerMatching( process, outputModule = '' )
-    if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu9')
-    else:               process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu15_v1')
+    if isRun2011:
+        process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*" )' )
+    else:
+        if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu9" )' )
+        else:               process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu15_v1" )' )
 
 ##########################################
 ## Add analysis
@@ -138,12 +155,17 @@ process.TFileService = cms.Service("TFileService",
 process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 process.hNuTop.minMu2pt         = cms.double(30.)
 process.hNuTop.studyScaleFactor = cms.bool(True)
+
 if isMC:
     process.hNuTop.applyMuIDEffcorr = cms.bool(True)
     process.hNuTop.applyEleEScale = cms.bool(False) 
     process.hNuTop.applyEleIDweight = cms.bool(True) 
-    process.hNuTop.EBidWgt = cms.double( 0.978 ) 
-    process.hNuTop.EEidWgt = cms.double( 0.994 ) 
+    #--- 2010 values ---#
+    # process.hNuTop.EBidWgt = cms.double( 0.978 ) 
+    # process.hNuTop.EEidWgt = cms.double( 0.994 ) 
+    #--- 2011 values ---#
+    process.hNuTop.EBidWgt = cms.double( 0.975 ) 
+    process.hNuTop.EEidWgt = cms.double( 0.964 ) 
 else:
     process.hNuTop.applyMuIDEffcorr = cms.bool(False)
     process.hNuTop.applyEleIDweight = cms.bool(False) 
@@ -161,6 +183,22 @@ else:
 
 if Training:
     process.hNuTop.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
+
+#--- Switch to correctedGsfElectrons ---#
+#process.eidCutBasedExt.src = cms.InputTag("correctedGsfElectrons")
+#process.eidRobustLoose.src = cms.InputTag("correctedGsfElectrons")
+#process.eidRobustTight.src = cms.InputTag("correctedGsfElectrons")
+#process.eidRobustHighEnergy.src = cms.InputTag("correctedGsfElectrons")
+#process.eidLoose.src = cms.InputTag("correctedGsfElectrons")
+#process.eidTight.src = cms.InputTag("correctedGsfElectrons")
+#process.eleIsoDepositEcalFromHits.src = cms.InputTag("correctedGsfElectrons")
+#process.eleIsoDepositHcalFromTowers.src = cms.InputTag("correctedGsfElectrons")
+#process.eleIsoDepositTk.src = cms.InputTag("correctedGsfElectrons")
+#process.electronMatch.src = cms.InputTag("correctedGsfElectrons")
+#process.softElectronCands.electrons = cms.InputTag("correctedGsfElectrons")
+#process.softElectronSelector.input = cms.InputTag("correctedGsfElectrons")
+#process.softElectronTagInfos.leptons = cms.InputTag("correctedGsfElectrons")
+#process.patElectrons.electronSource = cms.InputTag("correctedGsfElectrons")
     
 ## ---
 ## Define the paths
@@ -170,10 +208,14 @@ if isMC:
     process.hNu2011Top30 = process.hNuTop.clone(minMu2pt = cms.double(30.))
     process.hNu2010Top20 = process.hNuTop.clone(minMu2pt = cms.double(20.))
     process.hNu2010Top30 = process.hNuTop.clone(minMu2pt = cms.double(30.))
-    process.hNu2010Top20.applyMuIDEffcorr   = cms.bool(False)
+    process.hNu2010Top20.muIDPset.eraForId  = cms.int32(2010)
+    process.hNu2010Top30.muIDPset.eraForId  = cms.int32(2010)
     process.hNu2010Top20.trigMatchPset.year = cms.int32(2010)
-    process.hNu2010Top30.applyMuIDEffcorr   = cms.bool(False)
     process.hNu2010Top30.trigMatchPset.year = cms.int32(2010)
+    process.hNu2010Top20.EBidWgt = cms.double( 0.978 ) 
+    process.hNu2010Top30.EBidWgt = cms.double( 0.978 ) 
+    process.hNu2010Top20.EEidWgt = cms.double( 0.994 ) 
+    process.hNu2010Top30.EEidWgt = cms.double( 0.994 ) 
 else:
     process.hNuTop20 = process.hNuTop.clone(minMu2pt = cms.double(20.))
     process.hNuTop30 = process.hNuTop.clone(minMu2pt = cms.double(30.))

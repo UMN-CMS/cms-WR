@@ -8,6 +8,9 @@ hNuTop = cms.EDFilter(
         randomSeed   = cms.int32( 0 ),  # for MC
         year         = cms.int32( 2011 ) # for MC
     ),
+    muIDPset = cms.PSet(
+        eraForId     = cms.int32( 2011 )
+    ),
     DoLog        = cms.bool( False ),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
     jetTag       = cms.InputTag( 'selectedPatJets' ),
@@ -28,6 +31,8 @@ hNuTop = cms.EDFilter(
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
     maxVertexZsepCM       = cms.double(0.03),
     
+    pileupEra         = cms.int32(20110),
+
     applyEleEScale    = cms.bool(False),
     EBscalefactor     = cms.double(1.0),
     EEscalefactor     = cms.double(1.0),
