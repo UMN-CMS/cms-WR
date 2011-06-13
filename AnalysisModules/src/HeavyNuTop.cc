@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.5 2011/06/09 19:16:32 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.6 2011/06/13 02:29:11 bdahmes Exp $
 //
 //
 
@@ -45,7 +45,7 @@
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
-#include "RecoEgamma/EgammaElectronProducers/plugins/CorrectedGsfElectronProducer.h"
+// #include "RecoEgamma/EgammaElectronProducers/plugins/CorrectedGsfElectronProducer.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
