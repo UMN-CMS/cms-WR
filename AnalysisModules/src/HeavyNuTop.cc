@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.6 2011/06/13 02:29:11 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.7 2011/06/13 10:36:22 bdahmes Exp $
 //
 //
 
@@ -170,7 +170,6 @@ private:
   HeavyNu_NNIF *nnif_;
   HeavyNuTrigger *trig_;
   HeavyNuID *muid_ ; 
-  JetCorrectionUncertainty *jecuObj_;
 
   std::vector<double> MCweightByVertex_;
 
@@ -1326,21 +1325,6 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   if (firstEvent_) {
-    // handle the jet corrector parameters collection,
-    // get the jet corrector parameters collection from the global tag
-    //
-    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-    iSetup.get<JetCorrectionsRecord>().get("AK5Calo",JetCorParColl);
-    
-    // get the uncertainty parameters from the collection,
-    // instantiate the jec uncertainty object
-    JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-    jecuObj_    = new JetCorrectionUncertainty(JetCorPar);
-
-    // For Fall10 corrections...not yet applied
-    // edm::FileInPath corrFile("HeavyNu/AnalysisModules/test/Jec10V3_Uncertainty_AK5Calo.txt") ;
-    // jecuObj_ = new JetCorrectionUncertainty(corrFile.fullPath()) ; 
-
     firstEvent_ = false;
   }
 
