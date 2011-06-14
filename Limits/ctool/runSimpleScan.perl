@@ -18,7 +18,7 @@ GetOptions("toys=i" => \$toys,
 $pwd=`pwd`;
 chomp($pwd);
 $exe=$pwd."/scanSimple.sh";
-$workloc="/local/cms/user/".$ENV{"USER"}."/heavyNuLimits";
+$workloc="/local/cms/user/".$ENV{"USER"}."/heavyNuSimple";
 if ($jobBase ne "default") {
     $workloc=$workloc."/${jobBase}";
 }
@@ -47,9 +47,9 @@ print(CONDOR "Universe = vanilla\n");
 print(CONDOR "Requirements = Memory > 400  && (Arch==\"X86_64\") && (SlotId!=5 && SlotId!=11)\n");
 print(CONDOR  "+CondorGroup=\"cmsfarm\"\n");
 
-for ($minbin=14; $minbin<50; $minbin++)
+for ($minbin=14; $minbin<50; $minbin++) {
 
-    $s11=$signal2011."/WR${mw}_nuRmu${mn}/$dir11/heavyNuAnalysis_WR".$mw."_nuRmu".$mn.".root";
+    $s11=$signal2011."/WR".$mw."_nuRmu".$mn."/heavyNuAnalysis_WR".$mw."_nuRmu".$mn.".root";
 
     if (! -e $s11) {
 	print "No $s11\n";
@@ -69,7 +69,7 @@ for ($minbin=14; $minbin<50; $minbin++)
     } else {
 	print "2010/2011 $mw $mn\n";
 
-	$ofname="$fileLoc/limit_".$mw."_".$mn;
+	$ofname="$fileLoc/limit_".$mw."_".$mn."_".$minbin;
 	$cmd="./makeLimitFileSimple2Y.exe $mw $minbin $lumi2011 $data2011 $s11 $data2010 $s10 $ofname";
     }
     

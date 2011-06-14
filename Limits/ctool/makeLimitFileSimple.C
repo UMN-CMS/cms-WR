@@ -134,7 +134,7 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr, int iminbin, TFile* dataf,
   abin.signal=sigh->Integral(iminbin,sigh->GetNbinsX())*normSignal*lumi;
   abin.lumi=lumi;
   abin.year=2010;
-  abin.data=int(datah->Integral(iminbin,sigh->GetNbinsX()))*normSignal*lumi;
+  abin.data=int(datah->Integral(iminbin,sigh->GetNbinsX()));
   abin.binName="b10";
   pbi.push_back(abin);
 
@@ -159,7 +159,7 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int iminbin, int mwr, 
   abin.signal=sigh->Integral(iminbin,sigh->GetNbinsX())*normSignal*lumi;
   abin.lumi=lumi;
   abin.year=2011;
-  abin.data=int(datah->Integral(iminbin,sigh->GetNbinsX()))*normSignal*lumi;
+  abin.data=int(datah->Integral(iminbin,sigh->GetNbinsX()));
   abin.binName="b11";
   pbi.push_back(abin);
   
@@ -171,7 +171,7 @@ void makeLimitFile2011(double lumi, int mwr, int iminbin, TFile* dataf, TFile* s
   formatLimitFile(pbi,limitFileName);
 }
 
-void makeLimitFileTwoYear(double lumi11, int mwr, int iminbin, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName) {
+void makeLimitFileTwoYear(double lumi11, int iminbin, int mwr, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName) {
 
   std::vector<PerBinInfo> pbi2010=makeLimitContent2010(mwr,iminbin,dataf10,signalf10);
   std::vector<PerBinInfo> pbi2011=makeLimitContent2011(lumi11,iminbin,mwr,dataf11,signalf11);
