@@ -38,7 +38,7 @@ void loadSystematics() {
 
   systematics10[i_ZJ]["ISRPDF"]=1+sqrt(pow(0.08,2)+pow(0.09,2)+
 					  pow(0.14,2));
-  systematics10[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.08,2)+pow(0.03,2));
+  systematics10[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.13,2)+pow(0.03,2));
 
 
   systematics10[i_OTHER]["LUMI"]=1.04;
@@ -52,6 +52,8 @@ void loadSystematics() {
   systematics11[i_ZJ]=systematics10[i_ZJ];
   systematics11[i_OTHER]=systematics10[i_OTHER];
 
+  systematics11[i_TT]["TTONLY"]=1+sqrt(pow(0.22,2)+pow(0.05,2));
+  systematics11[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.06,2)+pow(0.03,2));
 
   // individual systematics
 

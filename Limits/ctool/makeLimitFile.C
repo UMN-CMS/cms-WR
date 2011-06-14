@@ -20,14 +20,14 @@ const char* data_hist_name = "hNu/cut8_mWRmass/mWR";
 const char* signal_hist_name = "hNu/cut8_mWRmass/mWR";
 const char* signal_norm_hist = "hNu/nelec";
 // functional parameters for ttbar (total per ipb, exponential slope)
-const BShape bkgd_tt2010(1.03/36.1, -5.10e-3);
-const BShape bkgd_tt2011(5.17/191, -4.94e-3);
+const BShape bkgd_tt2010(0.867/36.1, -5.27e-3);
+const BShape bkgd_tt2011(5.52/204, -5.05e-3);
 // functional parameters for z+jets (total per ipb, exponential slope)
-const BShape bkgd_zj2010(0.85/36.1, -4.63e-3);
-const BShape bkgd_zj2011(5.26/191, -3.97e-3);
+const BShape bkgd_zj2010(0.598*1.01/36.1, -3.61e-3);
+const BShape bkgd_zj2011(3.57*1.12/204, -3.81e-3);
 // functional parameters for other backgrounds (w+jets, VV, QCD, tW)
-const BShape bkgd_other2010((0.03+0.037+0.022)/36.1+0.0026, -5e-3);
-const BShape bkgd_other2011((0.19+0.14+0.05)/191.0, -4.33e-3);
+const BShape bkgd_other2010((0.03+0.04+0.027)/36.1+0.0026, -4e-3);
+const BShape bkgd_other2011((0.18+0.17+0.05)/204.0, -4.6e-3);
 
 // names
 const char* jnames[]= {"WR","TT","ZJ","OT"};
