@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.7 2011/06/13 10:36:22 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.8 2011/06/13 14:59:48 bdahmes Exp $
 //
 //
 
@@ -154,8 +154,8 @@ private:
   double applyMESfactor_;             // for Muon Energy Scale studies
   int    applyTrigEffsign_;           // for Trigger Efficiency studies
   bool   applyMuIDCorrections_ ; 
-  bool   applyEleScaleCorrections_ ; 
-  bool   applyEleIDWeightFactor_ ; 
+    // bool   applyEleScaleCorrections_ ; 
+    // bool   applyEleIDWeightFactor_ ; 
   bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
 
   int    pileupEra_;
@@ -854,8 +854,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   applyMESfactor_ = 1.0 ; // Hardcoded for Top studies
   applyTrigEffsign_ = 0. ; // Hardcoded for Top studies 
 
-  applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
-  applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ; 
+  // applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
+  // applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ; 
   applyMuIDCorrections_ = iConfig.getParameter<bool>("applyMuIDEffcorr");
 
 
@@ -946,25 +946,14 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   std::cout << "minMuMuMass       = " << cuts.minimum_mumu_mass     << " GeV" << std::endl;
   std::cout << "min4objMass       = " << cuts.minimum_mWR_mass      << " GeV" << std::endl;
   std::cout << "applyMuIDEffcorr  = " << applyMuIDCorrections_      << std::endl;
-  std::cout << "applyEleEScale    = " << applyEleScaleCorrections_  << std::endl ; 
+  // std::cout << "applyEleEScale    = " << applyEleScaleCorrections_  << std::endl ; 
   std::cout << "EB scale factor   = " << EBscalefactor_             << std::endl ; 
   std::cout << "EE scale factor   = " << EEscalefactor_             << std::endl ; 
-  std::cout << "applyEleIDweight  = " << applyEleIDWeightFactor_    << std::endl ; 
+  // std::cout << "applyEleIDweight  = " << applyEleIDWeightFactor_    << std::endl ; 
   std::cout << "EB weight         = " << ebIDwgt_                   << std::endl ; 
   std::cout << "EE weight         = " << eeIDwgt_                   << std::endl ; 
 
   std::cout << "pileup era        = " << pileupEra_ << std::endl;
-
-  ebIDwgt_ = iConfig.getParameter<double>("EBidWgt") ; 
-  eeIDwgt_ = iConfig.getParameter<double>("EEidWgt") ; 
-
-  applyMESfactor_ = 1.0 ; // Hardcoded for Top studies
-  applyTrigEffsign_ = 0. ; // Hardcoded for Top studies 
-
-  applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
-  applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ; 
-
-
   std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
 }
   
@@ -1324,8 +1313,39 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false; 
   }
 
-  if (firstEvent_) {
+  if (firstEvent_) {      
     firstEvent_ = false;
+    // Some sanity checks inserted 
+    // If running on Monte Carlo, expect
+    //   - pileup configuration to make sense
+    //   - to apply nominal trigger and ID corrections
+    //   - to apply proper weighting to events for electron reco/ID
+    // If running on data
+    //   - no corrections are applied
+    if ( studyScaleFactorEvolution_ ) std::cout << "Histograms for top scale factor cross checks will be created" << std::endl ; 
+    if ( hnuEvent.isMC ) {
+        if ( applyMuIDCorrections_ )      std::cout << "Nominal Mu ID corrections applied" << std::endl ;
+        else                              std::cout << "WARNING: You have disabled Mu ID corrections.  Are you sure?" << std::endl ;
+        if ( ebIDwgt_ != 1.0 &&
+             eeIDwgt_ != 1.0 )            std::cout << "Events will be weighted to account for data/MC reconstruction and ID differences" << std::endl ;
+        else                              std::cout << "WARNING: You are not applying EB/EE weighting to MC.  Are you sure?" << std::endl ; 
+
+        int pileupYear = pileupEra_ / 10 ;
+        int idYear     = muid_->idEra() ;
+        int trigYear   = trig_->trigEra() ;
+        
+        bool allErasMatch = ( pileupYear == idYear ) && ( idYear == trigYear ) ;
+        if ( !allErasMatch ) {
+            std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl ;
+            std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
+                      << ", and year for trigger is " << trigYear << std::endl ;
+        } else {
+            std::cout << "Looking at corrections, I assume you are running with the " << trigYear << " year settings" << std::endl ; 
+        }
+    } else {
+        if ( ebIDwgt_ != 1.0 && eeIDwgt_ != 1.0 )
+            std::cout << "WARNING: You are applying EB/EE weighting to DATA.  Are you sure?" << std::endl ; 
+    }
   }
 
   hists.nelec ->Fill(pElecs->size()) ;

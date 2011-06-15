@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.55 2011/06/10 19:25:56 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.56 2011/06/13 02:29:11 bdahmes Exp $
 //
 //
 
@@ -1470,7 +1470,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   HeavyNuEvent hnuEvent;
 
   hnuEvent.isMC = !iEvent.isRealData();
-
+  
   if (iEvent.isRealData())
   {
     if( (applyMESfactor_ != 1.0) ||
@@ -1568,8 +1568,50 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     // For Fall10 corrections...not yet applied
     // edm::FileInPath corrFile("HeavyNu/AnalysisModules/test/Jec10V3_Uncertainty_AK5Calo.txt") ;
-    // jecuObj_ = new JetCorrectionUncertainty(corrFile.fullPath()) ; 
+    // jecuObj_ = new JetCorrectionUncertainty(corrFile.fullPath()) ;
 
+    // Some sanity checks inserted 
+    // If running on Monte Carlo, expect
+    //   - pileup configuration to make sense
+    //   - to apply trigger and ID corrections
+    // If running on data
+    //   - no corrections are applied
+    // Of course, this changes completely when doing systematics checks
+    if ( studyMuonSelectionEff_ )     std::cout << "Histograms for studying muon reco/ID efficiency will be created" << std::endl ;
+    if ( studyScaleFactorEvolution_ ) std::cout << "Histograms for Z scale factor cross checks will be created" << std::endl ; 
+    if ( applyJECUsign_ )             std::cout << "Studies will be used to estimate JEC uncertainty" << std::endl ; 
+    else                              std::cout << "Nominal Jet corrections applied" << std::endl ; 
+    if ( !disableTriggerCorrection_ ) {
+        if ( applyTrigEffsign_ )      std::cout << "Studies will be used to estimate trigger efficiency uncertainty" << std::endl ; 
+        else                          std::cout << "Nominal trigger corrections applied" << std::endl ;
+    }
+    if ( hnuEvent.isMC ) {
+        int pileupYear = pileupEra_ / 10 ;
+        int idYear     = muid_->idEra() ;
+        int trigYear   = trig_->trigEra() ;
+        
+        bool allErasMatch = true ; 
+        if ( applyMuIDEffsign_ )          std::cout << "Studies will be used to estimate Mu ID uncertainty" << std::endl ; 
+        else if ( applyMuIDCorrections_ ) std::cout << "Nominal Mu ID corrections applied" << std::endl ;
+        else                              std::cout << "You have disabled Mu ID corrections.  Are you sure?" << std::endl ;
+        if ( disableTriggerCorrection_ ) {
+            std::cout << "You have disabled the trigger correction.  Are you sure?" << std::endl ;
+            if ( pileupYear != idYear ) allErasMatch = false ; 
+        } else {
+            allErasMatch = ( pileupYear == idYear ) && ( idYear == trigYear ) ;
+        }
+        if ( !allErasMatch ) {
+            std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl ;
+            std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
+                      << ", and year for trigger is " << trigYear << std::endl ;
+        } else {
+            std::cout << "Looking at corrections, I assume you are running with the " << trigYear << " year settings" << std::endl ; 
+        }
+    } else {
+        if ( disableTriggerCorrection_ )
+            std::cout << "WARNING: You have disabled the trigger correction in data.  What are you doing?!?" << std::endl ; 
+    }
+    
     firstEvent_ = false;
   }
 

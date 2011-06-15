@@ -19,7 +19,8 @@ class HeavyNuID {
 
   explicit HeavyNuID(const edm::ParameterSet & iConfig);
   double   weightForMC(double pt,int signOfError2apply=0);
-
+  int      idEra() { return idEra_ ; } 
+    
   void endJob();
 
  private:
