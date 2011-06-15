@@ -655,6 +655,10 @@ void plotLimits(int maxval = -1, bool doMuon = true, std::string limitFile = "li
 
     observedPlot->SetLineColor(kBlue);
     observedPlot->SetFillColor(kBlue - 4);
+    if ( !doMuon ) { 
+        observedPlot->SetLineColor(kRed);
+        observedPlot->SetFillColor(kRed - 4);
+    }
     observedPlot->SetFillStyle(3005);
     observedPlot->SetLineWidth(5);
     observedPlot->Draw("F SAME");
@@ -702,11 +706,11 @@ void plotLimits(int maxval = -1, bool doMuon = true, std::string limitFile = "li
     leg->Draw();
     Tevatron->Draw("F SAME") ;
     wrnu->Draw("F SAME") ;
-    text.DrawLatex(720, .94*ymax, "M_{N_{#mu}} > M_{W_{R}}");
+    if ( doMuon ) text.DrawLatex(720, .94*ymax, "M_{N_{#mu}} > M_{W_{R}}");
+    else          text.DrawLatex(720, .94*ymax, "M_{N_{e}} > M_{W_{R}}");
     text2.DrawLatex(730, 20, "Excluded by Tevatron");
     
     twoDlimits->Print("lim2D.pdf");
 
 }
-
 
