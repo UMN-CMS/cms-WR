@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.56 2011/06/13 02:29:11 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.57 2011/06/15 19:29:46 bdahmes Exp $
 //
 //
 
@@ -358,6 +358,7 @@ private:
     HistPerDef Mu1HighPtCutNoJets;   
     HistPerDef Mu1HighPtCut1Jet;   
     HistPerDef diLmassCut;
+    HistPerDef loDiLmassCut;  
     HistPerDef mWRmassCut;
     HistPerDef oneBtag;
     HistPerDef twoBtag;
@@ -372,6 +373,10 @@ private:
     HistPerDef Mu1TrigMatchesInZwin;
     HistPerDef Mu2TrigMatchesInZwin;
     HistPerDef Mu1Mu2TrigMatchesInZwin;
+    HistPerDef Mu1tagCJprobeInZwin;
+    HistPerDef Mu2tagCJprobeInZwin;
+    HistPerDef Mu1tagMu2CJpassesLooseInZwin;
+    HistPerDef Mu2tagMu1CJpassesLooseInZwin;
 
   } hists;
 
@@ -1087,23 +1092,24 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   hists.LLJJptCuts.book  ( new TFileDirectory(fs->mkdir("cut4_LLJJpt")),     "(4objects with ptcuts:4)", nnif_->masspts() );
   hists.VertexCuts.book  ( new TFileDirectory(fs->mkdir("cut5_Vertex")),     "(vertex requirements:5)",  nnif_->masspts() );
   hists.Mu1HighPtCut.book( new TFileDirectory(fs->mkdir("cut6_Mu1HighPt")),  "(Mu1 High pt cut:6)",      nnif_->masspts() );
+  hists.loDiLmassCut.book( new TFileDirectory(fs->mkdir("cut7a_loDiLmass")), "(mumu mass cut:7a)",       nnif_->masspts() );
   hists.diLmassCut.book  ( new TFileDirectory(fs->mkdir("cut7_diLmass")),    "(mumu mass cut:7)",        nnif_->masspts() );
   hists.mWRmassCut.book  ( new TFileDirectory(fs->mkdir("cut8_mWRmass")),    "(mumujj mass cut:8)",      nnif_->masspts() );
 
   if (studyScaleFactorEvolution_) { 
-    hists.Mu1Pt30GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt30GeV")),  "(Mu1 30 GeV pt cut)",  nnif_->masspts() );
-    hists.Mu1Pt40GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt40GeV")),  "(Mu1 40 GeV pt cut)",  nnif_->masspts() );
-    hists.Mu1Pt50GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt50GeV")),  "(Mu1 50 GeV pt cut)",  nnif_->masspts() );
-    hists.Mu1Pt60GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt60GeV")),  "(Mu1 60 GeV pt cut)",  nnif_->masspts() );
-    hists.Mu1Pt80GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt80GeV")),  "(Mu1 80 GeV pt cut)",  nnif_->masspts() );
-    hists.Mu1Pt100GeVCut.book( new TFileDirectory(fs->mkdir("Mu1Pt100GeV")), "(Mu1 100 GeV pt cut)", nnif_->masspts() );
+    hists.Mu1Pt30GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt30GeV")),  "(Mu1 30 GeV pt cut)",  v_null );
+    hists.Mu1Pt40GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt40GeV")),  "(Mu1 40 GeV pt cut)",  v_null );
+    hists.Mu1Pt50GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt50GeV")),  "(Mu1 50 GeV pt cut)",  v_null );
+    hists.Mu1Pt60GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt60GeV")),  "(Mu1 60 GeV pt cut)",  v_null );
+    hists.Mu1Pt80GeVCut.book ( new TFileDirectory(fs->mkdir("Mu1Pt80GeV")),  "(Mu1 80 GeV pt cut)",  v_null );
+    hists.Mu1Pt100GeVCut.book( new TFileDirectory(fs->mkdir("Mu1Pt100GeV")), "(Mu1 100 GeV pt cut)", v_null );
 
-    hists.Mu1HighPtCutVtxEq1.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxEq1")), "(Mu1 60 GeV pt cut, 1 vtx)", nnif_->masspts() );
-    hists.Mu1HighPtCutVtx2to5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtx2to5")), "(Mu1 60 GeV pt cut, 2-5 vtx)", nnif_->masspts() );
-    hists.Mu1HighPtCutVtxGt5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxGt5")), "(Mu1 60 GeV pt cut, 6+ vtx)", nnif_->masspts() );
+    hists.Mu1HighPtCutVtxEq1.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxEq1")), "(Mu1 60 GeV pt cut, 1 vtx)", v_null );
+    hists.Mu1HighPtCutVtx2to5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtx2to5")), "(Mu1 60 GeV pt cut, 2-5 vtx)", v_null );
+    hists.Mu1HighPtCutVtxGt5.book( new TFileDirectory(fs->mkdir("Mu1HighPtVtxGt5")), "(Mu1 60 GeV pt cut, 6+ vtx)", v_null );
 
-    hists.Mu1HighPtCutNoJets.book( new TFileDirectory(fs->mkdir("Mu1HighPtNoJets")), "(Mu1 60 GeV pt cut, no jets)", nnif_->masspts() );
-    hists.Mu1HighPtCut1Jet.book(   new TFileDirectory(fs->mkdir("Mu1HighPt1Jet")), "(Mu1 60 GeV pt cut, 1 jet)", nnif_->masspts() );
+    hists.Mu1HighPtCutNoJets.book( new TFileDirectory(fs->mkdir("Mu1HighPtNoJets")), "(Mu1 60 GeV pt cut, no jets)", v_null );
+    hists.Mu1HighPtCut1Jet.book(   new TFileDirectory(fs->mkdir("Mu1HighPt1Jet")), "(Mu1 60 GeV pt cut, 1 jet)", v_null );
   }
 
   if (trig_->matchingEnabled()) {
@@ -1118,8 +1124,12 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
   if (studyMuonSelectionEff_) {
     hists.Mu1tagInZwin.book              ( new TFileDirectory(fs->mkdir("Mu1tagInZwin")),               "(#mu1 tag in Z mass Window)",v_null );
     hists.Mu2tagInZwin.book              ( new TFileDirectory(fs->mkdir("Mu2tagInZwin")),               "(#mu2 tag in Z mass Window)",v_null );
+    hists.Mu1tagCJprobeInZwin.book       ( new TFileDirectory(fs->mkdir("Mu1tagCJprobeInZwin")),        "(#mu1 tag CJ probe in Z mass Window)",v_null );
+    hists.Mu2tagCJprobeInZwin.book       ( new TFileDirectory(fs->mkdir("Mu2tagCJprobeInZwin")),        "(#mu2 tag CJ probe in Z mass Window)",v_null );
     hists.Mu1tagMu2passesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu1tagMu2passesLooseInZwin")), "(#mu2 passes Loose crit. in Z mass Window)",v_null );
     hists.Mu2tagMu1passesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu2tagMu1passesLooseInZwin")), "(#mu1 passes Loose crit. in Z mass Window)",v_null );
+    hists.Mu1tagMu2CJpassesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu1tagMu2CJpassesLooseInZwin")), "(#mu2 CJ passes Loose crit. in Z mass Window)",v_null );
+    hists.Mu2tagMu1CJpassesLooseInZwin.book( new TFileDirectory(fs->mkdir("Mu2tagMu1CJpassesLooseInZwin")), "(#mu1 CJ passes Loose crit. in Z mass Window)",v_null );
     hists.Mu1passesTightInZwin.book      ( new TFileDirectory(fs->mkdir("Mu1passesTightInZwin")),       "(#mu1 passes Tight crit. in Z mass Window)",v_null );
     hists.Mu2passesTightInZwin.book      ( new TFileDirectory(fs->mkdir("Mu2passesTightInZwin")),       "(#mu2 passes Tight crit. in Z mass Window)",v_null );
     hists.Mu1Mu2passesTightInZwin.book   ( new TFileDirectory(fs->mkdir("Mu1Mu2passesTightInZwin")),    "(#mu1,#mu2 passes Tight crit. in Z mass Window)",v_null );
@@ -1400,18 +1410,26 @@ HeavyNu::studyMuonSelectionEff(edm::Handle<pat::MuonCollection>& pMuons,
           hists.trkIsoStudy->Fill(trkIso);
         }
 
+        bool mu0cj = (drj1m0 < 0.8) || (drj2m0 < 0.8) ; 
+        bool mu1cj = (drj1m1 < 0.8) || (drj2m1 < 0.8) ; 
 	bool m0passed = muPassesSelection(*m0,hne);
 	bool m1passed = muPassesSelection(*m1,hne);
 	if( m0passed && m0tight ) {
 	  hists.Mu1tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	  if ( m1passed )
+	  if ( mu1cj ) hists.Mu1tagCJprobeInZwin.fill( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
+	  if ( m1passed ) { 
 	    hists.Mu1tagMu2passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	}
+            if ( mu1cj ) hists.Mu1tagMu2CJpassesLooseInZwin.fill( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
+          }
+        }
 	if( m1passed && m1tight ) {
 	  hists.Mu2tagInZwin.fill                  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	  if( m0passed )
+	  if ( mu0cj ) hists.Mu2tagCJprobeInZwin.fill( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
+	  if( m0passed ) {
 	    hists.Mu2tagMu1passesLooseInZwin.fill  ( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
-	}
+            if ( mu0cj ) hists.Mu2tagMu1CJpassesLooseInZwin.fill( *pMuons, *pJets, *pMET, hne.isMC, hne.eventWgt );
+          }
+        }
     } // if candidate for study
   } // else don't bother with 3 or more muons
 
@@ -1826,6 +1844,9 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       hists.Mu1HighPtCutVtxGt5.fill( hnuEvent,v_null );
   }
   hists.Mu1HighPtCut.fill( hnuEvent,nnif_->masspts() );
+
+  if ( hnuEvent.mMuMu < 40 ) return false;  // Sanity check...remove low mass points
+  hists.loDiLmassCut.fill( hnuEvent,nnif_->masspts() );
 
   if ( hnuEvent.mMuMu<cuts.minimum_mumu_mass ) return false;  // dimuon mass cut
   hists.diLmassCut.fill( hnuEvent,nnif_->masspts() );
