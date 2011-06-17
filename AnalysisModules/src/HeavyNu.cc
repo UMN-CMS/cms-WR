@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.57 2011/06/15 19:29:46 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.58 2011/06/15 21:19:54 bdahmes Exp $
 //
 //
 
@@ -272,7 +272,7 @@ private:
     TH1 *phiMu1, *phiMu2, *phiJet1, *phiJet2 ;
     TH1 *dEtaMu, *dPhiMu, *dEtaJet, *dPhiJet ;
     TH2 *dEtaPhiMu, *dEtaPhiJet ; 
-    TH1 *dRminMu1jet, *dRminMu2jet ; 
+    TH1 *dRminMu1jet, *dRminMu2jet, *dRminMuJet ; 
     TH1 *hptrelMu1, *hptrelMu2 ; 
     TH2 *ptrelVsdRminMu1jet, *ptrelVsdRminMu2jet ;
     TH2 *jetID2d;
@@ -519,6 +519,7 @@ HeavyNu::HistPerDef::book(TFileDirectory *td,
 
   // ----------  Mu/Jet histograms  ----------
 
+  t="Minimum #Delta R(#mu,jet) "    +post;  dRminMuJet=td->make<TH1D>("dRminMuJet",t.c_str(),50,0,5.);
   t="Minimum #Delta R(#mu_{1},jet) "+post;  dRminMu1jet=td->make<TH1D>("dRminMu1jet",t.c_str(),50,0,5.);
   t="Minimum #Delta R(#mu_{2},jet) "+post;  dRminMu2jet=td->make<TH1D>("dRminMu2jet",t.c_str(),50,0,5.);
 
@@ -725,6 +726,8 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
   dRminMu1jet->Fill( min(dRmu1jet1,dRmu1jet2),wgt ) ; 
   dRminMu2jet->Fill( min(dRmu2jet1,dRmu2jet2),wgt ) ; 
 
+  dRminMuJet->Fill( min( min(dRmu1jet1,dRmu1jet2),min(dRmu2jet1,dRmu2jet2) ),wgt ) ; 
+  
   hptrelMu1->Fill( ptrelMu1,wgt );
   hptrelMu2->Fill( ptrelMu2,wgt );
 
@@ -894,6 +897,8 @@ HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
     dRminMu1jet->Fill(hne.dRminMu1jet,wgt);
     dRminMu2jet->Fill(hne.dRminMu2jet,wgt);
+
+    dRminMuJet->Fill( min(hne.dRminMu1jet,hne.dRminMu2jet),wgt ) ; 
 
     hptrelMu1->Fill(hne.ptrelMu1,wgt);
     hptrelMu2->Fill(hne.ptrelMu2,wgt);

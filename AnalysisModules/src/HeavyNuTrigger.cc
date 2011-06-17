@@ -101,7 +101,7 @@ HeavyNuTrigger::isTriggerMatched(const pat::MuonRef& m,
 
     // fill histograms
     if ( trigRef.isAvailable() ) {
-      std::cout << "We got one!!!" << std::endl;
+      // std::cout << "We got one!!!" << std::endl;
       if (thist) {
 	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( *m,*trigRef );
 	double dphi = reco::deltaPhi( m->phi(),trigRef->phi() );

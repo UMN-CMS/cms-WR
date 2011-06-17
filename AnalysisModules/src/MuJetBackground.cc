@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.4 2011/06/06 12:20:54 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.5 2011/06/09 19:16:32 bdahmes Exp $
 //
 //
 
@@ -139,30 +139,6 @@ inline void labelJetIDaxis(TAxis *ax)
   ax->SetBinLabel(3,"PURE09 Tight");
 }
 
-//============================================================
-// From the JetEnergyScale twiki:
-//
-inline float sqr(float x) { return x*x; }
-const float unc4bjetScale2 = sqr(0.05f);
-const float unc4pileup2    = sqr(0.01f);
-const float unc4calib2     = sqr(0.015f);
-const float totalOtherUnc2 = unc4bjetScale2+unc4pileup2+unc4calib2;
-
-float qcdJecTotalUncertainty(float jpt, float jeta,
-			     JetCorrectionUncertainty *jecuObj,
-			     bool directionIsUp)
-{
-  float offunc; // the "official" eta/pt dependent uncertainty
-
-  jecuObj->setJetPt ( (float)jpt  );
-  jecuObj->setJetEta( (float)jeta );
-  offunc = jecuObj->getUncertainty(directionIsUp);
-
-  return sqrt(sqr(offunc)+totalOtherUnc2);
-}
-
-//============================================================
-
 
 static std::string btagName;
 
@@ -214,7 +190,6 @@ private:
   edm::InputTag multiSClabel_ ; 
 
   double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
-  int    applyJECUsign_;              // for Jet Energy Correction Uncertainty studies
   double applyMESfactor_;             // for Muon Energy Scale studies
 
   std::string currentFile_;
@@ -229,7 +204,6 @@ private:
   
   HeavyNu_NNIF *nnif_;
   HeavyNuTrigger *trig_;
-  JetCorrectionUncertainty *jecuObj_;
 
   std::map<uint32_t,TH1 *> m_runHistos_;
 
@@ -306,9 +280,8 @@ private:
     TH2 *muNmatchesVsPt, *muNvalidMuonHitsVsPt, *muNvalidPixelHitsVsPt;
     TH2 *muTrckIsoVsPt, *muHcalIsoVsPt, *muEcalIsoVsPt, *muCaloIsoVsPt;
 
-    TH1 *jetPt, *jetEta, *jetPhi, *jetID, *jecUncHi, *jecUncLo ; 
+    TH1 *jetPt, *jetEta, *jetPhi, *jetID ; 
     TH2 *jetPtvsNum;
-    TProfile2D *jecUncHiVsEtaPt,*jecUncLoVsEtaPt;
 
     TFileDirectory *rundir;
 
@@ -750,21 +723,6 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
   ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
 
-  applyJECUsign_ = iConfig.getParameter<int>("applyJECUsign");
-  if (applyJECUsign_) applyJECUsign_ /= abs(applyJECUsign_); // ensure -1,0,+1
-
-  if (applyJECUsign_>0) {
-    hists.jecUncHi = fs->make<TH1F>("jecUncHi","JEC Uncertainty (high); Uncertainty (%)", 100,0,10);
-    hists.jecUncHiVsEtaPt = fs->make<TProfile2D>("jecUncHiVsEtaPt",
-						 "JEC Uncertainty (high)(%);Jet #eta;Jet p_{T} (GeV)",
-						 50,-2.5,2.5,100,0,1000);
-  } else if (applyJECUsign_<0) {
-    hists.jecUncLo = fs->make<TH1F>("jecUncLo","JEC Uncertainty (low);  Uncertainty (%)", 100,0,10);
-    hists.jecUncLoVsEtaPt = fs->make<TProfile2D>("jecUncLoVsEtaPt",
-						 "JEC Uncertainty (low)(%);Jet #eta;Jet p_{T} (GeV)",
-						 50,-2.5,2.5,100,0,1000);
-  }
-
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
   std::cout << "muonTag          = " << muonTag_                 << std::endl;
@@ -782,7 +740,6 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   std::cout << "muonTrackIso     = " << cuts.muon_trackiso_limit << " GeV" << std::endl;
   std::cout << "minMuMuMass      = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
   std::cout << "min4objMass      = " << cuts.minimum_mWR_mass    << " GeV" << std::endl;
-  std::cout << "applyJECUsign    = " << applyJECUsign_           << std::endl;
   std::cout << "applyMESfactor   = " << applyMESfactor_          << std::endl;
   std::cout << "minimumMuJetdPhi = " << cuts.minimum_dijet_dPhi  << std::endl; 
   std::cout << "minimumQCDjetPt  = " << cuts.minimum_QCDjet_pt   << " GeV " << std::endl; 
@@ -853,31 +810,11 @@ MuJetBackground::fillBasicJetHistos( const pat::Jet& j,
   double jpt=j.pt(),jeta=j.eta();
   float totalunc = 0.0f;
 
-  float jecuHi=0.; float jecuLo=0.;
-
-  if( applyJECUsign_ ) {
-    jecuHi=qcdJecTotalUncertainty( jpt,jeta,jecuObj_,true );
-    jecuLo=qcdJecTotalUncertainty( jpt,jeta,jecuObj_,false );
-    totalunc = (applyJECUsign_>0) ? jecuHi : jecuLo;
-    jpt *= (1.0 + (applyJECUsign_*totalunc));
-  }
-
   hists.jetPt ->Fill( jpt  ) ; 
   hists.jetEta->Fill( jeta ) ; 
   hists.jetPhi->Fill( j.phi() ) ; 
   hists.jetID ->Fill( qcdJetID( j ) );
-  hists.jetPtvsNum->Fill( jetnum, jpt ) ; 
-
-  jecuHi *= 100.f;
-  jecuLo *= 100.f;
-  if (jecuHi != jecuLo) std::cout<<jeta<<"\t"<<jpt<<"\t"<<jecuHi<<"\t"<<jecuLo<<std::endl;
-
-  if( applyJECUsign_>0 ) {
-    hists.jecUncHi->Fill( jecuHi ); hists.jecUncHiVsEtaPt->Fill( jeta,j.pt(),(double)jecuHi );
-  } else if( applyJECUsign_<0 ){
-    hists.jecUncLo->Fill( jecuLo ); hists.jecUncLoVsEtaPt->Fill( jeta,j.pt(),(double)jecuLo );
-  }
-  //std::cout << "end fill" << std::endl ; 
+  hists.jetPtvsNum->Fill( jetnum, jpt ) ;
 }                                         // MuJetBackground::fillBasicJetHistos
 
 //======================================================================
@@ -903,11 +840,6 @@ MuJetBackground::selectJetsStd(edm::Handle<pat::JetCollection>& pJets,
     float jeta      = (*iJ).eta();
     float jecuscale = 1.0f;
     // std::cout << "JES: " << jecuscale << std::endl ; 
-    if( applyJECUsign_ ) {
-      float jecu = qcdJecTotalUncertainty( jpt,jeta,jecuObj_,(applyJECUsign_>0) );
-      jecuscale  = (1 + (applyJECUsign_*jecu));
-      jpt       *= jecuscale;
-    }
     // std::cout << "JES: " << jecuscale << std::endl ; 
     if( (jpt       > cuts.minimum_jet_pt)   && // more later!
 	(fabs(jeta)<=cuts.maximum_jet_abseta) ) {
@@ -980,11 +912,6 @@ MuJetBackground::selectJets(edm::Handle<pat::JetCollection>& pJets,
     float jeta      = (*iJ).eta();
     float jecuscale = 1.0f;
     // std::cout << "JES: " << jecuscale << std::endl ; 
-    if( applyJECUsign_ ) {
-      float jecu = qcdJecTotalUncertainty( jpt,jeta,jecuObj_,(applyJECUsign_>0) );
-      jecuscale  = (1 + (applyJECUsign_*jecu));
-      jpt       *= jecuscale;
-    }
     // std::cout << "JES: " << jecuscale << std::endl ; 
 
     // std::cout << "BMD: Looking at jet with pT " << jpt << " and eta " << jeta << std::endl ; 
@@ -1184,8 +1111,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   if (iEvent.isRealData())
   {
-    if( (applyMESfactor_ != 1.0) ||
-	(applyJECUsign_  != 0.0) )
+    if( (applyMESfactor_ != 1.0) ) 
       throw cms::Exception( "Energy scale studies not allowed on data currently");
 
     uint32_t runn = iEvent.id().run();
@@ -1248,16 +1174,10 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // handle the jet corrector parameters collection,
     // get the jet corrector parameters collection from the global tag
     //
-    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-    iSetup.get<JetCorrectionsRecord>().get("AK5Calo",JetCorParColl);
     
     // get the uncertainty parameters from the collection,
     // instantiate the jec uncertainty object
     //
-    if ( applyJECUsign_ ) { 
-      JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-      jecuObj_    = new JetCorrectionUncertainty(JetCorPar);
-    }
     firstEvent_ = false;
   }
 
