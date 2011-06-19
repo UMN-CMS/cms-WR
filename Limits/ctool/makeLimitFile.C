@@ -20,8 +20,8 @@ const char* data_hist_name = "hNu/cut8_mWRmass/mWR";
 const char* signal_hist_name = "hNu/cut8_mWRmass/mWR";
 const char* signal_norm_hist = "hNu/nelec";
 // functional parameters for ttbar (total per ipb, exponential slope)
-const BShape bkgd_tt2010(0.867/36.1, -5.27e-3);
-const BShape bkgd_tt2011(5.52/204, -5.05e-3);
+const BShape bkgd_tt2010(0.867*1.02/36.1, -5.27e-3);
+const BShape bkgd_tt2011(5.52*1.08/204, -5.05e-3);
 // functional parameters for z+jets (total per ipb, exponential slope)
 const BShape bkgd_zj2010(0.598*1.01/36.1, -3.61e-3);
 const BShape bkgd_zj2011(3.57*1.12/204, -3.81e-3);
@@ -166,7 +166,8 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signal
     char name[10];
     sprintf(name,"a%02d",ibin);
     abin.binName=name;
-    pbi.push_back(abin);
+    if (abin.signal>0.01) 
+      pbi.push_back(abin);
   }
   return pbi;
 }
@@ -227,7 +228,8 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
     char name[10];
     sprintf(name,"b%02d",ibin);
     abin.binName=name;
-    pbi.push_back(abin);
+    if (abin.signal>0.01) 
+      pbi.push_back(abin);
   }
   return pbi;
 }

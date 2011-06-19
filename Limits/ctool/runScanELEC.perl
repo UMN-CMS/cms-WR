@@ -21,11 +21,11 @@ if ($jobBase ne "default") {
     $workloc=$workloc."/${jobBase}";
 }
 
-$zone2010="/local/cms/user/jmmans/heavyNuINR/2010";
+$zone2010="/local/cms/user/jmmans/heavyNu_jun14/2010";
 
-$zone2011="/local/cms/user/jmmans/heavyNuINR/2011";
+$zone2011="/local/cms/user/jmmans/heavyNu_jun14/2011";
 
-$lumi2011=191;
+$lumi2011=204;
 
 $fileLoc=$workloc."/input";
 system("mkdir -p $fileLoc");

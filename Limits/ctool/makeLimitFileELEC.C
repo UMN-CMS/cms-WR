@@ -20,14 +20,14 @@ const char* data_hist_name = "Data";
 const char* signal_hist_name = "Signal";
 const char* signal_norm_hist = 0;
 // functional parameters for ttbar (total per ipb, exponential slope)
-const BShape bkgd_tt2010(0.68/36.1, -5.9e-3);
-const BShape bkgd_tt2011(7.49/191, -5.8e-3);
+const BShape bkgd_tt2010(0.68/36.1, -5.8e-3);
+const BShape bkgd_tt2011(7.49/191, -6.6e  -3);
 // functional parameters for z+jets (total per ipb, exponential slope)
-const BShape bkgd_zj2010(0.43/36.1, -4.7e-3);
-const BShape bkgd_zj2011(4.34/191, -4.1e-3);
+const BShape bkgd_zj2010(0.43/36.1, -4.3e-3);
+const BShape bkgd_zj2011(4.34/191, -4.4e-3);
 // functional parameters for other backgrounds (w+jets, VV, QCD, tW)
-const BShape bkgd_other2010((0.12+0.04+0.03+0.2)/36.1, -4.4e-3);
-const BShape bkgd_other2011((0.88+0.35+0.23+0.24)/191.0, -3.9e-3);
+const BShape bkgd_other2010((0.12+0.04+0.03+0.2)/36.1, -4.6e-3);
+const BShape bkgd_other2011((0.88+0.35+0.23+0.24)/191.0, -4.6e-3);
 
 // names
 const char* jnames[]= {"WR","TT","ZJ","OT"};
