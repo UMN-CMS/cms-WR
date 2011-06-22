@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.6 2011/06/17 16:03:36 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.7 2011/06/22 22:53:31 bdahmes Exp $
 //
 //
 
@@ -513,49 +513,49 @@ MuJetBackground::HistPerDef::fill(const HeavyNuEvent& hne, double w1, double w2,
 
   // Muons 
   if (hne.mu1.isAvailable()) { 
-    ptMu1->Fill(hne.mu1->pt()) ; 
-    ptMu2->Fill(hne.mu2->pt()) ; 
+    ptMu1->Fill(hne.mu1->pt(),hne.eventWgt) ; 
+    ptMu2->Fill(hne.mu2->pt(),hne.eventWgt) ; 
     
-    etaMu1->Fill(hne.mu1->eta()) ; 
-    etaMu2->Fill(hne.mu2->eta()) ; 
+    etaMu1->Fill(hne.mu1->eta(),hne.eventWgt) ; 
+    etaMu2->Fill(hne.mu2->eta(),hne.eventWgt) ; 
 
-    phiMu1->Fill(hne.mu1->phi()) ; 
-    phiMu2->Fill(hne.mu2->phi()) ; 
+    phiMu1->Fill(hne.mu1->phi(),hne.eventWgt) ; 
+    phiMu2->Fill(hne.mu2->phi(),hne.eventWgt) ; 
   }
 
   // Jets 
   if (hne.j1.isAvailable()) {
 
-    ptJet1->Fill(hne.j1->pt()) ; 
-    etaJet1->Fill(hne.j1->eta()) ; 
-    phiJet1->Fill(hne.j1->phi()) ; 
+    ptJet1->Fill(hne.j1->pt(),hne.eventWgt) ; 
+    etaJet1->Fill(hne.j1->eta(),hne.eventWgt) ; 
+    phiJet1->Fill(hne.j1->phi(),hne.eventWgt) ; 
 
     if (hne.j2.isAvailable()) {
-      ptJet2->Fill(hne.j2->pt()) ; 
-      etaJet2->Fill(hne.j2->eta()) ; 
-      phiJet2->Fill(hne.j2->phi()) ; 
+      ptJet2->Fill(hne.j2->pt(),hne.eventWgt) ; 
+      etaJet2->Fill(hne.j2->eta(),hne.eventWgt) ; 
+      phiJet2->Fill(hne.j2->phi(),hne.eventWgt) ; 
 
-      mWR->Fill   ( hne.mWR,weight   ) ; 
-      mNuR1->Fill ( hne.mNuR1,w1 ) ; 
-      mNuR2->Fill ( hne.mNuR2,w2 ) ; 
-      mNuR2D->Fill( hne.mNuR1, hne.mNuR2,weight );
-      mJJ->Fill   ( hne.mJJ,weight   );
+      mWR->Fill   ( hne.mWR,weight*hne.eventWgt   ) ; 
+      mNuR1->Fill ( hne.mNuR1,w1*hne.eventWgt ) ; 
+      mNuR2->Fill ( hne.mNuR2,w2*hne.eventWgt ) ; 
+      mNuR2D->Fill( hne.mNuR1, hne.mNuR2,weight*hne.eventWgt );
+      mJJ->Fill   ( hne.mJJ,weight*hne.eventWgt   );
 
-      mWR_raw->Fill   ( hne.mWR   ) ; 
-      mNuR1_raw->Fill ( hne.mNuR1 ) ; 
-      mNuR2_raw->Fill ( hne.mNuR2 ) ; 
-      mNuR2D_raw->Fill( hne.mNuR1, hne.mNuR2 );
-      mJJ_raw->Fill   ( hne.mJJ   );
+      mWR_raw->Fill   ( hne.mWR,hne.eventWgt   ) ; 
+      mNuR1_raw->Fill ( hne.mNuR1,hne.eventWgt ) ; 
+      mNuR2_raw->Fill ( hne.mNuR2,hne.eventWgt ) ; 
+      mNuR2D_raw->Fill( hne.mNuR1, hne.mNuR2,hne.eventWgt );
+      mJJ_raw->Fill   ( hne.mJJ,hne.eventWgt   );
 
     }
 
   }
 
-  mMuMu->Fill( hne.mMuMu,weight );
-  mMuMuZoom->Fill( hne.mMuMu,weight );
+  mMuMu->Fill( hne.mMuMu,weight*hne.eventWgt );
+  mMuMuZoom->Fill( hne.mMuMu,weight*hne.eventWgt );
 
-  mMuMu_raw->Fill( hne.mMuMu );
-  mMuMuZoom_raw->Fill( hne.mMuMu );
+  mMuMu_raw->Fill( hne.mMuMu,hne.eventWgt );
+  mMuMuZoom_raw->Fill( hne.mMuMu,hne.eventWgt );
 
 }// end of fill()
 

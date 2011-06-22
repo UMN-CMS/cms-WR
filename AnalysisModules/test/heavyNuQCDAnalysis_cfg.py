@@ -238,4 +238,20 @@ if Training:
 if isMCsignal:
     process.hNuCalo.isSignal = cms.bool(True)
 
-process.p += process.hNuCalo
+if isMC:
+    process.hNuCalo2010 = process.hNuCalo.clone(minMu2pt = cms.double(20.))
+    process.hNuCalo2010.pileupEra          = cms.int32(20100)
+    process.hNuCalo2010.muIDPset.eraForId  = cms.int32(2010)
+    process.hNuCalo2010.trigMatchPset.year = cms.int32(2010)
+    process.hNuCalo2010.reweightPtLow  = cms.vdouble( 20,25,30,40,60,100 ),
+    process.hNuCalo2010.reweightPtHigh = cms.vdouble( 25,30,40,60,100,1000 ),
+    process.hNuCalo2010.reweightLoose  = cms.vdouble( 0.0493001,0.0512686,0.0625999,0.0822622,0.159119,0.273381 ),
+    process.hNuCalo2010.reweightTight  = cms.vdouble( 0.0609952,0.0597178,0.0608489,0.062275,0.0955056,0.157895 ),
+
+    process.p += process.hNuCalo2010
+    process.p1 = cms.Path( process.patDefaultSequence + process.hNuCalo )
+    process.s  = cms.Schedule(process.p,process.p1)
+)
+
+else:
+    process.p += process.hNuCalo
