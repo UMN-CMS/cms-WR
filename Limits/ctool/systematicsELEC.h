@@ -30,15 +30,14 @@ void loadSystematics() {
 					      pow(0.00,2));
   systematics10[i_SIGNAL]["SIGONLY"]=1+sqrt(pow(0.00,2)+pow(0.05,2));
 
-  systematics10[i_TT]["LUMI"]=1.04;
   systematics10[i_TT]["ISRPDF"]=1+sqrt(pow(0.06,2)+pow(0.06,2)+
 					  pow(0.08,2));
-  systematics10[i_TT]["TTONLY"]=1+sqrt(pow(0.22,2)+pow(0.05,2));
+  systematics10[i_TT]["TTONLY"]=1+sqrt(pow(0.15,2)+pow(0.02,2));
 
 
   systematics10[i_ZJ]["ISRPDF"]=1+sqrt(pow(0.00,2)+pow(0.09,2)+
 					  pow(0.15,2));
-  systematics10[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.07,2)+pow(0.03,2));
+  systematics10[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.11,2)+pow(0.04,2));
 
 
   systematics10[i_OTHER]["LUMI"]=1.04; 
@@ -50,6 +49,12 @@ void loadSystematics() {
   systematics11[i_ZJ]=systematics10[i_ZJ];
   systematics11[i_OTHER]=systematics10[i_OTHER];
 
+
+  systematics11[i_TT]["TTONLY"]=1+sqrt(pow(0.15,2)+pow(0.02,2));
+  systematics11[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.11,2)+pow(0.04,2));
+
+  systematics11[i_SIGNAL]["LUMI"]=1.06; 
+  systematics11[i_OTHER]["LUMI"]=1.06; 
 
   // individual systematics
 
