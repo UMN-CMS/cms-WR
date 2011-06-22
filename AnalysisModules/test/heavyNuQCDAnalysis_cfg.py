@@ -17,8 +17,6 @@ isRun2010LoLumi=False
 isRun2011=True
 
 isData=not isMC
-filterByJSON=True
-filterByGoodRuns=True
 
 ## Low and high lumi data selection is controlled by the JSON-derived cfi's imported
 ## below. For run 2010, the low lumi data is that for which the HLT_Mu9 trigger path
@@ -46,25 +44,18 @@ process.source = cms.Source("PoolSource",
 )
 # process.load('HeavyNu.AnalysisModules.in_cff')
 
-if isData and filterByJSON:
+if isData:
     if isRun2011:
         print "===========> Flag is SET for 2011 luminosity data <============"
-        if filterByGoodRuns:
-            from HeavyNu.AnalysisModules.run2011LumiJSONapr29_cfi import lumisToProcess
-            process.source.lumisToProcess = lumisToProcess
-        else:
-            process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
-            # myDCSLumis = LumiList.LumiList(filename = '/home/phys/dahmes/Work/Physics/WR/CMSSW_4_1_3/src/HeavyNu/AnalysisModules/test/dcsOnly_160404-163387.json').getCMSSWString().split(',')
-            myDCSLumis = LumiList.LumiList(filename = '/home/phys/dahmes/Work/Physics/WR/CMSSW_4_1_3/src/HeavyNu/AnalysisModules/test/dcsOnly_160404-163796.json').getCMSSWString().split(',')
-            process.source.lumisToProcess.extend(myDCSLumis)
+        from HeavyNu.AnalysisModules.goodLumiList_may10rereco_2011_mu24x_cfi import lumisToProcess
     else:
         if isRun2010LoLumi:
             print "===========> Flag is SET for 2010 LOW luminosity data <============"
-            from HeavyNu.AnalysisModules.run2010loLumiRunList_cfi import lumisToProcess
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi import lumisToProcess
         else:
             print "===========> Flag is SET for 2010 HIGH luminosity data <============"
-            from HeavyNu.AnalysisModules.run2010hiLumiRunList_cfi import lumisToProcess    
-        process.source.lumisToProcess = lumisToProcess
+            from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi import lumisToProcess    
+    process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -74,10 +65,9 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## global tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    process.GlobalTag.globaltag = cms.string('START41_V0::All')
 else:
-    # process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
-    process.GlobalTag.globaltag = cms.string('GR_P_V17::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
@@ -119,11 +109,11 @@ from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
 if isMC:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 else:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L2Relative','L3Absolute','L2L3Residual']))
+                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 
 ########################################
 # PAT Trigger matching
@@ -154,11 +144,11 @@ from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
     switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ] )
     removeCleaningFromTriggerMatching( process )
-    process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*" )' )
-    process.muonTriggerMatchHLTMuons.maxDeltaR = cms.double( 0.2 )
-    process.muonTriggerMatchHLTMuons.maxDPtRel = cms.double( 1.0 )
-    # if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu9')
-    # else:               process.muonTriggerMatchHLTMuons.pathNames = cms.vstring('HLT_Mu15_v1')
+    if isRun2011:
+        process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*" )' )
+    else:
+        if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu9" )' )
+        else:               process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu15_v1" )' )
 
 ##########################################
 ## Add analysis
@@ -175,6 +165,10 @@ process.hNuCalo = cms.EDFilter("MuJetBackground",
         randomSeed   = cms.int32( 0 ),  # for MC
         year         = cms.int32( 2011 )  # for MC
     ),
+    muIDPset = cms.PSet(
+        eraForId     = cms.int32( 2011 )
+    ),
+    pileupEra         = cms.int32(20110),
     DoLog        = cms.bool( False ),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
     jetTag       = cms.InputTag( 'selectedPatJets' ),
@@ -211,16 +205,16 @@ process.hNuCalo = cms.EDFilter("MuJetBackground",
     getSurvivalRate = cms.bool(False),    
     doClosureTest   = cms.bool(True),    
     doQuadJetTest   = cms.bool(True),    
-    #--- Old results from 2010 data ---#
-    # reweightPtLow   = cms.vdouble( 0,10,15,20,25,30,40,60,100,200,400),
-    # reweightPtHigh  = cms.vdouble( 10,15,20,25,30,40,60,100,200,400,1000),
-    # reweightLoose   = cms.vdouble( 0.226356,0.104505,0.058554,0.0505105,0.0554867,0.0587291,0.0769231,0.152395,0.263158,0.5,1 ),
-    # reweightTight   = cms.vdouble( 0.0581472,0.0357932,0.063638,0.0628168,0.0629979,0.0587147,0.0646372,0.0949227,0.135135,1,1 ),
-    #--- New results, 43.4/pb from 2011 data ---# 
-    reweightPtLow  = cms.vdouble( 20,25,30,40,60,100 ),
-    reweightPtHigh = cms.vdouble( 25,30,40,60,100,1000 ),
-    reweightLoose  = cms.vdouble( 0.0587241,0.0549809,0.0633958,0.0872151,0.165605,0.464286 ),
-    reweightTight  = cms.vdouble( 0.0657958,0.0632302,0.0589719,0.0699013,0.07109,0.266667 ),
+    #--- New results from 42x re-reco 2010 (36/pb) data ---#
+    # reweightPtLow  = cms.vdouble( 20,25,30,40,60,100 ),
+    # reweightPtHigh = cms.vdouble( 25,30,40,60,100,1000 ),
+    # reweightLoose  = cms.vdouble( 0.0493001,0.0512686,0.0625999,0.0822622,0.159119,0.273381 ),
+    # reweightTight  = cms.vdouble( 0.0609952,0.0597178,0.0608489,0.062275,0.0955056,0.157895 ),
+    #--- New results from 42x re-reco 2011 (204/pb) data ---#
+    reweightPtLow  = cms.vdouble( 30,40,60,100 ),
+    reweightPtHigh = cms.vdouble( 40,60,100,1000 ),
+    reweightLoose  = cms.vdouble( 0.0652302,0.0854414,0.147673,0.311429 ),
+    reweightTight  = cms.vdouble( 0.0656517,0.0671176,0.0775541,0.177215 ),
 
     minimumMuJetdPhi = cms.double(2.8274334),
     minimumJetPtForDijets = cms.double(10.),

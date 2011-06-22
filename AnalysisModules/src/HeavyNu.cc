@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.58 2011/06/15 21:19:54 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.59 2011/06/17 16:03:36 bdahmes Exp $
 //
 //
 
@@ -1604,6 +1604,8 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( studyScaleFactorEvolution_ ) std::cout << "Histograms for Z scale factor cross checks will be created" << std::endl ; 
     if ( applyJECUsign_ )             std::cout << "Studies will be used to estimate JEC uncertainty" << std::endl ; 
     else                              std::cout << "Nominal Jet corrections applied" << std::endl ; 
+    if ( applyMESfactor_ != 1.0 )     std::cout << "Studies will be used to estimate MES uncertainty: " << applyMESfactor_ << std::endl ; 
+    else                              std::cout << "No MES corrections applied" << std::endl ; 
     if ( !disableTriggerCorrection_ ) {
         if ( applyTrigEffsign_ )      std::cout << "Studies will be used to estimate trigger efficiency uncertainty" << std::endl ; 
         else                          std::cout << "Nominal trigger corrections applied" << std::endl ;
@@ -1613,10 +1615,13 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         int idYear     = muid_->idEra() ;
         int trigYear   = trig_->trigEra() ;
         
-        bool allErasMatch = true ; 
-        if ( applyMuIDEffsign_ )          std::cout << "Studies will be used to estimate Mu ID uncertainty" << std::endl ; 
-        else if ( applyMuIDCorrections_ ) std::cout << "Nominal Mu ID corrections applied" << std::endl ;
-        else                              std::cout << "You have disabled Mu ID corrections.  Are you sure?" << std::endl ;
+        bool allErasMatch = true ;
+        if ( applyMuIDCorrections_ ) {
+          if ( applyMuIDEffsign_ ) std::cout << "Studies will be used to estimate Mu ID uncertainty: " << applyMuIDEffsign_
+                                             << std::endl ; 
+          else                     std::cout << "Nominal Mu ID corrections applied" << std::endl ;
+        }
+        else std::cout << "You have disabled Mu ID corrections.  Are you sure?" << std::endl ;
         if ( disableTriggerCorrection_ ) {
             std::cout << "You have disabled the trigger correction.  Are you sure?" << std::endl ;
             if ( pileupYear != idYear ) allErasMatch = false ; 
@@ -1634,6 +1639,7 @@ HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if ( disableTriggerCorrection_ )
             std::cout << "WARNING: You have disabled the trigger correction in data.  What are you doing?!?" << std::endl ; 
     }
+    std::cout << "===============================================" << std::endl ; 
     
     firstEvent_ = false;
   }

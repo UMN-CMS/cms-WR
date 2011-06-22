@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.5 2011/06/09 19:16:32 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.6 2011/06/17 16:03:36 bdahmes Exp $
 //
 //
 
@@ -69,8 +69,11 @@
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 //////////////////////////////////////////////////////////////////
 // generic maximum/minimum
@@ -201,10 +204,15 @@ private:
 
   bool calcSurvival_ ; 
   bool doClosure_, doQuadJet_ ; 
-  
-  HeavyNu_NNIF *nnif_;
-  HeavyNuTrigger *trig_;
 
+  bool   applyMuIDCorrections_ ;
+    
+  // HeavyNu_NNIF *nnif_;
+  HeavyNuTrigger *trig_;
+  HeavyNuID *muid_ ; 
+
+  int    pileupEra_;
+  std::vector<double> MCweightByVertex_;
   std::map<uint32_t,TH1 *> m_runHistos_;
 
   // ----------member data ---------------------------
@@ -582,9 +590,10 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
 
   btagName=iConfig.getParameter<std::string>("BtagName");
 
-  nnif_ = new HeavyNu_NNIF(iConfig);
+  // nnif_ = new HeavyNu_NNIF(iConfig);
 
   trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
+  muid_ = new HeavyNuID(iConfig.getParameter<edm::ParameterSet>("muIDPset"));
 
   edm::Service<TFileService> fs;
   hists.nelec    = fs->make<TH1D>("nelec", "N(e^{#pm})",10,-0.5,9.5);
@@ -723,6 +732,9 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
   ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
 
+  pileupEra_ = iConfig.getParameter<int>("pileupEra");
+  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data(pileupEra_));
+
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
   std::cout << "muonTag          = " << muonTag_                 << std::endl;
@@ -744,6 +756,7 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   std::cout << "minimumMuJetdPhi = " << cuts.minimum_dijet_dPhi  << std::endl; 
   std::cout << "minimumQCDjetPt  = " << cuts.minimum_QCDjet_pt   << " GeV " << std::endl; 
   std::cout << "minExtraJetdR    = " << cuts.minimum_extraJet_dR << std::endl; 
+  std::cout << "pileup era       = " << pileupEra_ << std::endl;
 
 }
   
@@ -808,7 +821,6 @@ MuJetBackground::fillBasicJetHistos( const pat::Jet& j,
   //std::cout << "Begin basic fill" << std::endl ; 
 
   double jpt=j.pt(),jeta=j.eta();
-  float totalunc = 0.0f;
 
   hists.jetPt ->Fill( jpt  ) ; 
   hists.jetEta->Fill( jeta ) ; 
@@ -878,6 +890,7 @@ bool
 MuJetBackground::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
 			     HeavyNuEvent& hne)
 {
+  double mu1wgt = 1.0 ;
   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
     double dr1=(hne.j1.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hne.j1->eta(),hne.j1->phi()));
@@ -895,10 +908,13 @@ MuJetBackground::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
 	  (hne.mu1->pt()<(*iM).pt()) ) { 
 	hne.mu1=iM;
 	hne.mu2=iM;
+        if ( applyMuIDCorrections_ && hne.isMC )
+          mu1wgt = muid_->weightForMC( mupt,0 ) ;
       }
     }
   }
-  if ( hne.mu1.isNull() ) return false ; 
+  if ( hne.mu1.isNull() ) return false ;
+  if ( applyMuIDCorrections_ && hne.isMC ) hne.eventWgt *= mu1wgt ; 
   return true ; 
 }                                                // HeavyNu::selectMuons
 
@@ -1005,6 +1021,8 @@ MuJetBackground::selectMuonsInJets(edm::Handle<pat::MuonCollection>& pMuons,
 				   edm::Handle<pat::JetCollection>& pJets,
 				   HeavyNuEvent& hne)
 {
+  double mu1wgt = 1.0 ; 
+  double mu2wgt = 1.0 ; 
   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
     if ( (*iM).pt() < cuts.minimum_mu2_pt ) continue ; 
@@ -1036,14 +1054,21 @@ MuJetBackground::selectMuonsInJets(edm::Handle<pat::MuonCollection>& pMuons,
 	  // else std::cout << "BMD: Setting mu1" << std::endl ; 
 	  hne.mu2=hne.mu1;
 	  hne.mu1=iM;
+          if ( applyMuIDCorrections_ && hne.isMC ) {
+	    mu2wgt = mu1wgt ; 
+            mu1wgt = muid_->weightForMC( (*iM).pt(),0 ) ; 
+          }
 	} else if ( hne.mu2.isNull() || hne.mu2->pt()<(*iM).pt() ) {
 	  // std::cout << "BMD: Setting mu2 only" << std::endl ; 
 	  hne.mu2=iM;
+          if ( applyMuIDCorrections_ && hne.isMC ) 
+	    mu2wgt = muid_->weightForMC( (*iM).pt(),0 ) ;
 	}
       }
     }
   }
   if ( hne.mu1.isNull() ) return false ; 
+  if ( applyMuIDCorrections_ && hne.isMC ) hne.eventWgt *= mu1wgt * mu2wgt ;
   return true ; 
 }
 
@@ -1107,6 +1132,8 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // float maxdPhi = 1.570796 ; float minPtQCD = 10. ; 
 
   hnuEvent.isMC = !iEvent.isRealData();
+  applyMuIDCorrections_ = hnuEvent.isMC;
+
   // std::cout << "Test 0" << std::endl ; 
 
   if (iEvent.isRealData())
@@ -1144,6 +1171,31 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<reco::SuperClusterCollection> multi5x5Clusters ; 
   iEvent.getByLabel(multiSClabel_, multi5x5Clusters) ; 
 
+  if(hnuEvent.isMC)
+  {
+  	edm::Handle<std::vector<PileupSummaryInfo> > pPU;
+  	iEvent.getByLabel("addPileupInfo", pPU);
+  	if(pPU.isValid() && pPU->size() > 0)
+  	{
+  		hnuEvent.n_pue = pPU->at(0).getPU_NumInteractions();
+  	}
+  	else
+  	{
+  		hnuEvent.n_pue = -1;
+		//  		std::cout << "NO VALID Pileup Summary found!" << std::endl;
+  	}
+
+	// reweighting by vertex
+	if (hnuEvent.n_pue>=0) 
+	  hnuEvent.eventWgt*=MCweightByVertex_[hnuEvent.n_pue];
+
+	// generator information
+	edm::Handle<reco::GenParticleCollection> genInfo;
+	if (iEvent.getByLabel("genParticles",genInfo)) {
+	  hnuEvent.decayID(*genInfo);
+	} 
+  }
+
   if ( !pElecs.isValid() || 
        !pGammas.isValid() || 
        !pMuons.isValid() || 
@@ -1178,6 +1230,21 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // get the uncertainty parameters from the collection,
     // instantiate the jec uncertainty object
     //
+    if ( hnuEvent.isMC ) {
+        int pileupYear = pileupEra_ / 10 ;
+        int idYear     = muid_->idEra() ;
+        int trigYear   = trig_->trigEra() ;
+        
+        bool allErasMatch = ( pileupYear == idYear ) && ( idYear == trigYear ) ;
+        if ( !allErasMatch ) {
+            std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl ;
+            std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
+                      << ", and year for trigger is " << trigYear << std::endl ;
+        } else {
+            std::cout << "Looking at corrections, I assume you are running with the " << trigYear << " year settings" << std::endl ; 
+        }
+        std::cout << "==================================" << std::endl ; 
+    }  
     firstEvent_ = false;
   }
 
@@ -1611,7 +1678,8 @@ MuJetBackground::beginJob() {
 void 
 MuJetBackground::endJob() {
   // nnif_->endJob();
-  // trig_->endJob();
+  trig_->endJob();
+  muid_->endJob();
 }
 
 //define this as a plug-in

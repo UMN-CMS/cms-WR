@@ -164,8 +164,13 @@ if Training:
 ## ---
 if isMC:
     process.hNu2010 = process.hNu.clone(minMu2pt = cms.double(20.))
-    process.hNu2010.pileupEra = cms.int32(20100)
+    process.hNu2010.pileupEra          = cms.int32(20100)
+    process.hNu2010.muIDPset.eraForId  = cms.int32(2010)
+    process.hNu2010.trigMatchPset.year = cms.int32(2010)
     process.hNu2011 = process.hNu.clone(minMu2pt = cms.double(30.))
+    process.hNu2011.pileupEra          = cms.int32(20110)
+    process.hNu2011.muIDPset.eraForId  = cms.int32(2011)
+    process.hNu2011.trigMatchPset.year = cms.int32(2011)
 
     process.hNu2010MESHi = process.hNu2010.clone(applyMESfactor = cms.double(1.01))
     process.hNu2010MESLo = process.hNu2010.clone(applyMESfactor = cms.double(0.99))
