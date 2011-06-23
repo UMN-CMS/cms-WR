@@ -13,8 +13,8 @@ import FWCore.ParameterSet.Types as CfgTypes
 isMC=False
 isMCsignal=False
 Training=False
-isRun2010LoLumi=False
-isRun2011=True
+isRun2010LoLumi=True
+isRun2011=False
 
 isData=not isMC
 
@@ -251,7 +251,6 @@ if isMC:
     process.p += process.hNuCalo2010
     process.p1 = cms.Path( process.patDefaultSequence + process.hNuCalo )
     process.s  = cms.Schedule(process.p,process.p1)
-)
 
 else:
     process.p += process.hNuCalo
