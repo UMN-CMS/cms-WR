@@ -13,6 +13,7 @@ Training=False
 isRun2010LoLumi=False
 isRun2011=True
 isPileupMC=True
+isPFJets=False
 
 isData=not isMC
 
@@ -39,7 +40,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:input.root')
+    fileNames=cms.untracked.vstring('file:/local/cms/user/jmmans/heavyNuS11/HeavyNu_S11_AODSIM_1000_600/HeavyNu_S11_AODSIM_1000_600_001.root')
 )
 
 if isData:
@@ -85,6 +86,22 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 
 ## pat sequences to be loaded:
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
+from PhysicsTools.PatAlgos.tools.pfTools import *
+
+process.out = cms.OutputModule("PoolOutputModule",
+                               fileName = cms.untracked.string('heavynu_candevents.root'),
+                               # save only events passing the full path
+                               SelectEvents=cms.untracked.PSet(SelectEvents=cms.vstring('p')),
+                               outputCommands = cms.untracked.vstring("keep *")
+                               )
+if isPFJets:
+    postfix = "PFlow"
+    usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix)
+    # turn to false when running on data
+    getattr(process, "patElectrons"+postfix).embedGenMatch = isMC
+    getattr(process, "patMuons"+postfix).embedGenMatch = isMC
+    getattr(process, "patTaus"+postfix).embedGenMatch = isMC
+    
 
 ## ---
 ## Define the path
@@ -93,20 +110,20 @@ process.p = cms.Path(
   process.patDefaultSequence
 )
 
+if isPFJets:
+    process.p += getattr(process,"patPF2PATSequence"+postfix)
+
 ########################################
 # Output module - has to be defined before PAT python tools will work
 ########################################
 
 if isData:
-    process.out = cms.OutputModule("PoolOutputModule",
-                                   fileName = cms.untracked.string('heavynu_candevents.root'),
-    # save only events passing the full path
-                                   SelectEvents=cms.untracked.PSet(SelectEvents=cms.vstring('p')),
-                                   outputCommands = cms.untracked.vstring("keep *")
-                                   )
     process.outpath  = cms.EndPath(process.out)
     from PhysicsTools.PatAlgos.tools.coreTools import *
+    if isPFJets:
+        removeMCMatchingPF2PAT( process, '' )
     removeMCMatching(process, ['All'])
+        
 
 ########################################
 # PAT Jet Energy Corrections - MC vs Data
@@ -114,6 +131,7 @@ if isData:
 # 
 
 from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
+
 if isMC:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5CaloJets'),
@@ -167,11 +185,26 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
-# process.hNu.studyMuSelectEff = cms.bool(True)
+if isMCsignal:
+	process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
+	process.hNuGenFilter.keepIds = cms.vint32(2,)
+
+process.hNu.studyMuSelectEff = cms.bool(False)
+process.hNu.studyScaleFactor = cms.bool(False)
+
+process.hNu.applyMuIDEffcorr = cms.bool(isMC)
+
+process.hNu.isPFJets = cms.bool(isPFJets)
+if isPFJets:
+    process.hNu.jetTag = cms.InputTag( 'selectedPatJetsPFlow')
+    process.hNu.muonTag = cms.InputTag( 'selectedPatMuons')
+    
 if isRun2011:
     process.hNu.minMu2pt = cms.double(30.)
+    process.hNu.pileupEra    = cms.int32(20110)
 else:
     process.hNu.minMu2pt = cms.double(20.)
+    process.hNu.pileupEra    = cms.int32(20100)
 
 if isData:
     # turn on trigger match requirement
@@ -186,6 +219,6 @@ if Training:
     
 if isMCsignal:
     process.hNu.isSignal = cms.bool(True)
-
-
-process.p += process.hNu
+    process.p += process.hNuGenFilter*process.hNu
+else:
+    process.p += process.hNu

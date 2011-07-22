@@ -29,6 +29,7 @@ hNu = cms.EDFilter(
     
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
     maxVertexZsepCM       = cms.double(0.03),
+    maxJetVZsepCM         = cms.double(0.1),
     
     ZmassWinMinGeV= cms.double(86.),
     ZmassWinMaxGeV= cms.double(96.),
@@ -47,5 +48,7 @@ hNu = cms.EDFilter(
     studyScaleFactor  = cms.bool(True),
     highestPtTriggerOnly = cms.bool(False),
     isSignal     = cms.bool(False),
-    mNuRnormalization = cms.double(1000.0)
+    mNuRnormalization = cms.double(1000.0),
+
+    isPFJets = cms.bool(False)
     )
