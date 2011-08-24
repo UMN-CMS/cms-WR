@@ -103,6 +103,9 @@ static double triangleArea(const reco::Particle::Vector& v1,
   double cos_theta13 = v1.unit().Dot(v3.unit()) ; 
   double cos_theta23 = v2.unit().Dot(v3.unit()) ; 
 
+  // std::cout << "Angles (cos): " << cos_theta12 << ", " << cos_theta13 << ", " << cos_theta23
+  // 	    << std::endl ; 
+
   // No triangle: vectors are either on top of each other or back-to-back
   if ( fabs(cos_theta12) == 1 || fabs(cos_theta13) == 1 || fabs(cos_theta23) == 1 ) return -1. ; 
 
@@ -111,12 +114,18 @@ static double triangleArea(const reco::Particle::Vector& v1,
   double sin_theta13 = sqrt( 1.0 - cos_theta13 * cos_theta13 ) ; 
   double sin_theta23 = sqrt( 1.0 - cos_theta23 * cos_theta23 ) ; 
 
-  double angle12_sphere = (cos_theta12 - (cos_theta13*cos_theta23)) / (sin_theta13*sin_theta23) ; 
-  double angle13_sphere = (cos_theta13 - (cos_theta12*cos_theta23)) / (sin_theta12*sin_theta23) ; 
-  double angle23_sphere = (cos_theta23 - (cos_theta12*cos_theta13)) / (sin_theta12*sin_theta13) ;
+  double cos_angle12_sphere = (cos_theta12 - (cos_theta13*cos_theta23)) / (sin_theta13*sin_theta23) ; 
+  double cos_angle13_sphere = (cos_theta13 - (cos_theta12*cos_theta23)) / (sin_theta12*sin_theta23) ; 
+  double cos_angle23_sphere = (cos_theta23 - (cos_theta12*cos_theta13)) / (sin_theta12*sin_theta13) ;
+
+  // std::cout << "Angles (full): " << acos(cos_angle12_sphere) << ", " 
+  // 	    << acos(cos_angle13_sphere) << ", " << acos(cos_angle23_sphere)
+  // 	    << std::endl ; 
 
   double pi = 3.14159265 ; 
-  double area = ( angle12_sphere + angle13_sphere + angle23_sphere - pi ) ; 
+  double area = ( acos(cos_angle12_sphere) + acos(cos_angle13_sphere) + acos(cos_angle23_sphere) - pi ) ; 
+
+  // std::cout << "Angles (area): " << area << std::endl ; 
 
   return area ; 
 }

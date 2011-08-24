@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.61 2011/07/22 17:17:06 pastika Exp $
+// $Id: HeavyNu.cc,v 1.62 2011/08/24 10:22:46 bdahmes Exp $
 //
 //
 
@@ -1045,7 +1045,7 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
             mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
             mJJ->Fill(hne.mJJ, wgt);
 
-	    mu1ptFracWRmass->Fill( hne.mWR/mu1pt, wgt ) ; 
+	    mu1ptFracWRmass->Fill( mu1pt/hne.mWR, wgt ) ; 
 	    mu1jj_surfarea->Fill( hne.area_1jj, wgt ) ; 
 	    mu2jj_surfarea->Fill( hne.area_2jj, wgt ) ; 
 
@@ -1874,6 +1874,10 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(!pElecs.isValid() || !pMuons.isValid() || !pJets.isValid() || !(pMET.isValid() && (pMET->size() > 0)))
     {
         std::cout << "Exiting as valid PAT objects not found" << std::endl;
+	std::cout << "Electrons: " << pElecs.isValid() << std::endl ; 
+	std::cout << "Muons:     " << pMuons.isValid() << std::endl ; 
+	std::cout << "Jets:      " << pJets.isValid() << std::endl ; 
+	std::cout << "MET:       " << pMET.isValid() << std::endl ; 
         return false;
     }
 
@@ -1926,8 +1930,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if(hnuEvent.isMC)
         {
             int pileupYear = pileupEra_ / 10;
-            int idYear = muid_->idEra();
-            int trigYear = trig_->trigEra();
+            int idYear     = muid_->idEra();
 
             bool allErasMatch = true;
             if(applyMuIDCorrections_)
@@ -1944,17 +1947,17 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
             else
             {
-                allErasMatch = (pileupYear == idYear) && (idYear == trigYear);
+                allErasMatch = (pileupYear == idYear) ;
             }
             if(!allErasMatch)
             {
                 std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl;
-                std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
-                        << ", and year for trigger is " << trigYear << std::endl;
+                std::cout << "         pileup era is "    << pileupEra_ << ", year for mu ID is " << idYear
+			  << std::endl;
             }
             else
             {
-                std::cout << "Looking at corrections, I assume you are running with the " << trigYear << " year settings" << std::endl;
+                std::cout << "Looking at corrections, I assume you are running with the " << pileupYear << " year settings" << std::endl;
             }
         }
         else

@@ -75,7 +75,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 if (isMC):
     print "=================> MC flag is SET <===================="
     if (isPileupMC):
-        process.GlobalTag.globaltag=cms.string('START41_V0::All')
+        process.GlobalTag.globaltag=cms.string('START42_V13::All')
         print "=============> isPileupMC flag is SET <================"
     else:
         print "========> Fall10 MC with Spring10 JEC applied <========"
@@ -239,13 +239,17 @@ process.hNu.studyScaleFactor = cms.bool(False)
 process.hNu.minMu2pt         = cms.double(30.)
 process.hNu.pileupEra        = cms.int32(20110)
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
-process.hNu.muonTag          = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
+if isData:
+    process.hNu.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
 
 process.hNu.isPFJets = cms.bool(isPFJets)
 if isPFJets:
     process.hNu.jetTag  = cms.InputTag( 'selectedPatJetsPFlow')
-    process.hNu.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch')
-    
+    if isData:
+        process.hNu.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch')
+    else:
+        process.hNu.muonTag = cms.InputTag( 'selectedPatMuons')
+
 if isData:
     # turn on trigger match requirement
     process.hNu.trigMatchPset.trigEventTag=cms.InputTag("patTriggerEvent")

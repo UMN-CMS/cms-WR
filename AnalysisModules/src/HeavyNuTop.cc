@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.9 2011/06/15 19:29:47 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.10 2011/08/24 10:22:46 bdahmes Exp $
 //
 //
 
@@ -1304,15 +1304,14 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         int pileupYear = pileupEra_ / 10 ;
         int idYear     = muid_->idEra() ;
-        int trigYear   = trig_->trigEra() ;
         
-        bool allErasMatch = ( pileupYear == idYear ) && ( idYear == trigYear ) ;
+        bool allErasMatch = ( pileupYear == idYear ) ;
         if ( !allErasMatch ) {
             std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl ;
             std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
-                      << ", and year for trigger is " << trigYear << std::endl ;
-        } else {
-            std::cout << "Looking at corrections, I assume you are running with the " << trigYear << " year settings" << std::endl ; 
+		      << std::endl ; 
+	} else {
+            std::cout << "Looking at corrections, I assume you are running with the " << pileupYear << " year settings" << std::endl ; 
         }
     } else {
         if ( ebIDwgt_ != 1.0 && eeIDwgt_ != 1.0 )

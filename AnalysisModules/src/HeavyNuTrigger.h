@@ -47,7 +47,6 @@ class HeavyNuTrigger {
   bool simulateForMC(double pt,double eta,int signOfError2apply=0);
   bool simulateForMC(double pt,int signOfError2apply=0) { return simulateForMC(pt,0.,signOfError2apply); }  
 
-  int trigEra() { return year_ ; } 
   void endJob();
 
  private:
@@ -59,7 +58,6 @@ class HeavyNuTrigger {
   std::string   muonMatch_;
   double        triggerPt_;
   int           johnnyApple_;
-  int           year_;
 };
 
 #endif
