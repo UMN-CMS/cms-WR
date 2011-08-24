@@ -4,7 +4,9 @@ hNu = cms.EDFilter(
     "HeavyNu",
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
+        muonTriggers = cms.vstring( '' ),
         muonMatch    = cms.string( '' ),
+        triggerPt    = cms.double( 40. ),
         randomSeed   = cms.int32( 0 ),  # for MC
         year         = cms.int32( 2011 ) # for MC
     ),
@@ -16,6 +18,7 @@ hNu = cms.EDFilter(
     jetTag       = cms.InputTag( 'selectedPatJets' ),
     metTag       = cms.InputTag( 'patMETs' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
+    trackTag     = cms.InputTag( 'patTracksPt10' ),
     BtagName     = cms.string('jetProbabilityBJetTags'),
     minBtagDiscr = cms.double(0.669), # yields 0.1% fake rate, see SWGuideBTagPerformance twiki
     minMu1pt     = cms.double(60.),

@@ -1,15 +1,88 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "TVector3.h"
 
+HeavyNuEvent::HeavyNuEvent(anal_type theMode) { 
+  mode = theMode ; 
+  eventWgt = 1.0 ; 
+  cutlevel = -1 ; 
+  nMuons = 0 ; 
+  nJets = 0 ; 
+  nElectrons = 0 ; 
+}
+
+// Fills the HNE object with relevant information
+// void HeavyNuEvent::initialize(int mode, 
+// 			      std::vector<pat::MuonRef> muons, 
+// 			      std::vector< std::pair<pat::JetRef,float> > jets,
+// 			      std::vector<pat::ElectronRef> electrons,
+// 			      double muPtScale, double muIsoLimit, double muJdR) {
+
+//   cutlevel = 0 ; // We do not pass any cuts to start
+
+//   if ( mode == HNU ) { // Nominal running
+
+//     if ( jets.size() < 2 ) return ; 
+//     j1 = jets.at(0) ; j2 = jets.at(1) ; 
+//     if ( (hnu::jetID(*j1) < 1) || (hnu::jetID(*j2) < 1) ) return ; 
+//     cutlevel = 1 ; // Two highest pT jets in the event pass ID requirements
+
+//     for (unsigned int i=0; i<muons.size(); i++) { 
+//       if ( !mu2.isNull() ) break ; 
+//       pat::MuonRef iM = muons.at(i) ; 
+//       if ( hnu::muIsolation((*iM),muPtScale) < muIsoLimit ) {
+// 	double dRj1 = deltaR(iM->eta(), iM->phi(), j1->eta(), j1->phi()) ; 
+// 	double dRj2 = deltaR(iM->eta(), iM->phi(), j2->eta(), j2->phi()) ; 
+// 	if (dRj1 > muJdR && dRj2 > muJdR) { 
+// 	  if      ( mu1.isNull() ) mu1 = iM ; 
+// 	  else if ( mu2.isNull() ) mu2 = iM ; 
+// 	  else    std::cout << "WARNING: Expected empty muon position" << std::endl ; 
+// 	}
+//       }
+//     }
+//     if ( mu2.isNull() ) return ;
+//     cutlevel = 2 ; // Two highest pT muons that are isolated, separated from chosen jets
+    
+//         if(trig_->matchingEnabled() &&
+//             iEvent.isRealData())
+//     {
+//         if(inZmassWindow(hnuEvent.mMuMu))
+//             hists.MuTightInZwin.fill(hnuEvent, v_null);
+
+//         // require that one muon be BOTH tight and trigger-matched
+//         //
+//         mu1trig = mu1trig &&
+//                 trig_->isTriggerMatched(hnuEvent.mu1, iEvent,
+//                 &(hists.Mu1TrigMatchesInZwin.trigHistos));
+
+//         mu2trig = mu2trig &&
+//                 trig_->isTriggerMatched(hnuEvent.mu2, iEvent,
+//                 &(hists.Mu2TrigMatchesInZwin.trigHistos));
+
+//     }
+//     else if(!iEvent.isRealData() && !disableTriggerCorrection_)
+//     {
+//         mu1trig = mu1trig && trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu1->pt(), applyTrigEffsign_);
+//         mu2trig = mu2trig && trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu2->pt(), applyTrigEffsign_);
+//     }
+//   } else if ( mode == TOP ) { 
+//   } else if ( mode == QCD ) { 
+//   }
+// }
+
 void HeavyNuEvent::regularize() {
   mu[0]=mu1;
-  if (!mu2.isNull()) mu[1] = mu2 ; 
-  if (!e1.isNull()) e[1] = e1 ; 
-  // mu[1]=mu2;
+  if ( mode == HNU || mode == QCD ) mu[1] = mu2 ; 
+  if ( mode == TOP ) e[1] = e1 ; 
+
   j[0]=j1;
   j[1]=j2;
   tjV[0]=tjV1;
   tjV[1]=tjV2;
+}
+
+void HeavyNuEvent::scaleMuE(double mufactor, double efactor) {
+  MuScale   = mufactor ; 
+  ElecScale = efactor ; 
 }
 
 static double planeCosAngle(const reco::Particle::Vector& plane1,
@@ -21,99 +94,132 @@ static double planeCosAngle(const reco::Particle::Vector& plane1,
   return rv;
 }
 
-void HeavyNuEvent::calculateMuMu(double muptfactor) {
-  MESscale = muptfactor;
-  vMuMu    = MESscale*(mu1->p4()+mu2->p4());
-  mMuMu    = vMuMu.M();
-  czeta_mumu   =mu1->momentum().unit().Dot(mu2->momentum().unit());
-  ctheta_mumu  =planeCosAngle(mu1->momentum(),mu2->momentum(),reco::Particle::Vector(0,0,1));
+static double triangleArea(const reco::Particle::Vector& v1,
+			   const reco::Particle::Vector& v2,
+			   const reco::Particle::Vector& v3) { 
+
+  // All actions assume/enforce unit sphere
+  double cos_theta12 = v1.unit().Dot(v2.unit()) ; 
+  double cos_theta13 = v1.unit().Dot(v3.unit()) ; 
+  double cos_theta23 = v2.unit().Dot(v3.unit()) ; 
+
+  // No triangle: vectors are either on top of each other or back-to-back
+  if ( fabs(cos_theta12) == 1 || fabs(cos_theta13) == 1 || fabs(cos_theta23) == 1 ) return -1. ; 
+
+  // Now calculate angles on sphere surface using identities
+  double sin_theta12 = sqrt( 1.0 - cos_theta12 * cos_theta12 ) ; 
+  double sin_theta13 = sqrt( 1.0 - cos_theta13 * cos_theta13 ) ; 
+  double sin_theta23 = sqrt( 1.0 - cos_theta23 * cos_theta23 ) ; 
+
+  double angle12_sphere = (cos_theta12 - (cos_theta13*cos_theta23)) / (sin_theta13*sin_theta23) ; 
+  double angle13_sphere = (cos_theta13 - (cos_theta12*cos_theta23)) / (sin_theta12*sin_theta23) ; 
+  double angle23_sphere = (cos_theta23 - (cos_theta12*cos_theta13)) / (sin_theta12*sin_theta13) ;
+
+  double pi = 3.14159265 ; 
+  double area = ( angle12_sphere + angle13_sphere + angle23_sphere - pi ) ; 
+
+  return area ; 
 }
 
-void HeavyNuEvent::calculateMuE(double muptfactor,double elefactor) {
-  MESscale = muptfactor;
-  EEScale  = elefactor;
-  vMuMu    = MESscale*mu1->p4() + EEScale*e1->p4();
+void HeavyNuEvent::calculateMuMu() {
+  vMuMu    = MuScale*(mu1.p4()+mu2.p4());
+  mMuMu    = vMuMu.M();
+  czeta_mumu   =mu1.momentum().unit().Dot(mu2.momentum().unit());
+  ctheta_mumu  =planeCosAngle(mu1.momentum(),mu2.momentum(),reco::Particle::Vector(0,0,1));
+}
+
+void HeavyNuEvent::calculateMuE() {
+  vMuMu    = MuScale*mu1.p4() + ElecScale*e1.p4();
   mMuMu    = vMuMu.M();
 }
 
-void HeavyNuEvent::calculate(int nMu) {
+void HeavyNuEvent::calculate() {
 
-  reco::Particle::LorentzVector j1p4 = j1->p4();
-  reco::Particle::LorentzVector j2p4 = j2->p4();
+  reco::Particle::LorentzVector j1p4 = j1.p4();
+  reco::Particle::LorentzVector j2p4 = j2.p4();
 
-  reco::Particle::LorentzVector mu1p4 = mu1->p4();
-  reco::Particle::LorentzVector mu2p4 = ( (nMu == 2) ? mu2->p4() : e1->p4() );
-  // reco::Particle::LorentzVector mu2p4 = mu2->p4();
+  reco::Particle::LorentzVector lep1p4 = mu1.p4();
+  reco::Particle::LorentzVector lep2p4 = (mode == CLO) ? mu1.p4() : ((mode == TOP) ? e1.p4() : mu2.p4()) ;  
 
   // if doing JECU studies, apply scaling factor here
   //
   if( j1scale != 1.0 ) j1p4 *= j1scale;
   if( j2scale != 1.0 ) j2p4 *= j2scale;
+
+  // std::cout << j1scale << "+++" << j2scale << std::endl ; 
  
   reco::Particle::Vector j1mom = j1p4.Vect();
   reco::Particle::Vector j2mom = j2p4.Vect();
 
   // if doing MES studies, apply scaling factor here
   //
-  if ( nMu == 2 ) {
-    if ( MESscale != 1.0 ) { mu1p4 *= MESscale; mu2p4 *= MESscale; }
+  if ( mode == TOP ) {
+    if ( MuScale != 1.0 )   lep1p4 *= MuScale;  
+    if ( ElecScale != 1.0 ) lep2p4 *= ElecScale; 
   } else { 
-    if ( MESscale != 1.0 ) mu1p4 *= MESscale;  
-    if ( EEScale != 1.0 )  mu2p4 *= EEScale; 
+    if ( MuScale != 1.0 ) { lep1p4 *= MuScale; lep2p4 *= MuScale; }
   }
 
-  reco::Particle::Vector mu1mom = mu1p4.Vect();
-  reco::Particle::Vector mu2mom = mu2p4.Vect();
+  reco::Particle::Vector lep1mom = lep1p4.Vect();
+  reco::Particle::Vector lep2mom = lep2p4.Vect();
 
-  vMuMu  = mu1p4+mu2p4;
+  vMuMu  = lep1p4+lep2p4;
   vJJ    = j1p4+j2p4;
   lv_evt = vMuMu+vJJ;
 
-  czeta_mumu   =fabs(mu1mom.unit().Dot(mu2mom.unit()));
+  // Calculate opening angle of m1/m2 + jj on a sphere
+  area_1jj = triangleArea(lep1mom,j1mom,j2mom) ; 
+  area_2jj = triangleArea(lep2mom,j1mom,j2mom) ; 
 
-  ctheta_mumu  =planeCosAngle(mu1mom,mu2mom,reco::Particle::Vector(0,0,1));
+  czeta_mumu   =fabs(lep1mom.unit().Dot(lep2mom.unit()));
+
+  ctheta_mumu  =planeCosAngle(lep1mom,lep2mom,reco::Particle::Vector(0,0,1));
   ctheta_jj    =planeCosAngle(j1mom,j2mom,reco::Particle::Vector(0,0,1));
-  ctheta_mu1_jj=planeCosAngle(j1mom,j2mom,mu1mom);
-  ctheta_mu2_jj=planeCosAngle(j1mom,j2mom,mu2mom);
+  ctheta_mu1_jj=planeCosAngle(j1mom,j2mom,lep1mom);
+  ctheta_mu2_jj=planeCosAngle(j1mom,j2mom,lep2mom);
 
   // LorentzVector of just the Z deboost.
   reco::Particle::LorentzVector deboostz(0,0,-lv_evt.pz(),lv_evt.pz());
   
-  reco::Particle::LorentzVector mu1z=mu1p4+deboostz;
-  reco::Particle::LorentzVector mu2z=mu2p4+deboostz;
+  reco::Particle::LorentzVector lep1z=lep1p4+deboostz;
+  reco::Particle::LorentzVector lep2z=lep2p4+deboostz;
   reco::Particle::LorentzVector j1z=j1p4+deboostz;
   reco::Particle::LorentzVector j2z=j2p4+deboostz;
   
-  cthetaz_mumu   = planeCosAngle(mu1z.Vect(),mu2z.Vect(),reco::Particle::Vector(0,0,1));
+  cthetaz_mumu   = planeCosAngle(lep1z.Vect(),lep2z.Vect(),reco::Particle::Vector(0,0,1));
   cthetaz_jj     = planeCosAngle(j1z.Vect(),j2z.Vect(),reco::Particle::Vector(0,0,1));
-  cthetaz_mu1_jj = planeCosAngle(j1z.Vect(),j2z.Vect(),mu1z.Vect());
-  cthetaz_mu2_jj = planeCosAngle(j1z.Vect(),j2z.Vect(),mu2z.Vect());
+  cthetaz_mu1_jj = planeCosAngle(j1z.Vect(),j2z.Vect(),lep1z.Vect());
+  cthetaz_mu2_jj = planeCosAngle(j1z.Vect(),j2z.Vect(),lep2z.Vect());
 
-  float dRmu1jet1 = deltaR( mu1->eta(), mu1->phi(), j1->eta(), j1->phi() ) ; 
-  float dRmu1jet2 = deltaR( mu1->eta(), mu1->phi(), j2->eta(), j2->phi() ) ; 
-  float dRmu2jet1 = (( e1.isNull() ) ? 
- 		     (deltaR( mu2->eta(), mu2->phi(), j1->eta(), j1->phi() )) : 
- 		     (deltaR( e1->eta(), e1->phi(), j1->eta(), j1->phi() ))) ; 
-  float dRmu2jet2 = (( e1.isNull() ) ? 
- 		     (deltaR( mu2->eta(), mu2->phi(), j2->eta(), j2->phi() )) : 
- 		     (deltaR( e1->eta(), e1->phi(), j2->eta(), j2->phi() ))) ; 
+  float dRlep1jet1 = deltaR( mu1.eta(), mu1.phi(), j1.eta(), j1.phi() ) ; 
+  float dRlep1jet2 = deltaR( mu1.eta(), mu1.phi(), j2.eta(), j2.phi() ) ; 
+  float dRlep2jet1 = (( mode == TOP ) ? 
+		      (deltaR( e1.eta(), e1.phi(), j1.eta(), j1.phi() )) :  
+		      (( mode == CLO ) ? 
+		       dRlep1jet1 : 
+		       (deltaR( mu2.eta(), mu2.phi(), j1.eta(), j1.phi()))) ) ;  
+  float dRlep2jet2 = (( mode == TOP ) ? 
+		      (deltaR( e1.eta(), e1.phi(), j2.eta(), j2.phi() )) : 
+		      (( mode == CLO ) ? 
+		       dRlep1jet2 : 
+		       (deltaR( mu2.eta(), mu2.phi(), j2.eta(), j2.phi()))) ) ; 
   
   // find the closest jets
-  dRminMu1jet = std::min( dRmu1jet1,dRmu1jet2 );
-  dRminMu2jet = std::min( dRmu2jet1,dRmu2jet2 );
+  dRminMu1jet = std::min( dRlep1jet1,dRlep1jet2 );
+  dRminMu2jet = std::min( dRlep2jet1,dRlep2jet2 );
 
   // what are the muon transverse momenta relative to the closest jets?
-  reco::Particle::Vector jmom4mu1 = (dRminMu1jet == dRmu1jet1) ? j1mom : j2mom;
-  reco::Particle::Vector jmom4mu2 = (dRminMu2jet == dRmu2jet1) ? j1mom : j2mom;
+  reco::Particle::Vector jmom4lep1 = (dRminMu1jet == dRlep1jet1) ? j1mom : j2mom;
+  reco::Particle::Vector jmom4lep2 = (dRminMu2jet == dRlep2jet1) ? j1mom : j2mom;
 
-  TVector3 mu1vec( mu1mom.X(), mu1mom.Y(), mu1mom.Z() );
-  TVector3 mu2vec( mu2mom.X(), mu2mom.Y(), mu2mom.Z() );
+  TVector3 lep1vec( lep1mom.X(), lep1mom.Y(), lep1mom.Z() );
+  TVector3 lep2vec( lep2mom.X(), lep2mom.Y(), lep2mom.Z() );
 
-  TVector3 jt4mu1vec( jmom4mu1.X(), jmom4mu1.Y(), jmom4mu1.Z() );
-  TVector3 jt4mu2vec( jmom4mu2.X(), jmom4mu2.Y(), jmom4mu2.Z() );
+  TVector3 jt4lep1vec( jmom4lep1.X(), jmom4lep1.Y(), jmom4lep1.Z() );
+  TVector3 jt4lep2vec( jmom4lep2.X(), jmom4lep2.Y(), jmom4lep2.Z() );
 
-  ptrelMu1 = mu1vec.Perp( jt4mu1vec );
-  ptrelMu2 = mu2vec.Perp( jt4mu2vec );
+  ptrelMu1 = lep1vec.Perp( jt4lep1vec );
+  ptrelMu2 = lep2vec.Perp( jt4lep2vec );
 
   // Composite objects
   mJJ   = vJJ.M();
@@ -121,8 +227,8 @@ void HeavyNuEvent::calculate(int nMu) {
 
   mWR   = lv_evt.M();
 
-  mNuR1 = (vJJ + mu1p4).M();
-  mNuR2 = (vJJ + mu2p4).M();
+  mNuR1 = (vJJ + lep1p4).M();
+  mNuR2 = (vJJ + lep2p4).M();
 }
 /*
 void HeavyNuEvent::decayID(const HepMC::GenEvent& genE) {

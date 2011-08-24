@@ -40,8 +40,8 @@ class HeavyNuTrigger {
 
   inline bool matchingEnabled() { return matchingEnabled_; }
 
-  bool isTriggerMatched(const pat::MuonRef & muon,
-			const edm::Event   & iEvent,
+  bool isTriggerMatched(const pat::Muon  & muon,
+			const edm::Event & iEvent,
 			trigHistos_t *thist = NULL);
 
   bool simulateForMC(double pt,double eta,int signOfError2apply=0);
@@ -55,7 +55,9 @@ class HeavyNuTrigger {
   bool          matchingEnabled_;
   TRandom      *triggerRandom_;
   edm::InputTag trigEventTag_;
+  std::vector<std::string> muonTriggers_;
   std::string   muonMatch_;
+  double        triggerPt_;
   int           johnnyApple_;
   int           year_;
 };
