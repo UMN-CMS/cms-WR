@@ -7,13 +7,13 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=False
+isMC=True
 isMCsignal=False
 Training=False
 isRun2011LoLumi=True
 # isRun2011=True
 isPileupMC=True
-isPFJets=False
+isPFJets=True
 
 isData=not isMC
 
@@ -109,11 +109,56 @@ process.out = cms.OutputModule("PoolOutputModule",
                                )
 if isPFJets:
     postfix = "PFlow"
-    usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix)
+    usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+              jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+    # Remove pileup, muon, and electron candidates from jets 
+    # N.B.: This should already be done by default
+    getattr(process,"pfNoPileUp"+postfix).enable   = True
+    getattr(process,"pfNoMuon"+postfix).enable     = True
+    getattr(process,"pfNoElectron"+postfix).enable = True
     # turn to false when running on data
     getattr(process, "patElectrons"+postfix).embedGenMatch = isMC
-    getattr(process, "patMuons"+postfix).embedGenMatch = isMC
-    getattr(process, "patTaus"+postfix).embedGenMatch = isMC
+    getattr(process, "patMuons"+postfix).embedGenMatch     = isMC
+    getattr(process, "patTaus"+postfix).embedGenMatch      = isMC
+    # Needed for jet energy corrections
+    process.pfPileUpPFlow.Enable = True
+    process.pfPileUpPFlow.checkClosestZVertex = cms.bool(False)
+    process.pfPileUpPFlow.Vertices = cms.InputTag('goodOfflinePrimaryVertices')
+    process.pfJetsPFlow.doAreaFastjet = True
+    process.pfJetsPFlow.doRhoFastjet = False
+
+    #-----------------------------------------------------------------------#
+    #--- Jet Corrections using PF and PF2PAT                             ---#
+    #--- twiki reference: CMSPublic/WorkBookJetEnergyCorrections         ---#
+    #--- See also: PhysicsTools/PatExamples/test/patTuple_42x_jec_cfg.py ---#
+    #-----------------------------------------------------------------------#
+    from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
+    process.goodOfflinePrimaryVertices = cms.EDFilter(
+        "PrimaryVertexObjectFilter",
+        filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) ),
+        src=cms.InputTag('offlinePrimaryVertices')
+    )
+
+    # Compute the mean pt per unit area (rho) from the PFchs inputs
+    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
+    process.kt6PFJetsPFlow = kt4PFJets.clone(
+        rParam = cms.double(0.6),
+        src = cms.InputTag('pfNoElectron'+postfix),
+        doAreaFastjet = cms.bool(True),
+        doRhoFastjet = cms.bool(True)
+    )
+    process.patJetCorrFactorsPFlow.rho = cms.InputTag("kt6PFJetsPFlow", "rho")
+
+    # Add the PV selector and KT6 producer to the sequence
+    getattr(process,"patPF2PATSequence"+postfix).replace(
+        getattr(process,"pfNoElectron"+postfix),
+        getattr(process,"pfNoElectron"+postfix)*process.kt6PFJetsPFlow 
+    )
+
+    process.modifiedPF2PATSequence = cms.Sequence(    
+        process.goodOfflinePrimaryVertices*
+        getattr(process,"patPF2PATSequence"+postfix)
+    )
     
 #------------------------------#
 #--- Include Generic Tracks ---#
@@ -150,7 +195,7 @@ process.p = cms.Path(
 )
 
 if isPFJets:
-    process.p += getattr(process,"patPF2PATSequence"+postfix)
+    process.p += process.modifiedPF2PATSequence
 
 ########################################
 # Output module - has to be defined before PAT python tools will work
@@ -169,7 +214,7 @@ if isData:
 ########################################
 # 
 
-from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
+#from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
 
 if isMC:
     switchJetCollection( process,
@@ -238,17 +283,15 @@ process.hNu.studyScaleFactor = cms.bool(False)
 
 process.hNu.minMu2pt         = cms.double(30.)
 process.hNu.pileupEra        = cms.int32(20110)
-process.hNu.applyMuIDEffcorr = cms.bool(isMC)
+#--- For now, we do not know if any muon ID correction is necessary ---#
+process.hNu.applyMuIDEffcorr = cms.bool(False)
+
 if isData:
     process.hNu.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
 
 process.hNu.isPFJets = cms.bool(isPFJets)
 if isPFJets:
     process.hNu.jetTag  = cms.InputTag( 'selectedPatJetsPFlow')
-    if isData:
-        process.hNu.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch')
-    else:
-        process.hNu.muonTag = cms.InputTag( 'selectedPatMuons')
 
 if isData:
     # turn on trigger match requirement

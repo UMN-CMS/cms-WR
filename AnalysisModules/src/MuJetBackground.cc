@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.9 2011/08/24 10:22:46 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.10 2011/08/24 13:53:51 bdahmes Exp $
 //
 //
 
@@ -58,6 +58,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -222,7 +223,7 @@ private:
 
   int    pileupEra_;
   bool isPFJets_; 
-  std::vector<double> MCweightByVertex_;
+  edm::LumiReWeighting MCweightByVertex_;
   std::map<uint32_t,TH1 *> m_runHistos_;
 
   // ----------member data ---------------------------
@@ -379,8 +380,8 @@ void MuJetBackground::initializeHNE(HeavyNuEvent hne,
   hne.pfJets = isPF ; 
 
   if (hne.isMC) { 
-    std::pair<int,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
-    hne.n_pue     = pileup.first ; 
+    std::pair<float,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
+    hne.n_pue     = int(pileup.first) ; 
     hne.eventWgt *= pileup.second ; 
   }
   hne.n_primary_vertex = hnu::numberOfPrimaryVertices(pvHandle) ;
@@ -737,7 +738,8 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
 
   pileupEra_ = iConfig.getParameter<int>("pileupEra");
   isPFJets_ = iConfig.getParameter<bool>("isPFJets") ; 
-  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data(pileupEra_));
+  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(50),
+					   hnu::get_standard_pileup_data(pileupEra_,50));
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;

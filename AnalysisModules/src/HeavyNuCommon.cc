@@ -170,28 +170,50 @@ namespace hnu {
         return avgVertex(*tJet, maxDeltaVR);
   }
 
-  std::vector<double> generate_flat10_weights(const std::vector<double>& dataDist){
+  std::vector<float> generate_flat10_mc(const int npt){
     // see SimGeneral/MixingModule/python/mix_E7TeV_FlatDist10_2011EarlyData_inTimeOnly_cfi.py; copy and paste from there:
-    const double npu_probs[25] = {0.0698146584, 0.0698146584, 0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584 /* <-- 10*/,
-				  0.0630151648,0.0526654164,0.0402754482,0.0292988928,0.0194384503,0.0122016783,0.007207042,0.004003637,0.0020278322,
-				  0.0010739954,0.0004595759,0.0002229748,0.0001028162,4.58337152809607E-05 /* <-- 24 */};
-    std::vector<double> result(25);
-    double s = 0.0;
-    for(int npu=0; npu<25; ++npu){
-      double npu_estimated = dataDist[npu];
-      result[npu] = npu_estimated / npu_probs[npu];
-      s += npu_estimated;
-    }
-    // normalize weights such that the total sum of weights over thw whole sample is 1.0, i.e., sum_i  result[i] * npu_probs[i] should be 1.0 (!)
-    for(int npu=0; npu<25; ++npu){
-      result[npu] /= s;
-    }
-    return result;
+    // const double npu_probs[25] = {0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,  // 0-4
+    // 				  0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,  // 5-9
+    // 				  0.0698146584,0.0630151648,0.0526654164,0.0402754482,0.0292988928,  // 10-14
+    // 				  0.0194384503,0.0122016783,0.0072070420,0.0040036370,0.0020278322,  // 15-19
+    // 				  0.0010739954,0.0004595759,0.0002229748,0.0001028162,4.58337152809607E-05 // 20-24 
+    // };
+
+    // see https://twiki.cern.ch/twiki/bin/view/CMS/PileupMCReweightingUtilities for PU_S4 samples
+    // Additional values (25+ vertices) calculated by hand assuming average of 12 pileup collisions
+    // Result is not exact but will get rid of problems with n(PU) > 25 in Monte Carlo
+    const double npu_probs[51] = { 0.104109000,0.070357300,0.069844500,0.069825400,0.069705400, // 0-4
+				   0.069790700,0.069675100,0.069448600,0.068033200,0.065104400, // 5-9
+				   0.059803600,0.052739500,0.043951300,0.035220200,0.026671400, // 10-14
+				   0.019411000,0.013397400,0.008985360,0.005751600,0.003514930, // 15-19
+				   0.002120870,0.001228910,0.000705920,0.000384744,0.000219377, // 20-24
+				   0.000105301,4.86004e-05,2.16002e-05,9.25723e-06,3.83058e-06, // 25-29
+				   1.53223e-06,5.93122e-07,2.22421e-07,8.08802e-08,2.85460e-08, // 30-34
+				   9.78719e-09,3.26240e-09,1.05807e-09,3.34129e-10,1.02809e-10, // 35-39
+				   3.08426e-11,9.02712e-12,2.57918e-12,7.19770e-13,1.96301e-13, // 40-44
+				   5.23469e-14,1.36557e-14,3.48657e-15,8.71641e-16,2.13463e-16, // 45-49
+				   5.12312e-17 }; 
+
+    std::vector<float> retval;
+    retval.reserve(npt);
+    for (int i=0; i<npt; i++)
+      retval.push_back(npu_probs[i]);
+    return retval;
+    // double s = 0.0;
+    // for(int npu=0; npu<25; ++npu){
+    //   double npu_estimated = dataDist[npu];
+    //   result[npu] = npu_estimated / npu_probs[npu];
+    //   s += npu_estimated;
+    // }
+    // // normalize weights such that the total sum of weights over thw whole sample is 1.0, i.e., sum_i  result[i] * npu_probs[i] should be 1.0 (!)
+    // for(int npu=0; npu<25; ++npu){
+    //   result[npu] /= s;
+    // }
+    // return result;
   }
 
 
-  std::vector<double> get_standard_pileup_data(int era) {
-    const int npt=50;
+  std::vector<float> get_standard_pileup_data(int era, const int npt) {
     const double default_pd[] = { 100, 100, 100, 0, 0, 0, 0, 0, 0,
 			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -217,25 +239,38 @@ namespace hnu {
     if (era>=20110 && era<=20112) pileupDist=may10_json;
     if (era>=20100 && era<=20109) pileupDist=dec22_json;
 
-    std::vector<double> retval;
+    std::vector<float> retval;
     retval.reserve(npt);
     for (int i=0; i<npt; i++)
       retval.push_back(pileupDist[i]);
     return retval;
   }
 
-  std::pair<int,double> pileupReweighting(edm::Handle<std::vector<PileupSummaryInfo> > pPU,
-					  const std::vector<double> mcWeight) {
+  std::pair<float,double> pileupReweighting(edm::Handle<std::vector<PileupSummaryInfo> > pPU,
+					    edm::LumiReWeighting puWeight) { 
 
-    int   nPileup = -1 ; 
-    double weight = 1.0 ; 
+    // int   nPileup = -1 ; 
+    double weight   = 1.0 ; 
+    float  avg_nvtx = -1. ; 
 
     if (pPU.isValid() && pPU->size() > 0) {
-      nPileup = pPU->at(0).getPU_NumInteractions();
-      weight *= mcWeight[nPileup];
+      std::vector<PileupSummaryInfo>::const_iterator puIter ; 
+
+      float sum_nvtx = 0 ; 
+      for (puIter=pPU->begin(); puIter!=pPU->end(); puIter++) 
+	sum_nvtx += float( puIter->getPU_NumInteractions() ) ; 
+
+      avg_nvtx = sum_nvtx / 3. ; 
+
+      // std::cout << "About to look up weight for " << avg_nvtx << " vertices, initial weight " << weight << std::endl ; 
+      weight = puWeight.weight3BX( avg_nvtx ) ; 
+      // if ( nPileup > int(mcWeight.size()) || nPileup < 0 ) 
+      // 	std::cout << "WARNING: Weight vector is too small, size " << mcWeight.size() << std::endl ; 
+      // weight *= mcWeight[nPileup];
+      // std::cout << "MC weight is now " << weight << std::endl ; 
     }
 
-    std::pair<int,double> pileupInfo = std::make_pair(nPileup,weight) ; 
+    std::pair<float,double> pileupInfo = std::make_pair(avg_nvtx,weight) ; 
     return pileupInfo ; 
   }
 

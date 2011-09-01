@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.10 2011/08/24 10:22:46 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.11 2011/08/24 13:53:51 bdahmes Exp $
 //
 //
 
@@ -53,6 +53,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -173,7 +174,7 @@ private:
   HeavyNuTrigger *trig_;
   HeavyNuID *muid_ ; 
 
-  std::vector<double> MCweightByVertex_;
+  edm::LumiReWeighting MCweightByVertex_;
 
   std::map<uint32_t,TH1 *> m_runHistos_;
 
@@ -924,7 +925,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
   init_=false;
 
-  MCweightByVertex_=hnu::generate_flat10_weights(hnu::get_standard_pileup_data(pileupEra_));
+  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(50),
+					   hnu::get_standard_pileup_data(pileupEra_,50));
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
@@ -1269,8 +1271,8 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if (hnuEvent.isMC) { 
     edm::Handle<std::vector<PileupSummaryInfo> > pPU;
     iEvent.getByLabel("addPileupInfo", pPU); 
-    std::pair<int,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
-    hnuEvent.n_pue     = pileup.first ; 
+    std::pair<float,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
+    hnuEvent.n_pue     = int(pileup.first) ; 
     hnuEvent.eventWgt *= pileup.second ; 
   }
   edm::Handle<reco::VertexCollection> pvHandle;

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.62 2011/08/24 10:22:46 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.63 2011/08/24 13:53:51 bdahmes Exp $
 //
 //
 
@@ -52,6 +52,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -112,22 +113,22 @@ template <class T> void outputCandidate(const T& p) {
 
 //============================================================
 
-inline void dumpJetCorInfo(const pat::Jet& j)
-{
-    std::cout << "Available JEC sets and levels:\n";
-    const std::vector<std::string> jecsets = j.availableJECSets();
-    for(size_t i = 0; i < jecsets.size(); i++)
-    {
-        std::cout << jecsets[i] << ":";
-        const std::vector<std::string> jeclevs = j.availableJECLevels(i);
-        for(size_t j = 0; j < jeclevs.size(); j++)
-            std::cout << " " << jeclevs[i];
-        std::cout << std::endl;
-    }
-    std::cout << "current JEC set   : " << j.currentJECSet() << std::endl;
-    std::cout << "current JEC level : " << j.currentJECLevel() << std::endl;
-    std::cout << "current JEC flavor: " << j.currentJECFlavor() << std::endl;
-}
+// inline void dumpJetCorInfo(const pat::Jet& j)
+// {
+//     std::cout << "Available JEC sets and levels:\n";
+//     const std::vector<std::string> jecsets = j.availableJECSets();
+//     for(size_t i = 0; i < jecsets.size(); i++)
+//     {
+//         std::cout << jecsets[i] << ":";
+//         const std::vector<std::string> jeclevs = j.availableJECLevels(i);
+//         for(size_t j = 0; j < jeclevs.size(); j++)
+//             std::cout << " " << jeclevs[i];
+//         std::cout << std::endl;
+//     }
+//     std::cout << "current JEC set   : " << j.currentJECSet() << std::endl;
+//     std::cout << "current JEC level : " << j.currentJECLevel() << std::endl;
+//     std::cout << "current JEC flavor: " << j.currentJECFlavor() << std::endl;
+// }
 
 //============================================================
 
@@ -252,7 +253,7 @@ private:
 				bool mu1tag, bool mu2tag, double weight) ;
 
     virtual void studyJetVertex(edm::Handle<pat::JetCollection>& pJets, edm::Handle<reco::JPTJetCollection> jptJets,
-            edm::Handle<pat::MuonCollection>& pMuons, int npue);
+				edm::Handle<pat::MuonCollection>& pMuons, int npue);
 
   bool passesTrigger(const double mu1pt,const double mu2pt,
 		     const bool mu1trig,const bool mu2trig, 
@@ -269,6 +270,8 @@ private:
     edm::InputTag jetTag_;
     edm::InputTag metTag_;
     edm::InputTag elecTag_;
+
+    int evtCounter ; 
 
     double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
 
@@ -295,7 +298,7 @@ private:
     HeavyNuID *muid_;
     JetCorrectionUncertainty *jecuObj_;
 
-    std::vector<double> MCweightByVertex_;
+    edm::LumiReWeighting MCweightByVertex_;
 
     std::map<uint32_t, TH1 *> m_runHistos_;
 
@@ -736,11 +739,11 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
 }// end of book()
 
 void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
-        pat::JetCollection jets,
-        pat::METCollection metc,
-        bool isMC,
-        double wgt,
-        bool pfJets)
+			       pat::JetCollection jets,
+			       pat::METCollection metc,
+			       bool isMC,
+			       double wgt,
+			       bool pfJets)
 {
   std::sort(muons.begin(), muons.end(), hnu::pTcompare());
   std::sort(jets.begin(), jets.end(), hnu::pTcompare());
@@ -751,6 +754,9 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
     const pat::Muon& m1 = muons.at(1);
 
     // Muons
+    // std::cout << "Muon collection with size " << muons.size() 
+    // 	      << " and Jet collection with size " << jets.size() << std::endl ; 
+    // std::cout << "No cuts, filling with weight: " << wgt << std::endl ; 
     ptMu1->Fill(m0.pt(), wgt);
     ptMu2->Fill(m1.pt(), wgt);
 
@@ -1366,7 +1372,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
                 50, -2.5, 2.5, 100, 0, 1000);
     }
 
-    MCweightByVertex_ = hnu::generate_flat10_weights(hnu::get_standard_pileup_data(pileupEra_));
+    MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(50),
+					     hnu::get_standard_pileup_data(pileupEra_,50));
 
     // For the record...
     std::cout << "Configurable cut values applied:" << std::endl;
@@ -1770,7 +1777,7 @@ void HeavyNu::studyIsolation(const std::vector<pat::Muon> muons,
 // } // HeavyNu::selectMuons
 
 void HeavyNu::studyJetVertex(edm::Handle<pat::JetCollection>& pJets, edm::Handle<reco::JPTJetCollection> jptJets,
-        edm::Handle<pat::MuonCollection>& pMuons, int npue)
+			     edm::Handle<pat::MuonCollection>& pMuons, int npue)
 {
     if(pMuons->size() < 2) return;
 
@@ -1812,6 +1819,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using namespace edm;
     HeavyNuEvent hnuEvent;
+
+    evtCounter++ ; 
 
     hnuEvent.isMC = !iEvent.isRealData();
     hnuEvent.pfJets = isPFJets_;
@@ -1855,10 +1864,13 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<reco::MuonCollection> tevMuons;
     iEvent.getByLabel("refitMuons", tevMuons); 
 
+    // std::cout << "Init event weight is: " << hnuEvent.eventWgt << std::endl ; 
+    // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
+
     if (hnuEvent.isMC) { 
       edm::Handle<std::vector<PileupSummaryInfo> > pPU;
       iEvent.getByLabel("addPileupInfo", pPU);
-      std::pair<int,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
+      std::pair<float,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
       hnuEvent.n_pue     = pileup.first ; 
       hnuEvent.eventWgt *= pileup.second ; 
       // generator information
@@ -1870,6 +1882,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<reco::VertexCollection> pvHandle;
     iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
     hnuEvent.n_primary_vertex = hnu::numberOfPrimaryVertices(pvHandle) ;
+
+    // std::cout << "PU event weight is:   " << hnuEvent.eventWgt << std::endl ; 
+    // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
 
     if(!pElecs.isValid() || !pMuons.isValid() || !pJets.isValid() || !(pMET.isValid() && (pMET->size() > 0)))
     {
@@ -2014,6 +2029,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     else return false;
 
+    // std::cout << "base event weight is: " << hnuEvent.eventWgt << std::endl ; 
+    // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
+
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet,float> > jetCands = 
       hnu::getJetList(pJets,jecuObj_,cuts.minimum_jet_pt,cuts.maximum_jet_abseta,applyJECUsign_,jecVal_) ; 
@@ -2067,6 +2085,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       hnuEvent.eventWgt *= (mu1wgt * mu2wgt) ; 
     }
 
+    // std::cout << "muid event weight is: " << hnuEvent.eventWgt << std::endl ; 
+    // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
+
     //--- Trigger Matching needed for efficiency studies ---//
     bool mu1trig = false ; bool mu2trig = false ; 
     if (trig_->matchingEnabled() && iEvent.isRealData()) {
@@ -2098,6 +2119,10 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	studyIsolation(muCands,jetCands,mu1trig,mu2trig,hnuEvent.eventWgt) ; 
     }
     if ( hnuEvent.nMuons < 2 ) return false ;
+
+    // std::cout << "2m2j event weight is: " << hnuEvent.eventWgt << std::endl ; 
+    // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
+
     hists.cutlevel->Fill(1) ; // Two highest pT muons that are isolated, separated from chosen jets
     hnuEvent.regularize(); // assign internal standards
     hnuEvent.scaleMuE(applyMESfactor_);
@@ -2214,6 +2239,7 @@ void HeavyNu::beginJob()
 {
     nnif_->beginJob();
     firstEvent_ = true;
+    evtCounter = 0 ; 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

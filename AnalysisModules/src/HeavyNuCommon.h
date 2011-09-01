@@ -12,6 +12,7 @@
 // #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 // #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "Math/VectorUtil.h"
@@ -87,12 +88,12 @@ namespace hnu {
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 
 								  float ebScale=1.0, float eeScale=1.0);
-    std::vector<double> generate_flat10_weights(const std::vector<double>& dataDist);
+    std::vector<float> generate_flat10_mc(const int npt);
 
-    std::vector<double> get_standard_pileup_data(int pileupEra); 
+    std::vector<float> get_standard_pileup_data(int pileupEra, const int npt); 
 
-    std::pair<int,double> pileupReweighting(edm::Handle< std::vector<PileupSummaryInfo> > pPU, 
-					    const std::vector<double> mcWeight);
+    std::pair<float,double> pileupReweighting(edm::Handle< std::vector<PileupSummaryInfo> > pPU, 
+					      const edm::LumiReWeighting mcWeight);
 }
 
 
