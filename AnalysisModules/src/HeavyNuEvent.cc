@@ -103,11 +103,24 @@ static double triangleArea(const reco::Particle::Vector& v1,
   double cos_theta13 = v1.unit().Dot(v3.unit()) ; 
   double cos_theta23 = v2.unit().Dot(v3.unit()) ; 
 
-  // std::cout << "Angles (cos): " << cos_theta12 << ", " << cos_theta13 << ", " << cos_theta23
-  // 	    << std::endl ; 
+  // std::cout << "Vectors: " << std::endl ; 
+  // std::cout << "v1 x: " << v1.X() << " y: " << v1.Y() << " z: " << v1.Z() << std::endl ; 
+  // std::cout << "v2 x: " << v2.X() << " y: " << v2.Y() << " z: " << v2.Z() << std::endl ; 
+  // std::cout << "v3 x: " << v3.X() << " y: " << v3.Y() << " z: " << v3.Z() << std::endl ; 
+
+  // std::cout << "Magnitudes: " << sqrt( v1.X()*v1.X() + v1.Y()*v1.Y() + v1.Z()*v1.Z() ) << " (1) " 
+  // 	    << sqrt( v2.X()*v2.X() + v2.Y()*v2.Y() + v2.Z()*v2.Z() ) << " (2) " 
+  // 	    << sqrt( v3.X()*v3.X() + v3.Y()*v3.Y() + v3.Z()*v3.Z() ) << " (3)" << std::endl ;  
+
+  // std::cout << "Angles (cos): " << cos_theta12 << " (12), " << cos_theta13 << " (13), " << cos_theta23
+  //  	    << " (23)" << std::endl ; 
 
   // No triangle: vectors are either on top of each other or back-to-back
   if ( fabs(cos_theta12) == 1 || fabs(cos_theta13) == 1 || fabs(cos_theta23) == 1 ) return -1. ; 
+
+  // std::cout << "Angles (interior): " << acos(cos_theta12) << " (12) " 
+  // 	    << acos(cos_theta13) << " (13) " 
+  // 	    << acos(cos_theta23) << " (23)" << std::endl ;  
 
   // Now calculate angles on sphere surface using identities
   double sin_theta12 = sqrt( 1.0 - cos_theta12 * cos_theta12 ) ; 
@@ -118,9 +131,9 @@ static double triangleArea(const reco::Particle::Vector& v1,
   double cos_angle13_sphere = (cos_theta13 - (cos_theta12*cos_theta23)) / (sin_theta12*sin_theta23) ; 
   double cos_angle23_sphere = (cos_theta23 - (cos_theta12*cos_theta13)) / (sin_theta12*sin_theta13) ;
 
-  // std::cout << "Angles (full): " << acos(cos_angle12_sphere) << ", " 
-  // 	    << acos(cos_angle13_sphere) << ", " << acos(cos_angle23_sphere)
-  // 	    << std::endl ; 
+  // std::cout << "Angles (surface): " << acos(cos_angle12_sphere) << " (12), " 
+  //  	    << acos(cos_angle13_sphere) << " (13), " << acos(cos_angle23_sphere) << " (23) "
+  //  	    << std::endl ; 
 
   double pi = 3.14159265 ; 
   double area = ( acos(cos_angle12_sphere) + acos(cos_angle13_sphere) + acos(cos_angle23_sphere) - pi ) ; 

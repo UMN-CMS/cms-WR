@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.63 2011/08/24 13:53:51 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.64 2011/09/01 13:46:11 bdahmes Exp $
 //
 //
 
@@ -704,23 +704,23 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     cthetaz_mu2_jj = td->make<TH1D > ("ctzM2JJ", t.c_str(), 50, 0, 1);
 
     t = "surface area m1jj " + post;
-    mu1jj_surfarea = td->make<TH1D> ("mu1jj_surfarea", t.c_str(), 80,0.,4.) ; 
+    mu1jj_surfarea = td->make<TH1D> ("mu1jj_surfarea", t.c_str(), 80,0.,6.2831853) ; 
     t = "surface area m2jj " + post;
-    mu2jj_surfarea = td->make<TH1D> ("mu2jj_surfarea", t.c_str(), 80,0.,4.) ; 
+    mu2jj_surfarea = td->make<TH1D> ("mu2jj_surfarea", t.c_str(), 80,0.,6.2831853) ; 
 
     // vertex histograms
     t = "mumu vtx DeltaZ " + post;
-    vtx_mumu     = td->make<TH1D > ("vtxMM", t.c_str(), 200, 0., 5.);
+    vtx_mumu     = td->make<TH1D > ("vtxMM", t.c_str(), 200, 0., 2.);
     t = "jj vtx DeltaZ " + post;
-    vtx_jj       = td->make<TH1D > ("vtxJJ", t.c_str(), 200, 0., 5.);
+    vtx_jj       = td->make<TH1D > ("vtxJJ", t.c_str(), 200, 0., 2.);
     t = "m1j vtx min DeltaZ " + post;
-    vtx_min_mu1j = td->make<TH1D > ("vtxM1Jmin", t.c_str(), 200, 0., 5.);
+    vtx_min_mu1j = td->make<TH1D > ("vtxM1Jmin", t.c_str(), 200, 0., 2.);
     t = "m2j vtx min DeltaZ " + post;
-    vtx_min_mu2j = td->make<TH1D > ("vtxM2Jmin", t.c_str(), 200, 0., 5.);
+    vtx_min_mu2j = td->make<TH1D > ("vtxM2Jmin", t.c_str(), 200, 0., 2.);
     t = "mu-j vtx min DeltaZ " + post;
-    vtx_min_muj  = td->make<TH1D > ("vtxMuJmin", t.c_str(), 200, 0., 5.);
+    vtx_min_muj  = td->make<TH1D > ("vtxMuJmin", t.c_str(), 200, 0., 2.);
     t = "mmjj vtx max DeltaZ " + post;
-    vtx_max_dist = td->make<TH1D > ("vtxDistmax", t.c_str(), 400, 0., 10.);
+    vtx_max_dist = td->make<TH1D > ("vtxDistmax", t.c_str(), 400, 0., 5.);
 
 
     // ----------  Neural Net histograms  ----------
