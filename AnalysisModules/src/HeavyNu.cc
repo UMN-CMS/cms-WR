@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.64 2011/09/01 13:46:11 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.65 2011/09/02 10:46:52 bdahmes Exp $
 //
 //
 
@@ -68,6 +68,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 
 //////////////////////////////////////////////////////////////////
@@ -383,7 +384,8 @@ private:
         TH1 *muPt, *muEta, *muPhi, *looseMuPt, *tightMuPt;
         TH1* mc_type;
 
-      TH1* cutlevel ; 
+        TH1* cutlevel;
+        TH1* weights;
 
         // Muon quality histos as a function of Pt
         TH2 *muNvalidHitsVsPt, *mudBvsPt, *muNormChi2vsPt, *muQualVsPt;
@@ -1236,7 +1238,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     hists.cutlevel->GetXaxis()->SetBinLabel(4,"M2 (Vertex)") ; 
     hists.cutlevel->GetXaxis()->SetBinLabel(5,"M3 (high p_{T})") ; 
     hists.cutlevel->GetXaxis()->SetBinLabel(6,"M4 (M_{#mu#mu})") ; 
-    hists.cutlevel->GetXaxis()->SetBinLabel(7,"M5 (M(W_{R})") ; 
+    hists.cutlevel->GetXaxis()->SetBinLabel(7,"M5 (M(W_{R})") ;
+    hists.weights = fs->make<TH1D > ("weights", "event weights", 100, 0.0, 1.0);
     hists.njet = fs->make<TH1D > ("njet", "N(Jet)", 50, -0.5, 49.5);
     hists.nmet = fs->make<TH1D > ("nmet", "N(MET)", 50, -0.5, 49.5);
     hists.met = fs->make<TH1D > ("met", "MET distribution", 100, 0, 2000);
@@ -1862,22 +1865,31 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByLabel(metTag_, pMET);
 
     edm::Handle<reco::MuonCollection> tevMuons;
-    iEvent.getByLabel("refitMuons", tevMuons); 
+    iEvent.getByLabel("refitMuons", tevMuons);
+
+    //Shirpa reweighting info
+    edm::Handle<GenEventInfoProduct> geneventinfo;
+    iEvent.getByLabel("generator", geneventinfo);
 
     // std::cout << "Init event weight is: " << hnuEvent.eventWgt << std::endl ; 
     // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
 
-    if (hnuEvent.isMC) { 
-      edm::Handle<std::vector<PileupSummaryInfo> > pPU;
-      iEvent.getByLabel("addPileupInfo", pPU);
-      std::pair<float,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
-      hnuEvent.n_pue     = pileup.first ; 
-      hnuEvent.eventWgt *= pileup.second ; 
-      // generator information
-      edm::Handle<reco::GenParticleCollection> genInfo;
-      if(iEvent.getByLabel("genParticles", genInfo)) {
-	hnuEvent.decayID(*genInfo);
-      }
+    if(hnuEvent.isMC)
+    {
+        edm::Handle<std::vector<PileupSummaryInfo> > pPU;
+        iEvent.getByLabel("addPileupInfo", pPU);
+        std::pair<float, double> pileup = hnu::pileupReweighting(pPU, MCweightByVertex_);
+        hnuEvent.n_pue = pileup.first;
+        hnuEvent.eventWgt *= pileup.second;
+        //Shirpa reweighting
+        hnuEvent.eventWgt *= geneventinfo->weight();
+        hists.weights->Fill(hnuEvent.eventWgt);
+        // generator information
+        edm::Handle<reco::GenParticleCollection> genInfo;
+        if(iEvent.getByLabel("genParticles", genInfo))
+        {
+            hnuEvent.decayID(*genInfo);
+        }
     }
     edm::Handle<reco::VertexCollection> pvHandle;
     iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
