@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.65 2011/09/02 10:46:52 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.66 2011/09/16 21:07:46 pastika Exp $
 //
 //
 
@@ -2134,6 +2134,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // std::cout << "2m2j event weight is: " << hnuEvent.eventWgt << std::endl ; 
     // if ( hnuEvent.eventWgt < 0.0001 || fabs(hnuEvent.eventWgt) > 1000. ) std::cout << evtCounter << std::endl ; 
+
+    if ( hnu::jetID(hnuEvent.j1) < 1 || hnu::jetID(hnuEvent.j2) < 1 ) return false ; 
 
     hists.cutlevel->Fill(1) ; // Two highest pT muons that are isolated, separated from chosen jets
     hnuEvent.regularize(); // assign internal standards

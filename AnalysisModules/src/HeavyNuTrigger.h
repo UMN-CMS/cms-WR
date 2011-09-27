@@ -55,6 +55,7 @@ class HeavyNuTrigger {
   TRandom      *triggerRandom_;
   edm::InputTag trigEventTag_;
   std::vector<std::string> muonTriggers_;
+  std::vector<int> beginRun_, endRun_ ; 
   std::string   muonMatch_;
   double        triggerPt_;
   int           johnnyApple_;

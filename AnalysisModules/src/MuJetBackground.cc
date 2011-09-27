@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.10 2011/08/24 13:53:51 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.11 2011/09/01 13:46:11 bdahmes Exp $
 //
 //
 
@@ -61,6 +61,8 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -781,60 +783,6 @@ MuJetBackground::~MuJetBackground()
 //
 //======================================================================
 
-// void
-// MuJetBackground::fillBasicMuHistos(const pat::Muon& m)
-// {
-
-//   //std::cout << "Begin fill basic" << std::endl ; 
-
-//   double mupt = m.pt();
-//   hists.muPt->Fill( applyMESfactor_*mupt ) ; 
-//   hists.muEta->Fill( m.eta() ) ; 
-//   hists.muPhi->Fill( m.phi() ) ; 
-
-//   if (applyMESfactor_==1.0) {
-//     hists.mudBvsPt->Fill( mupt, m.dB() );
-
-//     if (isVBTFloose(m)) {
-//       hists.muNvalidHitsVsPt->Fill     ( mupt, m.numberOfValidHits() );
-//       hists.muNormChi2vsPt->Fill       ( mupt, m.normChi2() );
-//       hists.muNmatchesVsPt->Fill       ( mupt, m.numberOfMatches() );
-      
-//       reco::TrackRef gt = m.globalTrack();
-//       // gt.isNonnull() guaranteed at this point?
-//       hists.muNvalidMuonHitsVsPt->Fill ( mupt, gt->hitPattern().numberOfValidMuonHits() );
-//       hists.muNvalidPixelHitsVsPt->Fill( mupt, gt->hitPattern().numberOfValidPixelHits() );
-//     }
-//     hists.muQualVsPt->Fill( mupt, 0 );
-//     for (int i=1; i<muonQualityFlags; i++)
-//       if (m.muonID(muonQuality[i]))
-// 	hists.muQualVsPt->Fill( mupt, i ) ; 
-    
-//     hists.muTrckIsoVsPt->Fill( mupt, m.trackIso() );
-//     hists.muHcalIsoVsPt->Fill( mupt, m.hcalIso()  );
-//     hists.muEcalIsoVsPt->Fill( mupt, m.ecalIso()  );
-//     hists.muCaloIsoVsPt->Fill( mupt, m.caloIso()  );
-//   }
-//   //std::cout << "end basic fill" << std::endl ; 
-// }                                          // MuJetBackground::fillBasicMuHistos
-
-//======================================================================
-
-// void
-// MuJetBackground::fillBasicJetHistos( const pat::Jet& j,
-// 			     int jetnum )
-// {
-//   //std::cout << "Begin basic fill" << std::endl ; 
-
-//   double jpt=j.pt(),jeta=j.eta();
-
-//   hists.jetPt ->Fill( jpt  ) ; 
-//   hists.jetEta->Fill( jeta ) ; 
-//   hists.jetPhi->Fill( j.phi() ) ; 
-//   hists.jetID ->Fill( qcdJetID( j ) );
-//   hists.jetPtvsNum->Fill( jetnum, jpt ) ;
-// }                                         // MuJetBackground::fillBasicJetHistos
-
 //======================================================================
 
 TH1 *
@@ -847,82 +795,6 @@ MuJetBackground::bookRunHisto(uint32_t runNumber)
 }
 
 //======================================================================
-
-// bool
-// MuJetBackground::selectJetsStd(edm::Handle<pat::JetCollection>& pJets,
-// 			       HeavyNuEvent& hne)
-// {
-//   for (size_t iJet=0; iJet<pJets->size(); iJet++) {
-//     pat::JetRef iJ=pat::JetRef( pJets,iJet );
-//     float jpt       = (*iJ).pt();
-//     float jeta      = (*iJ).eta();
-//     float jecuscale = 1.0f;
-//     // std::cout << "JES: " << jecuscale << std::endl ; 
-//     // std::cout << "JES: " << jecuscale << std::endl ; 
-//     if( (jpt       > cuts.minimum_jet_pt)   && // more later!
-// 	(fabs(jeta)<=cuts.maximum_jet_abseta) ) {
-
-//       if(hne.j1.isNull()) {
-// 	hne.j2=hne.j1;
-// 	hne.j1=iJ;
-// 	hne.j2scale=hne.j1scale;
-// 	hne.j1scale=jecuscale;
-//       } else {
-// 	float j1pt = hne.j1->pt() * hne.j1scale;
-// 	if (j1pt < jpt) {
-// 	  hne.j2=hne.j1;
-// 	  hne.j1=iJ;
-// 	  hne.j2scale=hne.j1scale;
-// 	  hne.j1scale=jecuscale;
-// 	}
-// 	else if( hne.j2.isNull() ) {
-// 	  hne.j2=iJ;
-// 	  hne.j2scale=jecuscale;
-// 	} else {
-// 	  float j2pt = hne.j2->pt() * hne.j2scale;
-// 	  if( j2pt < jpt ) {
-// 	    hne.j2=iJ;
-// 	    hne.j2scale=jecuscale;
-// 	  }
-// 	}
-//       } // if jet supplants one of the jets selected so far
-//     } // if jet passes pt/eta cuts
-//   } // jet loop
-//   if ( hne.j2.isNull() ) return false ; 
-//   return true ; 
-// } //HeavyNu::selectJets
-
-// bool
-// MuJetBackground::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
-// 			     HeavyNuEvent& hne)
-// {
-//   double mu1wgt = 1.0 ;
-//   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
-//     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
-//     double dr1=(hne.j1.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hne.j1->eta(),hne.j1->phi()));
-//     double dr2=(hne.j2.isNull())?(10.0):(deltaR((*iM).eta(),(*iM).phi(),hne.j2->eta(),hne.j2->phi()));
-
-//     double mupt = (*iM).pt();
-//     if( (mupt > cuts.minimum_mu2_pt)
-// 	&& isVBTFloose(*iM)
-// 	&& (fabs((*iM).eta()) < cuts.maximum_mu_abseta)
-// 	&& (std::min(dr1,dr2) > cuts.minimum_muon_jet_dR)
-// 	// && ((*iM).trackIso()  < cuts.muon_trackiso_limit)
-// 	&& (((*iM).trackIso()/mupt)  < cuts.muon_trackiso_limit) // relative track isolation
-// 	) {
-//       if( (hne.mu1.isNull()) ||
-// 	  (hne.mu1->pt()<(*iM).pt()) ) { 
-// 	hne.mu1=iM;
-// 	hne.mu2=iM;
-//         if ( applyMuIDCorrections_ && hne.isMC )
-//           mu1wgt = muid_->weightForMC( mupt,0 ) ;
-//       }
-//     }
-//   }
-//   if ( hne.mu1.isNull() ) return false ;
-//   if ( applyMuIDCorrections_ && hne.isMC ) hne.eventWgt *= mu1wgt ; 
-//   return true ; 
-// }                                                // HeavyNu::selectMuons
 
 bool 
 MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> > jets,

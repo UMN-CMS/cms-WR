@@ -167,7 +167,8 @@ namespace hnu {
         }
 
         // Return Vert
-        return avgVertex(*tJet, maxDeltaVR);
+	if ( tJet != jptJets.end() ) return avgVertex(*tJet, maxDeltaVR);
+	return -100. ; 
   }
 
   std::vector<float> generate_flat10_mc(const int npt){

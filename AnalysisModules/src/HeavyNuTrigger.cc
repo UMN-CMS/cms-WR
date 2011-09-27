@@ -15,6 +15,8 @@
 HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   trigEventTag_( iConfig.getParameter< edm::InputTag >( "trigEventTag" ) ),
   muonTriggers_( iConfig.getParameter< std::vector<std::string> >( "muonTriggers" ) ),
+  beginRun_    ( iConfig.getParameter< std::vector<int> >( "firstRun" ) ),
+  endRun_      ( iConfig.getParameter< std::vector<int> >( "lastRun" ) ),
   muonMatch_   ( iConfig.getParameter< std::string >  ( "muonMatch"    ) ),
   triggerPt_   ( iConfig.getParameter< double >       ( "triggerPt"    ) ),
   johnnyApple_ ( iConfig.getParameter< int >          ( "randomSeed"   ) )
@@ -31,6 +33,23 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
     std::cout << "   (Trigger pT               = "<<triggerPt_<<")"<<std::endl;
   }
 
+  // Safety: first/last run vectors are not the same size as the trigger list
+  if ( muonTriggers_.size() != beginRun_.size() || 
+       muonTriggers_.size() != endRun_.size() || 
+       beginRun_.size() != endRun_.size() ) { 
+    std::cout << "WARNING: Size of trigger initialization vectors are not equal." << std::endl ; 
+    std::cout << "         Resetting all vectors to size of trigger list and dropping run restriction " << std::endl ; 
+
+    unsigned int maxsize = std::max( muonTriggers_.size(),
+				     std::max( beginRun_.size(),endRun_.size() ) ) ; 
+    
+    beginRun_.clear() ; 
+    endRun_.clear() ; 
+    for (unsigned int i=0; i<maxsize; i++) { 
+      beginRun_.push_back(0) ; 
+      endRun_.push_back(999999) ; 
+    }
+  }
 }                                      // HeavyNuTrigger::HeavyNuTrigger
 
 //======================================================================
@@ -85,11 +104,15 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
   bool matched=false;
   // bool passTrig=false;
   
-  // For some muons, we ignore trigger match if pT is too low
+  // Only one trigger can be used for matching in a given run
   int run = iEvent.run() ; 
+  std::vector<std::string> validHLTpaths ; 
+  
+  for (unsigned int i=0; i<muonTriggers_.size(); i++) 
+    if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(muonTriggers_.at(i)) ; 
 
-  std::cout << "Looking for trigger match for muon with pT " << m.pt() 
-	    << " and eta " << m.eta() << std::endl ; 
+  // std::cout << "Looking for trigger match for muon with pT " << m.pt() 
+  // 	    << " and eta " << m.eta() << std::endl ; 
 
   // muon trigger matching is only allowed within |eta|<2.1
   if ( matchingEnabled_ &&(fabs(m.eta()) < 2.1) ) {
@@ -103,31 +126,37 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
     }
 
     const pat::TriggerObjectStandAloneCollection muonMatchCollection = m.triggerObjectMatches();
-    std::cout << "Trigger object matches size: " << muonMatchCollection.size() << std::endl ; 
+    // std::cout << "Trigger object matches size: " << muonMatchCollection.size() << std::endl ; 
 
     for (unsigned int i=0; i<muonMatchCollection.size(); i++) { 
       if ( matched ) break ; // Quit as soon as we find a match
-      std::cout << "Trigger object " << i+1 << " of " << muonMatchCollection.size() << std::endl ; 
+      // std::cout << "Trigger object " << i+1 << " of " << muonMatchCollection.size() << std::endl ; 
       pat::TriggerObject muonTrigger = muonMatchCollection.at(i) ; 
-      if ( muonTrigger.pt() > triggerPt_ ) { 
+      pat::TriggerObjectStandAlone muonTriggerInfo = muonMatchCollection.at(i) ; 
+      // Look for a match with one of our paths
+      std::vector<std::string> hltPaths = muonTriggerInfo.pathNames(true,false) ; 
+      bool hltPathMatch = false ; 
+      for (unsigned int j=0; j<hltPaths.size(); j++) { 
+	if (hltPathMatch) break ; 
+	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
+	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
+	    // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
+	    hltPathMatch = true ; 
+	    break ; 
+	  }
+	}
+      }
+      // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
+      // Requirements to see if the trigger would have accepted the event based on this muon
+      if ( hltPathMatch && muonTrigger.pt() > triggerPt_ ) { 
 	matched = true ; 
 
 	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( m,muonTrigger );
 	double dpt  = 1.-(muonTrigger.pt()/m.pt());
 	double dphi = reco::deltaPhi( m.phi(),muonTrigger.phi() );
 	double deta = m.eta() - muonTrigger.eta();
-	std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
-	std::cout << "dR is " << sqrt(dr2) << std::endl ; 
-
-    // PAT trigger helper for trigger matching information
-    // const pat::helper::TriggerMatchHelper matchHelper;
-
-    // const pat::TriggerObjectRef
-    //   trigRef( matchHelper.triggerMatchObject( reco::CandidateBaseRef(m.originalObject()),
-    //    					       muonMatch_,iEvent,*triggerEvent) );
-    
-    // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
-    // Requirements to see if the trigger would have accepted the event based on this muon
+	// std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
+	// std::cout << "dR is " << sqrt(dr2) << std::endl ; 
 
 	if (thist) {	  
 	  thist->trigMatchPtCorrel->Fill( m.pt(),muonTrigger.pt() );
@@ -162,6 +191,8 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
 
   // Triggers outside |eta| < 2.1 not allowed
   if ( fabs(eta) >= 2.1 ) return false ; 
+  // Cannot trigger if you do not meet the minimum pT threshold
+  if ( pt < triggerPt_ ) return false ; 
   
   // determined from HLT_Mu24 studies...updated 23 Aug 2011
   const double effslo24[]  = {0.945,0.939,0.946,0.948,0.935,0.954,0.954};
