@@ -36,7 +36,7 @@ process.options = cms.untracked.PSet(
 )
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:input.root')
+    fileNames=cms.untracked.vstring('/store/data/Run2011A/SingleMu/AOD/05Aug2011-v1/0000/96291883-D9C0-E011-9352-0026189437F8.root')
 )
 
 if isData:

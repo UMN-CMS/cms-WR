@@ -70,6 +70,7 @@ namespace hnu {
     int numberOfPrimaryVertices(edm::Handle<reco::VertexCollection> pvHandle) ;
 
     double avgVertex(const reco::JPTJet &tjet, double maxDeltaVR=1.0);
+    double avgVertex(const pat::Jet &tJet, double maxDeltaVR);
     double caloJetVertex(const pat::Jet &pJet, const reco::JPTJetCollection &jptJets, double maxDeltaVR=1.0);
 
     float jecTotalUncertainty(float jpt, float jeta,

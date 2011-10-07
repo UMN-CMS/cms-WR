@@ -2,8 +2,8 @@ DRIVER.prefix	ALIAS.cutlevel		ALIAS.probe	ALIAS.datafmt	ALIAS.mcfmt
 ^Cut	&	Data	&	Signal	&	\ttbar	&	Z+Jets	&	W+Jets	&	VV	&	tW   \\ \hline
 M0 (Raw)	hNu			nmuAll		" &%10.0f",e	"\t&%10.0f",e
 M0		hNu			nmuAll		"\t&%10.0f",I	"\t&%10.1f",I
-M1		hNu/cut4_LLJJpt		mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
-M2		hNu/cut5_Vertex		mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
-M3		hNu/cut6_Mu1HighPt	mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
-M4		hNu/cut7_diLmass	mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
-M5		hNu/cut8_mWRmass	mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
+M1		hNu/cut1_LLJJpt		mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
+M2		hNu/cut3_Vertex		mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
+M3		hNu/cut4_Mu1HighPt	mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
+M4		hNu/cut5_diLmass	mMuMu		"\t&%10.0f",I	"\t&%10.3g",I
+M5		hNu/cut6_mWRmass	mMuMu		"\t&%10.0f",I	"\t&%10.3g",I

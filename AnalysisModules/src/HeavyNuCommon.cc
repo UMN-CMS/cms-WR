@@ -155,6 +155,30 @@ namespace hnu {
       }
   }
 
+    double avgVertex(const pat::Jet &tJet, double maxDeltaVR)
+    {
+        double avetz = 0, weight = 0;
+        double thresh = 0.0001;
+        reco::PFCandidateFwdPtrVector::const_iterator itrack;
+        for(itrack = tJet.pfCandidatesFwdPtr().begin(); itrack != tJet.pfCandidatesFwdPtr().end(); itrack++)
+        {
+            if(((maxDeltaVR > thresh && sqrt(pow((*itrack)->vx(), 2) + pow((*itrack)->vy(), 2)) < maxDeltaVR) || maxDeltaVR < 0.0) && abs((*itrack)->pdgId()) == 211)
+            {
+                avetz += (*itrack)->vz() / (*itrack)->vertexChi2();
+                weight += 1. / (*itrack)->vertexChi2();
+            }
+        }
+
+        if(weight < 0.01)
+        { // throw out weight ~= 0 results
+            return -100;
+        }
+        else
+        {
+            return avetz / weight;
+        }
+    }
+
 
   double caloJetVertex(const pat::Jet &pJet, const reco::JPTJetCollection &jptJets, double maxDeltaVR){
 
