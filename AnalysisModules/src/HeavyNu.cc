@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.67 2011/09/27 16:17:10 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.68 2011/10/07 00:23:12 pastika Exp $
 //
 //
 
@@ -345,8 +345,8 @@ private:
         TH2 *mNuR2D, *jetPtvsNum;
         TH1 *mu1ptFracWRmass;
 
-        TH1* btagJet1, *btagJet2;
-        TH1* numBjets;
+        TH1 *btagJet1, *btagJet2;
+        TH1 *numBjets, *njets;
 
         TH1* met;
 
@@ -605,6 +605,8 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
 
     t = "# B-tagged Jets in Event " + post;
     numBjets = td->make<TH1D > ("numBjets", t.c_str(), 3, -0.5, 2.5);
+    t = "#  Jets in Event " + post;
+    njets = td->make<TH1D > ("njets", t.c_str(), 100, -0.5, 99.5);
 
     t = "Jet #Delta#eta vs. #Delta#phi ";
     t += post + ";#Delta#eta; #Delta#phi";
@@ -850,6 +852,8 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
     btagJet1->Fill(j0bdisc, wgt);
     btagJet2->Fill(j1bdisc, wgt);
 
+    njets->Fill(jets.size());
+
     if((j0bdisc >= minBtagDiscVal) &&
             (j1bdisc >= minBtagDiscVal)) numBjets->Fill(2., wgt);
     else if((j0bdisc >= minBtagDiscVal) ||
@@ -926,6 +930,26 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
 
     mMuMuZoom->Fill(mumu.M(), wgt);
     mJJ->Fill(jj.M(), wgt);
+
+    float deltaVzJ1J2 = fabs(hnu::avgVertex(j0, 1.0) - hnu::avgVertex(j1, 1.0));
+    float deltaVzJ1M1 = fabs(hnu::avgVertex(j0, 1.0) - m0.vertex().Z());
+    float deltaVzJ2M2 = fabs(hnu::avgVertex(j1, 1.0) - m1.vertex().Z());
+    float deltaVzJ1M2 = fabs(hnu::avgVertex(j0, 1.0) - m1.vertex().Z());
+    float deltaVzJ2M1 = fabs(hnu::avgVertex(j1, 1.0) - m0.vertex().Z());
+    float deltaVzM1M2 = fabs(m0.vertex().Z() - m1.vertex().Z());
+
+    vtx_jj->Fill(deltaVzJ1J2, wgt);
+    float minDeltaVzMu1J = std::min(deltaVzJ1M1, deltaVzJ2M1);
+    float minDeltaVzMu2J = std::min(deltaVzJ2M2, deltaVzJ2M2);
+    vtx_min_mu1j->Fill(minDeltaVzMu1J, wgt);
+    vtx_min_mu2j->Fill(minDeltaVzMu2J, wgt);
+    vtx_min_muj->Fill(std::min(minDeltaVzMu1J, minDeltaVzMu2J), wgt);
+
+    float maxDeltaVzMuJ1 = std::max(deltaVzJ1M1, deltaVzJ1M2);
+    float maxDeltaVzMuJ2 = std::max(deltaVzJ2M1, deltaVzJ2M2);
+    float maxDeltaVzMMJJ = std::max(deltaVzM1M2, deltaVzJ1J2);
+    float maxDeltaVzMuJ = std::max(maxDeltaVzMuJ1, maxDeltaVzMuJ2);
+    vtx_max_dist->Fill(std::max(maxDeltaVzMMJJ, maxDeltaVzMuJ), wgt);
 
 }// end of fill()
 
@@ -1015,6 +1039,7 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
     int jet2id = 0;
 
     // Jets
+    njets->Fill(hne.nJets);
     if(hne.nJets > 0)
     {
         if(!hne.pfJets) jet1id = hnu::jetID(hne.j1);
