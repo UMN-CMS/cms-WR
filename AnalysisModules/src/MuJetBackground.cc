@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.11 2011/09/01 13:46:11 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.12 2011/09/27 16:17:10 bdahmes Exp $
 //
 //
 
@@ -169,26 +169,26 @@ private:
   // virtual void fillBasicJetHistos( const pat::Jet& j,
   // 				   int jetnum );
 
-  void initializeHNE(HeavyNuEvent hne, edm::Handle< std::vector<PileupSummaryInfo> > pPU, 
-		     edm::Handle<reco::VertexCollection> pvHandle, bool isMC, bool isPF) ; 
+  void initializeHNE(HeavyNuEvent& hne, edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
+		     edm::Handle<reco::VertexCollection>& pvHandle, bool isMC, bool isPF) ; 
 
   // virtual bool selectJetsStd     ( edm::Handle<pat::JetCollection>& pJets,
   // 				   HeavyNuEvent& hne );
-  virtual bool selectJets        ( std::vector< std::pair<pat::Jet,float> > jets,
+  virtual bool selectJets        ( std::vector< std::pair<pat::Jet,float> >& jets,
 				   HeavyNuEvent& hne );
   // virtual bool selectMuons       ( edm::Handle<pat::MuonCollection>& pMuons,
   // 				   HeavyNuEvent& hne );
-  virtual void selectMuonsInJets ( std::vector<pat::Muon> muons,
-				   std::vector< std::pair<pat::Jet,float> > jets,
+  virtual void selectMuonsInJets ( std::vector<pat::Muon>& muons,
+				   std::vector< std::pair<pat::Jet,float> >& jets,
 				   HeavyNuEvent& hne );
-  bool findQCDmuon               ( const std::vector<pat::Muon> muons, 
-				   edm::Handle<pat::MuonCollection>& pMuons,
-				   HeavyNuEvent hne );
-  bool secondQualityMuon         (const pat::Muon mu1, const pat::Muon mu2);
-  virtual bool findQCDjet        ( const std::vector< std::pair<pat::Jet,float> > jets,
+  bool findQCDmuon               ( const std::vector<pat::Muon>& muons, 
 				   edm::Handle<pat::MuonCollection>& pMuons,
 				   HeavyNuEvent& hne );
-  virtual bool isDijetCandidate  ( HeavyNuEvent& hne,pat::MET theMET ); 
+  bool secondQualityMuon         (const pat::Muon& mu1, const pat::Muon& mu2);
+  virtual bool findQCDjet        ( const std::vector< std::pair<pat::Jet,float> >& jets,
+				   edm::Handle<pat::MuonCollection>& pMuons,
+				   HeavyNuEvent& hne );
+  virtual bool isDijetCandidate  ( HeavyNuEvent& hne,pat::MET& theMET ); 
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
   
   inline bool inZmassWindow( double mMuMu ) {
@@ -234,7 +234,7 @@ private:
     //book histogram set w/ common suffix inside the provided TFileDirectory
     void book(TFileDirectory *, const std::string&, const std::vector<hNuMassHypothesis>&) ;
     // fill all histos of the set with the mu-jet candidate
-    void fill(pat::Muon theMuon, pat::Jet theJet, pat::MET theMET, bool isMC, double trkIso) ;
+    void fill(pat::Muon& theMuon, pat::Jet& theJet, pat::MET& theMET, bool isMC, double trkIso) ;
     // void fill(reco::SuperCluster theSC) ; 
     // void fill(pat::MuonCollection muons, pat::JetCollection jets,bool isMC) ;
     // fill all histos of the set with the two muon candidates
@@ -374,9 +374,9 @@ const std::string muonQuality[] = {
 
 // }                                                // MuJetBackground::isVBTFtight
 
-void MuJetBackground::initializeHNE(HeavyNuEvent hne, 
-				    edm::Handle< std::vector<PileupSummaryInfo> > pPU, 
-				    edm::Handle<reco::VertexCollection> pvHandle, 
+void MuJetBackground::initializeHNE(HeavyNuEvent& hne, 
+				    edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
+				    edm::Handle<reco::VertexCollection>& pvHandle, 
 				    bool isMC, bool isPF) {  
   hne.isMC   = isMC ; 
   hne.pfJets = isPF ; 
@@ -483,9 +483,9 @@ MuJetBackground::HistPerDef::book(TFileDirectory *td,
 
 //======================================================================
 
-void MuJetBackground::HistPerDef::fill(pat::Muon theMuon,
-				       pat::Jet theJet, 
-				       pat::MET theMET, 
+void MuJetBackground::HistPerDef::fill(pat::Muon& theMuon,
+				       pat::Jet& theJet, 
+				       pat::MET& theMET, 
 				       bool isMC,
 				       double trkIsoLimit)
 {  
@@ -797,7 +797,7 @@ MuJetBackground::bookRunHisto(uint32_t runNumber)
 //======================================================================
 
 bool 
-MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> > jets,
+MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> >& jets,
 			    HeavyNuEvent& hne) {
   for (unsigned int i=0; i<jets.size(); i++) { 
     if ( hne.nJets == 2 ) break ; 
@@ -822,7 +822,7 @@ MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> > jets,
 
 
 bool
-MuJetBackground::findQCDjet(const std::vector< std::pair<pat::Jet,float> > jets,
+MuJetBackground::findQCDjet(const std::vector< std::pair<pat::Jet,float> >& jets,
 			    edm::Handle<pat::MuonCollection>& pMuons,
 			    HeavyNuEvent& hne) {
   pat::Jet iJqcd ; 
@@ -870,8 +870,8 @@ MuJetBackground::findQCDjet(const std::vector< std::pair<pat::Jet,float> > jets,
 //======================================================================
 
 void
-MuJetBackground::selectMuonsInJets(std::vector<pat::Muon> muons,
-				   std::vector< std::pair<pat::Jet,float> > jets,
+MuJetBackground::selectMuonsInJets(std::vector<pat::Muon>& muons,
+				   std::vector< std::pair<pat::Jet,float> >& jets,
 				   HeavyNuEvent& hne) {
   double mu1wgt = 1.0 ; 
   double mu2wgt = 1.0 ; 
@@ -901,7 +901,7 @@ MuJetBackground::selectMuonsInJets(std::vector<pat::Muon> muons,
   hne.eventWgt *= mu1wgt * mu2wgt ;
 }
 
-bool MuJetBackground::secondQualityMuon(const pat::Muon mu1, const pat::Muon mu2) { 
+bool MuJetBackground::secondQualityMuon(const pat::Muon& mu1, const pat::Muon& mu2) { 
 
   if ( !hnu::isVBTFloose(mu2) ) return false ; 
 
@@ -915,9 +915,9 @@ bool MuJetBackground::secondQualityMuon(const pat::Muon mu1, const pat::Muon mu2
 }
 
 bool
-MuJetBackground::findQCDmuon(const std::vector<pat::Muon> muons, 
+MuJetBackground::findQCDmuon(const std::vector<pat::Muon>& muons, 
 			     edm::Handle<pat::MuonCollection>& pMuons,
-			     HeavyNuEvent hne) {
+			     HeavyNuEvent& hne) {
 
   pat::Muon qcdCand = muons.at(0) ; 
   for (unsigned int i=1; i<muons.size(); i++) { // Skip first candidate
@@ -932,7 +932,7 @@ MuJetBackground::findQCDmuon(const std::vector<pat::Muon> muons,
   return true ; 
 } // MuJetBackground::findQCDmuon
 
-bool MuJetBackground::isDijetCandidate(HeavyNuEvent& hne,pat::MET theMET) {
+bool MuJetBackground::isDijetCandidate(HeavyNuEvent& hne,pat::MET& theMET) {
 
   if ( theMET.et() < 20. ) return false ; // Absolute MET requirement
   if ( hnu::jetID(hne.j1) < 1 ) return false ; // Require at least PURE09 Loose

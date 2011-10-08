@@ -96,8 +96,12 @@ process.out = cms.OutputModule("PoolOutputModule",
 
 if isPFJets:
     postfix = "PFlow"
-    usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
-              jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+    if isMC:
+        usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+    else:
+        usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
     getattr(process,"pfNoPileUp"+postfix).enable   = True

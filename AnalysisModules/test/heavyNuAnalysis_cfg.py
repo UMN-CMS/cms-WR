@@ -11,7 +11,7 @@ isMC=True
 isMCsignal=False
 Training=False
 isRun2011LoLumi=True
-# isRun2011=True
+isRun2011VeryHiLumi=False
 isPileupMC=True
 isPFJets=True
 
@@ -46,20 +46,16 @@ process.source = cms.Source("PoolSource",
 )
 
 if isData:
-    if isRun2011LoLumi or isRun2011HiLumi:
-        print "===========> Flag is SET for 2011 luminosity data <============"
-        # from HeavyNu.AnalysisModules.goodLumiList_mu24v1_cfi import lumisToProcess
-        # from HeavyNu.AnalysisModules.goodLumiList_mu24v2_cfi import lumisToProcess
-        # from HeavyNu.AnalysisModules.goodLumiList_mu40v1v2_cfi import lumisToProcess
-        # from HeavyNu.AnalysisModules.goodLumiList_mu40v3_cfi import lumisToProcess
-        from HeavyNu.AnalysisModules.goodLumiList_mu40v5_cfi import lumisToProcess
-    # else:
-    #     if isRun2010LoLumi:
-    #         print "===========> Flag is SET for 2010 LOW luminosity data <============"
-    #         from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu9_cfi import lumisToProcess
-    #     else:
-    #         print "===========> Flag is SET for 2010 HIGH luminosity data <============"
-    #         from HeavyNu.AnalysisModules.goodLumiList_apr21rereco_2010_mu15_cfi import lumisToProcess    
+    if isRun2011LoLumi:
+        print "===========> Flag is SET for 2011 LOW luminosity data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_160431_163869_Mu24_cfi import lumisToProcess
+    else:
+        if isRun2011VeryHiLumi and checkTriggerMatch:
+            print "===========> Flag is SET for 2011 HIGH luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_173236_Mu40eta2p1_cfi import lumisToProcess
+        else:
+            print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
 
     process.source.lumisToProcess = lumisToProcess
 
@@ -82,8 +78,7 @@ if (isMC):
         process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
     print "===============> Running on DATA <===================="
-    # process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
-    process.GlobalTag.globaltag = cms.string('GR_P_V22::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
@@ -109,8 +104,12 @@ process.out = cms.OutputModule("PoolOutputModule",
                                )
 if isPFJets:
     postfix = "PFlow"
-    usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
-              jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+    if isMC:
+        usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+    else:
+        usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L2Residual']))
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
     getattr(process,"pfNoPileUp"+postfix).enable   = True
@@ -260,11 +259,11 @@ if isData:
     if isRun2011LoLumi:
         process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*",1,0 )' )
     else:
-        process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
-    # else:
-        # if isRun2010LoLumi: process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu9" )' )
-        # else:               process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu15_v1" )' )
-
+        if isRun2011VeryHiLumi:
+            process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
+        else:
+            process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
+ 
 ##########################################
 ## Add analysis
 ##########################################
@@ -305,33 +304,30 @@ if Training:
     process.hNu.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
 
 #--- Changes necessary to sort out trigger complications ---#
-process.hNuMu24v1   = process.hNu.clone() 
-process.hNuMu24v2   = process.hNu.clone() 
-process.hNuMu40v1v2 = process.hNu.clone() 
-process.hNuMu40v3   = process.hNu.clone() 
-process.hNuMu40v5   = process.hNu.clone() 
+process.hNuMu24 = process.hNu.clone() 
+process.hNuMu40 = process.hNu.clone() 
 
-process.hNuMu24v1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1' )
-process.hNuMu24v2.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v2' )
-process.hNuMu40v1v2.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2' )
-process.hNuMu40v3.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v3' )
-process.hNuMu40v5.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v5' )
-
-process.hNuMu24v1.trigMatchPset.triggerPt = cms.double( 24. )
-process.hNuMu24v2.trigMatchPset.triggerPt = cms.double( 24. )
-process.hNuMu40v1v2.trigMatchPset.triggerPt = cms.double( 40. )
-process.hNuMu40v3.trigMatchPset.triggerPt = cms.double( 40. )
-process.hNuMu40v5.trigMatchPset.triggerPt = cms.double( 40. )
+process.hNuMu24.trigMatchPset.triggerPt = cms.double( 24. )
+process.hNuMu40.trigMatchPset.triggerPt = cms.double( 40. )
     
 if isMCsignal:
     process.hNu.isSignal = cms.bool(True)
     process.p += process.hNuGenFilter*process.hNu
 else:
     if isMC: 
-        process.p += process.hNu
+        process.q = cms.Path(
+            process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+            )
+        if isPFJets:
+            process.q += process.modifiedPF2PATSequence
+        process.p += process.hNuMu24
+        process.p += process.hNuMu40
     else:
-        # process.p += process.hNuMu24v1
-        # process.p += process.hNuMu24v2
-        # process.p += process.hNuMu40v1v2
-        # process.p += process.hNuMu40v3
-        process.p += process.hNuMu40v5
+        if isRun2011LoLumi:
+            process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
+            process.hNu.trigMatchPset.triggerPt = cms.double( 24. )
+        else:
+            process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+            process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
+
+        process.p += process.hNu

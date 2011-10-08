@@ -192,19 +192,20 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   // Triggers outside |eta| < 2.1 not allowed
   if ( fabs(eta) >= 2.1 ) return false ; 
   // Cannot trigger if you do not meet the minimum pT threshold
-  if ( pt < triggerPt_ ) return false ; 
-  
-  // determined from HLT_Mu24 studies...updated 23 Aug 2011
-  const double effslo24[]  = {0.945,0.939,0.946,0.948,0.935,0.954,0.954};
-  const double effsnom24[] = {0.931,0.923,0.928,0.930,0.899,0.924,0.924};
-  const double effshi24[]  = {0.957,0.952,0.961,0.963,0.961,0.974,0.974};
-  const double upedge24[]  = {   40,   50,   60,   80,  100,  3500,   -1};
+  if ( pt < triggerPt_ ) return false ;
 
-  // determined from HLT_Mu40 studies...updated 23 Aug 2011
-  const double effslo40[]  = {0.928,0.934,0.942,0.946,0.941,0.941};
-  const double effsnom40[] = {0.922,0.925,0.934,0.934,0.930,0.930};
-  const double effshi40[]  = {0.934,0.942,0.949,0.956,0.951,0.951};
-  const double upedge40[]  = {50,   60,   80,   100,  3500, -1};
+  // Trigger studies updated 8 October 2011
+  // HLT_Mu24 results are used for 30 < pT < 40 GeV
+  // All other bins combine Mu24, Mu40, Mu40_eta2p1 efficiencies
+  const double effslo24[]  = {0.916,0.931,0.937,0.946,0.943,0.938,0.938};
+  const double effsnom24[] = {0.934,0.935,0.943,0.952,0.952,0.946,0.946};
+  const double effshi24[]  = {0.949,0.941,0.949,0.958,0.960,0.954,0.954};
+  const double upedge24[]  = {   40,   50,   60,   80,  100, 3500,   -1};
+
+  const double effslo40[]  = {0.931,0.937,0.946,0.943,0.938,0.938};
+  const double effsnom40[] = {0.935,0.943,0.952,0.952,0.946,0.946};
+  const double effshi40[]  = {0.941,0.949,0.958,0.960,0.954,0.954};
+  const double upedge40[]  = {   50,   60,   80,  100, 3500,   -1};
 
   const double *effs = ( (triggerPt_ == 24) ? effsnom24 : effsnom40 );
   if ( signOfError2apply ) {
