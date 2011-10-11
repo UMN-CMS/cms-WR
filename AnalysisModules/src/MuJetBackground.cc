@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.12 2011/09/27 16:17:10 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.13 2011/10/08 18:28:17 bdahmes Exp $
 //
 //
 
@@ -306,7 +306,9 @@ private:
 
     TFileDirectory *rundir;
 
+    HistPerDef NoCuts;
     HistPerDef dPhiCuts;
+    HistPerDef dPhi10pctCuts;
 
     HistPerDef LLJJpTCuts;
     HistPerDef TrigMatches;
@@ -458,14 +460,14 @@ MuJetBackground::HistPerDef::book(TFileDirectory *td,
   t="#phi (Missing E_{T}) "+post; phiMET=td->make<TH1D>("phiMET",t.c_str(),30,-3.14159,3.14159);
   
   // ----------  Composite histograms  ----------
-  t="M(W_{R}) "                    +post;        mWR=td->make<TH1D>("mWR",   t.c_str(),40,0,2000);
-  t="M(N_{R}) with #mu_{1} "       +post;      mNuR1=td->make<TH1D>("mNuR1", t.c_str(),40,0,2000);
-  t="M(N_{R}) with #mu_{2} "       +post;      mNuR2=td->make<TH1D>("mNuR2", t.c_str(),20,0,1000);
-  t="M(W_{R}) "                    +post;    mWR_raw=td->make<TH1D>("mWR_raw",   t.c_str(),40,0,2000);
-  t="M(N_{R}) with #mu_{1} "       +post;  mNuR1_raw=td->make<TH1D>("mNuR1_raw", t.c_str(),40,0,2000);
-  t="M(N_{R}) with #mu_{2} "       +post;  mNuR2_raw=td->make<TH1D>("mNuR2_raw", t.c_str(),20,0,1000);
-  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;     mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),40,0,2000,20,0,1000);
-  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post; mNuR2D_raw=td->make<TH2D>("mNuR2D_raw",t.c_str(),40,0,2000,20,0,1000);
+  t="M(W_{R}) "                    +post;        mWR=td->make<TH1D>("mWR",   t.c_str(),70,0,2800);
+  t="M(N_{R}) with #mu_{1} "       +post;      mNuR1=td->make<TH1D>("mNuR1", t.c_str(),70,0,2800);
+  t="M(N_{R}) with #mu_{2} "       +post;      mNuR2=td->make<TH1D>("mNuR2", t.c_str(),70,0,1400);
+  t="M(W_{R}) "                    +post;    mWR_raw=td->make<TH1D>("mWR_raw",   t.c_str(),70,0,2800);
+  t="M(N_{R}) with #mu_{1} "       +post;  mNuR1_raw=td->make<TH1D>("mNuR1_raw", t.c_str(),70,0,2800);
+  t="M(N_{R}) with #mu_{2} "       +post;  mNuR2_raw=td->make<TH1D>("mNuR2_raw", t.c_str(),70,0,1400);
+  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;     mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),70,0,2800,70,0,1400);
+  t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post; mNuR2D_raw=td->make<TH2D>("mNuR2D_raw",t.c_str(),70,0,2800,70,0,1400);
 
   mNuR2D->Sumw2() ; 
 
@@ -678,8 +680,12 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   doQuadJet_    = iConfig.getParameter<bool>("doQuadJetTest") ;
 
   if ( calcSurvival_ ) { 
+    hists.NoCuts.book        ( new TFileDirectory(fs->mkdir("NoCuts")), 
+                               "(VBTF tight, mu+jet)", v_null );
     hists.dPhiCuts.book      ( new TFileDirectory(fs->mkdir("dPhiCuts")), 
-				       "(VBTF tight, NI Calo)", v_null );
+                               "(VBTF tight, NI Calo)", v_null );
+    hists.dPhi10pctCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctCuts")), 
+                               "(VBTF tight, NI 10% Calo)", v_null );
   } else { 
     if ( doQuadJet_ ) { 
       hists.LLJJpTCuts.book   ( new TFileDirectory(fs->mkdir("LLJJpTCuts")), 
@@ -724,14 +730,14 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   theMETtype  = iConfig.getParameter<int>("METvariety") ; 
   rwLowPtbin  = iConfig.getParameter< std::vector<double> >("reweightPtLow") ; 
   rwHighPtbin = iConfig.getParameter< std::vector<double> >("reweightPtHigh") ; 
-  rwLoose     = iConfig.getParameter< std::vector<double> >("reweightLoose") ; 
+  // rwLoose     = iConfig.getParameter< std::vector<double> >("reweightLoose") ; 
   rwTight     = iConfig.getParameter< std::vector<double> >("reweightTight") ; 
 
   // Special check: Make sure all vectors are of the same size
   unsigned int vecsize = rwLowPtbin.size() ; 
   if ( ( doClosure_ || doQuadJet_ ) && 
        ( rwHighPtbin.size() != vecsize ||
- 	 rwLoose.size() != vecsize ||
+ 	 // rwLoose.size() != vecsize ||
  	 rwTight.size() != vecsize ) )
     throw cms::Exception( "Please ensure that all QCD reweighting vectors are equal size");
 
@@ -1066,14 +1072,13 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnu::getMuonList(pMuons,tevMuons,cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,applyMESfactor_) ; 
   std::vector< std::pair<pat::Jet,float> > jetCands = 
     hnu::getJetList(pJets,jecuObj_,cuts.minimum_dijet_pt,cuts.maximum_jet_abseta,0) ; 
-  if ( muCands.size() < 1 || jetCands.size() < 1 ) return false ; 
-
-
-
-
+  if ( muCands.size() < 1 || jetCands.size() < 1 ) return false ;
+  
   if ( calcSurvival_ ) { 
     HeavyNuEvent hnuDijet(HeavyNuEvent::QCD) ;  
     initializeHNE(hnuDijet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ; 
+    hists.NoCuts.fill( muCands.at(0),jetCands.at(0).first,pMET->at(0),!iEvent.isRealData(),
+                       cuts.muon_trackiso_limit ) ; 
 
     if ( findQCDmuon( muCands, pMuons, hnuDijet ) ) { 
       if ( findQCDjet( jetCands, pMuons, hnuDijet ) ) { 
@@ -1081,6 +1086,10 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  if ( (hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso()) > 10. ) {
 	    hists.dPhiCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
 				 cuts.muon_trackiso_limit ) ; 
+	  }
+	  if ( ((hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso())/hnuDijet.mu1.pt()) > 0.10 ) {
+	    hists.dPhi10pctCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                      cuts.muon_trackiso_limit ) ; 
 	  }
 	}
       }

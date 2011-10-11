@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.69 2011/10/07 22:38:48 pastika Exp $
+// $Id: HeavyNu.cc,v 1.70 2011/10/08 18:28:17 bdahmes Exp $
 //
 //
 
@@ -47,12 +47,16 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
+
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/Math/interface/Point3D.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -246,6 +250,8 @@ private:
     virtual TH1 *bookRunHisto(uint32_t runNumber);
 
     virtual void studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>& pTracks,
+                                       edm::Handle<reco::TrackCollection>& gTracks,
+                                       edm::Handle<reco::BeamSpot>& beamspot, 
                                        const HeavyNuEvent& hne,
                                        bool mu1tag, bool mu2tag);
     virtual void studyIsolation(const std::vector<pat::Muon>& muons,
@@ -1530,6 +1536,8 @@ TH1 * HeavyNu::bookRunHisto(uint32_t runNumber)
 // Input HNE may not have two valid muons.  
 // If one muon is tight then there is only one tag.  If both are tight, you have two tags
 void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>& pTracks,
+                                    edm::Handle<reco::TrackCollection>& gTracks,
+                                    edm::Handle<reco::BeamSpot>& beamspot, 
                                     const HeavyNuEvent& hne,
                                     bool mu1tag, bool mu2tag) {
 
@@ -1557,6 +1565,9 @@ void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>&
 
     pat::GenericParticleCollection trackCands = *(pTracks.product());
     std::sort(trackCands.begin(), trackCands.end(), hnu::pTcompare());
+
+    reco::TrackCollection generalTracks = *(gTracks.product()); 
+
     int nprobes = 0;
     for(unsigned int i = 0; i < trackCands.size(); i++) {
         double trkPt = trackCands.at(i).pt();
@@ -1564,6 +1575,18 @@ void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>&
         double trkPhi = trackCands.at(i).phi();
         if(trkPt <= cuts.minimum_mu2_pt) break; // Sorted collection, so quit once below
         if(fabs(trkEta) >= cuts.maximum_mu_abseta) continue;
+
+        // Calculate the isolation for the candidate probe
+        double trkSumPtIsoCone = 0. ; 
+        for (unsigned int j=0; j<generalTracks.size(); j++) {
+            reco::Track isoTrk = generalTracks.at(j) ; 
+            double dR = deltaR(isoTrk.eta(), isoTrk.phi(), trkEta, trkPhi);
+            if ( fabs(dR) > 0.3 || fabs(dR) < 0.01 ) continue ;
+            if ( fabs(isoTrk.dxy(beamspot->position())) > 0.1 ) continue ;
+            double dz = fabs( trackCands.at(i).vertex().Z() - isoTrk.vertex().Z() ) ;
+            if ( dz > 0.2 ) continue ;
+            trkSumPtIsoCone += isoTrk.pt() ;
+        }
 
         double m1t = (hne.mu1.p4() + trackCands.at(i).p4()).M();
         double m2t = ((hne.nMuons < 2)?(-1.):((hne.mu2.p4() + trackCands.at(i).p4()).M()));
@@ -1577,13 +1600,15 @@ void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>&
         bool mu1matchTrack = (fabs(dR1t) < 0.02) && (fabs(dPt1t) < 0.05) ; 
         bool mu2matchTrack = (hne.nMuons > 1 ) && (fabs(dR2t) < 0.02) && (fabs(dPt2t) < 0.05) ; 
 
+        bool isIsolated = ( (trkSumPtIsoCone/trkPt) < cuts.muon_trackiso_limit ) ;
+        
         // It is possible that only one muon is in the event.  In this case, we look
         // for a track/muon in the Z window and try to match it to our second muon.
         // Failure indicates an inefficiency.  If, on the other hand, the second muon
         // is our tag, we know the primary muon passes requirements (to get in HNE muon
         // must be tight, etc.) so it becomes a matter of finding the track/muon
         if(mu1tag && !mu1matchTrack ) { // primary muon is the tag
-            if(inZmassWindow(m1t)) { // compatible with Z mass
+            if(inZmassWindow(m1t) && isIsolated) { // compatible with Z mass, isolated
                 if(std::min(dRj1t, dRj2t) > cuts.minimum_muon_jet_dR) { // Valid probe
                     nprobes++;
                     if ( mu2matchTrack ) {
@@ -1592,6 +1617,7 @@ void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>&
                     } else { // Failure to find tight mu2 
                         pat::Muon trkMuon = hne.mu1 ; 
                         trkMuon.setP4( trackCands.at(i).p4() ) ;
+                        trkMuon.setTrackIso( trkSumPtIsoCone ) ; 
                         hneCopy.mu2 = trkMuon ; // HACK
                         hists.Mu1tagInZwin.fill(hneCopy,v_null) ;
                     }
@@ -1602,7 +1628,7 @@ void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>&
         // primary muon could be tight but not trigger matched
         // Note that it is still possible to miss a good muon...
         if ( mu2tag && !mu2matchTrack ) { 
-            if ( inZmassWindow(m2t) ) { // compatible with Z mass
+            if ( inZmassWindow(m2t) && isIsolated ) { // compatible with Z mass, isolated
                 if ( std::min(dRj1t,dRj2t) > cuts.minimum_muon_jet_dR ) { // Valid probe
                     nprobes++ ; 
                     if ( mu1matchTrack ) { 
@@ -1611,6 +1637,7 @@ void HeavyNu::studyMuonSelectionEff(edm::Handle<pat::GenericParticleCollection>&
                     } else { // Found a primary muon, but not matched to this track
                         pat::Muon trkMuon = hne.mu1 ; 
                         trkMuon.setP4( trackCands.at(i).p4() ) ;
+                        trkMuon.setTrackIso( trkSumPtIsoCone ) ; 
                         hneCopy.mu1 = trkMuon ; // HACK
                         hists.Mu2tagInZwin.fill(hneCopy,v_null) ;
                     }
@@ -1747,6 +1774,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::JetCollection> pJets;
     iEvent.getByLabel(jetTag_, pJets);
 
+    edm::Handle<reco::TrackCollection> gTracks ; 
+    iEvent.getByLabel("generalTracks", gTracks) ; 
+        
     edm::Handle<pat::GenericParticleCollection> pTracks;
     iEvent.getByLabel(trackTag_, pTracks);
 
@@ -2025,11 +2055,16 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if(studyMuonSelectionEff_)
     {
+
+        edm::Handle<reco::BeamSpot> beamSpotHandle;
+        if (!iEvent.getByLabel(InputTag("offlineBeamSpot"), beamSpotHandle))
+            throw cms::Exception("Trying to do efficiency studies, cannot find beam spot");
+        
         int nmuCands = 0;
         for(unsigned int i = 0; i < pMuons->size(); i++)
             if(pMuons->at(i).pt() > cuts.minimum_mu2_pt) nmuCands++;
         if(nmuCands <= 2)
-            studyMuonSelectionEff(pTracks, hnuEvent, mu1trig, mu2trig);
+            studyMuonSelectionEff(pTracks, gTracks, beamSpotHandle, hnuEvent, mu1trig, mu2trig);
         if(muCands.size() == 2)
             studyIsolation(muCands, jetCands, mu1trig, mu2trig, hnuEvent.eventWgt);
     }

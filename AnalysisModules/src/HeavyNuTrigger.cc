@@ -111,19 +111,19 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
   for (unsigned int i=0; i<muonTriggers_.size(); i++) 
     if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(muonTriggers_.at(i)) ; 
 
-  // std::cout << "Looking for trigger match for muon with pT " << m.pt() 
-  // 	    << " and eta " << m.eta() << std::endl ; 
+//   std::cout << "Looking for trigger match for muon with pT " << m.pt() 
+//    	    << " and eta " << m.eta() << std::endl ; 
 
   // muon trigger matching is only allowed within |eta|<2.1
   if ( matchingEnabled_ &&(fabs(m.eta()) < 2.1) ) {
     // PAT trigger information
-    edm::Handle< pat::TriggerEvent > triggerEvent;
+//     edm::Handle< pat::TriggerEvent > triggerEvent;
 
-    iEvent.getByLabel( trigEventTag_, triggerEvent );
-    if ( !triggerEvent.isValid() ) {
-      std::cerr << "triggerEvent not found " << std::endl;
-      return false;
-    }
+//     iEvent.getByLabel( trigEventTag_, triggerEvent );
+//     if ( !triggerEvent.isValid() ) {
+//       std::cerr << "triggerEvent not found " << std::endl;
+//       return false;
+//     }
 
     const pat::TriggerObjectStandAloneCollection muonMatchCollection = m.triggerObjectMatches();
     // std::cout << "Trigger object matches size: " << muonMatchCollection.size() << std::endl ; 
@@ -140,7 +140,7 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
 	if (hltPathMatch) break ; 
 	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
 	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
-	    // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
+            // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
 	    hltPathMatch = true ; 
 	    break ; 
 	  }
@@ -155,8 +155,8 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
 	double dpt  = 1.-(muonTrigger.pt()/m.pt());
 	double dphi = reco::deltaPhi( m.phi(),muonTrigger.phi() );
 	double deta = m.eta() - muonTrigger.eta();
-	// std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
-	// std::cout << "dR is " << sqrt(dr2) << std::endl ; 
+//         std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
+//         std::cout << "dR is " << sqrt(dr2) << std::endl ; 
 
 	if (thist) {	  
 	  thist->trigMatchPtCorrel->Fill( m.pt(),muonTrigger.pt() );

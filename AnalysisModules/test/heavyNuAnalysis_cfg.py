@@ -7,11 +7,11 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=True
+isMC=False
 isMCsignal=False
 Training=False
-isRun2011LoLumi=True
-isRun2011VeryHiLumi=False
+isRun2011LoLumi=False
+isRun2011VeryHiLumi=True
 isPileupMC=True
 isPFJets=True
 
@@ -50,7 +50,7 @@ if isData:
         print "===========> Flag is SET for 2011 LOW luminosity data <============"
         from HeavyNu.AnalysisModules.goodLumiList_160431_163869_Mu24_cfi import lumisToProcess
     else:
-        if isRun2011VeryHiLumi and checkTriggerMatch:
+        if isRun2011VeryHiLumi:
             print "===========> Flag is SET for 2011 HIGH luminosity data <============"
             from HeavyNu.AnalysisModules.goodLumiList_173236_Mu40eta2p1_cfi import lumisToProcess
         else:
@@ -109,7 +109,7 @@ if isPFJets:
                   jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
     else:
         usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
-                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L2Residual']))
+                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
     getattr(process,"pfNoPileUp"+postfix).enable   = True
@@ -277,7 +277,7 @@ if isMCsignal:
 	process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
 	process.hNuGenFilter.keepIds = cms.vint32(2,)
 
-process.hNu.studyMuSelectEff = cms.bool(False)
+process.hNu.studyMuSelectEff = cms.bool(True)
 process.hNu.studyScaleFactor = cms.bool(False)
 
 process.hNu.minMu2pt         = cms.double(30.)
@@ -321,7 +321,7 @@ else:
         if isPFJets:
             process.q += process.modifiedPF2PATSequence
         process.p += process.hNuMu24
-        process.p += process.hNuMu40
+        process.q += process.hNuMu40
     else:
         if isRun2011LoLumi:
             process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )

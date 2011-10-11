@@ -8,8 +8,7 @@ import FWCore.ParameterSet.Types as CfgTypes
 isMC=False
 isMCsignal=False
 Training=False
-isRun2011LoLumi=True
-isDijetStudy=True
+isRun2011LoLumi=False
 isPFJets=True
 
 isData=not isMC
@@ -36,15 +35,13 @@ process.source = cms.Source("PoolSource",
 )
 
 if isData:
-#    if isDijetStudy:
-    from HeavyNu.AnalysisModules.goodLumiList_160404_176309_JSON_cfi import lumisToProcess
-#    else:
-#        if isRun2011LoLumi:
-#            print "===========> Flag is SET for 2011 LOW luminosity data <============"
-#            from HeavyNu.AnalysisModules.goodLumiList_160431_163869_Mu24_cfi.py import lumisToProcess
-#        else:
-#            print "===========> Flag is SET for 2011 HIGH luminosity data <============"
-#            from HeavyNu.AnalysisModules. import lumisToProcess    
+#    from HeavyNu.AnalysisModules.goodLumiList_160404_176309_JSON_cfi import lumisToProcess
+    if isRun2011LoLumi:
+        print "===========> Flag is SET for 2011 LOW luminosity data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_160431_163869_Mu24_cfi import lumisToProcess
+    else:
+        print "===========> Flag is SET for 2011 HIGH luminosity data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_165088_Mu40_Mu40eta2p1_cfi import lumisToProcess    
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -212,7 +209,7 @@ process.TFileService = cms.Service("TFileService",
 
 process.hNuQCD = cms.EDFilter("MuJetBackground",
     trigMatchPset = cms.PSet(
-        trigEventTag = cms.InputTag( "" ),
+        trigEventTag = cms.InputTag( "patTriggerEvent" ),
         muonMatch    = cms.string( 'muonTriggerMatchHLTMuons' ),
         muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2','HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ),
         triggerPt    = cms.double( 40. ),
@@ -227,7 +224,7 @@ process.hNuQCD = cms.EDFilter("MuJetBackground",
     pileupEra         = cms.int32(20110),
     DoLog        = cms.bool( False ),
     isPFJets     = cms.bool( True ), 
-    muonTag      = cms.InputTag( 'selectedPatMuons' ),
+    muonTag      = cms.InputTag( 'selectedPatMuonsTriggerMatch' ),
     jetTag       = cms.InputTag( 'selectedPatJetsPFlow' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
     photonTag    = cms.InputTag( 'selectedPatPhotons' ),
@@ -260,19 +257,13 @@ process.hNuQCD = cms.EDFilter("MuJetBackground",
     multi5x5SCs = cms.InputTag( 'correctedMulti5x5SuperClustersWithPreshower' ),
     minimumSuperClusterEt = cms.double(10.0), 
 
-    getSurvivalRate = cms.bool(True),    
+    getSurvivalRate = cms.bool(False),    
     doClosureTest   = cms.bool(False),    
-    doQuadJetTest   = cms.bool(False),    
-    #--- New results from 42x re-reco 2010 (36/pb) data ---#
-    # reweightPtLow  = cms.vdouble( 20,25,30,40,60,100 ),
-    # reweightPtHigh = cms.vdouble( 25,30,40,60,100,1000 ),
-    # reweightLoose  = cms.vdouble( 0.0493001,0.0512686,0.0625999,0.0822622,0.159119,0.273381 ),
-    # reweightTight  = cms.vdouble( 0.0609952,0.0597178,0.0608489,0.062275,0.0955056,0.157895 ),
-    #--- New results from 42x re-reco 2011 (204/pb) data ---#
-    reweightPtLow  = cms.vdouble( 30,40,60,100 ),
-    reweightPtHigh = cms.vdouble( 40,60,100,1000 ),
-    reweightLoose  = cms.vdouble( 0.0652302,0.0854414,0.147673,0.311429 ),
-    reweightTight  = cms.vdouble( 0.0656517,0.0671176,0.0775541,0.177215 ),
+    doQuadJetTest   = cms.bool(True),    
+    #--- New results from 2/fb 2011 data ---#
+    reweightPtLow  = cms.vdouble( 30,40,50,60,80,100,200 ),
+    reweightPtHigh = cms.vdouble( 40,50,60,80,100,200,1000 ),
+    reweightTight  = cms.vdouble( 0.0629483,0.0654695,0.0708795,0.0787387,0.0953354,0.133404,0.433735 ),
 
     minimumMuJetdPhi = cms.double(2.8274334),
     minimumJetPtForDijets = cms.double(10.),
@@ -280,6 +271,12 @@ process.hNuQCD = cms.EDFilter("MuJetBackground",
     # Take PF MET 
     METvariety = cms.int32(2) 
 )
+if isRun2011LoLumi:
+    process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
+    process.hNuQCD.trigMatchPset.triggerPt = cms.double( 24. )
+else:
+    process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+    process.hNuQCD.trigMatchPset.triggerPt = cms.double( 40. )
 
 # process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 
