@@ -279,6 +279,10 @@ if isMCsignal:
 
 process.hNu.studyMuSelectEff = cms.bool(True)
 process.hNu.studyScaleFactor = cms.bool(False)
+#--- Values below zero disable the vertex requirement ---#
+process.hNu.maxVertexZsepCM = cms.double(-1)
+process.hNu.maxJetVZsepCM   = cms.double(-1)
+
 
 process.hNu.minMu2pt         = cms.double(30.)
 process.hNu.pileupEra        = cms.int32(20110)

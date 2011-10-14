@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.11 2011/08/24 13:53:51 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.12 2011/09/01 13:46:11 bdahmes Exp $
 //
 //
 
@@ -1407,13 +1407,6 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.eventWgt *= mu1wgt ; 
   }
 
-  // 
-  // Impose vertex requirement here 
-  //
-  if( (fabs(hnuEvent.mu1.vertex().Z()-
-	    hnuEvent.e1.vertex().Z()) >= cuts.maxVertexZsep) )
-    return false;
-
   hnuEvent.met1 = pMET->at(0);
 
   hnuEvent.regularize(); // assign internal standards
@@ -1447,9 +1440,10 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   float deltaVzJ1E1 = fabs(hnuEvent.tjV1-hnuEvent.e1.vertex().Z());
   float deltaVzJ2M1 = fabs(hnuEvent.tjV2-hnuEvent.mu1.vertex().Z());
   float deltaVzM1E1 = fabs(hnuEvent.mu1.vertex().Z()-hnuEvent.e1.vertex().Z());
-  if ((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
-      (deltaVzJ2E1 >= cuts.maxJetVZsepCM) || (deltaVzJ1E1 >= cuts.maxJetVZsepCM) ||
-      (deltaVzJ2M1 >= cuts.maxJetVZsepCM) || (deltaVzM1E1 >= cuts.maxVertexZsep) ) 
+  if ((cuts.maxJetVZsepCM > 0 && cuts.maxVertexZsep > 0) && 
+      ((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
+       (deltaVzJ2E1 >= cuts.maxJetVZsepCM) || (deltaVzJ1E1 >= cuts.maxJetVZsepCM) ||
+       (deltaVzJ2M1 >= cuts.maxJetVZsepCM) || (deltaVzM1E1 >= cuts.maxVertexZsep)) ) 
     return false ; 
   hists.VertexCuts.fill( hnuEvent,v_null );
 

@@ -204,6 +204,9 @@ process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 process.hNuTop.minMu2pt         = cms.double(30.)
 process.hNuTop.studyScaleFactor = cms.bool(False)
 process.hNuTop.jetTag           = cms.InputTag( 'selectedPatJetsPFlow' )
+#--- Values below zero disable the vertex requirement ---#
+process.hNuTop.maxVertexZsepCM     = cms.double(-1)
+process.hNuTop.maxVertexJetVZsepCM = cms.double(-1)
 if isData:
     process.hNuTop.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
 

@@ -10,6 +10,9 @@ isMCsignal=False
 Training=False
 isRun2011LoLumi=False
 isPFJets=True
+doDijet=False
+doQuadjet=False
+doClosure=False
 
 isData=not isMC
 
@@ -148,27 +151,11 @@ if isData:
     removeMCMatchingPF2PAT( process, '' )
     removeMCMatching(process, ['All'], outputInProcess = False)
 
-########################################
-# PAT Jet Energy Corrections - MC vs Data
-########################################
-# 
-
-# from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
-# if isMC:
-#     switchJetCollection( process,
-#                          jetCollection=cms.InputTag('ak5CaloJets'),
-#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
-# else:
-#     switchJetCollection( process,
-#                          jetCollection=cms.InputTag('ak5CaloJets'),
-#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
 process.patJetCorrFactors.useRho = cms.bool(False)
 
 ########################################
 # PAT Trigger matching
 ########################################
-# imported directly from PhysicsTools/PatExamples/test/analyzePatTrigger_onTheFly_cfg.py
-#
 process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 
 ### ============
@@ -224,33 +211,24 @@ process.hNuQCD = cms.EDFilter("MuJetBackground",
     pileupEra         = cms.int32(20110),
     DoLog        = cms.bool( False ),
     isPFJets     = cms.bool( True ), 
-    muonTag      = cms.InputTag( 'selectedPatMuonsTriggerMatch' ),
-    jetTag       = cms.InputTag( 'selectedPatJetsPFlow' ),
+    muonTag      = cms.InputTag( 'selectedPatMuons' ),
+    jetTag       = cms.InputTag( 'selectedPatJets' ),
+    jptTag       = cms.InputTag( 'JetPlusTrackZSPCorJetAntiKt5' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
     photonTag    = cms.InputTag( 'selectedPatPhotons' ),
-    BtagName     = cms.string('jetProbabilityBJetTags'),
     minMu1pt     = cms.double(60.),
     minMu2pt     = cms.double(30.),
     minJetPt     = cms.double(40),
     maxMuAbsEta  = cms.double(2.4),
     maxJetAbsEta = cms.double(2.5),
     minMuMuMass  = cms.double(200),
-    min4objMass  = cms.double(520),
     minMuonJetdR = cms.double(0.5), 
-    
-    # muonTrackIsoLimitGeV  = cms.double(10.0),
-    muonTrackIsoLimitGeV  = cms.double(0.10),
-    dimuonMaxVertexZsepCM = cms.double(0.03),
-    maxJetVZsepCM         = cms.double(0.1),
 
-    ZmassWinMinGeV= cms.double(84.),
-    ZmassWinMaxGeV= cms.double(98.),
-
-    applyJECUsign  = cms.int32(0),
-    applyMESfactor = cms.double(1.0),
-
-    isSignal     = cms.bool(False),
-    mNuRnormalization = cms.double(1000.0), 
+    muonTrackRelIsoLimit = cms.double(0.10),
+    #--- Values below zero disable the vertex requirement ---#
+    #--- Nominal values: 0.03 for muons, 0.10 for jets, jet/muon ---#
+    dimuonMaxVertexZsepCM = cms.double(-1.),
+    maxJetVZsepCM         = cms.double(-1),
 
     #--- Specific variables added for INR QCD cross-check ---#
     hybridSCs   = cms.InputTag( 'correctedHybridSuperClusters' ),
@@ -259,18 +237,26 @@ process.hNuQCD = cms.EDFilter("MuJetBackground",
 
     getSurvivalRate = cms.bool(False),    
     doClosureTest   = cms.bool(False),    
-    doQuadJetTest   = cms.bool(True),    
+    doQuadJetTest   = cms.bool(False),    
     #--- New results from 2/fb 2011 data ---#
     reweightPtLow  = cms.vdouble( 30,40,50,60,80,100,200 ),
     reweightPtHigh = cms.vdouble( 40,50,60,80,100,200,1000 ),
     reweightTight  = cms.vdouble( 0.0629483,0.0654695,0.0708795,0.0787387,0.0953354,0.133404,0.433735 ),
 
     minimumMuJetdPhi = cms.double(2.8274334),
-    minimumJetPtForDijets = cms.double(10.),
+    minimumJetPtForDijets = cms.double(20.),
     minimumDeltaRforExtraJets = cms.double(0.7),
     # Take PF MET 
     METvariety = cms.int32(2) 
 )
+
+process.hNuQCD.getSurvivalRate = cms.bool( doDijet )
+process.hNuQCD.doQuadJetTest   = cms.bool( doQuadjet )
+process.hNuQCD.doClosureTest   = cms.bool( doClosure )
+process.hNuQCD.isPFJets = cms.bool( isPFJets )
+if isPFJets:
+    process.hNuQCD.jetTag  = cms.InputTag( 'selectedPatJetsPFlow' )
+
 if isRun2011LoLumi:
     process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
     process.hNuQCD.trigMatchPset.triggerPt = cms.double( 24. )
@@ -281,6 +267,7 @@ else:
 # process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 
 if isData:
+    process.hNuQCD.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
     # turn on trigger match requirement
     process.hNuQCD.trigMatchPset.trigEventTag=cms.InputTag("patTriggerEvent")
     process.hNuQCD.trigMatchPset.muonMatch=cms.string('muonTriggerMatchHLTMuons')
@@ -288,9 +275,6 @@ else:
     # turn on MC trigger simulation
     process.hNuQCD.trigMatchPset.randomSeed=cms.int32(os.getpid())
 
-if Training:
-    process.hNuQCD.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
-    
 if isMCsignal:
     process.hNuQCD.isSignal = cms.bool(True)
 

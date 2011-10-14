@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.71 2011/10/11 23:17:18 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.72 2011/10/12 23:00:07 bdahmes Exp $
 //
 //
 
@@ -2140,10 +2140,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.j1scale = jetCands.at(0).second;
     hnuEvent.j2scale = jetCands.at(1).second;
 
-    hnuEvent.tjV1 = hnu::avgVertex(hnuEvent.j1, 1.0);
-    //caloJetVertex(hnuEvent.j1, *jptJets);
-    hnuEvent.tjV2 = hnu::avgVertex(hnuEvent.j2, 1.0);
-    //hnu::caloJetVertex(hnuEvent.j2, *jptJets);
+    hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
+    hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
 
 
     // for (unsigned int i=0; i<muCands.size(); i++) { 
@@ -2287,12 +2285,13 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     float deltaVzJ2M2 = fabs(hnuEvent.tjV2 - hnuEvent.mu2.vertex().Z());
     float deltaVzJ1M2 = fabs(hnuEvent.tjV1 - hnuEvent.mu2.vertex().Z());
     float deltaVzJ2M1 = fabs(hnuEvent.tjV2 - hnuEvent.mu1.vertex().Z());
-    if((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
-            (deltaVzJ2M2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M2 >= cuts.maxJetVZsepCM) ||
-            (deltaVzJ2M1 >= cuts.maxJetVZsepCM))
+    if( (cuts.maxJetVZsepCM > 0) && 
+        ((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
+         (deltaVzJ2M2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M2 >= cuts.maxJetVZsepCM) ||
+         (deltaVzJ2M1 >= cuts.maxJetVZsepCM)) )
         return false;
     float deltaVzM1M2 = fabs(hnuEvent.mu1.vertex().Z() - hnuEvent.mu2.vertex().Z());
-    if(deltaVzM1M2 >= cuts.maxVertexZsep) return false;
+    if(cuts.maxVertexZsep > 0 && deltaVzM1M2 >= cuts.maxVertexZsep) return false;
 
     hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Event meets vertex requirements
     hists.VertexCuts.fill(hnuEvent, nnif_->masspts());
