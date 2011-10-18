@@ -285,6 +285,7 @@ process.hNu.maxJetVZsepCM   = cms.double(-1)
 
 
 process.hNu.minMu2pt         = cms.double(30.)
+#--- Pileup corrections ---#
 process.hNu.pileupEra        = cms.int32(20110)
 #--- For now, we do not know if any muon ID correction is necessary ---#
 process.hNu.applyMuIDEffcorr = cms.bool(False)

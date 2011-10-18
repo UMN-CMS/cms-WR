@@ -7,7 +7,13 @@ HeavyNuEvent::HeavyNuEvent(anal_type theMode) {
   cutlevel = -1 ; 
   nMuons = 0 ; 
   nJets = 0 ; 
-  nElectrons = 0 ; 
+  nElectrons = 0 ;
+
+  // Protection: set all scale factors to 1 by default
+  j1scale = 1.0 ;
+  j2scale = 1.0 ;
+  MuScale = 1.0 ;
+  ElecScale = 1.0 ; 
 }
 
 // Fills the HNE object with relevant information

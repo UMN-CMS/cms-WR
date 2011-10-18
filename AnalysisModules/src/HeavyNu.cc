@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.72 2011/10/12 23:00:07 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.73 2011/10/14 23:01:07 bdahmes Exp $
 //
 //
 
@@ -2226,11 +2226,16 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             std::vector<bool> isTrigMuon ; // Muon can only be a tag if it is both tight AND trigger matched
             int nTrigs = 0 ; 
             for (unsigned int i=0; i<muCands.size(); i++) {
-                bool isTrig = trig_->isTriggerMatched(muCands.at(i), iEvent) ;
+                bool isTrig = true ; // Default true for MC, as trigger "matching" is random
+                // Overwrite trigger decision for data with the REAL decision
+                if ( trig_->matchingEnabled() && iEvent.isRealData() )
+                    isTrig = trig_->isTriggerMatched(muCands.at(i), iEvent) ;
                 if ( isTrig ) nTrigs++ ; 
                 isTrigMuon.push_back( isTrig ) ;
             }
-            if ( nTrigs > 0 ) studyMuonSelectionEff( muCands,validJets,pTracks, gTracks, beamSpotHandle, isTrigMuon, hnuEvent.eventWgt);
+            if ( nTrigs > 0 ) {
+                studyMuonSelectionEff( muCands,validJets,pTracks, gTracks, beamSpotHandle, isTrigMuon, hnuEvent.eventWgt);
+            }
         }
         if (muCands.size() == 2)
             studyIsolation(muCands, jetCands, mu1trig, mu2trig, hnuEvent.eventWgt);

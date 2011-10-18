@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.12 2011/09/01 13:46:11 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.13 2011/10/14 23:01:07 bdahmes Exp $
 //
 //
 
@@ -1376,9 +1376,14 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     double dRej = deltaR(iJ.eta(), iJ.phi(), hnuEvent.e1.eta(), hnuEvent.e1.phi()) ; 
     if (dRej > cuts.minimum_lep_jet_dR) { 
       hnuEvent.nJets++ ; 
-      if      ( hnuEvent.nJets == 1 ) hnuEvent.j1 = iJ ; 
-      else if ( hnuEvent.nJets == 2 ) hnuEvent.j2 = iJ ; 
-      else    std::cout << "WARNING: Expected empty jet position" << std::endl ; 
+      if ( hnuEvent.nJets == 1 ) {
+        hnuEvent.j1 = iJ ;
+        hnuEvent.j1scale = 1.0 ; // No jet corrections are applied for Top!
+      } else if ( hnuEvent.nJets == 2 ) {
+        hnuEvent.j2 = iJ ;
+        hnuEvent.j2scale = 1.0 ; 
+      } else
+        std::cout << "WARNING: Expected empty jet position" << std::endl ; 
     }
   }
   if ( hnuEvent.nJets < 2 ) return false ; 
