@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.15 2011/10/13 14:34:55 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.16 2011/10/14 23:01:07 bdahmes Exp $
 //
 //
 
@@ -121,7 +121,7 @@ private:
 		     edm::Handle<reco::VertexCollection>& pvHandle, bool isMC, bool isPF) ; 
 
   virtual bool selectJets        ( std::vector< std::pair<pat::Jet,float> >& jets,
-				   HeavyNuEvent& hne );
+				   HeavyNuEvent& hne, int minNjets=2 );
   virtual void selectMuonsInJets ( std::vector<pat::Muon>& muons,
 				   std::vector< std::pair<pat::Jet,float> >& jets,
 				   HeavyNuEvent& hne );
@@ -218,6 +218,11 @@ private:
     HistPerDef Mu1HighPtCut;
     HistPerDef diLmassCut;
 
+    // Closure test using two muons --> run automatically with quadjet
+    HistPerDef mmJClosure; 
+    HistPerDef mMuJClosure;
+
+    // Closure test using one muon
     HistPerDef LJJJClosure; 
     HistPerDef L2JClosure;
   } hists;
@@ -276,7 +281,6 @@ MuJetBackground::HistPerDef::book(TFileDirectory *td,
 				  const std::string& post,
 				  const std::vector<hNuMassHypothesis>& v_masspts )
 {
-  // std::cout << "Beginning booking: " << post << std::endl ; 
   std::string t; // histogram title string;
   
   TH1::SetDefaultSumw2();
@@ -350,8 +354,6 @@ void MuJetBackground::HistPerDef::fill(pat::Muon& theMuon,
 				       bool isMC,
 				       double trkIsoLimit)
 {  
-  // std::cout << "Begin fill" << std::endl ; 
-
   // Muons 
   ptMu1->Fill(theMuon.pt()) ; 
   etaMu1->Fill(theMuon.eta()) ; 
@@ -383,7 +385,6 @@ void MuJetBackground::HistPerDef::fill(pat::Muon& theMuon,
         }
     }
   }
-  // std::cout << "end fill" << std::endl ; 
 }// end of fill()
 
 //======================================================================
@@ -393,15 +394,13 @@ MuJetBackground::HistPerDef::fill(const HeavyNuEvent& hne, double w1, double w2)
 {
   double weight = w1 * w2 ; 
 
-  // std::cout << "fill called with weights " << w1 << " and " << w2 << std::endl ; 
-  
   // Muons 
-  if (hne.nMuons > 0) { 
+  if (hne.nMuons > 0) {
     ptMu1->Fill(hne.mu1.pt(),hne.eventWgt) ;     
     etaMu1->Fill(hne.mu1.eta(),hne.eventWgt) ; 
     phiMu1->Fill(hne.mu1.phi(),hne.eventWgt) ; 
 
-    if (hne.nMuons > 1 ) { 
+    if (hne.nMuons > 1 ) {  
       ptMu2->Fill(hne.mu2.pt(),hne.eventWgt) ; 
       etaMu2->Fill(hne.mu2.eta(),hne.eventWgt) ; 
       phiMu2->Fill(hne.mu2.phi(),hne.eventWgt) ; 
@@ -410,7 +409,6 @@ MuJetBackground::HistPerDef::fill(const HeavyNuEvent& hne, double w1, double w2)
   
   // Jets 
   if (hne.nJets > 0) {
-
     ptJet1->Fill(hne.j1.pt(),hne.eventWgt) ; 
     etaJet1->Fill(hne.j1.eta(),hne.eventWgt) ; 
     phiJet1->Fill(hne.j1.phi(),hne.eventWgt) ; 
@@ -510,6 +508,10 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
                               "(passes mu1 pT rqmt)", v_null );
     hists.diLmassCut.book   ( new TFileDirectory(fs->mkdir("diLmassCuts")), 
                               "(passes mumu mass cut)", v_null );
+    hists.mmJClosure.book   ( new TFileDirectory(fs->mkdir("mmJClosure")), 
+                              "(3 jets, with 2 muons in jets)", v_null );
+    hists.mMuJClosure.book  ( new TFileDirectory(fs->mkdir("mMuJClosure")), 
+                              "(2 jets, with one tight muon in jet, one muon)", v_null );
   }
   if ( doClosure_ ) { 
     hists.LJJJClosure.book ( new TFileDirectory(fs->mkdir("LJJJClosure")), 
@@ -600,8 +602,6 @@ MuJetBackground::~MuJetBackground()
 TH1 *
 MuJetBackground::bookRunHisto(uint32_t runNumber)
 {
-  // std::cout << "Begin run book" << std::endl ; 
-
   std::string runstr = int2str<uint32_t>(runNumber);
   return hists.rundir->make <TH1I> (runstr.c_str(), runstr.c_str(),1,1,2);
 }
@@ -610,7 +610,7 @@ MuJetBackground::bookRunHisto(uint32_t runNumber)
 
 bool 
 MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> >& jets,
-			    HeavyNuEvent& hne) {
+			    HeavyNuEvent& hne, int minNjets) {
   for (unsigned int i=0; i<jets.size(); i++) { 
     if ( hne.nJets == 2 ) break ; 
     pat::Jet iJ = jets.at(i).first ;
@@ -772,8 +772,6 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   applyMuIDCorrections_ = !iEvent.isRealData();
 
-  // std::cout << "Test 0" << std::endl ; 
-
   if (iEvent.isRealData())
   {
     uint32_t runn = iEvent.id().run();
@@ -786,7 +784,6 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       runh = it->second;
     runh->Fill(1);
   }
-  // std::cout << "Test 0" << std::endl ; 
 
   edm::Handle<pat::MuonCollection> pMuons ; 
   iEvent.getByLabel(muonTag_,pMuons) ; 
@@ -990,6 +987,143 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
           }
         }
       }
+      // Closure test using two muons, not one
+      if ( muCands.size() >= 2 ) { 
+        if ( jetCands.size() >= 3 ) {
+          HeavyNuEvent mmjet(HeavyNuEvent::QCD) ;
+          initializeHNE(mmjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ; 
+          selectMuonsInJets( muCands,jetCands,mmjet ) ; 
+          if ( mmjet.nMuons >= 2 ) {  
+            if ( selectJets( jetCands,mmjet,1 ) ) {
+              if ( mmjet.nJets < 2 ) mmjet.j2 = mmjet.j1 ; 
+              if ( hnu::jetID(mmjet.j1) > 0 ) { 
+                if (iEvent.isRealData()) {
+                  std::cout << "\t" << iEvent.id() << std::endl;
+                  std::cout << "\tM(mumu) = " << mmjet.mMuMu << " GeV";
+                  std::cout << "\tJets:   j1 ";
+                  std::cout << "pt=" << mmjet.j1.pt() << " GeV, eta=" << mmjet.j1.eta() << ", phi=" << mmjet.j1.phi();
+                  std::cout << std::endl;
+                  std::cout << "\tMuons: mu1 ";
+                  std::cout << "pt=" << mmjet.mu1.pt() << " GeV, eta=" << mmjet.mu1.eta() << ", phi=" << mmjet.mu1.phi();
+                  std::cout << ", mu2 ";
+                  std::cout << "pt=" << mmjet.mu2.pt() << " GeV, eta=" << mmjet.mu2.eta() << ", phi=" << mmjet.mu2.phi();
+                  std::cout << std::endl;
+                }
+                mmjet.tjV1 = hnu::caloJetVertex(mmjet.j1, *jptJets);
+                
+                mmjet.scaleMuE() ; 
+                mmjet.regularize();
+                mmjet.calculate() ;
+                
+                double mu1scaleFactor, mu2scaleFactor ; 
+                mu1scaleFactor = qcdScaleFactor(mmjet.mu1.pt(),
+                                                rwLowPtbin,rwHighPtbin,rwTight) ; 
+                mu2scaleFactor = qcdScaleFactor(mmjet.mu2.pt(),
+                                                rwLowPtbin,rwHighPtbin,rwTight) ; 
+                
+                bool mu1trig = false ; bool mu2trig = false ;
+                if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
+                  mu1trig = trig_->isTriggerMatched( mmjet.mu1, iEvent) ; 
+                  mu2trig = trig_->isTriggerMatched( mmjet.mu2, iEvent) ; 
+                } else if ( !iEvent.isRealData() ) {
+                  mu1trig = trig_->simulateForMC( mmjet.mu1.pt(),mmjet.mu1.eta(),0 );
+                  mu2trig = trig_->simulateForMC( mmjet.mu2.pt(),mmjet.mu2.eta(),0 );
+                }
+                if ( mu1trig || mu2trig ) {
+                  //--- Impose vertex requirement here ---//
+                  float deltaVzJ1M1 = fabs(mmjet.tjV1-mmjet.mu1.vertex().Z());
+                  float deltaVzJ1M2 = fabs(mmjet.tjV1-mmjet.mu2.vertex().Z());
+                  float deltaVzM1M2 = fabs(mmjet.mu1.vertex().Z()-mmjet.mu2.vertex().Z());
+                  if ( (cuts.maxJetVZsepCM < 0 || cuts.maxVertexZsep < 0) || 
+                       ((deltaVzJ1M1 < cuts.maxJetVZsepCM) && (deltaVzJ1M2 < cuts.maxJetVZsepCM) &&
+                        (deltaVzM1M2 < cuts.maxVertexZsep)) ) {
+                    if ( mmjet.mu1.pt() > cuts.minimum_mu1_pt ) {
+                      hists.mmJClosure.fill( mmjet,mu1scaleFactor,mu2scaleFactor ) ;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if ( jetCands.size() >= 2 ) {
+          HeavyNuEvent mMjet(HeavyNuEvent::QCD) ;
+          initializeHNE(mMjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ; 
+          selectMuonsInJets( muCands,jetCands,mMjet ) ; 
+          if ( mMjet.nMuons == 1 ) {  
+            if ( selectJets( jetCands,mMjet,1 ) ) {
+              if ( mMjet.nJets < 2 ) mMjet.j2 = mMjet.j1 ;
+              for (unsigned int i=0; i<muCands.size(); i++) { 
+                if ( mMjet.nMuons == 2 ) break ; 
+                pat::Muon iM = muCands.at(i) ; 
+                if ( hnu::muIsolation(iM,1.0) < cuts.muon_trackiso_limit ) {
+                  double dRmM = deltaR(iM.eta(), iM.phi(), mMjet.mu1.eta(), mMjet.mu1.phi()) ;
+                  if ( dRmM < 0.02 ) continue ; // Do not want the mu-in-jet
+                  double dRjM = deltaR(iM.eta(), iM.phi(), mMjet.j1.eta(), mMjet.j1.phi()) ; 
+                  if (dRjM > cuts.minimum_muon_jet_dR ) { 
+                    if ( mMjet.nMuons == 2 ) std::cout << "WARNING: Expected empty muon position" << std::endl ;
+                    else { 
+                      mMjet.nMuons++ ;
+                      std::cout << "Found an isolated muon: pT " << iM.pt()
+                                << ", eta " << iM.eta() << ", phi " << iM.phi() << std::endl ;
+                      mMjet.mu2 = iM ; // Note that the mu-in-jet will ALWAYS be in position 1
+                      if ( applyMuIDCorrections_ )
+                        mMjet.eventWgt *= muid_->weightForMC(mMjet.mu1.pt(),0) ;
+                    }
+                  }
+                }
+              }
+              if ( mMjet.nMuons == 2 ) {
+                if ( hnu::jetID(mMjet.j1) > 0 ) { 
+                  if (iEvent.isRealData()) {
+                    std::cout << "\t" << iEvent.id() << std::endl;
+                    std::cout << "\tM(mumu) = " << mMjet.mMuMu << " GeV";
+                    std::cout << "\tJets:   j1 ";
+                    std::cout << "pt=" << mMjet.j1.pt() << " GeV, eta=" << mMjet.j1.eta() << ", phi=" << mMjet.j1.phi();
+                    std::cout << std::endl;
+                    std::cout << "\tMuons: mu-in-jet ";
+                    std::cout << "pt=" << mMjet.mu1.pt() << " GeV, eta=" << mMjet.mu1.eta() << ", phi=" << mMjet.mu1.phi();
+                    std::cout << ", Muon ";
+                    std::cout << "pt=" << mMjet.mu2.pt() << " GeV, eta=" << mMjet.mu2.eta() << ", phi=" << mMjet.mu2.phi();
+                    std::cout << std::endl;
+                  }
+                  mMjet.tjV1 = hnu::caloJetVertex(mMjet.j1, *jptJets);
+                
+                  mMjet.scaleMuE() ; 
+                  mMjet.regularize();
+                  mMjet.calculate() ;
+                  
+                  double mu1scaleFactor ; 
+                  mu1scaleFactor = qcdScaleFactor(mMjet.mu1.pt(),
+                                                  rwLowPtbin,rwHighPtbin,rwTight) ; 
+                
+                  bool mu1trig = false ; bool mu2trig = false ;
+                  if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
+                    mu1trig = trig_->isTriggerMatched( mMjet.mu1, iEvent) ; 
+                    mu2trig = trig_->isTriggerMatched( mMjet.mu2, iEvent) ; 
+                  } else if ( !iEvent.isRealData() ) {
+                      mu1trig = trig_->simulateForMC( mMjet.mu1.pt(),mMjet.mu1.eta(),0 );
+                      mu2trig = trig_->simulateForMC( mMjet.mu2.pt(),mMjet.mu2.eta(),0 );
+                  }
+                  if ( mu1trig || mu2trig ) {
+                    //--- Impose vertex requirement here ---//
+                    float deltaVzJ1M1 = fabs(mMjet.tjV1-mMjet.mu1.vertex().Z());
+                    float deltaVzJ1M2 = fabs(mMjet.tjV1-mMjet.mu2.vertex().Z());
+                    float deltaVzM1M2 = fabs(mMjet.mu1.vertex().Z()-mMjet.mu2.vertex().Z());
+                    if ( (cuts.maxJetVZsepCM < 0 || cuts.maxVertexZsep < 0) || 
+                         ((deltaVzJ1M1 < cuts.maxJetVZsepCM) && (deltaVzJ1M2 < cuts.maxJetVZsepCM) &&
+                          (deltaVzM1M2 < cuts.maxVertexZsep)) ) {
+                      if ( mMjet.mu1.pt() > cuts.minimum_mu1_pt || mMjet.mu2.pt() > cuts.minimum_mu1_pt ) {
+                        hists.mMuJClosure.fill( mMjet,mu1scaleFactor ) ;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } 
+        }
+      }
     }
   }
 
@@ -1031,11 +1165,6 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 float deltaVzJ1J2 = fabs(hnuClosure3jet1muon.tjV1-hnuClosure3jet1muon.tjV2);
                 float deltaVzJ1M1 = fabs(hnuClosure3jet1muon.tjV1-hnuClosure3jet1muon.mu1.vertex().Z());
                 float deltaVzJ2M1 = fabs(hnuClosure3jet1muon.tjV2-hnuClosure3jet1muon.mu1.vertex().Z());
-//                 std::cout << "Vertex information: " << cuts.maxJetVZsepCM << " --> " ;
-//                 std::cout << deltaVzJ1J2 << (( deltaVzJ1J2 < cuts.maxJetVZsepCM ) ? "(y) " : "(n) ") ; 
-//                 std::cout << deltaVzJ1M1 << (( deltaVzJ1M1 < cuts.maxJetVZsepCM ) ? "(y) " : "(n) ") ; 
-//                 std::cout << deltaVzJ2M1 << (( deltaVzJ2M1 < cuts.maxJetVZsepCM ) ? "(y)" : "(n)") ;
-//                 std::cout << std::endl ; 
                 if ( (cuts.maxJetVZsepCM < 0) ||
                      ((deltaVzJ1J2 < cuts.maxJetVZsepCM) && (deltaVzJ1M1 < cuts.maxJetVZsepCM) &&
                       (deltaVzJ2M1 < cuts.maxJetVZsepCM)) ) { 
@@ -1119,11 +1248,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
               float deltaVzJ1J2 = fabs(hnuClosure2jet1muon.tjV1-hnuClosure2jet1muon.tjV2);
               float deltaVzJ1M1 = fabs(hnuClosure2jet1muon.tjV1-hnuClosure2jet1muon.mu1.vertex().Z());
               float deltaVzJ2M1 = fabs(hnuClosure2jet1muon.tjV2-hnuClosure2jet1muon.mu1.vertex().Z());
-//               std::cout << "Vertex information: " << cuts.maxJetVZsepCM << " --> " ;
-//               std::cout << deltaVzJ1J2 << (( deltaVzJ1J2 < cuts.maxJetVZsepCM ) ? "(y) " : "(n) ") ; 
-//               std::cout << deltaVzJ1M1 << (( deltaVzJ1M1 < cuts.maxJetVZsepCM ) ? "(y) " : "(n) ") ; 
-//               std::cout << deltaVzJ2M1 << (( deltaVzJ2M1 < cuts.maxJetVZsepCM ) ? "(y)" : "(n)") ;
-//               std::cout << std::endl ; 
+
               if ( (cuts.maxJetVZsepCM < 0) ||
                    ((deltaVzJ1J2 < cuts.maxJetVZsepCM) && (deltaVzJ1M1 < cuts.maxJetVZsepCM) &&
                     (deltaVzJ2M1 < cuts.maxJetVZsepCM)) ) { 
@@ -1154,10 +1279,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void 
 MuJetBackground::beginJob() {
-  // std::cout << "Beginning the job" << std::endl ; 
-  // nnif_->beginJob();
   firstEvent_ = true;
-  // std::cout << "leaving beginJob" << std::endl ; 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

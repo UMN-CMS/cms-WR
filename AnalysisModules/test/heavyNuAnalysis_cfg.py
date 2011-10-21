@@ -274,8 +274,9 @@ process.TFileService = cms.Service("TFileService",
 
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 if isMCsignal:
-	process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
-	process.hNuGenFilter.keepIds = cms.vint32(2,)
+    process.hNu.isSignal = cms.bool(True)
+    process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
+    process.hNuGenFilter.keepIds = cms.vint32(2,)
 
 process.hNu.studyMuSelectEff = cms.bool(True)
 process.hNu.studyScaleFactor = cms.bool(False)
@@ -316,8 +317,14 @@ process.hNuMu24.trigMatchPset.triggerPt = cms.double( 24. )
 process.hNuMu40.trigMatchPset.triggerPt = cms.double( 40. )
     
 if isMCsignal:
-    process.hNu.isSignal = cms.bool(True)
-    process.p += process.hNuGenFilter*process.hNu
+    process.q = cms.Path(
+        process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+    )
+    if isPFJets:
+        process.q += process.modifiedPF2PATSequence
+
+    process.p += process.hNuGenFilter*process.hNuMu24
+    process.q += process.hNuGenFilter*process.hNuMu40
 else:
     if isMC: 
         process.q = cms.Path(

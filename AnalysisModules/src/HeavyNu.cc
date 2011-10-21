@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.73 2011/10/14 23:01:07 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.74 2011/10/18 16:56:50 bdahmes Exp $
 //
 //
 
@@ -327,8 +327,8 @@ private:
         // fill all histos of the set with the two electron candidates
         void fill(const HeavyNuEvent& hne, const std::vector<hNuMassHypothesis>&);
         // Special fill for muon efficiency studies
-        void fill(const pat::Muon& theTag, const pat::Muon& theProbe, const double wgt) ; 
-        void fill(const pat::Muon& theTag, const pat::GenericParticle& theProbe, const double wgt) ; 
+        void fill(const pat::Muon& theTag, const pat::Muon& theProbe, const double probeTrkIso, const double wgt) ; 
+        void fill(const pat::Muon& theTag, const pat::GenericParticle& theProbe, const double trkIso, const double wgt) ; 
         
         TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2;
         TH2 *ptMu1VsPtMu2ss, *ptMu1VsPtMu2os;
@@ -822,9 +822,9 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
 
     // isolation
     t = "trackIso(tag) " + post;
-    tagTrackIso = td->make<TH1D > ("tagTrackIso", t.c_str(), 100, 0., 100.);
+    tagTrackIso = td->make<TH1D > ("tagTrackIso", t.c_str(), 200, 0., 10.);
     t = "trackIso(tag) " + post;
-    probeTrackIso = td->make<TH1D > ("probeTrackIso", t.c_str(), 100, 0., 100.);
+    probeTrackIso = td->make<TH1D > ("probeTrackIso", t.c_str(), 200, 0., 10.);
     t = "trackRelIso(tag) " + post;
     tagTrackRelIso = td->make<TH1D > ("tagTrackRelIso", t.c_str(), 100, 0., 2.);
     t = "trackRelIso(probe) " + post;
@@ -1278,6 +1278,7 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
 void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
                                const pat::Muon& theProbe,
+                               const double probeTrkIso,
                                const double wgt)
 {
     ptTag->Fill(theTag.pt(), wgt);
@@ -1289,15 +1290,15 @@ void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
     phiProbe->Fill(theProbe.phi(), wgt);
 
     tagTrackIso ->Fill(theTag.trackIso(), wgt);
-    probeTrackIso ->Fill(theProbe.trackIso(), wgt);
+    probeTrackIso ->Fill(probeTrkIso, wgt);
 
     tagTrackRelIso->Fill(theTag.trackIso() / theTag.pt(), wgt);
-    probeTrackRelIso->Fill(theProbe.trackIso() / theProbe.pt(), wgt);
+    probeTrackRelIso->Fill(probeTrkIso / theProbe.pt(), wgt);
 
     reco::Particle::LorentzVector mumu = theTag.p4() + theProbe.p4();
     mMuMuTP->Fill(mumu.M(), wgt);
 
-    double probe_relIso = theProbe.trackIso() / theProbe.pt() ; 
+    double probe_relIso = probeTrkIso / theProbe.pt() ; 
     if ( probe_relIso < 1.0 ) {
         ptProbeRiso100->Fill(theProbe.pt(), wgt);
         etaProbeRiso100->Fill(theProbe.eta(), wgt);
@@ -1334,12 +1335,12 @@ void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
 
 void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
                                const pat::GenericParticle& theProbe,
-                               double wgt)
+                               const double trkIso, 
+                               const double wgt)
 {
-    pat::Muon muonProbe ;
+    pat::Muon muonProbe ; 
     muonProbe.setP4( theProbe.p4() ) ;
-    muonProbe.setTrackIso( theProbe.trackIso() ) ;
-    HistPerDef::fill( theTag,muonProbe,wgt ) ;
+    HistPerDef::fill( theTag,muonProbe,trkIso,wgt ) ;
 }// end of fill()
 
 
@@ -1758,8 +1759,7 @@ void HeavyNu::studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons,
                 if ( dz > 0.2 ) continue ;
                 trkSumPtIsoCone += track.pt() ;
             }
-            theProbe.setTrackIso( trkSumPtIsoCone ) ; 
-            hists.TightTagTrackProbeInZwin.fill( theTag,theProbe,wgt ) ;
+            hists.TightTagTrackProbeInZwin.fill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
             nTrackProbes++ ;
             // Does the probe pass tight ID selection?
             unsigned int muIdx = tightMuons.size() ;
@@ -1770,12 +1770,13 @@ void HeavyNu::studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons,
                 if ( deltaR(tightMuon.eta(), tightMuon.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
                      fabs(theProbe.pt()-tightMuon.pt())/theProbe.pt() < 0.05 ) {
                     muIdx = k ;
-                    std::cout << "Isolation comparison for track and matched tight muon: "
-                              << trkSumPtIsoCone << " vs. " << tightMuon.trackIso() << std::endl ;
+//                     std::cout << "Isolation comparison for track and matched tight muon: "
+//                               << trkSumPtIsoCone << " vs. " << tightMuon.trackIso() << std::endl ;
                 }
             }
-            if ( muIdx < tightMuons.size() ) 
-                hists.TightTagTrackProbePassesInZwin.fill( theTag,theProbe,wgt ) ;
+            if ( muIdx < tightMuons.size() ) {
+                hists.TightTagTrackProbePassesInZwin.fill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
+            }
         }
         
         // Second case:
@@ -1796,10 +1797,10 @@ void HeavyNu::studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons,
 
             // Confirmed: we have a valid probe
             nMuonIsoProbes++ ; 
-            hists.TightTagTightProbeInZwin.fill( theTag,theProbe,wgt ) ;
+            hists.TightTagTightProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
 
             if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) 
-                hists.TightTagTightProbePassesInZwin.fill( theTag,theProbe,wgt ) ;
+                hists.TightTagTightProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
         }
     }
     if ( nTrackProbes > 2 )   std::cout << "WARNING: Found more track probes than expected --> " << nTrackProbes << std::endl ; 
