@@ -17,8 +17,8 @@ struct BShape { BShape(double v, double s) : value(v),slope(s) {}
 // name of the histogram containing the observations
 const char* data_hist_name = "hNu/cut8_mWRmass/mWR";
 // name of the histogram containing the signal
-const char* signal_hist_name = "hNu/cut8_mWRmass/mWR";
-const char* signal_norm_hist = "hNu/nelec";
+const char* signal_hist_name = "hNu/cut6_mWRmass/mWR";
+const char* signal_norm_hist = "hNu/mc_type";
 // functional parameters for ttbar (total per ipb, exponential slope)
 const BShape bkgd_tt2010(0.867*1.02/36.1, -5.27e-3);
 const BShape bkgd_tt2011(5.52*1.08/204, -5.05e-3);
@@ -124,7 +124,8 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signal
   
   TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
-  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
+  //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
+  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->GetBinContent(3));
   // double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<PerBinInfo> pbi;
