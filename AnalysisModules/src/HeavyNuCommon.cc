@@ -205,19 +205,15 @@ namespace hnu {
     // };
 
     // see https://twiki.cern.ch/twiki/bin/view/CMS/PileupMCReweightingUtilities for PU_S4 samples
-    // Additional values (25+ vertices) calculated by hand assuming average of 12 pileup collisions
-    // Result is not exact but will get rid of problems with n(PU) > 25 in Monte Carlo
-    const double npu_probs[51] = { 0.104109000,0.070357300,0.069844500,0.069825400,0.069705400, // 0-4
-				   0.069790700,0.069675100,0.069448600,0.068033200,0.065104400, // 5-9
-				   0.059803600,0.052739500,0.043951300,0.035220200,0.026671400, // 10-14
-				   0.019411000,0.013397400,0.008985360,0.005751600,0.003514930, // 15-19
-				   0.002120870,0.001228910,0.000705920,0.000384744,0.000219377, // 20-24
-				   0.000105301,4.86004e-05,2.16002e-05,9.25723e-06,3.83058e-06, // 25-29
-				   1.53223e-06,5.93122e-07,2.22421e-07,8.08802e-08,2.85460e-08, // 30-34
-				   9.78719e-09,3.26240e-09,1.05807e-09,3.34129e-10,1.02809e-10, // 35-39
-				   3.08426e-11,9.02712e-12,2.57918e-12,7.19770e-13,1.96301e-13, // 40-44
-				   5.23469e-14,1.36557e-14,3.48657e-15,8.71641e-16,2.13463e-16, // 45-49
-				   5.12312e-17 }; 
+    // Using the "spike at zero + smearing distribution" as shown on the twiki and recommended for in-time PU corrections
+    const double npu_probs[35] = { 1.45346E-01,6.42802E-02,6.95255E-02,6.96747E-02,6.92955E-02, // 0-4
+                                   6.84997E-02,6.69528E-02,6.45515E-02,6.09865E-02,5.63323E-02, // 5-9
+                                   5.07322E-02,4.44681E-02,3.79205E-02,3.15131E-02,2.54220E-02, // 10-14
+                                   2.00184E-02,1.53776E-02,1.15387E-02,8.47608E-03,6.08715E-03, // 15-19
+                                   4.28255E-03,2.97185E-03,2.01918E-03,1.34490E-03,8.81587E-04, // 20-24
+                                   5.69954E-04,3.61493E-04,2.28692E-04,1.40791E-04,8.44606E-05, // 25-29
+                                   5.10204E-05,3.07802E-05,1.81401E-05,1.00201E-05,5.80004E-06  // 30-34
+    }; 
 
     std::vector<float> retval;
     retval.reserve(npt);
@@ -258,9 +254,20 @@ namespace hnu {
       0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
       0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
       0.00 };
+    // Note: there is a 36th entry with 0.008, but other ingredients have only 35 entries so omitting
+    const double json_2375ipb[] = {
+      1.29654E07, 5.58514E07, 1.29329E08, 2.12134E08, 2.76138E08,
+      3.03604E08, 2.93258E08, 2.55633E08,  2.0497E08, 1.53264E08,
+      1.07936E08, 7.21006E07,  4.5913E07,   2.797E07, 1.63426E07,
+      9.17598E06, 4.95861E06, 2.58239E06,  1.2977E06,     629975,
+          295784,     134470,    59260.1,    25343.9,    10530.1,
+         4255.05,    1673.95,    641.776,    240.022,    87.6504,
+          31.281,    10.9195,    3.73146,    1.24923,   0.602368
+    } ; 
 
     const double* pileupDist=default_pd;
 
+    if (era>=20113 && era<=20120) pileupDist=json_2375ipb;
     if (era>=20110 && era<=20112) pileupDist=may10_json;
     if (era>=20100 && era<=20109) pileupDist=dec22_json;
 
@@ -271,31 +278,43 @@ namespace hnu {
     return retval;
   }
 
-  std::pair<float,double> pileupReweighting(edm::Handle<std::vector<PileupSummaryInfo> > pPU,
-					    edm::LumiReWeighting puWeight) { 
+  std::pair<float,double> pileupReweighting(const edm::Handle<std::vector<PileupSummaryInfo> >& pPU,
+					    edm::LumiReWeighting& puWeight) { 
 
-    // int   nPileup = -1 ; 
-    double weight   = 1.0 ; 
-    float  avg_nvtx = -1. ; 
+    int   nPileup = -1 ; 
+    double weight = 1.0 ; 
+    // float  avg_nvtx = -1. ;
+    
+    std::vector<PileupSummaryInfo>::const_iterator PVI;
+    for (PVI = pPU->begin(); PVI != pPU->end(); ++PVI) {
+      int BX = PVI->getBunchCrossing();
 
-    if (pPU.isValid() && pPU->size() > 0) {
-      std::vector<PileupSummaryInfo>::const_iterator puIter ; 
-
-      float sum_nvtx = 0 ; 
-      for (puIter=pPU->begin(); puIter!=pPU->end(); puIter++) 
-	sum_nvtx += float( puIter->getPU_NumInteractions() ) ; 
-
-      avg_nvtx = sum_nvtx / 3. ; 
-
-      // std::cout << "About to look up weight for " << avg_nvtx << " vertices, initial weight " << weight << std::endl ; 
-      weight = puWeight.weight3BX( avg_nvtx ) ; 
-      // if ( nPileup > int(mcWeight.size()) || nPileup < 0 ) 
-      // 	std::cout << "WARNING: Weight vector is too small, size " << mcWeight.size() << std::endl ; 
-      // weight *= mcWeight[nPileup];
-      // std::cout << "MC weight is now " << weight << std::endl ; 
+      if (BX == 0) { 
+        nPileup = PVI->getPU_NumInteractions();
+        continue;
+      }
     }
+    weight = puWeight.weight( nPileup );
+    
+//     if (pPU.isValid() && pPU->size() > 0) {
+//       std::vector<PileupSummaryInfo>::const_iterator puIter ; 
 
-    std::pair<float,double> pileupInfo = std::make_pair(avg_nvtx,weight) ; 
+//       float sum_nvtx = 0 ; 
+//       for (puIter=pPU->begin(); puIter!=pPU->end(); puIter++) 
+// 	sum_nvtx += float( puIter->getPU_NumInteractions() ) ; 
+
+//       avg_nvtx = sum_nvtx / 3. ; 
+
+//       // std::cout << "About to look up weight for " << avg_nvtx << " vertices, initial weight " << weight << std::endl ; 
+//       weight = puWeight.weight3BX( avg_nvtx ) ; 
+//       // if ( nPileup > int(mcWeight.size()) || nPileup < 0 ) 
+//       // 	std::cout << "WARNING: Weight vector is too small, size " << mcWeight.size() << std::endl ; 
+//       // weight *= mcWeight[nPileup];
+//       // std::cout << "MC weight is now " << weight << std::endl ; 
+//     }
+
+    // std::pair<float,double> pileupInfo = std::make_pair(avg_nvtx,weight) ; 
+    std::pair<float,double> pileupInfo = std::make_pair(nPileup,weight) ; 
     return pileupInfo ; 
   }
 

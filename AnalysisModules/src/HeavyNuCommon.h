@@ -93,8 +93,8 @@ namespace hnu {
 
     std::vector<float> get_standard_pileup_data(int pileupEra, const int npt); 
 
-    std::pair<float,double> pileupReweighting(edm::Handle< std::vector<PileupSummaryInfo> > pPU, 
-					      const edm::LumiReWeighting mcWeight);
+    std::pair<float,double> pileupReweighting(const edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
+					      edm::LumiReWeighting& mcWeight);
 }
 
 

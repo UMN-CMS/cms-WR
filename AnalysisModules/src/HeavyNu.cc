@@ -295,6 +295,8 @@ private:
 
     bool disableTriggerCorrection_; // turn off the trigger emulator
     int pileupEra_;
+    double puShift_ ;
+    reweight::PoissonMeanShifter poissonNvtxShifter_ ; 
     bool isPFJets_; // true if PFJets are used (turns off jet id requirement)
 
     std::string currentFile_;
@@ -1392,6 +1394,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     jecVal_ = iConfig.getParameter<int>("jecEra");
 
     pileupEra_ = iConfig.getParameter<int>("pileupEra");
+    puShift_   = iConfig.getParameter<double>("systPileupShift") ;
+    if ( fabs(puShift_) > 0.001 ) poissonNvtxShifter_ = reweight::PoissonMeanShifter( puShift_ ) ; 
     disableTriggerCorrection_ = iConfig.getParameter<bool>("DisableTriggerCorrection");
 
     applyJECUsign_ = iConfig.getParameter<int>("applyJECUsign");
@@ -1565,9 +1569,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
                 50, -2.5, 2.5, 100, 0, 1000);
     }
 
-    MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(50),
-            hnu::get_standard_pileup_data(pileupEra_, 50));
-
+    MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(35),
+            hnu::get_standard_pileup_data(pileupEra_, 35));
+    
     // For the record...
     std::cout << "Configurable cut values applied:" << std::endl;
     std::cout << "muonTag           = " << muonTag_ << std::endl;
@@ -1956,8 +1960,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         edm::Handle<std::vector<PileupSummaryInfo> > pPU;
         iEvent.getByLabel("addPileupInfo", pPU);
         std::pair<float, double> pileup = hnu::pileupReweighting(pPU, MCweightByVertex_);
-        hnuEvent.n_pue = pileup.first;
+        hnuEvent.n_pue = pileup.first ; // Will only be used for studies, thus no syst. correction necessary
         hnuEvent.eventWgt *= pileup.second;
+        if ( fabs(puShift_) > 0.001 ) hnuEvent.eventWgt *= poissonNvtxShifter_.ShiftWeight( pileup.first ) ; 
         //Shirpa reweighting
         hnuEvent.eventWgt *= geneventinfo->weight();
         hists.weights->Fill(hnuEvent.eventWgt);
