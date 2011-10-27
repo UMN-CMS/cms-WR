@@ -2,33 +2,49 @@ import FWCore.ParameterSet.Config as cms
 
 import os
 
-#import sys
-#isMC=sys.modules['__main__'].isMC
-#isMCsignal=sys.modules['__main__'].isMCsignal
-#process = sys.modules['__main__'].process
-
+#--- Data/MC switch ---#
 isMC=False
-isMCsignal=False
-Training=False
-isRun2011LoLumi=False
-isRun2011VeryHiLumi=True
-isPileupMC=True
-isPFJets=True
-
 isData=not isMC
 
-#--- Things to change ---#
-#--- Check the trigger match ---#
-#--- Check the Global Tag ---#
-#--- Check the JSON ---#
-#--- Check the name of the module ---#
+#--- Signal MC flags ---#
+isMCsignal=False
+Training=False
 
-## Low and high lumi data selection is controlled by the JSON-derived cfi's imported
-## below. For run 2010, the low lumi data is that for which the HLT_Mu9 trigger path
-## was active and unprescaled, (uncertified) run range 133446 - 147116. Certification
-## restricts this run range further.
-##
-isRun2011HiLumi=not isRun2011LoLumi
+#--- Trigger-based luminosity flags ---#
+#--- only one should be True        ---#
+#--- LoLumi     --> HLT_Mu24        ---#
+#--- HiLumi     --> HLT_Mu40        ---#
+#--- VeryHiLumi --> HLT_Mu40_eta2p1 ---#
+isRun2011LoLumi     = False
+isRun2011HiLumi     = False
+isRun2011VeryHiLumi = True
+
+#--- Flags for data taking era ---#
+isRun2011A = True
+muIdYear   = 20110
+pileupEra  = 20113
+#--- Placeholder for 2011B variables
+if not isRun2011A:
+    muIdYear  = 20111
+    pileupEra = 20113
+
+
+#--- Flags for nominal studies ---#
+runAnalysis = True
+systematics = False
+
+#--- Flags for Top studies ---#
+topStudy = True
+
+#--- Flags for QCD studies ---#
+qcdStudy  = False
+doDijet   = False
+doQuadjet = False
+doClosure = False
+
+#--- Should always be True ---#
+isPileupMC = True
+isPFJets   = True
 
 process = cms.Process("PAT");
 
@@ -64,18 +80,16 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-## global tags:
-#
-# Use 38X for MC, 39X for data
-#
+
+## Global Tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
     if (isPileupMC):
         process.GlobalTag.globaltag=cms.string('START42_V13::All')
         print "=============> isPileupMC flag is SET <================"
-    else:
-        print "========> Fall10 MC with Spring10 JEC applied <========"
-        process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    # else:
+    #     print "========> Fall10 MC with Spring10 JEC applied <========"
+    #     process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
     print "===============> Running on DATA <===================="
     process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
@@ -90,12 +104,10 @@ process.load('Configuration.StandardSequences.Services_cff')
 ## pat sequences to be loaded:
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.load("RecoMuon.MuonIdentification.refitMuons_cfi")
-# process.muonMatch.muonSource = cms.InputTag("refitMuons")
-# process.patMuons.muonSource = cms.InputTag("refitMuons")
-# process.makePatMuons = cms.Sequence( process.refitMuons * process.muonMatch * process.patMuons )
-
 from PhysicsTools.PatAlgos.tools.pfTools import *
 
+#--- Output module: 
+#--- Must be defined before PAT python tools will work
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('heavynu_candevents.root'),
                                # save only events passing the full path
@@ -186,19 +198,19 @@ process.patTrackSequence = cms.Sequence(
         process.patTracksPt10
 )
 
-## ---
-## Define the path
-## ---
+## --------------------- ##
+## Define the basic path ##
+## --------------------- ##
+process.AnalysisIntroSequence = cms.Sequence(
+    process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+)
+if isPFJets:
+    process.AnalysisIntroSequence += process.modifiedPF2PATSequence
+
 process.p = cms.Path(
-  process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+    process.AnalysisIntroSequence
 )
 
-if isPFJets:
-    process.p += process.modifiedPF2PATSequence
-
-########################################
-# Output module - has to be defined before PAT python tools will work
-########################################
 
 if isData:
     # process.outpath  = cms.EndPath(process.out)
@@ -208,49 +220,33 @@ if isData:
     removeMCMatching(process, ['All'], outputInProcess = False)
         
 
-########################################
-# PAT Jet Energy Corrections - MC vs Data
-########################################
-# 
-
-#from PhysicsTools.PatAlgos.tools.jetTools import switchJetCollection
-
-if isMC:
-    switchJetCollection( process,
-                         jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
-else:
-    switchJetCollection( process,
-                         jetCollection=cms.InputTag('ak5CaloJets'),
-                         jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
+#--- Calo Jet Energy Corrections: No longer used ---#
 process.patJetCorrFactors.useRho = cms.bool(False)
+# Corrections for Calo Jets: no longer used
+# if isMC:
+#     switchJetCollection( process,
+#                          jetCollection=cms.InputTag('ak5CaloJets'),
+#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
+# else:
+#     switchJetCollection( process,
+#                          jetCollection=cms.InputTag('ak5CaloJets'),
+#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute','L2L3Residual']))
 
-########################################
-# PAT Trigger matching
-########################################
-# imported directly from PhysicsTools/PatExamples/test/analyzePatTrigger_onTheFly_cfg.py
-#
-process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 
-### ============
-### Python tools
-### ============
-### Attention: order matters!
 
-## --
-## Switch to selected PAT objects in the main work flow
-## --
+## ============================== ##
+## Python tools --> Order matters ##
+## ============================== ##
+
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
 removeCleaning( process, False )
-# removeCleaning( process, isData )
 
-## Special change for saving good products in data
+# Special change for saving good products in data
 if isData:
     process.out.outputCommands = cms.untracked.vstring("keep *")
 
-## --
-## Switch on PAT trigger - but only for data!
-## --
+#--- Trigger matching ---#
+process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
     switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
@@ -264,82 +260,246 @@ if isData:
         else:
             process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
  
-##########################################
-## Add analysis
-##########################################
-
+#--- Output histgram file ---#
 process.TFileService = cms.Service("TFileService",
-       fileName = cms.string("anal.root"),
+       fileName = cms.string("analysis.root"),
 )
 
+## ================ ##
+## Nominal Analysis ##
+## ================ ##
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
 if isMCsignal:
     process.hNu.isSignal = cms.bool(True)
     process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
     process.hNuGenFilter.keepIds = cms.vint32(2,)
 
+# process.hNu.minMu2pt         = cms.double(30.)
+process.hNu.isPFJets         = cms.bool(isPFJets)
 process.hNu.studyMuSelectEff = cms.bool(True)
 process.hNu.studyScaleFactor = cms.bool(False)
+process.hNu.studyRatePerRun  = cms.bool(isData)
 #--- Values below zero disable the vertex requirement ---#
 process.hNu.maxVertexZsepCM = cms.double(-1)
 process.hNu.maxJetVZsepCM   = cms.double(-1)
-
-
-process.hNu.minMu2pt         = cms.double(30.)
 #--- Pileup corrections ---#
-process.hNu.pileupEra        = cms.int32(20110)
-#--- For now, we do not know if any muon ID correction is necessary ---#
-process.hNu.applyMuIDEffcorr = cms.bool(False)
+process.hNu.pileupEra = cms.int32(pileupEra)
+
+#--- Muon ID corrections are available as of 27 Oct, 2011 ---#
+process.hNu.applyMuIDEffcorr = cms.bool(isMC)
 
 if isData:
-    process.hNu.muonTag = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
-
-process.hNu.isPFJets = cms.bool(isPFJets)
-if isPFJets:
-    process.hNu.jetTag  = cms.InputTag( 'selectedPatJetsPFlow')
-
-if isData:
-    # turn on trigger match requirement
-    process.hNu.trigMatchPset.trigEventTag=cms.InputTag("patTriggerEvent")
-    process.hNu.trigMatchPset.muonMatch=cms.string('muonTriggerMatchHLTMuons')
+    process.hNu.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
+    process.hNu.trigMatchPset.trigEventTag = cms.InputTag("patTriggerEvent")
+    process.hNu.trigMatchPset.muonMatch    = cms.string('muonTriggerMatchHLTMuons')
+    if isRun2011LoLumi:
+        process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
+        process.hNu.trigMatchPset.triggerPt = cms.double( 24. )
+    else:
+        process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+        process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
 else:
     # turn on MC trigger simulation
-    process.hNu.trigMatchPset.randomSeed=cms.int32(os.getpid())
+    process.hNu.trigMatchPset.randomSeed = cms.int32(os.getpid())
+    # Parameters for muon ID corrections to MC
+    process.hNu.muIDPset.eraForId        = cms.int32( muIdYear )
+
+if isPFJets:
+    process.hNu.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
 
 if Training:
     process.hNu.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
 
-#--- Changes necessary to sort out trigger complications ---#
+#--- Necessary to sort out trigger complications ---#
 process.hNuMu24 = process.hNu.clone() 
 process.hNuMu40 = process.hNu.clone() 
 
-process.hNuMu24.trigMatchPset.triggerPt = cms.double( 24. )
-process.hNuMu40.trigMatchPset.triggerPt = cms.double( 40. )
-    
-if isMCsignal:
-    process.q = cms.Path(
-        process.patDefaultSequence * process.patTrackSequence * process.refitMuons
-    )
-    if isPFJets:
-        process.q += process.modifiedPF2PATSequence
+process.hNuMu24.trigMatchPset.triggerPt  = cms.double( 24. )
+process.hNuMu24.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+process.hNuMu40.trigMatchPset.triggerPt  = cms.double( 40. )
+process.hNuMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
 
-    process.p += process.hNuGenFilter*process.hNuMu24
-    process.q += process.hNuGenFilter*process.hNuMu40
-else:
-    if isMC: 
-        process.q = cms.Path(
-            process.patDefaultSequence * process.patTrackSequence * process.refitMuons
-            )
-        if isPFJets:
-            process.q += process.modifiedPF2PATSequence
-        process.p += process.hNuMu24
-        process.q += process.hNuMu40
+process.hNuMu24jesHi = process.hNuMu24.clone( applyJECUsign = cms.int32(1) )
+process.hNuMu24jesLo = process.hNuMu24.clone( applyJECUsign = cms.int32(-1) )
+process.hNuMu40jesHi = process.hNuMu40.clone( applyJECUsign = cms.int32(1) )
+process.hNuMu40jesLo = process.hNuMu40.clone( applyJECUsign = cms.int32(-1) )
+
+process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
+process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
+process.hNuMu40mesHi = process.hNuMu40.clone( applyMESfactor = cms.double(1.01) )
+process.hNuMu40mesLo = process.hNuMu40.clone( applyMESfactor = cms.double(0.99) )
+
+process.hNuMu24midHi = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(1) )
+process.hNuMu24midLo = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(-1) )
+process.hNuMu40midHi = process.hNuMu40.clone( applyMuIDEffsign = cms.int32(1) )
+process.hNuMu40midLo = process.hNuMu40.clone( applyMuIDEffsign = cms.int32(-1) )
+process.hNuMu24midHi.applyMuIDEffcorr = cms.bool( True )
+process.hNuMu24midLo.applyMuIDEffcorr = cms.bool( True )
+process.hNuMu40midHi.applyMuIDEffcorr = cms.bool( True )
+process.hNuMu40midLo.applyMuIDEffcorr = cms.bool( True )
+
+process.hNuMu24trigHi = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(1) )
+process.hNuMu24trigLo = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(-1) )
+process.hNuMu40trigHi = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(1) )
+process.hNuMu40trigLo = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(-1) )
+
+process.hNuMu24puHi = process.hNuMu24.clone( systPileupShift = cms.double(0.6) ) 
+process.hNuMu24puLo = process.hNuMu24.clone( systPileupShift = cms.double(-0.6) ) 
+process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.6) ) 
+process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.6) ) 
+
+## ============ ##
+## QCD Analysis ##
+## ============ ##
+process.load("HeavyNu.AnalysisModules.heavynuqcd_cfi")
+
+process.hNuQCD.isPFJets = cms.bool(isPFJets)
+process.hNuQCD.getSurvivalRate = cms.bool( doDijet )    
+process.hNuQCD.doClosureTest   = cms.bool( doQuadJet )    
+process.hNuQCD.doQuadJetTest   = cms.bool( doClosure )    
+#--- Results from 2/fb 2011 data ---#
+process.hNuQCD.reweightPtLow  = cms.vdouble( 30,40,50,60,80,100,200 )
+process.hNuQCD.reweightPtHigh = cms.vdouble( 40,50,60,80,100,200,1000 )
+process.hNuQCD.reweightTight  = cms.vdouble( 0.0629483,0.0654695,0.0708795,0.0787387,0.0953354,0.133404,0.433735 )
+#--- Values below zero disable the vertex requirement ---#
+process.hNuQCD.dimuonMaxVertexZsepCM = cms.double( -1.0 )
+process.hNuQCD.maxJetVZsepCM         = cms.double( -1.0 )
+#--- Pileup corrections ---#
+process.hNuQCD.pileupEra = cms.int32(pileupEra)
+
+if isData:
+    process.hNuQCD.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
+    process.hNuQCD.trigMatchPset.trigEventTag = cms.InputTag( 'patTriggerEvent' )
+    process.hNuQCD.trigMatchPset.muonMatch    = cms.string( 'muonTriggerMatchHLTMuons' )
+    if isRun2011LoLumi:
+        process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
+        process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 24. )
     else:
-        if isRun2011LoLumi:
-            process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-            process.hNu.trigMatchPset.triggerPt = cms.double( 24. )
-        else:
-            process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
-            process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
+        process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+        process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 40. )
+else:
+    # turn on MC trigger simulation
+    process.hNuQCD.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+    # Parameters for muon ID corrections
+    process.hNuQCD.muIDPset.eraForId        = cms.int32( muIdYear )
 
-        process.p += process.hNu
+if isPFJets:
+    process.hNuQCD.jetTag  = cms.InputTag( 'selectedPatJetsPFlow' )
+
+process.hNuQCDMu24 = process.hNuQCD.clone() 
+process.hNuQCDMu40 = process.hNuQCD.clone() 
+
+process.hNuQCDMu24.trigMatchPset.triggerPt  = cms.double( 24. )
+process.hNuQCDMu24.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+process.hNuQCDMu40.trigMatchPset.triggerPt  = cms.double( 40. )
+process.hNuQCDMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+
+## ============ ##
+## Top Analysis ##
+## ============ ##
+process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
+# process.hNuTop.minLep2pt        = cms.double(30.)
+process.hNuTop.studyScaleFactor = cms.bool(False)
+
+#--- Temporarily disabling all corrections ---#
+process.hNuTop.applyMuIDEffcorr   = cms.bool(False)
+process.hNuTop.applyEleEScale     = cms.bool(False) 
+process.hNuTop.applyEleIDweight   = cms.bool(False) 
+process.hNuTop.pileupEra          = cms.int32(pileupEra)
+process.hNuTop.muIDPset.eraForId  = cms.int32(muIdYear)
+process.hNuTop.EBidWgt = cms.double( 1.000 ) 
+process.hNuTop.EEidWgt = cms.double( 1.000 ) 
+#--- Values below zero disable the vertex requirement ---#
+process.hNuTop.maxVertexZsepCM     = cms.double(-1)
+process.hNuTop.maxVertexJetVZsepCM = cms.double(-1)
+
+if isPFJets:
+    process.hNuTop.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
+
+if isData:
+    process.hNuTop.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
+    process.hNuTop.trigMatchPset.trigEventTag = cms.InputTag("patTriggerEvent")
+    process.hNuTop.trigMatchPset.muonMatch    = cms.string('muonTriggerMatchHLTMuons')
+    if isRun2011LoLumi:
+        process.hNuTop.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
+        process.hNuTop.trigMatchPset.triggerPt    = cms.double( 24. )
+    else:
+        process.hNuTop.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+        process.hNuTop.trigMatchPset.triggerPt    = cms.double( 40. )
+else:
+    process.hNuTop.trigMatchPset.randomSeed=cms.int32( os.getpid() )
+    
+process.hNuTopMu24 = process.hNuTop.clone() 
+process.hNuTopMu40 = process.hNuTop.clone() 
+
+process.hNuTopMu24.trigMatchPset.triggerPt  = cms.double( 24. )
+process.hNuTopMu24.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+process.hNuTopMu40.trigMatchPset.triggerPt  = cms.double( 40. )
+process.hNuTopMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+
+#-------------#
+#--- Paths ---#
+#-------------#
+if runAnalysis:
+    if qcdStudy and topStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pQCD','pTop') )
+    if qcdStudy and not topStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pQCD') )
+    if topStudy and not qcdStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pTop') )
+    if not qcdStudy and not topStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal') )
+else: 
+    if qcdStudy and topStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pQCD','pTop') )
+    if qcdStudy and not topStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pQCD') )
+    if topStudy and not qcdStudy:
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pTop') )
+
+if runAnalysis:
+    if isMC:
+        if isMCsignal:
+            process.AnalysisIntroSequence += process.hNuGenFilter
+
+        process.p24 = cms.Path( process.AnalysisIntroSequence + process.hNuMu24 ) 
+        process.p40 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 ) 
+            
+        if systematics:
+            process.p24jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesHi )
+            process.p24jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesLo )
+            process.p40jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesHi )
+            process.p40jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesLo )
+            process.p24mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesHi )
+            process.p24mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesLo )
+            process.p40mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesHi )
+            process.p40mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesLo )
+            process.p24midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midHi )
+            process.p24midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midLo )
+            process.p40midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midHi )
+            process.p40midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midLo )
+            process.p24trigHi = cms.Path( process.AnalysisIntroSequence + process.hNuMu24trigHi )
+            process.p24trigLo = cms.Path( process.AnalysisIntroSequence + process.hNuMu24trigLo )
+            process.p40trigHi = cms.Path( process.AnalysisIntroSequence + process.hNuMu40trigHi )
+            process.p40trigLo = cms.Path( process.AnalysisIntroSequence + process.hNuMu40trigLo )
+            process.p24puHi   = cms.Path( process.AnalysisIntroSequence + process.hNuMu24puHi )
+            process.p24puLo   = cms.Path( process.AnalysisIntroSequence + process.hNuMu24puLo )
+            process.p40puHi   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40puHi )
+            process.p40puLo   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40puLo )
+    else:
+        process.pNominal = cms.Path( process.AnalysisIntroSequence + process.hNu )
+
+if qcdStudy:
+    if isMC:
+        process.pQCD24 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu24 ) 
+        process.pQCD40 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu40 ) 
+    else:
+        process.pQCD = cms.Path( process.AnalysisIntroSequence + process.hNuQCD )
+        
+if topStudy:
+    if isMC:
+        process.pTop24 = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24 ) 
+        process.pTop40 = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40 ) 
+    else:
+        process.pTop = cms.Path( process.AnalysisIntroSequence + process.hNuTop )
+

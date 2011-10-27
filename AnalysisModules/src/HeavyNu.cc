@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.74 2011/10/18 16:56:50 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.76 2011/10/24 22:08:12 bdahmes Exp $
 //
 //
 
@@ -158,8 +158,8 @@ template <class T> void outputCandidate(const T& p)
 inline void labelJetIDaxis(TAxis *ax)
 {
     ax->SetBinLabel(1, "Neither");
-    ax->SetBinLabel(2, "PURE09 Loose");
-    ax->SetBinLabel(3, "PURE09 Tight");
+    ax->SetBinLabel(2, "Loose");
+    ax->SetBinLabel(3, "Tight");
 }
 
 //============================================================
@@ -256,9 +256,9 @@ private:
                                        edm::Handle<reco::BeamSpot>& beamspot, 
                                        std::vector<bool> isTag,
                                        double wgt);
-    virtual void studyIsolation(const std::vector<pat::Muon>& muons,
-                                const std::vector< std::pair<pat::Jet, float> >& jets,
-                                bool mu1tag, bool mu2tag, double weight);
+//     virtual void studyIsolation(const std::vector<pat::Muon>& muons,
+//                                 const std::vector< std::pair<pat::Jet, float> >& jets,
+//                                 bool mu1tag, bool mu2tag, double weight);
 
     virtual void studyJetVertex(edm::Handle<pat::JetCollection>& pJets,
                                 edm::Handle<reco::JPTJetCollection>& jptJets,
@@ -298,7 +298,9 @@ private:
     double puShift_ ;
     reweight::PoissonMeanShifter poissonNvtxShifter_ ; 
     bool isPFJets_; // true if PFJets are used (turns off jet id requirement)
-
+    bool studyRatePerRun_ ; // should only be true for data
+    bool studyAlternativeSelection_ ; 
+    
     std::string currentFile_;
     bool dolog_;
     bool firstEvent_;
@@ -410,6 +412,8 @@ private:
         TH1* cutlevel;
         TH1* weights;
 
+        TH1* z2jetPerRun; 
+        
         // Muon quality histos as a function of Pt
         TH2 *muNvalidHitsVsPt, *mudBvsPt, *muNormChi2vsPt, *muQualVsPt;
         TH2 *muNmatchesVsPt, *muNvalidMuonHitsVsPt, *muNvalidPixelHitsVsPt;
@@ -432,12 +436,21 @@ private:
         HistPerDef LLJJptCuts;
         HistPerDef VertexCuts;
         HistPerDef Mu1HighPtCut;
-        HistPerDef Mu1Pt30GeVCut;
         HistPerDef Mu1Pt40GeVCut;
         HistPerDef Mu1Pt50GeVCut;
         HistPerDef Mu1Pt60GeVCut;
         HistPerDef Mu1Pt80GeVCut;
         HistPerDef Mu1Pt100GeVCut;
+        HistPerDef AlternativeElecChanPt;
+        HistPerDef AlternativeMu1Pt40;
+        HistPerDef AlternativeMu2Pt40;
+        HistPerDef AlternativeMu2Pt60;
+        HistPerDef AlternativeJetPt60;
+        HistPerDef AlternativeBarrelLoose;
+        HistPerDef AlternativeBarrelTight;
+        HistPerDef AlternativeAtLeastOneBjet;
+        HistPerDef AlternativeTwoBjets;
+        HistPerDef AlternativeDimuonMass120;
         HistPerDef Mu1HighPtCutVtxEq1;
         HistPerDef Mu1HighPtCutVtx2to5;
         HistPerDef Mu1HighPtCutVtxGt5;
@@ -457,6 +470,8 @@ private:
         HistPerDef TightTagTrackProbePassesInZwin;
         HistPerDef TightTagTightProbeInZwin;
         HistPerDef TightTagTightProbePassesInZwin;
+        HistPerDef TightTagTightCJProbeInZwin;
+        HistPerDef TightTagTightCJProbePassesInZwin;
         HistPerDef Mu1TrigMatchesInZwin;
         HistPerDef Mu2TrigMatchesInZwin;
         HistPerDef Mu1Mu2TrigMatchesInZwin;
@@ -1414,9 +1429,11 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     studyMuonSelectionEff_ = iConfig.getParameter<bool>("studyMuSelectEff");
 
     studyScaleFactorEvolution_ = iConfig.getParameter<bool>("studyScaleFactor");
-
+    studyAlternativeSelection_ = iConfig.getParameter<bool>("alternativeSelections");
+    
     isPFJets_ = iConfig.getParameter<bool>("isPFJets");
-
+    studyRatePerRun_ = iConfig.getParameter<bool>("studyRatePerRun"); 
+    
     // ==================== Init other members ====================
     //
 
@@ -1427,6 +1444,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     //
     edm::Service<TFileService> fs;
     hists.mc_type = fs->make<TH1D > ("mc_type", "MC Type Code", 100, -0.5, 99.5);
+    if ( studyRatePerRun_ )
+        hists.z2jetPerRun = fs->make<TH1I > ("z2jetPerRun","M3 Z #to #mu#mu events per run",20000,160000,180000); 
     hists.nelec = fs->make<TH1D > ("nelec", "N(e^{#pm})", 10, -0.5, 9.5);
     hists.nmuAll = fs->make<TH1D > ("nmuAll", "N(#mu^{#pm})", 10, -0.5, 9.5);
     hists.nmuLoose = fs->make<TH1D > ("nmuLoose", "N(#mu^{#pm}) passes Loose", 10, -0.5, 9.5);
@@ -1516,9 +1535,21 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     hists.diLmassCut.book(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)", nnif_->masspts());
     hists.mWRmassCut.book(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)", nnif_->masspts());
 
+    if ( studyAlternativeSelection_ ) {
+        hists.AlternativeElecChanPt.book(new TFileDirectory(fs->mkdir("AltMu1Pt80Mu2Pt40")),"(Alternative: Electron pT selection)", v_null);
+        hists.AlternativeMu1Pt40.book(new TFileDirectory(fs->mkdir("AltMu1Pt40")), "(Alternative: mu1 pT 40 GeV)", v_null);
+        hists.AlternativeMu2Pt40.book(new TFileDirectory(fs->mkdir("AltMu2Pt40")), "(Alternative: mu2 pT 40 GeV)", v_null);
+        hists.AlternativeMu2Pt60.book(new TFileDirectory(fs->mkdir("AltMu2Pt60")), "(Alternative: mu2 pT 60 GeV)", v_null);
+        hists.AlternativeJetPt60.book(new TFileDirectory(fs->mkdir("AltJetPt60")), "(Alternative: jet pT 60 GeV)", v_null);
+        hists.AlternativeBarrelLoose.book(new TFileDirectory(fs->mkdir("AltBarrelLoose")), "(Alternative: one barrel muon, loose)", v_null);
+        hists.AlternativeBarrelTight.book(new TFileDirectory(fs->mkdir("AltBarrelTight")), "(Alternative: one barrel muon, tight)", v_null);
+        hists.AlternativeAtLeastOneBjet.book(new TFileDirectory(fs->mkdir("AltOneBjet")), "(Alternative: at least one b-jet)", v_null);
+        hists.AlternativeTwoBjets.book(new TFileDirectory(fs->mkdir("AltTwoBjets")), "(Alternative: two b-jets)", v_null);
+        hists.AlternativeDimuonMass120.book(new TFileDirectory(fs->mkdir("AltDimuon120")), "(Alternative: dimuon mass 120 GeV)", v_null);
+    }
+    
     if(studyScaleFactorEvolution_)
     {
-        hists.Mu1Pt30GeVCut.book(new TFileDirectory(fs->mkdir("Mu1Pt30GeV")), "(Mu1 30 GeV pt cut)", v_null);
         hists.Mu1Pt40GeVCut.book(new TFileDirectory(fs->mkdir("Mu1Pt40GeV")), "(Mu1 40 GeV pt cut)", v_null);
         hists.Mu1Pt50GeVCut.book(new TFileDirectory(fs->mkdir("Mu1Pt50GeV")), "(Mu1 50 GeV pt cut)", v_null);
         hists.Mu1Pt60GeVCut.book(new TFileDirectory(fs->mkdir("Mu1Pt60GeV")), "(Mu1 60 GeV pt cut)", v_null);
@@ -1548,6 +1579,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.TightTagTrackProbePassesInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTrackProbePassesInZwin")), "(probe passes, ID in Z mass Window)");
         hists.TightTagTightProbeInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightProbeInZwin")), "(probe, iso in Z mass Window)");
         hists.TightTagTightProbePassesInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightProbePassesInZwin")), "(probe passes, iso in Z mass Window)");
+        hists.TightTagTightCJProbeInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightCJProbeInZwin")), "(CJ probe, iso in Z mass Window)");
+        hists.TightTagTightCJProbePassesInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightCJProbePassesInZwin")), "(CJ probe passes, iso in Z mass Window)");
     }
 
     hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -1794,17 +1827,25 @@ void HeavyNu::studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons,
             if ( !inZmassWindow(tpMass) ) continue ; 
             // Remove probes that overlap with valid jets
             bool probeJetOverlap = false ; 
-            for (unsigned int k=0; k<jets.size(); k++) 
-                if ( deltaR(jets.at(k).eta(), jets.at(k).phi(),
-                            theProbe.eta(), theProbe.phi()) < cuts.minimum_muon_jet_dR ) probeJetOverlap = true ;
-            if ( probeJetOverlap ) continue ;
+            double dRclosestjet = 9999. ; 
+            for (unsigned int k=0; k<jets.size(); k++) {
+                double dR_jet_tightmu = deltaR(jets.at(k).eta(), jets.at(k).phi(),theProbe.eta(), theProbe.phi()) ; 
+                if ( dR_jet_tightmu < cuts.minimum_muon_jet_dR ) probeJetOverlap = true ;
+            }
+            if ( probeJetOverlap ) continue ; // All probes must be separated from jets
 
             // Confirmed: we have a valid probe
             nMuonIsoProbes++ ; 
             hists.TightTagTightProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
 
-            if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) 
+            if ( dRclosestjet < 0.8 ) 
+                hists.TightTagTightCJProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+            
+            if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) {
                 hists.TightTagTightProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+                if ( dRclosestjet < 0.8 )
+                    hists.TightTagTightCJProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+            }
         }
     }
     if ( nTrackProbes > 2 )   std::cout << "WARNING: Found more track probes than expected --> " << nTrackProbes << std::endl ; 
@@ -1812,9 +1853,10 @@ void HeavyNu::studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons,
             
 }
 
+/*
 void HeavyNu::studyIsolation(const std::vector<pat::Muon>& muons,
                              const std::vector< std::pair<pat::Jet, float> >& jets,
-                             bool mu1tag, bool mu2tag, double weight) {
+                             std::vector<bool> isTag, double weight) {
     //
     // Now look for "close jet" effects
     //
@@ -1824,7 +1866,7 @@ void HeavyNu::studyIsolation(const std::vector<pat::Muon>& muons,
     double m12 = (mu1.p4() + mu2.p4()).M();
     if(!inZmassWindow(m12)) return;
     // With at least one tagged: same ordering in muon list, hne
-    if(!mu1tag && !mu2tag) return;
+    if(!isTag.at(0) && !mu2tag) return;
 
     bool mu1close = false;
     bool mu2close = false;
@@ -1853,6 +1895,7 @@ void HeavyNu::studyIsolation(const std::vector<pat::Muon>& muons,
     if(mu2close && hnu::muIsolation(mu2, 1.0) < cuts.muon_trackiso_limit)
         hists.closejetMu1tagMu2passInZwin->Fill(mu2.pt(), weight);
 }
+*/
 
 void HeavyNu::studyJetVertex(edm::Handle<pat::JetCollection>& pJets,
                              edm::Handle<reco::JPTJetCollection>& jptJets,
@@ -2241,10 +2284,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
             if ( nTrigs > 0 ) {
                 studyMuonSelectionEff( muCands,validJets,pTracks, gTracks, beamSpotHandle, isTrigMuon, hnuEvent.eventWgt);
+                // studyIsolation(muCands,validJets,isTrigMuon,hnuEvent.eventWgt);
             }
         }
-        if (muCands.size() == 2)
-            studyIsolation(muCands, jetCands, mu1trig, mu2trig, hnuEvent.eventWgt);
     }
     if(hnuEvent.nMuons < 2) return false;
 
@@ -2307,6 +2349,44 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Event meets vertex requirements
     hists.VertexCuts.fill(hnuEvent, nnif_->masspts());
 
+    //--- The "basic" object, trigger, and (possibly) vertex requirements should be done ---//
+    //--- Consider alternative selection requirements ---//
+    if ( studyAlternativeSelection_ ) {
+        double mu1pt = applyMESfactor_ * hnuEvent.mu1.pt() ;
+        double mu2pt = applyMESfactor_ * hnuEvent.mu2.pt() ;
+        double j1pt  = hnuEvent.j1scale * hnuEvent.j1.pt() ; 
+        double j2pt  = hnuEvent.j2scale * hnuEvent.j2.pt() ; 
+        if ( hnuEvent.mMuMu >= cuts.minimum_mumu_mass ) { // Standard dimuon requirement
+            if ( mu1pt >= 40. ) hists.AlternativeMu1Pt40.fill(hnuEvent, v_null) ;
+            if ( mu1pt >=  cuts.minimum_mu1_pt ) { // Standard mu1 pT requirement
+                if ( mu2pt >= 40. ) {
+                    hists.AlternativeMu2Pt40.fill(hnuEvent, v_null) ;
+                    if ( mu1pt >= 80. ) hists.AlternativeElecChanPt.fill(hnuEvent, v_null) ;
+                }
+                if ( mu2pt >= 60. ) hists.AlternativeMu2Pt60.fill(hnuEvent, v_null) ;
+                if ( j2pt >= 60. )  hists.AlternativeJetPt60.fill(hnuEvent, v_null) ;
+                //--- Requirement for at least one muon to be barrel ---//
+                bool atLeastOneBarrelMuonLoose = ( fabs(hnuEvent.mu1.eta()) < 1.2 || fabs(hnuEvent.mu2.eta()) < 1.2 ) ;
+                bool atLeastOneBarrelMuonTight = ( fabs(hnuEvent.mu1.eta()) < 0.8 || fabs(hnuEvent.mu2.eta()) < 0.8 ) ;
+                if ( atLeastOneBarrelMuonLoose ) {
+                    hists.AlternativeBarrelLoose.fill(hnuEvent, v_null) ;
+                    if ( atLeastOneBarrelMuonTight ) hists.AlternativeBarrelTight.fill(hnuEvent, v_null) ;
+                }
+                //--- Checking for b-tagged jets using TCHE Loose ---//
+                int nBtags = 0 ;
+                if ( hnuEvent.j1.bDiscriminator(btagName) >= minBtagDiscVal ) nBtags++ ;  
+                if ( hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal ) nBtags++ ;  
+                if ( nBtags > 0 )  hists.AlternativeAtLeastOneBjet.fill(hnuEvent, v_null) ;
+                if ( nBtags == 2 ) hists.AlternativeTwoBjets.fill(hnuEvent, v_null) ;
+            }
+        }
+        if ( hnuEvent.mMuMu >= 120. ) {
+            if ( mu1pt >=  cuts.minimum_mu1_pt ) { // Standard mu1 pT requirement
+                hists.AlternativeDimuonMass120.fill(hnuEvent, v_null) ;
+            }
+        }
+    }
+    
     if(studyScaleFactorEvolution_)
     {
         double mu1pt = applyMESfactor_ * hnuEvent.mu1.pt();
@@ -2334,13 +2414,20 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if(hnuEvent.mMuMu < 40) return false; // Sanity check...remove low mass points
     hists.loDiLmassCut.fill(hnuEvent, nnif_->masspts());
-
+    if ( studyRatePerRun_ && inZmassWindow(hnuEvent.mMuMu) )
+        hists.z2jetPerRun->Fill( iEvent.id().run() ) ; 
+    
     if(hnuEvent.mMuMu < cuts.minimum_mumu_mass) return false; // dimuon mass cut
     hists.cutlevel->Fill(5.0, hnuEvent.eventWgt); // Event meets dimuon mass requirements
     hists.diLmassCut.fill(hnuEvent, nnif_->masspts());
 
     if(iEvent.isRealData())
     {
+        bool mu1posChg = (hnuEvent.mu1.charge() > 0) ; 
+        bool mu2posChg = (hnuEvent.mu2.charge() > 0) ;
+        if ( hnuEvent.mu1.charge() == 0 || hnuEvent.mu2.charge() == 0 )
+            std::cout << "WARNING: found muon with zero charge" << std::endl ; 
+
         std::cout << "\t" << iEvent.id() << std::endl;
         std::cout << "\tM(W_R)  = " << hnuEvent.mWR << " GeV";
         std::cout << ", M(NuR1) = " << hnuEvent.mNuR1 << " GeV";
@@ -2352,9 +2439,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         std::cout << ", j2 ";
         outputCandidate(hnuEvent.j2);
         std::cout << std::endl;
-        std::cout << "\tMuons: mu1 ";
+        std::cout << "\tMuons: mu1, mu" << (mu1posChg ? "+":"-");
         outputCandidate(hnuEvent.mu1);
-        std::cout << ", mu2 ";
+        std::cout << ", mu2, mu" << (mu2posChg ? "+":"-");
         outputCandidate(hnuEvent.mu2);
         std::cout << std::endl;
     }
