@@ -34,12 +34,12 @@ runAnalysis = True
 systematics = False
 
 #--- Flags for Top studies ---#
-topStudy = True
+topStudy = False
 
 #--- Flags for QCD studies ---#
 qcdStudy  = False
 doDijet   = False
-doQuadjet = False
+doQuadJet = False
 doClosure = False
 
 #--- Should always be True ---#
