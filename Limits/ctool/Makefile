@@ -10,8 +10,9 @@ LDFLAGS := `root-config --libs`
 
 all : exe
 
-exe: makeLimitFile2010.exe makeLimitFile2011.exe makeLimitFile2Y.exe \
-	makeLimitFileELEC2010.exe makeLimitFileELEC2011.exe makeLimitFileELEC2Y.exe
+exe: makeLimitFile2010.exe makeLimitFile2011.exe makeLimitFile2Y.exe 
+
+#	makeLimitFileELEC2010.exe makeLimitFileELEC2011.exe makeLimitFileELEC2Y.exe
 
 makeLimitFile2010.exe: makeLimitFile.o makeLimitFile2010.o systematics.o
 	${CXX} -g -o $@ $^  ${LDFLAGS}

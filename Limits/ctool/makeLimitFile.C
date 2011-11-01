@@ -15,19 +15,19 @@ struct BShape { BShape(double v, double s) : value(v),slope(s) {}
 };
 
 // name of the histogram containing the observations
-const char* data_hist_name = "hNu/cut8_mWRmass/mWR";
+const char* data_hist_name = "hNu/cut6_mWRmass/mWR";
 // name of the histogram containing the signal
 const char* signal_hist_name = "hNu/cut6_mWRmass/mWR";
 const char* signal_norm_hist = "hNu/mc_type";
 // functional parameters for ttbar (total per ipb, exponential slope)
 const BShape bkgd_tt2010(0.867*1.02/36.1, -5.27e-3);
-const BShape bkgd_tt2011(5.52*1.08/204, -5.05e-3);
+const BShape bkgd_tt2011(41.3/2140, -5.00e-3);
 // functional parameters for z+jets (total per ipb, exponential slope)
 const BShape bkgd_zj2010(0.598*1.01/36.1, -3.61e-3);
-const BShape bkgd_zj2011(3.57*1.12/204, -3.81e-3);
+const BShape bkgd_zj2011(28.6/2140, -3.35e-3);
 // functional parameters for other backgrounds (w+jets, VV, QCD, tW)
 const BShape bkgd_other2010((0.03+0.04+0.027)/36.1+0.0026, -4e-3);
-const BShape bkgd_other2011((0.18+0.17+0.05)/204.0, -4.6e-3);
+const BShape bkgd_other2011((3.24+0.39)/2140, -3.88e-3);
 
 // names
 const char* jnames[]= {"WR","TT","ZJ","OT"};
@@ -37,7 +37,7 @@ const BShape jbkgd2011[]={bkgd_tt2011,bkgd_zj2011,bkgd_other2011};
 
 // Histogram manipulation
 const double minimum_signal_content=0.01;
-const double bkgd_norm_low=520.0;
+const double bkgd_norm_low=600.0;
 const double bkgd_norm_high=2000.0;
 
 #include <stdio.h>
@@ -69,6 +69,11 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileNa
   }
   
   FILE* limitFile=fopen(limitFileName,"wt");
+
+  if (limitFile==0) {
+    fprintf(stderr,"Unable to open '%s' for writing\n",limitFileName);
+    return;
+  }
   
   fprintf(limitFile,"imax %d\n",nbins);
   fprintf(limitFile,"jmax %d  # tt and zjets\n",jmax);
@@ -125,7 +130,7 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signal
   TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
   //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
-  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->GetBinContent(3));
+  double normSignal=0.0;
   // double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<PerBinInfo> pbi;
@@ -133,7 +138,7 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signal
   datah->Rebin(5);
   sigh->Rebin(5);
 
-  int ilow=3;
+  int ilow=4;
   int ihigh=10;
 
   switch (mwr) {
@@ -158,7 +163,7 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signal
     */
     if (ibin<ilow || ibin>ihigh) continue;
     PerBinInfo abin;
-    abin.lowEdge=std::max(520.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
+    abin.lowEdge=std::max(600.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
     abin.highEdge=sigh->GetXaxis()->GetBinUpEdge(ibin);
     abin.signal=sigh->GetBinContent(ibin)*normSignal*lumi;
     abin.lumi=lumi;
@@ -181,15 +186,15 @@ void makeLimitFile2010(int mwr, TFile* dataf, TFile* signalf, const char* limitF
 std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf, TFile* signalf) {
   TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
-  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
-  //  double min_level_abs=minimum_signal_content*sigh->Integral();
+  //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
+  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->GetBinContent(3);  //  double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<PerBinInfo> pbi;
 
   datah->Rebin(5);
   sigh->Rebin(5);
 
-  int ilow=3;
+  int ilow=4;
   int ihigh=10;
 
   switch (mwr) {
@@ -198,15 +203,20 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
   case (900) : ihigh=7; break;
   case (1000) : ihigh=8; break;
   case (1100) : ihigh=8; break;
-  case (1200) : ilow=4; ihigh=9; break;
-  case (1300) : ilow=4; ihigh=9; break;
-  case (1400) : ilow=4; ihigh=9; break;
+  case (1200) : ihigh=9; break;
+  case (1300) : ihigh=9; break;
+  case (1400) : ihigh=9; break;
   case (1500) : ilow=4; ihigh=10; break;
   case (1600) : ilow=4; ihigh=10; break;
+  case (1700) :
   case (1800) : ilow=4; ihigh=11; break;
+  case (1900) :
   case (2000) : ilow=5; ihigh=12; break;
+  case (2100) :
   case (2200) : ilow=6; ihigh=13; break;
+  case (2300) :
   case (2400) : ilow=7; ihigh=14; break;
+  case (2500) : ilow=7; ihigh=14; break;
   };
     
   
@@ -220,14 +230,14 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
     if (ibin<ilow || ibin>ihigh) continue;
 
     PerBinInfo abin;
-    abin.lowEdge=std::max(520.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
+    abin.lowEdge=std::max(600.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
     abin.highEdge=sigh->GetXaxis()->GetBinUpEdge(ibin);
     abin.signal=sigh->GetBinContent(ibin)*normSignal*lumi;
     abin.lumi=lumi;
     abin.year=2011;
     abin.data=int(datah->GetBinContent(ibin));
     char name[10];
-    sprintf(name,"b%02d",ibin);
+    sprintf(name,"b%02d",ibin-3);
     abin.binName=name;
     if (abin.signal>0.01) 
       pbi.push_back(abin);
