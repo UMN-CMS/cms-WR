@@ -149,12 +149,14 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
       // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
       // Requirements to see if the trigger would have accepted the event based on this muon
       if ( hltPathMatch && muonTrigger.pt() > triggerPt_ ) { 
-	matched = true ; 
-
 	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( m,muonTrigger );
 	double dpt  = 1.-(muonTrigger.pt()/m.pt());
 	double dphi = reco::deltaPhi( m.phi(),muonTrigger.phi() );
 	double deta = m.eta() - muonTrigger.eta();
+
+	// One more requirement: make sure that the muon is nearby the trigger object
+	if ( sqrt(dr2) < 0.1 ) matched = true ; 
+
 //         std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
 //         std::cout << "dR is " << sqrt(dr2) << std::endl ; 
 

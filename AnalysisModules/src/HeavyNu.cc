@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.76 2011/10/24 22:08:12 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.77 2011/10/27 22:57:43 bdahmes Exp $
 //
 //
 
@@ -64,6 +64,7 @@
 #include "TH2.h"
 #include "TProfile2D.h"
 #include "TVector3.h"
+#include "TRandom.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
@@ -249,13 +250,13 @@ private:
     //         HeavyNuEvent& hne);
     virtual TH1 *bookRunHisto(uint32_t runNumber);
 
-    virtual void studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons,
-                                       std::vector<pat::Jet>& jets,
-                                       edm::Handle<pat::GenericParticleCollection>& pTracks,
-                                       edm::Handle<reco::TrackCollection>& gTracks,
-                                       edm::Handle<reco::BeamSpot>& beamspot, 
-                                       std::vector<bool> isTag,
-                                       double wgt);
+    virtual void studyMuonSelectionEff(const std::vector< std::pair<pat::Muon,pat::GenericParticle> >& trackTP, 
+				       const std::vector< std::pair<pat::Muon,pat::Muon> >& tightTP, 
+				       const std::vector< std::pair<pat::Muon,pat::Muon> >& cjTP, 
+				       const std::vector< pat::Muon >& tightMuons, 
+				       const edm::Handle<reco::TrackCollection>& gTracks,
+				       const edm::Handle<reco::BeamSpot>& beamspot, 
+				       double wgt);
 //     virtual void studyIsolation(const std::vector<pat::Muon>& muons,
 //                                 const std::vector< std::pair<pat::Jet, float> >& jets,
 //                                 bool mu1tag, bool mu2tag, double weight);
@@ -291,7 +292,10 @@ private:
     bool applyMuIDCorrections_;
     int applyMuIDEffsign_; // for Loose+Iso efficiency correction
     bool studyMuonSelectionEff_; // for Muon Loose ID Efficiency studies
+    bool oneTP_ ;
     bool studyScaleFactorEvolution_; // for Top, Z+jets scale factors (by Mu1 pT) studies
+    int tpSeed_ ; 
+    TRandom *tpRandom_;
 
     bool disableTriggerCorrection_; // turn off the trigger emulator
     int pileupEra_;
@@ -335,6 +339,8 @@ private:
         void fill(const pat::Muon& theTag, const pat::GenericParticle& theProbe, const double trkIso, const double wgt) ; 
         
         TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2;
+        TH1 *etaMu1pt30, *etaMu1pt40, *etaMu2pt30, *etaMu2pt40 ; 
+        TH1 *phiMu1pt30, *phiMu1pt40, *phiMu2pt30, *phiMu2pt40 ; 
         TH2 *ptMu1VsPtMu2ss, *ptMu1VsPtMu2os;
         TH1 *etaMu1, *etaMu2, *etaJet1, *etaJet2;
         TH1 *phiMu1, *phiMu2, *phiJet1, *phiJet2;
@@ -347,6 +353,7 @@ private:
 
         TH1 *ptTag, *etaTag, *phiTag ; 
         TH1 *ptProbe, *etaProbe, *phiProbe ; 
+        TH1 *etaProbePt30, *etaProbePt40, *phiProbePt30, *phiProbePt40 ; 
         TH1 *ptProbeRiso100, *etaProbeRiso100, *phiProbeRiso100 ; 
         TH1 *ptProbeRiso50, *etaProbeRiso50, *phiProbeRiso50 ; 
         TH1 *ptProbeRiso20, *etaProbeRiso20, *phiProbeRiso20 ; 
@@ -472,9 +479,11 @@ private:
         HistPerDef TightTagTightProbePassesInZwin;
         HistPerDef TightTagTightCJProbeInZwin;
         HistPerDef TightTagTightCJProbePassesInZwin;
+        HistPerDef TightTagTrigProbeInZwin;
+        HistPerDef TightTagTrigProbePassesInZwin;
         HistPerDef Mu1TrigMatchesInZwin;
         HistPerDef Mu2TrigMatchesInZwin;
-        HistPerDef Mu1Mu2TrigMatchesInZwin;
+        // HistPerDef Mu1Mu2TrigMatchesInZwin;
     } hists;
 
     struct CutsStruct
@@ -532,12 +541,28 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     ptMu2 = td->make<TH1D > ("ptMu2", t.c_str(), 100, 0., 1000.);
     t = "#eta(#mu_{1}) " + post;
     etaMu1 = td->make<TH1D > ("etaMu1", t.c_str(), 40, -2.5, 2.5);
+    t = "#eta(#mu_{1}, p_{T} > 30 GeV) " + post;
+    etaMu1pt30 = td->make<TH1D > ("etaMu1pt30", t.c_str(), 40, -2.5, 2.5);
+    t = "#eta(#mu_{1}, p_{T} > 40 GeV) " + post;
+    etaMu1pt40 = td->make<TH1D > ("etaMu1pt40", t.c_str(), 40, -2.5, 2.5);
     t = "#eta(#mu_{2}) " + post;
     etaMu2 = td->make<TH1D > ("etaMu2", t.c_str(), 40, -2.5, 2.5);
+    t = "#eta(#mu_{2}, p_{T} > 30 GeV) " + post;
+    etaMu2pt30 = td->make<TH1D > ("etaMu2pt30", t.c_str(), 40, -2.5, 2.5);
+    t = "#eta(#mu_{2}, p_{T} > 40 GeV) " + post;
+    etaMu2pt40 = td->make<TH1D > ("etaMu2pt40", t.c_str(), 40, -2.5, 2.5);
     t = "#phi(#mu_{1}) " + post;
     phiMu1 = td->make<TH1D > ("phiMu1", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(#mu_{1}, p_{T} > 30 GeV) " + post;
+    phiMu1pt30 = td->make<TH1D > ("phiMu1pt30", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(#mu_{1}, p_{T} > 40 GeV) " + post;
+    phiMu1pt40 = td->make<TH1D > ("phiMu1pt40", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(#mu_{2}) " + post;
     phiMu2 = td->make<TH1D > ("phiMu2", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(#mu_{2}, p_{T} > 30 GeV) " + post;
+    phiMu2pt30 = td->make<TH1D > ("phiMu2pt30", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(#mu_{2}, p_{T} > 40 GeV) " + post;
+    phiMu2pt40 = td->make<TH1D > ("phiMu2pt40", t.c_str(), 30, -3.14159, 3.14159);
 
     t = "p_{T}(#mu_{1}) vs. p_{T}(#mu_{2}) (SS) " + post + ";p_{T}(#mu_{1})(GeV);p_{T}(#mu_{2}(GeV))";
 
@@ -812,6 +837,10 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
 
     t = "#eta(probe) " + post;
     etaProbe = td->make<TH1D > ("etaProbe", t.c_str(), 40, -2.5, 2.5);
+    t = "#eta(probe p_{T} > 30 GeV) " + post;
+    etaProbePt30 = td->make<TH1D > ("etaProbePt30", t.c_str(), 40, -2.5, 2.5);
+    t = "#eta(probe p_{T} > 40 GeV) " + post;
+    etaProbePt40 = td->make<TH1D > ("etaProbePt40", t.c_str(), 40, -2.5, 2.5);
     t = "#eta(probe) 100% probe relIso " + post;
     etaProbeRiso100 = td->make<TH1D > ("etaProbeRiso100", t.c_str(), 40, -2.5, 2.5);
     t = "#eta(probe) 50% probe relIso " + post;
@@ -825,6 +854,10 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
 
     t = "#phi(probe) " + post;
     phiProbe = td->make<TH1D > ("phiProbe", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(probe p_{T} > 30 GeV) " + post;
+    phiProbePt30 = td->make<TH1D > ("phiProbePt30", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(probe p_{T} > 40 GeV) " + post;
+    phiProbePt40 = td->make<TH1D > ("phiProbePt40", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(probe) 100% probe relIso " + post;
     phiProbeRiso100 = td->make<TH1D > ("phiProbeRiso100", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(probe) 50% probe relIso " + post;
@@ -850,17 +883,17 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
 
     // ----------  Composite histograms  ----------
     t = "M(#mu #mu) " + post;
-    mMuMuTP = td->make<TH1D > ("mMuMuTP", t.c_str(), 80, 80, 120);
+    mMuMuTP = td->make<TH1D > ("mMuMuTP", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) 5% probe relIso " + post;
-    mMuMuTPRiso5 = td->make<TH1D > ("mMuMuTPRiso5", t.c_str(), 80, 80, 120);
+    mMuMuTPRiso5 = td->make<TH1D > ("mMuMuTPRiso5", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) 10% probe relIso " + post;
-    mMuMuTPRiso10 = td->make<TH1D > ("mMuMuTPRiso10", t.c_str(), 80, 80, 120);
+    mMuMuTPRiso10 = td->make<TH1D > ("mMuMuTPRiso10", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) 20% probe relIso " + post;
-    mMuMuTPRiso20 = td->make<TH1D > ("mMuMuTPRiso20", t.c_str(), 80, 80, 120);
+    mMuMuTPRiso20 = td->make<TH1D > ("mMuMuTPRiso20", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) 50% probe relIso " + post;
-    mMuMuTPRiso50 = td->make<TH1D > ("mMuMuTPRiso50", t.c_str(), 80, 80, 120);
+    mMuMuTPRiso50 = td->make<TH1D > ("mMuMuTPRiso50", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) 100% probe relIso " + post;
-    mMuMuTPRiso100 = td->make<TH1D > ("mMuMuTPRiso100", t.c_str(), 80, 80, 120);
+    mMuMuTPRiso100 = td->make<TH1D > ("mMuMuTPRiso100", t.c_str(), 60, 60, 120);
 
 }// end of book()
 
@@ -891,6 +924,23 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
 
     phiMu1->Fill(m0.phi(), wgt);
     phiMu2->Fill(m1.phi(), wgt);
+
+    if ( m0.pt() > 30. ) { 
+      etaMu1pt30->Fill(m0.eta(), wgt);
+      phiMu1pt30->Fill(m0.phi(), wgt);
+      if ( m0.pt() > 40. ) { 
+	etaMu1pt40->Fill(m0.eta(), wgt);
+	phiMu1pt40->Fill(m0.phi(), wgt);
+      }
+    }
+    if ( m1.pt() > 30. ) { 
+      etaMu2pt30->Fill(m1.eta(), wgt);
+      phiMu2pt30->Fill(m1.phi(), wgt);
+      if ( m1.pt() > 40. ) { 
+	etaMu2pt40->Fill(m1.eta(), wgt);
+	phiMu2pt40->Fill(m1.phi(), wgt);
+      }
+    }
 
     dPhiMu->Fill(fabs(deltaPhi(m0.phi(), m1.phi())), wgt);
     dEtaMu->Fill(fabs(m0.eta() - m1.eta()), wgt);
@@ -1093,6 +1143,23 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
     phiMu1->Fill(hne.mu1.phi(), wgt);
     phiMu2->Fill(hne.mu2.phi(), wgt);
+
+    if ( mu1pt > 30. ) { 
+      etaMu1pt30->Fill(hne.mu1.eta(), wgt);
+      phiMu1pt30->Fill(hne.mu1.phi(), wgt);
+      if ( mu1pt > 40. ) { 
+	etaMu1pt40->Fill(hne.mu1.eta(), wgt);
+	phiMu1pt40->Fill(hne.mu1.phi(), wgt);
+      }
+    }
+    if ( mu2pt > 30. ) { 
+      etaMu2pt30->Fill(hne.mu2.eta(), wgt);
+      phiMu2pt30->Fill(hne.mu2.phi(), wgt);
+      if ( mu2pt > 40. ) { 
+	etaMu2pt40->Fill(hne.mu2.eta(), wgt);
+	phiMu2pt40->Fill(hne.mu2.phi(), wgt);
+      }
+    }
 
     dPhiMu->Fill(fabs(deltaPhi(hne.mu1.phi(), hne.mu2.phi())), wgt);
     dEtaMu->Fill(fabs(hne.mu1.eta() - hne.mu2.eta()), wgt);
@@ -1306,6 +1373,16 @@ void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
     etaProbe->Fill(theProbe.eta(), wgt);
     phiProbe->Fill(theProbe.phi(), wgt);
 
+    // Special histograms for extra checking
+    if ( theProbe.pt() > 30. ) { 
+      etaProbePt30->Fill(theProbe.eta(), wgt) ; 
+      phiProbePt30->Fill(theProbe.phi(), wgt) ; 
+      if ( theProbe.pt() > 40. ) { 
+	etaProbePt40->Fill(theProbe.eta(), wgt) ; 
+	phiProbePt40->Fill(theProbe.phi(), wgt) ; 
+      }
+    }
+
     tagTrackIso ->Fill(theTag.trackIso(), wgt);
     probeTrackIso ->Fill(probeTrkIso, wgt);
 
@@ -1427,6 +1504,11 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     if(applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
 
     studyMuonSelectionEff_ = iConfig.getParameter<bool>("studyMuSelectEff");
+    oneTP_  = iConfig.getParameter<bool>("oneTPcand");
+    if (studyMuonSelectionEff_ && oneTP_) { 
+      tpSeed_   = iConfig.getParameter<int>("tpRandomSeed");
+      tpRandom_ = new TRandom(tpSeed_);
+    }
 
     studyScaleFactorEvolution_ = iConfig.getParameter<bool>("studyScaleFactor");
     studyAlternativeSelection_ = iConfig.getParameter<bool>("alternativeSelections");
@@ -1568,7 +1650,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     {
         hists.Mu1TrigMatchesInZwin.book(new TFileDirectory(fs->mkdir("Mu1TrigMatchesInZwin")), "(#mu1 trigger match in Z mass Window)", v_null);
         hists.Mu2TrigMatchesInZwin.book(new TFileDirectory(fs->mkdir("Mu2TrigMatchesInZwin")), "(#mu2 Trigger match in Z mass Window)", v_null);
-        hists.Mu1Mu2TrigMatchesInZwin.book(new TFileDirectory(fs->mkdir("Mu1Mu2TrigMatchesInZwin")), "(#mu1,#mu2 Trigger match in Z mass Window)", v_null);
+        // hists.Mu1Mu2TrigMatchesInZwin.book(new TFileDirectory(fs->mkdir("Mu1Mu2TrigMatchesInZwin")), "(#mu1,#mu2 Trigger match in Z mass Window)", v_null);
         trig_->book(*(hists.Mu1TrigMatchesInZwin.mydir), &(hists.Mu1TrigMatchesInZwin.trigHistos));
         trig_->book(*(hists.Mu2TrigMatchesInZwin.mydir), &(hists.Mu2TrigMatchesInZwin.trigHistos));
     }
@@ -1581,6 +1663,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.TightTagTightProbePassesInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightProbePassesInZwin")), "(probe passes, iso in Z mass Window)");
         hists.TightTagTightCJProbeInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightCJProbeInZwin")), "(CJ probe, iso in Z mass Window)");
         hists.TightTagTightCJProbePassesInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTightCJProbePassesInZwin")), "(CJ probe passes, iso in Z mass Window)");
+        hists.TightTagTrigProbeInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTrigProbeInZwin")), "(Trig probe, in Z mass Window)");
+        hists.TightTagTrigProbePassesInZwin.bookTagProbe(new TFileDirectory(fs->mkdir("TightTagTrigProbePassesInZwin")), "(Trig probe passes, in Z mass Window)");
     }
 
     hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -1739,118 +1823,67 @@ TH1 * HeavyNu::bookRunHisto(uint32_t runNumber)
     return hists.rundir->make <TH1I > (runstr.c_str(), runstr.c_str(), 1, 1, 2);
 }
 
-// Study the ID/isolation efficiency using generic tracks 
-// Input HNE may not have two valid muons.  
-// If one muon is tight then there is only one tag.  If both are tight, you have two tags
-void HeavyNu::studyMuonSelectionEff(std::vector<pat::Muon>& tightMuons, 
-                                    std::vector<pat::Jet>& jets,
-                                    edm::Handle<pat::GenericParticleCollection>& pTracks,
-                                    edm::Handle<reco::TrackCollection>& gTracks,
-                                    edm::Handle<reco::BeamSpot>& beamspot, 
-                                    std::vector<bool> isTag,
+void HeavyNu::studyMuonSelectionEff(const std::vector< std::pair<pat::Muon,pat::GenericParticle> >& trackTP, 
+				    const std::vector< std::pair<pat::Muon,pat::Muon> >& tightTP, 
+				    const std::vector< std::pair<pat::Muon,pat::Muon> >& cjTP, 
+				    const std::vector< pat::Muon >& tightMuons, 
+                                    const edm::Handle<reco::TrackCollection>& gTracks,
+                                    const edm::Handle<reco::BeamSpot>& beamspot, 
                                     double wgt) {
     
-    if ( tightMuons.size() < 1 || jets.size() < 2 ) return ;
-
-    pat::GenericParticleCollection trackCands = *(pTracks.product());
-    std::sort(trackCands.begin(), trackCands.end(), hnu::pTcompare());
-
     reco::TrackCollection generalTracks = *(gTracks.product()); 
 
-    int nTrackProbes = 0 ; int nMuonIsoProbes = 0 ; 
-    for (unsigned int i=0; i<tightMuons.size(); i++) {
-
-        // Tag is ALWAYS tight, trigger-matched, and isolated
-        if ( !isTag.at(i) ) continue ;
-        pat::Muon theTag = tightMuons.at(i) ;
-        if ( hnu::muIsolation(theTag,1.0) >= cuts.muon_trackiso_limit ) continue ; 
-
-        // First case:
-        // Probe is isolated track
-        for (unsigned int j=0; j<trackCands.size(); j++) {
-            pat::GenericParticle theProbe = trackCands.at(j) ; 
-            if ( theProbe.pt() <= cuts.minimum_mu2_pt ) break; // Sorted collection: quit once below
-            if ( fabs(theProbe.eta()) >= cuts.maximum_mu_abseta ) continue;
-            // Remove tag/probe overlaps
-            if ( deltaR(theTag.eta(), theTag.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
-                 fabs(theTag.pt()-theProbe.pt())/theTag.pt() < 0.05 ) continue ;  
-            // Only consider Z window
-            double tpMass = (theTag.p4() + theProbe.p4()).M() ;
-            if ( !inZmassWindow(tpMass) ) continue ; 
-            // Remove probes that overlap with valid jets
-            bool probeJetOverlap = false ; 
-            for (unsigned int k=0; k<jets.size(); k++) 
-                if ( deltaR(jets.at(k).eta(), jets.at(k).phi(),
-                            theProbe.eta(), theProbe.phi()) < cuts.minimum_muon_jet_dR ) probeJetOverlap = true ;
-            if ( probeJetOverlap ) continue ;
-
-            // Confirmed: we have a valid probe
-            // Calculate the isolation for the probe
-            double trkSumPtIsoCone = 0. ; 
-            for (unsigned int k=0; k<generalTracks.size(); k++) {
-                reco::Track track = generalTracks.at(k) ; 
-                double dR = deltaR(track.eta(), track.phi(), theProbe.eta(), theProbe.phi());
-                if ( fabs(dR) > 0.3 || fabs(dR) < 0.01 ) continue ;
-                if ( fabs(track.dxy(beamspot->position())) > 0.1 ) continue ;
-                double dz = fabs( theProbe.vertex().Z() - track.vertex().Z() ) ;
-                if ( dz > 0.2 ) continue ;
-                trkSumPtIsoCone += track.pt() ;
-            }
-            hists.TightTagTrackProbeInZwin.fill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-            nTrackProbes++ ;
-            // Does the probe pass tight ID selection?
-            unsigned int muIdx = tightMuons.size() ;
-            for (unsigned int k=0; k<tightMuons.size(); k++) {
-                if ( muIdx < tightMuons.size() ) break ; 
-                if ( k == i ) continue ;
-                pat::Muon tightMuon = tightMuons.at(k) ; 
-                if ( deltaR(tightMuon.eta(), tightMuon.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
-                     fabs(theProbe.pt()-tightMuon.pt())/theProbe.pt() < 0.05 ) {
-                    muIdx = k ;
-//                     std::cout << "Isolation comparison for track and matched tight muon: "
-//                               << trkSumPtIsoCone << " vs. " << tightMuon.trackIso() << std::endl ;
-                }
-            }
-            if ( muIdx < tightMuons.size() ) {
-                hists.TightTagTrackProbePassesInZwin.fill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-            }
-        }
-        
-        // Second case:
-        // Probe is tight muon
-        for (unsigned int j=0; j<tightMuons.size(); j++) {
-            // Remove tag/probe overlaps
-            if ( j == i ) continue ;
-            pat::Muon theProbe = tightMuons.at(j) ; 
-            // Only consider Z window
-            double tpMass = (theTag.p4() + theProbe.p4()).M() ;
-            if ( !inZmassWindow(tpMass) ) continue ; 
-            // Remove probes that overlap with valid jets
-            bool probeJetOverlap = false ; 
-            double dRclosestjet = 9999. ; 
-            for (unsigned int k=0; k<jets.size(); k++) {
-                double dR_jet_tightmu = deltaR(jets.at(k).eta(), jets.at(k).phi(),theProbe.eta(), theProbe.phi()) ; 
-                if ( dR_jet_tightmu < cuts.minimum_muon_jet_dR ) probeJetOverlap = true ;
-            }
-            if ( probeJetOverlap ) continue ; // All probes must be separated from jets
-
-            // Confirmed: we have a valid probe
-            nMuonIsoProbes++ ; 
-            hists.TightTagTightProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-
-            if ( dRclosestjet < 0.8 ) 
-                hists.TightTagTightCJProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-            
-            if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) {
-                hists.TightTagTightProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-                if ( dRclosestjet < 0.8 )
-                    hists.TightTagTightCJProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-            }
-        }
+    // First case: Check muon ID
+    // Probe is generic track meeting pT, eta requirements
+    for (unsigned int i=0; i<trackTP.size(); i++) {
+      pat::Muon            theTag   = trackTP.at(i).first ; 
+      pat::GenericParticle theProbe = trackTP.at(i).second ; 
+      // Calculate the isolation for the probe
+      double trkSumPtIsoCone = 0. ; 
+      for (unsigned int k=0; k<generalTracks.size(); k++) {
+	reco::Track track = generalTracks.at(k) ; 
+	double dR = deltaR(track.eta(), track.phi(), theProbe.eta(), theProbe.phi());
+	if ( fabs(dR) > 0.3 || fabs(dR) < 0.01 ) continue ;
+	if ( fabs(track.dxy(beamspot->position())) > 0.1 ) continue ;
+	double dz = fabs( theProbe.vertex().Z() - track.vertex().Z() ) ;
+	if ( dz > 0.2 ) continue ;
+	trkSumPtIsoCone += track.pt() ;
+      }
+      hists.TightTagTrackProbeInZwin.fill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
+      // Does the probe pass tight ID selection?
+      unsigned int muIdx = tightMuons.size() ;
+      for (unsigned int k=0; k<tightMuons.size(); k++) {
+	pat::Muon tightMuon = tightMuons.at(k) ; 
+	if ( deltaR(tightMuon.eta(), tightMuon.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
+	     fabs(theProbe.pt()-tightMuon.pt())/theProbe.pt() < 0.05 ) {
+	  muIdx = k ; break ; 
+	}
+      }
+      if ( muIdx < tightMuons.size() ) {
+	hists.TightTagTrackProbePassesInZwin.fill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
+      }
     }
-    if ( nTrackProbes > 2 )   std::cout << "WARNING: Found more track probes than expected --> " << nTrackProbes << std::endl ; 
-    if ( nMuonIsoProbes > 2 ) std::cout << "WARNING: Found more muon probes than expected  --> " << nMuonIsoProbes << std::endl ; 
-            
+        
+    // Second case: Check isolation
+    // Probe is tight muon separated from jets
+    for (unsigned int i=0; i<tightTP.size(); i++) {
+      pat::Muon theTag   = tightTP.at(i).first ; 
+      pat::Muon theProbe = tightTP.at(i).second ; 
+      // Confirmed: we have a valid probe
+      hists.TightTagTightProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+      if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) 
+	hists.TightTagTightProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+    }
+
+    // Third case:
+    // Probe is tight muon with 0.5 < dR(mu,j) < 0.8
+    for (unsigned int i=0; i<cjTP.size(); i++) {
+      pat::Muon theTag   = cjTP.at(i).first ; 
+      pat::Muon theProbe = cjTP.at(i).second ; 
+      hists.TightTagTightCJProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+      if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) 
+	hists.TightTagTightCJProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
+    }            
 }
 
 /*
@@ -2175,14 +2208,118 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_);
     hnuEvent.nJets = jetCands.size();
 
-    // Look for valid muons and put them in the event
+    // Look for valid muons
     std::vector<pat::Muon> muCands =
         hnu::getMuonList(pMuons, tevMuons, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_);
+    
+    // In order to avoid bias, necessary to perform muon studies 
+    // immediately after first creating the muon list
+    std::vector<pat::Muon> tagMuons ; 
+    for (unsigned int i=0; i<muCands.size(); i++) { 
+      // Muons already tight, in proper detector region, with sufficient pT
+      pat::Muon tagCand = muCands.at(i) ; 
+      if (hnu::muIsolation(tagCand) < cuts.muon_trackiso_limit) { 
+	if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, iEvent)) || 
+	     (!iEvent.isRealData() && trig_->simulateForMC(tagCand.pt(), tagCand.eta())) ) { 
+	  bool jetOverlap = false ; 
+	  for (unsigned int j=0; j<jetCands.size(); j++) { 
+	    pat::Jet jet = jetCands.at(j).first ; 
+	    if ( hnu::jetID(jet) > 0 ) {
+	      double dR = deltaR(tagCand.eta(), tagCand.phi(), jet.eta(), jet.phi()) ;
+	      if (dR <= cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; } 
+	    }
+	  }
+	  // If muon is separated from jets, is isolated, and trigger matched, it is a tag
+	  if ( !jetOverlap ) tagMuons.push_back( tagCand ) ; 
+	}
+      }
+    }
+
+    bool debuggingEvents = false ; 
+    if (studyMuonSelectionEff_) {
+
+        edm::Handle<reco::BeamSpot> beamSpotHandle;
+        if (!iEvent.getByLabel(InputTag("offlineBeamSpot"), beamSpotHandle))
+            throw cms::Exception("Trying to do efficiency studies, cannot find beam spot");
+
+        // Make sure that we have at least two jets
+        // keeping in mind that we only study efficiency for the nominal case
+        std::vector<pat::Jet> validJets ; 
+        for (unsigned int i=0; i<jetCands.size(); i++) { 
+            pat::Jet jet = jetCands.at(i).first ;
+            if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
+        }
+        if ( validJets.size() >= 2 && tagMuons.size() > 0 ) {
+	  //--- Create the two lists of probe muons ---//
+	  std::vector<pat::Muon> tightMuonProbes ; 
+	  std::vector<pat::Muon> cjMuonProbes ; 
+	  std::vector<pat::Muon> trigProbes ; 
+	  for (unsigned int i=0; i<muCands.size(); i++) {
+	    bool jetOverlap = false ; 
+	    double minDeltaR = 0.8 ; 
+	    for (unsigned int j=0; j<validJets.size(); j++) { 
+	      pat::Jet jet = validJets.at(j) ; 
+	      double dR = deltaR(muCands.at(i).eta(), muCands.at(i).phi(), jet.eta(), jet.phi()) ;
+	      if (dR < minDeltaR) minDeltaR = dR ; 
+	      if (dR <= cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; } 
+	    }
+	    if ( !jetOverlap ) {
+	      tightMuonProbes.push_back( muCands.at(i) ) ; 
+	      if ( minDeltaR < 0.8 ) cjMuonProbes.push_back( muCands.at(i) ) ; 
+	      if ( fabs(muCands.at(i).eta()) < 2.1 && 
+		   hnu::muIsolation(muCands.at(i)) < cuts.muon_trackiso_limit ) 
+		trigProbes.push_back( muCands.at(i) ) ; 
+	    }
+	  }
+	  std::vector< std::pair<pat::Muon,pat::Muon> > tagTightProbes = 
+              hnu::getTagProbePair<pat::Muon>( tagMuons,tightMuonProbes,ZwinMinGeV_,ZwinMaxGeV_,
+                                               ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
+	  std::vector< std::pair<pat::Muon,pat::Muon> > tagCJmuonProbes = 
+              hnu::getTagProbePair<pat::Muon>( tagMuons,cjMuonProbes,ZwinMinGeV_,ZwinMaxGeV_,
+                                               ((oneTP_)?(tpRandom_->Uniform()):(-1.0)),false ) ; 
+	  std::vector< std::pair<pat::Muon,pat::Muon> > tagTrigProbes = 
+              hnu::getTagProbePair<pat::Muon>( tagMuons,trigProbes,ZwinMinGeV_,ZwinMaxGeV_,
+                                               ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
+	  
+	  std::vector<pat::GenericParticle> trackProbes ; 
+	  pat::GenericParticleCollection trackCands = *(pTracks.product());
+	  std::sort(trackCands.begin(), trackCands.end(), hnu::pTcompare());
+	  for (unsigned int i=0; i<trackCands.size(); i++) {
+	    pat::GenericParticle trackCand = trackCands.at(i) ; 
+            if ( trackCand.pt() <= cuts.minimum_mu2_pt ) break ; // Sorted collection: quit once below
+            if ( fabs(trackCand.eta()) >= cuts.maximum_mu_abseta ) continue ;
+	    trackProbes.push_back( trackCand ) ; 
+	  } 
+	  std::vector< std::pair<pat::Muon,pat::GenericParticle> > tagTrackProbes = 
+              hnu::getTagProbePair<pat::GenericParticle>( tagMuons,trackProbes,ZwinMinGeV_,ZwinMaxGeV_,
+                                                          ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
+
+	  if ( tagTightProbes.size() > 0 || tagTrackProbes.size() > 0 ) debuggingEvents = true ; 
+
+	  // Defined both tag+probe collections
+	  studyMuonSelectionEff(tagTrackProbes,tagTightProbes,tagCJmuonProbes, 
+				muCands,gTracks,beamSpotHandle,hnuEvent.eventWgt);
+
+	  // Study Trigger Matching efficiency for data only
+	  if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
+	    for (unsigned int i=0; i<tagTrigProbes.size(); i++) { 
+	      pat::Muon theTag   = tagTrigProbes.at(i).first ; 
+	      pat::Muon theProbe = tagTrigProbes.at(i).second ; 
+	      hists.TightTagTrigProbeInZwin.fill( theTag,theProbe,theProbe.trackIso(),hnuEvent.eventWgt ) ; 
+	      if ( trig_->isTriggerMatched(theProbe, iEvent) )
+		hists.TightTagTrigProbePassesInZwin.fill( theTag,theProbe,theProbe.trackIso(),hnuEvent.eventWgt ) ; 
+	    }
+	  }
+	}
+    }
+
+    if ( debuggingEvents ) std::cout << "Debugging event " << iEvent.id() << std::endl ; 
+
     if (muCands.size() >= 2) { 
         hists.LLptCuts.fill(muCands, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_);
     } else return false ; 
         
-    if(hnuEvent.nJets < 2) return false;
+    if(hnuEvent.nJets < 2) return false ;
 
     hnuEvent.j1 = jetCands.at(0).first;
     hnuEvent.j2 = jetCands.at(1).first;
@@ -2250,44 +2387,13 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         else
         {
             mu1trig = (hnuEvent.nMuons > 0) &&
-                    trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu1.pt(), applyTrigEffsign_);
+	      trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu1.pt(), hnuEvent.mu1.eta(), applyTrigEffsign_);
             mu2trig = (hnuEvent.nMuons > 1) &&
-                    trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu2.pt(), applyTrigEffsign_);
+	      trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu2.pt(), hnuEvent.mu1.eta(), applyTrigEffsign_);
         }
     }
     // std::cout << "Trigger results: " << mu1trig << ", " << mu2trig << std::endl ; 
 
-    if(studyMuonSelectionEff_)
-    {
-
-        edm::Handle<reco::BeamSpot> beamSpotHandle;
-        if (!iEvent.getByLabel(InputTag("offlineBeamSpot"), beamSpotHandle))
-            throw cms::Exception("Trying to do efficiency studies, cannot find beam spot");
-
-        // Make sure that we have at least two jets
-        // keeping in mind that we only study efficiency for the nominal case
-        std::vector<pat::Jet> validJets ; 
-        for (unsigned int i=0; i<jetCands.size(); i++) { 
-            pat::Jet jet = jetCands.at(i).first ;
-            if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
-        }
-        if ( validJets.size() >= 2 && muCands.size() > 0 ) {
-            std::vector<bool> isTrigMuon ; // Muon can only be a tag if it is both tight AND trigger matched
-            int nTrigs = 0 ; 
-            for (unsigned int i=0; i<muCands.size(); i++) {
-                bool isTrig = true ; // Default true for MC, as trigger "matching" is random
-                // Overwrite trigger decision for data with the REAL decision
-                if ( trig_->matchingEnabled() && iEvent.isRealData() )
-                    isTrig = trig_->isTriggerMatched(muCands.at(i), iEvent) ;
-                if ( isTrig ) nTrigs++ ; 
-                isTrigMuon.push_back( isTrig ) ;
-            }
-            if ( nTrigs > 0 ) {
-                studyMuonSelectionEff( muCands,validJets,pTracks, gTracks, beamSpotHandle, isTrigMuon, hnuEvent.eventWgt);
-                // studyIsolation(muCands,validJets,isTrigMuon,hnuEvent.eventWgt);
-            }
-        }
-    }
     if(hnuEvent.nMuons < 2) return false;
 
     // std::cout << "2m2j event weight is: " << hnuEvent.eventWgt << std::endl ; 
@@ -2307,25 +2413,25 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             mu1trig, mu2trig, iEvent.id().run())) return false;
     hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Event meets trigger requirements
     hists.TrigMatches.fill(hnuEvent, v_null);
-    //--- Study Trigger Matching efficiency ---//
-    if(trig_->matchingEnabled() && iEvent.isRealData())
-    {
-        if(inZmassWindow(hnuEvent.mMuMu) &&
-                (fabs(hnuEvent.mu1.eta()) < 2.1) &&
-                (fabs(hnuEvent.mu2.eta()) < 2.1))
-        {
-            if(mu1trig)
-            {
-                hists.Mu1TrigMatchesInZwin.fill(hnuEvent, v_null);
-                if(mu2trig)
-                {
-                    hists.Mu2TrigMatchesInZwin.fill(hnuEvent, v_null);
-                    hists.Mu1Mu2TrigMatchesInZwin.fill(hnuEvent, v_null);
-                }
-            }
-            else if(mu2trig) hists.Mu2TrigMatchesInZwin.fill(hnuEvent, v_null);
-        }
-    }
+    // //--- Study Trigger Matching efficiency ---//
+    // if(trig_->matchingEnabled() && iEvent.isRealData())
+    // {
+    //     if(inZmassWindow(hnuEvent.mMuMu) &&
+    //             (fabs(hnuEvent.mu1.eta()) < 2.1) &&
+    //             (fabs(hnuEvent.mu2.eta()) < 2.1))
+    //     {
+    //         if(mu1trig)
+    //         {
+    //             hists.Mu1TrigMatchesInZwin.fill(hnuEvent, v_null);
+    //             if(mu2trig)
+    //             {
+    //                 hists.Mu2TrigMatchesInZwin.fill(hnuEvent, v_null);
+    //                 hists.Mu1Mu2TrigMatchesInZwin.fill(hnuEvent, v_null);
+    //             }
+    //         }
+    //         else if(mu2trig) hists.Mu2TrigMatchesInZwin.fill(hnuEvent, v_null);
+    //     }
+    // }
 
     nnif_->fillvector(hnuEvent);
     nnif_->output(hnuEvent.nnoutputs);
