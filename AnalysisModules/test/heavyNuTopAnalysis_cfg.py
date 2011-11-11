@@ -7,7 +7,7 @@ import os
 #isMCsignal=sys.modules['__main__'].isMCsignal
 #process = sys.modules['__main__'].process
 
-isMC=False
+isMC=True
 isMCsignal=False
 Training=False
 isRun2011LoLumi=False
@@ -36,7 +36,7 @@ process.options = cms.untracked.PSet(
 )
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/data/Run2011A/SingleMu/AOD/05Aug2011-v1/0000/96291883-D9C0-E011-9352-0026189437F8.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S4_START42_V11-v2/0000/B03CFC20-CEA9-E011-B014-00261894397F.root')
 )
 
 if isData:

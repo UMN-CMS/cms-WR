@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 import os
 
 #--- Data/MC switch ---#
-isMC=False
+isMC=True
 isData=not isMC
 
 #--- Signal MC flags ---#
@@ -33,7 +33,7 @@ if not isRun2011A:
 #--- Flags for nominal studies ---#
 runAnalysis = True
 systematics = False
-tagandprobe = True
+tagandprobe = False
 
 #--- Flags for Top studies ---#
 topStudy = False
@@ -60,7 +60,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer11/DYToLL_M-50_1jEnh2_2jEnh35_3jEnh40_4jEnh50_7TeV-sherpa/AODSIM/PU_S4_START42_V11-v1/0000/FCC2BEF5-4ACD-E011-8D68-001A92971B38.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer11/DYToLL_M-50_1jEnh2_2jEnh35_3jEnh40_4jEnh50_7TeV-sherpa/AODSIM/PU_S4_START42_V11-v1/0000/922065AE-48CD-E011-97F7-002618FDA28E.root')
 )
 
 if isData:

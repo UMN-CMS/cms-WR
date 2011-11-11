@@ -16,65 +16,6 @@ HeavyNuEvent::HeavyNuEvent(anal_type theMode) {
   ElecScale = 1.0 ; 
 }
 
-// Fills the HNE object with relevant information
-// void HeavyNuEvent::initialize(int mode, 
-// 			      std::vector<pat::MuonRef> muons, 
-// 			      std::vector< std::pair<pat::JetRef,float> > jets,
-// 			      std::vector<pat::ElectronRef> electrons,
-// 			      double muPtScale, double muIsoLimit, double muJdR) {
-
-//   cutlevel = 0 ; // We do not pass any cuts to start
-
-//   if ( mode == HNU ) { // Nominal running
-
-//     if ( jets.size() < 2 ) return ; 
-//     j1 = jets.at(0) ; j2 = jets.at(1) ; 
-//     if ( (hnu::jetID(*j1) < 1) || (hnu::jetID(*j2) < 1) ) return ; 
-//     cutlevel = 1 ; // Two highest pT jets in the event pass ID requirements
-
-//     for (unsigned int i=0; i<muons.size(); i++) { 
-//       if ( !mu2.isNull() ) break ; 
-//       pat::MuonRef iM = muons.at(i) ; 
-//       if ( hnu::muIsolation((*iM),muPtScale) < muIsoLimit ) {
-// 	double dRj1 = deltaR(iM->eta(), iM->phi(), j1->eta(), j1->phi()) ; 
-// 	double dRj2 = deltaR(iM->eta(), iM->phi(), j2->eta(), j2->phi()) ; 
-// 	if (dRj1 > muJdR && dRj2 > muJdR) { 
-// 	  if      ( mu1.isNull() ) mu1 = iM ; 
-// 	  else if ( mu2.isNull() ) mu2 = iM ; 
-// 	  else    std::cout << "WARNING: Expected empty muon position" << std::endl ; 
-// 	}
-//       }
-//     }
-//     if ( mu2.isNull() ) return ;
-//     cutlevel = 2 ; // Two highest pT muons that are isolated, separated from chosen jets
-    
-//         if(trig_->matchingEnabled() &&
-//             iEvent.isRealData())
-//     {
-//         if(inZmassWindow(hnuEvent.mMuMu))
-//             hists.MuTightInZwin.fill(hnuEvent, v_null);
-
-//         // require that one muon be BOTH tight and trigger-matched
-//         //
-//         mu1trig = mu1trig &&
-//                 trig_->isTriggerMatched(hnuEvent.mu1, iEvent,
-//                 &(hists.Mu1TrigMatchesInZwin.trigHistos));
-
-//         mu2trig = mu2trig &&
-//                 trig_->isTriggerMatched(hnuEvent.mu2, iEvent,
-//                 &(hists.Mu2TrigMatchesInZwin.trigHistos));
-
-//     }
-//     else if(!iEvent.isRealData() && !disableTriggerCorrection_)
-//     {
-//         mu1trig = mu1trig && trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu1->pt(), applyTrigEffsign_);
-//         mu2trig = mu2trig && trig_->simulateForMC(applyMESfactor_ * hnuEvent.mu2->pt(), applyTrigEffsign_);
-//     }
-//   } else if ( mode == TOP ) { 
-//   } else if ( mode == QCD ) { 
-//   }
-// }
-
 void HeavyNuEvent::regularize() {
   mu[0]=mu1;
   if ( mode == HNU || mode == QCD ) mu[1] = mu2 ; 
