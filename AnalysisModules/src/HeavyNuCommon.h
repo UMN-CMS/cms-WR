@@ -85,7 +85,7 @@ namespace hnu {
     std::vector<pat::Muon>                        getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 							      edm::Handle<reco::MuonCollection>& tevMuons,
 							      double minPt, double maxAbsEta,
-							      double ptScale=1.0);
+							      double ptScale=1.0, bool trackerPt=false);
     std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 

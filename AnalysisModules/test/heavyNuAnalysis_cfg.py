@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 import os
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Signal MC flags ---#
@@ -60,7 +60,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer11/DYToLL_M-50_1jEnh2_2jEnh35_3jEnh40_4jEnh50_7TeV-sherpa/AODSIM/PU_S4_START42_V11-v1/0000/922065AE-48CD-E011-97F7-002618FDA28E.root')
+    fileNames=cms.untracked.vstring('input.root')
 )
 
 if isData:
@@ -317,9 +317,9 @@ process.hNuMuZmass60to120 = process.hNu.clone()
 process.hNuMuZmass60to120.ZmassWinMinGeV = cms.double(60.)
 process.hNuMuZmass60to120.ZmassWinMaxGeV = cms.double(120.)
 
-process.hNuMuZmass60to75 = process.hNu.clone() 
-process.hNuMuZmass60to75.ZmassWinMinGeV = cms.double(60.)
-process.hNuMuZmass60to75.ZmassWinMaxGeV = cms.double(75.)
+process.hNuMuZmass65to75 = process.hNu.clone() 
+process.hNuMuZmass65to75.ZmassWinMinGeV = cms.double(65.)
+process.hNuMuZmass65to75.ZmassWinMaxGeV = cms.double(75.)
 
 process.hNuMuZmass105to120 = process.hNu.clone() 
 process.hNuMuZmass105to120.ZmassWinMinGeV = cms.double(105.)
@@ -337,15 +337,15 @@ process.hNuMu40.trigMatchPset.triggerPt    = cms.double( 40. )
 process.hNuMu40.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5' ) 
 process.hNuMu40.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
 process.hNuMu40eta2p1.trigMatchPset.triggerPt    = cms.double( 40. )
-process.hNuMu40eta2p1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_eta2p1_v1' ) 
+process.hNuMu40eta2p1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5' ) 
 process.hNuMu40eta2p1.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
 
 process.hNuMu24Zmass60to120 = process.hNuMu24.clone() 
 process.hNuMu24Zmass60to120.ZmassWinMinGeV = cms.double(60.)
 process.hNuMu24Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
-process.hNuMu24Zmass60to75 = process.hNuMu24.clone() 
-process.hNuMu24Zmass60to75.ZmassWinMinGeV = cms.double(60.)
-process.hNuMu24Zmass60to75.ZmassWinMaxGeV = cms.double(75.)
+process.hNuMu24Zmass65to75 = process.hNuMu24.clone() 
+process.hNuMu24Zmass65to75.ZmassWinMinGeV = cms.double(65.)
+process.hNuMu24Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
 process.hNuMu24Zmass105to120 = process.hNuMu24.clone() 
 process.hNuMu24Zmass105to120.ZmassWinMinGeV = cms.double(105.)
 process.hNuMu24Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
@@ -353,9 +353,9 @@ process.hNuMu24Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
 process.hNuMu40Zmass60to120 = process.hNuMu40.clone() 
 process.hNuMu40Zmass60to120.ZmassWinMinGeV = cms.double(60.)
 process.hNuMu40Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
-process.hNuMu40Zmass60to75 = process.hNuMu40.clone() 
-process.hNuMu40Zmass60to75.ZmassWinMinGeV = cms.double(60.)
-process.hNuMu40Zmass60to75.ZmassWinMaxGeV = cms.double(75.)
+process.hNuMu40Zmass65to75 = process.hNuMu40.clone() 
+process.hNuMu40Zmass65to75.ZmassWinMinGeV = cms.double(65.)
+process.hNuMu40Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
 process.hNuMu40Zmass105to120 = process.hNuMu40.clone() 
 process.hNuMu40Zmass105to120.ZmassWinMinGeV = cms.double(105.)
 process.hNuMu40Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
@@ -363,9 +363,9 @@ process.hNuMu40Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
 process.hNuMu40eta2p1Zmass60to120 = process.hNuMu40eta2p1.clone() 
 process.hNuMu40eta2p1Zmass60to120.ZmassWinMinGeV = cms.double(60.)
 process.hNuMu40eta2p1Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
-process.hNuMu40eta2p1Zmass60to75 = process.hNuMu40eta2p1.clone() 
-process.hNuMu40eta2p1Zmass60to75.ZmassWinMinGeV = cms.double(60.)
-process.hNuMu40eta2p1Zmass60to75.ZmassWinMaxGeV = cms.double(75.)
+process.hNuMu40eta2p1Zmass65to75 = process.hNuMu40eta2p1.clone() 
+process.hNuMu40eta2p1Zmass65to75.ZmassWinMinGeV = cms.double(65.)
+process.hNuMu40eta2p1Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
 process.hNuMu40eta2p1Zmass105to120 = process.hNuMu40eta2p1.clone() 
 process.hNuMu40eta2p1Zmass105to120.ZmassWinMinGeV = cms.double(105.)
 process.hNuMu40eta2p1Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
@@ -426,7 +426,7 @@ if isData:
         process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
         process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 24. )
     else:
-        process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+        process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5' ) 
         process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 40. )
 else:
     # turn on MC trigger simulation
@@ -475,7 +475,7 @@ if isData:
         process.hNuTop.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
         process.hNuTop.trigMatchPset.triggerPt    = cms.double( 24. )
     else:
-        process.hNuTop.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1' ) 
+        process.hNuTop.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5' ) 
         process.hNuTop.trigMatchPset.triggerPt    = cms.double( 40. )
 else:
     process.hNuTop.trigMatchPset.randomSeed=cms.int32( os.getpid() )
@@ -518,7 +518,7 @@ if runAnalysis:
 
         if tagandprobe:
             process.pWideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to120 ) 
-            process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to75 ) 
+            process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass65to75 ) 
             process.pHighZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass105to120 ) 
             
         if systematics:
@@ -546,26 +546,24 @@ if runAnalysis:
         process.pNominal = cms.Path( process.AnalysisIntroSequence + process.hNu )
         if tagandprobe:
             process.pWideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to120 ) 
-            process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to75 ) 
+            process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass65to75 ) 
             process.pHighZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass105to120 ) 
         if doTriggerStudy:
-            process.hNuMu40.trigMatchPset.muonTriggers       = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5' )
-            process.hNuMu40eta2p1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_eta2p1_v1' )
             if isRun2011LoLumi:
                 process.p24      = cms.Path( process.AnalysisIntroSequence + process.hNuMu24 )
                 process.p24wideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass60to120 ) 
-                process.p24lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass60to75 ) 
+                process.p24lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass65to75 ) 
                 process.p24highZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass105to120 ) 
             else:
                 if isRun2011VeryHiLumi:
                     process.p40eta2p1      = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
                     process.p40eta2p1wideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass60to120 ) 
-                    process.p40eta2p1lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass60to75 ) 
+                    process.p40eta2p1lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass65to75 ) 
                     process.p40eta2p1highZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass105to120 ) 
                 else:
                     process.p40       = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 )
                     process.p40wideZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass60to120 ) 
-                    process.p40lowZ   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass60to75 ) 
+                    process.p40lowZ   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass65to75 ) 
                     process.p40highZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass105to120 ) 
 
 if qcdStudy:

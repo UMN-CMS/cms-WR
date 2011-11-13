@@ -376,7 +376,7 @@ namespace hnu {
   std::vector<pat::Muon> getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 				     edm::Handle<reco::MuonCollection>& tevMuons,
 				     double minPt, double maxAbsEta, 
-				     double ptScale) {
+				     double ptScale, bool trackerPt) {
 
     std::vector<pat::Muon> muonList ; 
     for (unsigned int iMuon = 0; iMuon < pMuons->size(); iMuon++) {
@@ -387,13 +387,20 @@ namespace hnu {
       if ( !isVBTFtight(iM) ) continue ; 
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting
-      for (unsigned int iTeV=0; iTeV<tevMuons->size() ; iTeV++) { 
-	reco::Muon tevMuon = tevMuons->at(iTeV) ; 
-	double tevMuPt = tevMuon.pt() * ptScale ; 
-	if ( tevMuPt < minPt ) continue ;  
-	double dR = ROOT::Math::VectorUtil::DeltaR(tevMuon.p4(),iM.p4()) ;
-	if ( dR < 0.001 ) { // Replace muon p4 with refit (TeV) muon p4
-	  iM.setP4( tevMuon.p4() ) ; 
+      if ( trackerPt ) { 
+	double energy = sqrt( iM.innerTrack()->p()*iM.innerTrack()->p() + 
+			      0.1057 * 0.1057 ) ; // Track p^2 + muon_mass^2 
+	reco::Particle::LorentzVector trackP4(iM.innerTrack()->px(),iM.innerTrack()->py(),iM.innerTrack()->pz(),energy) ;  
+	iM.setP4( trackP4 ) ; 
+      } else { 
+	for (unsigned int iTeV=0; iTeV<tevMuons->size() ; iTeV++) { 
+	  reco::Muon tevMuon = tevMuons->at(iTeV) ; 
+	  double tevMuPt = tevMuon.pt() * ptScale ; 
+	  if ( tevMuPt < minPt ) continue ;  
+	  double dR = ROOT::Math::VectorUtil::DeltaR(tevMuon.p4(),iM.p4()) ;
+	  if ( dR < 0.001 ) { // Replace muon p4 with refit (TeV) muon p4
+	    iM.setP4( tevMuon.p4() ) ; 
+	  }
 	}
       }
 
