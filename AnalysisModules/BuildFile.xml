@@ -11,6 +11,7 @@
 <use   name="PhysicsTools/Utilities"/>
 <use   name="PhysicsTools/PatUtils"/>
 <use   name="HeavyNu/NeuralNets"/>
+<use   name="lhapdf"/>
 <flags   EDM_PLUGIN="1"/>
 <export>
 </export>
