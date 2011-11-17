@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Alexander Gude
 //         Created:  Thu May 12 11:15:22 CDT 2011
-// $Id: HeavyNuGenLevel.cc,v 1.4 2011/11/15 20:15:54 mansj Exp $
+// $Id: HeavyNuGenLevel.cc,v 1.5 2011/11/17 03:33:19 mansj Exp $
 //
 //
 
@@ -252,6 +252,9 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
     iEvent.getByLabel("ak5GenJetsNoMuNoNu", genJets);
 
+    //Shirpa reweighting info
+    edm::Handle<GenEventInfoProduct> geneventinfo;
+    iEvent.getByLabel("generator", geneventinfo);
 
     reco::Particle::LorentzVector l1,l2;
     reco::GenJetCollection::const_iterator ji, jet1 = genJets->end(), jet2 = genJets->end();
@@ -332,7 +335,7 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
       x2=geip->pdf()->x.second;
     }
     evt_weight=getWeight(Q,id1,x1,id2,x2,l1,l2);
-
+    evt_weight *= geneventinfo->weight();
 
 
     hists.cutProgress->Fill(0.0,evt_weight);    
