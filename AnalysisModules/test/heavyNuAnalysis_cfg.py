@@ -200,12 +200,21 @@ process.patTrackSequence = cms.Sequence(
         process.patTracksPt10
 )
 
+
+
 ## --------------------- ##
 ## Define the basic path ##
 ## --------------------- ##
-process.AnalysisIntroSequence = cms.Sequence(
-    process.patDefaultSequence * process.patTrackSequence * process.refitMuons
-)
+if isMC:
+   # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
+   process.load("GeneratorInterface.GenFilters.TotalKinematicsFilter_cfi")
+   process.AnalysisIntroSequence = cms.Sequence(
+       process.totalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+   )
+else:
+   process.AnalysisIntroSequence = cms.Sequence(
+       process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+   )
 if isPFJets:
     process.AnalysisIntroSequence += process.modifiedPF2PATSequence
 
