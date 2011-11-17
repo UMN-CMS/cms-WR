@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Alexander Gude
 //         Created:  Thu May 12 11:15:22 CDT 2011
-// $Id: HeavyNuGenLevel.cc,v 1.3 2011/11/11 13:04:29 pastika Exp $
+// $Id: HeavyNuGenLevel.cc,v 1.4 2011/11/15 20:15:54 mansj Exp $
 //
 //
 
@@ -37,6 +37,7 @@ Implementation:
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
@@ -64,7 +65,8 @@ private:
     virtual void analyze(const edm::Event&, const edm::EventSetup&);
     virtual void endJob();
 
-  double getWeight(const HepMC::GenEvent* evt, const HepMC::GenParticle* theLep, const HepMC::GenParticle* theLep2);
+  double getWeight(float Q, int id1, float x1, int id2, float x2,
+		   const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2);
 
 
     struct CutStruct
@@ -80,7 +82,7 @@ private:
     struct HistStruct
     {
       void book(TFileDirectory *, const std::string&, float* p_weight);
-      void fill(HepMC::GenParticle* l1, HepMC::GenParticle* l2,
+      void fill(const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2,
                 reco::GenJetCollection::const_iterator j1, reco::GenJetCollection::const_iterator j2);
       
       TH1 *cutProgress;
@@ -128,33 +130,31 @@ void HeavyNuGenLevel::HistStruct::book(TFileDirectory *td, const std::string& po
     m4obj = td->make<TH1F > ("m4obj", t.c_str(), 250, 0, 2500);
 }
 
-void HeavyNuGenLevel::HistStruct::fill(HepMC::GenParticle* l1, HepMC::GenParticle* l2,
+void HeavyNuGenLevel::HistStruct::fill(const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2,
         reco::GenJetCollection::const_iterator j1, reco::GenJetCollection::const_iterator j2)
 {
-  ptl1->Fill(l1->momentum().perp(),*p_weight);
-    ptl2->Fill(l2->momentum().perp(),*p_weight);
-    ptj1->Fill(j1->pt(),*p_weight);
-    ptj2->Fill(j2->pt(),*p_weight);
-
-    double dR11 = deltaR(l1->momentum().eta(), l1->momentum().phi(),
-            j1->eta(), j1->phi());
-    double dR12 = deltaR(l1->momentum().eta(), l1->momentum().phi(),
-            j2->eta(), j2->phi());
-    double dR21 = deltaR(l2->momentum().eta(), l2->momentum().phi(),
-            j1->eta(), j1->phi());
-    double dR22 = deltaR(l2->momentum().eta(), l2->momentum().phi(),
-            j2->eta(), j2->phi());
-
-    ljdR->Fill(dR11,*p_weight);
-    ljdR->Fill(dR12,*p_weight);
-    ljdR->Fill(dR21,*p_weight);
-    ljdR->Fill(dR22,*p_weight);
-    min_ljdR->Fill(std::min(std::min(dR11, dR12), std::min(dR21, dR22)),*p_weight);
-
-    reco::Particle::LorentzVector lvl1(l1->momentum().px(), l1->momentum().py(), l1->momentum().pz(), l1->momentum().e());
-    reco::Particle::LorentzVector lvl2(l2->momentum().px(), l2->momentum().py(), l2->momentum().pz(), l2->momentum().e());
-
-    reco::Particle::LorentzVector ll = lvl1 + lvl2;
+  ptl1->Fill(l1.pt(),*p_weight);
+  ptl2->Fill(l2.pt(),*p_weight);
+  ptj1->Fill(j1->pt(),*p_weight);
+  ptj2->Fill(j2->pt(),*p_weight);
+  
+  double dR11 = deltaR(l1.eta(), l1.phi(),
+		       j1->eta(), j1->phi());
+  double dR12 = deltaR(l1.eta(), l1.phi(),
+		       j2->eta(), j2->phi());
+  double dR21 = deltaR(l2.eta(), l2.phi(),
+		       j1->eta(), j1->phi());
+  double dR22 = deltaR(l2.eta(), l2.phi(),
+		       j2->eta(), j2->phi());
+  
+  ljdR->Fill(dR11,*p_weight);
+  ljdR->Fill(dR12,*p_weight);
+  ljdR->Fill(dR21,*p_weight);
+  ljdR->Fill(dR22,*p_weight);
+  min_ljdR->Fill(std::min(std::min(dR11, dR12), std::min(dR21, dR22)),*p_weight);
+  
+  
+    reco::Particle::LorentzVector ll = l1 + l2;
 
     mll->Fill(ll.M(),*p_weight);
 
@@ -250,43 +250,90 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     edm::Handle<reco::GenJetCollection> genJets;
     hists.cutProgress->Fill(-1);
 
-    iEvent.getByLabel("generator", hepMCEvt);
     iEvent.getByLabel("ak5GenJetsNoMuNoNu", genJets);
 
-    const HepMC::GenEvent* genEvt = hepMCEvt->GetEvent();
-    const HepMC::GenEvent* genE = genEvt;
 
-    HepMC::GenEvent::vertex_const_iterator vtex;
-    HepMC::GenVertex::particles_out_const_iterator Pout;
-    HepMC::GenParticle* theLep = 0;
-    HepMC::GenParticle* theLep2 = 0;
+    reco::Particle::LorentzVector l1,l2;
     reco::GenJetCollection::const_iterator ji, jet1 = genJets->end(), jet2 = genJets->end();
+    float Q, x1, x2;
+    int id1, id2;
 
-    for(vtex = genE->vertices_begin(); vtex != genE->vertices_end(); vtex++)
-    {
-        for(Pout = (*vtex)->particles_out_const_begin(); Pout != (*vtex)->particles_out_const_end(); Pout++)
-        {
-            if(abs((*Pout)->pdg_id()) == 13 && (*Pout)->status() == 1)
-            {
-                if(theLep == 0 || theLep->momentum().perp()<(*Pout)->momentum().perp())
-                {
-                    theLep2 = theLep;
-                    theLep = *Pout;
-                }
-                else if(theLep2 == 0 || theLep2->momentum().perp()<(*Pout)->momentum().perp())
-                {
-                    theLep2 = *Pout;
-                }
-            }
-        }
-    }
-    if(theLep2 == 0)
-    {
-        //std::cout << "Got less than two!\n";
-        return;
-    }
+    if (iEvent.getByLabel("generator", hepMCEvt)) {
 
-    evt_weight=getWeight(genEvt,theLep,theLep2);
+      const HepMC::GenEvent* genEvt = hepMCEvt->GetEvent();
+      const HepMC::GenEvent* genE = genEvt;
+
+      HepMC::GenEvent::vertex_const_iterator vtex;
+      HepMC::GenVertex::particles_out_const_iterator Pout;
+      HepMC::GenParticle* theLep = 0;
+      HepMC::GenParticle* theLep2 = 0;
+
+      for(vtex = genE->vertices_begin(); vtex != genE->vertices_end(); vtex++)
+	{
+	  for(Pout = (*vtex)->particles_out_const_begin(); Pout != (*vtex)->particles_out_const_end(); Pout++)
+	    {
+	      if(abs((*Pout)->pdg_id()) == 13 && (*Pout)->status() == 1)
+		{
+		  if(theLep == 0 || theLep->momentum().perp()<(*Pout)->momentum().perp())
+		    {
+		      theLep2 = theLep;
+		      theLep = *Pout;
+		    }
+		  else if(theLep2 == 0 || theLep2->momentum().perp()<(*Pout)->momentum().perp())
+		    {
+		      theLep2 = *Pout;
+		    }
+		}
+	    }
+	}
+      if(theLep2 == 0)
+	{
+	  //std::cout << "Got less than two!\n";
+	  return;
+	}
+      l1=reco::Particle::LorentzVector(theLep->momentum().px(), theLep->momentum().py(), theLep->momentum().pz(), theLep->momentum().e());
+      l2=reco::Particle::LorentzVector(theLep2->momentum().px(), theLep2->momentum().py(), theLep2->momentum().pz(), theLep2->momentum().e());
+
+      const HepMC::PdfInfo* pdfstuff = genEvt->pdf_info(); 
+      Q = pdfstuff->scalePDF();
+
+      id1 = pdfstuff->id1();
+      x1 = pdfstuff->x1();
+      id2 = pdfstuff->id2();
+      x2 = pdfstuff->x2();
+      
+    } else {
+      edm::Handle<reco::GenParticleCollection> gpp;
+      iEvent.getByLabel("genParticles",gpp); 
+
+
+      reco::GenParticleCollection::const_iterator i;
+      int nfound=0;
+      for (i=gpp->begin(); i!=gpp->end(); i++) {
+	if (i->status()!=1 || abs(i->pdgId())!=13) continue; // only final-state muons need apply
+	if (i->pt()>l1.pt()) {
+	  l2=l1;
+	  l1=i->p4();
+	  nfound++;
+	} else if (i->pt()>l2.pt()) {
+	  l2=i->p4();
+	  nfound++;
+	}
+      }
+      if (nfound<2) return;
+
+      edm::Handle<GenEventInfoProduct> geip;
+      iEvent.getByLabel("generator",geip);
+      
+      Q=geip->pdf()->scalePDF;
+      id1=geip->pdf()->id.first;
+      id2=geip->pdf()->id.second;
+      x1=geip->pdf()->x.first;
+      x2=geip->pdf()->x.second;
+    }
+    evt_weight=getWeight(Q,id1,x1,id2,x2,l1,l2);
+
+
 
     hists.cutProgress->Fill(0.0,evt_weight);    
 
@@ -305,23 +352,23 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     }
 
 
-    if(jet1 != genJets->end() && jet2 != genJets->end()) cut0.fill(theLep, theLep2, jet1, jet2);
+    if(jet1 != genJets->end() && jet2 != genJets->end()) cut0.fill(l1, l2, jet1, jet2);
 
     hists.cutProgress->Fill(1,evt_weight);
 
-    hists.ptl1->Fill(theLep->momentum().perp(),evt_weight);
-    hists.ptl2->Fill(theLep2->momentum().perp(),evt_weight);
+    hists.ptl1->Fill(l1.pt(),evt_weight);
+    hists.ptl2->Fill(l2.pt(),evt_weight);
 
-    if(theLep->momentum().perp() > cuts.minL2PT &&
-            theLep2->momentum().perp() > cuts.minL2PT &&
-            fabs(theLep->momentum().eta()) < 2.4 &&
-            fabs(theLep2->momentum().eta()) < 2.4 &&
-            (fabs(theLep->momentum().eta()) < 2.1 || fabs(theLep2->momentum().eta()) < 2.1)
+    if(l1.pt() > cuts.minL2PT &&
+            l2.pt() > cuts.minL2PT &&
+            fabs(l1.eta()) < 2.4 &&
+            fabs(l2.eta()) < 2.4 &&
+            (fabs(l1.eta()) < 2.1 || fabs(l2.eta()) < 2.1)
             )
     {
 
         hists.cutProgress->Fill(2,evt_weight);
-        //cut1.fill(theLep, theLep2, NULL, NULL);
+        //cut1.fill(l1, l2, NULL, NULL);
 
         if(jet1 != genJets->end() && jet2 != genJets->end())
         {
@@ -331,17 +378,17 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
             if(jet1->pt() > cuts.minJetPT && jet2->pt() > cuts.minJetPT)
             {
                 hists.cutProgress->Fill(3,evt_weight);
-                cut2.fill(theLep, theLep2, jet1, jet2);
+                cut2.fill(l1, l2, jet1, jet2);
 
-                if(theLep->momentum().perp() < cuts.minL1PT) return;
+                if(l1.pt() < cuts.minL1PT) return;
 
-                double dR11 = deltaR(theLep->momentum().eta(), theLep->momentum().phi(),
+                double dR11 = deltaR(l1.eta(), l1.phi(),
                         jet1->eta(), jet1->phi());
-                double dR12 = deltaR(theLep->momentum().eta(), theLep->momentum().phi(),
+                double dR12 = deltaR(l1.eta(), l1.phi(),
                         jet2->eta(), jet2->phi());
-                double dR21 = deltaR(theLep2->momentum().eta(), theLep2->momentum().phi(),
+                double dR21 = deltaR(l2.eta(), l2.phi(),
                         jet1->eta(), jet1->phi());
-                double dR22 = deltaR(theLep2->momentum().eta(), theLep2->momentum().phi(),
+                double dR22 = deltaR(l2.eta(), l2.phi(),
                         jet2->eta(), jet2->phi());
 
                 hists.ljdR->Fill(dR11,evt_weight);
@@ -355,19 +402,16 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                         dR21 > cuts.minLJdR && dR22 > cuts.minLJdR)
                 {
                     hists.cutProgress->Fill(4);
-                    cut3.fill(theLep, theLep2, jet1, jet2);
+                    cut3.fill(l1, l2, jet1, jet2);
 
-                    reco::Particle::LorentzVector lvl1(theLep->momentum().px(), theLep->momentum().py(), theLep->momentum().pz(), theLep->momentum().e());
-                    reco::Particle::LorentzVector lvl2(theLep2->momentum().px(), theLep2->momentum().py(), theLep2->momentum().pz(), theLep2->momentum().e());
-
-                    reco::Particle::LorentzVector ll = lvl1 + lvl2;
+                    reco::Particle::LorentzVector ll = l1+l2;
 
                     hists.mll->Fill(ll.M(),evt_weight);
 
                     if(ll.M() > cuts.minLLMass)
                     {
                         hists.cutProgress->Fill(5);
-                        cut4.fill(theLep, theLep2, jet1, jet2);
+                        cut4.fill(l1, l2, jet1, jet2);
 
                         reco::Particle::LorentzVector jj = jet1->p4() + jet2->p4();
                         reco::Particle::LorentzVector wr = jj + ll;
@@ -377,7 +421,7 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                         if(wr.M() > cuts.min4objMass)
                         {
                             hists.cutProgress->Fill(6);
-                            cut5.fill(theLep, theLep2, jet1, jet2);
+                            cut5.fill(l1, l2, jet1, jet2);
                         }
 
                     }
@@ -397,6 +441,10 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 void
 HeavyNuGenLevel::beginJob()
 {
+  if (doPDFreweight_) {
+    LHAPDF::initPDFSet(1,pdfReweightBaseName);
+    LHAPDF::initPDFSet(2,pdfReweightTargetName);
+  }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -407,27 +455,13 @@ HeavyNuGenLevel::endJob()
 }
 
 
-double HeavyNuGenLevel::getWeight(const HepMC::GenEvent* genEvt, const HepMC::GenParticle* theLep, const HepMC::GenParticle* theLep2) {
+double HeavyNuGenLevel::getWeight(float Q, int id1, float x1, int id2, float x2,
+				  const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2) {
 
   if (!doPDFreweight_) return 1.0;
 
-  const HepMC::PdfInfo* pdfstuff = genEvt->pdf_info(); 
-
-  if (pdfstuff == 0)  return 1.0;
-
-  
-  float Q = pdfstuff->scalePDF();
-
-  int id1 = pdfstuff->id1();
-  float x1 = pdfstuff->x1();
-  int id2 = pdfstuff->id2();
-  float x2 = pdfstuff->x2();
-  
   if (pdfReweightAddZmass_) {
-    reco::Particle::LorentzVector lvl1(theLep->momentum().px(), theLep->momentum().py(), theLep->momentum().pz(), theLep->momentum().e());
-    reco::Particle::LorentzVector lvl2(theLep2->momentum().px(), theLep2->momentum().py(), theLep2->momentum().pz(), theLep2->momentum().e());
-
-    reco::Particle::LorentzVector ll = lvl1 + lvl2;
+    reco::Particle::LorentzVector ll = l1 + l2;
 
     Q=sqrt(Q*Q+ll.M2());
   }
@@ -441,6 +475,8 @@ double HeavyNuGenLevel::getWeight(const HepMC::GenEvent* genEvt, const HepMC::Ge
   double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
   
   double w=(newpdf1/pdf1*newpdf2/pdf2);
+
+  //  printf("My weight is %f\n",w);
 
   return w;
   
