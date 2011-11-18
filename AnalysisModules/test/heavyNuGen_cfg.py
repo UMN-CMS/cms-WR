@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(
 # source
 
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/gen/powheg-hvq/POWHEG_PYTHIA6_ttbar_lnublnub_7TeV_cff_py_GEN.root')
+    fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/powheg-hvq/fact1.0_ren1.0/powheg_pythia/powheg_pythia_005.root')
 )
 
 
@@ -25,6 +25,8 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.load("HeavyNu.AnalysisModules.heavynugenlevel_cfi")
+
+process.hNuGen.doPDFReweight = cms.untracked.bool(True)
 
 process.load("RecoJets.Configuration.RecoGenJets_cff")
 process.load("RecoJets.Configuration.GenJetParticles_cff")

@@ -15,8 +15,8 @@ Training=False
 #--- LoLumi     --> HLT_Mu24        ---#
 #--- HiLumi     --> HLT_Mu40        ---#
 #--- VeryHiLumi --> HLT_Mu40_eta2p1 ---#
-isRun2011LoLumi     = True
-isRun2011HiLumi     = False
+isRun2011LoLumi     = False
+isRun2011HiLumi     = True
 isRun2011VeryHiLumi = False
 
 #--- Flags for data taking era ---#
@@ -29,18 +29,7 @@ if not isRun2011A:
     pileupEra = 20113
 
 
-#--- Flags for nominal studies ---#
 runAnalysis = True
-systematics = False
-
-#--- Flags for Top studies ---#
-topStudy = False
-
-#--- Flags for QCD studies ---#
-qcdStudy  = False
-doDijet   = False
-doQuadJet = False
-doClosure = False
 
 #--- Should always be True ---#
 isPileupMC = True
@@ -58,22 +47,22 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('input.root')
+    fileNames=cms.untracked.vstring('file:/hdfs/cms/user/dahmes/storage/wr2011/MuSkim/ReReco/may10/may10rerecoMuSkim_022.root')
 )
 
 if isData:
     if isRun2011LoLumi:
         print "===========> Flag is SET for 2011 LOW luminosity data <============"
-        from HeavyNu.AnalysisModules.goodLumiList_160431_163869_Mu24_cfi import lumisToProcess
+        from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
     else:
         if isRun2011VeryHiLumi:
             print "===========> Flag is SET for 2011 HIGH luminosity data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_173236_Mu40eta2p1_cfi import lumisToProcess
+            from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
         else:
             print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
             from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
 
-#    process.source.lumisToProcess = lumisToProcess
+    process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -212,11 +201,11 @@ process.patJetCorrFactors.useRho = cms.bool(True)
 if isMC:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5PFJets',"","RECO"),
-                         jetCorrLabel=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+                         jetCorrLabel=('AK5PF', ['L1FastJet','L2Relative','L3Absolute']))
 else:
     switchJetCollection( process,
                          jetCollection=cms.InputTag('ak5PFJets', "", "RECO"),
-                         jetCorrLabel=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
+                         jetCorrLabel=('AK5PF', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
 
 # Compute the mean pt per unit area (rho) from the PFchs inputs
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
@@ -351,3 +340,49 @@ process.hNuBasePFJets.jetTag = cms.InputTag( 'selectedPatJets' )
 
 if not isMC:
       process.pBasePFJetes = cms.Path( process.AnalysisIntroSequence + process.hNuBasePFJets )
+
+process.hNuFNAL = cms.EDFilter( "HeavyNuFNAL",
+    trigMatchPset = cms.PSet(
+        trigEventTag = cms.InputTag( "" ),
+        muonTriggers = cms.vstring( '' ),
+        firstRun     = cms.vint32( 0 ),
+        lastRun      = cms.vint32( 999999 ),
+        muonMatch    = cms.string( '' ),
+        triggerPt    = cms.double( 40. ),
+        randomSeed   = cms.int32( 0 ),  # for MC
+        year         = cms.int32( 2011 ) # for MC
+    ),
+    DoLog        = cms.bool( False ),
+    muonTag      = cms.InputTag( 'selectedPatMuons' ),
+    jetTag       = cms.InputTag( 'selectedPatJets' ),
+    metTag       = cms.InputTag( 'patMETs' ),
+    electronTag  = cms.InputTag( 'selectedPatElectrons' ),
+    trackTag     = cms.InputTag( 'patTracksPt10' ),
+    BtagName     = cms.string('jetProbabilityBJetTags'),
+    minBtagDiscr = cms.double(0.669), # yields 0.1% fake rate, see SWGuideBTagPerformance twiki
+    minMu1pt     = cms.double(25.),
+    minMu2pt     = cms.double(20.),
+    minJetPt     = cms.double(25),
+    minJet1Pt    = cms.double(120),
+    maxMuAbsEta  = cms.double(2.4),
+    maxJetAbsEta = cms.double(3.0),
+    minMuonJetdR = cms.double(0.5),
+    muonTrackRelIsoLimit  = cms.double(100.0), # 10.0),
+    maxVertexZsepCM       = cms.double(-1.),
+    maxJetVZsepCM         = cms.double(-1.),
+
+    jecEra            = cms.int32(0),
+
+    highestPtTriggerOnly = cms.bool(False),
+
+    useTrackerPt = cms.bool(True),
+    isPFJets = cms.bool(False)
+    )
+
+process.pFNAL = cms.Path( process.AnalysisIntroSequence + process.hNuFNAL )
+
+process.hNuFNALwPF2PAT = process.hNuFNAL.clone()
+process.hNuFNALwPF2PAT.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
+process.hNuFNALwPF2PAT.useTrackerPt = cms.bool(False)
+
+process.pFNALwPF2PAT = cms.Path( process.AnalysisIntroSequence + process.hNuFNALwPF2PAT )

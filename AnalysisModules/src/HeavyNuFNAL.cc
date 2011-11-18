@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFNAL.cc,v 1.65 2011/09/02 10:46:52 bdahmes Exp $
+// $Id: HeavyNuFNAL.cc,v 1.1 2011/11/13 10:40:35 bdahmes Exp $
 //
 //
 
@@ -1103,10 +1103,11 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using namespace edm;
     HeavyNuEvent hnuEvent;
+    bool isVerbose = false;
 
     evtCounter++ ; 
 
-    std::cout << "Investigating event: " << iEvent.id() << std::endl ; 
+    if(isVerbose) std::cout << "Investigating event: " << iEvent.id() << std::endl ;
 
     hnuEvent.isMC = !iEvent.isRealData();
     hnuEvent.pfJets = isPFJets_;
@@ -1170,8 +1171,8 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     else
         hists.met->Fill(0);
 
-    std::cout << "Initial info before cuts: " << pMuons->size()
-	      << " muons and " << pJets->size() << " jets " << std::endl ; 
+    if(isVerbose) std::cout << "Initial info before cuts: " << pMuons->size()
+                      << " muons and " << pJets->size() << " jets " << std::endl ;
 
     // Basic selection requirements: Require at least two muons, two jets
     if (pMuons->size() < 2 || pJets->size() < 2) return false ; 
@@ -1191,18 +1192,18 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet,float> > jetCands = 
       hnu::getJetList(pJets,jecuObj_,cuts.minimum_jet_pt,cuts.maximum_jet_abseta,0,jecVal_) ; 
-    std::cout << "Find " << jetCands.size() << " jets after initial pT, eta requirements" << std::endl ;
+    if(isVerbose) std::cout << "Find " << jetCands.size() << " jets after initial pT, eta requirements" << std::endl ;
     for (unsigned int i=0; i<jetCands.size(); i++) {
-        std::cout << "Jet " << i+1 << " of " << jetCands.size()
-                  << " with pT " << jetCands.at(i).first.pt()
-                  << " eta " << jetCands.at(i).first.eta()
-                  << " phi " << jetCands.at(i).first.phi() << std::endl ;
+        if(isVerbose) std::cout << "Jet " << i+1 << " of " << jetCands.size()
+                         << " with pT " << jetCands.at(i).first.pt()
+                         << " eta " << jetCands.at(i).first.eta()
+                         << " phi " << jetCands.at(i).first.phi() << std::endl ;
     }
     if ( jetCands.size() < 2 ) return false ; 
 
     std::vector<pat::Muon> muCands = 
       hnu::getMuonList(pMuons,tevMuons,cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0,useTrackerPt_) ; 
-    std::cout << "There are " << muCands.size() << " muons after initial pt, eta, tight id requirements" << std::endl ; 
+    if(isVerbose) std::cout << "There are " << muCands.size() << " muons after initial pt, eta, tight id requirements" << std::endl ;
     if ( muCands.size() < 2 ) return false ; 
     for (unsigned int i=0; i<muCands.size(); i++) { 
       pat::Muon iM = muCands.at(i) ; 
@@ -1214,21 +1215,24 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
     }
     if ( hnuEvent.nMuons < 2 ) return false ; 
-    std::cout << "Muon candidates: " << std::endl ;
-    std::cout << "muon 1 with pT " << hnuEvent.mu1.pt() << ", eta " << hnuEvent.mu1.eta()
-              << " and phi " << hnuEvent.mu1.phi() << std::endl ; 
-    std::cout << "muon 2 with pT " << hnuEvent.mu2.pt() << ", eta " << hnuEvent.mu2.eta()
-              << " and phi " << hnuEvent.mu2.phi() << std::endl ; 
+    if(isVerbose)
+    {
+        std::cout << "Muon candidates: " << std::endl ;
+        std::cout << "muon 1 with pT " << hnuEvent.mu1.pt() << ", eta " << hnuEvent.mu1.eta()
+                  << " and phi " << hnuEvent.mu1.phi() << std::endl ;
+        std::cout << "muon 2 with pT " << hnuEvent.mu2.pt() << ", eta " << hnuEvent.mu2.eta()
+                  << " and phi " << hnuEvent.mu2.phi() << std::endl ;
+    }
     
     for (unsigned int i=0; i<jetCands.size(); i++) { 
       if ( hnuEvent.nJets == 2 ) break ; 
       pat::Jet iJ = jetCands.at(i).first ; 
       double dRj1 = deltaR(iJ.eta(), iJ.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi()) ; 
       double dRj2 = deltaR(iJ.eta(), iJ.phi(), hnuEvent.mu2.eta(), hnuEvent.mu2.phi()) ; 
-      std::cout << "Jet separation for jet " << i+1 << " of " << jetCands.size()
-                << " with pT " << iJ.pt() << " GeV: dR = " << dRj1
-                << " for muon 1 and dR = " << dRj2 << " for muon 2"
-                << std::endl ; 
+      if(isVerbose) std::cout << "Jet separation for jet " << i+1 << " of " << jetCands.size()
+                     << " with pT " << iJ.pt() << " GeV: dR = " << dRj1
+                     << " for muon 1 and dR = " << dRj2 << " for muon 2"
+                     << std::endl ;
       if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) { 
 	hnuEvent.nJets++ ; 
 	if      ( hnuEvent.nJets == 1 ) { hnuEvent.j1 = iJ ; hnuEvent.j1scale = jetCands.at(i).second ; } 
@@ -1236,13 +1240,16 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	else    std::cout << "WARNING: Expected empty jet position" << std::endl ; 
       }
     }
-    std::cout << "At least " << hnuEvent.nJets << " jets after mu-jet separation requirements" << std::endl ; 
+    if(isVerbose) std::cout << "At least " << hnuEvent.nJets << " jets after mu-jet separation requirements" << std::endl ;
     if ( hnuEvent.nJets < 2 ) return false ; 
-    std::cout << "Jet candidates: " << std::endl ;
-    std::cout << "jet 1 with pT " << hnuEvent.j1.pt() << ", eta " << hnuEvent.j1.eta()
-              << " and phi " << hnuEvent.j1.phi() << std::endl ; 
-    std::cout << "jet 2 with pT " << hnuEvent.j2.pt() << ", eta " << hnuEvent.j2.eta()
-              << " and phi " << hnuEvent.j2.phi() << std::endl ; 
+    if(isVerbose)
+    {
+        std::cout << "Jet candidates: " << std::endl ;
+        std::cout << "jet 1 with pT " << hnuEvent.j1.pt() << ", eta " << hnuEvent.j1.eta()
+                  << " and phi " << hnuEvent.j1.phi() << std::endl ;
+        std::cout << "jet 2 with pT " << hnuEvent.j2.pt() << ", eta " << hnuEvent.j2.eta()
+                  << " and phi " << hnuEvent.j2.phi() << std::endl ;
+    }
 
     hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
     hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
@@ -1256,13 +1263,13 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
           trig_->isTriggerMatched(hnuEvent.mu2, iEvent) ; 
     }
 
-    std::cout << "Trigger results for muon 1: " << (mu1trig?"Y":"N")
-              << ", for muon 2: " << (mu2trig?"Y":"N") << std::endl ; 
-    if ( !passesTrigger(hnuEvent.mu1.pt(),hnuEvent.mu2.pt(),
-                        mu1trig,mu2trig,iEvent.id().run())) return false;
+    if(isVerbose)  std::cout << "Trigger results for muon 1: " << (mu1trig?"Y":"N")
+                     << ", for muon 2: " << (mu2trig?"Y":"N") << std::endl ;
+    //if ( !passesTrigger(hnuEvent.mu1.pt(),hnuEvent.mu2.pt(),
+    //                    mu1trig,mu2trig,iEvent.id().run())) return false;
     
-    std::cout << "Jet ID values: " << hnu::jetID(hnuEvent.j1) << " (j1), " 
-	      << hnu::jetID(hnuEvent.j2) << " (j2)" << std::endl ;
+    if(isVerbose)  std::cout << "Jet ID values: " << hnu::jetID(hnuEvent.j1) << " (j1), "
+                      << hnu::jetID(hnuEvent.j2) << " (j2)" << std::endl ;
     if ( hnu::jetID(hnuEvent.j1) < 1 || hnu::jetID(hnuEvent.j2) < 1 ) return false ; 
 
     if ( hnuEvent.j1.pt()< cuts.minimum_jet1_pt ) return false ; 
@@ -1271,30 +1278,33 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.scaleMuE();
     hnuEvent.calculate(); // calculate various details
 
-    std::cout << "*** Event survives basic requirements" << std::endl ; 
-    std::cout << "\t" << iEvent.id() << std::endl;
-    std::cout << "\tM(W_R)  = " << hnuEvent.mWR << " GeV";
-    std::cout << ", M(NuR1) = " << hnuEvent.mNuR1 << " GeV";
-    std::cout << ", M(NuR2) = " << hnuEvent.mNuR2 << " GeV" << std::endl;
-    std::cout << "\tM(mumu) = " << hnuEvent.mMuMu << " GeV";
-    std::cout << ", M(JJ) = " << hnuEvent.mJJ << " GeV" << std::endl;
-    std::cout << "\tJets:   j1 ";
-    outputCandidate(hnuEvent.j1);
-    std::cout << ", j2 ";
-    outputCandidate(hnuEvent.j2);
-    std::cout << std::endl;
-    std::cout << "\tMuons: mu1 ";
-    outputCandidate(hnuEvent.mu1);
-    std::cout << ", mu2 ";
-    outputCandidate(hnuEvent.mu2);
-    std::cout << std::endl;
+    if(isVerbose)
+    {
+        std::cout << "*** Event survives basic requirements" << std::endl;
+        std::cout << "\t" << iEvent.id() << std::endl;
+        std::cout << "\tM(W_R)  = " << hnuEvent.mWR << " GeV";
+        std::cout << ", M(NuR1) = " << hnuEvent.mNuR1 << " GeV";
+        std::cout << ", M(NuR2) = " << hnuEvent.mNuR2 << " GeV" << std::endl;
+        std::cout << "\tM(mumu) = " << hnuEvent.mMuMu << " GeV";
+        std::cout << ", M(JJ) = " << hnuEvent.mJJ << " GeV" << std::endl;
+        std::cout << "\tJets:   j1 ";
+        outputCandidate(hnuEvent.j1);
+        std::cout << ", j2 ";
+        outputCandidate(hnuEvent.j2);
+        std::cout << std::endl;
+        std::cout << "\tMuons: mu1 ";
+        outputCandidate(hnuEvent.mu1);
+        std::cout << ", mu2 ";
+        outputCandidate(hnuEvent.mu2);
+        std::cout << std::endl;
+    }
 
     if (pMET->size()) hnuEvent.met1 = pMET->at(0) ;
 
     if ( cuts.maxJetVZsepCM < 0 && cuts.maxVertexZsep < 0 ) {
-        std::cout << "Ignoring vertex requirements" << std::endl ;
+        if(isVerbose) std::cout << "Ignoring vertex requirements" << std::endl ;
     } else {
-      std::cout << "Checking vertex requirements" << std::endl ; 
+        if(isVerbose) std::cout << "Checking vertex requirements" << std::endl ;
 
       //--- Impose vertex requirement here ---//
       float deltaVzJ1J2 = fabs(hnuEvent.tjV1-hnuEvent.tjV2);
@@ -1303,21 +1313,24 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       float deltaVzJ1M2 = fabs(hnuEvent.tjV1-hnuEvent.mu2.vertex().Z());
       float deltaVzJ2M1 = fabs(hnuEvent.tjV2-hnuEvent.mu1.vertex().Z());
 
-      std::cout << "j1j2 " << deltaVzJ1J2 << ", " << (deltaVzJ1J2 >= cuts.maxJetVZsepCM) << std::endl ; 
-      std::cout << "j1m1 " << deltaVzJ1M1 << ", " << (deltaVzJ1M1 >= cuts.maxJetVZsepCM) << std::endl ; 
-      std::cout << "j1m2 " << deltaVzJ1M2 << ", " << (deltaVzJ1M2 >= cuts.maxJetVZsepCM) << std::endl ; 
-      std::cout << "j2m1 " << deltaVzJ2M1 << ", " << (deltaVzJ2M1 >= cuts.maxJetVZsepCM) << std::endl ; 
-      std::cout << "j2m2 " << deltaVzJ2M2 << ", " << (deltaVzJ2M2 >= cuts.maxJetVZsepCM) << std::endl ; 
+      if(isVerbose)
+        {
+            std::cout << "j1j2 " << deltaVzJ1J2 << ", " << (deltaVzJ1J2 >= cuts.maxJetVZsepCM) << std::endl;
+            std::cout << "j1m1 " << deltaVzJ1M1 << ", " << (deltaVzJ1M1 >= cuts.maxJetVZsepCM) << std::endl;
+            std::cout << "j1m2 " << deltaVzJ1M2 << ", " << (deltaVzJ1M2 >= cuts.maxJetVZsepCM) << std::endl;
+            std::cout << "j2m1 " << deltaVzJ2M1 << ", " << (deltaVzJ2M1 >= cuts.maxJetVZsepCM) << std::endl;
+            std::cout << "j2m2 " << deltaVzJ2M2 << ", " << (deltaVzJ2M2 >= cuts.maxJetVZsepCM) << std::endl;
+      }
 
       if((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
 	 (deltaVzJ2M2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M2 >= cuts.maxJetVZsepCM) ||
 	 (deltaVzJ2M1 >= cuts.maxJetVZsepCM))
 	return false;
       float deltaVzM1M2 = fabs(hnuEvent.mu1.vertex().Z()-hnuEvent.mu2.vertex().Z());
-      std::cout << "m1m2 " << deltaVzM1M2 << ", " << (deltaVzM1M2 >= cuts.maxVertexZsep) << std::endl ; 
+      if(isVerbose) std::cout << "m1m2 " << deltaVzM1M2 << ", " << (deltaVzM1M2 >= cuts.maxVertexZsep) << std::endl ;
       if (deltaVzM1M2 >= cuts.maxVertexZsep) return false ; 
     
-      std::cout << "Event passes vertex requirements" << std::endl ; 
+      if(isVerbose) std::cout << "Event passes vertex requirements" << std::endl ;
     }
 
     // Still want to keep events if WR candidate...just for later looks
@@ -1344,8 +1357,11 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.mu1.pt() < cuts.minimum_mu1_pt)
         return false;
 
-    std::cout << "---> Mu1 pT exceeds " << cuts.minimum_mu1_pt 
-	      << ": " << hnuEvent.mu1.pt() << std::endl ; 
+    if(isVerbose)
+    {
+        std::cout << "---> Mu1 pT exceeds " << cuts.minimum_mu1_pt
+	      << ": " << hnuEvent.mu1.pt() << std::endl ;
+    }
 
     hists.cutlevel->Fill(4) ; // Event meets high muon pT requirements
     hists.Mu1HighPtCut.fill(hnuEvent);
@@ -1355,26 +1371,28 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if ( hnuEvent.mMuMu < 60 || hnuEvent.mMuMu > 120 ) 
       hists.diLmassNo60to120Cut.fill(hnuEvent);
-    if ( hnuEvent.mMuMu < 70 || hnuEvent.mMuMu > 100 ) 
-      std::cout << "Event outside the dimuon (70,100) veto region" << std::endl ; 
-      std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
+    if ( hnuEvent.mMuMu < 70 || hnuEvent.mMuMu > 100 )
+    {
+      if(isVerbose) std::cout << "Event outside the dimuon (70,100) veto region" << std::endl ;
+      if(isVerbose) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
 
       double j1b = hnuEvent.j1.bDiscriminator(btagName);
       double j2b = hnuEvent.j2.bDiscriminator(btagName);
       int nBjets = 0 ;
       if (j1b >= minBtagDiscVal) nBjets++ ; 
       if (j2b >= minBtagDiscVal) nBjets++ ;      
-      if ( nBjets > 0 ) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for one or more b-jets" << std::endl ; 
-      if ( nBjets > 1 ) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for two or more b-jets" << std::endl ; 
+      if ( nBjets > 0 ) if(isVerbose) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for one or more b-jets" << std::endl ;
+      if ( nBjets > 1 ) if(isVerbose) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for two or more b-jets" << std::endl ;
       hists.diLmassNo70to100Cut.fill(hnuEvent);
+    }
     if ( hnuEvent.mMuMu < 70 || hnuEvent.mMuMu > 110 ) {
       hists.diLmassNo70to110Cut.fill(hnuEvent);
     }
     if ( hnuEvent.mMuMu > 100 ) 
       hists.diLmassAbove100Cut.fill(hnuEvent);
     if ( hnuEvent.mMuMu > 120 ) { 
-      std::cout << "Event has dimuon mass above 120 GeV" << std::endl ; 
-      std::cout << "*** Event away from Z, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ; 
+      if(isVerbose) std::cout << "Event has dimuon mass above 120 GeV" << std::endl ;
+      if(isVerbose) std::cout << "*** Event away from Z, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
       hists.diLmassAbove120Cut.fill(hnuEvent);
     }
     if ( hnuEvent.mMuMu > 150 ) 

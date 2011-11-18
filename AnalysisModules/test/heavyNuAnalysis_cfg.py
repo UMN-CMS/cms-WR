@@ -207,9 +207,10 @@ process.patTrackSequence = cms.Sequence(
 ## --------------------- ##
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
-   process.load("GeneratorInterface.GenFilters.TotalKinematicsFilter_cfi")
+   process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
+   process.hnuTotalKinematicsFilter.verbose = cms.untracked.bool(True)
    process.AnalysisIntroSequence = cms.Sequence(
-       process.totalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.refitMuons
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(

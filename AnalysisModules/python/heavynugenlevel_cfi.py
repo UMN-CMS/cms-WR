@@ -10,11 +10,11 @@ hNuGen = cms.EDAnalyzer (
     pdfReweightTargetId = cms.untracked.int32(0),
     pdfReweightAddZMass = cms.untracked.bool(False),
     minMu1pt     = cms.double(60.),
-    minMu2pt     = cms.double(30.),
+    minMu2pt     = cms.double(40.),
     minJetPt     = cms.double(40),
     maxMuAbsEta  = cms.double(2.4),
     maxJetAbsEta = cms.double(2.5),
     minMuMuMass  = cms.double(200),
-    min4objMass  = cms.double(520),
-    minMuonJetdR = cms.double(0.5)    
+    min4objMass  = cms.double(600),
+    minMuonJetdR = cms.double(0.5),
     )
