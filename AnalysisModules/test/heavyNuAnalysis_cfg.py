@@ -22,12 +22,12 @@ isRun2011VeryHiLumi = False
 #--- Flags for data taking era ---#
 isRun2011A = True
 muIdYear   = 20110
-pileupEra  = 20113
+pileupEra  = 20111
 doTriggerStudy = False
 #--- Placeholder for 2011B variables
 if not isRun2011A:
     muIdYear  = 20111
-    pileupEra = 20113
+    pileupEra = 20112
 
 
 #--- Flags for nominal studies ---#
@@ -297,8 +297,8 @@ process.hNu.maxJetVZsepCM   = cms.double(-1)
 #--- Pileup corrections ---#
 process.hNu.pileupEra = cms.int32(pileupEra)
 
-#--- Muon ID corrections are available as of 27 Oct, 2011 ---#
-process.hNu.applyMuIDEffcorr = cms.bool(isMC)
+#--- Muon ID corrections are not ready ---#
+process.hNu.applyMuIDEffcorr = cms.bool(False)
 
 if isData:
     process.hNu.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )

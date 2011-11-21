@@ -254,8 +254,12 @@ namespace hnu {
       0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
       0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
       0.00 };
+
+    // Pileup histograms assembled from inputs in this directory: 
+    // /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/PileUp
+
     // Note: there is a 36th entry with 0.008, but other ingredients have only 35 entries so omitting
-    const double json_2375ipb[] = {
+    const double json_2011a[] = {
       1.29654E07, 5.58514E07, 1.29329E08, 2.12134E08, 2.76138E08,
       3.03604E08, 2.93258E08, 2.55633E08,  2.0497E08, 1.53264E08,
       1.07936E08, 7.21006E07,  4.5913E07,   2.797E07, 1.63426E07,
@@ -265,10 +269,21 @@ namespace hnu {
           31.281,    10.9195,    3.73146,    1.24923,   0.602368
     } ; 
 
+    const double json_2011b[] = {
+          481142, 3.21393E06, 1.15733E07, 2.91676E07, 5.76072E07,
+      9.51074E07, 1.36849E08,  1.7665E08,  2.0885E08, 2.29582E08,
+      2.37228E08, 2.32243E08, 2.16642E08, 1.93361E08,  1.6564E08,
+      1.36514E08, 1.08455E08, 8.31965E07, 6.17147E07, 4.43296E07,
+      3.08733E07, 2.08734E07, 1.37166E07, 8.77106E06, 5.46389E06,
+      3.31952E06, 1.96896E06,  1.1414E06,     647299,     359460,
+          195642,     104449,    54741.4,    28184.3,    28004.9
+    } ; 
+
     const double* pileupDist=default_pd;
 
-    if (era>=20113 && era<=20120) pileupDist=json_2375ipb;
-    if (era>=20110 && era<=20112) pileupDist=may10_json;
+    if (era == 20111) pileupDist=json_2011a;
+    if (era == 20112) pileupDist=json_2011b;
+    if (era == 20110) pileupDist=may10_json;
     if (era>=20100 && era<=20109) pileupDist=dec22_json;
 
     std::vector<float> retval;
