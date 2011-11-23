@@ -15,7 +15,7 @@ namespace hnu {
   bool isVBTFtight(const pat::Muon& m)
   {
     if( !isVBTFloose(m) ) return false; // this should already have been checked.
-    
+
     reco::TrackRef gt = m.globalTrack();
     if (gt.isNull()) {
       std::cerr << "Mu global track reference is NULL" << std::endl;
@@ -27,7 +27,7 @@ namespace hnu {
 	    (m.numberOfMatches() > 1) &&
 	    (gt->hitPattern().numberOfValidMuonHits()>0) &&
 	    (gt->hitPattern().numberOfValidPixelHits()>0) );
-    
+
   } // HeavyNu::isVBTFtight
 
   double getElectronEt(const pat::Electron& e) { 
@@ -343,17 +343,17 @@ namespace hnu {
     jecUnc->setJetPt((float)jpt);
     jecUnc->setJetEta((float)jeta);
     offunc = jecUnc->getUncertainty(directionIsUp);
-
-    float pileupCorrection = (2 * 0.75 * 0.8) / jpt;
-    if      (correctEra == 1) pileupCorrection *= pileup2010A;
-    else if (correctEra == 2) pileupCorrection *= pileup2010B;
-    else if (correctEra == 3) pileupCorrection *= pileup2011A;
-    else { // Merge 2010A and 2010B corrections
-      float pileup2010 = ((3.18 * pileup2010A) + (32.96 * pileup2010B)) / 36.14;
-      pileupCorrection *= pileup2010;
-    }
+        // these are no longer necessary, commented out to ensure they never get applied without express intent
+        //    float pileupCorrection = (2 * 0.75 * 0.8) / jpt;
+        //    if      (correctEra == 1) pileupCorrection *= pileup2010A;
+        //    else if (correctEra == 2) pileupCorrection *= pileup2010B;
+        //    else if (correctEra == 3) pileupCorrection *= pileup2011A;
+        //    else { // Merge 2010A and 2010B corrections
+        //      float pileup2010 = ((3.18 * pileup2010A) + (32.96 * pileup2010B)) / 36.14;
+        //      pileupCorrection *= pileup2010;
+        //    }
     // Calculations taken from https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC, version 23
-    float totalUnc = sqrt((offunc*offunc) + (pileupCorrection*pileupCorrection) + (0.025*0.025));
+    float totalUnc = offunc;//sqrt((offunc*offunc) + (pileupCorrection*pileupCorrection) + (0.025*0.025));
     return totalUnc;
   }
 
@@ -365,21 +365,22 @@ namespace hnu {
     std::vector< std::pair<pat::Jet,float> > jetList ; 
 
     for (unsigned int iJet=0; iJet<pJets->size(); iJet++) {
-      pat::JetRef iJ = pat::JetRef(pJets, iJet);
-      float jpt = (*iJ).pt();
-      float jeta = (*iJ).eta();
+      pat::Jet iJ = pJets->at(iJet);
+      float jpt = iJ.pt();
+      float jeta = iJ.eta();
       if (fabs(jeta) > maxAbsEta) continue ; 
       int jpdgId = 0;
-      if (iJ->genParton()) jpdgId = iJ->genParton()->pdgId();
+      if (iJ.genParton()) jpdgId = iJ.genParton()->pdgId();
       bool isBjet = (abs(jpdgId) == 5);
       float jecuscale = 1.0f;
       if (jecSign) {
 	float jecu = jecTotalUncertainty(jpt, jeta, jecUnc, jecEra, isBjet, (jecSign > 0));
 	jecuscale = (1.0 + (float(jecSign) * jecu));
 	jpt *= jecuscale;
+        iJ.setP4(iJ.p4()*jecuscale);
       }
       if (jpt > minPt) { 
-	std::pair<pat::Jet,float> jetCand = std::make_pair((*iJ),jecuscale) ;
+	std::pair<pat::Jet,float> jetCand = std::make_pair(iJ,jecuscale) ;
 	jetList.push_back( jetCand ) ; 
       }
     }
@@ -414,7 +415,7 @@ namespace hnu {
 	  if ( tevMuPt < minPt ) continue ;  
 	  double dR = ROOT::Math::VectorUtil::DeltaR(tevMuon.p4(),iM.p4()) ;
 	  if ( dR < 0.001 ) { // Replace muon p4 with refit (TeV) muon p4
-	    iM.setP4( tevMuon.p4() ) ; 
+	    iM.setP4( tevMuon.p4() * ptScale ) ;
 	  }
 	}
       }
@@ -450,51 +451,4 @@ namespace hnu {
     return electronList ; 
   }
 
-  // Object of this code is to find all tag and probe pairs for a given event
-  // The tag will *always* be in the first position, and the probe collection 
-  // should always contain all tags.  If combination x contains a two-tag pair, 
-  // some other combination y will contain the same pair in reverse order
-//     template <class T> std::vector< std::pair<pat::Muon,T> > getTagProbePair(const std::vector<pat::Muon>& tags,
-//                                                                              const std::vector<T>& probes,
-//                                                                              double minMass, double maxMass, 
-//                                                                              double rval) {
-
-//         std::vector< std::pair<pat::Muon,T> > tagprobes ; 
-    
-//     // Sanity check to make sure tag collection is subset of probes
-//     std::vector<unsigned int> tagLocs ; 
-//     for (unsigned int i=0; i<tags.size(); i++) { 
-//       for (unsigned int j=0; j<probes.size(); j++) { 
-//      	double dR = ROOT::Math::VectorUtil::DeltaR(tags.at(i).p4(),probes.at(j).p4()) ; 
-//      	if ( dR < 0.02 ) { // Found the tag in the probe list
-//      	  tagLocs.push_back(j) ;
-//      	  break ; 
-//      	}
-//       }
-//     }
-//     if ( tagLocs.size() != tags.size() ) 
-//       std::cout << "WARNING!!! Expected to find all tags in probe list, but for " 
-// 		<< tags.size() << " tags found " << tagLocs.size() << " in probe list" 
-// 		<< std::endl ; 
-
-//     for (unsigned int i=0; i<tags.size(); i++) { 
-//       for (unsigned int j=0; j<probes.size(); j++) { 
-// 	// Skip known tags
-// 	if (std::find(probes.begin(),probes.end(),j) != probes.end()) continue ; 
-// 	double mass = (tags.at(i).p4()+probes.at(j).p4()).M() ; 
-// 	if ( mass < minMass || mass > maxMass ) continue ; 
-// 	std::pair<pat::Muon,T> tp = std::make_pair(tags.at(i),probes.at(j)) ; 
-// 	tagprobes.push_back( tp ) ; 
-//       }
-//     }
-    
-//     // Return all tag+probe combinations
-//     if ( rval < 0 || tagprobes.size() <= 1 ) return tagprobes ; 
-//     // Randomly pick one tag+probe combination from those available
-//     unsigned int idx = (unsigned int)(rval * tagprobes.size()) ; 
-//     std::vector< std::pair<pat::Muon,T> > singletp ; 
-//     singletp.push_back( tagprobes.at(idx) ) ; 
-//     return singletp ; 
-//   }
-    
 }

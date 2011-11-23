@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.13 2011/10/14 23:01:07 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.14 2011/10/18 16:56:50 bdahmes Exp $
 //
 //
 
@@ -650,7 +650,7 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
   double wgt = hne.eventWgt ;
 
   // Muons 
-  double mu1pt = hne.MuScale*hne.mu1.pt();
+  double mu1pt = hne.mu1.pt();
   double e1pt  = hne.ElecScale*hne.e1.pt();
 
   ptMu1->Fill(mu1pt,wgt) ; 
@@ -702,7 +702,7 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
 
     double j1bdisc = hne.j1.bDiscriminator(btagName);
 
-    ptJet1->Fill(hne.j1scale*hne.j1.pt(),wgt) ; 
+    ptJet1->Fill(hne.j1.pt(),wgt) ; 
     etaJet1->Fill(hne.j1.eta(),wgt) ; 
     phiJet1->Fill(hne.j1.phi(),wgt) ; 
     btagJet1->Fill(j1bdisc,wgt);
@@ -710,7 +710,7 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
     if (hne.nJets > 1) {
       double j2bdisc = hne.j2.bDiscriminator(btagName);
 
-      ptJet2->Fill(hne.j2scale*hne.j2.pt(),wgt) ; 
+      ptJet2->Fill(hne.j2.pt(),wgt) ; 
       etaJet2->Fill(hne.j2.eta(),wgt) ; 
       phiJet2->Fill(hne.j2.phi(),wgt) ; 
       btagJet2->Fill(j2bdisc,wgt);
@@ -969,260 +969,12 @@ HeavyNuTop::~HeavyNuTop()
 
 }
 
-//======================================================================
-
-//
-// member functions
-//
-// bool
-// HeavyNuTop::isVBTFloose(const pat::Muon& m)
-// {
-//   return m.muonID("AllGlobalMuons")&&(m.numberOfValidHits()>10);
-// }
-
-// bool
-// HeavyNuTop::isVBTFtight(const pat::Muon& m)
-// {
-//   if( !isVBTFloose(m) ) return false; // this should already have been checked.
-
-//   reco::TrackRef gt = m.globalTrack();
-//   if (gt.isNull()) {
-//     std::cerr << "Mu global track reference is NULL" << std::endl;
-//     return false;
-//   }
-//   return (m.muonID("AllTrackerMuons") &&
-// 	  (m.dB() < 0.2) &&
-// 	  (m.normChi2() < 10) &&
-// 	  (m.numberOfMatches() > 1) &&
-// 	  (gt->hitPattern().numberOfValidMuonHits()>0) &&
-// 	  (gt->hitPattern().numberOfValidPixelHits()>0) );
-
-// }                                                // HeavyNuTop::isVBTFtight
-
-//======================================================================
-
-// void
-// HeavyNuTop::fillBasicMuHistos(const pat::Muon& m)
-// {
-//   double mupt = m.pt();
-//   hists.muPt->Fill( applyMESfactor_*mupt ) ; 
-//   hists.muEta->Fill( m.eta() ) ; 
-//   hists.muPhi->Fill( m.phi() ) ; 
-// }                                          // HeavyNuTop::fillBasicMuHistos
-
-//======================================================================
-
-// void
-// HeavyNuTop::fillBasicJetHistos( const pat::Jet& j,
-// 				int jetnum )
-// {
-//   double jpt=j.pt(),jeta=j.eta();
-
-//   hists.jetPt ->Fill( jpt  ) ; 
-//   hists.jetEta->Fill( jeta ) ; 
-//   hists.jetPhi->Fill( j.phi() ) ; 
-//   hists.jetID ->Fill( jetIDemu( j ) );
-//   hists.jetPtvsNum->Fill( jetnum, jpt ) ; 
-// }                                         // HeavyNuTop::fillBasicJetHistos
-
-//======================================================================
-
-// double HeavyNuTop::GetCorrectedPt(const pat::Electron& e ) {
-//   double pt = e.superCluster()->energy() / cosh(e.superCluster()->eta()) ; 
-//   return pt ; 
-// }
-
 TH1 *
 HeavyNuTop::bookRunHisto(uint32_t runNumber)
 {
   std::string runstr = int2str<uint32_t>(runNumber);
   return hists.rundir->make <TH1I> (runstr.c_str(), runstr.c_str(),1,1,2);
 }
-
-//======================================================================
-
-// void
-// HeavyNuTop::selectJets(edm::Handle<pat::JetCollection>& pJets,
-// 		    HeavyNuEvent& hne)
-// {
-//   for (size_t iJet=0; iJet<pJets->size(); iJet++) {
-//     pat::JetRef iJ=pat::JetRef( pJets,iJet );
-//     float jpt       = (*iJ).pt();
-//     float jeta      = (*iJ).eta();
-
-//     float jecuscale = 1.0f;
-
-//     double dRej = deltaR( hne.e1.eta(),hne.e1.phi(),jeta,(*iJ).phi() ) ; 
-//     if( (jpt       > cuts.minimum_jet_pt)   && // more later!
-// 	(fabs(jeta)<=cuts.maximum_jet_abseta) && 
-// 	(dRej > cuts.minimum_lep_jet_dR) ) { 
-
-//       if(hne.j1.isNull()) {
-// 	hne.j2=hne.j1;
-// 	hne.j1=iJ;
-// 	hne.j2scale=hne.j1scale;
-// 	hne.j1scale=jecuscale;
-//       } else {
-// 	float j1pt = hne.j1->pt() * hne.j1scale;
-// 	if (j1pt < jpt) {
-// 	  hne.j2=hne.j1;
-// 	  hne.j1=iJ;
-// 	  hne.j2scale=hne.j1scale;
-// 	  hne.j1scale=jecuscale;
-// 	}
-// 	else if( hne.j2.isNull() ) {
-// 	  hne.j2=iJ;
-// 	  hne.j2scale=jecuscale;
-// 	} else {
-// 	  float j2pt = hne.j2->pt() * hne.j2scale;
-// 	  if( j2pt < jpt ) {
-// 	    hne.j2=iJ;
-// 	    hne.j2scale=jecuscale;
-// 	  }
-// 	}
-//       } // if jet supplants one of the jets selected so far
-//     } // if jet passes pt/eta cuts
-//   } // jet loop
-// }                                                  //HeavyNuTop::selectJets
-
-//======================================================================
-
-// bool
-// HeavyNuTop::muPassesSelection(const pat::Muon& m, const HeavyNuEvent& hne)
-// {
-//   const pat::JetRef& j1 = hne.j1 ; 
-//   const pat::JetRef& j2 = hne.j2 ; 
-  
-//   double mupt = applyMESfactor_*m.pt();
-//   double dr1=(j1.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j1->eta(),j1->phi()));
-//   double dr2=(j2.isNull())?(10.0):(deltaR(m.eta(),m.phi(),j2->eta(),j2->phi()));
-
-//   return( (mupt > cuts.minimum_lep2_pt)
-// 	  && hnu::isVBTFloose(m)
-// 	  && (fabs(m.eta()) < cuts.maximum_mu_abseta)
-// 	  && (std::min(dr1,dr2) > cuts.minimum_lep_jet_dR)
-// 	  && ((m.trackIso()/mupt)  < cuts.muon_trackiso_limit) );
-
-// }                                          // HeavyNuTop::muPassesSelection
-
-//======================================================================
-
-// bool
-// HeavyNuTop::elePassesSelection(const pat::Electron& e) 
-// {
-
-//   if ( !e.ecalDriven() ) return false ; 
-//   double ept = GetCorrectedPt(e) ; 
-//   // double ept = e.superCluster()->energy() / cosh(e.superCluster()->eta()) ; 
-
-//   if ( fabs(e.superCluster()->eta()) < 1.442 ) ept *= EBscalefactor_ ; 
-//   else ept *= EEscalefactor_ ; 
-
-//   if ( ept > cuts.minimum_mu2_pt &&
-//        fabs(e.eta()) < 2.5 ) { // Hardcoded limit on electron position
-
-//     // Calculate a few quantities
-//     bool HoE = ( e.hadronicOverEm() < 0.05 ) ; 
-//     bool dPhiIn = ( fabs(e.deltaPhiSuperClusterTrackAtVtx()) < 0.09 ) ; 
-//     double ecalIso  = e.dr03EcalRecHitSumEt() ; 
-//     double hcalIso1 = e.dr03HcalDepth1TowerSumEt() ; 
-//     double hcalIso2 = e.dr03HcalDepth2TowerSumEt() ; 
-
-//     if ( fabs(e.superCluster()->eta()) < 1.442 ) { // ECAL Barrel 
-//       bool goodShape = ( e.e2x5Max() / e.e5x5() > 0.94 ) || ( e.e1x5() / e.e5x5() > 0.83 ) ; 
-//       bool dEtaIn = ( fabs(e.deltaEtaSuperClusterTrackAtVtx()) < 0.005 ) ; 
-//       double threshold = 2. + 0.03 * ept ; 
-//       bool caloIso = ( (ecalIso + hcalIso1) < threshold ) ; 
-//       bool trkIso = ( e.dr03TkSumPt() < 7.5 ) ; 
-//       if ( HoE && goodShape && dEtaIn && dPhiIn && caloIso && trkIso ) return true ; 
-//     } else if ( fabs(e.superCluster()->eta()) > 1.56 ) { // ECAL endcap
-//       bool goodShape = ( e.sigmaIetaIeta() < 0.03 ) ; 
-//       bool dEtaIn = ( fabs(e.deltaEtaSuperClusterTrackAtVtx()) < 0.007 ) ; 
-//       double threshold = ( ept < 50. ) ? (2.5) : (2.5 + 0.03 * (ept-50)) ; 
-//       bool caloIso = ( ((ecalIso + hcalIso1) < threshold) && (hcalIso2 < 0.5) ) ; 
-//       bool trkIso = ( e.dr03TkSumPt() < 15. ) ; 
-//       if ( HoE && goodShape && dEtaIn && dPhiIn && caloIso && trkIso ) return true ; 
-//     }
-//   }
-//   return false ; 
-// }                                          // HeavyNu::elePassesSelection
-
-//======================================================================
-
-// void
-// HeavyNuTop::selectMuons(edm::Handle<pat::MuonCollection>& pMuons,
-// 		     HeavyNuEvent& hne)
-// {
-//   double mu1wgt = 1.0 ; 
-//   double mu2wgt = 1.0 ; 
-
-//   for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) {
-//     pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
-//     double mupt = applyMESfactor_*((*iM).pt()) ;
- 
-//     if( muPassesSelection(*iM,hne) ) {
-//       if( (hne.mu1.isNull()) ||
-// 	  (hne.mu1->pt()<(*iM).pt()) ) { // simple factor won't change this relation
-// 	hne.mu2=hne.mu1;
-// 	hne.mu1=iM;
-// 	if ( applyMuIDCorrections_ && hne.isMC ) {
-// 	  mu2wgt = mu1wgt ; 
-// 	  mu1wgt = muid_->weightForMC( mupt,0 ) ; 
-// 	}
-//       } else 	if (hne.mu2.isNull() ||
-// 		    hne.mu2->pt()<(*iM).pt()) { // or this
-// 	hne.mu2=iM;
-// 	if ( applyMuIDCorrections_ && hne.isMC ) 
-// 	  mu2wgt = muid_->weightForMC( mupt,0 ) ;
-//       }
-//     }
-//   }
-//   // Due to muon ID differences between data/MC, need to apply 
-//   // a weight factor to events based on muon pt
-//   if ( applyMuIDCorrections_ && hne.isMC ) {
-//     hne.eventWgt *= mu1wgt ; // Only mu1 weight matters
-//     if ( dolog_ ) std::cout << "Mu weight: " << mu1wgt << " " << hne.eventWgt << std::endl ; 
-//   }
-// }                                                // HeavyNuTop::selectMuons
-
-// void
-// HeavyNuTop::selectElectrons(edm::Handle<pat::ElectronCollection>& pElecs,
-// 			    HeavyNuEvent& hne)
-// {
-//   double weight = 1.0 ; 
-  
-//   for (size_t iEle=0; iEle<pElecs->size(); iEle++) {
-//     pat::ElectronRef iE=pat::ElectronRef(pElecs,iEle);
-
-//     if( elePassesSelection(*iE) ) {
-//       bool isEB = (fabs((*iE).superCluster()->eta()) < 1.442) ; 
-//       // double ept = (*iE).superCluster()->energy() / cosh((*iE).superCluster()->eta()) ; 
-//       double ept = GetCorrectedPt(*iE) ; 
-
-//       if (hne.e1.isNull()) { 
-// 	hne.e1=iE ;
-// 	if (isEB) hne.EEScale = EBscalefactor_ ; 
-// 	else      hne.EEScale = EEscalefactor_ ; 
-// 	weight = ( isEB ? ebIDwgt_ : eeIDwgt_ ) ; 
-//       } else {
-// 	bool e1isEB = (fabs(hne.e1->superCluster()->eta()) < 1.442) ; 
-// 	double e1pt = GetCorrectedPt(*hne.e1) ; 
-// 	if ( e1isEB ) e1pt *= EBscalefactor_ ;
-// 	else          e1pt *= EEscalefactor_ ;
-// 	if (e1pt<ept) { 
-// 	  hne.e1=iE;
-// 	  if (isEB) hne.EEScale = EBscalefactor_ ; 
-// 	  else      hne.EEScale = EEscalefactor_ ; 
-// 	  weight = ( isEB ? ebIDwgt_ : eeIDwgt_ ) ; 
-// 	}
-//       }
-//     }
-//   }
-//   hne.eventWgt *= weight ; 
-//   if ( dolog_ ) std::cout << "Electron weight: " << weight << " " << hne.eventWgt << std::endl ; 
-// }                                                // HeavyNuTop::selectElectrons
-
-//======================================================================
 
 // ------------ method called to for each event  ------------
 bool
@@ -1396,7 +1148,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (unsigned int i=0; i<muCands.size(); i++) { 
     if ( hnuEvent.nMuons > 0 ) break ; 
     pat::Muon iM = muCands.at(i) ; 
-    if ( hnu::muIsolation(iM,applyMESfactor_) < cuts.muon_trackiso_limit ) {
+    if ( hnu::muIsolation(iM) < cuts.muon_trackiso_limit ) {
       double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi()) ; 
       double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi()) ; 
       if (dRj1 > cuts.minimum_lep_jet_dR && dRj2 > cuts.minimum_lep_jet_dR) { 
@@ -1408,7 +1160,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   if ( hnuEvent.nMuons < 1 ) return false ; // No muons
   if (applyMuIDCorrections_ && hnuEvent.isMC) {
-    double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()*applyMESfactor_),0) ;
+    double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()),0) ;
     hnuEvent.eventWgt *= mu1wgt ; 
   }
 
@@ -1432,7 +1184,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       trig_->isTriggerMatched( hnuEvent.mu1, iEvent ) ; 
   } else if (!iEvent.isRealData()) {
     mu1trig = mu1trig &&  
-      trig_->simulateForMC( applyMESfactor_*hnuEvent.mu1.pt(),hnuEvent.mu1.eta(),0 );
+      trig_->simulateForMC( hnuEvent.mu1.pt(),hnuEvent.mu1.eta(),0 );
   }
 
   if( !mu1trig ) return false;
@@ -1452,7 +1204,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false ; 
   hists.VertexCuts.fill( hnuEvent,v_null );
 
-  double mu1pt = applyMESfactor_*hnuEvent.mu1.pt() ;
+  double mu1pt = hnuEvent.mu1.pt() ;
   double e1pt  = hnu::getElectronEt(hnuEvent.e1) ; 
   double highestPt = ( (mu1pt > e1pt) ? mu1pt : e1pt ) ; 
   if ( studyScaleFactorEvolution_ ) { 

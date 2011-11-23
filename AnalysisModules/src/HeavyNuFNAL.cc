@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFNAL.cc,v 1.1 2011/11/13 10:40:35 bdahmes Exp $
+// $Id: HeavyNuFNAL.cc,v 1.2 2011/11/18 13:28:16 pastika Exp $
 //
 //
 
@@ -734,8 +734,8 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
     mc_type->Fill(hne.mc_class, wgt);
 
     // Muons
-    double mu1pt = hne.MuScale * hne.mu1.pt();
-    double mu2pt = hne.MuScale * hne.mu2.pt();
+    double mu1pt = hne.mu1.pt();
+    double mu2pt = hne.mu2.pt();
 
     ptMu1->Fill(mu1pt, wgt);
     ptMu2->Fill(mu2pt, wgt);
@@ -779,7 +779,7 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
         {
             if(hne.mu[i].genLepton() != 0)
             {
-                float dpt = (hne.MuScale * hne.mu[i].pt()) - hne.mu[i].genLepton()->pt();
+                float dpt = (hne.mu[i].pt()) - hne.mu[i].genLepton()->pt();
                 float dR = deltaR(hne.mu[i].eta(), hne.mu[i].phi(),
                         hne.mu[i].genLepton()->eta(), hne.mu[i].genLepton()->phi());
                 if(i == 0)
@@ -813,7 +813,7 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
 
         double j1bdisc = hne.j1.bDiscriminator(btagName);
 
-        ptJet1->Fill(hne.j1scale * hne.j1.pt(), wgt);
+        ptJet1->Fill(hne.j1.pt(), wgt);
         etaJet1->Fill(hne.j1.eta(), wgt);
         phiJet1->Fill(hne.j1.phi(), wgt);
         btagJet1->Fill(j1bdisc, wgt);
@@ -822,7 +822,7 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
         {
             double j2bdisc = hne.j2.bDiscriminator(btagName);
 
-            ptJet2->Fill(hne.j2scale * hne.j2.pt(), wgt);
+            ptJet2->Fill(hne.j2.pt(), wgt);
             etaJet2->Fill(hne.j2.eta(), wgt);
             phiJet2->Fill(hne.j2.phi(), wgt);
             btagJet2->Fill(j2bdisc, wgt);
