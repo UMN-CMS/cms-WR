@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.79 2011/11/11 13:04:29 pastika Exp $
+// $Id: HeavyNu.cc,v 1.80 2011/11/23 12:34:06 pastika Exp $
 //
 //
 
@@ -210,13 +210,16 @@ private:
                   pat::METCollection metc,
                   bool isMC,
                   double wgt,
-                  bool pfJets);
+                  bool pfJets,
+		  int nPU,
+		  int nPV);
         // fill all histos of the set with the two electron candidates
         void fill(const HeavyNuEvent& hne, const std::vector<hNuMassHypothesis>&);
         // Special fill for muon efficiency studies
         void fill(const pat::Muon& theTag, const pat::Muon& theProbe, const double probeTrkIso, const double wgt) ; 
         void fill(const pat::Muon& theTag, const pat::GenericParticle& theProbe, const double trkIso, const double wgt) ; 
         
+        TH1 *evtWeight ; 
         TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2;
         TH1 *etaMu1pt30, *etaMu1pt40, *etaMu2pt30, *etaMu2pt40 ; 
         TH1 *phiMu1pt30, *phiMu1pt40, *phiMu2pt30, *phiMu2pt40 ; 
@@ -230,6 +233,7 @@ private:
         TH2 *ptrelVsdRminMu1jet, *ptrelVsdRminMu2jet;
         TH2 *jetID2d;
 
+        TH1 *tpEvtWeight ; 
         TH1 *ptTag, *etaTag, *phiTag ; 
         TH1 *ptProbe, *etaProbe, *phiProbe ; 
         TH1 *etaProbePt30, *etaProbePt40, *phiProbePt30, *phiProbePt40 ; 
@@ -241,6 +245,16 @@ private:
         TH1 *tagTrackIso, *tagTrackRelIso, *probeTrackIso, *probeTrackRelIso ; 
         TH1 *mMuMuTP, *mMuMuTPRiso100, *mMuMuTPRiso50, *mMuMuTPRiso20, *mMuMuTPRiso10, *mMuMuTPRiso5 ; 
         
+        TH2 *ptTag_mass, *etaTag_mass, *phiTag_mass ; 
+        TH2 *ptProbe_mass, *etaProbe_mass, *phiProbe_mass ; 
+        TH2 *etaProbePt30_mass, *etaProbePt40_mass, *phiProbePt30_mass, *phiProbePt40_mass ; 
+        TH2 *ptProbeRiso100_mass, *etaProbeRiso100_mass, *phiProbeRiso100_mass ; 
+        TH2 *ptProbeRiso50_mass, *etaProbeRiso50_mass, *phiProbeRiso50_mass ; 
+        TH2 *ptProbeRiso20_mass, *etaProbeRiso20_mass, *phiProbeRiso20_mass ; 
+        TH2 *ptProbeRiso10_mass, *etaProbeRiso10_mass, *phiProbeRiso10_mass ; 
+        TH2 *ptProbeRiso5_mass, *etaProbeRiso5_mass, *phiProbeRiso5_mass ; 
+        TH2 *tagTrackIso_mass, *tagTrackRelIso_mass, *probeTrackIso_mass, *probeTrackRelIso_mass ; 
+
         TH1 *dptMu1gen, *dptMu2gen;
         TH1 *dRMu1gen, *dRMu2gen;
         TH1 *qualMu1, *qualMu2;
@@ -282,6 +296,9 @@ private:
 
         // mc type
         TH1* mc_type;
+
+        // Pileup, vertex count information
+        TH1 *n_pileup, *n_vertex ; 
 
     };
 
@@ -412,6 +429,9 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
 
     mydir = td;
 
+    t = "event weights " + post;
+    evtWeight = td->make<TH1D > ("evtWeight", t.c_str(), 1000, 0.0, 10.0);
+
     // ----------  Muon histograms  ----------
 
     t = "p_{T}(#mu_{1}) " + post;
@@ -419,17 +439,17 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     t = "p_{T}(#mu_{2}) " + post;
     ptMu2 = td->make<TH1D > ("ptMu2", t.c_str(), 100, 0., 1000.);
     t = "#eta(#mu_{1}) " + post;
-    etaMu1 = td->make<TH1D > ("etaMu1", t.c_str(), 40, -2.5, 2.5);
+    etaMu1 = td->make<TH1D > ("etaMu1", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(#mu_{1}, p_{T} > 30 GeV) " + post;
-    etaMu1pt30 = td->make<TH1D > ("etaMu1pt30", t.c_str(), 40, -2.5, 2.5);
+    etaMu1pt30 = td->make<TH1D > ("etaMu1pt30", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(#mu_{1}, p_{T} > 40 GeV) " + post;
-    etaMu1pt40 = td->make<TH1D > ("etaMu1pt40", t.c_str(), 40, -2.5, 2.5);
+    etaMu1pt40 = td->make<TH1D > ("etaMu1pt40", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(#mu_{2}) " + post;
-    etaMu2 = td->make<TH1D > ("etaMu2", t.c_str(), 40, -2.5, 2.5);
+    etaMu2 = td->make<TH1D > ("etaMu2", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(#mu_{2}, p_{T} > 30 GeV) " + post;
-    etaMu2pt30 = td->make<TH1D > ("etaMu2pt30", t.c_str(), 40, -2.5, 2.5);
+    etaMu2pt30 = td->make<TH1D > ("etaMu2pt30", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(#mu_{2}, p_{T} > 40 GeV) " + post;
-    etaMu2pt40 = td->make<TH1D > ("etaMu2pt40", t.c_str(), 40, -2.5, 2.5);
+    etaMu2pt40 = td->make<TH1D > ("etaMu2pt40", t.c_str(), 50, -2.5, 2.5);
     t = "#phi(#mu_{1}) " + post;
     phiMu1 = td->make<TH1D > ("phiMu1", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(#mu_{1}, p_{T} > 30 GeV) " + post;
@@ -454,7 +474,7 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     // delta angles
 
     t = "#Delta#eta(#mu_{1},#mu_{2}) " + post;
-    dEtaMu = td->make<TH1D > ("dEtaMu", t.c_str(), 40, 0, 5);
+    dEtaMu = td->make<TH1D > ("dEtaMu", t.c_str(), 50, 0, 5);
     t = "#Delta#phi(#mu_{1},#mu_{2}) " + post;
     dPhiMu = td->make<TH1D > ("dPhiMu", t.c_str(), 30, 0, 3.14159);
     t = "#Delta p_{T}(#mu_{1},gen) " + post;
@@ -526,16 +546,16 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     t = "p_{T}(j_{2}) " + post;
     ptJet2 = td->make<TH1D > ("ptJet2", t.c_str(), 50, 0., 500.);
     t = "#eta(j_{1}) " + post;
-    etaJet1 = td->make<TH1D > ("etaJet1", t.c_str(), 40, -5, 5);
+    etaJet1 = td->make<TH1D > ("etaJet1", t.c_str(), 100, -5, 5);
     t = "#eta(j_{2}) " + post;
-    etaJet2 = td->make<TH1D > ("etaJet2", t.c_str(), 40, -5, 5);
+    etaJet2 = td->make<TH1D > ("etaJet2", t.c_str(), 100, -5, 5);
     t = "#phi(j_{1}) " + post;
     phiJet1 = td->make<TH1D > ("phiJet1", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(j_{2}) " + post;
     phiJet2 = td->make<TH1D > ("phiJet2", t.c_str(), 30, -3.14159, 3.14159);
 
     t = "#Delta#eta(j_{1},j_{2}) " + post;
-    dEtaJet = td->make<TH1D > ("dEtaJet", t.c_str(), 40, 0, 5);
+    dEtaJet = td->make<TH1D > ("dEtaJet", t.c_str(), 100, 0, 5);
     t = "#Delta#phi(j_{1},j_{2}) " + post;
     dPhiJet = td->make<TH1D > ("dPhiJet", t.c_str(), 30, 0, 3.14159);
 
@@ -567,6 +587,12 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
 
     t = "MC Type " + post;
     mc_type = td->make<TH1D > ("mc_type", "MC Type Code", 100, -0.5, 99.5);
+
+    t = "n(Pileup) " + post;
+    n_pileup = td->make<TH1D > ("n_pileup", "Number of (MC) pileup", 35, -0.5, 34.5);
+    t = "n(Vertex) " + post;
+    n_vertex = td->make<TH1D > ("n_vertex", "Number of reconstructed vertices", 35, -0.5, 34.5);
+
 
     // ----------  Mu/Jet histograms  ----------
 
@@ -689,15 +715,19 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
     std::string t; // histogram title string;
 
     TH1::SetDefaultSumw2();
+    TH2::SetDefaultSumw2();
 
     mydir = td;
+
+    t = "TP event weight " + post;
+    tpEvtWeight = td->make<TH1D > ("tpEvtWeight", t.c_str(), 1000, 0.0, 10.0);
 
     // ----------  Muon histograms  ----------
 
     t = "p_{T}(tag) " + post;
     ptTag = td->make<TH1D > ("ptTag", t.c_str(), 100, 0., 1000.);
     t = "#eta(tag) " + post;
-    etaTag = td->make<TH1D > ("etaTag", t.c_str(), 40, -2.5, 2.5);
+    etaTag = td->make<TH1D > ("etaTag", t.c_str(), 50, -2.5, 2.5);
     t = "#phi(tag) " + post;
     phiTag = td->make<TH1D > ("phiTag", t.c_str(), 30, -3.14159, 3.14159);
 
@@ -715,21 +745,21 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
     ptProbeRiso5 = td->make<TH1D > ("ptProbeRiso5", t.c_str(), 100, 0., 1000.);
 
     t = "#eta(probe) " + post;
-    etaProbe = td->make<TH1D > ("etaProbe", t.c_str(), 40, -2.5, 2.5);
+    etaProbe = td->make<TH1D > ("etaProbe", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe p_{T} > 30 GeV) " + post;
-    etaProbePt30 = td->make<TH1D > ("etaProbePt30", t.c_str(), 40, -2.5, 2.5);
+    etaProbePt30 = td->make<TH1D > ("etaProbePt30", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe p_{T} > 40 GeV) " + post;
-    etaProbePt40 = td->make<TH1D > ("etaProbePt40", t.c_str(), 40, -2.5, 2.5);
+    etaProbePt40 = td->make<TH1D > ("etaProbePt40", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe) 100% probe relIso " + post;
-    etaProbeRiso100 = td->make<TH1D > ("etaProbeRiso100", t.c_str(), 40, -2.5, 2.5);
+    etaProbeRiso100 = td->make<TH1D > ("etaProbeRiso100", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe) 50% probe relIso " + post;
-    etaProbeRiso50 = td->make<TH1D > ("etaProbeRiso50", t.c_str(), 40, -2.5, 2.5);
+    etaProbeRiso50 = td->make<TH1D > ("etaProbeRiso50", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe) 20% probe relIso " + post;
-    etaProbeRiso20 = td->make<TH1D > ("etaProbeRiso20", t.c_str(), 40, -2.5, 2.5);
+    etaProbeRiso20 = td->make<TH1D > ("etaProbeRiso20", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe) 10% probe relIso " + post;
-    etaProbeRiso10 = td->make<TH1D > ("etaProbeRiso10", t.c_str(), 40, -2.5, 2.5);
+    etaProbeRiso10 = td->make<TH1D > ("etaProbeRiso10", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe) 5% probe relIso " + post;
-    etaProbeRiso5 = td->make<TH1D > ("etaProbeRiso5", t.c_str(), 40, -2.5, 2.5);
+    etaProbeRiso5 = td->make<TH1D > ("etaProbeRiso5", t.c_str(), 50, -2.5, 2.5);
 
     t = "#phi(probe) " + post;
     phiProbe = td->make<TH1D > ("phiProbe", t.c_str(), 30, -3.14159, 3.14159);
@@ -759,6 +789,73 @@ void HeavyNu::HistPerDef::bookTagProbe(TFileDirectory *td, const std::string& po
     t = "trackRelIso(probe) " + post;
     probeTrackRelIso = td->make<TH1D > ("probeTrackRelIso", t.c_str(), 100, 0., 2.);
 
+    // Two dimensional histograms: quantity vs. dimuon mass
+
+    t = "p_{T}(tag) vs. #mu#mu mass " + post;
+    ptTag_mass = td->make<TH2D > ("ptTag_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+    t = "#eta(tag) vs. #mu#mu mass " + post;
+    etaTag_mass = td->make<TH2D > ("etaTag_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#phi(tag) vs. #mu#mu mass " + post;
+    phiTag_mass = td->make<TH2D > ("phiTag_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+
+    t = "p_{T}(probe) vs. #mu#mu mass " + post;
+    ptProbe_mass = td->make<TH2D > ("ptProbe_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+    t = "p_{T}(probe) 100% probe relIso vs. #mu#mu mass " + post;
+    ptProbeRiso100_mass = td->make<TH2D > ("ptProbeRiso100_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+    t = "p_{T}(probe) 50% probe relIso vs. #mu#mu mass " + post;
+    ptProbeRiso50_mass = td->make<TH2D > ("ptProbeRiso50_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+    t = "p_{T}(probe) 20% probe relIso vs. #mu#mu mass " + post;
+    ptProbeRiso20_mass = td->make<TH2D > ("ptProbeRiso20_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+    t = "p_{T}(probe) 10% probe relIso vs. #mu#mu mass " + post;
+    ptProbeRiso10_mass = td->make<TH2D > ("ptProbeRiso10_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+    t = "p_{T}(probe) 5% probe relIso vs. #mu#mu mass " + post;
+    ptProbeRiso5_mass = td->make<TH2D > ("ptProbeRiso5_mass", t.c_str(), 100, 0., 1000.,60,60.,120.);
+
+    t = "#eta(probe) vs. #mu#mu mass " + post;
+    etaProbe_mass = td->make<TH2D > ("etaProbe_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe p_{T} > 30 GeV) vs. #mu#mu mass " + post;
+    etaProbePt30_mass = td->make<TH2D > ("etaProbePt30_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe p_{T} > 40 GeV) vs. #mu#mu mass " + post;
+    etaProbePt40_mass = td->make<TH2D > ("etaProbePt40_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe) 100% probe relIso vs. #mu#mu mass " + post;
+    etaProbeRiso100_mass = td->make<TH2D > ("etaProbeRiso100_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe) 50% probe relIso vs. #mu#mu mass " + post;
+    etaProbeRiso50_mass = td->make<TH2D > ("etaProbeRiso50_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe) 20% probe relIso vs. #mu#mu mass " + post;
+    etaProbeRiso20_mass = td->make<TH2D > ("etaProbeRiso20_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe) 10% probe relIso vs. #mu#mu mass " + post;
+    etaProbeRiso10_mass = td->make<TH2D > ("etaProbeRiso10_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+    t = "#eta(probe) 5% probe relIso vs. #mu#mu mass " + post;
+    etaProbeRiso5_mass = td->make<TH2D > ("etaProbeRiso5_mass", t.c_str(), 50, -2.5, 2.5,60,60.,120.);
+
+    t = "#phi(probe) vs. #mu#mu mass " + post;
+    phiProbe_mass = td->make<TH2D > ("phiProbe_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe p_{T} > 30 GeV) vs. #mu#mu mass " + post;
+    phiProbePt30_mass = td->make<TH2D > ("phiProbePt30_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe p_{T} > 40 GeV) vs. #mu#mu mass " + post;
+    phiProbePt40_mass = td->make<TH2D > ("phiProbePt40_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe) 100% probe relIso vs. #mu#mu mass " + post;
+    phiProbeRiso100_mass = td->make<TH2D > ("phiProbeRiso100_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe) 50% probe relIso vs. #mu#mu mass " + post;
+    phiProbeRiso50_mass = td->make<TH2D > ("phiProbeRiso50_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe) 20% probe relIso vs. #mu#mu mass " + post;
+    phiProbeRiso20_mass = td->make<TH2D > ("phiProbeRiso20_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe) 10% probe relIso vs. #mu#mu mass " + post;
+    phiProbeRiso10_mass = td->make<TH2D > ("phiProbeRiso10_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+    t = "#phi(probe) 5% probe relIso vs. #mu#mu mass " + post;
+    phiProbeRiso5_mass = td->make<TH2D > ("phiProbeRiso5_mass", t.c_str(), 30, -3.14159, 3.14159,60,60.,120.);
+
+
+    // isolation
+    t = "trackIso(tag) vs. #mu#mu mass " + post;
+    tagTrackIso_mass = td->make<TH2D > ("tagTrackIso_mass", t.c_str(), 200, 0., 10.,60,60.,120.);
+    t = "trackIso(tag) vs. #mu#mu mass " + post;
+    probeTrackIso_mass = td->make<TH2D > ("probeTrackIso_mass", t.c_str(), 200, 0., 10.,60,60.,120.);
+    t = "trackRelIso(tag) vs. #mu#mu mass " + post;
+    tagTrackRelIso_mass = td->make<TH2D > ("tagTrackRelIso_mass", t.c_str(), 100, 0., 2.,60,60.,120.);
+    t = "trackRelIso(probe) vs. #mu#mu mass " + post;
+    probeTrackRelIso_mass = td->make<TH2D > ("probeTrackRelIso_mass", t.c_str(), 100, 0., 2.,60,60.,120.);
+
 
     // ----------  Composite histograms  ----------
     t = "M(#mu #mu) " + post;
@@ -781,7 +878,8 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
                                pat::METCollection metc,
                                bool isMC,
                                double wgt,
-                               bool pfJets)
+                               bool pfJets,
+			       int nPU, int nPV)
 {
     HeavyNuEvent hne;
     hne.isMC = isMC;
@@ -789,6 +887,8 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
     hne.pfJets = pfJets;
     hne.nJets = jets.size();
     hne.nMuons = muons.size();
+    hne.n_pue = nPU ; 
+    hne.n_primary_vertex = nPV ; 
     
     std::sort(muons.begin(), muons.end(), hnu::pTcompare());
     std::sort(jets.begin(), jets.end(), hnu::pTcompare());
@@ -812,7 +912,11 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 {
     double wgt = hne.eventWgt;
 
+    evtWeight->Fill(wgt) ;
     mc_type->Fill(hne.mc_class, wgt);
+
+    n_pileup->Fill(hne.n_pue) ; 
+    n_vertex->Fill(hne.n_primary_vertex) ; 
 
     // Muons
     double mu1pt = hne.mu1.pt();
@@ -1042,31 +1146,47 @@ void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
                                const double probeTrkIso,
                                const double wgt)
 {
+    tpEvtWeight->Fill(wgt) ; 
+    reco::Particle::LorentzVector mumu = theTag.p4() + theProbe.p4();
+
     ptTag->Fill(theTag.pt(), wgt);
     etaTag->Fill(theTag.eta(), wgt);
     phiTag->Fill(theTag.phi(), wgt);
+    ptTag_mass->Fill(theTag.pt(), mumu.M(), wgt);
+    etaTag_mass->Fill(theTag.eta(), mumu.M(), wgt);
+    phiTag_mass->Fill(theTag.phi(), mumu.M(), wgt);
 
     ptProbe->Fill(theProbe.pt(), wgt);
     etaProbe->Fill(theProbe.eta(), wgt);
     phiProbe->Fill(theProbe.phi(), wgt);
+    ptProbe_mass->Fill(theProbe.pt(), mumu.M(), wgt);
+    etaProbe_mass->Fill(theProbe.eta(), mumu.M(), wgt);
+    phiProbe_mass->Fill(theProbe.phi(), mumu.M(), wgt);
 
     // Special histograms for extra checking
     if ( theProbe.pt() > 30. ) { 
       etaProbePt30->Fill(theProbe.eta(), wgt) ; 
       phiProbePt30->Fill(theProbe.phi(), wgt) ; 
+      etaProbePt30_mass->Fill(theProbe.eta(), mumu.M(), wgt) ; 
+      phiProbePt30_mass->Fill(theProbe.phi(), mumu.M(), wgt) ; 
       if ( theProbe.pt() > 40. ) { 
 	etaProbePt40->Fill(theProbe.eta(), wgt) ; 
 	phiProbePt40->Fill(theProbe.phi(), wgt) ; 
+	etaProbePt40_mass->Fill(theProbe.eta(), mumu.M(), wgt) ; 
+	phiProbePt40_mass->Fill(theProbe.phi(), mumu.M(), wgt) ; 
       }
     }
 
     tagTrackIso ->Fill(theTag.trackIso(), wgt);
     probeTrackIso ->Fill(probeTrkIso, wgt);
+    tagTrackIso_mass ->Fill(theTag.trackIso(), mumu.M(), wgt);
+    probeTrackIso_mass ->Fill(probeTrkIso, mumu.M(), wgt);
 
     tagTrackRelIso->Fill(theTag.trackIso() / theTag.pt(), wgt);
     probeTrackRelIso->Fill(probeTrkIso / theProbe.pt(), wgt);
+    tagTrackRelIso_mass->Fill(theTag.trackIso() / theTag.pt(), mumu.M(), wgt);
+    probeTrackRelIso_mass->Fill(probeTrkIso / theProbe.pt(), mumu.M(), wgt);
 
-    reco::Particle::LorentzVector mumu = theTag.p4() + theProbe.p4();
     mMuMuTP->Fill(mumu.M(), wgt);
 
     double probe_relIso = probeTrkIso / theProbe.pt() ; 
@@ -1074,26 +1194,41 @@ void HeavyNu::HistPerDef::fill(const pat::Muon& theTag,
         ptProbeRiso100->Fill(theProbe.pt(), wgt);
         etaProbeRiso100->Fill(theProbe.eta(), wgt);
         phiProbeRiso100->Fill(theProbe.phi(), wgt);
+        ptProbeRiso100_mass->Fill(theProbe.pt(), mumu.M(), wgt);
+        etaProbeRiso100_mass->Fill(theProbe.eta(), mumu.M(), wgt);
+        phiProbeRiso100_mass->Fill(theProbe.phi(), mumu.M(), wgt);
         mMuMuTPRiso100->Fill(mumu.M(), wgt);
         if ( probe_relIso < 0.5 ) {
             ptProbeRiso50->Fill(theProbe.pt(), wgt);
             etaProbeRiso50->Fill(theProbe.eta(), wgt);
             phiProbeRiso50->Fill(theProbe.phi(), wgt);
+            ptProbeRiso50_mass->Fill(theProbe.pt(), mumu.M(), wgt);
+            etaProbeRiso50_mass->Fill(theProbe.eta(), mumu.M(), wgt);
+            phiProbeRiso50_mass->Fill(theProbe.phi(), mumu.M(), wgt);
             mMuMuTPRiso50->Fill(mumu.M(), wgt);
             if ( probe_relIso < 0.2 ) {
                 ptProbeRiso20->Fill(theProbe.pt(), wgt);
                 etaProbeRiso20->Fill(theProbe.eta(), wgt);
                 phiProbeRiso20->Fill(theProbe.phi(), wgt);
-                mMuMuTPRiso20->Fill(mumu.M(), wgt);
+                ptProbeRiso20_mass->Fill(theProbe.pt(), mumu.M(), wgt);
+                etaProbeRiso20_mass->Fill(theProbe.eta(), mumu.M(), wgt);
+                phiProbeRiso20_mass->Fill(theProbe.phi(), mumu.M(), wgt);
+		mMuMuTPRiso20->Fill(mumu.M(), wgt);
                 if ( probe_relIso < 0.1 ) {
                     ptProbeRiso10->Fill(theProbe.pt(), wgt);
                     etaProbeRiso10->Fill(theProbe.eta(), wgt);
                     phiProbeRiso10->Fill(theProbe.phi(), wgt);
+                    ptProbeRiso10_mass->Fill(theProbe.pt(), mumu.M(), wgt);
+                    etaProbeRiso10_mass->Fill(theProbe.eta(), mumu.M(), wgt);
+                    phiProbeRiso10_mass->Fill(theProbe.phi(), mumu.M(), wgt);
                     mMuMuTPRiso10->Fill(mumu.M(), wgt);
                     if ( probe_relIso < 0.05 ) {
                         ptProbeRiso5->Fill(theProbe.pt(), wgt);
                         etaProbeRiso5->Fill(theProbe.eta(), wgt);
                         phiProbeRiso5->Fill(theProbe.phi(), wgt);
+                        ptProbeRiso5_mass->Fill(theProbe.pt(), mumu.M(), wgt);
+                        etaProbeRiso5_mass->Fill(theProbe.eta(), mumu.M(), wgt);
+                        phiProbeRiso5_mass->Fill(theProbe.phi(), mumu.M(), wgt);
                         mMuMuTPRiso5->Fill(mumu.M(), wgt);
                     }
                 }
@@ -1217,7 +1352,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     hists.cutlevel->GetXaxis()->SetBinLabel(6, "M3 (high p_{T})");
     hists.cutlevel->GetXaxis()->SetBinLabel(7, "M4 (M_{#mu#mu})");
     hists.cutlevel->GetXaxis()->SetBinLabel(8, "M5 (M(W_{R})");
-    hists.weights = fs->make<TH1D > ("weights", "event weights", 100, 0.0, 1.0);
+    hists.weights = fs->make<TH1D > ("weights", "event weights", 1000, 0.0, 10.0);
     hists.njet = fs->make<TH1D > ("njet", "N(Jet)", 50, -0.5, 49.5);
     hists.nmet = fs->make<TH1D > ("nmet", "N(MET)", 50, -0.5, 49.5);
     hists.met = fs->make<TH1D > ("met", "MET distribution", 100, 0, 2000);
@@ -1825,7 +1960,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(pMuons->size() >= 2 && pJets->size() >= 2)
     {
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
-        hists.noCuts.fill(*pMuons, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_);
+        hists.noCuts.fill(*pMuons, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex);
     }
     else return false;
 
@@ -1942,7 +2077,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( debuggingEvents ) std::cout << "Debugging event " << iEvent.id() << std::endl ; 
 
     if (muCands.size() >= 2) { 
-        hists.LLptCuts.fill(muCands, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_);
+      hists.LLptCuts.fill(muCands, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex);
     } else return false ; 
         
     if(hnuEvent.nJets < 2) return false ;

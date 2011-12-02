@@ -33,7 +33,7 @@ if not isRun2011A:
 #--- Flags for nominal studies ---#
 runAnalysis = True
 systematics = False
-tagandprobe = False
+tagandprobe = True
 
 #--- Flags for Top studies ---#
 topStudy = False
@@ -286,6 +286,8 @@ if isMCsignal:
     process.hNuGenFilter.keepIds = cms.vint32(2,)
 
 # process.hNu.minMu2pt         = cms.double(30.)
+process.hNu.ZmassWinMinGeV   = cms.double(60.)
+process.hNu.ZmassWinMaxGeV   = cms.double(120.)
 process.hNu.isPFJets         = cms.bool(isPFJets)
 process.hNu.studyMuSelectEff = cms.bool(tagandprobe)
 process.hNu.studyScaleFactor = cms.bool(False)
@@ -525,10 +527,10 @@ if runAnalysis:
         process.p24 = cms.Path( process.AnalysisIntroSequence + process.hNuMu24 ) 
         process.p40 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 ) 
 
-        if tagandprobe:
-            process.pWideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to120 ) 
-            process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass65to75 ) 
-            process.pHighZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass105to120 ) 
+        # if tagandprobe:
+        #    process.pWideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to120 ) 
+        #    process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass65to75 ) 
+        #    process.pHighZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass105to120 ) 
             
         if systematics:
             process.p24jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesHi )
@@ -553,27 +555,27 @@ if runAnalysis:
             process.p40puLo   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40puLo )
     else:
         process.pNominal = cms.Path( process.AnalysisIntroSequence + process.hNu )
-        if tagandprobe:
-            process.pWideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to120 ) 
-            process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass65to75 ) 
-            process.pHighZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass105to120 ) 
+        # if tagandprobe:
+        #    process.pWideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass60to120 ) 
+        #    process.pLowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass65to75 ) 
+        #    process.pHighZ = cms.Path( process.AnalysisIntroSequence + process.hNuMuZmass105to120 ) 
         if doTriggerStudy:
             if isRun2011LoLumi:
                 process.p24      = cms.Path( process.AnalysisIntroSequence + process.hNuMu24 )
-                process.p24wideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass60to120 ) 
-                process.p24lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass65to75 ) 
-                process.p24highZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass105to120 ) 
+                # process.p24wideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass60to120 ) 
+                # process.p24lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass65to75 ) 
+                # process.p24highZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu24Zmass105to120 ) 
             else:
                 if isRun2011VeryHiLumi:
                     process.p40eta2p1      = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
-                    process.p40eta2p1wideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass60to120 ) 
-                    process.p40eta2p1lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass65to75 ) 
-                    process.p40eta2p1highZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass105to120 ) 
+                    # process.p40eta2p1wideZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass60to120 ) 
+                    # process.p40eta2p1lowZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass65to75 ) 
+                    # process.p40eta2p1highZ = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1Zmass105to120 ) 
                 else:
                     process.p40       = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 )
-                    process.p40wideZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass60to120 ) 
-                    process.p40lowZ   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass65to75 ) 
-                    process.p40highZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass105to120 ) 
+                    # process.p40wideZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass60to120 ) 
+                    # process.p40lowZ   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass65to75 ) 
+                    # process.p40highZ  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40Zmass105to120 ) 
 
 if qcdStudy:
     if isMC:

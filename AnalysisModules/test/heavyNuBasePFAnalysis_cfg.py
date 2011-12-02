@@ -148,6 +148,15 @@ if isPFJets:
         doRhoFastjet = cms.bool(True)
     )
     process.patJetCorrFactorsPFlow.rho = cms.InputTag("kt6PFJetsPFlow", "rho")
+    # Needed for AOD PF jets
+    ##-------------------- Import the JEC services -----------------------
+    process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
+    process.kt6PFJets = kt4PFJets.clone(
+        rParam = cms.double(0.6),
+        src = cms.InputTag('pfNoElectron'),
+        doAreaFastjet = cms.bool(True),
+        doRhoFastjet = cms.bool(True)
+    )
 
     # Add the PV selector and KT6 producer to the sequence
     getattr(process,"patPF2PATSequence"+postfix).replace(
@@ -160,33 +169,6 @@ if isPFJets:
         getattr(process,"patPF2PATSequence"+postfix)
     )
     
-#------------------------------#
-#--- Include Generic Tracks ---#
-#------------------------------#
-#--- Generic PAT tracks modules stolen from ElectroWeakAnalysis/Skimming/python ---#
-process.patAODTrackCandsUnfiltered = cms.EDProducer("ConcreteChargedCandidateProducer",
-    src          = cms.InputTag("generalTracks"),
-    particleType = cms.string('mu+')   # to fix mass hypothesis
-)
-process.patAODTrackCands = cms.EDFilter("CandViewSelector",
-    src = cms.InputTag("patAODTrackCandsUnfiltered"),
-    cut = cms.string('pt > 10')
-)
-from PhysicsTools.PatAlgos.producersLayer1.genericParticleProducer_cfi import patGenericParticles
-process.allPatTracks = patGenericParticles.clone(
-    src = cms.InputTag("patAODTrackCands")
-)
-from PhysicsTools.PatAlgos.selectionLayer1.trackSelector_cfi import *
-process.patTracksPt10 = selectedPatTracks.clone(
-    cut = 'pt > 10.'
-)
-process.patTrackSequence = cms.Sequence( 
-        process.patAODTrackCandsUnfiltered *
-        process.patAODTrackCands *
-        process.allPatTracks *
-        process.patTracksPt10
-)
-
 if isData:
     # process.outpath  = cms.EndPath(process.out)
     from PhysicsTools.PatAlgos.tools.coreTools import *
@@ -241,10 +223,12 @@ getattr(process,"patDefaultSequence").replace(
 ## Define the basic path ##
 ## --------------------- ##
 process.AnalysisIntroSequence = cms.Sequence(
-    process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+    process.patDefaultSequence * process.refitMuons
 )
 if isPFJets:
     process.AnalysisIntroSequence += process.modifiedPF2PATSequence
+    # Needed for jet corrections with AOD PF jets 
+    process.AnalysisIntroSequence += process.kt6PFJets
 
 process.p = cms.Path(
     process.AnalysisIntroSequence
@@ -293,7 +277,7 @@ if isMCsignal:
 
 # process.hNu.minMu2pt         = cms.double(30.)
 process.hNu.isPFJets         = cms.bool(isPFJets)
-process.hNu.studyMuSelectEff = cms.bool(True)
+process.hNu.studyMuSelectEff = cms.bool(False)
 process.hNu.studyScaleFactor = cms.bool(False)
 process.hNu.studyRatePerRun  = cms.bool(isData)
 #--- Values below zero disable the vertex requirement ---#
@@ -339,7 +323,7 @@ process.hNuBasePFJets = process.hNu.clone()
 process.hNuBasePFJets.jetTag = cms.InputTag( 'selectedPatJets' )
 
 if not isMC:
-      process.pBasePFJetes = cms.Path( process.AnalysisIntroSequence + process.hNuBasePFJets )
+      process.pBasePFJets = cms.Path( process.AnalysisIntroSequence + process.hNuBasePFJets )
 
 process.hNuFNAL = cms.EDFilter( "HeavyNuFNAL",
     trigMatchPset = cms.PSet(
@@ -356,33 +340,44 @@ process.hNuFNAL = cms.EDFilter( "HeavyNuFNAL",
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
     jetTag       = cms.InputTag( 'selectedPatJets' ),
     metTag       = cms.InputTag( 'patMETs' ),
-    electronTag  = cms.InputTag( 'selectedPatElectrons' ),
-    trackTag     = cms.InputTag( 'patTracksPt10' ),
-    BtagName     = cms.string('jetProbabilityBJetTags'),
-    minBtagDiscr = cms.double(0.669), # yields 0.1% fake rate, see SWGuideBTagPerformance twiki
+    BtagName     = cms.string( 'trackCountingHighEffBJetTags' ),
+    minBtagDiscr = cms.double(2.0), 
     minMu1pt     = cms.double(25.),
     minMu2pt     = cms.double(20.),
-    minJetPt     = cms.double(25),
     minJet1Pt    = cms.double(120),
+    minJet2Pt    = cms.double(25),
     maxMuAbsEta  = cms.double(2.4),
     maxJetAbsEta = cms.double(3.0),
     minMuonJetdR = cms.double(0.5),
-    muonTrackRelIsoLimit  = cms.double(100.0), # 10.0),
+    muonTrackRelIsoLimit  = cms.double(999999.0), 
     maxVertexZsepCM       = cms.double(-1.),
     maxJetVZsepCM         = cms.double(-1.),
 
-    jecEra            = cms.int32(0),
-
-    highestPtTriggerOnly = cms.bool(False),
+    jetsFromReco  = cms.bool( True ),
+    jetCorrString = cms.string( "ak5PFL1FastL2L3Residual" ),
 
     useTrackerPt = cms.bool(True),
     isPFJets = cms.bool(False)
     )
 
+#--- Runs baseline Fermilab configuration, including AOD jets ---#
 process.pFNAL = cms.Path( process.AnalysisIntroSequence + process.hNuFNAL )
 
-process.hNuFNALwPF2PAT = process.hNuFNAL.clone()
-process.hNuFNALwPF2PAT.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
-process.hNuFNALwPF2PAT.useTrackerPt = cms.bool(False)
+#--- Each subsequent selection adds cuts to BASE case ---#
 
-process.pFNALwPF2PAT = cms.Path( process.AnalysisIntroSequence + process.hNuFNALwPF2PAT )
+#--- Switch to using cocktail muon pT, PAT jets from AOD input ---#
+process.hNuFNALCocktail = process.hNuFNAL.clone( useTrackerPt = cms.bool(False), jetsFromReco = cms.bool(False) )
+process.pFNALCocktail   = cms.Path( process.AnalysisIntroSequence + process.hNuFNALCocktail )
+
+#--- Add jets selected using PF2PAT ---#
+process.hNuFNALPF2PATCocktail = process.hNuFNALCocktail.clone( jetTag = cms.InputTag('selectedPatJetsPFlow') )
+process.pFNALPF2PATCocktail   = cms.Path( process.AnalysisIntroSequence + process.hNuFNALPF2PATCocktail )
+
+#--- Now try with jets within tracker ---#
+process.hNuFNALeta2p5 = process.hNuFNALPF2PATCocktail.clone( maxJetAbsEta = cms.double(2.5) )
+process.pFNALeta2p5   = cms.Path( process.AnalysisIntroSequence + process.hNuFNALeta2p5 )
+
+#--- And finally with muon isolation ---#
+process.hNuFNALmuIso = process.hNuFNALeta2p5.clone( muonTrackRelIsoLimit = cms.double(0.10) )
+process.pFNALmuIso   = cms.Path( process.AnalysisIntroSequence + process.hNuFNALmuIso )
+

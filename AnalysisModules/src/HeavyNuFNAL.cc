@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFNAL.cc,v 1.2 2011/11/18 13:28:16 pastika Exp $
+// $Id: HeavyNuFNAL.cc,v 1.3 2011/11/23 12:34:06 pastika Exp $
 //
 //
 
@@ -45,12 +45,13 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
-//#include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
@@ -135,12 +136,12 @@ private:
     edm::InputTag jetTag_;
     edm::InputTag metTag_;
 
+    bool takeJetsFromReco_ ; 
+    std::string JetCorrectionService_ ; 
+
     int evtCounter ; 
 
     double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
-
-    int jecVal_; // Jet correction eras: 0 = 2010(A+B), 1 = 2010A, 2 = 2010B, 3 = 2011A
-    bool highestPtTriggerOnly_;
 
     bool isPFJets_; // true if PFJets are used (turns off jet id requirement)
     bool useTrackerPt_ ; 
@@ -167,7 +168,7 @@ private:
                 double wgt,
                 bool pfJets);
         // fill all histos of the set with the two electron candidates
-        void fill(const HeavyNuEvent& hne);
+      void fill(const HeavyNuEvent& hne, bool recoJets);
 
         TH1 *ptMu1, *ptMu2, *ptJet1, *ptJet2;
         TH2 *ptMu1VsPtMu2ss, *ptMu1VsPtMu2os;
@@ -190,6 +191,7 @@ private:
 
         TH1 *mMuMu, *mMuMuOS, *mMuMuSS, *diMuCharge, *mMuMuZoom, *mMuMuGenZoom;
         TH1 *mWR, *mWR_1b, *mWR_2b, *mNuR1, *mNuR1_1b, *mNuR1_2b, *mNuR2, *mNuR2_1b, *mNuR2_2b;
+        TH1 *mWR40, *mWR40_1b, *mWR40_2b ; 
         TH1 *mJJ, *mJJ_1b, *mJJ_2b;
         TH2 *mNuR2D, *jetPtvsNum;
         TH1 *mu1ptFracWRmass; 
@@ -246,25 +248,36 @@ private:
         TH1 *closejetMu1tagMu2probeInZwin, *closejetMu1tagMu2passInZwin ; 
 
         TFileDirectory *rundir;
+        HistPerDef LLJJCut;
         HistPerDef Mu1HighPtCut;
         HistPerDef loDiLmassCut;
         HistPerDef diLmassNo70to100Cut;
         HistPerDef diLmassNo70to110Cut;
         HistPerDef diLmassNo60to120Cut;
         HistPerDef diLmassAbove100Cut;
+        HistPerDef diLmassAbove110Cut;
         HistPerDef diLmassAbove120Cut;
         HistPerDef diLmassAbove150Cut;
         HistPerDef diLmassAbove200Cut;
-        HistPerDef oneBtag;
-        HistPerDef twoBtag;
+        HistPerDef LLJJBump;
+        HistPerDef Mu1HighPtBump;
+        HistPerDef loDiLmassBump;
+        HistPerDef diLmassNo70to100Bump;
+        HistPerDef diLmassNo70to110Bump;
+        HistPerDef diLmassNo60to120Bump;
+        HistPerDef diLmassAbove100Bump;
+        HistPerDef diLmassAbove110Bump;
+        HistPerDef diLmassAbove120Bump;
+        HistPerDef diLmassAbove150Bump;
+        HistPerDef diLmassAbove200Bump;
     } hists;
 
     struct CutsStruct
     {
         double minimum_mu1_pt;
         double minimum_mu2_pt;
-        double minimum_jet_pt;
         double minimum_jet1_pt;
+        double minimum_jet2_pt;
         double maximum_mu_abseta;
         double maximum_jet_abseta;
         double minimum_muon_jet_dR;
@@ -440,11 +453,17 @@ void HeavyNuFNAL::HistPerDef::book(TFileDirectory *td, const std::string& post)
     // ----------  Composite histograms  ----------
 
     t = "M(W_{R}) " + post;
-    mWR = td->make<TH1D > ("mWR", t.c_str(), 70, 0, 2800);
+    mWR = td->make<TH1D > ("mWR", t.c_str(), 40, 0, 2400);
     t = "M(W_{R}), at least one b-jet " + post;
-    mWR_1b = td->make<TH1D > ("mWR_1b", t.c_str(), 70, 0, 2800);
+    mWR_1b = td->make<TH1D > ("mWR_1b", t.c_str(), 40, 0, 2400);
     t = "M(W_{R}), two b-jets " + post;
-    mWR_2b = td->make<TH1D > ("mWR_2b", t.c_str(), 70, 0, 2800);
+    mWR_2b = td->make<TH1D > ("mWR_2b", t.c_str(), 40, 0, 2400);
+    t = "M(W_{R}) " + post;
+    mWR40 = td->make<TH1D > ("mWR40", t.c_str(), 70, 0, 2800);
+    t = "M(W_{R}), at least one b-jet " + post;
+    mWR40_1b = td->make<TH1D > ("mWR40_1b", t.c_str(), 70, 0, 2800);
+    t = "M(W_{R}), two b-jets " + post;
+    mWR40_2b = td->make<TH1D > ("mWR40_2b", t.c_str(), 70, 0, 2800);
     t = "M(N_{R}) with #mu_{1} " + post;
     mNuR1 = td->make<TH1D > ("mNuR1", t.c_str(), 70, 0, 2800);
     t = "M(N_{R}) with #mu_{1} and at least on b-jet " + post;
@@ -686,6 +705,7 @@ void HeavyNuFNAL::HistPerDef::fill(pat::MuonCollection muons,
     vWR = vJJ + m0.p4() + m1.p4();
 
     mWR->Fill(vWR.M(), wgt);
+    mWR40->Fill(vWR.M(), wgt);
     mNuR1 ->Fill((vJJ + m0.p4()).M(), wgt);
     mNuR2 ->Fill((vJJ + m1.p4()).M(), wgt);
     mNuR2D->Fill((vJJ + m0.p4()).M(), (vJJ + m1.p4()).M(), wgt);
@@ -714,11 +734,13 @@ void HeavyNuFNAL::HistPerDef::fill(pat::MuonCollection muons,
     bool twoBjets = (j0bdisc >= minBtagDiscVal) && (j1bdisc >= minBtagDiscVal) ; 
     if ( oneBjet ) {
       mWR_1b->Fill(vWR.M(), wgt);
+      mWR40_1b->Fill(vWR.M(), wgt);
       mJJ_1b->Fill(jj.M(), wgt);
       mNuR1_1b->Fill((vJJ + m0.p4()).M(), wgt);
       mNuR2_1b->Fill((vJJ + m1.p4()).M(), wgt);
       if ( twoBjets ) { 
 	mWR_2b->Fill(vWR.M(), wgt);
+	mWR40_2b->Fill(vWR.M(), wgt);
 	mJJ_2b->Fill(jj.M(), wgt);
 	mNuR1_2b->Fill((vJJ + m0.p4()).M(), wgt);
 	mNuR2_2b->Fill((vJJ + m1.p4()).M(), wgt);
@@ -727,7 +749,7 @@ void HeavyNuFNAL::HistPerDef::fill(pat::MuonCollection muons,
 
 }// end of fill()
 
-void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
+void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne, bool recoJets)
 {
     double wgt = hne.eventWgt;
 
@@ -809,7 +831,7 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
     // Jets
     if(hne.nJets > 0)
     {
-      if(!hne.pfJets) jet1id = hnu::jetID(hne.j1);
+      if(!hne.pfJets && !recoJets) jet1id = hnu::jetID(hne.j1);
 
         double j1bdisc = hne.j1.bDiscriminator(btagName);
 
@@ -833,7 +855,7 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
                     (j2bdisc >= minBtagDiscVal)) numBjets->Fill(1., wgt);
             else numBjets->Fill(0., wgt);
 
-            if(!hne.pfJets) jet2id = hnu::jetID(hne.j2);
+	    if(!hne.pfJets && !recoJets) jet2id = hnu::jetID(hne.j2);
 
             dPhiJet->Fill(fabs(deltaPhi(hne.j1.phi(), hne.j2.phi())), wgt);
             dEtaJet->Fill(fabs(hne.j1.eta() - hne.j2.eta()), wgt);
@@ -841,6 +863,7 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
                     fabs(deltaPhi(hne.j1.phi(), hne.j2.phi())), wgt);
 
             mWR->Fill(hne.mWR, wgt);
+            mWR40->Fill(hne.mWR, wgt);
             mNuR1->Fill(hne.mNuR1, wgt);
             mNuR2->Fill(hne.mNuR2, wgt);
             mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
@@ -850,11 +873,13 @@ void HeavyNuFNAL::HistPerDef::fill(const HeavyNuEvent& hne)
 	    bool twoBjets = (j1bdisc >= minBtagDiscVal) && (j2bdisc >= minBtagDiscVal) ; 
 	    if ( oneBjet ) {
 	      mWR_1b->Fill(hne.mWR, wgt);
+	      mWR40_1b->Fill(hne.mWR, wgt);
 	      mJJ_1b->Fill(hne.mJJ, wgt);
 	      mNuR1_1b->Fill(hne.mNuR1, wgt);
 	      mNuR2_1b->Fill(hne.mNuR2, wgt);
 	      if ( twoBjets ) { 
 		mWR_2b->Fill(hne.mWR, wgt);
+		mWR40_2b->Fill(hne.mWR, wgt);
 		mJJ_2b->Fill(hne.mJJ, wgt);
 		mNuR1_2b->Fill(hne.mNuR1, wgt);
 		mNuR2_2b->Fill(hne.mNuR2, wgt);
@@ -957,23 +982,22 @@ HeavyNuFNAL::HeavyNuFNAL(const edm::ParameterSet& iConfig)
     jetTag_   = iConfig.getParameter< edm::InputTag > ("jetTag");
     metTag_   = iConfig.getParameter< edm::InputTag > ("metTag");
 
+    takeJetsFromReco_     = iConfig.getParameter<bool> ("jetsFromReco") ; 
+    JetCorrectionService_ = iConfig.getParameter<std::string> ("jetCorrString") ; 
+
     btagName = iConfig.getParameter<std::string > ("BtagName");
     minBtagDiscVal = iConfig.getParameter<double>("minBtagDiscr");
 
     cuts.minimum_mu1_pt = iConfig.getParameter<double>("minMu1pt");
     cuts.minimum_mu2_pt = iConfig.getParameter<double>("minMu2pt");
-    cuts.minimum_jet_pt  = iConfig.getParameter<double>("minJetPt");
     cuts.minimum_jet1_pt = iConfig.getParameter<double>("minJet1Pt");
+    cuts.minimum_jet2_pt = iConfig.getParameter<double>("minJet2Pt");
     cuts.maximum_mu_abseta = iConfig.getParameter<double>("maxMuAbsEta");
     cuts.maximum_jet_abseta = iConfig.getParameter<double>("maxJetAbsEta");
     cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
     cuts.muon_trackiso_limit = iConfig.getParameter<double>("muonTrackRelIsoLimit");
     cuts.maxVertexZsep = iConfig.getParameter<double>("maxVertexZsepCM");
     cuts.maxJetVZsepCM = iConfig.getParameter<double>("maxJetVZsepCM");
-
-    jecVal_ = iConfig.getParameter<int>("jecEra");
-
-    highestPtTriggerOnly_ = iConfig.getParameter<bool>("highestPtTriggerOnly");
 
     isPFJets_ = iConfig.getParameter<bool>("isPFJets");
     useTrackerPt_ = iConfig.getParameter<bool>("useTrackerPt") ; 
@@ -1021,15 +1045,29 @@ HeavyNuFNAL::HeavyNuFNAL(const edm::ParameterSet& iConfig)
     //
     // hists.LLptCuts.book(new TFileDirectory(fs->mkdir("cut1_LLpt")), "(dileptons with ptcuts:1)");
     // hists.MuTightCuts.book(new TFileDirectory(fs->mkdir("cut2_MuTight")), "(Mu tight cuts:2)");
+    hists.LLJJCut.book(new TFileDirectory(fs->mkdir("cut3_LLJJ")), "(Two muons, jets cut:3)");
     hists.Mu1HighPtCut.book(new TFileDirectory(fs->mkdir("cut4_Mu1HighPt")), "(Mu1 High pt cut:4)");
     hists.loDiLmassCut.book(new TFileDirectory(fs->mkdir("cut5a_loDiLmass")), "(mumu mass cut:5a)");
     hists.diLmassNo70to100Cut.book(new TFileDirectory(fs->mkdir("diLcut_no70to100")), "(mumu mass cut, no 70-100)");
     hists.diLmassNo70to110Cut.book(new TFileDirectory(fs->mkdir("diLcut_no70to110")), "(mumu mass cut, no 70-110)");
     hists.diLmassNo60to120Cut.book(new TFileDirectory(fs->mkdir("diLcut_no60to120")), "(mumu mass cut, no 60-120)");
     hists.diLmassAbove100Cut.book(new TFileDirectory(fs->mkdir("diLcut_above100")), "(mumu mass cut, 100 GeV)");
+    hists.diLmassAbove110Cut.book(new TFileDirectory(fs->mkdir("diLcut_above100")), "(mumu mass cut, 110 GeV)");
     hists.diLmassAbove120Cut.book(new TFileDirectory(fs->mkdir("diLcut_above120")), "(mumu mass cut, 120 GeV)");
     hists.diLmassAbove150Cut.book(new TFileDirectory(fs->mkdir("diLcut_above150")), "(mumu mass cut, 150 GeV)");
     hists.diLmassAbove200Cut.book(new TFileDirectory(fs->mkdir("diLcut_above200")), "(mumu mass cut, 200 GeV)");
+
+    hists.LLJJBump.book(new TFileDirectory(fs->mkdir("bump3_LLJJ")), "(Two muons, jets cut:3)");
+    hists.Mu1HighPtBump.book(new TFileDirectory(fs->mkdir("bump4_Mu1HighPt")), "(Mu1 High pt cut:4)");
+    hists.loDiLmassBump.book(new TFileDirectory(fs->mkdir("bump5a_loDiLmass")), "(mumu mass cut:5a)");
+    hists.diLmassNo70to100Bump.book(new TFileDirectory(fs->mkdir("diLbump_no70to100")), "(mumu mass cut, no 70-100)");
+    hists.diLmassNo70to110Bump.book(new TFileDirectory(fs->mkdir("diLbump_no70to110")), "(mumu mass cut, no 70-110)");
+    hists.diLmassNo60to120Bump.book(new TFileDirectory(fs->mkdir("diLbump_no60to120")), "(mumu mass cut, no 60-120)");
+    hists.diLmassAbove100Bump.book(new TFileDirectory(fs->mkdir("diLbump_above100")), "(mumu mass cut, 100 GeV)");
+    hists.diLmassAbove110Bump.book(new TFileDirectory(fs->mkdir("diLbump_above100")), "(mumu mass cut, 110 GeV)");
+    hists.diLmassAbove120Bump.book(new TFileDirectory(fs->mkdir("diLbump_above120")), "(mumu mass cut, 120 GeV)");
+    hists.diLmassAbove150Bump.book(new TFileDirectory(fs->mkdir("diLbump_above150")), "(mumu mass cut, 150 GeV)");
+    hists.diLmassAbove200Bump.book(new TFileDirectory(fs->mkdir("diLbump_above200")), "(mumu mass cut, 200 GeV)");
 
 
     hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -1046,13 +1084,12 @@ HeavyNuFNAL::HeavyNuFNAL(const edm::ParameterSet& iConfig)
     std::cout << "minBtagDiscr      = " << minBtagDiscVal << std::endl;
     std::cout << "minMu1pt          = " << cuts.minimum_mu1_pt << " GeV" << std::endl;
     std::cout << "minMu2pt          = " << cuts.minimum_mu2_pt << " GeV" << std::endl;
-    std::cout << "minJetPt          = " << cuts.minimum_jet_pt << " GeV" << std::endl;
     std::cout << "minJet1Pt         = " << cuts.minimum_jet1_pt << " GeV" << std::endl;
+    std::cout << "minJet2Pt         = " << cuts.minimum_jet2_pt << " GeV" << std::endl;
     std::cout << "maxMuAbsEta       = " << cuts.maximum_mu_abseta << std::endl;
     std::cout << "maxJetAbsEta      = " << cuts.maximum_jet_abseta << std::endl;
     std::cout << "minMuonJetdR      = " << cuts.minimum_muon_jet_dR << std::endl;
     std::cout << "muonTrackRelIso   = " << cuts.muon_trackiso_limit << std::endl;
-    std::cout << "jecEra            = " << jecVal_ << std::endl;
 
     std::cout << "isPFJets          = " << isPFJets_ << std::endl;
     std::cout << "useTrackerPt      = " << useTrackerPt_ << std::endl;
@@ -1103,11 +1140,10 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using namespace edm;
     HeavyNuEvent hnuEvent;
-    bool isVerbose = false;
 
     evtCounter++ ; 
 
-    if(isVerbose) std::cout << "Investigating event: " << iEvent.id() << std::endl ;
+    if(dolog_) std::cout << "Investigating event: " << iEvent.id() << std::endl ;
 
     hnuEvent.isMC = !iEvent.isRealData();
     hnuEvent.pfJets = isPFJets_;
@@ -1136,8 +1172,8 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::JetCollection> pJets;
     iEvent.getByLabel(jetTag_, pJets);
 
-//     edm::Handle<reco::PFJetCollection> pfJets;
-//     iEvent.getByLabel(edm::InputTag("ak5PFJets","","RECO"),pfJets) ; 
+    edm::Handle<reco::PFJetCollection> pfJets;
+    iEvent.getByLabel(edm::InputTag("ak5PFJets","","RECO"),pfJets) ; 
 
     edm::Handle<pat::METCollection> pMET;
     iEvent.getByLabel(metTag_, pMET);
@@ -1171,7 +1207,7 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     else
         hists.met->Fill(0);
 
-    if(isVerbose) std::cout << "Initial info before cuts: " << pMuons->size()
+    if(dolog_) std::cout << "Initial info before cuts: " << pMuons->size()
                       << " muons and " << pJets->size() << " jets " << std::endl ;
 
     // Basic selection requirements: Require at least two muons, two jets
@@ -1191,10 +1227,10 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet,float> > jetCands = 
-      hnu::getJetList(pJets,jecuObj_,cuts.minimum_jet_pt,cuts.maximum_jet_abseta,0,jecVal_) ; 
-    if(isVerbose) std::cout << "Find " << jetCands.size() << " jets after initial pT, eta requirements" << std::endl ;
+      hnu::getJetList(pJets,jecuObj_,cuts.minimum_jet2_pt,cuts.maximum_jet_abseta,0,-1) ; 
+    if(dolog_) std::cout << "Find " << jetCands.size() << " jets after initial pT, eta requirements" << std::endl ;
     for (unsigned int i=0; i<jetCands.size(); i++) {
-        if(isVerbose) std::cout << "Jet " << i+1 << " of " << jetCands.size()
+        if(dolog_) std::cout << "Jet " << i+1 << " of " << jetCands.size()
                          << " with pT " << jetCands.at(i).first.pt()
                          << " eta " << jetCands.at(i).first.eta()
                          << " phi " << jetCands.at(i).first.phi() << std::endl ;
@@ -1203,7 +1239,7 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     std::vector<pat::Muon> muCands = 
       hnu::getMuonList(pMuons,tevMuons,cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0,useTrackerPt_) ; 
-    if(isVerbose) std::cout << "There are " << muCands.size() << " muons after initial pt, eta, tight id requirements" << std::endl ;
+    if(dolog_) std::cout << "There are " << muCands.size() << " muons after initial pt, eta, tight id requirements" << std::endl ;
     if ( muCands.size() < 2 ) return false ; 
     for (unsigned int i=0; i<muCands.size(); i++) { 
       pat::Muon iM = muCands.at(i) ; 
@@ -1215,7 +1251,7 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
     }
     if ( hnuEvent.nMuons < 2 ) return false ; 
-    if(isVerbose)
+    if(dolog_)
     {
         std::cout << "Muon candidates: " << std::endl ;
         std::cout << "muon 1 with pT " << hnuEvent.mu1.pt() << ", eta " << hnuEvent.mu1.eta()
@@ -1224,25 +1260,64 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                   << " and phi " << hnuEvent.mu2.phi() << std::endl ;
     }
     
-    for (unsigned int i=0; i<jetCands.size(); i++) { 
-      if ( hnuEvent.nJets == 2 ) break ; 
-      pat::Jet iJ = jetCands.at(i).first ; 
-      double dRj1 = deltaR(iJ.eta(), iJ.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi()) ; 
-      double dRj2 = deltaR(iJ.eta(), iJ.phi(), hnuEvent.mu2.eta(), hnuEvent.mu2.phi()) ; 
-      if(isVerbose) std::cout << "Jet separation for jet " << i+1 << " of " << jetCands.size()
-                     << " with pT " << iJ.pt() << " GeV: dR = " << dRj1
-                     << " for muon 1 and dR = " << dRj2 << " for muon 2"
-                     << std::endl ;
-      if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) { 
-	hnuEvent.nJets++ ; 
-	if      ( hnuEvent.nJets == 1 ) { hnuEvent.j1 = iJ ; hnuEvent.j1scale = jetCands.at(i).second ; } 
-	else if ( hnuEvent.nJets == 2 ) { hnuEvent.j2 = iJ ; hnuEvent.j2scale = jetCands.at(i).second ; } 
-	else    std::cout << "WARNING: Expected empty jet position" << std::endl ; 
+    if ( takeJetsFromReco_ ) { 
+      if (dolog_) std::cout << "Trying to correct jets with " << JetCorrectionService_ << std::endl ; 
+      const JetCorrector* corrector = JetCorrector::getJetCorrector(JetCorrectionService_,iSetup);   //Get the jet corrector from the event setup
+      if (dolog_) std::cout << "Successful grab of correction service" << std::endl ; 
+      for (reco::PFJetCollection::const_iterator jet=pfJets->begin(); jet!=pfJets->end(); jet++)  {
+	reco::PFJet correctedJet = *jet ; //copy original jet
+	if (dolog_) std::cout << "I have a jet with pt " << correctedJet.pt() << " and trying to make corrections" << std::endl ; 
+	int index = jet-pfJets->begin();
+	edm::RefToBase<reco::Jet> jetRef(edm::Ref<reco::PFJetCollection>(pfJets,index));
+	double jec = corrector->correction(*jet,jetRef,iEvent,iSetup);
+	correctedJet.scaleEnergy(jec) ; // apply the correction
+	if (dolog_) std::cout << "I now have a jet with pt " << correctedJet.pt() << std::endl ; 
+	if ( correctedJet.pt() > cuts.minimum_jet2_pt ) { 
+	  if (dolog_) std::cout << "I have a jet with pt " << correctedJet.pt() << " and trying to make a PAT jet" << std::endl ; 
+	  pat::Jet theJet(correctedJet) ; 
+	  if (dolog_) std::cout << "I have a PAT jet with pt " << theJet.pt() << std::endl ; 
+	  if ( hnuEvent.nJets == 0 ) { 
+	    hnuEvent.j1 = theJet ;
+	  } else if ( hnuEvent.nJets == 1 ) { 
+	    if ( theJet.pt() > hnuEvent.j1.pt() ) { 
+	      hnuEvent.j2 = hnuEvent.j1 ; 
+	      hnuEvent.j1 = theJet ; 
+	    } else { 
+	      hnuEvent.j2 = theJet ; 
+	    }
+	  } else { 
+	    if ( theJet.pt() > hnuEvent.j1.pt() ) { 
+	      hnuEvent.j2 = hnuEvent.j1 ; 
+	      hnuEvent.j1 = theJet ; 
+	    } else if ( theJet.pt() > hnuEvent.j2.pt() ) { 
+	      hnuEvent.j2 = theJet ; 
+	    }
+	  }
+	  hnuEvent.nJets++ ; 
+	}
+      }
+      hnuEvent.j1scale = 1.0 ; hnuEvent.j2scale = 1.0 ; 
+    } else { 
+      for (unsigned int i=0; i<jetCands.size(); i++) { 
+	if ( hnuEvent.nJets == 2 ) break ; 
+	pat::Jet iJ = jetCands.at(i).first ; 
+	double dRj1 = deltaR(iJ.eta(), iJ.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi()) ; 
+	double dRj2 = deltaR(iJ.eta(), iJ.phi(), hnuEvent.mu2.eta(), hnuEvent.mu2.phi()) ; 
+	if(dolog_) std::cout << "Jet separation for jet " << i+1 << " of " << jetCands.size()
+			     << " with pT " << iJ.pt() << " GeV: dR = " << dRj1
+			     << " for muon 1 and dR = " << dRj2 << " for muon 2"
+			     << std::endl ;
+	if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) { 
+	  hnuEvent.nJets++ ; 
+	  if      ( hnuEvent.nJets == 1 ) { hnuEvent.j1 = iJ ; hnuEvent.j1scale = jetCands.at(i).second ; } 
+	  else if ( hnuEvent.nJets == 2 ) { hnuEvent.j2 = iJ ; hnuEvent.j2scale = jetCands.at(i).second ; } 
+	  else    std::cout << "WARNING: Expected empty jet position" << std::endl ; 
+	}
       }
     }
-    if(isVerbose) std::cout << "At least " << hnuEvent.nJets << " jets after mu-jet separation requirements" << std::endl ;
+    if(dolog_) std::cout << "At least " << hnuEvent.nJets << " jets after mu-jet separation requirements" << std::endl ;
     if ( hnuEvent.nJets < 2 ) return false ; 
-    if(isVerbose)
+    if(dolog_)
     {
         std::cout << "Jet candidates: " << std::endl ;
         std::cout << "jet 1 with pT " << hnuEvent.j1.pt() << ", eta " << hnuEvent.j1.eta()
@@ -1251,8 +1326,10 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                   << " and phi " << hnuEvent.j2.phi() << std::endl ;
     }
 
+    std::cout << "Still here 1" << std::endl ; 
     hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
     hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
+    std::cout << "Still here 2" << std::endl ; 
 
     //--- Trigger Matching needed for efficiency studies ---//
     bool mu1trig = false ; bool mu2trig = false ; 
@@ -1263,28 +1340,41 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
           trig_->isTriggerMatched(hnuEvent.mu2, iEvent) ; 
     }
 
-    if(isVerbose)  std::cout << "Trigger results for muon 1: " << (mu1trig?"Y":"N")
+    if(dolog_)  std::cout << "Trigger results for muon 1: " << (mu1trig?"Y":"N")
                      << ", for muon 2: " << (mu2trig?"Y":"N") << std::endl ;
     //if ( !passesTrigger(hnuEvent.mu1.pt(),hnuEvent.mu2.pt(),
     //                    mu1trig,mu2trig,iEvent.id().run())) return false;
     
-    if(isVerbose)  std::cout << "Jet ID values: " << hnu::jetID(hnuEvent.j1) << " (j1), "
-                      << hnu::jetID(hnuEvent.j2) << " (j2)" << std::endl ;
-    if ( hnu::jetID(hnuEvent.j1) < 1 || hnu::jetID(hnuEvent.j2) < 1 ) return false ; 
-
-    if ( hnuEvent.j1.pt()< cuts.minimum_jet1_pt ) return false ; 
+    std::cout << "Still here 3" << std::endl ; 
+    if ( !takeJetsFromReco_ ) { 
+      if(dolog_)  std::cout << "Jet ID values: " << hnu::jetID(hnuEvent.j1) << " (j1), "
+			    << hnu::jetID(hnuEvent.j2) << " (j2)" << std::endl ;
+      if ( hnu::jetID(hnuEvent.j1) < 1 || hnu::jetID(hnuEvent.j2) < 1 ) return false ; 
+      std::cout << "Still here 4" << std::endl ; 
+    }
 
     hnuEvent.regularize(); // assign internal standards
     hnuEvent.scaleMuE();
     hnuEvent.calculate(); // calculate various details
+    std::cout << "Still here 5" << std::endl ; 
 
-    if(isVerbose)
+    bool isInBump = ( hnuEvent.mWR > 850.0 && hnuEvent.mWR < 1150.0 ) ; 
+    std::cout << "Still here 6" << std::endl ; 
+
+    hists.LLJJCut.fill(hnuEvent,takeJetsFromReco_);
+    std::cout << "Still here 7" << std::endl ; 
+    if ( isInBump) hists.LLJJBump.fill(hnuEvent,takeJetsFromReco_);
+
+    if ( hnuEvent.j1.pt()< cuts.minimum_jet1_pt ) return false ; 
+
+    std::cout << "Still here 8" << std::endl ; 
+    if(dolog_)
     {
         std::cout << "*** Event survives basic requirements" << std::endl;
         std::cout << "\t" << iEvent.id() << std::endl;
-        std::cout << "\tM(W_R)  = " << hnuEvent.mWR << " GeV";
-        std::cout << ", M(NuR1) = " << hnuEvent.mNuR1 << " GeV";
-        std::cout << ", M(NuR2) = " << hnuEvent.mNuR2 << " GeV" << std::endl;
+        std::cout << "\tM(mmjj)  = " << hnuEvent.mWR << " GeV";
+        std::cout << ", M(m1jj) = " << hnuEvent.mNuR1 << " GeV";
+        std::cout << ", M(m2jj) = " << hnuEvent.mNuR2 << " GeV" << std::endl;
         std::cout << "\tM(mumu) = " << hnuEvent.mMuMu << " GeV";
         std::cout << ", M(JJ) = " << hnuEvent.mJJ << " GeV" << std::endl;
         std::cout << "\tJets:   j1 ";
@@ -1302,9 +1392,9 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if (pMET->size()) hnuEvent.met1 = pMET->at(0) ;
 
     if ( cuts.maxJetVZsepCM < 0 && cuts.maxVertexZsep < 0 ) {
-        if(isVerbose) std::cout << "Ignoring vertex requirements" << std::endl ;
+        if(dolog_) std::cout << "Ignoring vertex requirements" << std::endl ;
     } else {
-        if(isVerbose) std::cout << "Checking vertex requirements" << std::endl ;
+        if(dolog_) std::cout << "Checking vertex requirements" << std::endl ;
 
       //--- Impose vertex requirement here ---//
       float deltaVzJ1J2 = fabs(hnuEvent.tjV1-hnuEvent.tjV2);
@@ -1313,7 +1403,7 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       float deltaVzJ1M2 = fabs(hnuEvent.tjV1-hnuEvent.mu2.vertex().Z());
       float deltaVzJ2M1 = fabs(hnuEvent.tjV2-hnuEvent.mu1.vertex().Z());
 
-      if(isVerbose)
+      if(dolog_)
         {
             std::cout << "j1j2 " << deltaVzJ1J2 << ", " << (deltaVzJ1J2 >= cuts.maxJetVZsepCM) << std::endl;
             std::cout << "j1m1 " << deltaVzJ1M1 << ", " << (deltaVzJ1M1 >= cuts.maxJetVZsepCM) << std::endl;
@@ -1327,10 +1417,10 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 (deltaVzJ2M1 >= cuts.maxJetVZsepCM))
 	return false;
       float deltaVzM1M2 = fabs(hnuEvent.mu1.vertex().Z()-hnuEvent.mu2.vertex().Z());
-      if(isVerbose) std::cout << "m1m2 " << deltaVzM1M2 << ", " << (deltaVzM1M2 >= cuts.maxVertexZsep) << std::endl ;
+      if(dolog_) std::cout << "m1m2 " << deltaVzM1M2 << ", " << (deltaVzM1M2 >= cuts.maxVertexZsep) << std::endl ;
       if (deltaVzM1M2 >= cuts.maxVertexZsep) return false ; 
     
-      if(isVerbose) std::cout << "Event passes vertex requirements" << std::endl ;
+      if(dolog_) std::cout << "Event passes vertex requirements" << std::endl ;
     }
 
     // Still want to keep events if WR candidate...just for later looks
@@ -1357,49 +1447,65 @@ bool HeavyNuFNAL::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.mu1.pt() < cuts.minimum_mu1_pt)
         return false;
 
-    if(isVerbose)
+    if(dolog_)
     {
         std::cout << "---> Mu1 pT exceeds " << cuts.minimum_mu1_pt
 	      << ": " << hnuEvent.mu1.pt() << std::endl ;
     }
 
     hists.cutlevel->Fill(4) ; // Event meets high muon pT requirements
-    hists.Mu1HighPtCut.fill(hnuEvent);
+    hists.Mu1HighPtCut.fill(hnuEvent,takeJetsFromReco_);
+    if ( isInBump ) hists.Mu1HighPtBump.fill(hnuEvent,takeJetsFromReco_);
 
-    if(hnuEvent.mMuMu < 40) return false; // Sanity check...remove low mass points
-    hists.loDiLmassCut.fill(hnuEvent);
+    if(hnuEvent.mMuMu < 50) return false; // Sanity check...remove low mass points
+    hists.loDiLmassCut.fill(hnuEvent,takeJetsFromReco_);
+    if ( isInBump ) hists.loDiLmassBump.fill(hnuEvent,takeJetsFromReco_);
 
-    if ( hnuEvent.mMuMu < 60 || hnuEvent.mMuMu > 120 ) 
-      hists.diLmassNo60to120Cut.fill(hnuEvent);
+    if ( hnuEvent.mMuMu < 60 || hnuEvent.mMuMu > 120 ) {
+      hists.diLmassNo60to120Cut.fill(hnuEvent,takeJetsFromReco_);
+      if ( isInBump ) hists.diLmassNo60to120Bump.fill(hnuEvent,takeJetsFromReco_);
+    }
     if ( hnuEvent.mMuMu < 70 || hnuEvent.mMuMu > 100 )
     {
-      if(isVerbose) std::cout << "Event outside the dimuon (70,100) veto region" << std::endl ;
-      if(isVerbose) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
+      if(dolog_) std::cout << "Event outside the dimuon (70,100) veto region" << std::endl ;
+      if(dolog_) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
 
       double j1b = hnuEvent.j1.bDiscriminator(btagName);
       double j2b = hnuEvent.j2.bDiscriminator(btagName);
       int nBjets = 0 ;
       if (j1b >= minBtagDiscVal) nBjets++ ; 
       if (j2b >= minBtagDiscVal) nBjets++ ;      
-      if ( nBjets > 0 ) if(isVerbose) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for one or more b-jets" << std::endl ;
-      if ( nBjets > 1 ) if(isVerbose) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for two or more b-jets" << std::endl ;
-      hists.diLmassNo70to100Cut.fill(hnuEvent);
+      if ( nBjets > 0 ) if(dolog_) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for one or more b-jets" << std::endl ;
+      if ( nBjets > 1 ) if(dolog_) std::cout << "*** Event passes tight Z window veto, and mumujj mass is " << hnuEvent.mWR << " GeV for two or more b-jets" << std::endl ;
+      hists.diLmassNo70to100Cut.fill(hnuEvent,takeJetsFromReco_);
+      if (isInBump) hists.diLmassNo70to100Bump.fill(hnuEvent,takeJetsFromReco_);
     }
     if ( hnuEvent.mMuMu < 70 || hnuEvent.mMuMu > 110 ) {
-      hists.diLmassNo70to110Cut.fill(hnuEvent);
+      hists.diLmassNo70to110Cut.fill(hnuEvent,takeJetsFromReco_);
+      if ( isInBump ) hists.diLmassNo70to110Bump.fill(hnuEvent,takeJetsFromReco_);
     }
-    if ( hnuEvent.mMuMu > 100 ) 
-      hists.diLmassAbove100Cut.fill(hnuEvent);
-    if ( hnuEvent.mMuMu > 120 ) { 
-      if(isVerbose) std::cout << "Event has dimuon mass above 120 GeV" << std::endl ;
-      if(isVerbose) std::cout << "*** Event away from Z, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
-      hists.diLmassAbove120Cut.fill(hnuEvent);
+    if ( hnuEvent.mMuMu > 100 ) {
+      hists.diLmassAbove100Cut.fill(hnuEvent,takeJetsFromReco_);
+      if (isInBump) hists.diLmassAbove100Bump.fill(hnuEvent,takeJetsFromReco_);
+      if ( hnuEvent.mMuMu > 110 ) {
+	hists.diLmassAbove110Cut.fill(hnuEvent,takeJetsFromReco_);
+	if (isInBump) hists.diLmassAbove110Bump.fill(hnuEvent,takeJetsFromReco_);
+	if ( hnuEvent.mMuMu > 120 ) { 
+	  if(dolog_) std::cout << "Event has dimuon mass above 120 GeV" << std::endl ;
+	  if(dolog_) std::cout << "*** Event away from Z, and mumujj mass is " << hnuEvent.mWR << " GeV" << std::endl ;
+	  hists.diLmassAbove120Cut.fill(hnuEvent,takeJetsFromReco_);
+	  if (isInBump) hists.diLmassAbove120Bump.fill(hnuEvent,takeJetsFromReco_);
+	  if ( hnuEvent.mMuMu > 150 ) { 
+	    hists.diLmassAbove150Cut.fill(hnuEvent,takeJetsFromReco_);
+	    if (isInBump) hists.diLmassAbove150Bump.fill(hnuEvent,takeJetsFromReco_);
+	    if ( hnuEvent.mMuMu > 200 ) {
+	      hists.diLmassAbove200Cut.fill(hnuEvent,takeJetsFromReco_);
+	      if (isInBump) hists.diLmassAbove200Bump.fill(hnuEvent,takeJetsFromReco_);
+	    }
+	  }
+	}
+      }
     }
-    if ( hnuEvent.mMuMu > 150 ) 
-      hists.diLmassAbove150Cut.fill(hnuEvent);
-    if ( hnuEvent.mMuMu > 200 ) 
-      hists.diLmassAbove200Cut.fill(hnuEvent);
-
     // Change the final logic of the filter based on LQ meeting discussion:
     // Interest in seeing events that pass the dilepton mass requirement
     return true;
