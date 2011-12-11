@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.14 2011/10/18 16:56:50 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.15 2011/11/23 12:34:06 pastika Exp $
 //
 //
 
@@ -93,25 +93,6 @@ public:
   template <class T> bool operator() (const T& a, const T& b) { return a.pt() > b.pt() ; } 
 };
 
-//============================================================
-//============================================================
-
-// Returns 0=neither, 1=loose or 2=tight, -1 if tight but not loose (!)
-// int jetIDemu(const pat::Jet& j)
-// {
-//   JetIDSelectionFunctor jetIDloose(JetIDSelectionFunctor::PURE09,JetIDSelectionFunctor::LOOSE);
-//   JetIDSelectionFunctor jetIDtight(JetIDSelectionFunctor::PURE09,JetIDSelectionFunctor::TIGHT);
-
-//   pat::strbitset ret = jetIDloose.getBitTemplate();
-//   ret.set(false);  bool loose = jetIDloose(j, ret);
-//   ret.set(false);  bool tight = jetIDtight(j, ret);
-//   return (tight ? (loose ? 2 : -1) : (loose ? 1 : 0));
-// }
-
-//============================================================
-//============================================================
-
-
 static std::string btagName;
 static double      minBtagDiscVal; // for discriminating B-tagged jets.
 
@@ -129,20 +110,7 @@ private:
   virtual void beginJob          ();
   virtual bool filter            ( edm::Event&, const edm::EventSetup& );
   virtual void endJob            ();
-  // virtual bool isVBTFloose       ( const pat::Muon& m );
-  // virtual bool isVBTFtight       ( const pat::Muon& m );
-  // virtual void fillBasicMuHistos ( const pat::Muon& m );
-  // virtual void fillBasicJetHistos( const pat::Jet& j,
-  // 				   int jetnum );
-  // virtual void selectJets        ( edm::Handle<pat::JetCollection>& pJets,
-  // 				   HeavyNuEvent& hne );
-  // virtual bool muPassesSelection ( const pat::Muon& m,
-  // 				   const HeavyNuEvent& hne ) ; 
-  //   virtual bool elePassesSelection ( const pat::Electron& e );
-  // virtual void selectMuons       ( edm::Handle<pat::MuonCollection>& pMuons,
-  // 				   HeavyNuEvent& hne );
-  // virtual void selectElectrons   ( edm::Handle<pat::ElectronCollection>& pElecs,
-  // 				   HeavyNuEvent& hne );
+
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
   
   // double GetCorrectedPt ( const pat::Electron& e );
@@ -214,9 +182,9 @@ private:
     TH1 *mu1trackRelIso, *mu1hcalRelIso, *mu1ecalRelIso, *mu1caloRelIso;
     TH1 *mu2trackRelIso, *mu2hcalRelIso, *mu2ecalRelIso, *mu2caloRelIso;
 
-    TH1 *mMuMu, *mMuMuOS, *mMuMuSS, *diMuCharge, *mMuMuZoom, *mMuMuGenZoom;
-    TH1 *mWR, *mNuR1, *mNuR2, *mJJ ; 
-    TH2 *mNuR2D, *jetPtvsNum ; 
+    TH1 *mMuMu, *mMuMuOS, *mMuMuSS, *diMuCharge, *mMuMuZoom, *mMuMuGenZoom, *mMuMuBarrel, *mMuMuBB;
+    TH1 *mWR, *mNuR1, *mNuR2, *mJJ, *mWRBarrel, *mWRBB ;
+    TH2 *mNuR2D, *jetPtvsNum, *mWRvsminLPt, *mWRvsNPV;
 
     TH1* btagJet1, *btagJet2;
     TH1* numBjets;
@@ -276,6 +244,7 @@ private:
     HistPerDef Mu1HighPtCutVtx2to5;
     HistPerDef Mu1HighPtCutVtxGt5;
     HistPerDef diLmassCut;
+    //HistPerDef diLmassCutEChannel;
     HistPerDef mWRmassCut;
 
   } hists;
@@ -440,17 +409,25 @@ HeavyNuTop::HistPerDef::book(TFileDirectory *td,
   // ----------  Composite histograms  ----------
 
   t="M(W_{R}) "                    +post;       mWR=td->make<TH1D>("mWR",   t.c_str(),70,0,2800);
+  t="M(W_{R}) e in Barrel"         +post; mWRBarrel=td->make<TH1D>("mWReBarrel", t.c_str(),70,0,2800);
+  t="M(W_{R}) e and #mu in Barrel" +post;     mWRBB=td->make<TH1D>("mWRemuBarrel", t.c_str(),70,0,2800);
   t="M(N_{R}) with #mu_{1} "       +post;     mNuR1=td->make<TH1D>("mNuR1", t.c_str(),70,0,2800);
   t="M(N_{R}) with #mu_{2} "       +post;     mNuR2=td->make<TH1D>("mNuR2", t.c_str(),70,0,1400);
   t="M(N_{R}) #mu_{1} vs. #mu_{2} "+post;    mNuR2D=td->make<TH2D>("mNuR2D",t.c_str(),70,0,2800,70,0,1400);
 
   t="M(jj) "                       +post;          mJJ=td->make<TH1D>("mJJ",         t.c_str(),50,0,2000);
   t="M(#mu #mu) "                  +post;        mMuMu=td->make<TH1D>("mMuMu",       t.c_str(),50,0,2000);
+  t="M(#mu #mu) e in Barrel"       +post;  mMuMuBarrel=td->make<TH1D>("mMuMueBarrel", t.c_str(),50,0,2000);
+  t="M(#mu #mu) e and #mu in Barrel" +post;    mMuMuBB=td->make<TH1D>("mMuMuemuBarrel", t.c_str(),50,0,2000);
   t="M(#mu #mu)(OS) "              +post;      mMuMuOS=td->make<TH1D>("mMuMuOS",     t.c_str(),50,0,2000);
   t="M(#mu #mu)(SS) "              +post;      mMuMuSS=td->make<TH1D>("mMuMuSS",     t.c_str(),50,0,2000);
   t="M(#mu #mu) "                  +post;    mMuMuZoom=td->make<TH1D>("mMuMuZoom",   t.c_str(),75,0,300);
   t="M(#mu #mu)(generated) "       +post; mMuMuGenZoom=td->make<TH1D>("mMuMuGenZoom",t.c_str(),75,0,300);
   t="DiMuon Charge "               +post;   diMuCharge=td->make<TH1D>("diMuCharge",  t.c_str(),2,-1,1);
+
+  double edges[] = {0,20,30,40,50,60,1500};
+  t="M(W_{R}) vs. min lepton p_{t} " +post;  mWRvsminLPt=td->make<TH2D>("mWRvsminLPt",  t.c_str(),70,0,2800,6,edges);
+  t="M(W_{R}) vs. N primary vertices " +post;  mWRvsNPV=td->make<TH2D>("mWRvsNPV",  t.c_str(),70,0,2800,30, 0, 30);
 
   diMuCharge->GetXaxis()->SetBinLabel(1,"OS");
   diMuCharge->GetXaxis()->SetBinLabel(2,"SS");
@@ -566,11 +543,9 @@ void HeavyNuTop::HistPerDef::fill(pat::MuonCollection muons,
   btagJet1->Fill(j0bdisc,wgt);
   btagJet2->Fill(j1bdisc,wgt);
 
-  if(      (j0bdisc >= minBtagDiscVal) &&
-	   (j1bdisc >= minBtagDiscVal)   )    numBjets->Fill(2.,wgt);
-  else if( (j0bdisc >= minBtagDiscVal) ||
-	   (j1bdisc >= minBtagDiscVal)   )    numBjets->Fill(1.,wgt);
-  else                                        numBjets->Fill(0.,wgt);
+  if( (j0bdisc >= minBtagDiscVal) && (j1bdisc >= minBtagDiscVal)   ) numBjets->Fill(2.,wgt);
+  else if( (j0bdisc >= minBtagDiscVal) || (j1bdisc >= minBtagDiscVal)   ) numBjets->Fill(1.,wgt);
+  else numBjets->Fill(0.,wgt);
 
   dPhiJet->Fill( fabs(deltaPhi(j0.phi(),j1.phi())),wgt ) ; 
   dEtaJet->Fill( fabs(j0.eta() - j1.eta()),wgt ) ; 
@@ -616,15 +591,27 @@ void HeavyNuTop::HistPerDef::fill(pat::MuonCollection muons,
   reco::Particle::LorentzVector vJJ = j0.p4() + j1.p4() ; 
   vWR = vJJ + m0.p4() + m1.p4() ; 
 
-  mWR->Fill( vWR.M(),wgt ) ; 
+  mWR->Fill( vWR.M(),wgt ) ;
+  if(m1.isEB()) 
+  {
+      mWRBarrel->Fill(vWR.M(),wgt );
+      if(m0.eta() < 1.44) mWRBB->Fill(vWR.M(),wgt );
+  }
   mNuR1 ->Fill( (vJJ + m0.p4()).M(),wgt ) ; 
   mNuR2 ->Fill( (vJJ + m1.p4()).M(),wgt ) ; 
-  mNuR2D->Fill( (vJJ + m0.p4()).M(),(vJJ + m1.p4()).M(),wgt ) ; 
+  mNuR2D->Fill( (vJJ + m0.p4()).M(),(vJJ + m1.p4()).M(),wgt ) ;
+
+  mWRvsminLPt->Fill(vWR.M(), std::min(m0.pt(), m1.pt()));
 
   reco::Particle::LorentzVector mumu=m0.p4()+m1.p4();
   reco::Particle::LorentzVector jj=j0.p4()+j1.p4();
 
   mMuMu->Fill(mumu.M(),wgt );
+  if(m1.isEB())
+  {
+      mMuMuBarrel->Fill(mumu.M(),wgt);
+      if(m0.eta() < 1.44) mMuMuBB->Fill(mumu.M(),wgt);
+  }
   if (m0.charge() == m1.charge()) {
     mMuMuSS->Fill( mumu.M(),wgt );
     ptMu1VsPtMu2ss->Fill( m0.pt(), m1.pt(),wgt );
@@ -715,11 +702,9 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
       phiJet2->Fill(hne.j2.phi(),wgt) ; 
       btagJet2->Fill(j2bdisc,wgt);
 
-      if(      (j1bdisc >= minBtagDiscVal) &&
-	       (j2bdisc >= minBtagDiscVal)   )    numBjets->Fill(2.,wgt);
-      else if( (j1bdisc >= minBtagDiscVal) ||
-	       (j2bdisc >= minBtagDiscVal)   )    numBjets->Fill(1.,wgt);
-      else                                        numBjets->Fill(0.,wgt);
+      if((j1bdisc >= minBtagDiscVal) && (j2bdisc >= minBtagDiscVal)) numBjets->Fill(2.,wgt);
+      else if((j1bdisc >= minBtagDiscVal) || (j2bdisc >= minBtagDiscVal)) numBjets->Fill(1.,wgt);
+      else numBjets->Fill(0.,wgt);
 
       jet2id = hnu::jetID(hne.j2);
 
@@ -729,10 +714,18 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
 		       fabs(deltaPhi(hne.j1.phi(),hne.j2.phi())),wgt) ;
 
       mWR->Fill   ( hne.mWR,wgt   ) ; 
+      if(hne.e1.isEB()) 
+      {
+          mWRBarrel->Fill( hne.mWR,wgt   ) ;
+          if(hne.mu1.eta() < 1.44) mWRBB->Fill( hne.mWR,wgt   ) ;
+      }
       mNuR1->Fill ( hne.mNuR1,wgt ) ; 
       mNuR2->Fill ( hne.mNuR2,wgt ) ; 
       mNuR2D->Fill( hne.mNuR1, hne.mNuR2,wgt );
       mJJ->Fill   ( hne.mJJ,wgt   );
+
+      mWRvsminLPt->Fill(hne.mWR, std::min(hne.mu1.pt(), hne.e1.pt()));
+      mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex);
       
       ctheta_jj->Fill(hne.ctheta_jj,wgt);
       ctheta_mu1_jj->Fill(hne.ctheta_mu1_jj,wgt);
@@ -764,7 +757,11 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
   met->Fill( hne.met1.pt(),wgt );
 
   mMuMu->Fill( hne.mMuMu,wgt );
-
+  if(hne.e1.isEB())
+  {
+      mMuMuBarrel->Fill(hne.mMuMu,wgt );
+      if(hne.mu1.eta() < 1.44) mMuMuBB->Fill(hne.mMuMu,wgt );
+  }
   if (hne.mu1.charge() == hne.e1.charge()) {
     mMuMuSS->Fill( hne.mMuMu,wgt );
     ptMu1VsPtMu2ss->Fill( hne.mu1.pt(), hne.e1.pt(),wgt );
@@ -781,26 +778,6 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
   czeta_mumu_zoom->Fill(hne.czeta_mumu,wgt);
   ctheta_mumu->Fill(hne.ctheta_mumu,wgt);
   cthetaz_mumu->Fill(hne.cthetaz_mumu,wgt);
-
-  // Neural net histos
-//   if (v_masspts.size()) {
-//     // defines in HeavyNuCommon.h
-// #ifdef CMSSW_4XX
-//     TDirectory *nnrootdir = nndir->getBareDirectory("");
-// #endif
-// #ifdef CMSSW_3XX 
-//     TDirectory *nnrootdir = nndir->cd();
-// #endif
-
-//     for (size_t i=0; i<v_masspts.size(); i++) {
-//       int mwr = v_masspts[i].first;
-//       int mnu = v_masspts[i].second;
-//       std::string name = nnhistoname(mwr,mnu);
-//       TH1D *nnh = (TH1D *)nnrootdir->Get(name.c_str());
-//       assert(nnh);
-//       nnh->Fill(hne.nnoutputs[i]);
-//     }
-//   }
 }// end of fill()
 
 //======================================================================
@@ -925,8 +902,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
   init_=false;
 
-  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(50),
-					   hnu::get_standard_pileup_data(pileupEra_,50));
+  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(),
+					   hnu::get_standard_pileup_data(pileupEra_));
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
@@ -1083,25 +1060,6 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   else
     hists.met->Fill(0);
 
-  // for (size_t iJet=0; iJet<pJets->size(); iJet++) { 
-  //   pat::JetRef iJ=pat::JetRef(pJets,iJet);
-  //   fillBasicJetHistos(*iJ,iJet+1);
-  // }
-
-  // int nloose=0,ntight=0;
-  // for (size_t iMuon=0; iMuon<pMuons->size(); iMuon++) { 
-  //   pat::MuonRef iM=pat::MuonRef(pMuons,iMuon);
-  //   if( !iM.isAvailable() ) continue;
-  //   fillBasicMuHistos( *iM );
-  //   if( isVBTFloose(*iM) ) {
-  //     nloose++;
-  //     if( isVBTFtight(*iM) )
-  // 	ntight++;
-  //   }
-  // }
-  // hists.nmuLoose->Fill(nloose) ;
-  // hists.nmuTight->Fill(ntight) ;
-
   // Basic selection requirements: Require at least two muons, two jets
   if ( pMuons->size() >= 1 && pElecs->size() >= 1 && pJets->size() >= 2 ) {
     hists.noCuts.fill( *pMuons,*pElecs,*pJets,*pMET, hnuEvent.isMC, hnuEvent.eventWgt ) ; 
@@ -1167,7 +1125,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hnuEvent.met1 = pMET->at(0);
 
   hnuEvent.regularize(); // assign internal standards
-  hnuEvent.scaleMuE(applyMESfactor_,hnuEvent.ElecScale);
+  //hnuEvent.scaleMuE(applyMESfactor_,hnuEvent.ElecScale);
   hnuEvent.calculate(); // calculate various details
   
   // Require mu1 meets tight requirements
@@ -1206,8 +1164,8 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   double mu1pt = hnuEvent.mu1.pt() ;
   double e1pt  = hnu::getElectronEt(hnuEvent.e1) ; 
-  double highestPt = ( (mu1pt > e1pt) ? mu1pt : e1pt ) ; 
-  if ( studyScaleFactorEvolution_ ) { 
+  double highestPt = std::max(mu1pt, e1pt);
+  if ( studyScaleFactorEvolution_ && hnuEvent.mMuMu>=cuts.minimum_mumu_mass) {
     if ( highestPt > 30. )  hists.Mu1Pt30GeVCut.fill( hnuEvent,v_null );
     if ( highestPt > 40. )  hists.Mu1Pt40GeVCut.fill( hnuEvent,v_null );
     if ( highestPt > 50. )  hists.Mu1Pt50GeVCut.fill( hnuEvent,v_null );

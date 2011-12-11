@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 import os
 
 #--- Data/MC switch ---#
-isMC=False
+isMC=True
 isData=not isMC
 
 #--- Signal MC flags ---#
@@ -33,11 +33,12 @@ trigYear = muIdYear
 
 #--- Flags for nominal studies ---#
 runAnalysis = True
-systematics = False
+systematics = True
 tagandprobe = True
 
 #--- Flags for Top studies ---#
-topStudy = False
+topStudy = True
+studyTopScale = True
 
 #--- Flags for QCD studies ---#
 qcdStudy  = False
@@ -61,7 +62,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('input.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S4_START42_V11-v2/0000/A0AE4E6B-D4A9-E011-9871-001A9281171E.root')
 )
 
 if isData:
@@ -464,7 +465,7 @@ process.hNuQCDMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
 ## ============ ##
 process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 # process.hNuTop.minLep2pt        = cms.double(30.)
-process.hNuTop.studyScaleFactor = cms.bool(False)
+process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
 
 #--- Some corrections re-enabled ---#
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)

@@ -98,7 +98,7 @@ void HeavyNuEvent::calculateMuMu() {
 }
 
 void HeavyNuEvent::calculateMuE() {
-  vMuMu    = MuScale*mu1.p4() + ElecScale*e1.p4();
+  vMuMu    = mu1.p4() + e1.p4();
   mMuMu    = vMuMu.M();
 }
 
@@ -122,12 +122,13 @@ void HeavyNuEvent::calculate() {
 
   // if doing MES studies, apply scaling factor here
   //
-  if ( mode == TOP ) {
-    if ( MuScale != 1.0 )   lep1p4 *= MuScale;  
-    if ( ElecScale != 1.0 ) lep2p4 *= ElecScale; 
-  } else { 
-    if ( MuScale != 1.0 ) { lep1p4 *= MuScale; lep2p4 *= MuScale; }
-  }
+  //if ( mode == TOP ) {
+  //  if ( MuScale != 1.0 )   lep1p4 *= MuScale;
+  //  if ( ElecScale != 1.0 ) lep2p4 *= ElecScale;
+  //}
+  //else {
+  //  if ( MuScale != 1.0 ) { lep1p4 *= MuScale; lep2p4 *= MuScale; }
+  //}
 
   reco::Particle::Vector lep1mom = lep1p4.Vect();
   reco::Particle::Vector lep2mom = lep2p4.Vect();

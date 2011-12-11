@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.80 2011/11/23 12:34:06 pastika Exp $
+// $Id: HeavyNu.cc,v 1.81 2011/12/02 15:43:25 bdahmes Exp $
 //
 //
 
@@ -1497,8 +1497,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
                 50, -2.5, 2.5, 100, 0, 1000);
     }
 
-    MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(35),
-            hnu::get_standard_pileup_data(pileupEra_, 35));
+    MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(),
+            hnu::get_standard_pileup_data(pileupEra_));
     
     // For the record...
     std::cout << "Configurable cut values applied:" << std::endl;

@@ -195,7 +195,7 @@ namespace hnu {
 	return -100. ; 
   }
 
-  std::vector<float> generate_flat10_mc(const int npt){
+  std::vector<float> generate_flat10_mc(){
     // see SimGeneral/MixingModule/python/mix_E7TeV_FlatDist10_2011EarlyData_inTimeOnly_cfi.py; copy and paste from there:
     // const double npu_probs[25] = {0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,  // 0-4
     // 				  0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,  // 5-9
@@ -216,6 +216,7 @@ namespace hnu {
     }; 
 
     std::vector<float> retval;
+    int npt = sizeof(npu_probs)/sizeof(double);
     retval.reserve(npt);
     for (int i=0; i<npt; i++)
       retval.push_back(npu_probs[i]);
@@ -234,7 +235,7 @@ namespace hnu {
   }
 
 
-  std::vector<float> get_standard_pileup_data(int era, const int npt) {
+  std::vector<float> get_standard_pileup_data(int era) {
     const double default_pd[] = { 100, 100, 100, 0, 0, 0, 0, 0, 0,
 			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -280,13 +281,30 @@ namespace hnu {
     } ; 
 
     const double* pileupDist=default_pd;
-
-    if (era == 20111) pileupDist=json_2011a;
-    if (era == 20112) pileupDist=json_2011b;
-    if (era == 20110) pileupDist=may10_json;
-    if (era>=20100 && era<=20109) pileupDist=dec22_json;
+    int npt = 35;
+    if (era == 20111) 
+    {
+        npt = sizeof(json_2011a)/sizeof(double);
+        pileupDist=json_2011a;
+    }
+    if (era == 20112) 
+    {
+        npt = sizeof(json_2011b)/sizeof(double);
+        pileupDist=json_2011b;
+    }
+    if (era == 20110) 
+    {
+        npt = sizeof(may10_json)/sizeof(double);
+        pileupDist=may10_json;
+    }
+    if (era>=20100 && era<=20109) 
+    {
+        npt = sizeof(dec22_json)/sizeof(double);
+        pileupDist=dec22_json;
+    }
 
     std::vector<float> retval;
+    
     retval.reserve(npt);
     for (int i=0; i<npt; i++)
       retval.push_back(pileupDist[i]);
@@ -434,16 +452,17 @@ namespace hnu {
     
     std::vector< std::pair<pat::Electron,float> > electronList ; 
     for (unsigned int iElectron=0; iElectron < pElecs->size(); iElectron++) {
-      pat::ElectronRef iE = pat::ElectronRef(pElecs, iElectron); 
-      if ( getElectronSCEta(*iE) > maxAbsEta ) continue ; 
-      if ( !passesHEEPv31(*iE) ) continue ; 
+      pat::Electron iE = pElecs->at(iElectron); 
+      if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
+      if ( !passesHEEPv31(iE) ) continue ; 
 
-      float scale  = ( (iE->isEB()) ? ebScale : eeScale ) ; 
-      float elecEt = getElectronEt(*iE) * scale ; 
-      bool passEtCuts = ( (iE->isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ; 
+      float scale  = ( (iE.isEB()) ? ebScale : eeScale ) ;
+      float elecEt = getElectronEt(iE) * scale ; 
+      bool passEtCuts = ( (iE.isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ;
 
-      if (passEtCuts) { 
-	std::pair<pat::Electron,float> electronCand = std::make_pair((*iE),scale) ;
+      if (passEtCuts) {
+        iE.setP4(iE.p4() * scale);
+	std::pair<pat::Electron,float> electronCand = std::make_pair(iE,scale) ;
 	electronList.push_back( electronCand ) ; 
       }
     }
