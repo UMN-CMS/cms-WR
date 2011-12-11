@@ -19,6 +19,7 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   endRun_      ( iConfig.getParameter< std::vector<int> >( "lastRun" ) ),
   muonMatch_   ( iConfig.getParameter< std::string >  ( "muonMatch"    ) ),
   triggerPt_   ( iConfig.getParameter< double >       ( "triggerPt"    ) ),
+  trigEra_     ( iConfig.getParameter< int >          ( "trigEra" ) ),
   johnnyApple_ ( iConfig.getParameter< int >          ( "randomSeed"   ) )
 {
   matchingEnabled_ = false;
@@ -30,6 +31,7 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
     std::cout << "Trigger matching is === DISABLED ===" << std::endl;
     std::cout << "   (Trigger sim. random seed = "<<johnnyApple_<<")"<<std::endl;
     triggerRandom_ = new TRandom(johnnyApple_);
+    std::cout << "   (Trigger Era              = "<<trigEra_<<")"<<std::endl;
     std::cout << "   (Trigger pT               = "<<triggerPt_<<")"<<std::endl;
   }
 
@@ -37,8 +39,8 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   if ( muonTriggers_.size() != beginRun_.size() || 
        muonTriggers_.size() != endRun_.size() || 
        beginRun_.size() != endRun_.size() ) { 
-    std::cout << "WARNING: Size of trigger initialization vectors are not equal." << std::endl ; 
-    std::cout << "         Resetting all vectors to size of trigger list and dropping run restriction " << std::endl ; 
+    std::cout << "INFO: Size of trigger initialization vectors are not equal." << std::endl ; 
+    std::cout << "      Resetting all vectors to size of trigger list and dropping run restriction " << std::endl ; 
 
     unsigned int maxsize = std::max( muonTriggers_.size(),
 				     std::max( beginRun_.size(),endRun_.size() ) ) ; 
@@ -196,27 +198,28 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   // Cannot trigger if you do not meet the minimum pT threshold
   if ( pt < triggerPt_ ) return false ;
 
-  // Trigger studies updated 8 October 2011
+  // Trigger studies updated 11 Dec 2011
   // HLT_Mu24 results are used for 30 < pT < 40 GeV
-  // All other bins combine Mu24, Mu40, Mu40_eta2p1 efficiencies
-  const double effslo24[]  = {0.916,0.931,0.937,0.946,0.943,0.938,0.938};
-  const double effsnom24[] = {0.934,0.935,0.943,0.952,0.952,0.946,0.946};
-  const double effshi24[]  = {0.949,0.941,0.949,0.958,0.960,0.954,0.954};
-  const double upedge24[]  = {   40,   50,   60,   80,  100, 3500,   -1};
+  // All other bins combine Mu24, Mu40, Mu40_eta2p1 efficiencies for run 2011a
+  // Run 2011b results use Mu40_eta2p1 only
+  const double effslo2011a[]  = {0.868979,0.855499,0.862255,0.874853,0.882812,0.876860,0.823287,0.823287};
+  const double effsnom2011a[] = {0.875648,0.864359,0.872848,0.885346,0.897508,0.890611,0.871189,0.871189};
+  const double effshi2011a[]  = {0.882316,0.873220,0.883441,0.895840,0.912204,0.904362,0.919090,0.919090};
+  const double upedge2011a[]  = {      40,      50,      60,      80,     100,     200,    3500,      -1};
 
-  const double effslo40[]  = {0.931,0.937,0.946,0.943,0.938,0.938};
-  const double effsnom40[] = {0.935,0.943,0.952,0.952,0.946,0.946};
-  const double effshi40[]  = {0.941,0.949,0.958,0.960,0.954,0.954};
-  const double upedge40[]  = {   50,   60,   80,  100, 3500,   -1};
+  const double effslo2011b[]  = {0.908256,0.922264,0.944146,0.920008,0.906448,0.917130,0.917130};
+  const double effsnom2011b[] = {0.900857,0.913545,0.936445,0.906582,0.893309,0.866667,0.866667};
+  const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
+  const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
-  const double *effs = ( (triggerPt_ == 24) ? effsnom24 : effsnom40 );
+  const double *effs = ( (trigEra_ == 20110) ? effsnom2011a : effsnom2011b );
   if ( signOfError2apply ) {
-    if ( triggerPt_ == 24 ) effs = (signOfError2apply > 0) ? effshi24 : effslo24;
-    else                    effs = (signOfError2apply > 0) ? effshi40 : effslo40;
+    if ( trigEra_ == 20110 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
+    else                     effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
   }
 
   int i;
-  const double *upedge = ( (triggerPt_ == 24) ? upedge24 : upedge40 );
+  const double *upedge = ( (trigEra_ == 20110) ? upedge2011a : upedge2011b );
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
   double eff=effs[i];
     

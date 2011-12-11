@@ -7,6 +7,7 @@ hNuQCD = cms.EDFilter(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
         triggerPt    = cms.double( 40. ),
+        trigEra      = cms.int32( 20110 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
@@ -34,9 +35,9 @@ hNuQCD = cms.EDFilter(
     
     #--- Specific variables added for INR QCD cross-check ---#
     electronTag = cms.InputTag( 'selectedPatElectrons' ),
-    photonTag   = cms.InputTag( 'selectedPatElectrons' ),
-    hybridSCs   = cms.InputTag( 'correctedHybridSuperClusters' ),
-    multi5x5SCs = cms.InputTag( 'correctedMulti5x5SuperClustersWithPreshower' ),
+    # photonTag   = cms.InputTag( 'selectedPatElectrons' ),
+    # hybridSCs   = cms.InputTag( 'correctedHybridSuperClusters' ),
+    # multi5x5SCs = cms.InputTag( 'correctedMulti5x5SuperClustersWithPreshower' ),
     minimumSuperClusterEt = cms.double(10.0), 
 
     getSurvivalRate = cms.bool(False),    

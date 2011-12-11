@@ -58,6 +58,7 @@ class HeavyNuTrigger {
   std::vector<int> beginRun_, endRun_ ; 
   std::string   muonMatch_;
   double        triggerPt_;
+  int           trigEra_;
   int           johnnyApple_;
 };
 

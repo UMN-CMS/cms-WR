@@ -7,6 +7,7 @@ hNuTop = cms.EDFilter(
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
+        trigEra      = cms.int32( 20110 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),

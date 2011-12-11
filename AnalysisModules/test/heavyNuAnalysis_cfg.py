@@ -29,6 +29,7 @@ if not isRun2011A:
     muIdYear  = 20111
     pileupEra = 20112
 
+trigYear = muIdYear
 
 #--- Flags for nominal studies ---#
 runAnalysis = True
@@ -298,8 +299,8 @@ process.hNu.maxJetVZsepCM   = cms.double(-1)
 #--- Pileup corrections ---#
 process.hNu.pileupEra = cms.int32(pileupEra)
 
-#--- Muon ID corrections are not ready ---#
-process.hNu.applyMuIDEffcorr = cms.bool(False)
+#--- Muon ID corrections are taken from Dec 11, 2011 studies---#
+process.hNu.applyMuIDEffcorr = cms.bool(isMC)
 
 if isData:
     process.hNu.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
@@ -314,6 +315,7 @@ if isData:
 else:
     # turn on MC trigger simulation
     process.hNu.trigMatchPset.randomSeed = cms.int32(os.getpid())
+    process.hNu.trigMatchPset.trigEra    = cms.int32( trigYear )
     # Parameters for muon ID corrections to MC
     process.hNu.muIDPset.eraForId        = cms.int32( muIdYear )
 
@@ -395,10 +397,10 @@ process.hNuMu24midHi = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(1) )
 process.hNuMu24midLo = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(-1) )
 process.hNuMu40midHi = process.hNuMu40.clone( applyMuIDEffsign = cms.int32(1) )
 process.hNuMu40midLo = process.hNuMu40.clone( applyMuIDEffsign = cms.int32(-1) )
-process.hNuMu24midHi.applyMuIDEffcorr = cms.bool( True )
-process.hNuMu24midLo.applyMuIDEffcorr = cms.bool( True )
-process.hNuMu40midHi.applyMuIDEffcorr = cms.bool( True )
-process.hNuMu40midLo.applyMuIDEffcorr = cms.bool( True )
+process.hNuMu24midHi.applyMuIDEffcorr = cms.bool( isMC )
+process.hNuMu24midLo.applyMuIDEffcorr = cms.bool( isMC )
+process.hNuMu40midHi.applyMuIDEffcorr = cms.bool( isMC )
+process.hNuMu40midLo.applyMuIDEffcorr = cms.bool( isMC )
 
 process.hNuMu24trigHi = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(1) )
 process.hNuMu24trigLo = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(-1) )
@@ -417,9 +419,9 @@ process.load("HeavyNu.AnalysisModules.heavynuqcd_cfi")
 
 process.hNuQCD.isPFJets = cms.bool(isPFJets)
 process.hNuQCD.getSurvivalRate = cms.bool( doDijet )    
-process.hNuQCD.doClosureTest   = cms.bool( doQuadJet )    
-process.hNuQCD.doQuadJetTest   = cms.bool( doClosure )    
-#--- Results from 2/fb 2011 data ---#
+process.hNuQCD.doClosureTest   = cms.bool( doClosure )    
+process.hNuQCD.doQuadJetTest   = cms.bool( doQuadJet )    
+#--- Results from 2/fb 2011 data --> Run 2011A only ---#
 process.hNuQCD.reweightPtLow  = cms.vdouble( 30,40,50,60,80,100,200 )
 process.hNuQCD.reweightPtHigh = cms.vdouble( 40,50,60,80,100,200,1000 )
 process.hNuQCD.reweightTight  = cms.vdouble( 0.0629483,0.0654695,0.0708795,0.0787387,0.0953354,0.133404,0.433735 )
@@ -442,6 +444,7 @@ if isData:
 else:
     # turn on MC trigger simulation
     process.hNuQCD.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+    process.hNuQCD.trigMatchPset.eraForId   = cms.int32( trigYear )
     # Parameters for muon ID corrections
     process.hNuQCD.muIDPset.eraForId        = cms.int32( muIdYear )
 
@@ -463,12 +466,13 @@ process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 # process.hNuTop.minLep2pt        = cms.double(30.)
 process.hNuTop.studyScaleFactor = cms.bool(False)
 
-#--- Temporarily disabling all corrections ---#
-process.hNuTop.applyMuIDEffcorr   = cms.bool(False)
-process.hNuTop.applyEleEScale     = cms.bool(False) 
-process.hNuTop.applyEleIDweight   = cms.bool(False) 
-process.hNuTop.pileupEra          = cms.int32(pileupEra)
-process.hNuTop.muIDPset.eraForId  = cms.int32(muIdYear)
+#--- Some corrections re-enabled ---#
+process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
+process.hNuTop.applyEleEScale        = cms.bool(isMC) 
+process.hNuTop.applyEleIDweight      = cms.bool(isMC) 
+process.hNuTop.pileupEra             = cms.int32(pileupEra)
+process.hNuTop.trigMatchPset.trigEra = cms.int32(trigYear)
+process.hNuTop.muIDPset.eraForId     = cms.int32(muIdYear)
 process.hNuTop.EBidWgt = cms.double( 1.000 ) 
 process.hNuTop.EEidWgt = cms.double( 1.000 ) 
 #--- Values below zero disable the vertex requirement ---#
