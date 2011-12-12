@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.81 2011/12/02 15:43:25 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.82 2011/12/11 14:06:08 pastika Exp $
 //
 //
 
@@ -148,6 +148,9 @@ private:
                        const bool mu1trig, const bool mu2trig,
                        const uint32_t run);
 
+  double getPDFWeight(float Q, int id1, float x1, int id2, float x2);
+
+
     inline bool inZmassWindow(double mMuMu)
     {
         return(mMuMu <= ZwinMaxGeV_) && (mMuMu >= ZwinMinGeV_);
@@ -196,6 +199,11 @@ private:
     edm::LumiReWeighting MCweightByVertex_;
 
     std::map<uint32_t, TH1 *> m_runHistos_;
+
+  bool doPDFreweight_;
+  std::string pdfReweightBaseName, pdfReweightTargetName;
+  int pdfReweightBaseId, pdfReweightTargetId;
+
 
     // ----------member data ---------------------------
 
@@ -1326,6 +1334,18 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     
     isPFJets_ = iConfig.getParameter<bool>("isPFJets");
     studyRatePerRun_ = iConfig.getParameter<bool>("studyRatePerRun"); 
+
+
+    doPDFreweight_=iConfig.getUntrackedParameter<bool>("doPDFReweight",false);
+    if (doPDFreweight_) {
+      pdfReweightBaseName=iConfig.getUntrackedParameter<std::string>("pdfReweightBaseName");
+      pdfReweightTargetName=iConfig.getUntrackedParameter<std::string>("pdfReweightTargetName");
+      pdfReweightBaseId=iConfig.getUntrackedParameter<int>("pdfReweightBaseId",0);
+      pdfReweightTargetId=iConfig.getUntrackedParameter<int>("pdfReweightTargetId",0);
+      std::cout << "PDF Reweighting from " << pdfReweightBaseName << ":" << pdfReweightBaseId
+		<< " to " << pdfReweightTargetName << ":" << pdfReweightTargetId
+		<< std::endl;
+    }
     
     // ==================== Init other members ====================
     //
@@ -1808,6 +1828,21 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if ( fabs(puShift_) > 0.001 ) hnuEvent.eventWgt *= poissonNvtxShifter_.ShiftWeight( pileup.first ) ; 
         //Shirpa reweighting
         hnuEvent.eventWgt *= geneventinfo->weight();
+	// PDF reweighting
+	if (doPDFreweight_) {
+	  edm::Handle<GenEventInfoProduct> geip;
+	  iEvent.getByLabel("generator",geip);
+      
+	  float Q=geip->pdf()->scalePDF;
+	  int id1=geip->pdf()->id.first;
+	  int id2=geip->pdf()->id.second;
+	  float x1=geip->pdf()->x.first;
+	  float x2=geip->pdf()->x.second;
+
+	  hnuEvent.eventWgt *= getPDFWeight(Q,id1,x1,id2,x2);	  
+	}
+	
+
         hists.weights->Fill(hnuEvent.eventWgt);
         // generator information
         edm::Handle<reco::GenParticleCollection> genInfo;
@@ -2289,6 +2324,30 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     return true;
 }
+
+#include "LHAPDF/LHAPDF.h"
+
+double HeavyNu::getPDFWeight(float Q, int id1, float x1, int id2, float x2) {
+
+  
+  if (!doPDFreweight_) return 1.0;
+  
+  LHAPDF::usePDFMember(1,pdfReweightBaseId);
+  double pdf1 = LHAPDF::xfx(1, x1, Q, id1)/x1;
+  double pdf2 = LHAPDF::xfx(1, x2, Q, id2)/x2;
+  
+  LHAPDF::usePDFMember(2,pdfReweightTargetId);
+  double newpdf1 = LHAPDF::xfx(2, x1, Q, id1)/x1;
+  double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
+  
+  double w=(newpdf1/pdf1*newpdf2/pdf2);
+  
+  //  printf("My weight is %f\n",w);
+  
+  return w;
+  
+}
+
 
 // ------------ method called once each job just before starting event loop  ------------
 
