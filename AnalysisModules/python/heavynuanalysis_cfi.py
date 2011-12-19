@@ -60,5 +60,12 @@ hNu = cms.EDFilter(
     isSignal              = cms.bool(False),
     mNuRnormalization     = cms.double(1000.0),
 
+   doPDFReweight = cms.untracked.bool(False),
+#    pdfReweightBaseName = cms.untracked.string('cteq6ll.LHpdf'),
+    pdfReweightBaseName = cms.untracked.string('CT10.LHgrid'),
+    pdfReweightBaseId = cms.untracked.int32(0),
+    pdfReweightTargetName = cms.untracked.string('CT10'),
+    pdfReweightTargetId = cms.untracked.int32(0),    
+
     isPFJets = cms.bool(False)
     )

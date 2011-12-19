@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.82 2011/12/11 14:06:08 pastika Exp $
+// $Id: HeavyNu.cc,v 1.83 2011/12/12 17:06:42 mansj Exp $
 //
 //
 
@@ -67,7 +67,7 @@
 #include "TRandom.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
-#include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
+//#include "HeavyNu/AnalysisModules/src/HeavyNu_NNIF.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
@@ -191,7 +191,7 @@ private:
     bool dolog_;
     bool firstEvent_;
 
-    HeavyNu_NNIF *nnif_;
+  //    HeavyNu_NNIF *nnif_;
     HeavyNuTrigger *trig_;
     HeavyNuID *muid_;
     JetCorrectionUncertainty *jecuObj_;
@@ -1350,7 +1350,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     // ==================== Init other members ====================
     //
 
-    nnif_ = new HeavyNu_NNIF(iConfig);
+    //    nnif_ = new HeavyNu_NNIF(iConfig);
     trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet > ("trigMatchPset"));
     muid_ = new HeavyNuID(iConfig.getParameter<edm::ParameterSet > ("muIDPset"));
     // ==================== Book the histos ====================
@@ -1440,13 +1440,13 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     hists.noCuts.book(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)", v_null);
     hists.LLptCuts.book(new TFileDirectory(fs->mkdir("cutX_LLpt")), "(dileptons with ptcuts:X)", v_null);
     // hists.MuTightCuts.book(new TFileDirectory(fs->mkdir("cut2_MuTight")), "(Mu tight cuts:2)", v_null);
-    hists.LLJJptCuts.book(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)", nnif_->masspts());
+    hists.LLJJptCuts.book(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)", v_null);
     hists.TrigMatches.book(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)", v_null);
-    hists.VertexCuts.book(new TFileDirectory(fs->mkdir("cut3_Vertex")), "(vertex requirements:3)", nnif_->masspts());
-    hists.Mu1HighPtCut.book(new TFileDirectory(fs->mkdir("cut4_Mu1HighPt")), "(Mu1 High pt cut:4)", nnif_->masspts());
-    hists.loDiLmassCut.book(new TFileDirectory(fs->mkdir("cut5a_loDiLmass")), "(mumu mass cut:5a)", nnif_->masspts());
-    hists.diLmassCut.book(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)", nnif_->masspts());
-    hists.mWRmassCut.book(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)", nnif_->masspts());
+    hists.VertexCuts.book(new TFileDirectory(fs->mkdir("cut3_Vertex")), "(vertex requirements:3)", v_null);
+    hists.Mu1HighPtCut.book(new TFileDirectory(fs->mkdir("cut4_Mu1HighPt")), "(Mu1 High pt cut:4)", v_null);
+    hists.loDiLmassCut.book(new TFileDirectory(fs->mkdir("cut5a_loDiLmass")), "(mumu mass cut:5a)", v_null);
+    hists.diLmassCut.book(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)", v_null);
+    hists.mWRmassCut.book(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)", v_null);
 
     if ( studyAlternativeSelection_ ) {
         hists.AlternativeElecChanPt.book(new TFileDirectory(fs->mkdir("AltMu1Pt80Mu2Pt40")),"(Alternative: Electron pT selection)", v_null);
@@ -2109,7 +2109,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
     }
 
-    if ( debuggingEvents ) std::cout << "Debugging event " << iEvent.id() << std::endl ; 
+    //    if ( debuggingEvents ) std::cout << "Debugging event " << iEvent.id() << std::endl ; 
 
     if (muCands.size() >= 2) { 
       hists.LLptCuts.fill(muCands, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex);
@@ -2195,10 +2195,10 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Event meets trigger requirements
     hists.TrigMatches.fill(hnuEvent, v_null);
 
-    nnif_->fillvector(hnuEvent);
-    nnif_->output(hnuEvent.nnoutputs);
+    //    nnif_->fillvector(hnuEvent);
+    //    nnif_->output(hnuEvent.nnoutputs);
 
-    // hists.LLJJptCuts.fill(hnuEvent, nnif_->masspts());
+    // hists.LLJJptCuts.fill(hnuEvent, v_null);
 
     //--- Impose vertex requirement here ---//
     float deltaVzJ1J2 = fabs(hnuEvent.tjV1 - hnuEvent.tjV2);
@@ -2215,7 +2215,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(cuts.maxVertexZsep > 0 && deltaVzM1M2 >= cuts.maxVertexZsep) return false;
 
     hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Event meets vertex requirements
-    hists.VertexCuts.fill(hnuEvent, nnif_->masspts());
+    hists.VertexCuts.fill(hnuEvent, v_null);
 
     //--- The "basic" object, trigger, and (possibly) vertex requirements should be done ---//
     //--- Consider alternative selection requirements ---//
@@ -2278,16 +2278,16 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hists.Mu1HighPtCutVtxGt5.fill(hnuEvent, v_null);
     }
     hists.cutlevel->Fill(4.0, hnuEvent.eventWgt); // Event meets high muon pT requirements
-    hists.Mu1HighPtCut.fill(hnuEvent, nnif_->masspts());
+    hists.Mu1HighPtCut.fill(hnuEvent, v_null);
 
     if(hnuEvent.mMuMu < 40) return false; // Sanity check...remove low mass points
-    hists.loDiLmassCut.fill(hnuEvent, nnif_->masspts());
+    hists.loDiLmassCut.fill(hnuEvent, v_null);
     if ( studyRatePerRun_ && inZmassWindow(hnuEvent.mMuMu) )
         hists.z2jetPerRun->Fill( iEvent.id().run() ) ; 
     
     if(hnuEvent.mMuMu < cuts.minimum_mumu_mass) return false; // dimuon mass cut
     hists.cutlevel->Fill(5.0, hnuEvent.eventWgt); // Event meets dimuon mass requirements
-    hists.diLmassCut.fill(hnuEvent, nnif_->masspts());
+    hists.diLmassCut.fill(hnuEvent, v_null);
 
     if(iEvent.isRealData())
     {
@@ -2320,7 +2320,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.mWR >= cuts.minimum_mWR_mass)
     {
         hists.cutlevel->Fill(6.0, hnuEvent.eventWgt); // Event meets W_R mass requirements
-        hists.mWRmassCut.fill(hnuEvent, nnif_->masspts());
+        hists.mWRmassCut.fill(hnuEvent, v_null);
     }
     return true;
 }
@@ -2353,16 +2353,22 @@ double HeavyNu::getPDFWeight(float Q, int id1, float x1, int id2, float x2) {
 
 void HeavyNu::beginJob()
 {
-    nnif_->beginJob();
+  //    nnif_->beginJob();
     firstEvent_ = true;
     evtCounter = 0;
+
+    if (doPDFreweight_) {
+      LHAPDF::initPDFSet(1,pdfReweightBaseName);
+      LHAPDF::initPDFSet(2,pdfReweightTargetName);
+    }
+
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 
 void HeavyNu::endJob()
 {
-    nnif_->endJob();
+  //    nnif_->endJob();
     trig_->endJob();
     muid_->endJob();
 }
