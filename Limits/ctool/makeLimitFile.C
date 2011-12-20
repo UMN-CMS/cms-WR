@@ -183,7 +183,7 @@ void makeLimitFile2010(int mwr, TFile* dataf, TFile* signalf, const char* limitF
   formatLimitFile(pbi,limitFileName);
 }  
 
-std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf, TFile* signalf) {
+std::vector<PerBinInfo> makeLimitContent2011(double lumi, double xsec, int mwr, TFile* dataf, TFile* signalf) {
   TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
   //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
@@ -232,7 +232,7 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
     PerBinInfo abin;
     abin.lowEdge=std::max(600.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
     abin.highEdge=sigh->GetXaxis()->GetBinUpEdge(ibin);
-    abin.signal=sigh->GetBinContent(ibin)*normSignal*lumi;
+    abin.signal=sigh->GetBinContent(ibin)*normSignal*lumi*xsec;
     abin.lumi=lumi;
     abin.year=2011;
     abin.data=int(datah->GetBinContent(ibin));
@@ -245,15 +245,15 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
   return pbi;
 }
 
-void makeLimitFile2011(double lumi, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName) {
-  std::vector<PerBinInfo> pbi = makeLimitContent2011(lumi,mwr,dataf,signalf);
+void makeLimitFile2011(double lumi, double xsec, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName) {
+  std::vector<PerBinInfo> pbi = makeLimitContent2011(lumi,xsec,mwr,dataf,signalf);
   formatLimitFile(pbi,limitFileName);
 }
 
 void makeLimitFileTwoYear(double lumi11, int mwr, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName) {
 
   std::vector<PerBinInfo> pbi2010=makeLimitContent2010(mwr,dataf10,signalf10);
-  std::vector<PerBinInfo> pbi2011=makeLimitContent2011(lumi11,mwr,dataf11,signalf11);
+  std::vector<PerBinInfo> pbi2011=makeLimitContent2011(lumi11,1.0,mwr,dataf11,signalf11);
 
   std::vector<PerBinInfo> pbi;
   std::vector<PerBinInfo>::const_iterator i;

@@ -4,19 +4,20 @@
 #include <stdlib.h>
 
 int main(int argc, char* argv[]) {
-  if (argc<6) {
-    printf("Usage: makeLimitFile2011 [lumi] [mwr] [data file] [signal file] [outfilename] [optional special syst mode]\n");
+  if (argc<7) {
+    printf("Usage: makeLimitFile2011 [lumi] [xsec] [mwr] [data file] [signal file] [outfilename] [optional special syst mode]\n");
     return 1;
   }
   float lumi=atof(argv[1]);
-  int mwr=atoi(argv[2]);
-  TFile df(argv[3]);
-  TFile sf(argv[4]);
+  float xsec=atof(argv[2]);
+  int mwr=atoi(argv[3]);
+  TFile df(argv[4]);
+  TFile sf(argv[5]);
 
-  if (argc==7)
-    special_syst_mode=atoi(argv[6]);
+  if (argc==8)
+    special_syst_mode=atoi(argv[7]);
 
-  makeLimitFile2011(lumi,mwr,&df,&sf,argv[5]);
+  makeLimitFile2011(lumi,xsec,mwr,&df,&sf,argv[6]);
 
   return 0;
 }

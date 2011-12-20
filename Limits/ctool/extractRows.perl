@@ -3,6 +3,7 @@
 use Getopt::Long;
 
 $special=0;
+$xsec=1.0;
 
 GetOptions(	   "special=i" => \$special);
 
@@ -14,6 +15,11 @@ foreach $file (@ARGV) {
     
     open(OF,$file);
     while (<OF>) {
+
+	if (/xsec=([0-9.]+)/) {
+	    $xsec=$1;
+	}
+
 	$mode=1 if (/Observed/);
 	$mode=2 if (/Expected/);
 	
@@ -34,8 +40,9 @@ foreach $file (@ARGV) {
     }
     close(OF);
     
-    printf("%3d %5d %5d %9.7f %9.7f %9.7f %9.7f %9.7f %9.7f \n",
-	   $special, $mw, $mn,
-	   $obs,
-	   $exp,$exp_m2s,$exp_m1s,$exp_p1s,$exp_p2s);
+    printf("%5d %5d %9.7f %9.7f %9.7f %9.7f %9.7f %9.7f %3d\n",
+	   $mw, $mn,
+	   $obs*$xsec,
+	   $exp*$xsec,$exp_m2s*$xsec,$exp_m1s*$xsec,$exp_p1s*$xsec,$exp_p2s*$xsec,
+	   $special);
 }

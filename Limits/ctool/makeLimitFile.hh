@@ -26,9 +26,9 @@ std::vector<PerBinInfo> makeLimitContent2010(int mwr, TFile* dataf, TFile* signa
 
 void makeLimitFile2010(int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
 
-std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf, TFile* signalf);
+std::vector<PerBinInfo> makeLimitContent2011(double lumi, double xsec, int mwr, TFile* dataf, TFile* signalf);
 
-void makeLimitFile2011(double lumi, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
+void makeLimitFile2011(double lumi, double xsec, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
 
 void makeLimitFileTwoYear(double lumi11, int mwr, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName);
 
