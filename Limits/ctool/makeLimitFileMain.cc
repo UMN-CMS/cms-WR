@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 
   SystematicsDB syst;
   syst.load(argv[8]);
-
+  syst.standardSystematics(); // define the standard systematics
   if (argc==10)
     int special_syst_mode=atoi(argv[9]);
 

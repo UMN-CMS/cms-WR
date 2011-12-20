@@ -69,10 +69,33 @@ double SystematicsDB::getSystematic(const std::string& systName, const std::stri
   else return 0;
 }
 std::vector<std::string> SystematicsDB::getSystematicsList() const {
-  std::vector<std::string> retval;
+  return m_finalsystematics;
+}
+void SystematicsDB::setSimpleSystematic(const std::string& systName)  {
+  m_finalsystematics.push_back(systName);
+}
+void SystematicsDB::defineSingleChannelSyst(const std::string& systName, const std::string& process, const std::vector<std::string>& contents) {
+  std::string key=makeKey(process,systName);
+  DBitem dbi;
+  // clear
+  for (int i=0; i<10; i++) dbi.values[i]=0;
+  // iterate over inputs and sum in quadrature
+  for (int i=0; i<10; i++) {
+    for (std::vector<std::string>::const_iterator sourcesyst=contents.begin(); sourcesyst!=contents.end(); sourcesyst++) 
+      dbi.values[i]+=pow(getSystematic(*sourcesyst,process,i),2);
+    dbi.values[i]=sqrt(dbi.values[i]);
+  }
+  
+  m_db.insert(std::pair<std::string,DBitem>(key,dbi));
+  m_finalsystematics.push_back(systName);
+}
+void SystematicsDB::standardSystematics() {
+  setSimpleSystematic("PDF");
 
-  retval.push_back("PDF");
-  retval.push_back("SHAPE");
+  std::vector<std::string> systContents;
+  systContents.push_back("SHAPE");
 
-  return retval;
+  defineSingleChannelSyst("TTONLY","TTJETS",systContents);
+  defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
+  defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
 }

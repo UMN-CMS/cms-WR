@@ -129,7 +129,11 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& mp, co
     fprintf(limitFile,"%-10s lnN ",i->c_str());
     for (int ibin=0; ibin<nbins; ibin++) {
       int srcBin=pbi[ibin].sourceBin;
-      for (int j=0; j<=jmax; j++) fprintf(limitFile,"%3.3f ",syst.getSystematic(*i,procName[j],srcBin));
+      for (int j=0; j<=jmax; j++) {
+	double systLevel=syst.getSystematic(*i,procName[j],srcBin);
+	if (fabs(systLevel-1.0)<0.0015) fprintf(limitFile,"  -   ");
+	else fprintf(limitFile,"%5.3f ", systLevel);
+      }
     }
     fprintf(limitFile,"\n");
   }

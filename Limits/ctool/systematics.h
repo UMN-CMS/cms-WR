@@ -12,11 +12,16 @@ class SystematicsDB {
 
   double getSystematic(const std::string& systName, const std::string& process, int imassbin) const;
   std::vector<std::string> getSystematicsList() const;
+  void setSimpleSystematic(const std::string& systName);
+  void defineSingleChannelSyst(const std::string& systName, const std::string& process, const std::vector<std::string>& contents);
+  //  void defineAllChannelSyst(const std::string& systName, const std::string& process, const std::vector<std::string>& contents);
+
   void load(const std::string& systdb);
+  void standardSystematics();
   void dump() const;
 
  private:
-
+  std::vector<std::string> m_finalsystematics;
   struct DBitem {
     double values[10];
   };
