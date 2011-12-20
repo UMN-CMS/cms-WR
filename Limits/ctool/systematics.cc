@@ -1,132 +1,78 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <string.h>
 #include <math.h>
+#include <ctype.h>
+#include <stdio.h>
+#include "systematics.h"
 
-std::map<std::string,double> systematics10[4];
-std::map<std::string,double> systematics11[4];
-
-std::vector<std::string> systematicsList;
-
-static const int i_SIGNAL=0;
-static const int i_TT=1;
-static const int i_ZJ=2;
-static const int i_OTHER=3;
-
-
-int special_syst_mode=0;
-
-void loadSystematics() {
-  static bool didLoad=false;
-  if (didLoad) return;
-  didLoad=true;
-    
-
-  systematicsList.push_back("LUMI");
-  //  systematicsList.push_back("RECOCAL10");
-  systematicsList.push_back("RECOCAL11");
-  if (special_syst_mode!=2) 
-    systematicsList.push_back("ISRPDF");
-  systematicsList.push_back("SIGONLY");
-  if (special_syst_mode!=1) {
-    systematicsList.push_back("TTONLY");
-    systematicsList.push_back("ZJONLY");
-    systematicsList.push_back("UNCOTHER");
-  }
-
-
-  // first we do common systematics
-
-  systematics10[i_SIGNAL]["LUMI"]=1.04;
-  if (special_syst_mode!=2) 
-    systematics10[i_SIGNAL]["ISRPDF"]=1+sqrt(pow(0.03,2)+pow(0.04,2)+
-					     pow(0.00,2));
-  systematics10[i_SIGNAL]["SIGONLY"]=1+sqrt(pow(0.00,2)+pow(0.05,2));
-
-  if (special_syst_mode!=1) {
-
-    if (special_syst_mode!=2) 
-      systematics10[i_TT]["ISRPDF"]=1+sqrt(pow(0.08,2)+pow(0.06,2)+
-					   pow(0.08,2));
-    systematics10[i_TT]["TTONLY"]=1+sqrt(pow(0.22,2)+pow(0.05,2));
-
-
-    if (special_syst_mode!=2) 
-      systematics10[i_ZJ]["ISRPDF"]=1+sqrt(pow(0.08,2)+pow(0.09,2)+
-					   pow(0.14,2));
-    systematics10[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.13,2)+pow(0.03,2));
-
-
-    systematics10[i_OTHER]["LUMI"]=1.04;
-    if (special_syst_mode!=2) 
-      systematics10[i_OTHER]["ISRPDF"]=1+sqrt(pow(0.08,2)+pow(0.05,2)+
-					      pow(0.08,2));
-    systematics10[i_OTHER]["UNCOTHER"]=1.22;
-  }
-
-  // copy 2010 -> 2011
-  systematics11[i_SIGNAL]=systematics10[i_SIGNAL];
-  systematics11[i_TT]=systematics10[i_TT];
-  systematics11[i_ZJ]=systematics10[i_ZJ];
-  systematics11[i_OTHER]=systematics10[i_OTHER];
-
-  systematics11[i_SIGNAL]["LUMI"]=1.06; 
-  systematics11[i_OTHER]["LUMI"]=1.06; 
-  
-  if (special_syst_mode!=1) {
-  
-    systematics11[i_TT]["TTONLY"]=1+sqrt(pow(0.16,2)+pow(0.05,2));
-    systematics11[i_ZJ]["ZJONLY"]=1+sqrt(pow(0.06,2)+pow(0.03,2));
-  }
-
-  // individual systematics
-
-  systematics10[i_SIGNAL]["RECOCAL10"]=1+sqrt(pow(0.08,2)+pow(0.02,2)+
-					       pow(0.005,2)+pow(0.02,2)+
-					       pow(0.02,2));
-  if (special_syst_mode!=1) {
-    systematics10[i_TT]["RECOCAL10"]=1+sqrt(pow(0.11,2)+pow(0.05,2)+
-					    pow(0.005,2)+pow(0.02,2)+
-					    pow(0.01,2));
-    systematics10[i_ZJ]["RECOCAL10"]=1+sqrt(pow(0.04,2)+pow(0.02,2)+
-					    pow(0.005,2)+pow(0.02,2)+
-					    pow(0.005,2));
-    systematics10[i_OTHER]["RECOCAL10"]=1+sqrt(pow(0.11,2)+pow(0.04,2)+
-					       pow(0.005,2)+pow(0.02,2)+
-					       pow(0.005,2));
-
-  }
-
-  systematics11[i_SIGNAL]["RECOCAL11"]=1+sqrt(pow(0.10,2)+pow(0.02,2)+
-					      pow(0.002,2)+pow(0.06,2)+
-					      pow(0.002,2));
-  if (special_syst_mode!=1) {
-    
-    systematics11[i_TT]["RECOCAL11"]=1+sqrt(pow(0.11,2)+pow(0.05,2)+
-					    pow(0.002,2)+pow(0.008,2)+
-					   pow(0.005,2));
-    systematics11[i_ZJ]["RECOCAL11"]=1+sqrt(pow(0.03,2)+pow(0.03,2)+
-					    pow(0.002,2)+pow(0.003,2)+
-					    pow(0.005,2));
-    systematics11[i_OTHER]["RECOCAL11"]=1+sqrt(pow(0.10,2)+pow(0.04,2)+
-					       pow(0.002,2)+pow(0.004,2)+
-					       pow(0.002,2));
-  }
-
+static std::string to_upper(const std::string& item) {
+  std::string retval;
+  for (std::string::const_iterator i=item.begin(); i!=item.end(); i++) 
+    retval.push_back(toupper(*i));
+  return retval;
 }
 
-const char* getSyst(int iChan, int iyear, const std::string& sname) {
-  static char ubuff[10];
+SystematicsDB::SystematicsDB() : m_mode(0) {
+}
 
-  std::map<std::string,double>::const_iterator i;
+static std::string makeKey(const std::string& process, const std::string& systName) {
+  return to_upper(process+"-"+systName);
+}
 
-  if (iyear==2010) {
-    i=systematics10[iChan].find(sname);
-    if (i==systematics10[iChan].end()) return "   - ";
-  } else {
-    i=systematics11[iChan].find(sname);
-    if (i==systematics11[iChan].end()) return "   - ";
+void SystematicsDB::load(const std::string& systdb) {
+  FILE* f=fopen(systdb.c_str(),"r");
+  if (f==0) return;
+
+  char buffer[1024];
+  float vals[10];
+  char proc[100],syst[100];
+  while (!feof(f)) {
+    buffer[0]=0;
+    fgets(buffer,1000,f);
+    if (strchr(buffer,'#')!=0) *(strchr(buffer,'#'))=0;
+    while (strchr(buffer,',')!=0) *(strchr(buffer,','))='\t';
+
+    int matched=sscanf(buffer,"%s %s %f %f %f %f %f %f %f %f %f %f",proc,syst,
+		       vals,vals+1,vals+2,vals+3,vals+4,
+		       vals+5,vals+6,vals+7,vals+8,vals+9);
+    if (matched==12) {
+      std::string key=makeKey(proc,syst);
+      DBitem item;
+      for (int i=0; i<10; i++) item.values[i]=vals[i];
+      m_db.insert(std::pair<std::string,DBitem>(key,item));
+    }
   }
-  sprintf(ubuff,"%5.2f",i->second);
-  return ubuff;
+  fclose(f);
+}
+
+void SystematicsDB::dump() const {
+  for (std::map<std::string,DBitem>::const_iterator i=m_db.begin(); i!=m_db.end(); i++) {
+    printf("'%s',%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",i->first.c_str(),
+	   i->second.values[0],i->second.values[1],
+	   i->second.values[2],i->second.values[3],
+	   i->second.values[4],i->second.values[5],
+	   i->second.values[6],i->second.values[7],
+	   i->second.values[8],i->second.values[9]);
+  }
+}
+
+double SystematicsDB::getSystematic(const std::string& systName, const std::string& process, int imassbin) const { 
+  std::string key=makeKey(process,systName);
+
+  // No PDF error for signal?
+  if ((m_mode&NO_PDF_FOR_SIGNAL)!=0 && key.find("PDF")!=std::string::npos && key.find("SIGNAL")!=std::string::npos) return 0;
+
+  std::map<std::string,DBitem>::const_iterator i=m_db.find(key);
+  if (i!=m_db.end() && imassbin>=0 && imassbin<10) return (i->second.values[imassbin]<1)?(i->second.values[imassbin]+1):(i->second.values[imassbin]);
+  else return 0;
+}
+std::vector<std::string> SystematicsDB::getSystematicsList() const {
+  std::vector<std::string> retval;
+
+  retval.push_back("PDF");
+  retval.push_back("SHAPE");
+
+  return retval;
 }

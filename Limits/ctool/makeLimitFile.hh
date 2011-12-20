@@ -6,31 +6,35 @@ static const int i_TT=1;
 static const int i_ZJ=2;
 static const int i_OTHER=3;
 
-#include "TFile.h"
+class TFile;
+class SystematicsDB;
+
 #include <vector>
 #include <string>
 
 struct PerBinInfo {
   double lumi;
   double signal;
+  double bkgd;
   int data;
+  int sourceBin;
   double lowEdge, highEdge;
   int year;
   std::string binName;
 };
 
+struct MassPoint {
+  int mwr;
+  int mnr;
+};
 
-void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileName);
+void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& pt, const char* limitFileName, const SystematicsDB& syst);
 
-std::vector<PerBinInfo> makeLimitContent2010(int mwr, TFile* dataf, TFile* signalf);
+std::vector<double> extractBins(TFile* f, const std::string& histName);
 
-void makeLimitFile2010(int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
+std::vector<PerBinInfo> makeLimitContent(double lumi, double xsec, const MassPoint& pt, TFile* dataf, TFile* signalf);
 
-std::vector<PerBinInfo> makeLimitContent2011(double lumi, double xsec, int mwr, TFile* dataf, TFile* signalf);
-
-void makeLimitFile2011(double lumi, double xsec, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName);
-
-void makeLimitFileTwoYear(double lumi11, int mwr, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName);
+void makeLimitFile(double lumi, double xsec, const MassPoint& pt, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst);
 
 
 #endif // MAKE_LIMIT_FILE 1
