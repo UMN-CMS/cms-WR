@@ -64,6 +64,11 @@ namespace hnu {
 
     int  jetID             ( const pat::Jet& j );
 
+    void initPDFSet(int i, std::string name) ; 
+    
+    double getPDFWeight(float Q, int id1, float x1, int id2, float x2,
+                        bool doPDFreweight, int pdfReweightBaseId, int pdfReweightTargetId) ; 
+  
     /* bool passesTrigger     (const double mu1pt, const double mu2pt, */
     /* 			    const bool mu1trig, const bool mu2trig, const uint32_t run) ;  */
 

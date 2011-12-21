@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Alexander Gude
 //         Created:  Thu May 12 11:15:22 CDT 2011
-// $Id: HeavyNuGenLevel.cc,v 1.5 2011/11/17 03:33:19 mansj Exp $
+// $Id: HeavyNuGenLevel.cc,v 1.6 2011/11/17 16:24:42 pastika Exp $
 //
 //
 
@@ -43,7 +43,7 @@ Implementation:
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/Math/interface/deltaR.h"
-#include "LHAPDF/LHAPDF.h"
+// #include "LHAPDF/LHAPDF.h"
 
 
 #include "Math/VectorUtil.h"
@@ -65,8 +65,8 @@ private:
     virtual void analyze(const edm::Event&, const edm::EventSetup&);
     virtual void endJob();
 
-  double getWeight(float Q, int id1, float x1, int id2, float x2,
-		   const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2);
+//   double getWeight(float Q, int id1, float x1, int id2, float x2,
+// 		   const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2);
 
 
     struct CutStruct
@@ -334,7 +334,12 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
       x1=geip->pdf()->x.first;
       x2=geip->pdf()->x.second;
     }
-    evt_weight=getWeight(Q,id1,x1,id2,x2,l1,l2);
+    if ( pdfReweightAddZmass_) {
+        reco::Particle::LorentzVector ll = l1 + l2;
+        Q=sqrt(Q*Q+ll.M2());
+    }
+    evt_weight=hnu::getPDFWeight(Q,id1,x1,id2,x2,doPDFreweight_,
+                                 pdfReweightBaseId,pdfReweightTargetId);
     evt_weight *= geneventinfo->weight();
 
 
@@ -445,8 +450,8 @@ void
 HeavyNuGenLevel::beginJob()
 {
   if (doPDFreweight_) {
-    LHAPDF::initPDFSet(1,pdfReweightBaseName);
-    LHAPDF::initPDFSet(2,pdfReweightTargetName);
+    hnu::initPDFSet(1,pdfReweightBaseName);
+    hnu::initPDFSet(2,pdfReweightTargetName);
   }
 }
 
@@ -458,32 +463,32 @@ HeavyNuGenLevel::endJob()
 }
 
 
-double HeavyNuGenLevel::getWeight(float Q, int id1, float x1, int id2, float x2,
-				  const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2) {
+// double HeavyNuGenLevel::getWeight(float Q, int id1, float x1, int id2, float x2,
+// 				  const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2) {
 
-  if (!doPDFreweight_) return 1.0;
+//   if (!doPDFreweight_) return 1.0;
 
-  if (pdfReweightAddZmass_) {
-    reco::Particle::LorentzVector ll = l1 + l2;
+//   if (pdfReweightAddZmass_) {
+//     reco::Particle::LorentzVector ll = l1 + l2;
 
-    Q=sqrt(Q*Q+ll.M2());
-  }
+//     Q=sqrt(Q*Q+ll.M2());
+//   }
 
-  LHAPDF::usePDFMember(1,pdfReweightBaseId);
-  double pdf1 = LHAPDF::xfx(1, x1, Q, id1)/x1;
-  double pdf2 = LHAPDF::xfx(1, x2, Q, id2)/x2;
+//   LHAPDF::usePDFMember(1,pdfReweightBaseId);
+//   double pdf1 = LHAPDF::xfx(1, x1, Q, id1)/x1;
+//   double pdf2 = LHAPDF::xfx(1, x2, Q, id2)/x2;
   
-  LHAPDF::usePDFMember(2,pdfReweightTargetId);
-  double newpdf1 = LHAPDF::xfx(2, x1, Q, id1)/x1;
-  double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
+//   LHAPDF::usePDFMember(2,pdfReweightTargetId);
+//   double newpdf1 = LHAPDF::xfx(2, x1, Q, id1)/x1;
+//   double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
   
-  double w=(newpdf1/pdf1*newpdf2/pdf2);
+//   double w=(newpdf1/pdf1*newpdf2/pdf2);
 
-  //  printf("My weight is %f\n",w);
+//   //  printf("My weight is %f\n",w);
 
-  return w;
+//   return w;
   
-}
+// }
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HeavyNuGenLevel);

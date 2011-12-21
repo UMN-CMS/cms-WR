@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.83 2011/12/12 17:06:42 mansj Exp $
+// $Id: HeavyNu.cc,v 1.84 2011/12/19 16:53:56 mansj Exp $
 //
 //
 
@@ -148,7 +148,7 @@ private:
                        const bool mu1trig, const bool mu2trig,
                        const uint32_t run);
 
-  double getPDFWeight(float Q, int id1, float x1, int id2, float x2);
+    // double getPDFWeight(float Q, int id1, float x1, int id2, float x2);
 
 
     inline bool inZmassWindow(double mMuMu)
@@ -1839,7 +1839,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  float x1=geip->pdf()->x.first;
 	  float x2=geip->pdf()->x.second;
 
-	  hnuEvent.eventWgt *= getPDFWeight(Q,id1,x1,id2,x2);	  
+	  hnuEvent.eventWgt *= hnu::getPDFWeight(Q,id1,x1,id2,x2,
+                                                 doPDFreweight_,
+                                                 pdfReweightBaseId,pdfReweightTargetId);	  
 	}
 	
 
@@ -2325,28 +2327,28 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return true;
 }
 
-#include "LHAPDF/LHAPDF.h"
+// #include "LHAPDF/LHAPDF.h"
 
-double HeavyNu::getPDFWeight(float Q, int id1, float x1, int id2, float x2) {
+// double HeavyNu::getPDFWeight(float Q, int id1, float x1, int id2, float x2) {
 
   
-  if (!doPDFreweight_) return 1.0;
+//   if (!doPDFreweight_) return 1.0;
   
-  LHAPDF::usePDFMember(1,pdfReweightBaseId);
-  double pdf1 = LHAPDF::xfx(1, x1, Q, id1)/x1;
-  double pdf2 = LHAPDF::xfx(1, x2, Q, id2)/x2;
+//   LHAPDF::usePDFMember(1,pdfReweightBaseId);
+//   double pdf1 = LHAPDF::xfx(1, x1, Q, id1)/x1;
+//   double pdf2 = LHAPDF::xfx(1, x2, Q, id2)/x2;
   
-  LHAPDF::usePDFMember(2,pdfReweightTargetId);
-  double newpdf1 = LHAPDF::xfx(2, x1, Q, id1)/x1;
-  double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
+//   LHAPDF::usePDFMember(2,pdfReweightTargetId);
+//   double newpdf1 = LHAPDF::xfx(2, x1, Q, id1)/x1;
+//   double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
   
-  double w=(newpdf1/pdf1*newpdf2/pdf2);
+//   double w=(newpdf1/pdf1*newpdf2/pdf2);
   
-  //  printf("My weight is %f\n",w);
+//   //  printf("My weight is %f\n",w);
   
-  return w;
+//   return w;
   
-}
+// }
 
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -2358,8 +2360,8 @@ void HeavyNu::beginJob()
     evtCounter = 0;
 
     if (doPDFreweight_) {
-      LHAPDF::initPDFSet(1,pdfReweightBaseName);
-      LHAPDF::initPDFSet(2,pdfReweightTargetName);
+      hnu::initPDFSet(1,pdfReweightBaseName);
+      hnu::initPDFSet(2,pdfReweightTargetName);
     }
 
 }
