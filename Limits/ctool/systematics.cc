@@ -104,8 +104,6 @@ void SystematicsDB::defineCommonSyst(const std::string& systName, const std::vec
 }
 
 void SystematicsDB::standardSystematics() {
-  setSimpleSystematic("PDF");
-
   std::vector<std::string> systContents;
   systContents.push_back("SHAPE");
   systContents.push_back("NORM");
@@ -121,4 +119,10 @@ void SystematicsDB::standardSystematics() {
   systContents.push_back("PU");
   systContents.push_back("TRIG");
   defineCommonSyst("RECOID",systContents);
+
+  systContents.clear();
+  systContents.push_back("PDF");
+  systContents.push_back("REN");
+  systContents.push_back("FACT");
+  defineCommonSyst("PDFSCALE",systContents);
 }
