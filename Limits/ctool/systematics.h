@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <set>
 
 #ifndef systematics_h_included
 #define systematics_h_included 1
@@ -14,7 +15,7 @@ class SystematicsDB {
   std::vector<std::string> getSystematicsList() const;
   void setSimpleSystematic(const std::string& systName);
   void defineSingleChannelSyst(const std::string& systName, const std::string& process, const std::vector<std::string>& contents);
-  //  void defineAllChannelSyst(const std::string& systName, const std::string& process, const std::vector<std::string>& contents);
+  void defineCommonSyst(const std::string& systName, const std::vector<std::string>& contents);
 
   void load(const std::string& systdb);
   void standardSystematics();
@@ -22,6 +23,7 @@ class SystematicsDB {
 
  private:
   std::vector<std::string> m_finalsystematics;
+  std::set<std::string> m_processNames;
   struct DBitem {
     double values[10];
   };

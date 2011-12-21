@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include "systematics.h"
+#include <algorithm>
 
 static std::string to_upper(const std::string& item) {
   std::string retval;
@@ -42,6 +43,7 @@ void SystematicsDB::load(const std::string& systdb) {
       DBitem item;
       for (int i=0; i<10; i++) item.values[i]=vals[i];
       m_db.insert(std::pair<std::string,DBitem>(key,item));
+      m_processNames.insert(to_upper(proc));
     }
   }
   fclose(f);
@@ -69,6 +71,7 @@ double SystematicsDB::getSystematic(const std::string& systName, const std::stri
     return (i->second.values[imassbin]<1)?(i->second.values[imassbin]+1):(i->second.values[imassbin]);
   else return 0.0;
 }
+
 std::vector<std::string> SystematicsDB::getSystematicsList() const {
   return m_finalsystematics;
 }
@@ -82,21 +85,40 @@ void SystematicsDB::defineSingleChannelSyst(const std::string& systName, const s
   for (int i=0; i<10; i++) dbi.values[i]=0;
   // iterate over inputs and sum in quadrature
   for (int i=0; i<10; i++) {
-    for (std::vector<std::string>::const_iterator sourcesyst=contents.begin(); sourcesyst!=contents.end(); sourcesyst++) 
-      dbi.values[i]+=pow(getSystematic(*sourcesyst,process,i),2);
+    for (std::vector<std::string>::const_iterator sourcesyst=contents.begin(); sourcesyst!=contents.end(); sourcesyst++) {
+      double asyst=getSystematic(*sourcesyst,process,i);
+      if (asyst<1) continue; // no contribution
+      asyst-=1;
+      dbi.values[i]+=pow(asyst,2);
+    }
     dbi.values[i]=sqrt(dbi.values[i]);
   }
   
   m_db.insert(std::pair<std::string,DBitem>(key,dbi));
-  m_finalsystematics.push_back(systName);
+  if (std::find(m_finalsystematics.begin(),m_finalsystematics.end(),systName)==m_finalsystematics.end())
+    m_finalsystematics.push_back(systName);
 }
+void SystematicsDB::defineCommonSyst(const std::string& systName, const std::vector<std::string>& contents) {
+  for (std::set<std::string>::const_iterator i=m_processNames.begin(); i!=m_processNames.end(); i++) 
+    defineSingleChannelSyst(systName,*i,contents);
+}
+
 void SystematicsDB::standardSystematics() {
   setSimpleSystematic("PDF");
 
   std::vector<std::string> systContents;
   systContents.push_back("SHAPE");
+  systContents.push_back("NORM");
 
   defineSingleChannelSyst("TTONLY","TTJETS",systContents);
   defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
   defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
+
+  systContents.clear();
+  systContents.push_back("JES");
+  systContents.push_back("MES");
+  systContents.push_back("MUONID");
+  systContents.push_back("PU");
+  systContents.push_back("TRIG");
+  defineCommonSyst("RECOID",systContents);
 }

@@ -113,12 +113,12 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& mp, co
   for (int ibin=0; ibin<nbins; ibin++)  
     for (int j=0; j<=jmax; j++) fprintf(limitFile," %2d   ",j);
   fprintf(limitFile,"\n");
-  fprintf(limitFile,"rate           ");
+  fprintf(limitFile,"rate            ");
   for (int ibin=0; ibin<nbins; ibin++) {
     fprintf(limitFile,"%5.2f ", pbi[ibin].signal);
     for (int j=1; j<=jmax; j++) 
-      if (bkgdh[j-1][ibin]<0.001)  fprintf(limitFile,"%5.3f ",0.001); //,bkgdh[j-1]->GetBinContent(ibin));
-      else fprintf(limitFile,"%5.3f ",bkgdh[j-1][ibin]);
+      if (bkgdh[j-1][ibin]<0.01)  fprintf(limitFile,"%5.2f ",0.01); //,bkgdh[j-1]->GetBinContent(ibin));
+      else fprintf(limitFile,"%5.2f ",bkgdh[j-1][ibin]);
   }
   fprintf(limitFile,"\n");
 
@@ -126,7 +126,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& mp, co
   // systematics
   for (std::vector<std::string>::const_iterator i=systematicsList.begin();
        i!=systematicsList.end(); i++) {
-    fprintf(limitFile,"%-10s lnN ",i->c_str());
+    fprintf(limitFile,"%-10s lnN  ",i->c_str());
     for (int ibin=0; ibin<nbins; ibin++) {
       int srcBin=pbi[ibin].sourceBin;
       for (int j=0; j<=jmax; j++) {
