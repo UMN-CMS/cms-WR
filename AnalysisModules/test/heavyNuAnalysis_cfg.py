@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 import os
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Signal MC flags ---#
@@ -21,29 +21,25 @@ isRun2011VeryHiLumi = False
 
 #--- Flags for data taking era ---#
 isRun2011A = True
-muIdYear   = 20110
-pileupEra  = 20111
+dataEra    = 20111 
 doTriggerStudy = False
 #--- Placeholder for 2011B variables
 if not isRun2011A:
-    muIdYear  = 20111
-    pileupEra = 20112
-
-trigYear = muIdYear
+    dataEra = 20112
 
 #--- Flags for nominal studies ---#
 runAnalysis = True
-systematics = True
+systematics = False
 tagandprobe = True
 
 #--- Flags for Top studies ---#
-topStudy = True
+topStudy      = True
 studyTopScale = True
 
 #--- Flags for QCD studies ---#
-qcdStudy  = False
+qcdStudy  = True
 doDijet   = False
-doQuadJet = False
+doQuadJet = True
 doClosure = False
 
 #--- Should always be True ---#
@@ -62,7 +58,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S4_START42_V11-v2/0000/A0AE4E6B-D4A9-E011-9871-001A9281171E.root')
+    fileNames=cms.untracked.vstring('input.root')
 )
 
 if isData:
@@ -298,7 +294,7 @@ process.hNu.studyRatePerRun  = cms.bool(isData)
 process.hNu.maxVertexZsepCM = cms.double(-1)
 process.hNu.maxJetVZsepCM   = cms.double(-1)
 #--- Pileup corrections ---#
-process.hNu.pileupEra = cms.int32(pileupEra)
+process.hNu.pileupEra = cms.int32(dataEra)
 
 #--- Muon ID corrections are taken from Dec 11, 2011 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
@@ -316,9 +312,9 @@ if isData:
 else:
     # turn on MC trigger simulation
     process.hNu.trigMatchPset.randomSeed = cms.int32(os.getpid())
-    process.hNu.trigMatchPset.trigEra    = cms.int32( trigYear )
+    process.hNu.trigMatchPset.trigEra    = cms.int32( dataEra )
     # Parameters for muon ID corrections to MC
-    process.hNu.muIDPset.eraForId        = cms.int32( muIdYear )
+    process.hNu.muIDPset.eraForId        = cms.int32( dataEra )
 
 if isPFJets:
     process.hNu.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
@@ -327,17 +323,17 @@ if Training:
     process.hNu.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
 
 #--- Necessary to account for Z background in tag and probe studies ---#
-process.hNuMuZmass60to120 = process.hNu.clone() 
-process.hNuMuZmass60to120.ZmassWinMinGeV = cms.double(60.)
-process.hNuMuZmass60to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMuZmass60to120 = process.hNu.clone() 
+#process.hNuMuZmass60to120.ZmassWinMinGeV = cms.double(60.)
+#process.hNuMuZmass60to120.ZmassWinMaxGeV = cms.double(120.)
 
-process.hNuMuZmass65to75 = process.hNu.clone() 
-process.hNuMuZmass65to75.ZmassWinMinGeV = cms.double(65.)
-process.hNuMuZmass65to75.ZmassWinMaxGeV = cms.double(75.)
+#process.hNuMuZmass65to75 = process.hNu.clone() 
+#process.hNuMuZmass65to75.ZmassWinMinGeV = cms.double(65.)
+#process.hNuMuZmass65to75.ZmassWinMaxGeV = cms.double(75.)
 
-process.hNuMuZmass105to120 = process.hNu.clone() 
-process.hNuMuZmass105to120.ZmassWinMinGeV = cms.double(105.)
-process.hNuMuZmass105to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMuZmass105to120 = process.hNu.clone() 
+#process.hNuMuZmass105to120.ZmassWinMinGeV = cms.double(105.)
+#process.hNuMuZmass105to120.ZmassWinMaxGeV = cms.double(120.)
 
 #--- Necessary to sort out trigger complications ---#
 process.hNuMu24       = process.hNu.clone() 
@@ -354,35 +350,35 @@ process.hNuMu40eta2p1.trigMatchPset.triggerPt    = cms.double( 40. )
 process.hNuMu40eta2p1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5' ) 
 process.hNuMu40eta2p1.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
 
-process.hNuMu24Zmass60to120 = process.hNuMu24.clone() 
-process.hNuMu24Zmass60to120.ZmassWinMinGeV = cms.double(60.)
-process.hNuMu24Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
-process.hNuMu24Zmass65to75 = process.hNuMu24.clone() 
-process.hNuMu24Zmass65to75.ZmassWinMinGeV = cms.double(65.)
-process.hNuMu24Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
-process.hNuMu24Zmass105to120 = process.hNuMu24.clone() 
-process.hNuMu24Zmass105to120.ZmassWinMinGeV = cms.double(105.)
-process.hNuMu24Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMu24Zmass60to120 = process.hNuMu24.clone() 
+#process.hNuMu24Zmass60to120.ZmassWinMinGeV = cms.double(60.)
+#process.hNuMu24Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMu24Zmass65to75 = process.hNuMu24.clone() 
+#process.hNuMu24Zmass65to75.ZmassWinMinGeV = cms.double(65.)
+#process.hNuMu24Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
+#process.hNuMu24Zmass105to120 = process.hNuMu24.clone() 
+#process.hNuMu24Zmass105to120.ZmassWinMinGeV = cms.double(105.)
+#process.hNuMu24Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
 
-process.hNuMu40Zmass60to120 = process.hNuMu40.clone() 
-process.hNuMu40Zmass60to120.ZmassWinMinGeV = cms.double(60.)
-process.hNuMu40Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
-process.hNuMu40Zmass65to75 = process.hNuMu40.clone() 
-process.hNuMu40Zmass65to75.ZmassWinMinGeV = cms.double(65.)
-process.hNuMu40Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
-process.hNuMu40Zmass105to120 = process.hNuMu40.clone() 
-process.hNuMu40Zmass105to120.ZmassWinMinGeV = cms.double(105.)
-process.hNuMu40Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMu40Zmass60to120 = process.hNuMu40.clone() 
+#process.hNuMu40Zmass60to120.ZmassWinMinGeV = cms.double(60.)
+#process.hNuMu40Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMu40Zmass65to75 = process.hNuMu40.clone() 
+#process.hNuMu40Zmass65to75.ZmassWinMinGeV = cms.double(65.)
+#process.hNuMu40Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
+#process.hNuMu40Zmass105to120 = process.hNuMu40.clone() 
+#process.hNuMu40Zmass105to120.ZmassWinMinGeV = cms.double(105.)
+#process.hNuMu40Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
 
-process.hNuMu40eta2p1Zmass60to120 = process.hNuMu40eta2p1.clone() 
-process.hNuMu40eta2p1Zmass60to120.ZmassWinMinGeV = cms.double(60.)
-process.hNuMu40eta2p1Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
-process.hNuMu40eta2p1Zmass65to75 = process.hNuMu40eta2p1.clone() 
-process.hNuMu40eta2p1Zmass65to75.ZmassWinMinGeV = cms.double(65.)
-process.hNuMu40eta2p1Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
-process.hNuMu40eta2p1Zmass105to120 = process.hNuMu40eta2p1.clone() 
-process.hNuMu40eta2p1Zmass105to120.ZmassWinMinGeV = cms.double(105.)
-process.hNuMu40eta2p1Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMu40eta2p1Zmass60to120 = process.hNuMu40eta2p1.clone() 
+#process.hNuMu40eta2p1Zmass60to120.ZmassWinMinGeV = cms.double(60.)
+#process.hNuMu40eta2p1Zmass60to120.ZmassWinMaxGeV = cms.double(120.)
+#process.hNuMu40eta2p1Zmass65to75 = process.hNuMu40eta2p1.clone() 
+#process.hNuMu40eta2p1Zmass65to75.ZmassWinMinGeV = cms.double(65.)
+#process.hNuMu40eta2p1Zmass65to75.ZmassWinMaxGeV = cms.double(75.)
+#process.hNuMu40eta2p1Zmass105to120 = process.hNuMu40eta2p1.clone() 
+#process.hNuMu40eta2p1Zmass105to120.ZmassWinMinGeV = cms.double(105.)
+#process.hNuMu40eta2p1Zmass105to120.ZmassWinMaxGeV = cms.double(120.)
 
 process.hNuMu24jesHi = process.hNuMu24.clone( applyJECUsign = cms.int32(1) )
 process.hNuMu24jesLo = process.hNuMu24.clone( applyJECUsign = cms.int32(-1) )
@@ -425,12 +421,13 @@ process.hNuQCD.doQuadJetTest   = cms.bool( doQuadJet )
 #--- Results from 2/fb 2011 data --> Run 2011A only ---#
 process.hNuQCD.reweightPtLow  = cms.vdouble( 30,40,50,60,80,100,200 )
 process.hNuQCD.reweightPtHigh = cms.vdouble( 40,50,60,80,100,200,1000 )
-process.hNuQCD.reweightTight  = cms.vdouble( 0.0629483,0.0654695,0.0708795,0.0787387,0.0953354,0.133404,0.433735 )
+process.hNuQCD.reweight2011A  = cms.vdouble( 0.059932,0.0630225,0.0682759,0.0770292,0.0943841,0.113484,0.170732 )
+process.hNuQCD.reweight2011B  = cms.vdouble( 0.0681898,0.0683649,0.0738487,0.0793934,0.0959666,0.11178,0.196970 )
 #--- Values below zero disable the vertex requirement ---#
 process.hNuQCD.dimuonMaxVertexZsepCM = cms.double( -1.0 )
 process.hNuQCD.maxJetVZsepCM         = cms.double( -1.0 )
-#--- Pileup corrections ---#
-process.hNuQCD.pileupEra = cms.int32(pileupEra)
+#--- Pileup corrections: needed even for data! ---#
+process.hNuQCD.pileupEra = cms.int32(dataEra)
 
 if isData:
     process.hNuQCD.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
@@ -445,9 +442,9 @@ if isData:
 else:
     # turn on MC trigger simulation
     process.hNuQCD.trigMatchPset.randomSeed = cms.int32( os.getpid() )
-    process.hNuQCD.trigMatchPset.eraForId   = cms.int32( trigYear )
+    process.hNuQCD.trigMatchPset.eraForId   = cms.int32( dataEra )
     # Parameters for muon ID corrections
-    process.hNuQCD.muIDPset.eraForId        = cms.int32( muIdYear )
+    process.hNuQCD.muIDPset.eraForId        = cms.int32( dataEra )
 
 if isPFJets:
     process.hNuQCD.jetTag  = cms.InputTag( 'selectedPatJetsPFlow' )
@@ -471,9 +468,9 @@ process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
 process.hNuTop.applyEleEScale        = cms.bool(isMC) 
 process.hNuTop.applyEleIDweight      = cms.bool(isMC) 
-process.hNuTop.pileupEra             = cms.int32(pileupEra)
-process.hNuTop.trigMatchPset.trigEra = cms.int32(trigYear)
-process.hNuTop.muIDPset.eraForId     = cms.int32(muIdYear)
+process.hNuTop.pileupEra             = cms.int32(dataEra)
+process.hNuTop.trigMatchPset.trigEra = cms.int32(dataEra)
+process.hNuTop.muIDPset.eraForId     = cms.int32(dataEra)
 process.hNuTop.EBidWgt = cms.double( 1.000 ) 
 process.hNuTop.EEidWgt = cms.double( 1.000 ) 
 #--- Values below zero disable the vertex requirement ---#

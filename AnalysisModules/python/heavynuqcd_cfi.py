@@ -7,16 +7,16 @@ hNuQCD = cms.EDFilter(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
         triggerPt    = cms.double( 40. ),
-        trigEra      = cms.int32( 20110 ),
+        trigEra      = cms.int32( 20111 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
         randomSeed   = cms.int32( 0 )  # for MC
     ),
     muIDPset = cms.PSet(
-        eraForId     = cms.int32( 2011 )
+        eraForId     = cms.int32( 20111 )
     ),
-    pileupEra    = cms.int32(20119),
+    pileupEra    = cms.int32(20111),
     isPFJets     = cms.bool(True),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
     jetTag       = cms.InputTag( 'selectedPatJets' ),

@@ -9,11 +9,11 @@
 HeavyNuID::HeavyNuID(const edm::ParameterSet & iConfig):
   idEra_ ( iConfig.getParameter< int > ( "eraForId" ) )
 {
-    if ( idEra_ == 20110 )      std::cout << "Applying run 2011A muon ID corrections: " << std::endl ; 
-    else if ( idEra_ == 20111 ) std::cout << "Applying run 2011B muon ID corrections: " << std::endl ; 
+    if ( idEra_ == 20111 )      std::cout << "Applying run 2011A muon ID corrections: " << std::endl ; 
+    else if ( idEra_ == 20112 ) std::cout << "Applying run 2011B muon ID corrections: " << std::endl ; 
     else {
         std::cout << "WARNING: Unknown correction.  Applying 2011A" << std::endl ;
-        idEra_ = 20110 ;
+        idEra_ = 20111 ;
     }
 }                                      // HeavyNuID::HeavyNuID
 
@@ -38,8 +38,8 @@ HeavyNuID::weightForMC(double pt,int signOfError2apply)
   const double *upedge = ( (idEra_ == 20110) ? upedge2011A : upedge2011B );
 
   if ( signOfError2apply ) {
-    if ( idEra_ == 20110 ) scale = (signOfError2apply > 0) ? scalehi2011A : scalelo2011A ;
-    if ( idEra_ == 20111 ) scale = (signOfError2apply > 0) ? scalehi2011B : scalelo2011B ;
+    if ( idEra_ == 20111 ) scale = (signOfError2apply > 0) ? scalehi2011A : scalelo2011A ;
+    if ( idEra_ == 20112 ) scale = (signOfError2apply > 0) ? scalehi2011B : scalelo2011B ;
   }
 
   int i;

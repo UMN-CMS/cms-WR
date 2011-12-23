@@ -7,7 +7,7 @@ hNuTop = cms.EDFilter(
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
-        trigEra      = cms.int32( 20110 ),
+        trigEra      = cms.int32( 20111 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
@@ -15,7 +15,7 @@ hNuTop = cms.EDFilter(
         randomSeed   = cms.int32( 0 )  # for MC
     ),
     muIDPset = cms.PSet(
-        eraForId     = cms.int32( 2011 )
+        eraForId     = cms.int32( 20111 )
     ),
     DoLog          = cms.bool( False ),
     muonTag        = cms.InputTag( 'selectedPatMuons' ),
@@ -38,7 +38,7 @@ hNuTop = cms.EDFilter(
     maxVertexZsepCM       = cms.double(0.03),
     maxVertexJetVZsepCM   = cms.double(0.1),
 
-    pileupEra         = cms.int32(20110),
+    pileupEra         = cms.int32(20111),
 
     applyEleEScale    = cms.bool(False),
     EBscalefactor     = cms.double(1.0),

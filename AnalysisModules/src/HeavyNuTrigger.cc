@@ -212,9 +212,10 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
   const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
-  const double *effs = ( (trigEra_ == 20110) ? effsnom2011a : effsnom2011b );
+  // 2011 A is the default
+  const double *effs = ( (trigEra_ == 20111) ? effsnom2011a : effsnom2011b );
   if ( signOfError2apply ) {
-    if ( trigEra_ == 20110 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
+    if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
     else                     effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
   }
 

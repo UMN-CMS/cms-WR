@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.15 2011/11/23 12:34:06 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.16 2011/12/11 14:06:08 pastika Exp $
 //
 //
 
@@ -1033,7 +1033,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
              eeIDwgt_ != 1.0 )            std::cout << "Events will be weighted to account for data/MC reconstruction and ID differences" << std::endl ;
         else                              std::cout << "WARNING: You are not applying EB/EE weighting to MC.  Are you sure?" << std::endl ; 
 
-        int pileupYear = pileupEra_ / 10 ;
+        int pileupYear = pileupEra_ ;
         int idYear     = muid_->idEra() ;
         
         bool allErasMatch = ( pileupYear == idYear ) ;
