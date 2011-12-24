@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.16 2011/12/11 14:06:08 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.17 2011/12/23 15:17:15 bdahmes Exp $
 //
 //
 
@@ -69,6 +69,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 //////////////////////////////////////////////////////////////////
 // generic maximum/minimum
@@ -995,14 +996,20 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel(metTag_, pMET) ;
 
   edm::Handle<reco::MuonCollection> tevMuons;
-  iEvent.getByLabel("refitMuons", tevMuons); 
+  iEvent.getByLabel("refitMuons", tevMuons);
+
+  //Shirpa reweighting info
+  edm::Handle<GenEventInfoProduct> geneventinfo;
+  iEvent.getByLabel("generator", geneventinfo);
 
   if (hnuEvent.isMC) { 
     edm::Handle<std::vector<PileupSummaryInfo> > pPU;
     iEvent.getByLabel("addPileupInfo", pPU); 
     std::pair<float,double> pileup = hnu::pileupReweighting(pPU,MCweightByVertex_) ; 
     hnuEvent.n_pue     = int(pileup.first) ; 
-    hnuEvent.eventWgt *= pileup.second ; 
+    hnuEvent.eventWgt *= pileup.second ;
+    //Shirpa reweighting
+    hnuEvent.eventWgt *= geneventinfo->weight();
   }
   edm::Handle<reco::VertexCollection> pvHandle;
   iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
