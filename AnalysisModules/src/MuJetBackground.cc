@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.20 2011/12/11 14:06:08 pastika Exp $
+// $Id: MuJetBackground.cc,v 1.21 2011/12/23 15:17:15 bdahmes Exp $
 //
 //
 
@@ -76,6 +76,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 //////////////////////////////////////////////////////////////////
 // generic maximum/minimum
@@ -118,7 +119,7 @@ private:
   virtual void endJob            ();
 
   void initializeHNE(HeavyNuEvent& hne, edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
-		     edm::Handle<reco::VertexCollection>& pvHandle, bool isMC, bool isPF) ; 
+		     edm::Handle<reco::VertexCollection>& pvHandle, bool isMC, bool isPF, double weight) ;
 
   virtual bool selectJets        ( std::vector< std::pair<pat::Jet,float> >& jets,
 				   HeavyNuEvent& hne, int minNjets=2 );
@@ -263,7 +264,7 @@ private:
 void MuJetBackground::initializeHNE(HeavyNuEvent& hne, 
 				    edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
 				    edm::Handle<reco::VertexCollection>& pvHandle, 
-				    bool isMC, bool isPF) {  
+				    bool isMC, bool isPF, double weight) {
   hne.isMC   = isMC ; 
   hne.pfJets = isPF ; 
 
@@ -893,7 +894,13 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel("patMETs", patMetCollection) ; 
 
   edm::Handle<reco::PFMETCollection> pfMetCollection ; 
-  iEvent.getByLabel("pfMet", pfMetCollection) ; 
+  iEvent.getByLabel("pfMet", pfMetCollection) ;
+
+  //Shirpa reweighting info
+  double genweight = 1.0;
+  edm::Handle<GenEventInfoProduct> geneventinfo;
+  iEvent.getByLabel("generator", geneventinfo);
+  if(!iEvent.isRealData()) genweight = geneventinfo->weight();
 
   if ( ( theMETtype == 1 && !patMetCollection.isValid() ) ||
        ( theMETtype == 2 && !pfMetCollection.isValid() ) ) { 
@@ -944,7 +951,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   
   if ( calcSurvival_ ) { 
     HeavyNuEvent hnuDijet(HeavyNuEvent::QCD) ;  
-    initializeHNE(hnuDijet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ; 
+    initializeHNE(hnuDijet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_, genweight) ;
     hists.NoCuts.fill( muCands.at(0),jetCands.at(0).first,pMET->at(0),!iEvent.isRealData(),
                        cuts.muon_trackiso_limit ) ; 
 
@@ -992,7 +999,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       // if ( muCands.size() >= 2 && jetCands.size() >= 4 ) { 
       if ( dirtyMuons.size() >= 2 && jetCands.size() >= 2 ) {
           HeavyNuEvent hnuQuadjet(HeavyNuEvent::QCD) ;  
-          initializeHNE(hnuQuadjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ;
+          initializeHNE(hnuQuadjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_,genweight) ;
           selectMuonPairs( dirtyMuons,hnuQuadjet ) ; 
 //               hnuQuadjet.mu1 = dirtyMuons.at(0) ; 
 //               hnuQuadjet.mu2 = dirtyMuons.at(1) ;
@@ -1080,7 +1087,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if ( dirtyMuons.size() >= 2 ) { 
       if ( jetCands.size() >= 1 ) {
           HeavyNuEvent mmjet(HeavyNuEvent::QCD) ;
-          initializeHNE(mmjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ; 
+          initializeHNE(mmjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_,genweight) ;
           selectMuonPairs( dirtyMuons,mmjet ) ; 
 //           mmjet.mu1 = dirtyMuons.at(0) ; 
 //           mmjet.mu2 = dirtyMuons.at(1) ;
@@ -1146,7 +1153,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if ( dirtyMuons.size() >= 1 ) {
       if ( jetCands.size() >= 1 ) {
           HeavyNuEvent mMjet(HeavyNuEvent::QCD) ;
-          initializeHNE(mMjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ;
+          initializeHNE(mMjet,pPU,pvHandle,!iEvent.isRealData(),isPFJets_,genweight) ;
           mMjet.mu1 = dirtyMuons.at(0) ;
 	  std::cout << "mu1 has pT " << mMjet.mu1.pt() << std::endl ; 
 	  int dirtyMuonPosition = 1 ; 
@@ -1245,7 +1252,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	   && pMET->at(0).pt() < 20. ) { 
 
 	HeavyNuEvent hnuClosure3jet1muon(HeavyNuEvent::CLO) ;  
-	initializeHNE(hnuClosure3jet1muon,pPU,pvHandle,!iEvent.isRealData(),isPFJets_) ; 
+	initializeHNE(hnuClosure3jet1muon,pPU,pvHandle,!iEvent.isRealData(),isPFJets_,genweight);
       
 	selectMuonsInJets( muCands,jetCands,hnuClosure3jet1muon ) ; 
 	if ( hnuClosure3jet1muon.nMuons == 1 ) {  
@@ -1303,7 +1310,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	   && pMET->at(0).pt() < 20. ) { // MET cut to remove W+2 jets
 
 	HeavyNuEvent hnuClosure2jet1muon(HeavyNuEvent::CLO) ;
-	initializeHNE(hnuClosure2jet1muon,pPU,pvHandle,!iEvent.isRealData(),isPFJets_);
+	initializeHNE(hnuClosure2jet1muon,pPU,pvHandle,!iEvent.isRealData(),isPFJets_,genweight);
 
         for (unsigned int i=0; i<jetCands.size(); i++) {
           pat::Jet jet = jetCands.at(i).first ;
