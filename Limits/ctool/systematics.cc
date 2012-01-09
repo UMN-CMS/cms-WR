@@ -104,8 +104,9 @@ void SystematicsDB::defineCommonSyst(const std::string& systName, const std::vec
 }
 void SystematicsDB::defineSignalSyst(const std::string& systName, const std::vector<std::string>& contents) {
   for (std::set<std::string>::const_iterator i=m_processNames.begin(); i!=m_processNames.end(); i++) {
-    if (*i->find("SIGNAL")!=std::npos) 
+    if (i->find("SIGNAL")!=std::string::npos) 
       defineSingleChannelSyst(systName,*i,contents);
+  }
 }
 
 void SystematicsDB::standardSystematics() {
