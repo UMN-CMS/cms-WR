@@ -102,6 +102,11 @@ void SystematicsDB::defineCommonSyst(const std::string& systName, const std::vec
   for (std::set<std::string>::const_iterator i=m_processNames.begin(); i!=m_processNames.end(); i++) 
     defineSingleChannelSyst(systName,*i,contents);
 }
+void SystematicsDB::defineSignalSyst(const std::string& systName, const std::vector<std::string>& contents) {
+  for (std::set<std::string>::const_iterator i=m_processNames.begin(); i!=m_processNames.end(); i++) {
+    if (*i->find("SIGNAL")!=std::npos) 
+      defineSingleChannelSyst(systName,*i,contents);
+}
 
 void SystematicsDB::standardSystematics() {
   std::vector<std::string> systContents;
@@ -111,6 +116,10 @@ void SystematicsDB::standardSystematics() {
   defineSingleChannelSyst("TTONLY","TTJETS",systContents);
   defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
   defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
+
+  systContents.clear();
+  systContents.push_back("MCSTATS");
+  defineSignalSyst("SIGONLY",systContents);  
 
   systContents.clear();
   systContents.push_back("JES");
@@ -125,4 +134,7 @@ void SystematicsDB::standardSystematics() {
   systContents.push_back("REN");
   systContents.push_back("FACT");
   defineCommonSyst("PDFSCALE",systContents);
+
+  setSimpleSystematic("LUMI");
+  
 }

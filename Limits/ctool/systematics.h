@@ -16,6 +16,7 @@ class SystematicsDB {
   void setSimpleSystematic(const std::string& systName);
   void defineSingleChannelSyst(const std::string& systName, const std::string& process, const std::vector<std::string>& contents);
   void defineCommonSyst(const std::string& systName, const std::vector<std::string>& contents);
+  void defineSignalSyst(const std::string& systName, const std::vector<std::string>& contents);
 
   void load(const std::string& systdb);
   void standardSystematics();
