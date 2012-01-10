@@ -458,7 +458,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
         TLatex* mark = new TLatex(0.69, 0.95, "CMS Preliminary");
         // TLatex* mark2 = new TLatex(0.6,0.65, "#int Ldt = 227 pb^{-1} at 7 TeV") ;
-        TLatex* mark2 = new TLatex(0.69, 0.68, "240 pb^{-1} at 7 TeV");
+        TLatex* mark2 = new TLatex(0.69, 0.68, "4.7 fb^{-1} at 7 TeV");
         mark->SetNDC(kTRUE);
         mark->SetTextSize(0.03);
         mark->SetTextFont(42);
@@ -493,25 +493,28 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
         mark->Draw();
         mark2->Draw();
 
-        char cn[128], png[128];
+        char cn[128], png[128], eps[128];
         if(doMuon)
         {
             sprintf(cn, "Mu_Limit_1D_mWR_%d.pdf", iwr);
             sprintf(png, "Mu_Limit_1D_mWR_%d.png", iwr);
+            sprintf(eps, "Mu_Limit_1D_mWR_%d.eps", iwr);
         }
         else
         {
             sprintf(cn, "Elec_Limit_1D_mWR_%d.pdf", iwr);
             sprintf(png, "Elec_Limit_1D_mWR_%d.png", iwr);
+            sprintf(eps, "Elec_Limit_1D_mWR_%d.eps", iwr);
         }
         csUL->Print(cn);
         csUL->Print(png);
+        csUL->Print(eps);
     }
 
 
     // Now, create a set of points and make the 2D exclusion plot
 
-    const int TRANSITION_MWR = 1400;
+    const int TRANSITION_MWR = 2000;
 
     std::vector<XYZ> expLowPts;
     std::vector<XYZ> expHighPts;
@@ -666,15 +669,67 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
     TGraph* observedPlot = new TGraph();
     TGraph* expectedPlot = new TGraph();
+    
+    unsigned int istart = 0;
+    if(minval > 700)
+    {
+        observedPlot->SetPoint(istart, 700, 50);
+        expectedPlot->SetPoint(istart, 700, 50);
+        istart++;
+    }
+    if(minval > 800)
+    {
+        observedPlot->SetPoint(istart, 800, 54);
+        expectedPlot->SetPoint(istart, 800, 52);
+        istart++;
+    }
+    
+    if(minval > 900)
+    {
+        observedPlot->SetPoint(istart, 900, 56);
+        expectedPlot->SetPoint(istart, 900, 59);
+        istart++;
+    }
 
-    int ctr2d = 0;
+    int ctr2d = istart;
     for(unsigned int i = 0; i < obsLowPts.size(); i++) observedPlot->SetPoint(ctr2d++, obsLowPts.at(i).x, obsLowPts.at(i).y);
     for(unsigned int i = 0; i < obs_right.size(); i++) observedPlot->SetPoint(ctr2d++, obs_right.at(i).x, obs_right.at(i).y);
     for(unsigned int i = obsHighPts.size(); i > 0; i--) observedPlot->SetPoint(ctr2d++, obsHighPts.at(i - 1).x, obsHighPts.at(i - 1).y);
-    ctr2d = 0;
+    ctr2d = istart;
     for(unsigned int i = 0; i < expLowPts.size(); i++) expectedPlot->SetPoint(ctr2d++, expLowPts.at(i).x, expLowPts.at(i).y);
     for(unsigned int i = 0; i < exp_right.size(); i++) expectedPlot->SetPoint(ctr2d++, exp_right.at(i).x, exp_right.at(i).y);
     for(unsigned int i = expHighPts.size(); i > 0; i--) expectedPlot->SetPoint(ctr2d++, expHighPts.at(i - 1).x, expHighPts.at(i - 1).y);
+    
+    
+    if(minval > 900)
+    {
+        observedPlot->SetPoint(observedPlot->GetN(), 900, 819);
+        expectedPlot->SetPoint(expectedPlot->GetN(), 900, 810);
+    }
+    if(minval > 800)
+    {
+        observedPlot->SetPoint(observedPlot->GetN(), 800, 722);
+        expectedPlot->SetPoint(expectedPlot->GetN(), 800, 726);
+    }
+    if(minval > 700)
+    {
+        observedPlot->SetPoint(observedPlot->GetN(), 700, 645);
+        expectedPlot->SetPoint(expectedPlot->GetN(), 700, 641);
+    }
+
+    //    double xx, yy;
+    //    std::cout << "OBSERVED" << std::endl;
+    //    for(int i = 0; i < observedPlot->GetN(); i++)
+    //    {
+    //        observedPlot->GetPoint(i, xx, yy);
+    //        std::cout << xx << "\t" << yy << std::endl;
+    //    }
+    //std::cout << "EXPECTED" << std::endl;
+    //for(int i = 0; i < expectedPlot->GetN(); i++)
+    //{
+    //    expectedPlot->GetPoint(i, xx, yy);
+    //    if(xx < 1000) std::cout << xx << "\t" << yy << std::endl;
+    //}
 
     TCanvas *twoDlimits = new TCanvas("twoDlimits", "twoDlimits", 800, 800);
     twoDlimits->SetRightMargin(0.03);
@@ -682,11 +737,12 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     setTDRStyle();
     fixOverlay();
 
-    const float xmax = 2500, ymax = 1700;
+    const float xmax = 2600, ymax = 2100;
 
-    TH2D* grid = new TH2D("grid", "grid", 100, 650, xmax, 100, 0, ymax); //1000) ; 
+    TH2D* grid = new TH2D("grid", "grid", 100, 600, xmax, 100, 0, ymax); //1000) ;
     grid->GetXaxis()->SetTitle("M_{W_{R}} [GeV]");
     grid->GetYaxis()->SetTitleOffset(1.45);
+    grid->GetXaxis()->SetNdivisions(6, 5, 0);
 
 
     if(doMuon)
@@ -713,7 +769,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     expectedPlot->SetLineWidth(5);
     expectedPlot->Draw("L SAME");
 
-    TLegend *leg = new TLegend(.8, .8, .95, .88);
+    TLegend *leg = new TLegend(.78, .84, .93, .92);
     leg->SetTextFont(42);
     leg->SetBorderSize(1);
     leg->SetFillColor(10);
@@ -724,15 +780,15 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
     // ============== plot Tevatron limit region:
 
-    float x[] = {650, 740, 740, 650};
-    float y[] = {0, 0, 740, 650};
+    float x[] = {600, 740, 740, 600};
+    float y[] = {0, 0, 740, 600};
     TGraph* Tevatron = new TGraph(4, x, y);
     Tevatron->SetFillColor(kGray + 1);
     Tevatron->SetLineColor(kGray);
 
     // ============== plot region M_nuR > M_WR:
-    float x2[] = {650, ymax, 650};
-    float y2[] = {ymax, ymax, 650};
+    float x2[] = {600, ymax, 600};
+    float y2[] = {ymax, ymax, 600};
     TGraph* wrnu = new TGraph(3, x2, y2);
     wrnu->SetLineWidth(3);
     wrnu->SetLineColor(kYellow - 4);
@@ -750,13 +806,14 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     text2.SetTextFont(42);
 
     TLatex* mark = new TLatex(1300, 1.015 * ymax, "CMS Preliminary");
+    mark->SetNDC();
     mark->SetTextSize(0.04);
     mark->SetTextFont(42);
 
 
-    TLatex* mark2 = new TLatex(1300, 0.93 * ymax, "240 pb^{-1} at 7 TeV");
-    mark2->SetTextSize(0.04);
-    mark2->SetTextFont(42);
+    //TLatex* mark2 = new TLatex(1300, 0.93 * ymax, "4.7 fb^{-1} at 7 TeV");
+    //mark2->SetTextSize(0.04);
+    //mark2->SetTextFont(42);
 
     leg->Draw();
     Tevatron->Draw("F SAME");
@@ -764,8 +821,8 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     if(doMuon) text.DrawLatex(720, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");
     else text.DrawLatex(720, .92 * ymax, "M_{N_{e}} > M_{W_{R}}");
     text2.DrawLatex(730, 20, "Excluded by Tevatron");
-    mark->Draw();
-    mark2->Draw();
+    mark->DrawLatex(0.18, 0.96, "CMS Preliminary");
+    mark->DrawLatex(0.71, 0.96, "4.7 fb^{-1} at 7 TeV");
 
     fixOverlay();
 
