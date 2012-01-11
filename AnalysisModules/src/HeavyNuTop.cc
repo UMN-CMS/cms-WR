@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.17 2011/12/23 15:17:15 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.18 2011/12/24 01:54:14 pastika Exp $
 //
 //
 
@@ -602,7 +602,7 @@ void HeavyNuTop::HistPerDef::fill(pat::MuonCollection muons,
   mNuR2 ->Fill( (vJJ + m1.p4()).M(),wgt ) ; 
   mNuR2D->Fill( (vJJ + m0.p4()).M(),(vJJ + m1.p4()).M(),wgt ) ;
 
-  mWRvsminLPt->Fill(vWR.M(), std::min(m0.pt(), m1.pt()));
+  mWRvsminLPt->Fill(vWR.M(), std::min(m0.pt(), m1.pt()), wgt);
 
   reco::Particle::LorentzVector mumu=m0.p4()+m1.p4();
   reco::Particle::LorentzVector jj=j0.p4()+j1.p4();
@@ -714,19 +714,19 @@ HeavyNuTop::HistPerDef::fill(const HeavyNuEvent& hne,
       dEtaPhiJet->Fill(fabs(hne.j1.eta()-hne.j2.eta()),
 		       fabs(deltaPhi(hne.j1.phi(),hne.j2.phi())),wgt) ;
 
-      mWR->Fill   ( hne.mWR,wgt   ) ; 
+      mWR->Fill(hne.mWR,wgt); 
       if(hne.e1.isEB()) 
       {
-          mWRBarrel->Fill( hne.mWR,wgt   ) ;
-          if(hne.mu1.eta() < 1.44) mWRBB->Fill( hne.mWR,wgt   ) ;
+          mWRBarrel->Fill(hne.mWR,wgt);
+          if(hne.mu1.eta() < 1.44) mWRBB->Fill(hne.mWR, wgt);
       }
       mNuR1->Fill ( hne.mNuR1,wgt ) ; 
       mNuR2->Fill ( hne.mNuR2,wgt ) ; 
       mNuR2D->Fill( hne.mNuR1, hne.mNuR2,wgt );
       mJJ->Fill   ( hne.mJJ,wgt   );
 
-      mWRvsminLPt->Fill(hne.mWR, std::min(hne.mu1.pt(), hne.e1.pt()));
-      mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex);
+      mWRvsminLPt->Fill(hne.mWR, std::min(hne.mu1.pt(), hne.e1.pt()), wgt);
+      mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
       
       ctheta_jj->Fill(hne.ctheta_jj,wgt);
       ctheta_mu1_jj->Fill(hne.ctheta_mu1_jj,wgt);
