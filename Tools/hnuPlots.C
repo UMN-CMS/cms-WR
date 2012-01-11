@@ -1,5 +1,6 @@
 #include "TFile.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TF1.h"
 #include "TLegend.h"
 #include "TROOT.h"
@@ -11,6 +12,7 @@
 #include "TGraphErrors.h"
 #include "TGraphAsymmErrors.h"
 #include "TMultiGraph.h"
+#include "TPaveStats.h"
 
 #include "tdrstyle.C"
 
@@ -34,6 +36,8 @@ const int colors[] = {
 };
 const int NCOLORS = sizeof(colors) / sizeof(int);
 
+int terribleroothackcounter = 0;
+
 class HnuPlots
 {
 public:
@@ -45,9 +49,12 @@ public:
         std::string histpath;
         double intLumi, cs, kfactor;
         std::string normhistpath;
+        double clow, chigh;
+        bool projX;
 
+        FileStruct(){ }
         FileStruct(std::string l, TFile* f, std::string h);
-        FileStruct(std::string l, TFile* f, std::string h, double iL, double c, double kf, std::string nh);
+        FileStruct(std::string l, TFile* f, std::string h, double iL, double c, double kf, std::string nh, double cl = 0.0, double ch = 0.0, bool px = true);
     } ;
 
     //HnuPlots();
@@ -56,7 +63,10 @@ public:
     void plot();
     void plotMCComp();
     void plotMCShape(std::string bgfilename);
+    void plotQCDFit();
     void plotNorm(double lower, double upper);
+    void cutFlow();
+    void integrals(double min, double max);
     void setRebin(int rbval);
     void setXAxisTitle(std::string label);
     void setYAxisTitle(std::string label);
@@ -64,6 +74,7 @@ public:
     void setLog(bool log);
     void setFormLabel(std::string);
     void setXRange(double min, double max);
+    void setSavePlots(bool sp);
 
 private:
     std::vector<std::pair<std::string, TH1*> > bghists;
@@ -75,9 +86,12 @@ private:
     std::string xaxislabel;
     std::string yaxislabel;
     std::string formlabel;
-    bool autosort, islog;
+    bool autosort, islog, saveplots;
 
     std::string getHistogramXAxisTitle(std::string name);
+
+    TH1* project(TH2* h2d, double cl, double ch, bool porjx = true);
+    int projcount;
 } ;
 
 bool compHistInt(std::pair<std::string, TH1*> h1, std::pair<std::string, TH1*> h2)
@@ -134,6 +148,8 @@ HnuPlots::HnuPlots(HnuPlots::FileStruct& fdata, std::vector<HnuPlots::FileStruct
     islog = false;
     iLumi = 1.0;
     xmin = xmax = 0.0;
+    saveplots = true;
+    projcount = 0;
 }
 
 HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStruct> >& vfbg, std::vector<std::vector<HnuPlots::FileStruct> >& vfsig, double iL)
@@ -148,11 +164,19 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
         first = true;
         for(vector<HnuPlots::FileStruct>::const_iterator ibgf = ivbg->begin(); ibgf != ivbg->end(); ibgf++)
         {
-            TH1 * h = (TH1*)ibgf->file->Get(ibgf->histpath.c_str());
+            TH1 * h = NULL;
+            if(fabs(ibgf->clow) < 1e-300 && fabs(ibgf->chigh) < 1e-300) h = (TH1*)ibgf->file->Get(ibgf->histpath.c_str());
+            else
+            {
+                TH2 *h2 = (TH2*)ibgf->file->Get(ibgf->histpath.c_str());
+                if(!h2) std::cout << "failed to get File:hist - " << ibgf->file->GetName() << " : " << ibgf->histpath << std::endl;
+                h = project(h2, ibgf->clow, ibgf->chigh);
+            }
             TH1 * hn = (TH1*)ibgf->file->Get(ibgf->normhistpath.c_str());
             if(h && hn)
             {
                 h->Scale(ibgf->intLumi * ibgf->cs * ibgf->kfactor / hn->GetBinContent(1));
+                //cout << ibgf->label << " : " << ibgf->intLumi * ibgf->cs * ibgf->kfactor / hn->GetBinContent(1) << endl;
                 if(first)
                 {
                     bghists.push_back(pair<string, TH1*>(ibgf->label, (TH1*)h->Clone()));
@@ -208,10 +232,17 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
         sighists.back().second->SetLineColor(kWhite + iColor);
         sighists.back().second->SetMarkerColor(kWhite + iColor);
         sighists.back().second->SetLineWidth(0);
-        iColor++;
+        iColor += 2;
     }
 
-    TH1 *h = (TH1*)fdata.file->Get(fdata.histpath.c_str());
+    TH1 *h;
+    if(fabs(fdata.clow) < 1e-300 && fabs(fdata.chigh) < 1e-300) h = (TH1*)fdata.file->Get(fdata.histpath.c_str());
+    else
+    {
+        TH2 *h2 = (TH2*)fdata.file->Get(fdata.histpath.c_str());
+        if(!h2) std::cout << "failed to get File:hist - " << fdata.file->GetName() << " : " << fdata.histpath << std::endl;
+        h = project(h2, fdata.clow, fdata.chigh);
+    }
     if(h) datahist = pair<string, TH1*>(fdata.label, (TH1*)h->Clone());
     else std::cout << "failed to get File:hist - " << fdata.file->GetName() << " : " << fdata.histpath << std::endl;
 
@@ -223,6 +254,45 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
     islog = false;
     iLumi = iL;
     xmin = xmax = 0.0;
+    saveplots = true;
+    projcount = 0;
+}
+
+TH1* HnuPlots::project(TH2* h2d, double cl, double ch, bool porjx)
+{
+    char tmp[128];
+    TH1* h = NULL;
+
+    if(porjx)
+    {
+        sprintf(tmp, "%s_projx_%d", h2d->GetName(), projcount++);
+        h = new TH1D(tmp, tmp, h2d->GetXaxis()->GetNbins() + 1, h2d->GetXaxis()->GetBinLowEdge(1), h2d->GetXaxis()->GetBinUpEdge(h2d->GetXaxis()->GetNbins()));
+        for(int i = h2d->GetYaxis()->FindBin(cl); i <= h2d->GetYaxis()->FindBin(ch); i++)
+        {
+            for(int j = 0; j < h2d->GetXaxis()->GetNbins() + 1; j++)
+            {
+                h->SetBinContent(j, h->GetBinContent(j) + h2d->GetBinContent(j, i));
+                double be1 = h->GetBinError(j), be2 = h2d->GetBinError(j, i);
+                h->SetBinError(j, sqrt(be1*be1+be2*be2));
+            }
+        }
+    }
+    else
+    {
+        sprintf(tmp, "%s_projy_%d", h2d->GetName(), projcount++);
+        h = new TH1D(tmp, tmp, h2d->GetYaxis()->GetNbins() + 1, h2d->GetYaxis()->GetBinLowEdge(1), h2d->GetYaxis()->GetBinUpEdge(h2d->GetYaxis()->GetNbins()));
+        for(int i = h2d->GetXaxis()->FindBin(cl); i <= h2d->GetXaxis()->FindBin(ch); i++)
+        {
+            for(int j = 0; j < h2d->GetYaxis()->GetNbins() + 1; j++)
+            {
+                h->SetBinContent(j, h->GetBinContent(j) + h2d->GetBinContent(i, j));
+                double be1 = h->GetBinError(j), be2 = h2d->GetBinError(i, j);
+                h->SetBinError(j, sqrt(be1*be1+be2*be2));
+            }
+        }
+    }
+
+    return h;
 }
 
 HnuPlots::FileStruct::FileStruct(std::string l, TFile* f, std::string h)
@@ -231,9 +301,10 @@ HnuPlots::FileStruct::FileStruct(std::string l, TFile* f, std::string h)
     file = f;
     histpath = h;
     intLumi = cs = kfactor = 1.0;
+    clow = chigh = 0.0;
 }
 
-HnuPlots::FileStruct::FileStruct(std::string l, TFile* f, std::string h, double iL, double c, double kf, std::string nh)
+HnuPlots::FileStruct::FileStruct(std::string l, TFile* f, std::string h, double iL, double c, double kf, std::string nh, double cl, double ch, bool px)
 {
     label = l;
     file = f;
@@ -242,6 +313,9 @@ HnuPlots::FileStruct::FileStruct(std::string l, TFile* f, std::string h, double 
     cs = c;
     kfactor = kf;
     normhistpath = nh;
+    clow = cl;
+    chigh = ch;
+    projX = px;
 }
 
 void HnuPlots::plot()
@@ -320,7 +394,7 @@ void HnuPlots::plot()
     //dummy->GetXaxis()->SetTitle(xaxislabel.c_str());
     if(islog)
     {
-        dummy->GetYaxis()->SetRangeUser(std::max(0.001, 0.2*std::min(hbg->GetMaximum(), datahist.second->GetMinimum(0.0001))), std::max(hbg->GetMaximum(), datahist.second->GetMaximum())*8);
+        dummy->GetYaxis()->SetRangeUser(std::max(0.001, 0.2 * std::min(hbg->GetMaximum(), datahist.second->GetMinimum(0.0001))), std::max(hbg->GetMaximum(), datahist.second->GetMaximum())*8);
         gPad->SetLogy(1);
     }
     else
@@ -331,7 +405,7 @@ void HnuPlots::plot()
     dummy->GetYaxis()->SetTitleOffset(1.0);
     dummy->SetStats(0);
     dummy->SetTitle(0);
-    if(dummy->GetNdivisions()%100 > 5) dummy->GetXaxis()->SetNdivisions(6, 5, 0);
+    if(dummy->GetNdivisions() % 100 > 5) dummy->GetXaxis()->SetNdivisions(6, 5, 0);
 
     TLatex mark;
     mark.SetTextSize(0.04);
@@ -401,7 +475,7 @@ void HnuPlots::plot()
     if(xmin != xmax) dummy2->GetXaxis()->SetRangeUser(xmin, xmax);
     dummy2->SetStats(0);
     dummy2->SetTitle(0);
-    if(dummy2->GetNdivisions()%100 > 5) dummy2->GetXaxis()->SetNdivisions(6, 5, 0);
+    if(dummy2->GetNdivisions() % 100 > 5) dummy2->GetXaxis()->SetNdivisions(6, 5, 0);
 
     TF1 *fline = new TF1("line", "pol0", datahist.second->GetBinLowEdge(1), datahist.second->GetBinLowEdge(datahist.second->GetNbinsX()) + datahist.second->GetBinWidth(datahist.second->GetNbinsX()));
     fline->SetParameter(0, 1);
@@ -411,13 +485,16 @@ void HnuPlots::plot()
     fline->Draw("same");
     chdata->Draw("same");
 
-    char ofn[128], tmp[32];
-    int cutlevel = 11111;
-    sscanf(strstr(datahist.second->GetTitle(), "cut:"), "cut:%d", &cutlevel);
-    sprintf(tmp, "cut:%da", cutlevel);
-    if(strstr(datahist.second->GetTitle(), tmp) != NULL) sprintf(ofn, "%s_cut%da_%s.pdf", formlabel.c_str(), cutlevel, datahist.second->GetName());
-    else sprintf(ofn, "%s_cut%d_%s.pdf", formlabel.c_str(), cutlevel, datahist.second->GetName());
-    c1->Print(ofn);
+    if(saveplots)
+    {
+        char ofn[128], tmp[32];
+        int cutlevel = 11111;
+        sscanf(strstr(datahist.second->GetTitle(), "cut:"), "cut:%d", &cutlevel);
+        sprintf(tmp, "cut:%da", cutlevel);
+        if(strstr(datahist.second->GetTitle(), tmp) != NULL) sprintf(ofn, "%s_cut%da_%s.pdf", formlabel.c_str(), cutlevel, datahist.second->GetName());
+        else sprintf(ofn, "%s_cut%d_%s.pdf", formlabel.c_str(), cutlevel, datahist.second->GetName());
+        c1->Print(ofn);
+    }
 }
 
 void HnuPlots::plotMCComp()
@@ -505,7 +582,8 @@ void HnuPlots::plotMCShape(std::string bgfilename)
     fffs.push_back(make_pair("#it{e^{a+bM+cM^{2}}}", "exp([0]+[1]*x+[2]*x*x)"));
     fffs.push_back(make_pair("#it{e^{a+bM+cM^{3}}}", "exp([0]+[1]*x+[2]*x*x*x)"));
     //fffs.push_back(make_pair("#it{e^{a+bM}/M^{c}}", "exp([0]+[1]*x)/pow(x,[2])"));
-    fffs.push_back(make_pair("#it{e^{a+bM}+C}", "exp([0]+[1]*x)+[2]"));
+    fffs.push_back(make_pair("#it{e^{a+bM}+c}", "exp([0]+[1]*x)+[2]"));
+    //fffs.push_back(make_pair("#it{e^{a+bM}+cM^{2}}", "exp([0]+[1]*x)+[2]*x*x"));
     //fffs.push_back(make_pair("#it{e^{a+bM^{C}}}", "exp([0]+[1]*pow(x,[2]))"));
 
     TCanvas * cans[bghists.size()];
@@ -548,10 +626,14 @@ void HnuPlots::plotMCShape(std::string bgfilename)
             char tmp2[32];
             sprintf(tmp2, "f%d", ifunc);
             f[ifunc] = new TF1(tmp, fffs[ifunc].second.c_str(), 600, 2800);
-
+            if(f[ifunc]->GetNpar() > 2 && strstr(fffs[ifunc].first.c_str(), "#it{e^{a+bM}+c}") != NULL)
+            {
+                f[ifunc]->SetParLimits(2, 0.0, 1000);
+                f[ifunc]->SetParameter(2, 2);
+            }
             h->Fit(f[ifunc], "LMNQR");
             cout << fffs[ifunc].second << " Chi^2/NDOF:" << f[ifunc]->GetChisquare() << " / " << f[ifunc]->GetNDF() << endl;
-            cout << "par0: " << f[ifunc]->GetParameter(0) << "\t par1: " << f[ifunc]->GetParameter(1) << "\t par2: " << f[ifunc]->GetParameter(2) << endl;
+            cout << "par0: " << f[ifunc]->GetParameter(0) << "\t par1: " << f[ifunc]->GetParameter(1) << "\tpar1error: " << f[ifunc]->GetParError(1) << "\t par2: " << f[ifunc]->GetParameter(2) << endl;
             f[ifunc]->SetLineColor(colors[ifunc % NCOLORS]);
             f[ifunc]->SetLineWidth(2);
             f[ifunc]->SetMarkerStyle(0);
@@ -561,8 +643,8 @@ void HnuPlots::plotMCShape(std::string bgfilename)
         f2 = new TF1("f2", "exp([0]+[1]*x)", 600, 2800);
         f3 = new TF1("f3", "exp([0]+[1]*x)", 600, 2800);
         h->Fit(f1, "LMNQ", "", 600, 2800);
-        h->Fit(f2, "LMNQ", "", 600, 1100);
-        h->Fit(f3, "LMNQ", "", 1100, 2800);
+        h->Fit(f2, "LMNQ", "", 600, 1400);
+        h->Fit(f3, "LMNQ", "", 1400, 2800);
         double s1 = f1->GetParameter(1), s2 = f2->GetParameter(1), s3 = f3->GetParameter(1);
         //double e1 = f1->GetParError(1), e2 = f2->GetParError(1), e3 = f3->GetParError(1);
         //double diff1 = fabs(s1 - s2), diff2 = fabs(s2 - s3), diff1e = e1 * e1 + e2*e2, diff2e = e3 * e3 + e2*e2;
@@ -671,6 +753,20 @@ void HnuPlots::plotMCShape(std::string bgfilename)
         tgshape->Draw("E3 same");
         tgslope->Draw("E3Top same");
         h->Draw("same");
+
+        TF1 *fu2 = new TF1("fu", "[0]*exp([1]*(x-[2]))", 600, 2800);
+        fu2->SetParameters(f[0]->Eval(600), f[0]->GetParameter(1) + f[0]->GetParError(1), 600);
+        TF1 *fd2 = new TF1("fd", "[0]*exp([1]*(x-[2]))", 600, 2800);
+        fd2->SetParameters(f[0]->Eval(600), f[0]->GetParameter(1) - f[0]->GetParError(1), 600);
+        fu2->SetLineWidth(2);
+        fu2->SetLineStyle(2);
+        fu2->SetMarkerStyle(0);
+        fd2->SetLineWidth(2);
+        fd2->SetLineStyle(2);
+        leg->AddEntry(fu2, "slope stat err");
+        fu2->Draw("same");
+        fd2->Draw("same");
+
         if(drawtrialfuncs)
             for(unsigned int ifunc = 0; ifunc < fffs.size(); ifunc++)
             {
@@ -681,9 +777,9 @@ void HnuPlots::plotMCShape(std::string bgfilename)
         {
             f[0]->Draw("same");
             f[0]->SetFillColor(kWhite);
-            char tmp3[128];
-            sprintf(tmp3, "Fit (slope: %0.2e)", f[0]->GetParameter(1));
-            leg->AddEntry(f[0], tmp3);
+            //char tmp3[128];
+            //sprintf(tmp3, "Fit (slope: %0.2e)", f[0]->GetParameter(1));
+            leg->AddEntry(f[0], "Exp Fit");
         }
         leg->Draw("same");
         mark.DrawLatex(0.65, 0.95, "CMS Preliminary");
@@ -693,6 +789,64 @@ void HnuPlots::plotMCShape(std::string bgfilename)
         delete [] f;
     }
     fclose(fbackfits);
+}
+
+void HnuPlots::plotQCDFit()
+{
+    setTDRStyle();
+
+    TH1* hd = (TH1*)datahist.second->Clone();
+    for(std::vector<std::pair<std::string, TH1*> >::const_iterator ihbg = sighists.begin(); ihbg != sighists.end(); ihbg++)
+    {
+        hd->Add(ihbg->second, -1);
+    }
+
+    printf("Integral              : %f\n", hd->Integral(0, hd->GetNbinsX() + 1));
+    printf("Integral above 600 GeV: %f\n", hd->Integral(hd->FindBin(600), hd->GetNbinsX() + 1));
+
+    TF1* ff = new TF1("ff", "expo", 600, 2000);
+    ff->FixParameter(1, -0.004937);
+    hd->Fit(ff, "LLRQNMB");
+
+    printf("Slope: %f +/- %f\n", ff->GetParameter(1), ff->GetParError(1));
+
+    TText* CMSprelim = new TText(0.16, 0.96, "CMS Preliminary") ;
+    CMSprelim->SetNDC();
+    CMSprelim->SetTextSize(0.03);
+
+    char tmp_iLumi[128];
+    sprintf(tmp_iLumi, "%0.1f fb^{-1} at #sqrt{s} = 7 TeV", iLumi / 1000);
+    TLatex* intLumi = new TLatex(0.72, 0.96, tmp_iLumi);
+    intLumi->SetNDC();
+    intLumi->SetTextSize(0.03);
+    intLumi->SetLineWidth(2);
+
+    TBox* box = new TBox(0, 0.001, 600, 2.);
+    box->SetFillColor(kBlue);
+    box->SetFillStyle(3003);
+
+    TCanvas* ca = new TCanvas("ca", "ca");
+    ca->Clear();
+    ca->cd(0)->SetLogy();
+    hd->SetLineColor(kBlack);
+    hd->GetXaxis()->SetTitle("M(#mu#mujj) [GeV]");
+    hd->GetYaxis()->SetTitle("Events / (200 GeV)");
+    hd->GetYaxis()->SetTitleOffset(1.5);
+    hd->SetMaximum(2.0);
+    hd->SetMinimum(0.001);
+    hd->SetStats(true);
+    hd->Draw();
+    ff->Draw("same");
+    fixOverlay();
+    //fitbox->Draw("same");
+    box->Draw("same");
+    CMSprelim->Draw("same");
+    intLumi->Draw("same");
+
+    //    TCanvas *c1 = new TCanvas("ca", "ca", 600, 600);
+    //    c1->SetLogy(true);
+    //    hd->Draw();
+    //    ff->Draw("same");
 }
 
 void HnuPlots::plotNorm(double lower, double upper)
@@ -717,6 +871,57 @@ void HnuPlots::plotNorm(double lower, double upper)
 
     bghists[0].second->Scale(dataint / mcint);
     plot();
+}
+
+void HnuPlots::cutFlow()
+{
+    std::vector<std::pair<std::string, TH1*> > hists;
+    hists.push_back(datahist);
+    for(std::vector<std::pair<std::string, TH1*> >::const_iterator ihbg = sighists.begin(); ihbg != sighists.end(); ihbg++)
+    {
+        hists.push_back(*ihbg);
+    }
+    for(std::vector<std::pair<std::string, TH1*> >::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ihbg++)
+    {
+        hists.push_back(*ihbg);
+    }
+
+    printf("%18s & ", "cut level");
+    for(std::vector<std::pair<std::string, TH1*> >::const_iterator i = hists.begin(); i != hists.end(); i++)
+    {
+        if(i != hists.end() - 1) printf("%10s & ", i->first.c_str());
+        else printf("%10s \\\\ \\hline\n", i->first.c_str());
+    }
+    for(int icl = 1; icl < 9; icl++)
+    {
+        for(std::vector<std::pair<std::string, TH1*> >::const_iterator i = hists.begin(); i != hists.end(); i++)
+        {
+            if(i == hists.begin()) printf("%18s & ", i->second->GetXaxis()->GetBinLabel(icl));
+            if(i->second->GetBinContent(icl) > 3 || i == hists.begin())
+            {
+                if(i != hists.end() - 1) printf("%10.0f & ", i->second->GetBinContent(icl)*4680.0 / 2510);
+                else printf("%10.0f \\\\ \\hline\n", i->second->GetBinContent(icl));
+            }
+            else
+            {
+                if(i != hists.end() - 1) printf("%10.3f & ", i->second->GetBinContent(icl)*4680.0 / 2510);
+                else printf("%10.3f \\\\ \\hline\n", i->second->GetBinContent(icl)*4680.0 / 2510);
+            }
+        }
+    }
+}
+
+void HnuPlots::integrals(double min, double max)
+{
+    printf("Integrals\n%s: %f\n", datahist.first.c_str(), datahist.second->Integral(datahist.second->FindBin(min), datahist.second->FindBin(max)));
+    for(std::vector<std::pair<std::string, TH1*> >::const_iterator ihbg = sighists.begin(); ihbg != sighists.end(); ihbg++)
+    {
+        printf("%s: %f\n", ihbg->first.c_str(), ihbg->second->Integral(ihbg->second->FindBin(min), ihbg->second->FindBin(max)));
+    }
+    for(std::vector<std::pair<std::string, TH1*> >::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ihbg++)
+    {
+        printf("%s: %f\n", ihbg->first.c_str(), ihbg->second->Integral(ihbg->second->FindBin(min), ihbg->second->FindBin(max)));
+    }
 }
 
 std::string HnuPlots::getHistogramXAxisTitle(std::string name)
@@ -766,6 +971,11 @@ void HnuPlots::setXRange(double min, double max)
     xmax = max;
 }
 
+void HnuPlots::setSavePlots(bool sp)
+{
+    saveplots = sp;
+}
+
 const std::string cutlevels[] = {
     "cut0_none",
     "cut1_LLJJpt",
@@ -775,7 +985,8 @@ const std::string cutlevels[] = {
     "cut5_diLmass",
     "cut6_mWRmass",
     "cutX_LLpt",
-    "cut5a_loDiLmass"
+    "cut5a_loDiLmass",
+    ""
 };
 
 void plotMCVar(int cutlevel, std::string name, std::string xaxis = "M_{W_{R}} [GeV]")
@@ -786,13 +997,13 @@ void plotMCVar(int cutlevel, std::string name, std::string xaxis = "M_{W_{R}} [G
     vector<HnuPlots::FileStruct> bg, sig;
     //HnuPlots::FileStruct
     //bg.push_back(HnuPlots::FileStruct("DY madgraph",  new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavyNuAnalysis_DYJetsToLL_madgraph_2140ipb.root"),                    "hNuMu40/" + cutlevels[cutlevel] + "/" + name));
-    //bg.push_back(HnuPlots::FileStruct("DY sherpa",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2140ipbKFACTOR.root"), "hNu/" + cutlevels[cutlevel] + "/" + name));
+    //bg.push_back(HnuPlots::FileStruct("DY sherpa",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles//local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2140ipbKFACTOR.root"), "hNu/" + cutlevels[cutlevel] + "/" + name));
     //bg.push_back(HnuPlots::FileStruct("t#bar{t} madgraph",  new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavyNuTopAnalysis_TTJets_TuneZ2_7TeV-madgraph-tauola_oct21_2140ipb.root"),                    "hNuTopHiLumi/" + cutlevels[cutlevel] + "/" + name));
-    //bg.push_back(HnuPlots::FileStruct("t#bar{t} powheg",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_Top_2140ipb.root"),                    "hNuTopHiLumi/" + cutlevels[cutlevel] + "/" + name));
+    //bg.push_back(HnuPlots::FileStruct("t#bar{t} powheg",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles//local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_Top_2140ipb.root"),                    "hNuTopHiLumi/" + cutlevels[cutlevel] + "/" + name));
     bg.push_back(HnuPlots::FileStruct("t#bar{t} madgraph", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6.root"), "hNu/" + cutlevels[cutlevel] + "/" + name));
     bg.push_back(HnuPlots::FileStruct("t#bar{t} powheg", new TFile("/local/cms/user/dahmes/wr2011/bgMC/Summer11/aug30/ttbar-PFJets.root"), "hNu/" + cutlevels[cutlevel] + "/" + name));
     //bg.push_back(HnuPlots::FileStruct("e#mu Data",    new TFile("/local/cms/user/dahmes/wr2011/data_2140ipb/run2011A-top.root"),                    "hNuTop/" + cutlevels[cutlevel] + "/" + name));
-    //bg.push_back(HnuPlots::FileStruct("W+Jets",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavynu_2011Bg_summer11_WToLNu_7TeV-sherpa_2140ipb.root"),                    "hNu/" + cutlevels[cutlevel] + "/" + name));
+    //bg.push_back(HnuPlots::FileStruct("W+Jets",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles//local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WToLNu_7TeV-sherpa_2140ipb.root"),                    "hNu/" + cutlevels[cutlevel] + "/" + name));
     //bg.push_back(HnuPlots::FileStruct("VV",        new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/vv_2140ipb.root"),                                                            "hNu/" + cutlevels[cutlevel] + "/" + name));
     //bg.push_back(HnuPlots::FileStruct("tW",        new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/tW_2140ipb.root"),                                                            "hNu/" + cutlevels[cutlevel] + "/" + name));
 
@@ -825,86 +1036,71 @@ void plotFNALVar(int cutlevel, std::string name, std::string xaxis = "M_{W_{R}} 
     hps.plotMCComp();
 }
 
-void plot2011old(int cutlevel = 5, std::string plot = "mWR", bool log = true)
+void setBgandData(bool is2011A, bool is2011B, HnuPlots::FileStruct& data, std::vector<std::vector<HnuPlots::FileStruct> >& bg, double& lumi, int cutlevel = 5, std::string plot = "mWR")
 {
-    using namespace std;
+    char fdata[128];
 
-    //background legend label, TFile
-    vector<HnuPlots::FileStruct> bg, sig;
-    bg.push_back(HnuPlots::FileStruct("t#bar{t}", new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2140ipb.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot));
-    bg.push_back(HnuPlots::FileStruct("Z+Jets", new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2140ipbKFACTOR.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot));
-    //bg.push_back(HnuPlots::FileStruct("t#bar{t} Madgraph",  new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/ttbar-PFJets_2140ipb.root"),                                         "hNu/" + cutlevels[cutlevel] + "/" + plot));
-    //bg.push_back(HnuPlots::FileStruct("Z+Jets Madgraph",    new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavyNuAnalysis_DYJetsToLL_madgraph_2140ipb.root"),                  "hNuMu40/" + cutlevels[cutlevel] + "/" + plot));
-    bg.push_back(HnuPlots::FileStruct("tW", new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/tW_2140ipb.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot));
-    bg.push_back(HnuPlots::FileStruct("VV", new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/vv_2140ipb.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot));
-    bg.push_back(HnuPlots::FileStruct("W+Jets", new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/heavynu_2011Bg_summer11_WToLNu_7TeV-sherpa_2140ipb.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot));
-    //bg.push_back(HnuPlots::FileStruct("Background", new TFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_4_2_7/src/HeavyNu/Tools/rootfiles/Zotherbg_2140ipb.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot));
+    //background
+    std::vector<HnuPlots::FileStruct> bgTT, bgZJ, bgOther;
+    if(is2011A)
+    {
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu24/" + cutlevels[cutlevel] + "/" + plot,  216.2,  3048, 1.545,  "hNuMu24/cutlevel"));
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  3048, 1.545,  "hNuMu40/cutlevel"));
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),           "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,   17.4, 1.05,  "hNuMu24/cutlevel"));
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),           "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  17.4, 1.05,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,    5.3, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,    5.3,  1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,   5.3,  1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,     43, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,    43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,   18.2, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,    5.9, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,   5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-dec23.root");
+        lumi += 216.2 + 1956.7;
+    }
+    if(is2011B)
+    {
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3048,  1.534,  "hNuMu40/cutlevel"));
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),           "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,  17.4, 0.94,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,    43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,  18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,   5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-dec23.root");
+        lumi += 2510.5;
+    }
+    if(is2011A && is2011B) sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root");
+    bg.push_back(bgTT);
+    bg.push_back(bgZJ);
+    bg.push_back(bgOther);
 
     //data
-    //HnuPlots::FileStruct data("Data", new TFile("/local/cms/user/dahmes/wr2011/MuResults/GoodRuns/42X/2140ipb/RecoEff/oct20/run2011A-recoEff-2140ipb.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot);
-    HnuPlots::FileStruct data("Data", new TFile("/local/cms/user/dahmes/wr2011/data_2375ipb/run2011A-nominal.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot);
-
-    HnuPlots hps(data, bg, sig);
-    hps.setXAxisTitle("please auto set the axis");
-    hps.setYAxisTitle("please auto set the axis");
-    hps.setRebin(2);
-    hps.setLog(log);
-    hps.plot();
+    data.label = "Data";
+    data.file = new TFile(fdata);
+    data.histpath = "hNu/" + cutlevels[cutlevel] + "/" + plot;
 }
 
 void plot2011(bool is2011A = true, bool is2011B = true, int cutlevel = 5, std::string plot = "mWR", bool log = true, double xmin = 0.0, double xmax = 0.0)
 {
     using namespace std;
 
-    char fdata[128];
     double lumi = 0.0;
+    HnuPlots::FileStruct data;
 
     //background legend label, TFile
     vector<vector<HnuPlots::FileStruct> > bg, sig;
-    vector<HnuPlots::FileStruct> bgTT, bgZJ, bgOther, vsig;
-    if(is2011A)
-    {
-        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu24/" + cutlevels[cutlevel] + "/" + plot,  216.2, 3030,  1.57,  "hNuMu24/cutlevel"));
-        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  3030,  1.57,  "hNuMu40/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),           "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  18.36, 0.95,  "hNuMu24/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),           "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 18.36, 0.95,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  7.466, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  7.46,  1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  27.83, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  10.47, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  4.287, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-nov29.root");
-        lumi += 216.2 + 1956.7;
-    }
-    if(is2011B)
-    {
-        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3030,  1.55,  "hNuMu40/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),           "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 18.36, 0.88,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-nov29.root");
-        lumi += 2510.5;
-    }
-    if(is2011A && is2011B) sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-nov29.root");
-    bg.push_back(bgTT);
-    bg.push_back(bgZJ);
-    bg.push_back(bgOther);
+    vector<HnuPlots::FileStruct> vsig, vsig2;
+    setBgandData(is2011A, is2011B, data, bg, lumi, cutlevel, plot);
 
     //signal
-    vsig.push_back(HnuPlots::FileStruct("M_{W_{R}} = 1.8 TeV", new TFile("/local/cms/user/jmmans/heavyNu_signal/signal_1700_900.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.01252, 1.27,  "hNuMu40/cutlevel"));
+    vsig.push_back(HnuPlots::FileStruct("M_{W_{R}} = 1.8 TeV", new TFile("/local/cms/user/jmmans/heavyNu_signal/signal_1800_1000.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.01252, 1.27,  "hNuMu40/cutlevel"));
+    vsig2.push_back(HnuPlots::FileStruct("M_{W_{R}} = 1.0 TeV", new TFile("/local/cms/user/jmmans/heavyNu_signal/signal_1000_600.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.3573, 1.31,  "hNuMu40/cutlevel"));
+    //sig.push_back(vsig2);
     sig.push_back(vsig);
-
-    //data
-    //HnuPlots::FileStruct data("Data", new TFile("/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-nov11.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot);
-    HnuPlots::FileStruct data("Data", new TFile(fdata), "hNu/" + cutlevels[cutlevel] + "/" + plot);
 
     HnuPlots hps(data, bg, sig, lumi);
     hps.setXAxisTitle("please auto set the axis");
@@ -922,53 +1118,17 @@ void plotMCFits(bool is2011A = true, int cutlevel = 5, bool log = true)
 {
     using namespace std;
 
-    char plot[] = "mWR", fdata[128];
+    char plot[] = "mWR";
     double lumi;
+    HnuPlots::FileStruct data;
 
     //background legend label, TFile
     vector<vector<HnuPlots::FileStruct> > bg, sig;
-    vector<HnuPlots::FileStruct> bgTT, bgZJ, bgOther;
-    if(is2011A)
-    {
-        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2, 3030,  1.57,  "hNuMu24/cutlevel"));
-        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  3030,  1.57,  "hNuMu40/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),           "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  18.36, 0.95,  "hNuMu24/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),           "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 18.36, 0.95,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  7.466, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  7.46,  1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  27.83, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  10.47, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  4.287, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-nov29.root");
-        lumi = 216.2 + 1956.7;
-    }
-    else
-    {
-        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3030,  1.55,  "hNuMu40/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),           "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 18.36, 0.88,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-nov29.root");
-        lumi = 2510.5;
-    }
-    bg.push_back(bgTT);
-    bg.push_back(bgZJ);
-    bg.push_back(bgOther);
+    setBgandData(is2011A, !is2011A, data, bg, lumi, cutlevel, plot);
 
     std::string bgestfname = "bgest";
     if(is2011A) bgestfname += "2011A.txt";
     else  bgestfname += "2011B.txt";
-
-    //data
-    HnuPlots::FileStruct data("Data", new TFile(fdata), "hNu/" + cutlevels[cutlevel] + "/" + plot);
 
     HnuPlots hps(data, bg, sig, lumi);
     hps.setRebin(1);
@@ -978,47 +1138,48 @@ void plotMCFits(bool is2011A = true, int cutlevel = 5, bool log = true)
     hps.plotMCShape(bgestfname);
 }
 
-void plotTTBarNorm(bool is2011A = true, int cutlevel = 5, bool log = true)
+void plotTTBarNorm(bool is2011A = true, bool is2011B = true, int cutlevel = 5, bool log = true)
 {
     using namespace std;
 
     char plot[] = "mWR", fdata[256];
-    double lumi;
+    double lumi = 0.0;
 
     //background legend label, TFile
     vector<vector<HnuPlots::FileStruct> > bg, sig;
     vector<HnuPlots::FileStruct> bgTT, bgOther;
     if(is2011A)
     {
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),              "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  18.36, 1.0,  "hNuMu24/cutlevel"));
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),              "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 18.36, 1.0,  "hNuMu40/cutlevel"));
-        //bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                      "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  3030,  1.55, "hNuMu24/cutlevel"));
-        //bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                      "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 3030,  1.55, "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  7.466, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  7.46,  1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  27.83, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  10.47, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  4.287, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_2140ipb/run2011A-top.root");
-        lumi = 216.2 + 1956.7;
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),              "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  17.4, 1.0,  "hNuMu24/cutlevel"));
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),              "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 17.4, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_QCD_jan6.root"),                      "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  3048,  1.545, "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_QCD_jan6.root"),                      "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 3048,  1.545, "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  5.3, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  5.3,  1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 5.3,  1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  43, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  18.2, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,  5.9, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-dec23.root");
+        lumi += 216.2 + 1956.7;
     }
-    else
+    if(is2011B)
     {
-        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),              "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 18.36, 1.0,  "hNuMu40/cutlevel"));
-        //bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_dec14.root"),                      "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3030,  1.55, "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/top-run2011b-dec16.root");
-        lumi = 2510.5;
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),              "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 17.4, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_QCD_jan6.root"),                      "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3048,  1.534, "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 5.3,  1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other",    new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-dec23.root");
+        lumi += 2510.5;
     }
+    if(is2011A && is2011B) sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root");
     bg.push_back(bgTT);
     bg.push_back(bgOther);
 
@@ -1030,52 +1191,54 @@ void plotTTBarNorm(bool is2011A = true, int cutlevel = 5, bool log = true)
     hps.setYAxisTitle("please auto set the axis");
     hps.setRebin(2);
     hps.setLog(log);
-    if(is2011A) hps.setFormLabel("ttnorm_2011A");
-    else hps.setFormLabel("ttnorm_2011B");
+    if(is2011A && !is2011B) hps.setFormLabel("ttnorm_2011A");
+    else if(!is2011A && is2011B) hps.setFormLabel("ttnorm_2011B");
+    else hps.setFormLabel("ttnorm_2011Combined");
     hps.plotNorm(20.0, 3000.0);
 }
 
-void plotZJNorm(bool is2011A = true, int cutlevel = 4, bool log = true)
+void plotZJNorm(bool is2011A = true, bool is2011B = true, int cutlevel = 4, bool log = true)
 {
     using namespace std;
 
     char plot[] = "mMuMuZoom", fdata[256];
-    double lumi = -1;
+    double lumi = 0.0;
 
     //background legend label, TFile
     vector<vector<HnuPlots::FileStruct> > bg, sig;
     vector<HnuPlots::FileStruct> bgZJ, bgOther;
     if(is2011A)
     {
-        bgZJ.push_back(HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),          "hNuMu24/" + cutlevels[cutlevel] + "/" + plot,  216.2, 3030,  1.0, "hNuMu24/cutlevel"));
-        bgZJ.push_back(HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),          "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 3030,  1.0, "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),        "hNuMu24/" + cutlevels[cutlevel] + "/" + plot,  216.2, 18.36, 0.88,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),        "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7, 18.36, 0.88,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu24/" +     cutlevels[cutlevel] + "/" + plot, 216.2, 7.466, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 1956.7, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu24/" +     cutlevels[cutlevel] + "/" + plot, 216.2, 7.46,  1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 1956.7, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" +     cutlevels[cutlevel] + "/" + plot, 216.2, 27.83, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 1956.7, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" +     cutlevels[cutlevel] + "/" + plot, 216.2, 10.47, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 1956.7, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" +     cutlevels[cutlevel] + "/" + plot, 216.2, 4.287, 1.0,  "hNuMu24/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 1956.7, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-nov29.root");
-        lumi = 216.2 + 1956.7;
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu24/" + cutlevels[cutlevel] + "/" + plot,  216.2,  3048, 1.0, "hNuMu24/cutlevel"));
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  3048, 1.0, "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),         "hNuMu24/" + cutlevels[cutlevel] + "/" + plot,  216.2,  17.4, 1.051,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),         "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  17.4, 1.051,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,    5.3, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,    5.3, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,     43, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,    43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,   18.2, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,  18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu24/" + cutlevels[cutlevel] + "/" + plot, 216.2,    5.9, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 1956.7,   5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-dec23.root");
+        lumi += 216.2 + 1956.7;
     }
-    else
+    if(is2011B)
     {
-        bgZJ.push_back(HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_dec14.root"),          "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3030,  1.0, "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),        "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 18.36, 0.88,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 2510.5, 7.466, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 2510.5, 7.46,  1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 2510.5, 27.83, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 2510.5, 10.47, 1.0,  "hNuMu40/cutlevel"));
-        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" +     cutlevels[cutlevel] + "/" + plot, 2510.5, 4.287, 1.0,  "hNuMu40/cutlevel"));
-        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-nov29.root");
-        lumi = 2510.5;
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_dec14.root"),                   "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 3048,  1.0, "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),         "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5, 17.4, 0.940,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,   5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,    43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,  18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuMu40/" + cutlevels[cutlevel] + "/" + plot, 2510.5,   5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-dec23.root");
+        lumi += 2510.5;
     }
+    if(is2011A && is2011B) sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root");
     bg.push_back(bgZJ);
     bg.push_back(bgOther);
 
@@ -1087,11 +1250,170 @@ void plotZJNorm(bool is2011A = true, int cutlevel = 4, bool log = true)
     hps.setYAxisTitle("please auto set the axis");
     hps.setRebin(20);
     hps.setLog(log);
-    if(is2011A) hps.setFormLabel("zjnorm_2011A");
-    else hps.setFormLabel("zjnorm_2011B");
+    if(is2011A && !is2011B) hps.setFormLabel("zjnorm_2011A");
+    else if(!is2011A && is2011B) hps.setFormLabel("zjnorm_2011B");
+    else hps.setFormLabel("zjnorm_2011Combined");
     hps.setXRange(60.0, 500.0);
     hps.plotNorm(60.0, 120.0);
 }
+
+void plotCutFlow(bool is2011A = true, bool is2011B = true)
+{
+    using namespace std;
+
+    double lumi = 0.0;
+    HnuPlots::FileStruct data;
+
+    //background legend label, TFile
+    vector<vector<HnuPlots::FileStruct> > bg, sig;
+    vector<HnuPlots::FileStruct> vsig;
+    setBgandData(is2011A, is2011B, data, bg, lumi, 9, "cutlevel");
+
+    //signal
+    vsig.push_back(HnuPlots::FileStruct("M_{W_{R}} = 1.8 TeV", new TFile("/local/cms/user/jmmans/heavyNu_signal/signal_1800_1000.root"), "hNuMu40/cutlevel", lumi, 0.01252, 1.27,  "hNuMu40/cutlevel"));
+    sig.push_back(vsig);
+
+    HnuPlots hps(data, bg, sig, lumi);
+    hps.cutFlow();
+}
+
+void plotQCD(bool is2011A = true, std::string cutlevel = "diLmassCuts", std::string plot = "mWR", bool log = true, double xmin = 0.0, double xmax = 0.0)
+{
+    using namespace std;
+
+    char fdata[128];
+    double lumi = 0.0;
+
+    //background legend label, TFile
+    vector<vector<HnuPlots::FileStruct> > bg, sig;
+    vector<HnuPlots::FileStruct> bgTT, bgZJ, bgOther, vsig;
+    if(is2011A)
+    {
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_QCD_jan6.root"),                   "hNuQCDMu24/" + cutlevel + "/" + plot,  216.2, 3160,  1.49 * 0.02269,  "hNuMu24/cutlevel"));
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_QCD_jan6.root"),                   "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 3160,  1.49 * 0.02269,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_QCD_dec27.root"),           "hNuQCDMu24/" + cutlevel + "/" + plot, 216.2,  17.4, 1.06,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("t#bar{t}", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_QCD_dec27.root"),           "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 17.4, 1.06,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_QCD_dec27.root"),    "hNuQCDMu24/" + cutlevel + "/" + plot, 216.2,  5.3,  1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_QCD_dec27.root"),    "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 5.3,  1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_QCD_dec27.root"), "hNuQCDMu24/" + cutlevel + "/" + plot, 216.2,  5.3,  1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_QCD_dec27.root"), "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 5.3,  1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_QCD_dec27.root"),                "hNuQCDMu24/" + cutlevel + "/" + plot, 216.2,  43, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_QCD_dec27.root"),                "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_QCD_dec27.root"),                "hNuQCDMu24/" + cutlevel + "/" + plot, 216.2,  18.2, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_QCD_dec27.root"),                "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_QCD_dec27.root"),                "hNuQCDMu24/" + cutlevel + "/" + plot, 216.2,  5.9, 1.0,  "hNuMu24/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_QCD_dec27.root"),                "hNuQCDMu40/" + cutlevel + "/" + plot, 1956.7, 5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-dec23.root");
+        lumi += 216.2 + 1956.7;
+    }
+    else
+    {
+        bgZJ.push_back(   HnuPlots::FileStruct("Z+Jets",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_QCD_jan6.root"),                    "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 3160, 1.48 * 0.02269 * 1.16,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_QCD_dec27.root"),              "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 17.4, 0.95,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WToLNu_7TeV-sherpa_2011B_QCD_jan9.root"),                            "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 31314, 1.48 * 0.02269 * 1.16,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_QCD_dec27.root"),    "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 5.3, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_QCD_dec27.root"), "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 5.3,  1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_QCD_dec27.root"),                "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 43, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_QCD_dec27.root"),                "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 18.2, 1.0,  "hNuMu40/cutlevel"));
+        bgOther.push_back(HnuPlots::FileStruct("Other", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_QCD_dec27.root"),                "hNuQCDMu40/" + cutlevel + "/" + plot, 2510.5 + 216.2 + 1956.7, 5.9, 1.0,  "hNuMu40/cutlevel"));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root");
+        lumi += 2510.5 + 216.2 + 1956.7;
+    }
+    //bg.push_back(bgTT);
+    bg.push_back(bgZJ);
+    bg.push_back(bgOther);
+
+    //data
+    //HnuPlots::FileStruct data("Data", new TFile("data-run2011a-run2011b-nov11.root"), "hNu/" + cutlevels[cutlevel] + "/" + plot);
+    HnuPlots::FileStruct data("Data", new TFile(fdata), "hNuQCD/" + cutlevel + "/" + plot);
+
+    HnuPlots hps(data, bg, sig, lumi);
+    hps.setXAxisTitle("please auto set the axis");
+    hps.setYAxisTitle("please auto set the axis");
+    hps.setRebin(5);
+    hps.setLog(log);
+    hps.setXRange(xmin, xmax);
+    if(is2011A) hps.setFormLabel("QCD_2011A");
+    else hps.setFormLabel("QCD_2011B");
+    hps.setSavePlots(false);
+    hps.plot(); //Norm(85, 95);
+    hps.integrals(200, 2000);
+    hps.plotQCDFit();
+}
+
+void plotRussianTTBarNorm(bool is2011A = true, bool is2011B = true, int cutlevel = 5, double cl = 0.0, double ch = 2801.0, std::string plot = "mWRvsminLPt", bool log = true)
+{
+    using namespace std;
+
+    char fdata[256];
+    double lumi = 0.0;
+
+    const string rcuts[] = {
+        "Mu1Pt30GeV",
+        "Mu1Pt40GeV",
+        "Mu1Pt50GeV",
+        "Mu1Pt60GeV",
+        "Mu1Pt80GeV",
+        "Mu1Pt100GeV"
+    };
+
+    //background legend label, TFile
+    vector<vector<HnuPlots::FileStruct> > bg, sig;
+    vector<HnuPlots::FileStruct> bgTT, bgOther;
+    if(is2011A)
+    {
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),              "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  17.4, 1.0,  "hNuMu24/cutlevel", cl, ch));
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011A_dec14.root"),              "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 17.4, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_QCD_jan6.root"),                   "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  3048,  1.545, "hNuMu24/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011A_QCD_jan6.root"),                   "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 3048,  1.545, "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  5.3, 1.0,  "hNuMu24/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"),    "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 5.3, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  5.3,  1.0,  "hNuMu24/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011A_dec14.root"), "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 5.3,  1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  43, 1.0,  "hNuMu24/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 43, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  18.2, 1.0,  "hNuMu24/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 18.2, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu24/" + rcuts[cutlevel] + "/" + plot, 216.2,  5.9, 1.0,  "hNuMu24/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011A_dec14.root"),                "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 1956.7, 5.9, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-dec23.root");
+        lumi += 216.2 + 1956.7;
+    }
+    if(is2011B)
+    {
+        bgTT.push_back(   HnuPlots::FileStruct("t#bar{t}",   new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_TTTo2L2Nu2B_7TeV-powheg-pythia6_2011B_dec14.root"),              "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 17.4, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Background", new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_DYToLL_M-50_7TeV-sherpa_2011B_QCD_jan6.root"),                   "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 3048,  1.534, "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_T_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"),    "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 5.3, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_Tbar_TuneZ2_tW-channel-DR_7TeV-powheg-tauola_2011B_dec14.root"), "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 5.3,  1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WW_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 43, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_WZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 18.2, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        bgOther.push_back(HnuPlots::FileStruct("Other",      new TFile("/local/cms/user/pastika/heavynu/heavynu_2011Bg_summer11_ZZ_TuneZ2_7TeV_pythia6_tauola_2011B_dec14.root"),                "hNuTopMu40/" + rcuts[cutlevel] + "/" + plot, 2510.5, 5.9, 1.0,  "hNuMu40/cutlevel", cl, ch));
+        sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011b-dec23.root");
+        lumi += 2510.5;
+    }
+    if(is2011A && is2011B) sprintf(fdata, "%s", "/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root");
+    bg.push_back(bgTT);
+    bg.push_back(bgOther);
+
+    //data
+    HnuPlots::FileStruct data("Data", new TFile(fdata), "hNuTop/" + rcuts[cutlevel] + "/" + plot);
+    data.clow = cl;
+    data.chigh = ch;
+
+    HnuPlots hps(data, bg, sig, lumi);
+    hps.setXAxisTitle("M_{e#mujj} [GeV]");
+    hps.setYAxisTitle("please auto set the axis");
+    hps.setRebin(2);
+    hps.setLog(log);
+    hps.setSavePlots(false);
+    if(is2011A && !is2011B) hps.setFormLabel("ttnorm_2011A");
+    else if(!is2011A && is2011B) hps.setFormLabel("ttnorm_2011B");
+    else hps.setFormLabel("ttnorm_2011Combined");
+    hps.plotNorm(20.0, 3000.0);
+}
+
+
+
 
 
 
