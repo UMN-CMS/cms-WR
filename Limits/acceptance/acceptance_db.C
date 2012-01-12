@@ -1,4 +1,6 @@
 #include "acceptance_db.h"
+#include <math.h>
+#include <stdlib.h>
 
 void AcceptanceDB::add(int mw, int mn, double a2010, double a2011) {
   AcceptPt pt;
@@ -105,4 +107,5 @@ double AcceptanceDB::getBestEstimate(int mw, int mn, int year) const {
 
 void AcceptanceDB::loadDB() {
 #include "db_jun6.C"
+#include "db_more_jan12.C"
 }
