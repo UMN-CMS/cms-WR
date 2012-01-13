@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.85 2011/12/21 17:41:37 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.86 2011/12/23 15:17:15 bdahmes Exp $
 //
 //
 
@@ -62,6 +62,7 @@
 
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TProfile2D.h"
 #include "TVector3.h"
 #include "TRandom.h"
@@ -301,6 +302,10 @@ private:
         TH1 *mWR, *mNuR1, *mNuR2, *mJJ;
         TH2 *mNuR2D, *jetPtvsNum;
         TH1 *mu1ptFracWRmass;
+
+        TH2 *mMuMuvsmWR, *mWRvsmNuR1, *mWRvsmNuR2, *mWRvsNPV, *mMuMuZoomvsNPV;
+
+        TH3 *mMuMuZoomvsptMu1vsptMu2;
 
         TH1 *btagJet1, *btagJet2;
         TH1 *numBjets, *njets;
@@ -671,9 +676,9 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     t = "M(N_{R}) with #mu_{1} " + post;
     mNuR1 = td->make<TH1D > ("mNuR1", t.c_str(), 70, 0, 2800);
     t = "M(N_{R}) with #mu_{2} " + post;
-    mNuR2 = td->make<TH1D > ("mNuR2", t.c_str(), 70, 0, 1400);
+    mNuR2 = td->make<TH1D > ("mNuR2", t.c_str(), 70, 0, 2800);
     t = "M(N_{R}) #mu_{1} vs. #mu_{2} " + post;
-    mNuR2D = td->make<TH2D > ("mNuR2D", t.c_str(), 70, 0, 2800, 70, 0, 1400);
+    mNuR2D = td->make<TH2D > ("mNuR2D", t.c_str(), 70, 0, 2800, 70, 0, 2800);
 
     t = "#mu_{1} p_{T} / M(W_{R}) " + post;
     mu1ptFracWRmass = td->make<TH1D > ("mu1ptFracWRmass", t.c_str(), 100, 0, 1.);
@@ -692,6 +697,23 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     mMuMuGenZoom = td->make<TH1D > ("mMuMuGenZoom", t.c_str(), 400, 0, 400);
     t = "DiMuon Charge " + post;
     diMuCharge = td->make<TH1D > ("diMuCharge", t.c_str(), 2, -1, 1);
+
+    t = "M(#mu #mu) vs. M_{W_{R}} " + post;
+    mMuMuvsmWR = td->make<TH2D > ("mMuMuvsmWR", t.c_str(), 100, 0, 1000, 70, 0, 2800);
+    t = "M_{W_{R}} vs. M_{N_{1}} " + post;
+    mWRvsmNuR1 = td->make<TH2D > ("mWRvsmNuR1", t.c_str(), 70, 0, 2800, 70, 0, 2800);
+    t = "M_{W_{R}} vs. M_{N_{2}} " + post;
+    mWRvsmNuR2 = td->make<TH2D > ("mWRvsmNuR2", t.c_str(), 70, 0, 2800, 70, 0, 2800);
+    t = "M_{W_{R}} vs. NPV " + post;
+    mWRvsNPV = td->make<TH2D > ("mWRvsNPV", t.c_str(), 70, 0, 2800, 70, 0, 70);
+    t = "M(#mu #mu) vs. NPV " + post;
+    mMuMuZoomvsNPV = td->make<TH2D > ("mMuMuZoomvsNPV", t.c_str(), 400, 0, 400, 70, 0, 70);
+
+    t = "mMuMuZoomvsptMu1vsptMu2 " + post;
+    double xbins[] = {0.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0, 120.0, 2000.0};
+    double ybins[] = {0.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 2800.0};
+    double zbins[] = {0.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 2800.0};
+    mMuMuZoomvsptMu1vsptMu2 = td->make<TH3F > ("mMuMuZoomvsptMu1vsptMu2", t.c_str(), 14, xbins, 9, ybins, 7, zbins);
 
     diMuCharge->GetXaxis()->SetBinLabel(1, "OS");
     diMuCharge->GetXaxis()->SetBinLabel(2, "SS");
@@ -1281,6 +1303,14 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
     }
 
     mMuMuZoom->Fill(hne.mMuMu, wgt);
+
+    mMuMuvsmWR->Fill(hne.mMuMu, hne.mWR, wgt);
+    mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
+    mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
+    mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
+    mMuMuZoomvsNPV->Fill(hne.mMuMu, hne.n_primary_vertex, wgt);
+
+    mMuMuZoomvsptMu1vsptMu2->Fill(hne.mMuMu, hne.mu1.pt(), hne.mu2.pt(), wgt);
 
     diMuCharge->Fill(0.5 * hne.mu1.charge() * hne.mu2.charge(), wgt);
 
