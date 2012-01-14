@@ -82,15 +82,18 @@ namespace hnu {
     float jecTotalUncertainty(float jpt, float jeta,
 			      JetCorrectionUncertainty *jecUnc,
 			      int correctEra, bool isBjet, bool directionIsUp);
+    double muScaleLUT(pat::Muon& iM) ; 
 
     std::vector< std::pair<pat::Jet,float> >      getJetList (edm::Handle<pat::JetCollection>& pJets,
 							      JetCorrectionUncertainty* jecUnc,
 							      double minPt, double maxAbsEta,
-							      int jecSign=0, int jecEra=3);
+							      int jecSign=0, int jecEra=3, 
+							      bool isMC=false, int jerSign=0);
     std::vector<pat::Muon>                        getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 							      edm::Handle<reco::MuonCollection>& tevMuons,
 							      double minPt, double maxAbsEta,
-							      double ptScale=1.0, bool trackerPt=false);
+							      double mesScale=1.0, bool merUnc=false,
+							      bool trackerPt=false);
     std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 

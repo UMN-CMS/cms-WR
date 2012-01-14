@@ -7,6 +7,10 @@ const float pileup2010A = 1.2;
 const float pileup2010B = 2.2;
 const float pileup2011A = 5.0;
 
+// Data corrections provided by N. Kypreos.
+// MC corrections are inverse of data, and given below
+const double muScaleLUTarray100[5] = { 0.379012,0.162107,0.144514,0.0125131,-0.392431 } ; 
+
 namespace hnu {
   bool isVBTFloose(const pat::Muon& m)
   {
@@ -403,7 +407,8 @@ namespace hnu {
   std::vector< std::pair<pat::Jet,float> > getJetList(edm::Handle<pat::JetCollection>& pJets,
 						      JetCorrectionUncertainty* jecUnc,
 						      double minPt, double maxAbsEta, 
-						      int jecSign, int jecEra) {
+						      int jecSign, int jecEra, 
+						      bool isMC, int jerSign) {
     
     std::vector< std::pair<pat::Jet,float> > jetList ; 
 
@@ -416,11 +421,22 @@ namespace hnu {
       if (iJ.genParton()) jpdgId = iJ.genParton()->pdgId();
       bool isBjet = (abs(jpdgId) == 5);
       float jecuscale = 1.0f;
+      if ( isMC ) { // Known jet energy resolution difference between data and MC
+	double factor = 0.1 ; 
+	if      ( fabs(iJ.eta()) < 1.5 ) factor += 0.10 * double(jerSign) ; 
+	else if ( fabs(iJ.eta()) < 2.0 ) factor += 0.15 * double(jerSign) ; 
+	else                             factor += 0.20 * double(jerSign) ; 
+	const reco::GenJet* iG = iJ.genJet() ; 
+	double corr_delta_pt = ( iJ.pt() - iG->pt() ) * factor ; 
+	double jerscale = std::max(0.0,((iJ.pt()+corr_delta_pt)/iJ.pt())) ;
+	jpt *= jerscale ; 
+	iJ.setP4( iJ.p4()*jerscale ) ; 
+      }
       if (jecSign) {
 	float jecu = jecTotalUncertainty(jpt, jeta, jecUnc, jecEra, isBjet, (jecSign > 0));
 	jecuscale = (1.0 + (float(jecSign) * jecu));
 	jpt *= jecuscale;
-        iJ.setP4(iJ.p4()*jecuscale);
+	iJ.setP4(iJ.p4()*jecuscale);
       }
       if (jpt > minPt) { 
 	std::pair<pat::Jet,float> jetCand = std::make_pair(iJ,jecuscale) ;
@@ -432,17 +448,36 @@ namespace hnu {
     return jetList ; 
   }
 
+  double muScaleLUT(pat::Muon& iM) { 
+
+    const double etastep   = 2.0 * 2.4 / 5 ; 
+    const double etavec[6] = {-2.4,(-2.4+1.0*etastep),(-2.4+2.0*etastep),
+			      (-2.4+3.0*etastep),(-2.4+4.0*etastep),2.4} ; 
+    unsigned int ieta = 0 ; 
+    while (ieta < 5 && iM.eta() > etavec[ieta+1]) ieta++ ;  
+
+    return muScaleLUTarray100[ieta] ; 
+  } 
+
   std::vector<pat::Muon> getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 				     edm::Handle<reco::MuonCollection>& tevMuons,
 				     double minPt, double maxAbsEta, 
-				     double ptScale, bool trackerPt) {
+				     double mesScale, bool muBiasUnc, 
+				     bool trackerPt) {
 
+    double ptScale = mesScale ; 
     std::vector<pat::Muon> muonList ; 
     for (unsigned int iMuon = 0; iMuon < pMuons->size(); iMuon++) {
       pat::Muon iM = pMuons->at(iMuon) ; 
+      if ( fabs(iM.eta()) > maxAbsEta ) continue ; 
+      if ( muBiasUnc ) { 
+	int charge = iM.charge() / abs(iM.charge()) ; 
+	double k   = muScaleLUT(iM) ; 
+	double pt  = iM.pt() ; 
+	ptScale = ( double(charge) / ( double(charge) + k*pt ) ) ; 
+      }
       double mupt = ptScale * (iM.pt());
       if ( mupt < minPt ) continue ; 
-      if ( fabs(iM.eta()) > maxAbsEta ) continue ; 
       if ( !isVBTFtight(iM) ) continue ; 
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting

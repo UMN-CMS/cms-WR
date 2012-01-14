@@ -15,14 +15,14 @@ Training=False
 #--- LoLumi     --> HLT_Mu24        ---#
 #--- HiLumi     --> HLT_Mu40        ---#
 #--- VeryHiLumi --> HLT_Mu40_eta2p1 ---#
-isRun2011LoLumi     = False
+isRun2011LoLumi     = True
 isRun2011HiLumi     = False
 isRun2011VeryHiLumi = False
 
 #--- Flags for data taking era ---#
 isRun2011A = True
 dataEra    = 20111 
-doTriggerStudy = False
+doTriggerStudy = True
 #--- Placeholder for 2011B variables
 if not isRun2011A:
     dataEra = 20112
@@ -385,10 +385,18 @@ process.hNuMu24jesLo = process.hNuMu24.clone( applyJECUsign = cms.int32(-1) )
 process.hNuMu40jesHi = process.hNuMu40.clone( applyJECUsign = cms.int32(1) )
 process.hNuMu40jesLo = process.hNuMu40.clone( applyJECUsign = cms.int32(-1) )
 
+process.hNuMu24jerHi = process.hNuMu24.clone( applyJERsign = cms.int32(1) )
+process.hNuMu24jerLo = process.hNuMu24.clone( applyJERsign = cms.int32(-1) )
+process.hNuMu40jerHi = process.hNuMu40.clone( applyJERsign = cms.int32(1) )
+process.hNuMu40jerLo = process.hNuMu40.clone( applyJERsign = cms.int32(-1) )
+
 process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
 process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
 process.hNuMu40mesHi = process.hNuMu40.clone( applyMESfactor = cms.double(1.01) )
 process.hNuMu40mesLo = process.hNuMu40.clone( applyMESfactor = cms.double(0.99) )
+
+process.hNuMu24mer = process.hNuMu24.clone( checkMERUnc = cms.bool(True) )
+process.hNuMu40mer = process.hNuMu40.clone( checkMERUnc = cms.bool(True) )
 
 process.hNuMu24midHi = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(1) )
 process.hNuMu24midLo = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(-1) )
@@ -539,10 +547,16 @@ if runAnalysis:
             process.p24jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesLo )
             process.p40jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesHi )
             process.p40jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesLo )
+            process.p24jerHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jerHi )
+            process.p24jerLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jerLo )
+            process.p40jerHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jerHi )
+            process.p40jerLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jerLo )
             process.p24mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesHi )
             process.p24mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesLo )
             process.p40mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesHi )
             process.p40mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesLo )
+            process.p24mer    = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mer )
+            process.p40mer    = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mer )
             process.p24midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midHi )
             process.p24midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midLo )
             process.p40midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midHi )

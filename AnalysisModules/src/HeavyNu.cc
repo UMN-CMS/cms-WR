@@ -169,7 +169,9 @@ private:
 
     int jecVal_; // Jet correction eras: 0 = 2010(A+B), 1 = 2010A, 2 = 2010B, 3 = 2011A
     int applyJECUsign_; // for Jet Energy Correction Uncertainty studies
+    int applyJERsign_; // for Jet Energy Resolution and Resolution Uncertainty studies
     double applyMESfactor_; // for Muon Energy Scale studies
+    bool merUncertainty_ ; 
     int applyTrigEffsign_; // for Trigger Efficiency studies
     bool highestPtTriggerOnly_;
     bool applyMuIDCorrections_;
@@ -302,11 +304,11 @@ private:
         TH1 *mWR, *mNuR1, *mNuR2, *mJJ;
         TH2 *mNuR2D, *jetPtvsNum;
         TH1 *mu1ptFracWRmass;
-
+      
         TH2 *mMuMuvsmWR, *mWRvsmNuR1, *mWRvsmNuR2, *mWRvsNPV, *mMuMuZoomvsNPV;
-
+ 
         TH3 *mMuMuZoomvsptMu1vsptMu2;
-
+ 
         TH1 *btagJet1, *btagJet2;
         TH1 *numBjets, *njets;
 
@@ -708,7 +710,7 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     mWRvsNPV = td->make<TH2D > ("mWRvsNPV", t.c_str(), 70, 0, 2800, 70, 0, 70);
     t = "M(#mu #mu) vs. NPV " + post;
     mMuMuZoomvsNPV = td->make<TH2D > ("mMuMuZoomvsNPV", t.c_str(), 400, 0, 400, 70, 0, 70);
-
+ 
     t = "mMuMuZoomvsptMu1vsptMu2 " + post;
     double xbins[] = {0.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0, 120.0, 2000.0};
     double ybins[] = {0.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 2800.0};
@@ -1107,8 +1109,8 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
     evtWeight->Fill(wgt) ;
     mc_type->Fill(hne.mc_class, wgt);
 
-    n_pileup->Fill(hne.n_pue) ; 
-    n_vertex->Fill(hne.n_primary_vertex) ; 
+    n_pileup->Fill(hne.n_pue,wgt) ; 
+    n_vertex->Fill(hne.n_primary_vertex,wgt) ; 
 
     // Muons
     double mu1pt = hne.mu1.pt();
@@ -1200,7 +1202,7 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
     int jet2id = 0;
 
     // Jets
-    njets->Fill(hne.nJets);
+    njets->Fill(hne.nJets,wgt);
     if(hne.nJets > 0)
     {
         if(!hne.pfJets) jet1id = hnu::jetID(hne.j1);
@@ -1303,13 +1305,12 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
     }
 
     mMuMuZoom->Fill(hne.mMuMu, wgt);
-
     mMuMuvsmWR->Fill(hne.mMuMu, hne.mWR, wgt);
     mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
     mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
     mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
     mMuMuZoomvsNPV->Fill(hne.mMuMu, hne.n_primary_vertex, wgt);
-
+ 
     mMuMuZoomvsptMu1vsptMu2->Fill(hne.mMuMu, hne.mu1.pt(), hne.mu2.pt(), wgt);
 
     diMuCharge->Fill(0.5 * hne.mu1.charge() * hne.mu2.charge(), wgt);
@@ -1596,7 +1597,11 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     applyJECUsign_ = iConfig.getParameter<int>("applyJECUsign");
     if(applyJECUsign_) applyJECUsign_ /= abs(applyJECUsign_); // ensure -1,0,+1
 
+    applyJERsign_ = iConfig.getParameter<int>("applyJERsign");
+    if(applyJERsign_) applyJERsign_ /= abs(applyJERsign_); // ensure -1,0,+1
+
     applyMESfactor_ = iConfig.getParameter<double>("applyMESfactor");
+    merUncertainty_ = iConfig.getParameter<bool>("checkMERUnc");
 
     applyMuIDCorrections_ = iConfig.getParameter<bool>("applyMuIDEffcorr");
     applyMuIDEffsign_ = iConfig.getParameter<int>("applyMuIDEffsign");
@@ -2313,12 +2318,12 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet, float> > jetCands =
-            hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_);
+      hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_);
     hnuEvent.nJets = jetCands.size();
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
-        hnu::getMuonList(pMuons, tevMuons, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_);
+      hnu::getMuonList(pMuons, tevMuons, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_, merUncertainty_, false);
     
     // In order to avoid bias, necessary to perform muon studies 
     // immediately after first creating the muon list

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.18 2011/12/24 01:54:14 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.19 2012/01/11 22:06:16 pastika Exp $
 //
 //
 
@@ -1086,7 +1086,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // Look for valid jets and put them in the event
   std::vector< std::pair<pat::Jet,float> > jetCands = 
-    hnu::getJetList(pJets,jecuObj_,cuts.minimum_jet_pt,cuts.maximum_jet_abseta,0) ; 
+    hnu::getJetList(pJets,jecuObj_,cuts.minimum_jet_pt,cuts.maximum_jet_abseta,0,3,hnuEvent.isMC,0) ; 
   for (unsigned int i=0; i<jetCands.size(); i++) { 
     if ( hnuEvent.nJets == 2 ) break ; 
     pat::Jet iJ = jetCands.at(i).first ; 

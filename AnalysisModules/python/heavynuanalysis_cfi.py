@@ -45,8 +45,10 @@ hNu = cms.EDFilter(
 
     jecEra            = cms.int32(0),
     applyJECUsign     = cms.int32(0),
+    applyJERsign      = cms.int32(0),
     applyTrigEffsign  = cms.int32(0),
     applyMESfactor    = cms.double(1.0),
+    checkMERUnc       = cms.bool(False),
     applyMuIDEffcorr  = cms.bool(False),
     applyMuIDEffsign  = cms.int32(0),
 
