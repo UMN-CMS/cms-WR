@@ -37,7 +37,7 @@ topStudy      = True
 studyTopScale = True
 
 #--- Flags for QCD studies ---#
-qcdStudy  = True
+qcdStudy  = False
 doDijet   = False
 doQuadJet = True
 doClosure = False

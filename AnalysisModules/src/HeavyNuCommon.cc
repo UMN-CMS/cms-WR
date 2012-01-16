@@ -427,10 +427,14 @@ namespace hnu {
 	else if ( fabs(iJ.eta()) < 2.0 ) factor += 0.15 * double(jerSign) ; 
 	else                             factor += 0.20 * double(jerSign) ; 
 	const reco::GenJet* iG = iJ.genJet() ; 
-	double corr_delta_pt = ( iJ.pt() - iG->pt() ) * factor ; 
-	double jerscale = std::max(0.0,((iJ.pt()+corr_delta_pt)/iJ.pt())) ;
-	jpt *= jerscale ; 
-	iJ.setP4( iJ.p4()*jerscale ) ; 
+	if ( iG ) { 
+	  double corr_delta_pt = ( iJ.pt() - iG->pt() ) * factor ; 
+	  // std::cout << "Corrected delta pt is: " << corr_delta_pt << " (" << iJ.pt() << "," << iG->pt() 
+	  // 	    << "," << factor << ")" << std::endl ; 
+	  double jerscale = std::max(0.0,((iJ.pt()+corr_delta_pt)/iJ.pt())) ;
+	  jpt *= jerscale ; 
+	  iJ.setP4( iJ.p4()*jerscale ) ; 
+	}
       }
       if (jecSign) {
 	float jecu = jecTotalUncertainty(jpt, jeta, jecUnc, jecEra, isBjet, (jecSign > 0));
