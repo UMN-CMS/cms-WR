@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.19 2012/01/11 22:06:16 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.20 2012/01/14 17:13:47 bdahmes Exp $
 //
 //
 
@@ -903,7 +903,7 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
   init_=false;
 
-  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(),
+  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(pileupEra_),
 					   hnu::get_standard_pileup_data(pileupEra_));
 
   // For the record...

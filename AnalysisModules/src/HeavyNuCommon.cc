@@ -224,7 +224,7 @@ namespace hnu {
 	return -100. ; 
   }
 
-  std::vector<float> generate_flat10_mc(){
+  std::vector<float> generate_flat10_mc(int era){
     // see SimGeneral/MixingModule/python/mix_E7TeV_FlatDist10_2011EarlyData_inTimeOnly_cfi.py; copy and paste from there:
     // const double npu_probs[25] = {0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,  // 0-4
     // 				  0.0698146584,0.0698146584,0.0698146584,0.0698146584,0.0698146584,  // 5-9
@@ -235,14 +235,29 @@ namespace hnu {
 
     // see https://twiki.cern.ch/twiki/bin/view/CMS/PileupMCReweightingUtilities for PU_S4 samples
     // Using the "spike at zero + smearing distribution" as shown on the twiki and recommended for in-time PU corrections
-    const double npu_probs[35] = { 1.45346E-01,6.42802E-02,6.95255E-02,6.96747E-02,6.92955E-02, // 0-4
-                                   6.84997E-02,6.69528E-02,6.45515E-02,6.09865E-02,5.63323E-02, // 5-9
-                                   5.07322E-02,4.44681E-02,3.79205E-02,3.15131E-02,2.54220E-02, // 10-14
-                                   2.00184E-02,1.53776E-02,1.15387E-02,8.47608E-03,6.08715E-03, // 15-19
-                                   4.28255E-03,2.97185E-03,2.01918E-03,1.34490E-03,8.81587E-04, // 20-24
-                                   5.69954E-04,3.61493E-04,2.28692E-04,1.40791E-04,8.44606E-05, // 25-29
-                                   5.10204E-05,3.07802E-05,1.81401E-05,1.00201E-05,5.80004E-06  // 30-34
+    const double npu_probs_summer11[35] = { 1.45346E-01,6.42802E-02,6.95255E-02,6.96747E-02,6.92955E-02, // 0-4
+					    6.84997E-02,6.69528E-02,6.45515E-02,6.09865E-02,5.63323E-02, // 5-9
+					    5.07322E-02,4.44681E-02,3.79205E-02,3.15131E-02,2.54220E-02, // 10-14
+					    2.00184E-02,1.53776E-02,1.15387E-02,8.47608E-03,6.08715E-03, // 15-19
+					    4.28255E-03,2.97185E-03,2.01918E-03,1.34490E-03,8.81587E-04, // 20-24
+					    5.69954E-04,3.61493E-04,2.28692E-04,1.40791E-04,8.44606E-05, // 25-29
+					    5.10204E-05,3.07802E-05,1.81401E-05,1.00201E-05,5.80004E-06  // 30-34
     }; 
+
+    const double npu_probs_fall11[50] = { 0.003388501, 0.010357558, 0.024724258, 0.042348605, 0.058279812, // 0-4
+					  0.068851751, 0.072914824, 0.071579609, 0.066811668, 0.060672356, // 5-9
+					  0.054528356,  0.04919354, 0.044886042, 0.041341896,   0.0384679, // 10-14
+					  0.035871463,  0.03341952, 0.030915649, 0.028395374, 0.025798107, // 15-19
+					  0.023237445, 0.020602754,   0.0180688, 0.015559693, 0.013211063, // 20-24
+					  0.010964293, 0.008920993, 0.007080504, 0.005499239, 0.004187022, // 25-29
+					  0.003096474, 0.002237361, 0.001566428, 0.001074149, 0.000721755, // 30-34
+					  0.000470838,  0.00030268, 0.000184665, 0.000112883, 6.74043E-05, // 35-39
+					  3.82178E-05, 2.22847E-05, 1.20933E-05, 6.96173E-06,  3.4689E-06, // 40-44
+					  1.96172E-06, 8.49283E-07, 5.02393E-07, 2.15311E-07, 9.56938E-08  // 45-49
+    };
+
+    bool isFall11 = ( era == 20113 || era == 20114 ) ; 
+    const double* npu_probs = ( isFall11 ? npu_probs_fall11 : npu_probs_summer11 ) ; 
 
     std::vector<float> retval;
     int npt = sizeof(npu_probs)/sizeof(double);
@@ -309,6 +324,36 @@ namespace hnu {
           195642,     104449,    54741.4,    28184.3,    28004.9
     } ; 
 
+    // Pileup histograms for Fall11 assembled from inputs in this directory: 
+    // /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/PileUp
+    // Per instructions, the so-called "true" distributions from data are used
+    const double json_2011a_44x[] = { 
+             0.0,   252573.0, 5.73861E06, 5.05641E07, 2.68197E08,
+      5.12977E08, 5.21466E08, 3.75661E08, 2.41467E08,  1.4315E08,
+      5.38318E07, 1.18125E07, 1.29073E06,     111569,    6537.93,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0
+    } ; 
+
+    const double json_2011b_44x[] = { 
+             0.0,    27267.4,      35590,    74493.3,     574590,
+      2.90648E06, 3.36311E07, 9.36661E07, 1.38283E08, 1.87624E08,
+      2.15647E08,  2.1173E08, 1.87002E08, 1.46693E08, 9.44372E07,
+      4.60317E07, 1.69231E07, 5.18161E06, 1.42805E06,     437008,
+          102694,     6516.2,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0,
+	     0.0,        0.0,        0.0,        0.0,        0.0
+    } ; 
+
+
     const double* pileupDist=default_pd;
     int npt = 35;
     if (era == 20111) 
@@ -320,6 +365,16 @@ namespace hnu {
     {
         npt = sizeof(json_2011b)/sizeof(double);
         pileupDist=json_2011b;
+    }
+    if (era == 20113) 
+    {
+        npt = sizeof(json_2011a_44x)/sizeof(double);
+        pileupDist=json_2011a_44x;
+    }
+    if (era == 20114) 
+    {
+        npt = sizeof(json_2011b_44x)/sizeof(double);
+        pileupDist=json_2011b_44x;
     }
     if (era == 20110) 
     {
@@ -460,7 +515,9 @@ namespace hnu {
     unsigned int ieta = 0 ; 
     while (ieta < 5 && iM.eta() > etavec[ieta+1]) ieta++ ;  
 
-    return muScaleLUTarray100[ieta] ; 
+    // Alignment corrections are given in chg/TeV.
+    // To get GeV scale, need to divide by 10^3
+    return muScaleLUTarray100[ieta] / 1000. ; 
   } 
 
   std::vector<pat::Muon> getMuonList(edm::Handle<pat::MuonCollection>& pMuons,

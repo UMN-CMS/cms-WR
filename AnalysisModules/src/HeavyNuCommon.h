@@ -98,7 +98,7 @@ namespace hnu {
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 
 								  float ebScale=1.0, float eeScale=1.0);
-    std::vector<float> generate_flat10_mc();
+    std::vector<float> generate_flat10_mc(int pileupEra=-1);
 
     std::vector<float> get_standard_pileup_data(int pileupEra); 
 

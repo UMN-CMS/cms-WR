@@ -6,6 +6,9 @@ import os
 isMC=False
 isData=not isMC
 
+#--- Special flag for 44x/Fall11 ---#
+is44x=True
+
 #--- Signal MC flags ---#
 isMCsignal=False
 Training=False
@@ -22,10 +25,16 @@ isRun2011VeryHiLumi = False
 #--- Flags for data taking era ---#
 isRun2011A = True
 dataEra    = 20111 
+pileupEra  = 20111 
+if is44x:
+    pileupEra = 20113
 doTriggerStudy = True
 #--- Placeholder for 2011B variables
 if not isRun2011A:
-    dataEra = 20112
+    dataEra   = 20112
+    pileupEra = 20112
+    if is44x:
+        pileupEra = 20114
 
 #--- Flags for nominal studies ---#
 runAnalysis = True
@@ -85,14 +94,20 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 if (isMC):
     print "=================> MC flag is SET <===================="
     if (isPileupMC):
-        process.GlobalTag.globaltag=cms.string('START42_V13::All')
+        if (is44x): 
+            process.GlobalTag.globaltag=cms.string('START44_V12::All')
+        else: 
+            process.GlobalTag.globaltag=cms.string('START42_V13::All')
         print "=============> isPileupMC flag is SET <================"
     # else:
     #     print "========> Fall10 MC with Spring10 JEC applied <========"
     #     process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
     print "===============> Running on DATA <===================="
-    process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
+    if (is44x):
+        process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
+    else:
+        process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
@@ -226,7 +241,10 @@ if isData:
     from PhysicsTools.PatAlgos.tools.coreTools import *
     if isPFJets:
         removeMCMatchingPF2PAT( process, '' )
-    removeMCMatching(process, ['All'], outputInProcess = False)
+    if (is44x):
+        removeMCMatching(process, ['All'], outputModules = [])
+    else:
+        removeMCMatching(process, ['All'], outputInProcess = False)
         
 
 #--- Calo Jet Energy Corrections: No longer used ---#
@@ -248,7 +266,10 @@ process.patJetCorrFactors.useRho = cms.bool(False)
 ## ============================== ##
 
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
-removeCleaning( process, False )
+if (is44x): 
+    removeCleaning( process, outputModules = [] )
+else:
+    removeCleaning( process, False )
 
 # Special change for saving good products in data
 if isData:
@@ -294,7 +315,7 @@ process.hNu.studyRatePerRun  = cms.bool(isData)
 process.hNu.maxVertexZsepCM = cms.double(-1)
 process.hNu.maxJetVZsepCM   = cms.double(-1)
 #--- Pileup corrections ---#
-process.hNu.pileupEra = cms.int32(dataEra)
+process.hNu.pileupEra = cms.int32(pileupEra)
 
 #--- Muon ID corrections are taken from Dec 11, 2011 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
@@ -412,10 +433,14 @@ process.hNuMu24trigLo = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(-1)
 process.hNuMu40trigHi = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(1) )
 process.hNuMu40trigLo = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(-1) )
 
-process.hNuMu24puHi = process.hNuMu24.clone( systPileupShift = cms.double(0.6) ) 
-process.hNuMu24puLo = process.hNuMu24.clone( systPileupShift = cms.double(-0.6) ) 
-process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.6) ) 
-process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.6) ) 
+# Pileup uncertainty: +/- 8% on number of interactions leads to 0.4 in 2011A, 0.7 in 2011B
+process.hNuMu24puHi = process.hNuMu24.clone( systPileupShift = cms.double(0.4) ) 
+process.hNuMu24puLo = process.hNuMu24.clone( systPileupShift = cms.double(-0.4) ) 
+process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.4) ) 
+process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.4) ) 
+if not isRun2011A:
+    process.hNuMu40puHi.systPileupShift = cms.double(0.7)
+    process.hNuMu40puLo.systPileupShift = cms.double(-0.7)
 
 ## ============ ##
 ## QCD Analysis ##
@@ -435,7 +460,7 @@ process.hNuQCD.reweight2011B  = cms.vdouble( 0.0681898,0.0683649,0.0738487,0.079
 process.hNuQCD.dimuonMaxVertexZsepCM = cms.double( -1.0 )
 process.hNuQCD.maxJetVZsepCM         = cms.double( -1.0 )
 #--- Pileup corrections: needed even for data! ---#
-process.hNuQCD.pileupEra = cms.int32(dataEra)
+process.hNuQCD.pileupEra = cms.int32(pileupEra)
 
 if isData:
     process.hNuQCD.muonTag                    = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
@@ -476,7 +501,7 @@ process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
 process.hNuTop.applyEleEScale        = cms.bool(isMC) 
 process.hNuTop.applyEleIDweight      = cms.bool(isMC) 
-process.hNuTop.pileupEra             = cms.int32(dataEra)
+process.hNuTop.pileupEra             = cms.int32(pileupEra)
 process.hNuTop.trigMatchPset.trigEra = cms.int32(dataEra)
 process.hNuTop.muIDPset.eraForId     = cms.int32(dataEra)
 process.hNuTop.EBidWgt = cms.double( 1.000 ) 

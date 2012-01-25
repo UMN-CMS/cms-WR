@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.21 2011/12/23 15:17:15 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.22 2012/01/05 00:22:42 pastika Exp $
 //
 //
 
@@ -585,7 +585,7 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   }      
   
   isPFJets_ = iConfig.getParameter<bool>("isPFJets") ; 
-  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(),
+  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(pileupEra_),
 					   hnu::get_standard_pileup_data(pileupEra_));
 
   // For the record...
