@@ -73,14 +73,23 @@ process.source = cms.Source("PoolSource",
 if isData:
     if isRun2011LoLumi:
         print "===========> Flag is SET for 2011 LOW luminosity data <============"
-        from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
+        if is44x:
+            from HeavyNu.AnalysisModules.goodLumiList_novRereco_160404_163869_mu24_cfi import lumisToProcess
+        else:
+            from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
     else:
         if isRun2011VeryHiLumi:
             print "===========> Flag is SET for 2011 HIGH luminosity data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
+            if is44x:
+                from HeavyNu.AnalysisModules.goodLumiList_novRereco_173236_180252_mu40_eta2p1_cfi import lumisToProcess
+            else:
+                from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
         else:
             print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
+            if is44x:
+                from HeavyNu.AnalysisModules.goodLumiList_novRereco_165088_173198_mu40_cfi import lumisToProcess
+            else:
+                from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
 
     process.source.lumisToProcess = lumisToProcess
 
