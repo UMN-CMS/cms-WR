@@ -119,6 +119,8 @@ process.load('Configuration.StandardSequences.Services_cff')
 ## pat sequences to be loaded:
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.load("RecoMuon.MuonIdentification.refitMuons_cfi")
+process.refitMuons.src = cms.InputTag("muons")
+process.myRefitMuonSequence = cms.Sequence( process.refitMuons )
 from PhysicsTools.PatAlgos.tools.pfTools import *
 
 #--- Output module: 
@@ -222,11 +224,11 @@ if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
-       process.patDefaultSequence * process.patTrackSequence * process.refitMuons
+       process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence
    )
 if isPFJets:
     process.AnalysisIntroSequence += process.modifiedPF2PATSequence
