@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.88 2012/01/14 17:13:46 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.89 2012/01/25 22:48:27 bdahmes Exp $
 //
 //
 
@@ -2158,8 +2158,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                                                  doPDFreweight_,
                                                  pdfReweightBaseId,pdfReweightTargetId);	  
 	}
-	
-
+        
         hists.weights->Fill(hnuEvent.eventWgt);
         // generator information
         edm::Handle<reco::GenParticleCollection> genInfo;

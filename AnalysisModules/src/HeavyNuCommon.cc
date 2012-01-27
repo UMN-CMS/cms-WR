@@ -257,10 +257,14 @@ namespace hnu {
     };
 
     bool isFall11 = ( era == 20113 || era == 20114 ) ; 
-    const double* npu_probs = ( isFall11 ? npu_probs_fall11 : npu_probs_summer11 ) ; 
+    const double* npu_probs = npu_probs_summer11 ;
+    int npt = sizeof(npu_probs_summer11)/sizeof(double);
+    if ( isFall11 ) {
+        npt = sizeof(npu_probs_fall11)/sizeof(double);
+        npu_probs = npu_probs_fall11 ;
+    }
 
     std::vector<float> retval;
-    int npt = sizeof(npu_probs)/sizeof(double);
     retval.reserve(npt);
     for (int i=0; i<npt; i++)
       retval.push_back(npu_probs[i]);
@@ -388,7 +392,7 @@ namespace hnu {
     }
 
     std::vector<float> retval;
-    
+
     retval.reserve(npt);
     for (int i=0; i<npt; i++)
       retval.push_back(pileupDist[i]);
@@ -401,7 +405,7 @@ namespace hnu {
     int   nPileup = -1 ; 
     double weight = 1.0 ; 
     // float  avg_nvtx = -1. ;
-    
+
     std::vector<PileupSummaryInfo>::const_iterator PVI;
     for (PVI = pPU->begin(); PVI != pPU->end(); ++PVI) {
       int BX = PVI->getBunchCrossing();
