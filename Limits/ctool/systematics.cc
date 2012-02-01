@@ -134,6 +134,7 @@ void SystematicsDB::standardSystematics() {
   systContents.push_back("PDF");
   systContents.push_back("REN");
   systContents.push_back("FACT");
+  systContents.push_back("ISRFSR");
   defineCommonSyst("PDFSCALE",systContents);
 
   setSimpleSystematic("LUMI");
