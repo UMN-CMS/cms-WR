@@ -3,6 +3,7 @@
 use Getopt::Long;
 
 $toys=50;
+$interpol=100;
 $method="HybridNew";
 $jobBase="default";
 $special="";
@@ -13,6 +14,7 @@ GetOptions("toys=i" => \$toys,
 	   "systmode=i" => \$systmode,
 	   "method=s" => \$method,
 	   "xsec=f" => \$xsec,
+	   "interpol=i" => \$interpol,
 	   "special=s" => \$special,
 	   "jobname=s" => \$jobBase);
 
@@ -57,13 +59,23 @@ print(CONDOR "Requirements = Memory > 400  && (Arch==\"X86_64\") ");
 print(CONDOR "&& (SlotId==6 || SlotId==11)");
 print(CONDOR "\n");
 print(CONDOR  "+CondorGroup=\"cmsfarm\"\n");
- 
+
+$mwmin=10000;
+$mwmax=0;
+%mwr_mn={};
+
+# direct mass points 
 foreach $item (@items) {
     chomp $item;
 #    print $item;
 #    next if (!($item=~/WRToNuLeptonToLLJJ_MW-([0-9]+)_MNu-([0-9]+)/));
     next if (!($item=~/signal_([0-9]+)_([0-9]+).root/));
     $mw=$1; $mn=$2;
+
+    $mwr_mn{$mw}=$mn;
+
+    $mwmin=$mw if ($mwmin>$mw);
+    $mwmax=$mw if ($mwwax<$mw);
 
     $s11=$signal2011."/".$item;
 
@@ -85,7 +97,18 @@ foreach $item (@items) {
     print CONDOR "Queue \n";
     
 }
-    
+# interpolations
+for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
+    next if (($amw%100)==0);
+    $mwb=((int($amw/100))*100);
+    $mwa=((int($amw/100)+1)*100);
+    $mnb=$mwr_mn{$mwb};
+    $mna=$mwr_mn{$mwa};
+    print "$mwa $mwb $mna $mnb\n";
+}
+ 
+
+   
 close(CONDOR);
-system("condor_submit for_condor.txt");
+#system("condor_submit for_condor.txt");
 
