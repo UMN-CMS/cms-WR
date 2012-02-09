@@ -80,6 +80,10 @@ int main(int argc, char* argv[]) {
     sscanf(istring.c_str(),"%d,%d,%[^,],%d,%d,%[^,]",
 	   &pt1.mwr,&pt1.mnr,if1,
 	   &pt2.mwr,&pt2.mnr,if2);
+    printf("Interpolating %d,%d,%s and %d,%d,%s\n",
+	   pt1.mwr,pt1.mnr,if1,	   pt2.mwr,pt2.mnr,if2
+	   );
+
     TFile f1(if1);
     TFile f2(if2);
 	   

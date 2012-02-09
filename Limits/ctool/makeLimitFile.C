@@ -213,7 +213,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, TFi
     char name[10];
     sprintf(name,"b%02d",ibin);
     abin.binName=name;
-    if (abin.signal>0.01 && !fullRange) 
+    if (abin.signal>0.01 || fullRange) 
       pbi.push_back(abin);
   }
   return pbi;
@@ -245,6 +245,7 @@ void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf,
     
     PerBinInfo bin=pbi1[i];
     bin.signal=pbi1[i].signal+(pt.mwr-signalp1.mwr)*(pbi2[i].signal-pbi1[i].signal)/(signalp2.mwr-signalp1.mwr);
+    //    printf("%f\n",bin.signal);
     pbiFinal.push_back(bin);
   }
   formatLimitFile(pbiFinal,pt,limitFileName,syst);
