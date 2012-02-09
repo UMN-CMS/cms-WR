@@ -105,6 +105,27 @@ for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
     $mnb=$mwr_mn{$mwb};
     $mna=$mwr_mn{$mwa};
     print "$mwa $mwb $mna $mnb\n";
+
+
+    $fa=sprintf("%s/signal_%d_%d.root",$signal2011,$mwa,$mna);
+    $fb=sprintf("%s/signal_%d_%d.root",$signal2011,$mwb,$mnb);
+
+    if (! -e $fa) {
+	print "No $fa\n";
+	next;
+    }
+    if (! -e $fb) {
+	print "No $fb\n";
+	next;
+    }
+
+    $amn=$mnb;
+	
+    $ofname="$fileLoc/limit_".$amw."_".$amn;
+    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -s $systdb ";
+    $cmd.=sprintf(" -I %d,%d,%s,%d,%d,%s",$mwb,$mnb,$fb,$mwa,$mna,$fa);
+    system($cmd);
+
 }
  
 
