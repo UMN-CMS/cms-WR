@@ -12,9 +12,19 @@ foreach $file (@ARGV) {
     $file=~/_([0-9]+)_([0-9]+).log/;
     $mw=$1;
     $mn=$2;
+
+
+	$obs=0;
+	$exp=0;
+	$exp_m1s=0;
+	$exp_m2s=0;
+	$exp_p2s=0;
+	$exp_p1s=0;
+
     
     open(OF,$file);
     while (<OF>) {
+	
 
 	if (/xsec=([0-9.]+)/) {
 	    $xsec=$1;
