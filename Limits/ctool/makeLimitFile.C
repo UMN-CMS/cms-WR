@@ -55,7 +55,7 @@ const double bkgd_norm_high=2000.0;
 #include "TH1.h"
 #include "TF1.h"
 
-void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& mp, const char* limitFileName, const SystematicsDB& syst) {
+void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, const char* limitFileName, const SystematicsDB& syst) {
   double* bkgdh[100];
   const int nbins=int(pbi.size());
   char temp[128];
@@ -63,7 +63,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& mp, co
   std::vector<std::string> systematicsList=syst.getSystematicsList();
 
   // set up the official names for the systematics DB
-  sprintf(temp,snames[0],mp.mwr,mp.mnr);
+  sprintf(temp,snames[0],mp.mwr_syst,mp.mnr_syst);
   procName.push_back(temp);
   for (int j=1; j<=jmax; j++) procName.push_back(snames[j]);
   
@@ -155,7 +155,36 @@ std::vector<double> extractBins(TFile* f, const std::string& histname) {
   return retval;
 }
 
-std::vector<PerBinInfo> makeLimitContent(double lumi, double xsec, const MassPoint& mp, TFile* dataf, TFile* signalf) {
+static void binRanger(int mw, int& ilow, int& ihigh) {
+  int mweff=((mw+50)/100);
+  
+  switch (mweff) {
+  case (7) : ihigh=4; break;
+  case (8) : ihigh=4; break;
+  case (9) : ihigh=4; break;
+  case (10) : ihigh=5; break;
+  case (11) : ihigh=5; break;
+  case (12) : ihigh=5; break;
+  case (13) : ihigh=6; break;
+  case (14) : ilow=1; ihigh=6; break;
+  case (15) : ilow=1; ihigh=6; break;
+  case (16) : ilow=1; ihigh=7; break;
+  case (17) :
+  case (18) : ilow=1; ihigh=7; break;
+  case (19) :
+  case (20) : ilow=2; ihigh=8; break;
+  case (21) :
+  case (22) : ilow=2; ihigh=9; break;
+  case (23) :
+  case (24) : ilow=3; ihigh=9; break;
+  case (25) : ilow=3; ihigh=9; break;
+  };
+  
+  
+}
+
+
+std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, TFile* signalf, bool fullRange) {
   //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
   double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->GetBinContent(3);  //  double min_level_abs=minimum_signal_content*sigh->Integral();
 
@@ -169,49 +198,55 @@ std::vector<PerBinInfo> makeLimitContent(double lumi, double xsec, const MassPoi
   int ilow=0;
   int ihigh=9;
 
-  switch (mp.mwr) {
-  case (700) : ihigh=4; break;
-  case (800) : ihigh=4; break;
-  case (900) : ihigh=4; break;
-  case (1000) : ihigh=5; break;
-  case (1100) : ihigh=5; break;
-  case (1200) : ihigh=5; break;
-  case (1300) : ihigh=6; break;
-  case (1400) : ilow=1; ihigh=6; break;
-  case (1500) : ilow=1; ihigh=6; break;
-  case (1600) : ilow=1; ihigh=7; break;
-  case (1700) :
-  case (1800) : ilow=1; ihigh=7; break;
-  case (1900) :
-  case (2000) : ilow=2; ihigh=8; break;
-  case (2100) :
-  case (2200) : ilow=2; ihigh=9; break;
-  case (2300) :
-  case (2400) : ilow=3; ihigh=9; break;
-  case (2500) : ilow=3; ihigh=9; break;
-  };
+  if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
     
   
   for (int ibin=ilow; ibin<=ihigh; ibin++) {
     PerBinInfo abin;
     abin.lowEdge=ibin*200+600;
     abin.highEdge=(ibin+1)*200+600;
-    abin.signal=vsignal[ibin]*normSignal*lumi*xsec;
+    abin.signal=vsignal[ibin]*normSignal*mp.lumi*mp.xsec;
     abin.sourceBin=ibin;
-    abin.lumi=lumi;
+    abin.lumi=mp.lumi;
     abin.year=2011;
     abin.data=int(vdata[ibin]);
     char name[10];
     sprintf(name,"b%02d",ibin);
     abin.binName=name;
-    if (abin.signal>0.01) 
+    if (abin.signal>0.01 && !fullRange) 
       pbi.push_back(abin);
   }
   return pbi;
 }
 
-void makeLimitFile(double lumi, double xsec, const MassPoint& mp, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst) {
-  std::vector<PerBinInfo> pbi = makeLimitContent(lumi,xsec,mp,dataf,signalf);
+void makeLimitFile(const LimitPoint& mp, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst) {
+  std::vector<PerBinInfo> pbi = makeLimitContent(mp,dataf,signalf);
   formatLimitFile(pbi,mp,limitFileName,syst);
 }
 
+void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf, 
+			      TFile* signalf1, const LimitPoint& signalp1, 
+			      TFile* signalf2, const LimitPoint& signalp2, 
+			      const char* limitFileName, const SystematicsDB& syst) {
+
+  std::vector<PerBinInfo> pbi1=makeLimitContent(signalp1,dataf,signalf1,true);
+  std::vector<PerBinInfo> pbi2=makeLimitContent(signalp2,dataf,signalf2,true);
+
+  std::vector<PerBinInfo> pbiFinal;
+
+  int ilow=0;
+  int ihigh=9;
+
+  binRanger(pt.mwr,ilow,ihigh);
+
+  for (size_t i=0; i<pbi1.size(); i++) {
+    // skip irrelevant mass bins
+    if (i<size_t(ilow) || i>size_t(ihigh)) continue;
+    
+    PerBinInfo bin=pbi1[i];
+    bin.signal=pbi1[i].signal+(pt.mwr-signalp1.mwr)*(pbi2[i].signal-pbi1[i].signal)/(signalp2.mwr-signalp1.mwr);
+    pbiFinal.push_back(bin);
+  }
+  formatLimitFile(pbiFinal,pt,limitFileName,syst);
+
+}

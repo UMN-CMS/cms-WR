@@ -74,7 +74,7 @@ foreach $item (@items) {
 
 	
     $ofname="$fileLoc/limit_".$mw."_".$mn;
-    $cmd="./makeLimitFile.exe $lumi2011 $mw $mn $xsec $data2011 $s11 $ofname $systdb $systmode ";
+    $cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -i $s11 -o $ofname -s $systdb ";
     system($cmd);
 
     $mass=sprintf("%04d%04d",$mw,$mn);

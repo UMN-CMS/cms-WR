@@ -23,18 +23,25 @@ struct PerBinInfo {
   std::string binName;
 };
 
-struct MassPoint {
-  int mwr;
-  int mnr;
+struct LimitPoint {
+  double lumi;
+  double xsec;
+  int mwr, mwr_syst;
+  int mnr, mnr_syst;
 };
 
-void formatLimitFile(const std::vector<PerBinInfo>& pbi, const MassPoint& pt, const char* limitFileName, const SystematicsDB& syst);
+void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& pt, const char* limitFileName, const SystematicsDB& syst);
 
 std::vector<double> extractBins(TFile* f, const std::string& histName);
 
-std::vector<PerBinInfo> makeLimitContent(double lumi, double xsec, const MassPoint& pt, TFile* dataf, TFile* signalf);
+std::vector<PerBinInfo> makeLimitContent(const LimitPoint& pt, TFile* dataf, TFile* signalf, bool fullRange=false);
 
-void makeLimitFile(double lumi, double xsec, const MassPoint& pt, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst);
+void makeLimitFile(const LimitPoint& pt, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst);
+
+void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf, 
+			      TFile* signalf1, const LimitPoint& signalp1, 
+			      TFile* signalf2, const LimitPoint& signalp2, 
+			      const char* limitFileName, const SystematicsDB& syst);
 
 
 #endif // MAKE_LIMIT_FILE 1
