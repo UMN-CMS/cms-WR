@@ -7,7 +7,7 @@ Some important constants are set at the top of the file.
 #include <math.h>
 #include <stdio.h>
 #include "makeLimitFile.hh"
-#include "systematicsELEC.h"
+#include "systematics.h"
 
 struct BShape { BShape(double v, double s) : value(v),slope(s) {}
   double value;
@@ -15,41 +15,45 @@ struct BShape { BShape(double v, double s) : value(v),slope(s) {}
 };
 
 // name of the histogram containing the observations
-const char* data_hist_name = "Data";
+const char* data_hist_name[] = {"Data_A","Data_B",0};
 // name of the histogram containing the signal
 const char* signal_hist_name = "Signal";
 const char* signal_norm_hist = 0;
 // functional parameters for ttbar (total per ipb, exponential slope)
-const BShape bkgd_tt2010(1.00/36.1, -5.8e-3);
-const BShape bkgd_tt2011(5.73/191, -6.6e-3);
+const BShape bkgd_tt2011(70.0/(2173+2511), -5.0e-3);
 // functional parameters for z+jets (total per ipb, exponential slope)
-const BShape bkgd_zj2010(0.63/36.1, -4.3e-3);
-const BShape bkgd_zj2011(2.66/191, -4.4e-3);
+const BShape bkgd_zj2011(48.0/(2173+2511), -3.5e-3);
 // functional parameters for other backgrounds (w+jets, VV, QCD, tW)
-const BShape bkgd_other2010((0.07+0.02+0.12+0.03)/36.1, -4.6e-3);
-const BShape bkgd_other2011((0.0+0.16+0.65+0.18)/191.0, -4.6e-3);
+const BShape bkgd_other2011(12.0/(2173+2511), -4.8e-3);
 
 // names
+const char* snames[]= {"SIGNAL_%d_%d","TTJETS","ZJETS","OTHER"};
 const char* jnames[]= {"WR","TT","ZJ","OT"};
 const int jmax=3;
-const BShape jbkgd2010[]={bkgd_tt2010,bkgd_zj2010,bkgd_other2010};
 const BShape jbkgd2011[]={bkgd_tt2011,bkgd_zj2011,bkgd_other2011};
 
 // Histogram manipulation
 const double minimum_signal_content=0.01;
-const double bkgd_norm_low=520.0;
-const double bkgd_norm_high=2000.0;
+const double bkgd_norm_low=600.0;
+const double bkgd_norm_high=3000.0;
 
 #include <stdio.h>
 #include "TFile.h"
 #include "TH1.h"
 #include "TF1.h"
 
-void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileName) {
-  loadSystematics();
+void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, const char* limitFileName, const SystematicsDB& syst) {
 
   double* bkgdh[100];
+  char temp[128];
   const int nbins=int(pbi.size());
+  std::vector<std::string> procName;
+  std::vector<std::string> systematicsList=syst.getSystematicsList();
+
+  // set up the official names for the systematics DB
+  sprintf(temp,snames[0],mp.mwr_syst,mp.mnr_syst);
+  procName.push_back(temp);
+  for (int j=1; j<=jmax; j++) procName.push_back(snames[j]);
   
   TF1* f1=new TF1("f1","exp([0]*x)");
   
@@ -57,8 +61,8 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileNa
     bkgdh[j]=new double[nbins];
     
     for (int ib=0; ib<nbins; ib++) {
-      double v=(pbi[ib].year==2010)?(jbkgd2010[j].value):(jbkgd2011[j].value);
-      double s=(pbi[ib].year==2010)?(jbkgd2010[j].slope):(jbkgd2011[j].slope);
+      double v=jbkgd2011[j].value;
+      double s=jbkgd2011[j].slope;
 
       f1->SetParameter(0,s); 
    
@@ -102,143 +106,88 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const char* limitFileNa
       else fprintf(limitFile,"%5.3f ",bkgdh[j-1][ibin]);
   }
   fprintf(limitFile,"\n");
-
+  
   // systematics
   for (std::vector<std::string>::const_iterator i=systematicsList.begin();
        i!=systematicsList.end(); i++) {
-    fprintf(limitFile,"%-10s lnN ",i->c_str());
+    fprintf(limitFile,"%-10s lnN  ",i->c_str());
     for (int ibin=0; ibin<nbins; ibin++) {
-      for (int j=0; j<=jmax; j++) fprintf(limitFile,"%s ",getSyst(j,pbi[ibin].year,*i)); 
+      int srcBin=pbi[ibin].sourceBin;
+      for (int j=0; j<=jmax; j++) {
+	double systLevel=syst.getSystematic(*i,procName[j],srcBin);
+	if (systLevel<0.001 || fabs(systLevel-1.0)<0.0015) fprintf(limitFile,"  -   ");
+	else fprintf(limitFile,"%5.3f ", systLevel);
+      }
     }
     fprintf(limitFile,"\n");
   }
-  
 
   fclose(limitFile);
 
   
 }
 
-std::vector<PerBinInfo> makeLimitContent2010(int mwr,TFile* dataf, TFile* signalf) {
-  const double lumi=36.1;
+static void binRanger(int mw, int& ilow, int& ihigh) {
+  int mweff=((mw+50)/100);
   
-  TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
-  TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
-  double normSignal=1.0;//((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
-  //  double min_level_abs=minimum_signal_content*sigh->Integral();
-
-  std::vector<PerBinInfo> pbi;
-
-  datah->Rebin(5);
-  sigh->Rebin(5);
-
-  int ilow=3;
-  int ihigh=10;
-
-  switch (mwr) {
-  case (700) : ihigh=7; break;
-  case (800) : ihigh=7; break;
-  case (900) : ihigh=8; break;
-  case (1000) : ihigh=8; break;
-  case (1100) : ihigh=8; break;
-  case (1200) : ihigh=9; break;
-  case (1300) : ihigh=9; break;
-  case (1400) : ihigh=9; break;
-  case (1500) : ilow=4; break;
-  case (1600) : ilow=5; break;
-  case (1700) : ilow=5; break;
-  case (1800) : ilow=5; break;
-  case (1900) : ilow=5; break;
-  case (2000) : ilow=5; break;
-  case (2100) : ilow=5; break;
-  case (2200) : ilow=5; break;
-  case (2300) : ilow=5; break;
-  case (2400) : ilow=5; break;
-  case (2500) : ilow=5; break;
-  case (2600) : ilow=5; break;
+  switch (mweff) {
+  case (7) : ihigh=4; break;
+  case (8) : ihigh=4; break;
+  case (9) : ihigh=4; break;
+  case (10) : ihigh=5; break;
+  case (11) : ihigh=5; break;
+  case (12) : ihigh=5; break;
+  case (13) : ihigh=6; break;
+  case (14) : ilow=1; ihigh=6; break;
+  case (15) : ilow=1; ihigh=6; break;
+  case (16) : ilow=1; ihigh=7; break;
+  case (17) :
+  case (18) : ilow=1; ihigh=7; break;
+  case (19) :
+  case (20) : ilow=2; ihigh=8; break;
+  case (21) :
+  case (22) : ilow=2; ihigh=9; break;
+  case (23) :
+  case (24) : ilow=3; ihigh=9; break;
+  case (25) : ilow=3; ihigh=9; break;
   };
   
-  for (int ibin=1; ibin<=sigh->GetNbinsX(); ibin++) {
-    /*
-      if (sigh->GetBinContent(ibin)<min_level_abs) {
-      printf("  Dropping 2010 bin %d with %f (%f)\n",ibin,sigh->GetBinContent(ibin),min_level_abs);
-      continue; 
-    }
-    */
-    if (ibin<ilow || ibin>ihigh) continue;
-    PerBinInfo abin;
-    abin.lowEdge=std::max(520.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
-    abin.highEdge=sigh->GetXaxis()->GetBinUpEdge(ibin);
-    abin.signal=sigh->GetBinContent(ibin)*normSignal*lumi;
-    if (abin.signal<0.01) continue; // skip very empty bins (less than 0.01 event expected)  These cause formatting problems
-    abin.lumi=lumi;
-    abin.data=int(datah->GetBinContent(ibin));
-    abin.year=2010;
-    char name[10];
-    sprintf(name,"c%02d",ibin);
-    abin.binName=name;
-    pbi.push_back(abin);
-  }
-  return pbi;
+  
 }
 
-void makeLimitFile2010(int mwr, TFile* dataf, TFile* signalf, const char* limitFileName) {
-  std::vector<PerBinInfo> pbi=makeLimitContent2010(mwr,dataf,signalf);
-  formatLimitFile(pbi,limitFileName);
-}  
+std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, TFile* signalf, bool fullRange) {
+  TH1* datah=(TH1*)(dataf->Get(data_hist_name[0])->Clone("datah"));
 
-std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf, TFile* signalf) {
-  TH1* datah=(TH1*)(dataf->Get(data_hist_name)->Clone("datah"));
+  for (int i=1; data_hist_name[i]!=0; i++) {
+    datah->Add((TH1*)(dataf->Get(data_hist_name[i])));
+  }
+
   TH1* sigh=(TH1*)(signalf->Get(signal_hist_name)->Clone("sigh"));
   double normSignal=1.0;//((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
-    //  double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<PerBinInfo> pbi;
 
-  datah->Rebin(5);
-  sigh->Rebin(5);
-
-  int ilow=3;
+  int ilow=1;
   int ihigh=10;
+  
+  binRanger(mp.mwr,ilow,ihigh);
 
-  switch (mwr) {
-  case (700) : ihigh=6; break;
-  case (800) : ihigh=7; break;
-  case (900) : ihigh=7; break;
-  case (1000) : ihigh=8; break;
-  case (1100) : ihigh=8; break;
-  case (1200) : ilow=4; ihigh=9; break;
-  case (1300) : ilow=4; ihigh=9; break;
-  case (1400) : ilow=4; ihigh=9; break;
-  case (1500) : ilow=4; ihigh=10; break;
-  case (1600) : ilow=4; ihigh=10; break;
-  case (1700) : ilow=4; ihigh=10; break;
-  case (1800) : ilow=4; ihigh=11; break;
-  case (1900) : ilow=4; ihigh=11; break;
-  case (2000) : ilow=5; ihigh=12; break;
-  case (2100) : ilow=5; ihigh=12; break;
-  case (2200) : ilow=6; ihigh=13; break;
-  case (2300) : ilow=6; ihigh=13; break;
-  case (2400) : ilow=7; ihigh=14; break;
-  case (2500) : ilow=7; ihigh=14; break;
-  };
-    
   
   for (int ibin=1; ibin<=sigh->GetNbinsX(); ibin++) {
-    /*
-    if (sigh->GetBinContent(ibin)<min_level_abs) {
-      printf("  Dropping 2011 bin %d with %f (%f)\n",ibin,sigh->GetBinContent(ibin),min_level_abs);
+    
+    if (sigh->GetBinContent(ibin)<minimum_signal_content && !fullRange) {
+      printf("  Dropping 2011 bin %d with %f (%f)\n",ibin,sigh->GetBinContent(ibin),minimum_signal_content);
       continue;
     }
-    */
-    if (ibin<ilow || ibin>ihigh) continue;
+    
+    if ((ibin<ilow || ibin>ihigh) && !fullRange) continue;
 
     PerBinInfo abin;
-    abin.lowEdge=std::max(520.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
+    abin.lowEdge=std::max(600.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
     abin.highEdge=sigh->GetXaxis()->GetBinUpEdge(ibin);
-    abin.signal=sigh->GetBinContent(ibin)*normSignal*lumi;
-    if (abin.signal<0.01) continue; // skip very empty bins (less
-    abin.lumi=lumi;
+    abin.signal=sigh->GetBinContent(ibin)*normSignal*mp.lumi;
+    if (abin.signal<0.01 && !fullRange) continue; // skip very empty bins (less
+    abin.lumi=mp.lumi;
     abin.year=2011;
     abin.data=int(datah->GetBinContent(ibin));
     char name[10];
@@ -249,24 +198,34 @@ std::vector<PerBinInfo> makeLimitContent2011(double lumi, int mwr, TFile* dataf,
   return pbi;
 }
 
-void makeLimitFile2011(double lumi, int mwr, TFile* dataf, TFile* signalf, const char* limitFileName) {
-  std::vector<PerBinInfo> pbi = makeLimitContent2011(lumi,mwr,dataf,signalf);
-  formatLimitFile(pbi,limitFileName);
+void makeLimitFile(const LimitPoint& mp, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst) {
+  std::vector<PerBinInfo> pbi = makeLimitContent(mp,dataf,signalf);
+  formatLimitFile(pbi,mp,limitFileName,syst);
 }
+void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf, 
+			      TFile* signalf1, const LimitPoint& signalp1, 
+			      TFile* signalf2, const LimitPoint& signalp2, 
+			      const char* limitFileName, const SystematicsDB& syst) {
 
-void makeLimitFileTwoYear(double lumi11, int mwr, TFile* dataf11, TFile* signalf11, TFile* dataf10, TFile* signalf10, const char* limitFileName) {
+  std::vector<PerBinInfo> pbi1=makeLimitContent(signalp1,dataf,signalf1,true);
+  std::vector<PerBinInfo> pbi2=makeLimitContent(signalp2,dataf,signalf2,true);
 
-  std::vector<PerBinInfo> pbi2010=makeLimitContent2010(mwr,dataf10,signalf10);
-  std::vector<PerBinInfo> pbi2011=makeLimitContent2011(lumi11,mwr,dataf11,signalf11);
+  std::vector<PerBinInfo> pbiFinal;
 
-  std::vector<PerBinInfo> pbi;
-  std::vector<PerBinInfo>::const_iterator i;
+  int ilow=0;
+  int ihigh=9;
 
-  pbi.insert(pbi.end(),pbi2010.begin(),pbi2010.end());
-  pbi.insert(pbi.end(),pbi2011.begin(),pbi2011.end());
+  binRanger(pt.mwr,ilow,ihigh);
 
-  formatLimitFile(pbi,limitFileName);
+  for (size_t i=0; i<pbi1.size(); i++) {
+    // skip irrelevant mass bins
+    if (i<size_t(ilow) || i>size_t(ihigh)) continue;
+    
+    PerBinInfo bin=pbi1[i];
+    bin.signal=pbi1[i].signal+(pt.mwr-signalp1.mwr)*(pbi2[i].signal-pbi1[i].signal)/(signalp2.mwr-signalp1.mwr);
+    //    printf("%f\n",bin.signal);
+    pbiFinal.push_back(bin);
+  }
+  formatLimitFile(pbiFinal,pt,limitFileName,syst);
 
 }
-
-

@@ -124,6 +124,7 @@ for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
     $ofname="$fileLoc/limit_".$amw."_".$amn;
     $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -s $systdb ";
     $cmd.=sprintf(" -I %d,%d,%s,%d,%d,%s",$mwb,$mnb,$fb,$mwa,$mna,$fa);
+    print "$cmd\n";
     system($cmd);
 
 }
