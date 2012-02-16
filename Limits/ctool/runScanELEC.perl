@@ -74,7 +74,8 @@ foreach $item (@items) {
     if (! -e $s11) {
 	print "No $s11\n";
 	next;
-    }
+    } 
+     
 
 	
     $ofname="$fileLoc/limit_".$mw."_".$mn;
@@ -118,6 +119,15 @@ for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
     $cmd.=sprintf(" -I %d,%d,%s,%d,%d,%s",$mwb,$mnb,$fb,$mwa,$mna,$fa);
     print "$cmd\n";
     system($cmd);
+
+
+    $mass=sprintf("%04d%04d",$amw,$amn);
+    
+    $comments="xsec=$xsec";
+    
+    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${amw}_${amn}.log ${method} ${toys} \\\"${comments}\\\" ${special}\n";
+    print CONDOR "Queue \n";
+
 
 }
  
