@@ -24,7 +24,10 @@ static std::string makeKey(const std::string& process, const std::string& systNa
 
 void SystematicsDB::load(const std::string& systdb) {
   FILE* f=fopen(systdb.c_str(),"r");
-  if (f==0) return;
+  if (f==0) {
+    fprintf(stderr,"Unable to open systematics file '%s'\n",systdb.c_str());
+    return;
+  }
 
   char buffer[1024];
   float vals[10];
