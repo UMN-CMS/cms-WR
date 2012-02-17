@@ -43,5 +43,7 @@ void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf,
 			      TFile* signalf2, const LimitPoint& signalp2, 
 			      const char* limitFileName, const SystematicsDB& syst);
 
+std::string whichSyst();
+
 
 #endif // MAKE_LIMIT_FILE 1

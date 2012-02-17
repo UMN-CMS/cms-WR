@@ -55,6 +55,8 @@ const double bkgd_norm_high=2000.0;
 #include "TH1.h"
 #include "TF1.h"
 
+std::string whichSyst() { return "MUON"; }
+
 void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, const char* limitFileName, const SystematicsDB& syst) {
   double* bkgdh[100];
   const int nbins=int(pbi.size());

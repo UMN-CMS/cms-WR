@@ -109,34 +109,66 @@ void SystematicsDB::defineSignalSyst(const std::string& systName, const std::vec
   }
 }
 
-void SystematicsDB::standardSystematics() {
+void SystematicsDB::standardSystematics(const std::string& which) {
   std::vector<std::string> systContents;
-  systContents.push_back("SHAPE");
-  systContents.push_back("NORM");
 
-  defineSingleChannelSyst("TTONLY","TTJETS",systContents);
-  defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
-  defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
+  if (which=="ELEC") {
+    systContents.push_back("SHAPE");
+    systContents.push_back("NORM");
+    
+    defineSingleChannelSyst("TTONLY","TTJETS",systContents);
+    defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
+    defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
+    
+    systContents.clear();
+    systContents.push_back("MCSTATS");
+    defineSignalSyst("SIGONLY",systContents);  
+    
+    systContents.clear();
+    systContents.push_back("JES");
+    systContents.push_back("EES");
+    systContents.push_back("EID");
+    systContents.push_back("PU");
+    systContents.push_back("TRIG");
+    defineCommonSyst("RECOID",systContents);
+    
+    systContents.clear();
+    systContents.push_back("PDF");
+    systContents.push_back("REN");
+    systContents.push_back("FACT");
+    systContents.push_back("ISRFSR");
+    defineCommonSyst("PDFSCALE",systContents);
 
-  systContents.clear();
-  systContents.push_back("MCSTATS");
-  defineSignalSyst("SIGONLY",systContents);  
+    setSimpleSystematic("LUMI");
+  } else { 
 
-  systContents.clear();
-  systContents.push_back("JES");
-  systContents.push_back("MES");
-  systContents.push_back("MUONID");
-  systContents.push_back("PU");
-  systContents.push_back("TRIG");
-  defineCommonSyst("RECOID",systContents);
-
-  systContents.clear();
-  systContents.push_back("PDF");
-  systContents.push_back("REN");
-  systContents.push_back("FACT");
-  systContents.push_back("ISRFSR");
-  defineCommonSyst("PDFSCALE",systContents);
-
-  setSimpleSystematic("LUMI");
-  
+    systContents.push_back("SHAPE");
+    systContents.push_back("NORM");
+    
+    defineSingleChannelSyst("TTONLY","TTJETS",systContents);
+    defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
+    defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
+    
+    systContents.clear();
+    systContents.push_back("MCSTATS");
+    defineSignalSyst("SIGONLY",systContents);  
+    
+    systContents.clear();
+    systContents.push_back("JES");
+    systContents.push_back("MES");
+    systContents.push_back("MUONID");
+    systContents.push_back("PU");
+    systContents.push_back("TRIG");
+    defineCommonSyst("RECOID",systContents);
+    
+    systContents.clear();
+    systContents.push_back("PDF");
+    systContents.push_back("REN");
+    systContents.push_back("FACT");
+    systContents.push_back("ISRFSR");
+    defineCommonSyst("PDFSCALE",systContents);
+    
+    setSimpleSystematic("LUMI");
+  }
 }
+

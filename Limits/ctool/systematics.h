@@ -19,7 +19,8 @@ class SystematicsDB {
   void defineSignalSyst(const std::string& systName, const std::vector<std::string>& contents);
 
   void load(const std::string& systdb);
-  void standardSystematics();
+  void standardSystematics(const std::string& which);
+
   void dump() const;
 
  private:

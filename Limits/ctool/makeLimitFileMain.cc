@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
   TFile df(df_name.c_str());
   SystematicsDB syst;
   syst.load(systf_name.c_str());
-  syst.standardSystematics(); // define the standard systematics
+  syst.standardSystematics(whichSyst()); // define the standard systematics
   /*
   if (argc==10)
     int special_syst_mode=atoi(argv[9]);
