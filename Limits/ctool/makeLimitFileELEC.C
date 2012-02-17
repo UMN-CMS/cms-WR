@@ -133,25 +133,25 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
   int mweff=((mw+50)/100);
   
   switch (mweff) {
-  case (7) : ihigh=4; break;
-  case (8) : ihigh=4; break;
-  case (9) : ihigh=4; break;
-  case (10) : ihigh=5; break;
-  case (11) : ihigh=5; break;
-  case (12) : ihigh=5; break;
-  case (13) : ihigh=6; break;
-  case (14) : ilow=1; ihigh=6; break;
-  case (15) : ilow=1; ihigh=6; break;
-  case (16) : ilow=1; ihigh=7; break;
+  case (7) : ihigh=3; break;
+  case (8) : ihigh=3; break;
+  case (9) : ihigh=3; break;
+  case (10) : ihigh=3; break;
+  case (11) : ilow=2; ihigh=4; break;
+  case (12) : ilow=2; ihigh=4; break;
+  case (13) : ilow=2; ihigh=4; break;
+  case (14) : ilow=3; ihigh=6; break;
+  case (15) : ilow=3; ihigh=6; break;
+  case (16) : ilow=3; ihigh=7; break;
   case (17) :
-  case (18) : ilow=1; ihigh=7; break;
+  case (18) : ilow=4; ihigh=7; break;
   case (19) :
-  case (20) : ilow=2; ihigh=8; break;
+  case (20) : ilow=4; ihigh=8; break;
   case (21) :
-  case (22) : ilow=2; ihigh=9; break;
+  case (22) : ilow=4; ihigh=9; break;
   case (23) :
-  case (24) : ilow=3; ihigh=9; break;
-  case (25) : ilow=3; ihigh=9; break;
+  case (24) : ilow=5; ihigh=9; break;
+  case (25) : ilow=5; ihigh=9; break;
   };
   
   
@@ -176,18 +176,18 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, TFi
 
   
   for (int ibin=1; ibin<=sigh->GetNbinsX(); ibin++) {
+
+    if ((ibin<ilow || ibin>ihigh) && !fullRange) continue;
     
     if (sigh->GetBinContent(ibin)<minimum_signal_content && !fullRange) {
-      printf("  Dropping 2011 bin %d with %f (%f)\n",ibin,sigh->GetBinContent(ibin),minimum_signal_content);
+      printf("  Dropping %d 2011 bin %d with %f (%f)\n",mp.mwr,ibin,sigh->GetBinContent(ibin),minimum_signal_content);
       continue;
     }
     
-    if ((ibin<ilow || ibin>ihigh) && !fullRange) continue;
-
     PerBinInfo abin;
     abin.lowEdge=std::max(600.0,sigh->GetXaxis()->GetBinLowEdge(ibin));
     abin.highEdge=sigh->GetXaxis()->GetBinUpEdge(ibin);
-    abin.signal=sigh->GetBinContent(ibin)*normSignal*mp.lumi;
+    abin.signal=sigh->GetBinContent(ibin)*normSignal*mp.lumi*mp.xsec;
     if (abin.signal<0.01 && !fullRange) continue; // skip very empty bins (less
     abin.lumi=mp.lumi;
     abin.year=2011;

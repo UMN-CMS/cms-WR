@@ -56,7 +56,8 @@ print(CONDOR "Universe = vanilla\n");
 print(CONDOR "Requirements = Memory > 400  && (Arch==\"X86_64\") ");
 
 #print(CONDOR "&& (SlotId>=5 && SlotId<=10)");
-print(CONDOR "&& (SlotId==6 || SlotId==11)");
+#print(CONDOR "&& (SlotId==6 || SlotId==11)");
+print(CONDOR "&& (SlotId==6)");
 print(CONDOR "\n");
 print(CONDOR  "+CondorGroup=\"cmsfarm\"\n");
 
@@ -127,10 +128,17 @@ for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
     print "$cmd\n";
     system($cmd);
 
+    $mass=sprintf("%04d%04d",$amw,$amn);
+
+    $comments="xsec=$xsec";
+
+    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${amw}_${amn}.log ${method} ${toys} \\\"${comments}\\\" ${special}\n";
+    print CONDOR "Queue \n";
+    
 }
  
 
    
 close(CONDOR);
-#system("condor_submit for_condor.txt");
+system("condor_submit for_condor.txt");
 
