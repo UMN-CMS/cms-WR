@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Alexander Gude
 //         Created:  Thu May 12 11:15:22 CDT 2011
-// $Id: HeavyNuGenLevel.cc,v 1.6 2011/11/17 16:24:42 pastika Exp $
+// $Id: HeavyNuGenLevel.cc,v 1.7 2011/12/21 17:41:39 bdahmes Exp $
 //
 //
 
@@ -111,13 +111,13 @@ void HeavyNuGenLevel::HistStruct::book(TFileDirectory *td, const std::string& po
     //t = "Progress through cut series : " + post;
     //cutProgress = td->make<TH1F > ("cutProgress", t.c_str(), 20, -0.5, 19.5);
     t = "Lepton 1 PT : " + post;
-    ptl1 = td->make<TH1F > ("ptl1", t.c_str(), 50, 0, 500);
+    ptl1 = td->make<TH1F > ("ptl1", t.c_str(), 80, 0, 800);
     t = "Lepton 2 PT : " + post;
-    ptl2 = td->make<TH1F > ("ptl2", t.c_str(), 50, 0, 400);
+    ptl2 = td->make<TH1F > ("ptl2", t.c_str(), 80, 0, 800);
     t = "Jet 1 PT : " + post;
-    ptj1 = td->make<TH1F > ("ptj1", t.c_str(), 50, 0, 500);
+    ptj1 = td->make<TH1F > ("ptj1", t.c_str(), 80, 0, 800);
     t = "Jet 2 PT : " + post;
-    ptj2 = td->make<TH1F > ("ptj2", t.c_str(), 50, 0, 500);
+    ptj2 = td->make<TH1F > ("ptj2", t.c_str(), 80, 0, 800);
 
     t = "Lepton-Jet dR : " + post;
     ljdR = td->make<TH1F > ("ljdR", t.c_str(), 50, 0, 5);
@@ -125,9 +125,9 @@ void HeavyNuGenLevel::HistStruct::book(TFileDirectory *td, const std::string& po
     min_ljdR = td->make<TH1F > ("min_ljdR", t.c_str(), 50, 0, 5);
 
     t = "MLL : " + post;
-    mll = td->make<TH1F > ("mll", t.c_str(), 150, 0, 1500);
+    mll = td->make<TH1F > ("mll", t.c_str(), 200, 0, 2000);
     t = "MWR : " + post;
-    m4obj = td->make<TH1F > ("m4obj", t.c_str(), 250, 0, 2500);
+    m4obj = td->make<TH1F > ("m4obj", t.c_str(), 300, 0, 3000);
 }
 
 void HeavyNuGenLevel::HistStruct::fill(const reco::Particle::LorentzVector& l1, const reco::Particle::LorentzVector& l2,
@@ -296,15 +296,21 @@ void HeavyNuGenLevel::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	}
       l1=reco::Particle::LorentzVector(theLep->momentum().px(), theLep->momentum().py(), theLep->momentum().pz(), theLep->momentum().e());
       l2=reco::Particle::LorentzVector(theLep2->momentum().px(), theLep2->momentum().py(), theLep2->momentum().pz(), theLep2->momentum().e());
-
-      const HepMC::PdfInfo* pdfstuff = genEvt->pdf_info(); 
-      Q = pdfstuff->scalePDF();
-
-      id1 = pdfstuff->id1();
-      x1 = pdfstuff->x1();
-      id2 = pdfstuff->id2();
-      x2 = pdfstuff->x2();
       
+      if (doPDFreweight_) {
+	const HepMC::PdfInfo* pdfstuff = genEvt->pdf_info(); 
+	Q = pdfstuff->scalePDF();
+	
+	id1 = pdfstuff->id1();
+	x1 = pdfstuff->x1();
+	id2 = pdfstuff->id2();
+	x2 = pdfstuff->x2();
+      }
+      else{
+	Q = 0.0;
+	id1 = id2 = 0;
+	x1 = x2 = 0.0;
+      }
     } else {
       edm::Handle<reco::GenParticleCollection> gpp;
       iEvent.getByLabel("genParticles",gpp); 

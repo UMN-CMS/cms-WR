@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 import os
 
-needGenParts=True
+needGenParts=False
 
 process = cms.Process("AGEN");
 
@@ -18,7 +18,7 @@ process.options = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
                             noEventSort = cms.untracked.bool(True),
      duplicateCheckMode = cms.untracked.string('noDuplicateCheck'),
-    fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/powheg-hvq/fact1.0_ren1.0/powheg_pythia/powheg_pythia_005.root')
+    fileNames=cms.untracked.vstring('file:/local/cms/user/gude/heavynu/isr_fsr_scale_MC/WRToNuLeptonToLLJJ_MW-2500_MNu-1300_TuneZ2_7TeV-pythia6-tauola_incScale_cff_py_GEN.root')
 )
 
 
