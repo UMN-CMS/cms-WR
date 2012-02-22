@@ -47,7 +47,7 @@ void SystematicsDB::load(const std::string& systdb) {
       std::string key=makeKey(proc,syst);
       DBitem item;
       for (int i=0; i<matched-2; i++) item.values[i]=vals[i];
-      for (int i=matched-1; i<NMASSBIN; i++) item.values[i]=vals[matched-3];
+      for (int i=matched-2; i<NMASSBIN; i++) item.values[i]=vals[matched-3];
       m_db.insert(std::pair<std::string,DBitem>(key,item));
       m_processNames.insert(to_upper(proc));
     }
