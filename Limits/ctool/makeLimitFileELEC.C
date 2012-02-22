@@ -109,6 +109,8 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
   }
   fprintf(limitFile,"\n");
   
+  //  syst.dump();
+
   // systematics
   for (std::vector<std::string>::const_iterator i=systematicsList.begin();
        i!=systematicsList.end(); i++) {
@@ -116,7 +118,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
     for (int ibin=0; ibin<nbins; ibin++) {
       int srcBin=pbi[ibin].sourceBin;
       for (int j=0; j<=jmax; j++) {
-	double systLevel=syst.getSystematic(*i,procName[j],srcBin);
+	double systLevel=syst.getSystematic(*i,procName[j],srcBin);	
 	if (systLevel<0.001 || fabs(systLevel-1.0)<0.0015) fprintf(limitFile,"  -   ");
 	else fprintf(limitFile,"%5.3f ", systLevel);
       }
@@ -190,6 +192,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, TFi
     abin.signal=sigh->GetBinContent(ibin)*normSignal*mp.lumi*mp.xsec;
     if (abin.signal<0.01 && !fullRange) continue; // skip very empty bins (less
     abin.lumi=mp.lumi;
+    abin.sourceBin=ibin-1; // different counting...
     abin.year=2011;
     abin.data=int(datah->GetBinContent(ibin));
     char name[10];

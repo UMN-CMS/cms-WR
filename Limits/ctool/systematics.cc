@@ -72,7 +72,10 @@ double SystematicsDB::getSystematic(const std::string& systName, const std::stri
   std::map<std::string,DBitem>::const_iterator i=m_db.find(key);
   if (i!=m_db.end() && imassbin>=0 && imassbin<10) 
     return (i->second.values[imassbin]<1)?(i->second.values[imassbin]+1):(i->second.values[imassbin]);
-  else return 0.0;
+  else {
+    // printf("No %s (%d)\n",key.c_str(),imassbin);
+    return 0.0;
+  }
 }
 
 std::vector<std::string> SystematicsDB::getSystematicsList() const {
