@@ -5,7 +5,7 @@
 
 class AcceptanceDB {
  public:
-  AcceptanceDB() { loadDB(); }
+  AcceptanceDB(const char* which=0) { loadDB(which); }
   void add(int mw, int mn, double a2010, double a2011);
   double getBestEstimate(int mw, int mn, int year) const;
 
@@ -27,7 +27,7 @@ class AcceptanceDB {
 		    const AcceptPt& a,const AcceptPt& b,
 		    const AcceptPt& c,const AcceptPt& d) const;
   double dist(const AcceptPt& a, const AcceptPt& b) const;
-  void loadDB();
+  void loadDB(const char* which);
 };
 
 #endif // acceptance_db_included
