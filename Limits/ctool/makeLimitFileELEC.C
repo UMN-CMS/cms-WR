@@ -146,14 +146,14 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
   case (15) : ilow=3; ihigh=6; break;
   case (16) : ilow=3; ihigh=7; break;
   case (17) :
-  case (18) : ilow=4; ihigh=7; break;
+  case (18) : ilow=4; ihigh=8; break;
   case (19) :
-  case (20) : ilow=4; ihigh=8; break;
+  case (20) : ilow=4; ihigh=9; break;
   case (21) :
-  case (22) : ilow=4; ihigh=9; break;
+  case (22) : ilow=4; ihigh=10; break;
   case (23) :
-  case (24) : ilow=5; ihigh=9; break;
-  case (25) : ilow=5; ihigh=9; break;
+  case (24) : ilow=5; ihigh=11; break;
+  case (25) : ilow=5; ihigh=11; break;
   };
   
   
@@ -172,7 +172,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, TFi
   std::vector<PerBinInfo> pbi;
 
   int ilow=1;
-  int ihigh=10;
+  int ihigh=11;
   
   binRanger(mp.mwr,ilow,ihigh);
 

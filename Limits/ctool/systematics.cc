@@ -8,6 +8,8 @@
 #include "systematics.h"
 #include <algorithm>
 
+static const int NMASSBIN=11;
+
 static std::string to_upper(const std::string& item) {
   std::string retval;
   for (std::string::const_iterator i=item.begin(); i!=item.end(); i++) 
@@ -30,7 +32,7 @@ void SystematicsDB::load(const std::string& systdb) {
   }
 
   char buffer[1024];
-  float vals[10];
+  float vals[NMASSBIN];
   char proc[100],syst[100];
   while (!feof(f)) {
     buffer[0]=0;
@@ -40,11 +42,12 @@ void SystematicsDB::load(const std::string& systdb) {
 
     int matched=sscanf(buffer,"%s %s %f %f %f %f %f %f %f %f %f %f",proc,syst,
 		       vals,vals+1,vals+2,vals+3,vals+4,
-		       vals+5,vals+6,vals+7,vals+8,vals+9);
-    if (matched==12) {
+		       vals+5,vals+6,vals+7,vals+8,vals+9,vals+10);
+    if (matched>=3) {
       std::string key=makeKey(proc,syst);
       DBitem item;
-      for (int i=0; i<10; i++) item.values[i]=vals[i];
+      for (int i=0; i<matched-2; i++) item.values[i]=vals[i];
+      for (int i=matched-1; i<NMASSBIN; i++) item.values[i]=vals[matched-3];
       m_db.insert(std::pair<std::string,DBitem>(key,item));
       m_processNames.insert(to_upper(proc));
     }
@@ -54,12 +57,13 @@ void SystematicsDB::load(const std::string& systdb) {
 
 void SystematicsDB::dump() const {
   for (std::map<std::string,DBitem>::const_iterator i=m_db.begin(); i!=m_db.end(); i++) {
-    printf("'%s',%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",i->first.c_str(),
+    printf("'%s',%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",i->first.c_str(),
 	   i->second.values[0],i->second.values[1],
 	   i->second.values[2],i->second.values[3],
 	   i->second.values[4],i->second.values[5],
 	   i->second.values[6],i->second.values[7],
-	   i->second.values[8],i->second.values[9]);
+	   i->second.values[8],i->second.values[9],
+	   i->second.values[10]);
   }
 }
 
@@ -70,7 +74,7 @@ double SystematicsDB::getSystematic(const std::string& systName, const std::stri
   if ((m_mode&NO_PDF_FOR_SIGNAL)!=0 && key.find("PDF")!=std::string::npos && key.find("SIGNAL")!=std::string::npos) return 0;
 
   std::map<std::string,DBitem>::const_iterator i=m_db.find(key);
-  if (i!=m_db.end() && imassbin>=0 && imassbin<10) 
+  if (i!=m_db.end() && imassbin>=0 && imassbin<NMASSBIN) 
     return (i->second.values[imassbin]<1)?(i->second.values[imassbin]+1):(i->second.values[imassbin]);
   else {
     // printf("No %s (%d)\n",key.c_str(),imassbin);
@@ -88,9 +92,9 @@ void SystematicsDB::defineSingleChannelSyst(const std::string& systName, const s
   std::string key=makeKey(process,systName);
   DBitem dbi;
   // clear
-  for (int i=0; i<10; i++) dbi.values[i]=0;
+  for (int i=0; i<NMASSBIN; i++) dbi.values[i]=0;
   // iterate over inputs and sum in quadrature
-  for (int i=0; i<10; i++) {
+  for (int i=0; i<NMASSBIN; i++) {
     for (std::vector<std::string>::const_iterator sourcesyst=contents.begin(); sourcesyst!=contents.end(); sourcesyst++) {
       double asyst=getSystematic(*sourcesyst,process,i);
       if (asyst<1) continue; // no contribution

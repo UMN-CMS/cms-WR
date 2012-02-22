@@ -27,7 +27,7 @@ class SystematicsDB {
   std::vector<std::string> m_finalsystematics;
   std::set<std::string> m_processNames;
   struct DBitem {
-    double values[10];
+    double values[20]; // make it big to avoid overflows...
   };
 
   std::map<std::string,DBitem> m_db;

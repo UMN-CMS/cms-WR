@@ -21,22 +21,28 @@ const char* signal_hist_name = "hNuMu40/cut6_mWRmass/mWR";
 const char* signal_norm_hist = "hNuMu40/mc_type";
 
 const double bkgd_tt2011A[] = {26.925420,10.301448,3.986795,1.555096,0.608636,
-			       0.240110,0.096327,0.039796,0.017621,0.010254};
+			       0.240110,0.096327,0.039796,0.017621,0.010254, 
+			       0.008188};
 
 const double bkgd_tt2011B[] = {28.000084,10.499279,3.976956,1.516418,0.579336,
-			       0.222650,0.087097,0.035592,0.016012,0.010128};
+			       0.222650,0.087097,0.035592,0.016012,0.010128,
+			       0.008391};
 
 const double bkgd_zj2011A[] = {14.491357,7.681296,4.045555,2.110133,1.095814,
-			       0.569651,0.291925,0.149057,0.075542,0.036823};
+			       0.569651,0.291925,0.149057,0.075542,0.036823, 
+			       0.014390};
 
 const double bkgd_zj2011B[] = {18.538802,9.210629,4.550137,2.248559,1.109002,
-			       0.541760,0.264128,0.128712,0.062757,0.030643};
+			       0.541760,0.264128,0.128712,0.062757,0.030643,
+			       0.014997};
 
 const double bkgd_other2011A[] = {1.564294,0.681379,0.305788,0.140924,0.066417,
-				  0.031874,0.015513,0.007631,0.003783,0.001887};
+				  0.031874,0.015513,0.007631,0.003783,0.001887,
+				  0.000945};
 
 const double bkgd_other2011B[] = {1.652976,0.548266,0.194975,0.073102,0.028415,
-				  0.011300,0.004557,0.001852,0.000757,0.000310};
+				  0.011300,0.004557,0.001852,0.000757,0.000310,
+				  0.000127};
 
 // names
 const char* jnames[]= {"WR","TT","ZJ","OT"};
@@ -47,8 +53,6 @@ const double* jbkgd2011B[]={bkgd_tt2011B,bkgd_zj2011B,bkgd_other2011B};
 
 // Histogram manipulation
 const double minimum_signal_content=0.01;
-const double bkgd_norm_low=600.0;
-const double bkgd_norm_high=2000.0;
 
 #include <stdio.h>
 #include "TFile.h"
@@ -148,10 +152,10 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 }
 
 std::vector<double> extractBins(TFile* f, const std::string& histname) {
-  std::vector<double> retval(10,0);
+  std::vector<double> retval(11,0);
   TH1* h=(TH1*)(f->Get(histname.c_str()));
   if (h!=0) {
-    for (int jbin=0; jbin<10; jbin++) 
+    for (int jbin=0; jbin<11; jbin++) 
       retval[jbin]=h->Integral(16+5*jbin,16+4+5*jbin);    
   }
   return retval;
@@ -178,8 +182,8 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
   case (21) :
   case (22) : ilow=2; ihigh=9; break;
   case (23) :
-  case (24) : ilow=3; ihigh=9; break;
-  case (25) : ilow=3; ihigh=9; break;
+  case (24) : ilow=3; ihigh=10; break;
+  case (25) : ilow=3; ihigh=10; break;
   };
   
   
