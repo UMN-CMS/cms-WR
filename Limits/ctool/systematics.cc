@@ -40,7 +40,7 @@ void SystematicsDB::load(const std::string& systdb) {
     if (strchr(buffer,'#')!=0) *(strchr(buffer,'#'))=0;
     while (strchr(buffer,',')!=0) *(strchr(buffer,','))='\t';
 
-    int matched=sscanf(buffer,"%s %s %f %f %f %f %f %f %f %f %f %f",proc,syst,
+    int matched=sscanf(buffer,"%s %s %f %f %f %f %f %f %f %f %f %f %f",proc,syst,
 		       vals,vals+1,vals+2,vals+3,vals+4,
 		       vals+5,vals+6,vals+7,vals+8,vals+9,vals+10);
     if (matched>=3) {
