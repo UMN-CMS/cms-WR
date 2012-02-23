@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.89 2012/01/25 22:48:27 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.90 2012/01/27 00:51:25 bdahmes Exp $
 //
 //
 
@@ -337,7 +337,7 @@ private:
         TH1* mc_type;
 
         // Pileup, vertex count information
-        TH1 *n_pileup, *n_vertex ; 
+      TH1 *n_pileup, *n_vertex, *n_vertex_noWgt ; 
 
     };
 
@@ -644,6 +644,8 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     n_pileup = td->make<TH1D > ("n_pileup", "Number of (MC) pileup", 35, -0.5, 34.5);
     t = "n(Vertex) " + post;
     n_vertex = td->make<TH1D > ("n_vertex", "Number of reconstructed vertices", 35, -0.5, 34.5);
+    t = "n(Vertex), no weights " + post;
+    n_vertex_noWgt = td->make<TH1D > ("n_vertex_noWgt", "Number of reconstructed vertices", 35, -0.5, 34.5);
 
 
     // ----------  Mu/Jet histograms  ----------
@@ -674,13 +676,13 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     // ----------  Composite histograms  ----------
 
     t = "M(W_{R}) " + post;
-    mWR = td->make<TH1D > ("mWR", t.c_str(), 70, 0, 2800);
+    mWR = td->make<TH1D > ("mWR", t.c_str(), 100, 0, 4000);
     t = "M(N_{R}) with #mu_{1} " + post;
-    mNuR1 = td->make<TH1D > ("mNuR1", t.c_str(), 70, 0, 2800);
+    mNuR1 = td->make<TH1D > ("mNuR1", t.c_str(), 100, 0, 4000);
     t = "M(N_{R}) with #mu_{2} " + post;
-    mNuR2 = td->make<TH1D > ("mNuR2", t.c_str(), 70, 0, 2800);
+    mNuR2 = td->make<TH1D > ("mNuR2", t.c_str(), 100, 0, 4000);
     t = "M(N_{R}) #mu_{1} vs. #mu_{2} " + post;
-    mNuR2D = td->make<TH2D > ("mNuR2D", t.c_str(), 70, 0, 2800, 70, 0, 2800);
+    mNuR2D = td->make<TH2D > ("mNuR2D", t.c_str(), 100, 0, 4000, 100, 0, 4000);
 
     t = "#mu_{1} p_{T} / M(W_{R}) " + post;
     mu1ptFracWRmass = td->make<TH1D > ("mu1ptFracWRmass", t.c_str(), 100, 0, 1.);
@@ -701,13 +703,13 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     diMuCharge = td->make<TH1D > ("diMuCharge", t.c_str(), 2, -1, 1);
 
     t = "M(#mu #mu) vs. M_{W_{R}} " + post;
-    mMuMuvsmWR = td->make<TH2D > ("mMuMuvsmWR", t.c_str(), 100, 0, 1000, 70, 0, 2800);
+    mMuMuvsmWR = td->make<TH2D > ("mMuMuvsmWR", t.c_str(), 100, 0, 1000, 100, 0, 4000);
     t = "M_{W_{R}} vs. M_{N_{1}} " + post;
-    mWRvsmNuR1 = td->make<TH2D > ("mWRvsmNuR1", t.c_str(), 70, 0, 2800, 70, 0, 2800);
+    mWRvsmNuR1 = td->make<TH2D > ("mWRvsmNuR1", t.c_str(), 100, 0, 4000, 100, 0, 4000);
     t = "M_{W_{R}} vs. M_{N_{2}} " + post;
-    mWRvsmNuR2 = td->make<TH2D > ("mWRvsmNuR2", t.c_str(), 70, 0, 2800, 70, 0, 2800);
+    mWRvsmNuR2 = td->make<TH2D > ("mWRvsmNuR2", t.c_str(), 100, 0, 4000, 100, 0, 4000);
     t = "M_{W_{R}} vs. NPV " + post;
-    mWRvsNPV = td->make<TH2D > ("mWRvsNPV", t.c_str(), 70, 0, 2800, 70, 0, 70);
+    mWRvsNPV = td->make<TH2D > ("mWRvsNPV", t.c_str(), 100, 0, 4000, 70, 0, 70);
     t = "M(#mu #mu) vs. NPV " + post;
     mMuMuZoomvsNPV = td->make<TH2D > ("mMuMuZoomvsNPV", t.c_str(), 400, 0, 400, 70, 0, 70);
  
@@ -1111,6 +1113,7 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
     n_pileup->Fill(hne.n_pue,wgt) ; 
     n_vertex->Fill(hne.n_primary_vertex,wgt) ; 
+    n_vertex_noWgt->Fill(hne.n_primary_vertex) ; 
 
     // Muons
     double mu1pt = hne.mu1.pt();
@@ -2269,7 +2272,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         firstEvent_ = false;
     }
 
-    hists.mc_type->Fill(hnuEvent.mc_class);
+    hists.mc_type->Fill(hnuEvent.mc_class,hnuEvent.eventWgt);
     hists.nelec ->Fill(pElecs->size());
     hists.nmuAll->Fill(pMuons->size());
     hists.njet ->Fill(pJets->size());
