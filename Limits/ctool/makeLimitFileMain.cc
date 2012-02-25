@@ -1,4 +1,5 @@
 #include "makeLimitFile.hh"
+#include "ratedb.hh"
 #include "systematics.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +11,11 @@ int main(int argc, char* argv[]) {
 
   int opt;
   LimitPoint pt,pt1,pt2;
-  std::string df_name, systf_name, of_name, sigf_name;
+  std::string df_name, systf_name, of_name, sigf_name, ratedb_name;
   std::string istring;
   bool interpolate=false;
 
-  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:")) != -1) {
+  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:")) != -1) {
                switch (opt) {
 	       case 'l':
 		 pt.lumi=atof(optarg);
@@ -29,6 +30,9 @@ int main(int argc, char* argv[]) {
 	       case 'w':
 		 pt.mwr=atoi(optarg);
 		 pt.mwr_syst=pt.mwr;
+		 break;
+	       case 'r':
+		 ratedb_name=optarg;
 		 break;
 	       case 'n':
 		 pt.mnr=atoi(optarg);
@@ -70,28 +74,25 @@ int main(int argc, char* argv[]) {
   if (argc==10)
     int special_syst_mode=atoi(argv[9]);
   */
+
+  RateDB rates;
+  rates.load(ratedb_name.c_str());
   
   if (!interpolate) {
-    TFile sf(sigf_name.c_str());
-
-    makeLimitFile(pt,&df,&sf,of_name.c_str(),syst);
+    makeLimitFile(pt,&df,rates,of_name.c_str(),syst);
   } else {
-    char if1[1000],if2[1000];
-    sscanf(istring.c_str(),"%d,%d,%[^,],%d,%d,%[^,]",
-	   &pt1.mwr,&pt1.mnr,if1,
-	   &pt2.mwr,&pt2.mnr,if2);
-    printf("Interpolating %d,%d,%s and %d,%d,%s\n",
-	   pt1.mwr,pt1.mnr,if1,	   pt2.mwr,pt2.mnr,if2
+    sscanf(istring.c_str(),"%d,%d:%d,%d",
+	   &pt1.mwr,&pt1.mnr,
+	   &pt2.mwr,&pt2.mnr);
+    printf("Interpolating %d,%d and %d,%d \n",
+	   pt1.mwr,pt1.mnr,   pt2.mwr,pt2.mnr
 	   );
 
-    TFile f1(if1);
-    TFile f2(if2);
-	   
     // take systematics from the first point, by convention
     pt.mnr_syst=pt1.mnr;    
     pt.mwr_syst=pt1.mwr;    
 
-    makeLimitFileInterpolate(pt,&df,&f1,pt1,&f2,pt2,of_name.c_str(),syst);
+    makeLimitFileInterpolate(pt,&df,rates,pt1,pt2,of_name.c_str(),syst);
 			     
   }
 

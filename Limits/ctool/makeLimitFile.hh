@@ -8,6 +8,7 @@ static const int i_OTHER=3;
 
 class TFile;
 class SystematicsDB;
+class RateDB;
 
 #include <vector>
 #include <string>
@@ -15,7 +16,7 @@ class SystematicsDB;
 struct PerBinInfo {
   double lumi;
   double signal;
-  double bkgd;
+  double bkgd[3];
   int data;
   int sourceBin;
   double lowEdge, highEdge;
@@ -34,13 +35,13 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& pt, c
 
 std::vector<double> extractBins(TFile* f, const std::string& histName);
 
-std::vector<PerBinInfo> makeLimitContent(const LimitPoint& pt, TFile* dataf, TFile* signalf, bool fullRange=false);
+std::vector<PerBinInfo> makeLimitContent(const LimitPoint& pt, TFile* dataf, const RateDB& dbr, bool fullRange=false);
 
-void makeLimitFile(const LimitPoint& pt, TFile* dataf, TFile* signalf, const char* limitFileName, const SystematicsDB& syst);
+void makeLimitFile(const LimitPoint& pt, TFile* dataf, const RateDB& dbr, const char* limitFileName, const SystematicsDB& syst);
 
-void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf, 
-			      TFile* signalf1, const LimitPoint& signalp1, 
-			      TFile* signalf2, const LimitPoint& signalp2, 
+void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf, const RateDB& dbf,
+			      const LimitPoint& signalp1, 
+			      const LimitPoint& signalp2, 
 			      const char* limitFileName, const SystematicsDB& syst);
 
 std::string whichSyst();
