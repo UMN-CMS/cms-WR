@@ -3,14 +3,14 @@
 use Getopt::Long;
 
 $toys=50;
-$interpol=100;
+$step=100;
 $method="HybridNew";
 $jobBase="default";
 $special="";
 $systmode=0;
 $xsec=0.01;
-$minmwAllowed=1;
-$maxmwAllowed=4000;
+$minmwAllowed=1000;
+$maxmwAllowed=2500;
 
 GetOptions("toys=i" => \$toys,
 	   "systmode=i" => \$systmode,
@@ -18,7 +18,7 @@ GetOptions("toys=i" => \$toys,
 	   "minmw=i" => \$minmwAllowed,
 	   "maxmw=i" => \$maxmwAllowed,
 	   "xsec=f" => \$xsec,
-	   "interpol=i" => \$interpol,
+	   "step=i" => \$step,
 	   "special=s" => \$special,
 	   "jobname=s" => \$jobBase);
 
@@ -32,25 +32,17 @@ if ($jobBase ne "default") {
     $workloc=$workloc."/${jobBase}";
 }
 
-#$data2010="/local/cms/user/jmmans/heavyNu_jun14/mu/run2010_42X_june4.root";
-#$signal2010="/local/cms/user/dudero/heavyNuAnalysis/dirTrackRelIso+MinDR=0.5/dirSignal";
-#$signal2010="/local/cms/user/jmmans/heavyNu_jun14/mu";
-
-#$data2011="/local/cms/user/dahmes/wr2011/MuResults/GoodRuns/may13-191ipb/heavyNuAnalysis/data2011_191ipb.root";
-#$data2011="/local/cms/user/jmmans/heavyNu_oct2x/mu/run2011A-nominal_2375_oct25.root";
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
-$signal2011="/local/cms/user/jmmans/heavyNu_signal/";
-
 
 $lumi2011=4700;
 $systdb="systematicsdb.csv";
+$ratesdb="ratesdb.csv";
 
 $fileLoc=$workloc."/input";
 system("mkdir -p $fileLoc");
 system("rm -rf ${workloc}/roostats*");
 
-# We use the 2011 as the master list of points
-open(PLIST,"ls $signal2011 |");
+open(PLIST,$ratesdb);
 @items=<PLIST>;
 close(PLIST);
 
@@ -74,7 +66,7 @@ foreach $item (@items) {
     chomp $item;
 #    print $item;
 #    next if (!($item=~/WRToNuLeptonToLLJJ_MW-([0-9]+)_MNu-([0-9]+)/));
-    next if (!($item=~/signal_([0-9]+)_([0-9]+).root/));
+    next if (!($item=~/signal_([0-9]+)_([0-9]+)/));
     $mw=$1; $mn=$2;
 
     next if ($mw < $minmwAllowed);
@@ -85,16 +77,8 @@ foreach $item (@items) {
     $mwmin=$mw if ($mwmin>$mw);
     $mwmax=$mw if ($mwwax<$mw);
 
-    $s11=$signal2011."/".$item;
-
-    if (! -e $s11) {
-	print "No $s11\n";
-	next;
-    }
-
-	
     $ofname="$fileLoc/limit_".$mw."_".$mn;
-    $cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -i $s11 -o $ofname -s $systdb ";
+    $cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
     system($cmd);
 
     $mass=sprintf("%04d%04d",$mw,$mn);
@@ -112,26 +96,13 @@ for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
     $mwa=((int($amw/100)+1)*100);
     $mnb=$mwr_mn{$mwb};
     $mna=$mwr_mn{$mwa};
-    print "$mwa $mwb $mna $mnb\n";
-
-
-    $fa=sprintf("%s/signal_%d_%d.root",$signal2011,$mwa,$mna);
-    $fb=sprintf("%s/signal_%d_%d.root",$signal2011,$mwb,$mnb);
-
-    if (! -e $fa) {
-	print "No $fa\n";
-	next;
-    }
-    if (! -e $fb) {
-	print "No $fb\n";
-	next;
-    }
+#    print "$mwa $mwb $mna $mnb\n";
 
     $amn=$mnb;
 	
     $ofname="$fileLoc/limit_".$amw."_".$amn;
-    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -s $systdb ";
-    $cmd.=sprintf(" -I %d,%d,%s,%d,%d,%s",$mwb,$mnb,$fb,$mwa,$mna,$fa);
+    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -r $ratedb -s $systdb ";
+    $cmd.=sprintf(" -I %d,%d:%d,%d",$mwb,$mnb,$mwa,$mna);
     print "$cmd\n";
     system($cmd);
 
