@@ -35,12 +35,15 @@ void RateDB::load(const char* file) {
 	else vals.push_back(atof(work.c_str()));
 	
 	work.clear();
-      }
+      } else work+=buffer[i];
     }
     if (!work.empty()) vals.push_back(atof(work.c_str()));
-    m_db.insert(std::pair<std::string, std::vector<double> >(makeKey(proc,tag),vals));
+    if (!vals.empty()) {
+//      printf("Loading %s (%d items)\n",makeKey(proc,tag).c_str(),vals.size());
+      m_db.insert(std::pair<std::string, std::vector<double> >(makeKey(proc,tag),vals));
+    }
   }
-  
+  fclose(f);
 }
 
 double RateDB::get(const std::string& process, const std::string& tag, int ibin) const {
@@ -48,7 +51,7 @@ double RateDB::get(const std::string& process, const std::string& tag, int ibin)
   std::string key=makeKey(process,tag);
   i=m_db.find(key);
   if (i==m_db.end()) {
-    printf("search failure\n");
+    printf("search failure '%s'\n",key.c_str());
     return 0;
   }
   if (ibin>=int(i->second.size())) return 0;

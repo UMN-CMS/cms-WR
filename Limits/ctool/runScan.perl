@@ -101,7 +101,7 @@ for ($amw=$mwmin; $amw<$mwmax; $amw+=$step) {
     $amn=$mnb;
 	
     $ofname="$fileLoc/limit_".$amw."_".$amn;
-    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -r $ratedb -s $systdb ";
+    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -r $ratesdb -s $systdb ";
     $cmd.=sprintf(" -I %d,%d:%d,%d",$mwb,$mnb,$mwa,$mna);
     print "$cmd\n";
     system($cmd);
