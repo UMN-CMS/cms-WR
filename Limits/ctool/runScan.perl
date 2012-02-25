@@ -9,10 +9,14 @@ $jobBase="default";
 $special="";
 $systmode=0;
 $xsec=0.01;
+$minmwAllowed=1;
+$maxmwAllowed=4000;
 
 GetOptions("toys=i" => \$toys,
 	   "systmode=i" => \$systmode,
 	   "method=s" => \$method,
+	   "minmw=i" => \$minmwAllowed,
+	   "maxmw=i" => \$maxmwAllowed,
 	   "xsec=f" => \$xsec,
 	   "interpol=i" => \$interpol,
 	   "special=s" => \$special,
@@ -72,6 +76,9 @@ foreach $item (@items) {
 #    next if (!($item=~/WRToNuLeptonToLLJJ_MW-([0-9]+)_MNu-([0-9]+)/));
     next if (!($item=~/signal_([0-9]+)_([0-9]+).root/));
     $mw=$1; $mn=$2;
+
+    next if ($mw < $minmwAllowed);
+    next if ($mw > $maxmwAllowed);
 
     $mwr_mn{$mw}=$mn;
 
