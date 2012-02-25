@@ -34,7 +34,7 @@ if ($jobBase ne "default") {
 
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 
-$lumi2011=4700;
+$lumi2011=4962;
 $systdb="systematicsdb.csv";
 $ratesdb="ratesdb.csv";
 
