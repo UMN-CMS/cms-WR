@@ -90,7 +90,7 @@ foreach $item (@items) {
     
 }
 # interpolations
-for ($amw=$mwmin; $amw<$mwmax; $amw+=$interpol) {
+for ($amw=$mwmin; $amw<$mwmax; $amw+=$step) {
     next if (($amw%100)==0);
     $mwb=((int($amw/100))*100);
     $mwa=((int($amw/100)+1)*100);
