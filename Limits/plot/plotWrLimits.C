@@ -34,7 +34,7 @@ struct XYZ
     {
         return(x == v.x) && (y == v.y);
     }
-};
+} ;
 
 static const double lumi2010 = 36.12;
 static const double lumi2011 = 204.16;
@@ -49,7 +49,7 @@ public:
     {
         return a.y > b.y;
     }
-};
+} ;
 
 class compareByNu2
 {
@@ -59,7 +59,7 @@ public:
     {
         return a.y < b.y;
     }
-};
+} ;
 
 std::vector<XYZ> getSortedVector(int iwr, std::vector<XYZ> a)
 {
@@ -173,6 +173,8 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     if(minval < 0) minval = 1000;
     if(maxval < 0) maxval = 2500;
 
+    const int MWR_STEP = 100;
+
     db = new AcceptanceDB(doMuon);
 
     // Inizialization
@@ -185,7 +187,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     Ptr = fopen(outputFileName.c_str(), "a");
 
     // static const int numPts = 133 ; 
-    static const int numPts = 800;
+    static const int numPts = 1000;
 
     Double_t mWR[numPts];
     Double_t mNu[numPts];
@@ -274,7 +276,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     std::map<std::pair<int, int>, double> rawObsPts;
     std::map<std::pair<int, int>, double> rawExpPts;
 
-    for(int imwr = minval; imwr <= maxval; imwr += 100)
+    for(int imwr = minval; imwr <= maxval; imwr += MWR_STEP)
     {
 
         if(imwr % 100 == 0) std::cout << "Computing for W_R mass : " << imwr << std::endl;
@@ -522,7 +524,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     std::vector<XYZ> obsHighPts;
     std::vector<XYZ> exp_justExcluded, exp_justNotExcluded;
     std::vector<XYZ> obs_justExcluded, obs_justNotExcluded;
-    for(int iwr = minval; iwr <= maxval; iwr += 100)
+    for(int iwr = minval; iwr <= maxval; iwr += MWR_STEP)
     {
         std::vector<XYZ> expectedPts = getSortedVector(iwr, extraExpPts);
         std::vector<XYZ> observedPts = getSortedVector(iwr, extraObsPts);
@@ -551,14 +553,14 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
             }
             if(iwr > TRANSITION_MWR && expDiff > 0 && inu < iwr - 50)
             {
-                std::pair<int, int> nmasspoint(iwr + 100, inu);
-                double nextSigmaBR = grCS->Interpolate(iwr + 100, inu);
+                std::pair<int, int> nmasspoint(iwr + MWR_STEP, inu);
+                double nextSigmaBR = grCS->Interpolate(iwr + MWR_STEP, inu);
                 double nextExpDiff = nextSigmaBR - rawExpPts[nmasspoint];
                 if(nextExpDiff < 0)
                 {
                     XYZ p1 = {iwr, inu, expDiff};
                     exp_justExcluded.push_back(p1);
-                    XYZ p2 = {iwr + 100, inu, nextExpDiff};
+                    XYZ p2 = {iwr + MWR_STEP, inu, nextExpDiff};
                     exp_justNotExcluded.push_back(p2);
                 }
                 //if(iwr == 1500) cout << iwr << "\t" << inu << "\t" << expDiff << "\t" << nextExpDiff << endl;
@@ -575,14 +577,14 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
             }
             if(iwr > TRANSITION_MWR && obsDiff > 0 && inu < iwr - 50)
             {
-                std::pair<int, int> nmasspoint(iwr + 100, inu);
-                double nextSigmaBR = grCS->Interpolate(iwr + 100, inu);
+                std::pair<int, int> nmasspoint(iwr + MWR_STEP, inu);
+                double nextSigmaBR = grCS->Interpolate(iwr + MWR_STEP, inu);
                 double nextObsDiff = nextSigmaBR - rawObsPts[nmasspoint];
                 if(nextObsDiff < 0)
                 {
                     XYZ p1 = {iwr, inu, obsDiff};
                     obs_justExcluded.push_back(p1);
-                    XYZ p2 = {iwr + 100, inu, nextObsDiff};
+                    XYZ p2 = {iwr + MWR_STEP, inu, nextObsDiff};
                     obs_justNotExcluded.push_back(p2);
                 }
             }
@@ -669,7 +671,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
     TGraph* observedPlot = new TGraph();
     TGraph* expectedPlot = new TGraph();
-    
+
     unsigned int istart = 0;
     if(minval > 700)
     {
@@ -683,7 +685,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
         expectedPlot->SetPoint(istart, 800, 52);
         istart++;
     }
-    
+
     if(minval > 900)
     {
         observedPlot->SetPoint(istart, 900, 56);
@@ -699,8 +701,8 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     for(unsigned int i = 0; i < expLowPts.size(); i++) expectedPlot->SetPoint(ctr2d++, expLowPts.at(i).x, expLowPts.at(i).y);
     for(unsigned int i = 0; i < exp_right.size(); i++) expectedPlot->SetPoint(ctr2d++, exp_right.at(i).x, exp_right.at(i).y);
     for(unsigned int i = expHighPts.size(); i > 0; i--) expectedPlot->SetPoint(ctr2d++, expHighPts.at(i - 1).x, expHighPts.at(i - 1).y);
-    
-    
+
+
     if(minval > 900)
     {
         observedPlot->SetPoint(observedPlot->GetN(), 900, 819);
@@ -717,13 +719,13 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
         expectedPlot->SetPoint(expectedPlot->GetN(), 700, 641);
     }
 
-    //    double xx, yy;
-    //    std::cout << "OBSERVED" << std::endl;
-    //    for(int i = 0; i < observedPlot->GetN(); i++)
-    //    {
-    //        observedPlot->GetPoint(i, xx, yy);
-    //        std::cout << xx << "\t" << yy << std::endl;
-    //    }
+    double xx, yy;
+    std::cout << "OBSERVED" << std::endl;
+    for(int i = 0; i < observedPlot->GetN(); i++)
+    {
+        observedPlot->GetPoint(i, xx, yy);
+        std::cout << xx << "\t" << yy << std::endl;
+    }
     //std::cout << "EXPECTED" << std::endl;
     //for(int i = 0; i < expectedPlot->GetN(); i++)
     //{
@@ -737,9 +739,9 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     setTDRStyle();
     fixOverlay();
 
-    const float xmax = 2600, ymax = 2100;
+    const float xmax = 2600, ymax = 2000;
 
-    TH2D* grid = new TH2D("grid", "grid", 100, 600, xmax, 100, 0, ymax); //1000) ;
+    TH2D* grid = new TH2D("grid", "grid", 100, 750, xmax, 100, 0, ymax); //1000) ;
     grid->GetXaxis()->SetTitle("M_{W_{R}} [GeV]");
     grid->GetYaxis()->SetTitleOffset(1.45);
     grid->GetXaxis()->SetNdivisions(6, 5, 0);
@@ -780,15 +782,15 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
     // ============== plot Tevatron limit region:
 
-    float x[] = {600, 740, 740, 600};
-    float y[] = {0, 0, 740, 600};
+    float x[] = {750, 890, 890, 750};
+    float y[] = {0, 0, 890, 750};
     TGraph* Tevatron = new TGraph(4, x, y);
     Tevatron->SetFillColor(kGray + 1);
     Tevatron->SetLineColor(kGray);
 
     // ============== plot region M_nuR > M_WR:
-    float x2[] = {600, ymax, 600};
-    float y2[] = {ymax, ymax, 600};
+    float x2[] = {750, ymax, 750};
+    float y2[] = {ymax, ymax, 750};
     TGraph* wrnu = new TGraph(3, x2, y2);
     wrnu->SetLineWidth(3);
     wrnu->SetLineColor(kYellow - 4);
@@ -818,9 +820,9 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     leg->Draw();
     Tevatron->Draw("F SAME");
     wrnu->Draw("F SAME");
-    if(doMuon) text.DrawLatex(720, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");
-    else text.DrawLatex(720, .92 * ymax, "M_{N_{e}} > M_{W_{R}}");
-    text2.DrawLatex(730, 20, "Excluded by Tevatron");
+    if(doMuon) text.DrawLatex(870, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");
+    else text.DrawLatex(870, .92 * ymax, "M_{N_{e}} > M_{W_{R}}");
+    text2.DrawLatex(880, 20, "Excluded by Tevatron");
     mark->DrawLatex(0.18, 0.96, "CMS Preliminary");
     mark->DrawLatex(0.71, 0.96, "4.7 fb^{-1} at 7 TeV");
 
