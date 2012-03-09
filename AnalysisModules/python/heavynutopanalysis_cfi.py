@@ -47,6 +47,7 @@ hNuTop = cms.EDFilter(
     EBidWgt           = cms.double(1.0),
     EEidWgt           = cms.double(1.0),
     applyMuIDEffcorr  = cms.bool(True),
+    applyMuIDEffsign  = cms.int32(0),
     studyScaleFactor  = cms.bool(True),
     isSignal          = cms.bool(False),
     mNuRnormalization = cms.double(1000.0)

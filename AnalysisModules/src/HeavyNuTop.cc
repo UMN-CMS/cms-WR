@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.20 2012/01/14 17:13:47 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.21 2012/01/25 22:48:28 bdahmes Exp $
 //
 //
 
@@ -124,6 +124,7 @@ private:
   double applyMESfactor_;             // for Muon Energy Scale studies
   int    applyTrigEffsign_;           // for Trigger Efficiency studies
   bool   applyMuIDCorrections_ ; 
+  int applyMuIDEffsign_ ; 
     // bool   applyEleScaleCorrections_ ; 
     // bool   applyEleIDWeightFactor_ ; 
   bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
@@ -839,6 +840,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   // applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
   // applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ; 
   applyMuIDCorrections_ = iConfig.getParameter<bool>("applyMuIDEffcorr");
+  applyMuIDEffsign_     = iConfig.getParameter<int>("applyMuIDEffsign");
+  if (applyMuIDEffsign_) applyMuIDEffsign_ /= abs(applyMuIDEffsign_); // ensure -1,0,+1
 
 
   studyScaleFactorEvolution_ = iConfig.getParameter<bool>("studyScaleFactor");
@@ -925,6 +928,7 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   std::cout << "minMuMuMass       = " << cuts.minimum_mumu_mass     << " GeV" << std::endl;
   std::cout << "min4objMass       = " << cuts.minimum_mWR_mass      << " GeV" << std::endl;
   std::cout << "applyMuIDEffcorr  = " << applyMuIDCorrections_      << std::endl;
+  std::cout << "applyMuIDEffsign  = " << applyMuIDEffsign_ << std::endl;
   // std::cout << "applyEleEScale    = " << applyEleScaleCorrections_  << std::endl ; 
   std::cout << "EB scale factor   = " << EBscalefactor_             << std::endl ; 
   std::cout << "EE scale factor   = " << EEscalefactor_             << std::endl ; 
@@ -1034,8 +1038,13 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //   - no corrections are applied
     if ( studyScaleFactorEvolution_ ) std::cout << "Histograms for top scale factor cross checks will be created" << std::endl ; 
     if ( hnuEvent.isMC ) {
-        if ( applyMuIDCorrections_ )      std::cout << "Nominal Mu ID corrections applied" << std::endl ;
-        else                              std::cout << "WARNING: You have disabled Mu ID corrections.  Are you sure?" << std::endl ;
+      if ( applyMuIDCorrections_ ) {
+	if (applyMuIDEffsign_) std::cout << "Studies will be used to estimate Mu ID uncertainty: " << applyMuIDEffsign_
+					<< std::endl;
+	else                   std::cout << "Nominal Mu ID corrections applied" << std::endl ;
+      } else {
+	std::cout << "WARNING: You have disabled Mu ID corrections.  Are you sure?" << std::endl ;
+      }
         if ( ebIDwgt_ != 1.0 &&
              eeIDwgt_ != 1.0 )            std::cout << "Events will be weighted to account for data/MC reconstruction and ID differences" << std::endl ;
         else                              std::cout << "WARNING: You are not applying EB/EE weighting to MC.  Are you sure?" << std::endl ; 
@@ -1125,7 +1134,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   if ( hnuEvent.nMuons < 1 ) return false ; // No muons
   if (applyMuIDCorrections_ && hnuEvent.isMC) {
-    double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()),0) ;
+    double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()),applyMuIDEffsign_) ;
     hnuEvent.eventWgt *= mu1wgt ; 
   }
 

@@ -510,6 +510,7 @@ process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
 
 #--- Some corrections re-enabled ---#
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
+process.hNuTop.applyMuIDEffsign      = cms.int32(0)
 process.hNuTop.applyEleEScale        = cms.bool(isMC) 
 process.hNuTop.applyEleIDweight      = cms.bool(isMC) 
 process.hNuTop.pileupEra             = cms.int32(pileupEra)
@@ -544,6 +545,11 @@ process.hNuTopMu24.trigMatchPset.triggerPt  = cms.double( 24. )
 process.hNuTopMu24.trigMatchPset.randomSeed = cms.int32( os.getpid() )
 process.hNuTopMu40.trigMatchPset.triggerPt  = cms.double( 40. )
 process.hNuTopMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
+
+process.hNuTopMu24midHi = process.hNuTopMu24.clone( applyMuIDEffsign = cms.int32(1) )
+process.hNuTopMu24midLo = process.hNuTopMu24.clone( applyMuIDEffsign = cms.int32(-1) )
+process.hNuTopMu40midHi = process.hNuTopMu40.clone( applyMuIDEffsign = cms.int32(1) )
+process.hNuTopMu40midLo = process.hNuTopMu40.clone( applyMuIDEffsign = cms.int32(-1) )
 
 #-------------#
 #--- Paths ---#
@@ -640,6 +646,11 @@ if topStudy:
     if isMC:
         process.pTop24 = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24 ) 
         process.pTop40 = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40 ) 
+        if systematics:
+            process.pTop24midHi = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24midHi )
+            process.pTop24midLo = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24midLo )
+            process.pTop40midHi = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40midHi )
+            process.pTop40midLo = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40midLo )
     else:
         process.pTop = cms.Path( process.AnalysisIntroSequence + process.hNuTop )
 
