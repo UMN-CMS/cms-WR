@@ -36,8 +36,8 @@ struct XYZ
     }
 } ;
 
-static const double lumi2010 = 36.12;
-static const double lumi2011 = 204.16;
+static const double lumi2010 = 0;
+static const double lumi2011 = 4971.0;
 
 AcceptanceDB* db;
 
@@ -144,6 +144,7 @@ double getEfficiency(int imwr, std::vector<XYZ> v)
     //               << ": " << nearestLo << "," << nearestHi << std::endl ; 
 
     double eff = -1.;
+    if(nearestHi > v.size()) std::cout << "NONONO " << imwr << std::endl;
     if(nearestLo != nearestHi)
     { // Not a reference point
         double wgtLoAcc = getWgtAcceptance(v.at(nearestLo).x, v.at(nearestLo).y);
@@ -173,14 +174,15 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     if(minval < 0) minval = 1000;
     if(maxval < 0) maxval = 2500;
 
-    const int MWR_STEP = 100;
+    const int MWR_STEP = 50;
 
     db = new AcceptanceDB(doMuon);
 
     // Inizialization
     FILE *Ptr;
     char *str1 = (char*)alloca(10000);
-    ifstream inLimit(limitFile.c_str());
+    //ifstream inLimit(limitFile.c_str());
+    FILE *inLimit = fopen(limitFile.c_str(), "r");
     ifstream inCS(csFile.c_str());
 
     std::string outputFileName = "obsexpSummary.txt";
@@ -189,17 +191,17 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     // static const int numPts = 133 ; 
     static const int numPts = 1000;
 
-    Double_t mWR[numPts];
-    Double_t mNu[numPts];
-    Double_t mWRcs[numPts];
-    Double_t mNucs[numPts];
-    Double_t theCS[numPts];
-    Double_t obs[numPts];
-    Double_t exp[numPts];
-    Double_t exp68lo[numPts];
-    Double_t exp68hi[numPts];
-    Double_t exp95lo[numPts];
-    Double_t exp95hi[numPts];
+    float mWR[numPts];
+    float mNu[numPts];
+    float mWRcs[numPts];
+    float mNucs[numPts];
+    float theCS[numPts];
+    float obs[numPts];
+    float exp[numPts];
+    float exp68lo[numPts];
+    float exp68hi[numPts];
+    float exp95lo[numPts];
+    float exp95hi[numPts];
 
     double csRelError = 0.10;
 
@@ -229,7 +231,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     for(unsigned int i = 0; i < ps.size(); i++) grCS->SetPoint(i, ps[i].x, ps[i].y, ps[i].z);
 
     ctr = 0;
-    while(!inLimit.eof())
+    /*while(!inLimit.eof())
     {
         inLimit >> mWR[ctr];
         inLimit >> mNu[ctr];
@@ -243,9 +245,34 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
         if(!inLimit.good()) break;
         ctr++;
         if(ctr >= numPts) break;
+        std::cout << mWR[ctr] << "\t" << mNu[ctr] << "\t" << obs[ctr] << "\t" << exp[ctr] << "\t" << exp68lo[ctr] << "\t" << exp68hi[ctr] << "\t" << exp95lo[ctr] << "\t" << exp95hi[ctr] << std::endl;
+    }*/
+    char buff[4096];
+    char *c;
+    while(!feof(inLimit) && (c = fgets(buff, 4096, inLimit)) != NULL)
+    {
+        float f1, f2, f3, f4, f5, f6, f7, f8;
+        for(char* k = strchr(buff, ','); k != 0; k = strchr(buff, ',')) *k = ' ';
+        if(sscanf(buff, "%f %f %f %f %f %f %f %f\n", &f1, &f2, &f3, &f4, &f5, &f6, &f7, &f8) == 8)
+        {
+            if(ctr >= numPts) break;
+            //std::cout << buff;
+            //std::cout << f1 << "\t" << f2 << "\t" << f3 << "\t" << f4 << "\t" << f5 << "\t" << f6 << "\t" << f7 << "\t" << f8 << std::endl;
+            mWR[ctr] = f1;
+            mNu[ctr] = f2;
+            obs[ctr] = f3/1000;
+            exp[ctr] = f4/1000;
+            exp68lo[ctr] = f6/1000;
+            exp68hi[ctr] = f7/1000;
+            exp95lo[ctr] = f5/1000;
+            exp95hi[ctr] = f8/1000;
+            //std::cout << mWR[ctr] << "\t" << mNu[ctr] << "\t" << obs[ctr] << "\t" << exp[ctr] << "\t" << exp68lo[ctr] << "\t" << exp68hi[ctr] << "\t" << exp95lo[ctr] << "\t" << exp95hi[ctr] << std::endl;
+            ctr++;
+        }
     }
+    fclose(inLimit);
 
-    // 
+    // a
     // Build up observed/expected limit as a function of W_R and N mass
     // 
     std::vector<XYZ> obsLimit;
@@ -269,6 +296,11 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
         if(find(exp95hiLimit.begin(), exp95hiLimit.end(), h95) == exp95hiLimit.end()) exp95hiLimit.push_back(h95);
         if(find(exp95loLimit.begin(), exp95loLimit.end(), l95) == exp95loLimit.end()) exp95loLimit.push_back(l95);
     }
+
+    //for(std::vector<XYZ>::const_iterator it = obsLimit.begin(); it != obsLimit.end(); ++it)
+    //{
+    //    std::cout << "HERE IS SOME NUMBERS: " << it->x << "\t" << it->y << "\t" << it->z << std::endl;
+    //}
 
     std::vector<XYZ> extraObsPts;
     std::vector<XYZ> extraExpPts;
@@ -340,9 +372,12 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
             double sigmaBR = grCS->Interpolate(iwr, inu);
             // if ( sigmaBR < 0.000001 ) continue ; 
+            if(sigmaBR > 1e-5 && sigmaBR < 1000.0)
+            {
             h_theoryL->SetPoint(inu - 10, inu, sigmaBR);
             h_theory->SetPoint(inu - 10, inu, sigmaBR);
             h_theory->SetPointError(inu - 10, 0., 0., sigmaBR * 0.1, sigmaBR * 0.1);
+            }
         }
 
 
@@ -377,7 +412,8 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
         for(unsigned int i = 0; i < expectedPts.size(); i++)
         {
-            if(doMuon || !((iwr == 1600 || iwr == 1800) && expectedPts.at(i).y < 100)) //for the same of the electrons
+            //if(doMuon || !((iwr == 1600 || iwr == 1800) && expectedPts.at(i).y < 100)) //for the same of the electrons
+            //if(expectedPts.at(i).y > 50 && expectedPts.at(i).y < iwr - 50)
             {
                 h_exp->SetPoint(i, expectedPts.at(i).y, expectedPts.at(i).z);
                 h_exp1sig->SetPoint(i, expectedPts.at(i).y, expectedPts.at(i).z);
@@ -385,11 +421,13 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
             }
         }
         for(unsigned int i = 0; i < observedPts.size(); i++)
-            if(doMuon || !((iwr == 1600 || iwr == 1800) && expectedPts.at(i).y < 100)) h_obs->SetPoint(i, observedPts.at(i).y, observedPts.at(i).z);
+            /*if(doMuon || !((iwr == 1600 || iwr == 1800) && expectedPts.at(i).y < 100))*/
+            h_obs->SetPoint(i, observedPts.at(i).y, observedPts.at(i).z);
 
         for(unsigned int i = 0; i < expected68loPts.size(); i++)
         {
-            if(doMuon || !((iwr == 1600 || iwr == 1800) && expectedPts.at(i).y < 100)) //these ifs remove the repeated sections
+            //if(doMuon || !((iwr == 1600 || iwr == 1800) && expectedPts.at(i).y < 100)) //these ifs remove the repeated sections
+            //if(expected68loPts.at(i).y > 50 && expected68loPts.at(i).y < iwr - 50)
             {
                 double d68lo = expectedPts.at(i).z - expected68loPts.at(i).z;
                 double d68hi = expected68hiPts.at(i).z - expectedPts.at(i).z;
@@ -460,7 +498,7 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
 
         TLatex* mark = new TLatex(0.69, 0.95, "CMS Preliminary");
         // TLatex* mark2 = new TLatex(0.6,0.65, "#int Ldt = 227 pb^{-1} at 7 TeV") ;
-        TLatex* mark2 = new TLatex(0.69, 0.68, "4.7 fb^{-1} at 7 TeV");
+        TLatex* mark2 = new TLatex(0.69, 0.68, "5.0 fb^{-1} at 7 TeV");
         mark->SetNDC(kTRUE);
         mark->SetTextSize(0.03);
         mark->SetTextFont(42);
@@ -513,10 +551,10 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
         csUL->Print(eps);
     }
 
-
+    //
     // Now, create a set of points and make the 2D exclusion plot
-
-    const int TRANSITION_MWR = 2000;
+    //
+    const int TRANSITION_MWR = 2100;
 
     std::vector<XYZ> expLowPts;
     std::vector<XYZ> expHighPts;
@@ -823,8 +861,8 @@ void plotLimits(int minval = -1, int maxval = -1, bool doMuon = true, std::strin
     if(doMuon) text.DrawLatex(870, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");
     else text.DrawLatex(870, .92 * ymax, "M_{N_{e}} > M_{W_{R}}");
     text2.DrawLatex(880, 20, "Excluded by Tevatron");
-    mark->DrawLatex(0.18, 0.96, "CMS Preliminary");
-    mark->DrawLatex(0.71, 0.96, "4.7 fb^{-1} at 7 TeV");
+    mark->DrawLatex(0.18, 0.96, "CMS");
+    mark->DrawLatex(0.71, 0.96, "5.0 fb^{-1} at 7 TeV");
 
     fixOverlay();
 
