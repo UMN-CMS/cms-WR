@@ -6,7 +6,7 @@ Some important constants are set at the top of the file.
 
 #include <math.h>
 #include <stdio.h>
-#include "makeLimitFile.hh"
+#include "makeLimitFileELEC.hh"
 #include "systematics.h"
 
 struct BShape { BShape(double v, double s) : value(v),slope(s) {}
@@ -14,13 +14,14 @@ struct BShape { BShape(double v, double s) : value(v),slope(s) {}
   double slope;
 };
 
+
 // name of the histogram containing the observations
 const char* data_hist_name[] = {"Data_A","Data_B",0};
 // name of the histogram containing the signal
 const char* signal_hist_name = "Signal";
 const char* signal_norm_hist = 0;
 // functional parameters for ttbar (total per ipb, exponential slope)
-const BShape bkgd_tt2011(70.0/(2173+2511), -5.0e-3);
+const BShape bkgd_tt2011(70.0/(2173+2511), -5.3e-3);
 // functional parameters for z+jets (total per ipb, exponential slope)
 const BShape bkgd_zj2011(48.0/(2173+2511), -3.5e-3);
 // functional parameters for other backgrounds (w+jets, VV, QCD, tW)

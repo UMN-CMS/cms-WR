@@ -16,7 +16,7 @@ makeLimitFile.exe: makeLimitFile.o makeLimitFileMain.o systematics.o ratedb.o
 	${CXX} -g -o $@ $^  ${LDFLAGS}
 
 
-makeLimitFileELEC.exe: makeLimitFileELEC.o makeLimitFileMain.o systematics.o
+makeLimitFileELEC.exe: makeLimitFileELEC.o makeLimitFileMainELEC.o systematics.o
 	${CXX} -g -o $@ $^  ${LDFLAGS}
 
 makeLimitFile.o: systematics.h systematics.cc makeLimitFile.hh ratedb.hh
