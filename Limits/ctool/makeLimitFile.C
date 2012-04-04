@@ -124,9 +124,9 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
   case (8) : ihigh=4; break;
   case (9) : ihigh=4; break;
   case (10) : ihigh=5; break;
-  case (11) : ihigh=5; break;
-  case (12) : ihigh=5; break;
-  case (13) : ihigh=6; break;
+  case (11) : ilow=1; ihigh=5; break;
+  case (12) : ilow=1; ihigh=5; break;
+  case (13) : ilow=1; ihigh=6; break;
   case (14) : ilow=1; ihigh=6; break;
   case (15) : ilow=1; ihigh=6; break;
   case (16) : ilow=1; ihigh=7; break;
