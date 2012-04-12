@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.21 2012/01/25 22:48:28 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.22 2012/03/09 10:37:05 bdahmes Exp $
 //
 //
 
@@ -130,6 +130,8 @@ private:
   bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
 
   int    pileupEra_;
+
+  int    heepVersion_ ; 
 
   double EBscalefactor_, EEscalefactor_ ; 
   double ebIDwgt_, eeIDwgt_ ; 
@@ -827,6 +829,9 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
   pileupEra_ = iConfig.getParameter<int>("pileupEra");
 
+  heepVersion_ = iConfig.getParameter<int>("heepVersion");
+  if ( heepVersion_ != 2 ) heepVersion_ = 1 ; // protection
+
   EBscalefactor_ = iConfig.getParameter<double>("EBscalefactor") ; 
   EEscalefactor_ = iConfig.getParameter<double>("EEscalefactor") ; 
   ebIDwgt_ = iConfig.getParameter<double>("EBidWgt") ; 
@@ -935,6 +940,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   // std::cout << "applyEleIDweight  = " << applyEleIDWeightFactor_    << std::endl ; 
   std::cout << "EB weight         = " << ebIDwgt_                   << std::endl ; 
   std::cout << "EE weight         = " << eeIDwgt_                   << std::endl ; 
+
+  std::cout << "HEEP version      = " << heepVersion_               << std::endl ; 
 
   std::cout << "pileup era        = " << pileupEra_ << std::endl;
   std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
@@ -1087,7 +1094,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // Look for valid electrons and put them in the event
   std::vector< std::pair<pat::Electron,float> > eCands = 
     hnu::getElectronList(pElecs,cuts.maximum_elec_abseta, 
-			 cuts.minimum_lep2_pt,cuts.minimum_lep2_pt) ; 
+			 cuts.minimum_lep2_pt,cuts.minimum_lep2_pt,heepVersion_) ; 
   hnuEvent.nElectrons = eCands.size() ; 
   if ( hnuEvent.nElectrons < 1 ) return false ; 
   hnuEvent.e1        = eCands.at(0).first ; 

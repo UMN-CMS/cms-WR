@@ -79,6 +79,40 @@ namespace hnu {
     return false ; 
   }
 
+  bool passesHEEPv32(const pat::Electron& e) { 
+    if ( !e.ecalDriven() ) return false ; 
+    double ePt  = getElectronEt(e) ; 
+    double eEta = getElectronSCEta(e) ; 
+
+    // common requirements 
+    bool HoE    = (e.hadronicOverEm() < 0.05) ; 
+    bool dPhiIn = (fabs(e.deltaPhiSuperClusterTrackAtVtx()) < 0.06) ; 
+    if ( !HoE || !dPhiIn ) return false ; 
+    int nLostHits = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
+    if ( nLostHits > 0 ) return false ; // conversion rejection
+
+    double ecalIso = e.dr03EcalRecHitSumEt() ; 
+    double hcalIso = e.dr03HcalDepth1TowerSumEt() ; 
+    double trkIso  = e.dr03TkSumPt() ; 
+    if ( trkIso > 5.0 ) return false ; 
+
+    if ( fabs(eEta) < 1.442 ) { // Barrel HEEP electron candidate
+      double e15 = e.e1x5() / e.e5x5() ; 
+      double e25 = e.e2x5Max() / e.e5x5() ; 
+      bool shape = ( e15 > 0.83 ) || ( e25 > 0.94 ) ; 
+      bool dEta  = ( fabs(e.deltaEtaSuperClusterTrackAtVtx()) < 0.005 ) ; 
+      bool isolated  = ( (ecalIso + hcalIso) < (2. + 0.03*ePt) ) ; 
+      return ( shape && dEta && isolated ) ; 
+    } else if ( fabs(eEta) > 1.560 ) { // Endcap HEEP electron candidate 
+      bool shape = ( e.sigmaIetaIeta() < 0.03 ) ; 
+      bool dEta  = ( fabs(e.deltaEtaSuperClusterTrackAtVtx()) < 0.007 ) ; 
+      double threshold = ( ePt < 50. ) ? (2.5) : (2.5 + 0.03 * (ePt-50)) ; 
+      bool isolated = ((ecalIso + hcalIso) < threshold) ; 
+      return ( shape && dEta && isolated ) ; 
+    }
+    return false ; 
+  }
+
   double muIsolation(const pat::Muon& m, const double pTscale) {
     double mupt = pTscale * m.pt() ; 
     return (m.trackIso() / mupt) ; 
@@ -571,15 +605,17 @@ namespace hnu {
   }
 
   std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
-								   double maxAbsEta, 
-								   double minEtEB, double minEtEE, 
-								   float ebScale, float eeScale) {
+								double maxAbsEta, 
+								double minEtEB, double minEtEE, 
+								int heepVersion,
+								float ebScale, float eeScale) {
     
     std::vector< std::pair<pat::Electron,float> > electronList ; 
     for (unsigned int iElectron=0; iElectron < pElecs->size(); iElectron++) {
       pat::Electron iE = pElecs->at(iElectron); 
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
-      if ( !passesHEEPv31(iE) ) continue ; 
+      if ( (heepVersion == 1) && !passesHEEPv31(iE) ) continue ; 
+      if ( (heepVersion == 2) && !passesHEEPv32(iE) ) continue ; 
 
       float scale  = ( (iE.isEB()) ? ebScale : eeScale ) ;
       float elecEt = getElectronEt(iE) * scale ; 

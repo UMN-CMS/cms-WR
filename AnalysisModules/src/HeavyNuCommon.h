@@ -61,6 +61,7 @@ namespace hnu {
     double getElectronEt    ( const pat::Electron& e ) ; 
     double getElectronSCEta ( const pat::Electron& e ) ; 
     bool passesHEEPv31      ( const pat::Electron& e ) ; 
+    bool passesHEEPv32      ( const pat::Electron& e ) ; 
 
     int  jetID             ( const pat::Jet& j );
 
@@ -97,6 +98,7 @@ namespace hnu {
     std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 
+								  int heepVersion=1,
 								  float ebScale=1.0, float eeScale=1.0);
     std::vector<float> generate_flat10_mc(int pileupEra=-1);
 

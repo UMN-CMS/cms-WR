@@ -44,6 +44,7 @@ tagandprobe = True
 #--- Flags for Top studies ---#
 topStudy      = True
 studyTopScale = True
+heepID        = 1
 
 #--- Flags for QCD studies ---#
 qcdStudy  = False
@@ -507,6 +508,7 @@ process.hNuQCDMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
 process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 # process.hNuTop.minLep2pt        = cms.double(30.)
 process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
+process.hNuTop.heepVersion      = cms.int32(heepID)
 
 #--- Some corrections re-enabled ---#
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)

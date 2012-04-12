@@ -40,6 +40,8 @@ hNuTop = cms.EDFilter(
 
     pileupEra         = cms.int32(20111),
 
+    heepVersion       = cms.int32(1),
+
     applyEleEScale    = cms.bool(False),
     EBscalefactor     = cms.double(1.0),
     EEscalefactor     = cms.double(1.0),
