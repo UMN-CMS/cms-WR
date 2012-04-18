@@ -3,11 +3,11 @@ import FWCore.ParameterSet.Config as cms
 import os
 
 #--- Data/MC switch ---#
-isMC=False
+isMC=True
 isData=not isMC
 
 #--- Special flag for 44x/Fall11 ---#
-is44x=True
+is44x=False
 
 #--- Signal MC flags ---#
 isMCsignal=False
@@ -18,7 +18,7 @@ Training=False
 #--- LoLumi     --> HLT_Mu24        ---#
 #--- HiLumi     --> HLT_Mu40        ---#
 #--- VeryHiLumi --> HLT_Mu40_eta2p1 ---#
-isRun2011LoLumi     = True
+isRun2011LoLumi     = False
 isRun2011HiLumi     = False
 isRun2011VeryHiLumi = False
 
@@ -28,7 +28,7 @@ dataEra    = 20111
 pileupEra  = 20111 
 if is44x:
     pileupEra = 20113
-doTriggerStudy = True
+doTriggerStudy = False
 #--- Placeholder for 2011B variables
 if not isRun2011A:
     dataEra   = 20112
@@ -37,9 +37,9 @@ if not isRun2011A:
         pileupEra = 20114
 
 #--- Flags for nominal studies ---#
-runAnalysis = True
-systematics = False
-tagandprobe = True
+runAnalysis = False
+systematics = True
+tagandprobe = False
 
 #--- Flags for Top studies ---#
 topStudy      = True
@@ -49,7 +49,7 @@ heepID        = 1
 #--- Flags for QCD studies ---#
 qcdStudy  = False
 doDijet   = False
-doQuadJet = True
+doQuadJet = False
 doClosure = False
 
 #--- Should always be True ---#
@@ -68,7 +68,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('input.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S4_START42_V11-v2/0000/6EDC7843-80AA-E011-8394-001A92971BA0.root')
 )
 
 if isData:
@@ -553,6 +553,11 @@ process.hNuTopMu24midLo = process.hNuTopMu24.clone( applyMuIDEffsign = cms.int32
 process.hNuTopMu40midHi = process.hNuTopMu40.clone( applyMuIDEffsign = cms.int32(1) )
 process.hNuTopMu40midLo = process.hNuTopMu40.clone( applyMuIDEffsign = cms.int32(-1) )
 
+process.hNuTopMu24trigHi = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int32(1) )
+process.hNuTopMu24trigLo = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int32(-1) )
+process.hNuTopMu40trigHi = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(1) )
+process.hNuTopMu40trigLo = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(-1) )
+
 #-------------#
 #--- Paths ---#
 #-------------#
@@ -653,6 +658,10 @@ if topStudy:
             process.pTop24midLo = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24midLo )
             process.pTop40midHi = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40midHi )
             process.pTop40midLo = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40midLo )
+            process.pTop24trigHi = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu24trigHi)
+            process.pTop24trigLo = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu24trigLo)
+            process.pTop40trigHi = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu40trigHi)
+            process.pTop40trigLo = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu40trigLo)
     else:
         process.pTop = cms.Path( process.AnalysisIntroSequence + process.hNuTop )
 

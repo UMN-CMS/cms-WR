@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.90 2012/01/27 00:51:25 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.91 2012/02/23 00:07:27 bdahmes Exp $
 //
 //
 
@@ -294,6 +294,8 @@ private:
         TH1 *dRMu1gen, *dRMu2gen;
         TH1 *qualMu1, *qualMu2;
 
+        TH1 *mindRjet_genjet, *maxdRjet_genjet;
+
         TH1 *mu1trackIso, *mu1hcalIso, *mu1ecalIso, *mu1caloIso, *mu1dB;
         TH1 *mu2trackIso, *mu2hcalIso, *mu2ecalIso, *mu2caloIso, *mu2dB;
 
@@ -373,10 +375,10 @@ private:
         TFileDirectory *rundir;
         // HistPerDef twoL;
         HistPerDef noCuts;
-        HistPerDef LLptCuts;
+        //HistPerDef LLptCuts;
         HistPerDef TrigMatches;
         HistPerDef LLJJptCuts;
-        HistPerDef VertexCuts;
+        //HistPerDef VertexCuts;
         HistPerDef Mu1HighPtCut;
         HistPerDef Mu1Pt40GeVCut;
         HistPerDef Mu1Pt50GeVCut;
@@ -399,7 +401,7 @@ private:
         HistPerDef Mu1HighPtCutNoJets;
         HistPerDef Mu1HighPtCut1Jet;
         HistPerDef diLmassCut;
-        HistPerDef loDiLmassCut;
+        //HistPerDef loDiLmassCut;
         HistPerDef mWRmassCut;
         HistPerDef oneBtag;
         HistPerDef twoBtag;
@@ -630,6 +632,11 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     jetID2d = td->make<TH2I > ("jetID2d", t.c_str(), 3, 0, 3, 3, 0, 3);
     labelJetIDaxis(jetID2d->GetXaxis());
     labelJetIDaxis(jetID2d->GetYaxis());
+
+    t = "min #DeltaR(jet, Wr genjet) " + post;
+    mindRjet_genjet = td->make<TH1D > ("mindRjet_genjet", t.c_str(), 50, 0.0, 10.0);
+    t = "max #DeltaR(jet, Wr genjet) " + post;
+    maxdRjet_genjet = td->make<TH1D > ("maxdRjet_genjet", t.c_str(), 50, 0.0, 10.0);
 
     // ----------  MET histograms     ----------
 
@@ -1103,8 +1110,7 @@ void HeavyNu::HistPerDef::fill(pat::MuonCollection muons,
     fill(hne, v_null);
 }
 
-void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
-        const std::vector<hNuMassHypothesis>& v_masspts)
+void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne, const std::vector<hNuMassHypothesis>& v_masspts)
 {
     double wgt = hne.eventWgt;
 
@@ -1287,6 +1293,16 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne,
 
         ptrelVsdRminMu1jet->Fill(hne.dRminMu1jet, hne.ptrelMu1, wgt);
         ptrelVsdRminMu2jet->Fill(hne.dRminMu2jet, hne.ptrelMu2, wgt);
+
+        if(hne.isMC)
+        {
+            double dR11 = deltaR(hne.j1.p4(), hne.gj1.p4());
+            double dR12 = deltaR(hne.j1.p4(), hne.gj2.p4());
+            double dR21 = deltaR(hne.j2.p4(), hne.gj1.p4());
+            double dR22 = deltaR(hne.j2.p4(), hne.gj2.p4());
+            mindRjet_genjet->Fill(std::min(std::min(dR11,dR12),std::min(dR21,dR22)));
+            maxdRjet_genjet->Fill(std::max(std::min(dR11,dR12),std::min(dR21,dR22)));
+        }
     }
 
     if(!hne.pfJets) jetID2d->Fill(jet1id, jet2id, wgt);
@@ -1730,13 +1746,13 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     //
     // hists.twoL.book(new TFileDirectory(fs->mkdir("cutm1_LL")), "(two lepton:-1)", v_null);
     hists.noCuts.book(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)", v_null);
-    hists.LLptCuts.book(new TFileDirectory(fs->mkdir("cutX_LLpt")), "(dileptons with ptcuts:X)", v_null);
+    //hists.LLptCuts.book(new TFileDirectory(fs->mkdir("cutX_LLpt")), "(dileptons with ptcuts:X)", v_null);
     // hists.MuTightCuts.book(new TFileDirectory(fs->mkdir("cut2_MuTight")), "(Mu tight cuts:2)", v_null);
     hists.LLJJptCuts.book(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)", v_null);
     hists.TrigMatches.book(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)", v_null);
-    hists.VertexCuts.book(new TFileDirectory(fs->mkdir("cut3_Vertex")), "(vertex requirements:3)", v_null);
+    //hists.VertexCuts.book(new TFileDirectory(fs->mkdir("cut3_Vertex")), "(vertex requirements:3)", v_null);
     hists.Mu1HighPtCut.book(new TFileDirectory(fs->mkdir("cut4_Mu1HighPt")), "(Mu1 High pt cut:4)", v_null);
-    hists.loDiLmassCut.book(new TFileDirectory(fs->mkdir("cut5a_loDiLmass")), "(mumu mass cut:5a)", v_null);
+    //hists.loDiLmassCut.book(new TFileDirectory(fs->mkdir("cut5a_loDiLmass")), "(mumu mass cut:5a)", v_null);
     hists.diLmassCut.book(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)", v_null);
     hists.mWRmassCut.book(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)", v_null);
 
@@ -2147,6 +2163,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         //Shirpa reweighting
         hnuEvent.eventWgt *= geneventinfo->weight();
 	// PDF reweighting
+#ifdef DO_LHAPDF
 	if (doPDFreweight_) {
 	  edm::Handle<GenEventInfoProduct> geip;
 	  iEvent.getByLabel("generator",geip);
@@ -2159,15 +2176,49 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	  hnuEvent.eventWgt *= hnu::getPDFWeight(Q,id1,x1,id2,x2,
                                                  doPDFreweight_,
-                                                 pdfReweightBaseId,pdfReweightTargetId);	  
+                                                 pdfReweightBaseId,pdfReweightTargetId);
 	}
-        
+#endif
+
         hists.weights->Fill(hnuEvent.eventWgt);
         // generator information
         edm::Handle<reco::GenParticleCollection> genInfo;
         if(iEvent.getByLabel("genParticles", genInfo))
         {
             hnuEvent.decayID(*genInfo);
+
+            reco::GenParticleCollection::const_iterator i;
+            for(i = genInfo->begin(); i != genInfo->end(); ++i)
+            {
+                if(abs(i->pdgId()) == 9900024 && i->numberOfDaughters() >= 2)
+                {
+                    edm::RefVector<std::vector<reco::GenParticle> > wrDaughters = i->daughterRefVector();
+                    for(std::vector<reco::GenParticle>::const_iterator j = wrDaughters.product()->begin(); j != wrDaughters.product()->end(); ++j)
+                    {
+                        if(abs(j->pdgId()) == 9900014 && j->numberOfDaughters() >= 2)
+                        {
+                            int igjet = 0;
+                            edm::RefVector<std::vector<reco::GenParticle> > nuDaughters = j->daughterRefVector();
+                            for(std::vector<reco::GenParticle>::const_iterator k = nuDaughters.product()->begin(); k != nuDaughters.product()->end(); ++k)
+                            {
+                                if(abs(k->pdgId()) > 0 && abs(k->pdgId()) < 7 && k->numberOfDaughters() > 0)
+                                {
+                                    if(igjet == 0) 
+                                    {
+                                        hnuEvent.gj1 = *k;
+                                        igjet++;
+                                    }
+                                    else if(igjet == 1)
+                                    {
+                                        hnuEvent.gj2 = *k;
+                                        igjet++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     edm::Handle<reco::VertexCollection> pvHandle;
@@ -2432,7 +2483,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //    if ( debuggingEvents ) std::cout << "Debugging event " << iEvent.id() << std::endl ; 
 
     if (muCands.size() >= 2) { 
-      hists.LLptCuts.fill(muCands, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex);
+      //hists.LLptCuts.fill(muCands, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex);
     } else return false ; 
         
     if(hnuEvent.nJets < 2) return false ;
@@ -2535,7 +2586,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(cuts.maxVertexZsep > 0 && deltaVzM1M2 >= cuts.maxVertexZsep) return false;
 
     hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Event meets vertex requirements
-    hists.VertexCuts.fill(hnuEvent, v_null);
+    //hists.VertexCuts.fill(hnuEvent, v_null);
 
     //--- The "basic" object, trigger, and (possibly) vertex requirements should be done ---//
     //--- Consider alternative selection requirements ---//
@@ -2601,7 +2652,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.Mu1HighPtCut.fill(hnuEvent, v_null);
 
     if(hnuEvent.mMuMu < 40) return false; // Sanity check...remove low mass points
-    hists.loDiLmassCut.fill(hnuEvent, v_null);
+    //hists.loDiLmassCut.fill(hnuEvent, v_null);
     if ( studyRatePerRun_ && inZmassWindow(hnuEvent.mMuMu) )
         hists.z2jetPerRun->Fill( iEvent.id().run() ) ; 
     

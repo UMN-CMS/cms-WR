@@ -21,6 +21,8 @@
 //#define CMSSW_3XX
 #define CMSSW_4XX
 
+#undef DO_LHAPDF
+
 namespace hnu {
 
   class pTcompareRef

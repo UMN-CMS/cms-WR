@@ -51,7 +51,9 @@ public:
 
   pat::Muon     mu1, mu2, mu[2];
   pat::Jet      j1,  j2,  j[2];
-  pat::Electron e1, e2, e[2]; 
+  pat::Electron e1, e2, e[2];
+
+  reco::GenParticle gm1, gm2, gj1, gj2;
 
   int nMuons, nJets, nElectrons ; 
 

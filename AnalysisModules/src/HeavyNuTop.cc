@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.22 2012/03/09 10:37:05 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.23 2012/04/12 14:31:03 bdahmes Exp $
 //
 //
 
@@ -838,7 +838,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
   eeIDwgt_ = iConfig.getParameter<double>("EEidWgt") ; 
 
   applyMESfactor_ = 1.0 ; // Hardcoded for Top studies
-  applyTrigEffsign_ = 0. ; // Hardcoded for Top studies 
+  applyTrigEffsign_ = iConfig.getParameter<int>("applyTrigEffsign");
+  if(applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
 
   isPFJets_ = iConfig.getParameter<bool>("isPFJets");
 
@@ -1165,7 +1166,7 @@ HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       trig_->isTriggerMatched( hnuEvent.mu1, iEvent ) ; 
   } else if (!iEvent.isRealData()) {
     mu1trig = mu1trig &&  
-      trig_->simulateForMC( hnuEvent.mu1.pt(),hnuEvent.mu1.eta(),0 );
+      trig_->simulateForMC( hnuEvent.mu1.pt(),hnuEvent.mu1.eta(), applyTrigEffsign_ );
   }
 
   if( !mu1trig ) return false;

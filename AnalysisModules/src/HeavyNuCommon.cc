@@ -1,5 +1,9 @@
 #include "HeavyNuCommon.h"
+
+#ifdef DO_LHAPDF
 #include "LHAPDF/LHAPDF.h"
+#endif
+
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 
@@ -148,14 +152,19 @@ namespace hnu {
   }
 
   void initPDFSet(int i, std::string name) {
-      LHAPDF::initPDFSet(i,name) ; 
+#ifdef DO_LHAPDF
+      LHAPDF::initPDFSet(i,name) ;
+#endif
   }
     
   double getPDFWeight(float Q, int id1, float x1, int id2, float x2,
                       bool doPDFreweight, int pdfReweightBaseId, int pdfReweightTargetId) {
   
       if (!doPDFreweight) return 1.0;
-  
+
+      double w = 1.0;
+
+#ifdef DO_LHAPDF
       LHAPDF::usePDFMember(1,pdfReweightBaseId);
       double pdf1 = LHAPDF::xfx(1, x1, Q, id1)/x1;
       double pdf2 = LHAPDF::xfx(1, x2, Q, id2)/x2;
@@ -164,7 +173,8 @@ namespace hnu {
       double newpdf1 = LHAPDF::xfx(2, x1, Q, id1)/x1;
       double newpdf2 = LHAPDF::xfx(2, x2, Q, id2)/x2;
       
-      double w=(newpdf1/pdf1*newpdf2/pdf2);
+      w=(newpdf1/pdf1*newpdf2/pdf2);
+#endif
   
       //  printf("My weight is %f\n",w);
   

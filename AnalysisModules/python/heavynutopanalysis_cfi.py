@@ -52,5 +52,6 @@ hNuTop = cms.EDFilter(
     applyMuIDEffsign  = cms.int32(0),
     studyScaleFactor  = cms.bool(True),
     isSignal          = cms.bool(False),
-    mNuRnormalization = cms.double(1000.0)
+    mNuRnormalization = cms.double(1000.0),
+    applyTrigEffsign  = cms.int32(0)
 )
