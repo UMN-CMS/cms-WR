@@ -3,11 +3,12 @@ import FWCore.ParameterSet.Config as cms
 import os
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Special flag for 44x/Fall11 ---#
 is44x=False
+is42x=False
 
 #--- Signal MC flags ---#
 isMCsignal=False
@@ -21,25 +22,26 @@ Training=False
 isRun2011LoLumi     = False
 isRun2011HiLumi     = False
 isRun2011VeryHiLumi = False
+isRun2012           = True
 
 #--- Flags for data taking era ---#
-isRun2011A = True
-dataEra    = 20111 
-pileupEra  = 20111 
-if is44x:
-    pileupEra = 20113
+isRun2011A = False
+dataEra    = 20121 
+pileupEra  = 20121 
+#if is44x:
+#    pileupEra = 20113
 doTriggerStudy = False
 #--- Placeholder for 2011B variables
-if not isRun2011A:
-    dataEra   = 20112
-    pileupEra = 20112
-    if is44x:
-        pileupEra = 20114
+#if not isRun2011A:
+#    dataEra   = 20112
+#    pileupEra = 20112
+#    if is44x:
+#        pileupEra = 20114
 
 #--- Flags for nominal studies ---#
-runAnalysis = False
-systematics = True
-tagandprobe = False
+runAnalysis = True
+systematics = False
+tagandprobe = True
 
 #--- Flags for Top studies ---#
 topStudy      = True
@@ -72,26 +74,30 @@ process.source = cms.Source("PoolSource",
 )
 
 if isData:
-    if isRun2011LoLumi:
-        print "===========> Flag is SET for 2011 LOW luminosity data <============"
-        if is44x:
-            from HeavyNu.AnalysisModules.goodLumiList_novRereco_160404_163869_mu24_cfi import lumisToProcess
-        else:
-            from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
+    if isRun2012:
+        print "===========> Flag is SET for 2012 data <============"
+        from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_cfi import lumisToProcess
     else:
-        if isRun2011VeryHiLumi:
-            print "===========> Flag is SET for 2011 HIGH luminosity data <============"
+        if isRun2011LoLumi:
+            print "===========> Flag is SET for 2011 LOW luminosity data <============"
             if is44x:
-                from HeavyNu.AnalysisModules.goodLumiList_novRereco_173236_180252_mu40_eta2p1_cfi import lumisToProcess
+                from HeavyNu.AnalysisModules.goodLumiList_novRereco_160404_163869_mu24_cfi import lumisToProcess
             else:
-                from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
+                from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
         else:
-            print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
-            if is44x:
-                from HeavyNu.AnalysisModules.goodLumiList_novRereco_165088_173198_mu40_cfi import lumisToProcess
+            if isRun2011VeryHiLumi:
+                print "===========> Flag is SET for 2011 HIGH luminosity data <============"
+                if is44x:
+                    from HeavyNu.AnalysisModules.goodLumiList_novRereco_173236_180252_mu40_eta2p1_cfi import lumisToProcess
+                else:
+                    from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
             else:
-                from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
-
+                print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
+                if is44x:
+                    from HeavyNu.AnalysisModules.goodLumiList_novRereco_165088_173198_mu40_cfi import lumisToProcess
+                else:
+                    from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
+                            
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -114,10 +120,13 @@ if (isMC):
     #     process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:
     print "===============> Running on DATA <===================="
-    if (is44x):
-        process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
+    if (isRun2012):
+        process.GlobalTag.globaltag = cms.string('GR_R_50_V13::All')
     else:
-        process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
+        if (is44x):
+            process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
+        else:
+            process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
@@ -147,8 +156,12 @@ if isPFJets:
         usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
                   jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
     else:
-        usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
-                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
+        if isRun2012:
+            usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
+        else:
+            usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
     getattr(process,"pfNoPileUp"+postfix).enable   = True
@@ -253,10 +266,10 @@ if isData:
     from PhysicsTools.PatAlgos.tools.coreTools import *
     if isPFJets:
         removeMCMatchingPF2PAT( process, '' )
-    if (is44x):
-        removeMCMatching(process, ['All'], outputModules = [])
-    else:
+    if (is42x):
         removeMCMatching(process, ['All'], outputInProcess = False)
+    else:
+        removeMCMatching(process, ['All'], outputModules = [])
         
 
 #--- Calo Jet Energy Corrections: No longer used ---#
