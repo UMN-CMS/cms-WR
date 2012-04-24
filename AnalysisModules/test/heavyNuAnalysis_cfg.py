@@ -310,7 +310,7 @@ if isData:
     if isRun2011LoLumi:
         process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*",1,0 )' )
     else:
-        if isRun2011VeryHiLumi:
+        if isRun2011VeryHiLumi or isRun2012:
             process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
         else:
             process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
