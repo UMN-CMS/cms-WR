@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.91 2012/02/23 00:07:27 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.92 2012/04/18 23:13:19 pastika Exp $
 //
 //
 
@@ -294,7 +294,7 @@ private:
         TH1 *dRMu1gen, *dRMu2gen;
         TH1 *qualMu1, *qualMu2;
 
-        TH1 *mindRjet_genjet, *maxdRjet_genjet;
+        TH1 *mindRjet_genjet, *maxdRjet_genjet, *nuMuMatchedJets;
 
         TH1 *mu1trackIso, *mu1hcalIso, *mu1ecalIso, *mu1caloIso, *mu1dB;
         TH1 *mu2trackIso, *mu2hcalIso, *mu2ecalIso, *mu2caloIso, *mu2dB;
@@ -454,7 +454,6 @@ private:
 };
 
 
-
 const int muonQualityFlags = 4;
 const std::string muonQuality[] = {
     "All", "AllGlobalMuons", "AllStandAloneMuons", "AllTrackerMuons"
@@ -472,6 +471,15 @@ inline void labelMuonQualAxis(TAxis *ax)
 inline std::string nnhistoname(int mwr, int mnu)
 {
     return("WR" + int2str<int>(mwr) + "nuRmu" + int2str<int>(mnu));
+}
+
+bool isWrDaughter(const reco::Candidate* mother)
+{
+    for(size_t i = 0; i < mother->numberOfMothers(); i++)
+    {
+        if(mother->mother(i)->pdgId() == 9900014 || isWrDaughter(mother->mother(i))) return true;
+    }
+    return false;
 }
 
 void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
@@ -634,10 +642,11 @@ void HeavyNu::HistPerDef::book(TFileDirectory *td, const std::string& post,
     labelJetIDaxis(jetID2d->GetYaxis());
 
     t = "min #DeltaR(jet, Wr genjet) " + post;
-    mindRjet_genjet = td->make<TH1D > ("mindRjet_genjet", t.c_str(), 50, 0.0, 10.0);
+    mindRjet_genjet = td->make<TH1D > ("mindRjet_genjet", t.c_str(), 70, 0.0, 7.0);
     t = "max #DeltaR(jet, Wr genjet) " + post;
-    maxdRjet_genjet = td->make<TH1D > ("maxdRjet_genjet", t.c_str(), 50, 0.0, 10.0);
-
+    maxdRjet_genjet = td->make<TH1D > ("maxdRjet_genjet", t.c_str(), 70, 0.0, 7.0);
+    t = "number of Nu matched Jets " + post;
+    nuMuMatchedJets = td->make<TH1D > ("nuMuMatchedJets", t.c_str(), 3, -0.5, 2.5);
     // ----------  MET histograms     ----------
 
     t = "MET distribution " + post;
@@ -1296,12 +1305,11 @@ void HeavyNu::HistPerDef::fill(const HeavyNuEvent& hne, const std::vector<hNuMas
 
         if(hne.isMC)
         {
-            double dR11 = deltaR(hne.j1.p4(), hne.gj1.p4());
-            double dR12 = deltaR(hne.j1.p4(), hne.gj2.p4());
-            double dR21 = deltaR(hne.j2.p4(), hne.gj1.p4());
-            double dR22 = deltaR(hne.j2.p4(), hne.gj2.p4());
-            mindRjet_genjet->Fill(std::min(std::min(dR11,dR12),std::min(dR21,dR22)));
-            maxdRjet_genjet->Fill(std::max(std::min(dR11,dR12),std::min(dR21,dR22)));
+            double dR1 = deltaR(hne.j1.p4(), hne.gj1.p4());
+            double dR2 = deltaR(hne.j2.p4(), hne.gj2.p4());
+            mindRjet_genjet->Fill(std::min(dR1, dR2), wgt);
+            maxdRjet_genjet->Fill(std::max(dR1, dR2), wgt);
+            nuMuMatchedJets->Fill(hne.numNuMuJetsMatched, wgt);
         }
     }
 
@@ -2151,6 +2159,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<GenEventInfoProduct> geneventinfo;
     iEvent.getByLabel("generator", geneventinfo);
 
+    //Gen jets for gen matching
+    edm::Handle<std::vector<reco::GenJet> > genjets;
 
     if(hnuEvent.isMC)
     {
@@ -2186,40 +2196,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if(iEvent.getByLabel("genParticles", genInfo))
         {
             hnuEvent.decayID(*genInfo);
-
-            reco::GenParticleCollection::const_iterator i;
-            for(i = genInfo->begin(); i != genInfo->end(); ++i)
-            {
-                if(abs(i->pdgId()) == 9900024 && i->numberOfDaughters() >= 2)
-                {
-                    edm::RefVector<std::vector<reco::GenParticle> > wrDaughters = i->daughterRefVector();
-                    for(std::vector<reco::GenParticle>::const_iterator j = wrDaughters.product()->begin(); j != wrDaughters.product()->end(); ++j)
-                    {
-                        if(abs(j->pdgId()) == 9900014 && j->numberOfDaughters() >= 2)
-                        {
-                            int igjet = 0;
-                            edm::RefVector<std::vector<reco::GenParticle> > nuDaughters = j->daughterRefVector();
-                            for(std::vector<reco::GenParticle>::const_iterator k = nuDaughters.product()->begin(); k != nuDaughters.product()->end(); ++k)
-                            {
-                                if(abs(k->pdgId()) > 0 && abs(k->pdgId()) < 7 && k->numberOfDaughters() > 0)
-                                {
-                                    if(igjet == 0) 
-                                    {
-                                        hnuEvent.gj1 = *k;
-                                        igjet++;
-                                    }
-                                    else if(igjet == 1)
-                                    {
-                                        hnuEvent.gj2 = *k;
-                                        igjet++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
+        iEvent.getByLabel("ak5GenJets", genjets);
     }
     edm::Handle<reco::VertexCollection> pvHandle;
     iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
@@ -2492,6 +2470,50 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.j2 = jetCands.at(1).first;
     hnuEvent.j1scale = jetCands.at(0).second;
     hnuEvent.j2scale = jetCands.at(1).second;
+
+    if(hnuEvent.isMC)
+    {
+        //here we match the reco jets to gen jets
+        double mindR1 = 100, mindR2 = 100;
+        for(std::vector<reco::GenJet>::const_iterator igj = genjets->begin(); igj != genjets->end(); ++igj)
+        {
+            double dR1 = deltaR(hnuEvent.j1.p4(), igj->p4());
+            double dR2 = deltaR(hnuEvent.j2.p4(), igj->p4());
+
+            if(dR1 < mindR1)
+            {
+                mindR1 = dR1;
+                hnuEvent.gj1 = *igj;
+            }
+            if(dR2 < mindR2)
+            {
+                mindR2 = dR2;
+                hnuEvent.gj2 = *igj;
+            }
+        }
+
+        //after finding the matching gen jets we track their parentage and try to match them to a Nu_mu
+        bool gmj1 = false, gmj2 = false;
+        std::vector<const reco::GenParticle*> mothers = hnuEvent.gj1.getGenConstituents();
+        for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
+        {
+            for(size_t i = 0; i < (*iM)->numberOfMothers(); i++)
+            {
+                if(gmj1 |= isWrDaughter((*iM)->mother(i))) break;
+            }
+            if(gmj1) break;
+        }
+        mothers = hnuEvent.gj2.getGenConstituents();
+        for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
+        {
+            for(size_t i = 0; i < (*iM)->numberOfMothers(); i++)
+            {
+                if(gmj2 |= isWrDaughter((*iM)->mother(i))) break;
+            }
+            if(gmj2) break;
+        }
+        hnuEvent.numNuMuJetsMatched = (int)gmj1 + (int)gmj2;
+    }
 
     hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
     hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);

@@ -212,7 +212,18 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
   const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
-  // 2011 A is the default
+  //These uncertainties are inflated by a factor of 3!!!!!!!
+  //const double effslo2011a[]  = {0.855641,0.837779,0.841069,0.853867,0.853420,0.849358,0.727483,0.727483};
+  //const double effsnom2011a[] = {0.875648,0.864359,0.872848,0.885346,0.897508,0.890611,0.871189,0.871189};
+  //const double effshi2011a[]  = {0.895652,0.890942,0.904627,0.916828,0.941596,0.931864,1.014892,1.014892};
+  //const double upedge2011a[]  = {      40,      50,      60,      80,     100,     200,    3500,      -1};
+  //These uncertainties are inflated by a factor of 3!!!!!!!
+  //const double effslo2011b[]  = {0.895652,0.878660,0.887385,0.913339,0.866301,0.853895,0.715275,0.715275};
+  //const double effsnom2011b[] = {0.900857,0.913545,0.936445,0.906582,0.893309,0.866667,0.866667};
+  //const double effshi2011b[]  = {0.855641,0.923054,0.939702,0.959548,0.946860,0.932726,1.018056,1.018056};
+  //const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
+
+ // 2011 A is the default
   const double *effs = ( (trigEra_ == 20111) ? effsnom2011a : effsnom2011b );
   if ( signOfError2apply ) {
     if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;

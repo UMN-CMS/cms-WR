@@ -46,6 +46,7 @@ public:
   void decayID(const reco::GenParticleCollection& gpc);
 
   bool isMC, pfJets;
+  int numNuMuJetsMatched;
   // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau
   int mc_class;
 
@@ -53,7 +54,8 @@ public:
   pat::Jet      j1,  j2,  j[2];
   pat::Electron e1, e2, e[2];
 
-  reco::GenParticle gm1, gm2, gj1, gj2;
+  reco::GenParticle gm1, gm2;
+  reco::GenJet gj1, gj2;
 
   int nMuons, nJets, nElectrons ; 
 

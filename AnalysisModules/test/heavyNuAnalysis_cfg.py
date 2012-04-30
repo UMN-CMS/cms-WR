@@ -70,7 +70,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S4_START42_V11-v2/0000/6EDC7843-80AA-E011-8394-001A92971BA0.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer11/WRToNuLeptonToLLJJ_MW-1800_MNu-1000_TuneZ2_7TeV-pythia6-tauola/AODSIM/PU_S4_START42_V11-v1/0000/2C82C05F-2FB6-E011-ADA1-00215E221938.root')
 )
 
 if isData:

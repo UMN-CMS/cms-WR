@@ -8,6 +8,7 @@ HeavyNuEvent::HeavyNuEvent(anal_type theMode) {
   nMuons = 0 ; 
   nJets = 0 ; 
   nElectrons = 0 ;
+  numNuMuJetsMatched = 0;
 
   // Protection: set all scale factors to 1 by default
   j1scale = 1.0 ;
