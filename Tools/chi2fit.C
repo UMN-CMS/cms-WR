@@ -59,20 +59,20 @@ void chi2fit(
 	     const string& path2scale="zjets.root:hNu2011Z30/cut6_Mu1HighPt/mMuMuZoom",
 	     const string& otherbckgrnd="zjetsBG.root:sumback_mMuMu_cut6",
 	     const bool zfit=true,
-	     const bool makeplots=false,
+	     const bool makeplots=true,
 	     const string& plottag="test",
-	     double ctr_xsecpb=1.20,
+	     double ctr_xsecpb=1.60,
 	     double xsecincpb=0.01,
 	     double minMLL=70.0,
 	     double maxMLL=110.0,
-	     double luminvpb=204.0,
-	     const int rebinx=4,
+	     double luminvpb=1804.0,
+	     const int rebinx=999,
 	     const double h2sf=1.0,
 	     const double h3sf=1.0,
 	     const double plotxmin=70.,
 	     const double plotxmax=110.0,
 	     const double plotymin=0.01,
-	     const double plotymax=500.0
+	     const double plotymax=10000.0
 	     )
 {
   setTDRStyle();
