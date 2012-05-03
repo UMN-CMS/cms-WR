@@ -6,12 +6,12 @@ eleFilter = cms.EDFilter("EleFilter",
                          eeTag    = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower"),
                          
                          # require minEleNum gsf electrons above minElePt
-                         minElePt  = cms.double( 20.0 ),
+                         minElePt  = cms.double( 30.0 ),
                          minEleNum = cms.double( 1 ),
                          
                          # additionally,
                          # require minSCNum above minSCEt separated from gfs (selected above) by at least DR>overlap
-                         minSCEt      = cms.double( 20.0 ),
+                         minSCEt      = cms.double( 30.0 ),
                          minSCNum     = cms.double( 1 ),
                          maxSCAbsEta  = cms.double( 2.6 ),
                          
@@ -21,6 +21,6 @@ eleFilter = cms.EDFilter("EleFilter",
                          massMin   = cms.double( 0.   ),
                          massMax   = cms.double( 8000.),
                          
-                         debug     = cms.bool(True)
+                         debug     = cms.bool(False)
 
                          )
