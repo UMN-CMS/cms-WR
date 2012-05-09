@@ -69,5 +69,10 @@ hNu = cms.EDFilter(
     pdfReweightTargetName = cms.untracked.string('CT10'),
     pdfReweightTargetId = cms.untracked.int32(0),    
 
-    isPFJets = cms.bool(False)
+    isPFJets = cms.bool(False),
+
+    #options are HNUMU, HNUE, TOP, QCD, CLO
+    analysisMode = cms.untracked.string('HNUMU'),
+
+    heepVersion = cms.untracked.int32(2)
     )

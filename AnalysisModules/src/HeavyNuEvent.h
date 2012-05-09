@@ -5,7 +5,11 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+#include "DataFormats/Math/interface/Point3D.h"
+#include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
 #include <memory>
 
@@ -25,77 +29,78 @@
 /** The purpose of this class is contain the key items for
     a HeavyNuEvent and provide a simple way to pass this information
     between sections of the code.
-*/
-typedef std::pair<int,int> hNuMassHypothesis;
+ */
+typedef std::pair<int, int> hNuMassHypothesis;
 
-class HeavyNuEvent {
+class HeavyNuEvent
+{
 public:
 
-  enum anal_type { HNU,TOP,QCD,CLO } ;
-  anal_type mode ; 
+    enum anal_type
+    {
+        HNUMU, HNUE, TOP, QCD, CLO
+    };
+    anal_type mode;
 
-  HeavyNuEvent(anal_type theMode = HNU) ; 
+    HeavyNuEvent(anal_type theMode = HNUMU);
 
-  // void initialize(int mode);
+    // void initialize(int mode);
 
-  void regularize();
-  void scaleMuE(double mufactor=1.0, double efactor=1.0) ; 
-  void calculateMuMu();
-  void calculateMuE();
-  void calculate();
-  void decayID(const reco::GenParticleCollection& gpc);
+    void scaleMuE(double mufactor = 1.0, double efactor = 1.0);
+    void calculateLL();
+    void calculate();
+    void decayID(const reco::GenParticleCollection& gpc);
 
-  bool isMC, pfJets;
-  int numNuMuJetsMatched;
-  // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau
-  int mc_class;
+    // These generic particles are used to pass features common to all leptons.
+    // Only options common to all leptons should included here.
+    pat::GenericParticle *l1, *l2;
 
-  pat::Muon     mu1, mu2, mu[2];
-  pat::Jet      j1,  j2,  j[2];
-  pat::Electron e1, e2, e[2];
+    // This function sets the generic leptons
+    void regularize();
 
-  reco::GenParticle gm1, gm2;
-  reco::GenJet gj1, gj2;
+    bool isMC, pfJets;
+    int numNuLJetsMatched;
+    // mc_class=0 (something else), 1=ee, 2=mm, 3=tau tau
+    int mc_class;
 
-  int nMuons, nJets, nElectrons ; 
+    pat::Muon mu1, mu2;
+    pat::Jet j1, j2;
+    pat::Electron e1, e2;
 
-  double tjV1, tjV2, tjV[2];
-  int n_primary_vertex, n_pue;
+    reco::GenParticle gm1, gm2;
+    reco::GenJet gj1, gj2;
 
-  pat::MET met1;
+    bool isBJet1, isBJet2;
 
-  // separately stored for JEC Uncertainty studies
-  // (saves space and time not copying whole jet objects,
-  //  particularly during the jet selection)
-  //
-  float j1scale, j2scale;
+    int nLeptons, nJets, nElectrons, numBJets;
 
-  float MuScale, ElecScale;
+    double tjV1, tjV2;
+    int n_primary_vertex, n_pue;
 
-  int cutlevel ; 
-  double eventWgt ; 
+    pat::MET met1;
 
-  reco::Particle::LorentzVector vMuMu;
-  reco::Particle::LorentzVector vJJ;
-  reco::Particle::LorentzVector lv_evt;
-  reco::Particle::LorentzVector WR;
+    // separately stored for JEC Uncertainty studies
+    // (saves space and time not copying whole jet objects,
+    //  particularly during the jet selection)
+    //
+    float j1scale, j2scale;
 
-  double area_1jj, area_2jj ; 
+    float MuScale, ElecScale;
 
-  double ctheta_mu1_jj, cthetaz_mu1_jj;
-  double ctheta_mu2_jj, cthetaz_mu2_jj;
+    int cutlevel;
+    double eventWgt;
 
-  double czeta_mumu; // cosine of 3D angle between the muon 3-mom vectors
+    reco::Particle::LorentzVector vLL;
+    reco::Particle::LorentzVector vJJ;
+    reco::Particle::LorentzVector lv_evt;
+    reco::Particle::LorentzVector WR;
 
-  double ctheta_mumu, cthetaz_mumu;
-  double ctheta_jj,   cthetaz_jj;
+    double dRminL1jet, dRminL2jet;
+    double ptrelL1, ptrelL2;
 
-  double dRminMu1jet, dRminMu2jet;
-  double ptrelMu1,    ptrelMu2;
+    double mWR, mJJ, mLL, mNuR1, mNuR2;
 
-  double mWR, mJJ, mMuMu, mNuR1, mNuR2;
-
-  std::vector<float> nnoutputs;
+    std::string btagName;
 };
 
 #endif

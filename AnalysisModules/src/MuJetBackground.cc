@@ -13,10 +13,10 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.22 2012/01/05 00:22:42 pastika Exp $
+// $Id: MuJetBackground.cc,v 1.23 2012/01/25 22:48:28 bdahmes Exp $
 //
 //
-
+/*
 // system include files
 #include <memory>
 #include <iostream>
@@ -1409,3 +1409,4 @@ MuJetBackground::endJob() {
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MuJetBackground);
+*/
