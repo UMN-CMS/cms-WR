@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.23 2012/01/25 22:48:28 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.24 2012/05/09 17:07:35 pastika Exp $
 //
 //
 /*
@@ -944,7 +944,8 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.njet ->Fill(pJets->size()) ;
 
   std::vector<pat::Muon> muCands = 
-    hnu::getMuonList(pMuons,tevMuons,cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0) ; 
+    hnu::getMuonList(pMuons,tevMuons,pvHandle,(int(muid_->idEra()/10)), 
+		     cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0) ; 
   std::vector< std::pair<pat::Jet,float> > jetCands = 
     hnu::getJetList(pJets,jecuObj_,cuts.minimum_dijet_pt,cuts.maximum_jet_abseta,0) ; 
   if ( muCands.size() < 1 || jetCands.size() < 1 ) return false ;

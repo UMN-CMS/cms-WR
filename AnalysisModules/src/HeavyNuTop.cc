@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.24 2012/04/18 23:13:20 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.25 2012/05/09 17:07:35 pastika Exp $
 //
 //
 
@@ -126,6 +126,9 @@ private:
     edm::InputTag jetTag_;
     edm::InputTag metTag_;
     edm::InputTag elecTag_;
+
+  edm::InputTag elecRhoTag_ ; 
+  double elecRho_ ; 
 
     double applyMESfactor_;             // for Muon Energy Scale studies
     int    applyTrigEffsign_;           // for Trigger Efficiency studies
@@ -298,6 +301,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     metTag_  = iConfig.getParameter< edm::InputTag > ( "metTag"  );
     elecTag_ = iConfig.getParameter< edm::InputTag > ( "electronTag" );
 
+    elecRhoTag_ = iConfig.getParameter< edm::InputTag > ("electronRho");    
+
     btagName = iConfig.getParameter<std::string > ("BtagName");
     minBtagDiscVal = iConfig.getParameter<double>("minBtagDiscr");
 
@@ -316,8 +321,9 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
     pileupEra_ = iConfig.getParameter<int>("pileupEra");
 
+    // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getParameter<int>("heepVersion");
-    if ( heepVersion_ != 2 ) heepVersion_ = 1 ; // protection
+    if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ; 
 
     EBscalefactor_ = iConfig.getParameter<double>("EBscalefactor") ;
     EEscalefactor_ = iConfig.getParameter<double>("EEscalefactor") ;
@@ -485,6 +491,10 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::ElectronCollection> pElecs ;
     iEvent.getByLabel(elecTag_, pElecs) ;
 
+    edm::Handle<double> electronRhoHandle ; 
+    iEvent.getByLabel(elecRhoTag_, electronRhoHandle) ; 
+    elecRho_ = ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.) ; 
+
     edm::Handle<pat::JetCollection> pJets ;
     iEvent.getByLabel(jetTag_, pJets) ;
 
@@ -593,7 +603,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Look for valid electrons and put them in the event
     std::vector< std::pair<pat::Electron, float> > eCands =
             hnu::getElectronList(pElecs, cuts.maximum_elec_abseta,
-                                 cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, heepVersion_) ;
+                                 cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, heepVersion_, elecRho_) ;
     hnuEvent.nElectrons = eCands.size() ;
     if(hnuEvent.nElectrons >= 1) hnuEvent.nLeptons++;
     if ( hnuEvent.nLeptons < 1 ) return false ;
@@ -630,7 +640,8 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
 
     // Finally, look for valid muons and put them in the event
-    std::vector<pat::Muon> muCands = hnu::getMuonList(pMuons, tevMuons, cuts.minimum_lep2_pt, cuts.maximum_mu_abseta, applyMESfactor_) ;
+    std::vector<pat::Muon> muCands = hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
+						      cuts.minimum_lep2_pt, cuts.maximum_mu_abseta, applyMESfactor_) ;
     for (unsigned int i = 0; i < muCands.size(); i++)
     {
         pat::Muon iM = muCands.at(i) ;
@@ -697,7 +708,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.VertexCuts->fill(hnuEvent);
 
     double mu1pt = hnuEvent.mu1.pt() ;
-    double e1pt  = hnu::getElectronEt(hnuEvent.e1) ;
+    double e1pt  = hnu::getElectronEt(hnuEvent.e1,(heepVersion_ != 40)) ;
     double highestPt = std::max(mu1pt, e1pt);
     if ( studyScaleFactorEvolution_ && hnuEvent.mLL >= cuts.minimum_mumu_mass)
     {

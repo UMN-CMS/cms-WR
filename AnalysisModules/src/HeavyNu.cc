@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.93 2012/04/30 15:22:17 pastika Exp $
+// $Id: HeavyNu.cc,v 1.94 2012/05/09 17:07:35 pastika Exp $
 //
 //
 
@@ -166,6 +166,9 @@ private:
     edm::InputTag jetTag_;
     edm::InputTag metTag_;
     edm::InputTag elecTag_;
+
+  edm::InputTag elecRhoTag_ ; 
+  double elecRho_ ; 
 
     int evtCounter;
 
@@ -427,6 +430,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     elecTag_ = iConfig.getParameter< edm::InputTag > ("electronTag");
     trackTag_ = iConfig.getParameter< edm::InputTag > ("trackTag");
 
+    elecRhoTag_ = iConfig.getParameter< edm::InputTag > ("electronRho");    
+
     btagName = iConfig.getParameter<std::string > ("BtagName");
     minBtagDiscVal = iConfig.getParameter<double>("minBtagDiscr");
 
@@ -482,7 +487,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     isPFJets_ = iConfig.getParameter<bool>("isPFJets");
     studyRatePerRun_ = iConfig.getParameter<bool>("studyRatePerRun");
 
+    // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion");
+    if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ;     
 
     std::string am = iConfig.getUntrackedParameter<std::string>("analysisMode");
     if(!am.compare("HNUMU")) analysisMode_ = HeavyNuEvent::HNUMU;
@@ -709,6 +716,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "jetTag            = " << jetTag_ << std::endl;
     std::cout << "metTag            = " << metTag_ << std::endl;
     std::cout << "electronTag       = " << elecTag_ << std::endl;
+    std::cout << "heepVersion       = " << heepVersion_ << std::endl;
     std::cout << "trackTag          = " << trackTag_ << std::endl;
     std::cout << "btagName          = " << btagName << std::endl;
     std::cout << "minBtagDiscr      = " << minBtagDiscVal << std::endl;
@@ -982,6 +990,10 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::ElectronCollection> pElecs;
     iEvent.getByLabel(elecTag_, pElecs);
 
+    edm::Handle<double> electronRhoHandle ; 
+    iEvent.getByLabel(elecRhoTag_, electronRhoHandle) ; 
+    elecRho_ = ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.) ; 
+
     edm::Handle<pat::JetCollection> pJets;
     iEvent.getByLabel(jetTag_, pJets);
 
@@ -1211,12 +1223,16 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
-      hnu::getMuonList(pMuons, tevMuons, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_, merUncertainty_, false);
+      hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
+		       cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_, merUncertainty_, false);
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
-      hnu::getElectronList(pElecs, cuts.maximum_mu_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, heepVersion_);
-    
+      hnu::getElectronList(pElecs, cuts.maximum_mu_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
+			   heepVersion_,elecRho_);
+
+    if (analysisMode_ == HeavyNuEvent::HNUE)
+      std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ; 
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
@@ -1319,6 +1335,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  }
 	}
     }
+
+    if (analysisMode_ == HeavyNuEvent::HNUE)
+      std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ; 
 
     if(hnuEvent.nJets < 2) return false;
 
@@ -1437,6 +1456,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
+      std::cout << "Examining electron trigger" << std::endl ; 
         for(unsigned int i = 0; i < eCands.size(); i++)
         {
             if(hnuEvent.nLeptons == 2) break;
@@ -1452,7 +1472,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
         }
 
-        l1trig = l2trig = true;
+	// bool l12trig = (hnuEvent.nLeptons > 1) &&
+	//   trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent, &(((HeavyNuMuHist*)hists.Mu2TrigMatchesInZwin)->trigHistos));
+	l1trig = l2trig = true ;
     }
 
     hnuEvent.regularize();

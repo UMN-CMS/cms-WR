@@ -22,6 +22,7 @@ hNuTop = cms.EDFilter(
     jetTag         = cms.InputTag( 'selectedPatJets' ),
     metTag         = cms.InputTag( 'patMETs' ),
     electronTag    = cms.InputTag( 'selectedPatElectrons' ),
+    electronRho    = cms.InputTag( 'kt6PFJetsCentral','rho','RECO' ),
     BtagName       = cms.string('trackCountingHighEffBJetTags'),
     minBtagDiscr   = cms.double(0.669), # yields 0.1% fake rate, see SWGuideBTagPerformance twiki
     minLep1pt      = cms.double(60.),

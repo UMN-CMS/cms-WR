@@ -6,6 +6,7 @@
 
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 
 const float pileup2010A = 1.2;
 const float pileup2010B = 2.2;
@@ -39,18 +40,108 @@ namespace hnu {
 
   } // HeavyNu::isVBTFtight
 
-  double getElectronEt(const pat::Electron& e) { 
-    reco::Particle::LorentzVector eScaled = e.p4() * (e.caloEnergy() / e.energy()) ;
-    return eScaled.Et() ; 
+  // Information taken from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId
+  // On 12 May, 2012
+  bool is2012MuTight(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle) { 
+
+    reco::TrackRef gt = m.globalTrack();
+    reco::TrackRef it = m.innerTrack();
+    if (gt.isNull() || it.isNull()) {
+      std::cerr << "Mu global track or inner track reference is NULL" << std::endl;
+      return false;
+    }
+    if ( !pvHandle.isValid() ) { 
+      std::cerr << "No primary vertex available.  Skipping advanced selection." << std::endl;
+      return false;
+    }      
+    reco::Vertex pv = pvHandle->at(0) ; 
+
+    return ( (m.isGlobalMuon()) &&
+	     // (m.normChi2() < 10) && --> Ignored for high pT muons
+	     (gt->hitPattern().numberOfValidMuonHits() > 0) &&
+	     (it->hitPattern().numberOfValidPixelHits() > 0) &&
+	     (m.numberOfMatchedStations() > 1) &&
+	     (m.dB() < 0.2) &&
+	     (fabs(it->dz(pv.position())) < 0.5) &&
+	     // (it->hitPattern().trackerLayersWithMeasurement() > 5) ) ; 
+	     (it->hitPattern().trackerLayersWithMeasurement() > 8) ) ; // modification for high pT muons
+  }
+
+  double getElectronEt(const pat::Electron& e, bool useCorrectedEnergy) { 
+    
+    double ET     = e.superCluster()->energy() * sin( e.p4().theta() ) ; 
+    double corrET = e.caloEnergy() * sin( e.p4().theta() ) ; 
+
+    return ( useCorrectedEnergy ? corrET : ET ) ; 
   } 
 
   double getElectronSCEta(const pat::Electron& e) { 
-    return e.superCluster()->eta() ; 
+    return e.caloPosition().eta() ; 
   }
+
+  bool passesHEEP(const pat::Electron& e, int heepVersion, double rho) { 
+
+    if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) return false ; 
+    
+    // All electrons must be ECAL driven
+    if ( !e.ecalDriven() ) return false ; 
+
+    double ePt  = getElectronEt(e,(heepVersion != 40)) ; 
+
+    double eEta = getElectronSCEta(e) ; 
+    bool isEB   = ( fabs(eEta) < 1.4442 ) ; 
+    bool isEE   = ( fabs(eEta) < 2.5 && fabs(eEta) > 1.56 ) ; 
+    if ( !isEB && !isEE ) return false ; 
+    
+    double HoE = e.hadronicOverEm() ; 
+    if ( HoE > 0.05 ) return false ; 
+
+    double dEtaIn = fabs(e.deltaEtaSuperClusterTrackAtVtx()) ; 
+    if ( isEB && dEtaIn > 0.005 ) return false ; 
+    if ( isEE && dEtaIn > 0.007 ) return false ; 
+
+    double dPhiIn = fabs(e.deltaPhiSuperClusterTrackAtVtx()) ; 
+    if (  heepVersion == 31                       && dPhiIn > 0.09 ) return false ; 
+    if ( (heepVersion == 32 || heepVersion == 40) && dPhiIn > 0.06 ) return false ; 
+
+    double sig_iEiE = e.sigmaIetaIeta() ; 
+    if ( isEE && sig_iEiE > 0.03 ) return false ; 
+
+    double e1x5_5x5 = e.e1x5() / e.e5x5() ; 
+    double e2x5_5x5 = e.e2x5Max() / e.e5x5() ; 
+    if ( isEB && (e2x5_5x5 < 0.94 && e1x5_5x5 < 0.83) ) return false ; 
+
+    int nLostHits = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
+    if ( nLostHits != 0 ) return false ; 
+    
+    double ecalHcalIso = e.dr03EcalRecHitSumEt() + e.dr03HcalDepth1TowerSumEt() ; 
+    double thresholdEB = 2. + 0.03 * ePt ; 
+    double thresholdEE = 2.5 ;
+    if ( isEE && ePt > 50 ) thresholdEE += (0.03 * (ePt - 50.)) ; 
+    if ( heepVersion == 40 ) { 
+      thresholdEB += ( 0.28 * rho ) ; 
+      thresholdEE += ( 0.28 * rho ) ; 
+    }
+    if ( isEB && ecalHcalIso > thresholdEB ) return false ; 
+    if ( isEE && ecalHcalIso > thresholdEE ) return false ; 
+
+    double hcalIsoDepth2 = e.dr03HcalDepth2TowerSumEt() ; 
+    if ( (heepVersion == 31) && isEE && hcalIsoDepth2 > 0.5 ) return false ; 
+
+    double trkIso = e.dr03TkSumPt() ;
+    if ( (heepVersion == 31) &&
+	 ((isEB && trkIso > 7.5) || (isEE && trkIso > 15.)) ) return false ; 
+    if ( (heepVersion == 32 || heepVersion == 40) && (trkIso > 5.) ) return false ; 
+
+    // Passes HEEP selection
+    return true ; 
+  }
+
 
   bool passesHEEPv31(const pat::Electron& e) { 
     if ( !e.ecalDriven() ) return false ; 
-    double ePt  = getElectronEt(e) ; 
+
+    double ePt  = getElectronEt(e,true) ; 
     double eEta = getElectronSCEta(e) ; 
 
     // common requirements 
@@ -85,7 +176,7 @@ namespace hnu {
 
   bool passesHEEPv32(const pat::Electron& e) { 
     if ( !e.ecalDriven() ) return false ; 
-    double ePt  = getElectronEt(e) ; 
+    double ePt  = getElectronEt(e,true) ; 
     double eEta = getElectronSCEta(e) ; 
 
     // common requirements 
@@ -300,9 +391,32 @@ namespace hnu {
 					  1.96172E-06, 8.49283E-07, 5.02393E-07, 2.15311E-07, 9.56938E-08  // 45-49
     };
 
-    bool isFall11 = ( era == 20113 || era == 20114 ) ; 
-    const double* npu_probs = npu_probs_summer11 ;
-    int npt = sizeof(npu_probs_summer11)/sizeof(double);
+    const double npu_probs_summer12[60] = { 2.344E-05, 2.344E-05, 2.344E-05, 2.344E-05, 4.687E-04, // 0-4
+					    4.687E-04, 7.032E-04, 9.414E-04, 1.234E-03, 1.603E-03, // 5-9
+					    2.464E-03, 3.250E-03, 5.021E-03, 6.644E-03, 8.502E-03, // 10-14
+					    1.121E-02, 1.518E-02, 2.033E-02, 2.608E-02, 3.171E-02, // 15-19
+					    3.667E-02, 4.060E-02, 4.338E-02, 4.520E-02, 4.641E-02, // 20-24
+					    4.735E-02, 4.816E-02, 4.881E-02, 4.917E-02, 4.909E-02, // 25-29
+					    4.842E-02, 4.707E-02, 4.501E-02, 4.228E-02, 3.896E-02, // 30-34
+					    3.521E-02, 3.118E-02, 2.702E-02, 2.287E-02, 1.885E-02, // 35-39
+					    1.508E-02, 1.166E-02, 8.673E-03, 6.190E-03, 4.222E-03, // 40-44
+					    2.746E-03, 1.698E-03, 9.971E-04, 5.549E-04, 2.924E-04, // 45-49
+					    1.457E-04, 6.864E-05, 3.054E-05, 1.282E-05, 5.081E-06, // 50-54
+					    1.898E-06, 6.688E-07, 2.221E-07, 6.947E-08, 2.047E-08  // 55-59
+    }; 
+
+
+
+    bool isSummer11 = ( era == 20111 || era == 20112 ) ; 
+    bool isFall11   = ( era == 20113 || era == 20114 ) ; 
+    const double* npu_probs = npu_probs_summer12 ;
+    int npt = sizeof(npu_probs_summer12)/sizeof(double);
+    // const double* npu_probs = npu_probs_summer11 ;
+    // int npt = sizeof(npu_probs_summer11)/sizeof(double);
+    if ( isSummer11 ) {
+        npt = sizeof(npu_probs_summer11)/sizeof(double);
+        npu_probs = npu_probs_summer11 ;
+    }
     if ( isFall11 ) {
         npt = sizeof(npu_probs_fall11)/sizeof(double);
         npu_probs = npu_probs_fall11 ;
@@ -401,9 +515,30 @@ namespace hnu {
 	     0.0,        0.0,        0.0,        0.0,        0.0
     } ; 
 
+    const double json_2012a_run193557[] = { 
+            59.3073,       156.1,     6681.18, 2.79236e+06, 7.28453e+06,
+	    66597.5,     60190.1,     48270.5,      155944, 1.19828e+06, 
+	7.83965e+06, 2.16456e+07, 3.29565e+07, 4.09794e+07, 4.95412e+07, 
+	5.83303e+07, 6.37098e+07, 6.28154e+07, 5.53595e+07, 4.38815e+07, 
+	3.23858e+07, 2.31768e+07, 1.65636e+07, 1.22208e+07, 9.41924e+06, 
+	7.42174e+06, 5.82024e+06,  4.4711e+06,  3.3413e+06, 2.42264e+06, 
+	1.70269e+06, 1.15991e+06,      766260,      491354,      306205, 
+	     185700,      109734,     63248.8,     35581.5,     19541.5, 
+	    10475.4,     5477.99,     2792.36,     1386.16,     669.462, 
+	    314.265,      143.27,     63.3834,     27.1948,     11.3099, 
+	    4.55733,     1.77868,    0.672206,    0.245942,   0.0870985, 
+	  0.0298523,  0.00990102,  0.00317743, 0.000986567,      402199
+    } ; 
+
+
 
     const double* pileupDist=default_pd;
     int npt = 35;
+    if (era == 20121) 
+    {
+        npt = sizeof(json_2012a_run193557)/sizeof(double);
+        pileupDist=json_2012a_run193557;
+    }
     if (era == 20111) 
     {
         npt = sizeof(json_2011a)/sizeof(double);
@@ -455,7 +590,8 @@ namespace hnu {
       int BX = PVI->getBunchCrossing();
 
       if (BX == 0) { 
-        nPileup = PVI->getPU_NumInteractions();
+        // nPileup = PVI->getPU_NumInteractions();
+        nPileup = PVI->getTrueNumInteractions();
         continue;
       }
     }
@@ -570,9 +706,12 @@ namespace hnu {
 
   std::vector<pat::Muon> getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 				     edm::Handle<reco::MuonCollection>& tevMuons,
-				     double minPt, double maxAbsEta, 
+				     edm::Handle<reco::VertexCollection>& pvHandle, 
+				     int idEra, double minPt, double maxAbsEta, 
 				     double mesScale, bool muBiasUnc, 
 				     bool trackerPt) {
+
+    // std::cout << "Please note that the ID era is: " << idEra << std::endl ; 
 
     double ptScale = mesScale ; 
     std::vector<pat::Muon> muonList ; 
@@ -587,7 +726,9 @@ namespace hnu {
       }
       double mupt = ptScale * (iM.pt());
       if ( mupt < minPt ) continue ; 
-      if ( !isVBTFtight(iM) ) continue ; 
+      bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM,pvHandle) ) : ( isVBTFtight(iM) ) ) ; 
+      if ( !passesID ) continue ; 
+      // if ( !isVBTFtight(iM) ) continue ; 
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting
       if ( trackerPt ) { 
@@ -618,17 +759,29 @@ namespace hnu {
 								double maxAbsEta, 
 								double minEtEB, double minEtEE, 
 								int heepVersion,
+								double rho,
 								float ebScale, float eeScale) {
     
     std::vector< std::pair<pat::Electron,float> > electronList ; 
+    // Just in case...
+    if ( heepVersion < 30 || heepVersion > 40 ) { 
+      if ( heepVersion <= 2 ) heepVersion += 30 ; 
+      else                    heepVersion = 40 ; 
+    }
+    if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) { 
+      std::cout << "WARNING Invalid HEEP version: " << heepVersion << std::endl ; 
+      return electronList ; 
+    }
     for (unsigned int iElectron=0; iElectron < pElecs->size(); iElectron++) {
       pat::Electron iE = pElecs->at(iElectron); 
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
-      if ( (heepVersion == 1) && !passesHEEPv31(iE) ) continue ; 
-      if ( (heepVersion == 2) && !passesHEEPv32(iE) ) continue ; 
+      // if ( (heepVersion == 31) && !passesHEEPv31(iE) ) continue ; 
+      // if ( (heepVersion == 32) && !passesHEEPv32(iE) ) continue ; 
+      // if ( (heepVersion == 40) && !passesHEEPv40(iE) ) continue ; 
+      if ( !passesHEEP(iE,heepVersion,rho) ) continue ; 
 
       float scale  = ( (iE.isEB()) ? ebScale : eeScale ) ;
-      float elecEt = getElectronEt(iE) * scale ; 
+      float elecEt = getElectronEt(iE,(heepVersion != 40)) * scale ; 
       bool passEtCuts = ( (iE.isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ;
 
       if (passEtCuts) {

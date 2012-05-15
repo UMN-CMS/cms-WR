@@ -21,10 +21,11 @@ hNu = cms.EDFilter(
     metTag       = cms.InputTag( 'patMETs' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
     trackTag     = cms.InputTag( 'patTracksPt10' ),
+    electronRho  = cms.InputTag( 'kt6PFJetsCentral','rho','RECO' ),
     BtagName     = cms.string('trackCountingHighEffBJetTags'),
     minBtagDiscr = cms.double(0.669), # yields 0.1% fake rate, see SWGuideBTagPerformance twiki
     minMu1pt     = cms.double(60.),
-    minMu2pt     = cms.double(30.),
+    minMu2pt     = cms.double(40.), # 2012 defaults
     minJetPt     = cms.double(40),
     maxMuAbsEta  = cms.double(2.4),
     maxJetAbsEta = cms.double(2.5),
@@ -74,5 +75,5 @@ hNu = cms.EDFilter(
     #options are HNUMU, HNUE, TOP, QCD, CLO
     analysisMode = cms.untracked.string('HNUMU'),
 
-    heepVersion = cms.untracked.int32(2)
+    heepVersion = cms.untracked.int32(40)
     )

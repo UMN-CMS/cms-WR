@@ -14,6 +14,7 @@
 
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -43,6 +44,8 @@ class HeavyNuTrigger {
   bool isTriggerMatched(const pat::Muon  & muon,
 			const edm::Event & iEvent,
 			trigHistos_t *thist = NULL);
+  bool isTriggerMatched(const pat::Electron & e1,  const pat::Electron & e2,
+			const edm::Event & iEvent, trigHistos_t *thist = NULL);
 
   bool simulateForMC(double pt,double eta,int signOfError2apply=0);
   bool simulateForMC(double pt,int signOfError2apply=0) { return simulateForMC(pt,0.,signOfError2apply); }  
@@ -54,9 +57,9 @@ class HeavyNuTrigger {
   bool          matchingEnabled_;
   TRandom      *triggerRandom_;
   edm::InputTag trigEventTag_;
-  std::vector<std::string> muonTriggers_;
+  std::vector<std::string> muonTriggers_, electronTriggers_;
   std::vector<int> beginRun_, endRun_ ; 
-  std::string   muonMatch_;
+  std::string   muonMatch_, electronMatch_;
   double        triggerPt_;
   int           trigEra_;
   int           johnnyApple_;

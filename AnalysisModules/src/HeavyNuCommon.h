@@ -58,10 +58,13 @@ namespace hnu {
 
     bool isVBTFloose       ( const pat::Muon& m );
     bool isVBTFtight       ( const pat::Muon& m );
+    bool is2012MuTight     ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle) ; 
+
     double muIsolation     ( const pat::Muon& m, const double scale=1.0 ) ; 
     
-    double getElectronEt    ( const pat::Electron& e ) ; 
+    double getElectronEt    ( const pat::Electron& e, bool useCorrectedEnergy ) ; 
     double getElectronSCEta ( const pat::Electron& e ) ; 
+    bool passesHEEP         ( const pat::Electron& e, int heepVersion, double rho ) ; 
     bool passesHEEPv31      ( const pat::Electron& e ) ; 
     bool passesHEEPv32      ( const pat::Electron& e ) ; 
 
@@ -94,13 +97,15 @@ namespace hnu {
 							      bool isMC=false, int jerSign=0);
     std::vector<pat::Muon>                        getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 							      edm::Handle<reco::MuonCollection>& tevMuons,
+							      edm::Handle<reco::VertexCollection>& pvHandle,
+							      int idEra, 
 							      double minPt, double maxAbsEta,
 							      double mesScale=1.0, bool merUnc=false,
 							      bool trackerPt=false);
     std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 
-								  int heepVersion=1,
+								  int heepVersion, double rho, 
 								  float ebScale=1.0, float eeScale=1.0);
     std::vector<float> generate_flat10_mc(int pileupEra=-1);
 

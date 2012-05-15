@@ -13,18 +13,20 @@
 //======================================================================
 
 HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
-  trigEventTag_( iConfig.getParameter< edm::InputTag >( "trigEventTag" ) ),
-  muonTriggers_( iConfig.getParameter< std::vector<std::string> >( "muonTriggers" ) ),
-  beginRun_    ( iConfig.getParameter< std::vector<int> >( "firstRun" ) ),
-  endRun_      ( iConfig.getParameter< std::vector<int> >( "lastRun" ) ),
-  muonMatch_   ( iConfig.getParameter< std::string >  ( "muonMatch"    ) ),
-  triggerPt_   ( iConfig.getParameter< double >       ( "triggerPt"    ) ),
-  trigEra_     ( iConfig.getParameter< int >          ( "trigEra" ) ),
-  johnnyApple_ ( iConfig.getParameter< int >          ( "randomSeed"   ) )
+  trigEventTag_  ( iConfig.getParameter< edm::InputTag > ( "trigEventTag" ) ),
+  muonTriggers_     ( iConfig.getParameter< std::vector<std::string> > ( "muonTriggers" ) ),
+  electronTriggers_ ( iConfig.getParameter< std::vector<std::string> > ( "electronTriggers" ) ),
+  beginRun_      ( iConfig.getParameter< std::vector<int> > ( "firstRun" ) ),
+  endRun_        ( iConfig.getParameter< std::vector<int> > ( "lastRun" ) ),
+  muonMatch_     ( iConfig.getParameter< std::string >  ( "muonMatch"     ) ),
+  electronMatch_ ( iConfig.getParameter< std::string >  ( "electronMatch" ) ),
+  triggerPt_     ( iConfig.getParameter< double >       ( "triggerPt" ) ),
+  trigEra_       ( iConfig.getParameter< int >          ( "trigEra"   ) ),
+  johnnyApple_   ( iConfig.getParameter< int >          ( "randomSeed" ) )
 {
   matchingEnabled_ = false;
   if (trigEventTag_.label().size() &&
-      muonMatch_.size())
+      (muonMatch_.size()||electronMatch_.size()))
     matchingEnabled_ = true;
 
   if (!matchingEnabled_) {
@@ -185,6 +187,88 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
   return ( matched ); 
 }                                    // HeavyNuTrigger::isTriggerMatched
 
+bool
+HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
+				 const pat::Electron& e2,
+				 const edm::Event& iEvent,
+				 trigHistos_t *thist)
+{
+  bool matched=false;
+  
+  // Only one trigger can be used for matching in a given run
+  int run = iEvent.run() ; 
+  std::vector<std::string> validHLTpaths ; 
+  
+  for (unsigned int i=0; i<electronTriggers_.size(); i++) 
+    if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(electronTriggers_.at(i)) ; 
+
+  std::cout << "Looking for trigger match for e1 with pT " << e1.pt() 
+    	    << " and eta " << e1.eta() 
+	    << "; e2 with pT " << e2.pt() << " and eta " << e2.eta() << std::endl ; 
+
+  if ( matchingEnabled_ ) {
+
+    const pat::TriggerObjectStandAloneCollection e1MatchCollection = e1.triggerObjectMatches();
+    const pat::TriggerObjectStandAloneCollection e2MatchCollection = e2.triggerObjectMatches();
+    std::cout << "Trigger object matches size: " << e1MatchCollection.size() 
+	      << " " << e2MatchCollection.size() << std::endl ; 
+
+    for (unsigned int i=0; i<e1MatchCollection.size(); i++) { 
+      if ( matched ) break ; // Quit as soon as we find a match
+      std::cout << "Trigger object " << i+1 << " of " << e1MatchCollection.size() << std::endl ; 
+      pat::TriggerObject electronTrigger = e1MatchCollection.at(i) ; 
+      pat::TriggerObjectStandAlone electronTriggerInfo = e1MatchCollection.at(i) ; 
+      // Look for a match with one of our paths
+      std::vector<std::string> hltPaths = electronTriggerInfo.pathNames(true,false) ; 
+      bool hltPathMatch = false ; 
+      for (unsigned int j=0; j<hltPaths.size(); j++) { 
+	if (hltPathMatch) break ; 
+	std::cout << "HLT Path: " << hltPaths.at(j) << std::endl ; 
+	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
+	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
+            // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
+	    hltPathMatch = true ; 
+	    break ; 
+	  }
+	}
+      }
+      // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
+      // Requirements to see if the trigger would have accepted the event based on this muon
+//       if ( hltPathMatch && electronTrigger.pt() > triggerPt_ ) { 
+// 	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( m,muonTrigger );
+// 	double dpt  = 1.-(muonTrigger.pt()/m.pt());
+// 	double dphi = reco::deltaPhi( m.phi(),muonTrigger.phi() );
+// 	double deta = m.eta() - muonTrigger.eta();
+
+// 	// One more requirement: make sure that the muon is nearby the trigger object
+// 	if ( sqrt(dr2) < 0.1 ) matched = true ; 
+
+// //         std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
+// //         std::cout << "dR is " << sqrt(dr2) << std::endl ; 
+
+// 	if (thist) {	  
+// 	  thist->trigMatchPtCorrel->Fill( m.pt(),muonTrigger.pt() );
+// 	  thist->trigMatchDR2     ->Fill( dr2 );
+// 	  thist->trigMatchDRDPt   ->Fill( dr2,dpt );
+// 	  thist->trigMatchDetaPhi ->Fill( deta,dphi );
+// 	}
+//       }
+//       if ( !matched ) {
+// 	if ( thist ) {
+// 	  thist->trigUnmatchedPt->Fill( m.pt() );
+// 	  thist->trigUnmatchedEtaPhi->Fill( m.eta(),m.phi() );
+// 	}
+//       }
+    }
+
+    // if ( thist ) { 
+    //   thist->trigAllCandMuPt->Fill( m.pt() );
+    //   thist->trigAllCandMuEtaPhi->Fill( m.eta(),m.phi() );
+    // }
+  }
+  return ( matched ); 
+}                                    // HeavyNuTrigger::isTriggerMatched
+
 //======================================================================
 
 bool
@@ -202,6 +286,7 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   // HLT_Mu24 results are used for 30 < pT < 40 GeV
   // All other bins combine Mu24, Mu40, Mu40_eta2p1 efficiencies for run 2011a
   // Run 2011b results use Mu40_eta2p1 only
+  // Run 2012 results use Mu40_eta2p1 only
   const double effslo2011a[]  = {0.868979,0.855499,0.862255,0.874853,0.882812,0.876860,0.823287,0.823287};
   const double effsnom2011a[] = {0.875648,0.864359,0.872848,0.885346,0.897508,0.890611,0.871189,0.871189};
   const double effshi2011a[]  = {0.882316,0.873220,0.883441,0.895840,0.912204,0.904362,0.919090,0.919090};
@@ -211,6 +296,11 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   const double effsnom2011b[] = {0.900857,0.913545,0.936445,0.906582,0.893309,0.866667,0.866667};
   const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
   const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
+
+  const double effslo2012[]   = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  const double effsnom2012[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  const double effshi2012[]   = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  const double upedge2012[]   = {      50,      60,      80,     100,     200,    3500,      -1};
 
   //These uncertainties are inflated by a factor of 3!!!!!!!
   //const double effslo2011a[]  = {0.855641,0.837779,0.841069,0.853867,0.853420,0.849358,0.727483,0.727483};
@@ -223,15 +313,20 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   //const double effshi2011b[]  = {0.855641,0.923054,0.939702,0.959548,0.946860,0.932726,1.018056,1.018056};
   //const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
- // 2011 A is the default
-  const double *effs = ( (trigEra_ == 20111) ? effsnom2011a : effsnom2011b );
+  // 2011 A is the default
+  const double *effs = effsnom2012 ; 
+  if (trigEra_ == 20111) effs = effsnom2011a ; 
+  if (trigEra_ == 20112) effs = effsnom2011b ; 
   if ( signOfError2apply ) {
     if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
-    else                     effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
+    if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
+    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effshi2012 : effslo2012;
   }
 
   int i;
-  const double *upedge = ( (trigEra_ == 20110) ? upedge2011a : upedge2011b );
+  const double *upedge = upedge2012 ; 
+  if (trigEra_ == 20111) upedge = upedge2011a ; 
+  if (trigEra_ == 20112) upedge = upedge2011b ; 
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
   double eff=effs[i];
     
