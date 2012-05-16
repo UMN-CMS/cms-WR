@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni
 //         Created:  Wed May  2 04:49:56 CDT 2012
-// $Id: EleFilter.cc,v 1.1 2012/05/03 09:22:58 franzoni Exp $
+// $Id: EleFilter.cc,v 1.2 2012/05/16 14:28:35 franzoni Exp $
 //
 //
 
@@ -139,7 +139,8 @@ bool
 EleFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
-
+  nEvt++;
+  
   edm::Handle<pat::ElectronCollection> patElectronCollection ; 
   iEvent.getByLabel(electronTag_,patElectronCollection) ; 
   if (!patElectronCollection.isValid()) {      
@@ -186,20 +187,21 @@ EleFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   else {
     if(debug_) std::cout << "++ debug " << patSelectedElectrons.size() << " electrons found with pt above: " << minElePt_ << "; minimum num gsf satisfied. " << std::endl;
   }
+  nEvt1++; // count how many events have required electrons
 
-  nEvt1++; // count how many have required electrons
 
   // if electrons cover nuber of required electrons AND nuber of required SC's as well, no need to check SC's => pass
   if( patSelectedElectrons.size() >= (minEleNum_ + minSCNum_) ) {
     if(debug_) {
       std::cout << "number of electrons (" << patSelectedElectrons.size() << ") exceeds minEle+minSC " << (minEleNum_ + minSCNum_) << " returning true" << std::endl; }
+    nEvt2++; // count how many events have required SC's; you have also minimum number of superclusters, in this case
     return true;
   }
+
 
   // find SC's that pass et/absEta requirements, but are not yet associated to an electron
   std::vector<reco::SuperCluster> selectedSC;
   selectedSC.reserve( eeSCs.size() );
-
   // EE sc's
   for(unsigned int eesc=0; eesc<eeSCs.size(); eesc++ ){
 
@@ -232,12 +234,14 @@ EleFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }// loop over EB SC
   if(debug_)  std::cout << "++ debug: after loop on EB, found: " << selectedSC.size() << " SC's" << std::endl;
 
+
+  // select on numbert of superclusters required in addition to electrons
   if( selectedSC.size() < minSCNum_) {
     if(debug_) std::cout << "++debug: num of selected SCs extra2electros ( " << selectedSC.size() << ") less than minimum (" << minSCNum_ << ") returning false;" << std::endl;
     return false;
   }
-  
-  nEvt2++; // count how many have required SC's
+  nEvt2++; // count how many events have required SC's
+
 
   // at this stage, that patSelectedElectrons and selectedSC have at least one element has already been checked
   // double-check, for protection, to avoid invalid .at(0)
@@ -246,6 +250,7 @@ EleFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // Sort the collections by pT
   std::sort(patSelectedElectrons.begin(),patSelectedElectrons.end(),compareEle()) ; 
   std::sort(selectedSC.begin(),          selectedSC.end(),          compareSC) ; 
+
 
   // further selection on mass
   reco::Particle::LorentzVector Z(patSelectedElectrons.at(0).ecalDrivenMomentum());
@@ -279,7 +284,7 @@ EleFilter::endJob() {
   std::cout << "Saw " << nEvt <<  " events in total"  << std::endl ; 
   std::cout << "    " << nEvt1 << " events with at least required electron(s) (" << minEleNum_ << " with pt > " << minElePt_ << ")" << std::endl ; 
   std::cout << "    " << nEvt2 << " events with additionally the required SC(s) (" << minSCNum_ << " with pt > " << minSCEt_ << " and fabs(eta)<" << maxSCAbsEta_ <<  ")" << std::endl ; 
-  std::cout << "    " << nEvt3 << " events with additionally the required mass requirements (" << massMin_ << " < m < " << massMax_ << std::endl ; 
+  std::cout << "    " << nEvt3 << " events with additionally the required mass requirements (" << massMin_ << " < m < " << massMax_ << ")" << std::endl ; 
   
 }
 
