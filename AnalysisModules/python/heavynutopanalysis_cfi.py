@@ -7,10 +7,12 @@ hNuTop = cms.EDFilter(
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
+        electronTriggers = cms.vstring( '' ),
         trigEra      = cms.int32( 20111 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
+        electronMatch = cms.string( '' ),
         triggerPt    = cms.double( 40. ),
         randomSeed   = cms.int32( 0 )  # for MC
     ),

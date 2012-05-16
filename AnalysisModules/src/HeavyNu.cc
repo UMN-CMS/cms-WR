@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.94 2012/05/09 17:07:35 pastika Exp $
+// $Id: HeavyNu.cc,v 1.95 2012/05/15 21:47:20 bdahmes Exp $
 //
 //
 
@@ -151,7 +151,7 @@ private:
 
     void fill(pat::MuonCollection muons,
               pat::ElectronCollection electrons,
-              pat::JetCollection jets,
+              std::vector< std::pair<pat::Jet, float> >& jets,
               pat::METCollection metc,
               bool isMC,
               double wgt,
@@ -340,7 +340,7 @@ bool HeavyNu::isWrDaughter(const reco::Candidate* mother)
 
 void HeavyNu::fill(pat::MuonCollection muons,
                    pat::ElectronCollection electrons,
-                   pat::JetCollection jets,
+                   std::vector< std::pair<pat::Jet, float> >& jets,
                    pat::METCollection metc,
                    bool isMC,
                    double wgt,
@@ -358,7 +358,7 @@ void HeavyNu::fill(pat::MuonCollection muons,
 
     std::sort(muons.begin(), muons.end(), hnu::pTcompare());
     std::sort(electrons.begin(), electrons.end(), hnu::pTcompare());
-    std::sort(jets.begin(), jets.end(), hnu::pTcompare());
+    //std::sort(jets.begin(), jets.end(), hnu::pTcompare());  should already be sorted
 
     if((analysisMode_ == HeavyNuEvent::HNUMU || analysisMode_ == HeavyNuEvent::TOP) && muons.size() > 0)
     {
@@ -387,13 +387,13 @@ void HeavyNu::fill(pat::MuonCollection muons,
     hne.btagName = btagName;
     if(hne.nJets > 0)
     {
-        hne.j1 = jets[0];
+        hne.j1 = jets[0].first;
         double j1bdisc = hne.j1.bDiscriminator(btagName);
         hne.isBJet1 = j1bdisc >= minBtagDiscVal;
     }
     if(hne.nJets > 1)
     {
-        hne.j2 = jets[1];
+        hne.j2 = jets[1].first;
         double j2bdisc = hne.j2.bDiscriminator(btagName);
         hne.isBJet2 = j2bdisc >= minBtagDiscVal;
     }
@@ -1209,17 +1209,19 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         case HeavyNuEvent::CLO:
             break;
     }
-    if(pJets->size() >= 2)
-    {
-        hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
-        fill(*pMuons, *pElecs, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
-    }
-    else return false;
+    
+    if(pJets->size() < 2) return false;
 
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet, float> > jetCands =
       hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_);
     hnuEvent.nJets = jetCands.size();
+
+    if(hnuEvent.nJets >= 2)
+    {
+        hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
+        fill(*pMuons, *pElecs, jetCands, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
+    }
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
@@ -1231,8 +1233,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       hnu::getElectronList(pElecs, cuts.maximum_mu_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
 			   heepVersion_,elecRho_);
 
-    if (analysisMode_ == HeavyNuEvent::HNUE)
-      std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ; 
+    //if (analysisMode_ == HeavyNuEvent::HNUE)
+    //  std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ;
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
@@ -1336,8 +1338,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
     }
 
-    if (analysisMode_ == HeavyNuEvent::HNUE)
-      std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ; 
+    //if (analysisMode_ == HeavyNuEvent::HNUE)
+    //  std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ;
 
     if(hnuEvent.nJets < 2) return false;
 
@@ -1456,7 +1458,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
-      std::cout << "Examining electron trigger" << std::endl ; 
+      //std::cout << "Examining electron trigger" << std::endl ;
         for(unsigned int i = 0; i < eCands.size(); i++)
         {
             if(hnuEvent.nLeptons == 2) break;
@@ -1672,6 +1674,4 @@ void HeavyNu::endJob()
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HeavyNu);
-
-
 

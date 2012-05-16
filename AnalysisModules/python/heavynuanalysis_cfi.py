@@ -5,10 +5,12 @@ hNu = cms.EDFilter(
     trigMatchPset = cms.PSet(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
+        electronTriggers = cms.vstring( '' ),
         trigEra      = cms.int32( 20111 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
+        electronMatch = cms.string( '' ),
         triggerPt    = cms.double( 40. ),
         randomSeed   = cms.int32( 0 )  # for MC
     ),
@@ -63,7 +65,7 @@ hNu = cms.EDFilter(
     isSignal              = cms.bool(False),
     mNuRnormalization     = cms.double(1000.0),
 
-   doPDFReweight = cms.untracked.bool(False),
+    doPDFReweight = cms.untracked.bool(False),
 #    pdfReweightBaseName = cms.untracked.string('cteq6ll.LHpdf'),
     pdfReweightBaseName = cms.untracked.string('CT10.LHgrid'),
     pdfReweightBaseId = cms.untracked.int32(0),

@@ -72,7 +72,7 @@ public:
 
     bool isBJet1, isBJet2;
 
-    int nLeptons, nJets, nElectrons, numBJets;
+    int nLeptons, nJets, nMuons, nElectrons, numBJets;
 
     double tjV1, tjV2;
     int n_primary_vertex, n_pue;
