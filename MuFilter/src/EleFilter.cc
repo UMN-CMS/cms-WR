@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni
 //         Created:  Wed May  2 04:49:56 CDT 2012
-// $Id: EleFilter.cc,v 1.3 2012/05/16 16:03:32 franzoni Exp $
+// $Id: EleFilter.cc,v 1.4 2012/05/16 16:16:10 franzoni Exp $
 //
 //
 
@@ -280,7 +280,7 @@ EleFilter::beginJob()
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 EleFilter::endJob() {
-  std::cout << "\n\nResults of filtering: " << std::endl ; 
+  std::cout << "\n\nResults of filtering from EleFilter: " << std::endl ; 
   std::cout << "Saw " << nEvt <<  " events in total"  << std::endl ; 
   std::cout << "    " << nEvt1 << " events with at least required electron(s) (" << minEleNum_ << " with pt > " << minElePt_ << ")" << std::endl ; 
   std::cout << "    " << nEvt2 << " events with additionally the required SC(s) (" << minSCNum_ << " with pt > " << minSCEt_ << " and fabs(eta)<" << maxSCAbsEta_ <<  ")" << std::endl ; 
