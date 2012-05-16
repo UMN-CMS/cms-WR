@@ -86,14 +86,15 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer12/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S7_START52_V9-v1/0000/FE3A3BCF-F28B-E111-80FD-001A64789D64.root')
+#    fileNames=cms.untracked.vstring('/store/mc/Summer12/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S7_START52_V9-v1/0000/FE3A3BCF-F28B-E111-80FD-001A64789D64.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/70F40D11-207E-E111-9038-003048678D86.root')
 #    fileNames=cms.untracked.vstring('/store/data/Run2012A/DoubleElectron/AOD/PromptReco-v1/000/191/247/66012C08-5888-E111-B2AF-0025901D5C86.root')
 #    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
 #    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_2_3_patch4/src/HeavyNu/AnalysisModules/heavynu_skim.root')
 #    fileNames=cms.untracked.vstring('file:/local/cms/user/turkewitz/eejj_skim_may7/eejj_skim_may7_120.root')
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(3850) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 if isData:
     if isRun2012:
