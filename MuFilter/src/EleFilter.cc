@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni
 //         Created:  Wed May  2 04:49:56 CDT 2012
-// $Id: EleFilter.cc,v 1.2 2012/05/16 14:28:35 franzoni Exp $
+// $Id: EleFilter.cc,v 1.3 2012/05/16 16:03:32 franzoni Exp $
 //
 //
 
@@ -258,11 +258,11 @@ EleFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   Z+=theScp4;
 
   if ( massMin_ < Z.M() && Z.M() < massMax_ ){
-    if(debug_) std::cout << "++debug: mass request satisfied;" << std::endl; }
+    if(debug_) std::cout << "++debug: mass request satisfied; " << Z.M() << std::endl; }
   else{
-    if(debug_) std::cout << "++debug: mass request failed;" << std::endl;
+    if(debug_) std::cout << "++debug: mass request failed;" << Z.M() << std::endl;
     return false;  }    
-
+  // mass computation requires some attention ** FIXME
   nEvt3++; // count how many pass mass requirement
 
 
