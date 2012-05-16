@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni
 //         Created:  Wed May  2 04:49:56 CDT 2012
-// $Id: EleFilter.cc,v 1.4 2012/05/02 07:18:07 franzoni Exp $
+// $Id: EleFilter.cc,v 1.1 2012/05/03 09:22:58 franzoni Exp $
 //
 //
 
@@ -191,7 +191,8 @@ EleFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // if electrons cover nuber of required electrons AND nuber of required SC's as well, no need to check SC's => pass
   if( patSelectedElectrons.size() >= (minEleNum_ + minSCNum_) ) {
-    std::cout << "number of electrons (" << patSelectedElectrons.size() << ") exceeds minEle+minSC " << (minEleNum_ + minSCNum_) << " returning true" << std::endl;
+    if(debug_) {
+      std::cout << "number of electrons (" << patSelectedElectrons.size() << ") exceeds minEle+minSC " << (minEleNum_ + minSCNum_) << " returning true" << std::endl; }
     return true;
   }
 
