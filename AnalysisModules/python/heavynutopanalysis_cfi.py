@@ -14,7 +14,8 @@ hNuTop = cms.EDFilter(
         muonMatch    = cms.string( '' ),
         electronMatch = cms.string( '' ),
         triggerPt    = cms.double( 40. ),
-        randomSeed   = cms.int32( 0 )  # for MC
+        randomSeed   = cms.int32( 0 ),  # for MC
+        electronFilters = cms.vstring('')
     ),
     muIDPset = cms.PSet(
         eraForId     = cms.int32( 20111 )

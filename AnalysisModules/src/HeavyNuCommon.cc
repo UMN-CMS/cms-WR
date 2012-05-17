@@ -47,11 +47,11 @@ namespace hnu {
     reco::TrackRef gt = m.globalTrack();
     reco::TrackRef it = m.innerTrack();
     if (gt.isNull() || it.isNull()) {
-      std::cerr << "Mu global track or inner track reference is NULL" << std::endl;
+      //std::cerr << "Mu global track or inner track reference is NULL" << std::endl;
       return false;
     }
     if ( !pvHandle.isValid() ) { 
-      std::cerr << "No primary vertex available.  Skipping advanced selection." << std::endl;
+      //std::cerr << "No primary vertex available.  Skipping advanced selection." << std::endl;
       return false;
     }      
     reco::Vertex pv = pvHandle->at(0) ; 

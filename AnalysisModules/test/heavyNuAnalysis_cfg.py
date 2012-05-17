@@ -61,7 +61,7 @@ doTriggerStudy = False
 heepVersion = 40
 
 #--- Flags for Top studies ---#
-topStudy      = False
+topStudy      = True
 studyTopScale = False
 
 #--- Flags for QCD studies ---#
@@ -86,7 +86,9 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
+#    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
+#    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_2_3_patch4/src/HeavyNu/AnalysisModules/heavynu_skim.root')
+fileNames=cms.untracked.vstring("/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V9-v1/0000/784C239B-8690-E111-BD45-001A92810AC0.root")
 )
 
 if isData:
