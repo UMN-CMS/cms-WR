@@ -358,7 +358,7 @@ void HeavyNu::fill(pat::MuonCollection muons,
 
     std::sort(muons.begin(), muons.end(), hnu::pTcompare());
     std::sort(electrons.begin(), electrons.end(), hnu::pTcompare());
-    //std::sort(jets.begin(), jets.end(), hnu::pTcompare());  should already be sorted
+    //std::sort(jets.begin(), jets.end(), hnu::pTcompare());
 
     if((analysisMode_ == HeavyNuEvent::HNUMU || analysisMode_ == HeavyNuEvent::TOP) && muons.size() > 0)
     {
@@ -958,6 +958,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     HeavyNuEvent hnuEvent(analysisMode_);
 
     evtCounter++;
+    // std::cout << "Event number: " << evtCounter << std::endl ; 
 
     hnuEvent.isMC = !iEvent.isRealData();
     hnuEvent.pfJets = isPFJets_;
@@ -1217,7 +1218,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_);
     hnuEvent.nJets = jetCands.size();
 
-    if(hnuEvent.nJets >= 2)
+    if(hnuEvent.nJets >= 2) 
     {
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
         fill(*pMuons, *pElecs, jetCands, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
@@ -1233,8 +1234,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       hnu::getElectronList(pElecs, cuts.maximum_mu_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
 			   heepVersion_,elecRho_);
 
-    //if (analysisMode_ == HeavyNuEvent::HNUE)
-    //  std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ;
+    // if (analysisMode_ == HeavyNuEvent::HNUE)
+    //   std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ; 
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
@@ -1338,8 +1339,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
     }
 
-    //if (analysisMode_ == HeavyNuEvent::HNUE)
-    //  std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ;
+    // if (analysisMode_ == HeavyNuEvent::HNUE)
+    //   std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ; 
 
     if(hnuEvent.nJets < 2) return false;
 
@@ -1458,7 +1459,6 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
-      //std::cout << "Examining electron trigger" << std::endl ;
         for(unsigned int i = 0; i < eCands.size(); i++)
         {
             if(hnuEvent.nLeptons == 2) break;
@@ -1474,9 +1474,13 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
         }
 
-	// bool l12trig = (hnuEvent.nLeptons > 1) &&
-	//   trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent, &(((HeavyNuMuHist*)hists.Mu2TrigMatchesInZwin)->trigHistos));
-	l1trig = l2trig = true ;
+	// if ( hnuEvent.nLeptons > 1 ) std::cout << "Examining electron trigger" << std::endl ; 
+	bool l12trig = (hnuEvent.nLeptons > 1) &&
+	  trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent, &(((HeavyNuMuHist*)hists.Mu2TrigMatchesInZwin)->trigHistos));
+	// if ( l12trig ) std::cout << "I have an electron trigger match!" << std::endl ; 
+
+	l1trig = l2trig = l12trig ;
+	// std::cout << l1trig << ", " << l2trig << std::endl ; 
     }
 
     hnuEvent.regularize();
@@ -1674,4 +1678,6 @@ void HeavyNu::endJob()
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HeavyNu);
+
+
 

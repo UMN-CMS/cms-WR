@@ -1,7 +1,8 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 
 // #include "PhysicsTools/PatUtils/interface/TriggerHelper.h"
-// #include "DataFormats/PatCandidates/interface/TriggerPath.h"
+#include "DataFormats/PatCandidates/interface/TriggerPath.h"
+#include "DataFormats/PatCandidates/interface/TriggerObject.h"
 
 #include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 
@@ -13,20 +14,20 @@
 //======================================================================
 
 HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
-  trigEventTag_  ( iConfig.getParameter< edm::InputTag > ( "trigEventTag" ) ),
+  trigEventTag_     ( iConfig.getParameter< edm::InputTag > ( "trigEventTag" ) ),
   muonTriggers_     ( iConfig.getParameter< std::vector<std::string> > ( "muonTriggers" ) ),
   electronTriggers_ ( iConfig.getParameter< std::vector<std::string> > ( "electronTriggers" ) ),
-  beginRun_      ( iConfig.getParameter< std::vector<int> > ( "firstRun" ) ),
-  endRun_        ( iConfig.getParameter< std::vector<int> > ( "lastRun" ) ),
-  muonMatch_     ( iConfig.getParameter< std::string >  ( "muonMatch"     ) ),
-  electronMatch_ ( iConfig.getParameter< std::string >  ( "electronMatch" ) ),
-  triggerPt_     ( iConfig.getParameter< double >       ( "triggerPt" ) ),
-  trigEra_       ( iConfig.getParameter< int >          ( "trigEra"   ) ),
-  johnnyApple_   ( iConfig.getParameter< int >          ( "randomSeed" ) )
+  beginRun_         ( iConfig.getParameter< std::vector<int> > ( "firstRun" ) ),
+  endRun_           ( iConfig.getParameter< std::vector<int> > ( "lastRun" ) ),
+  // muonMatch_        ( iConfig.getParameter< std::string >  ( "muonMatch"     ) ),
+  electronFilters_  ( iConfig.getParameter< std::vector<std::string > >  ( "electronFilters" ) ),
+  triggerPt_        ( iConfig.getParameter< double >       ( "triggerPt" ) ),
+  trigEra_          ( iConfig.getParameter< int >          ( "trigEra"   ) ),
+  johnnyApple_      ( iConfig.getParameter< int >          ( "randomSeed" ) )
 {
   matchingEnabled_ = false;
-  if (trigEventTag_.label().size() &&
-      (muonMatch_.size()||electronMatch_.size()))
+  if ( trigEventTag_.label().size() &&
+       ( muonTriggers_.size() || (electronTriggers_.size() && electronFilters_.size()) ) )
     matchingEnabled_ = true;
 
   if (!matchingEnabled_) {
@@ -194,6 +195,7 @@ HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
 				 trigHistos_t *thist)
 {
   bool matched=false;
+  if ( !matchingEnabled_ ) return false ; 
   
   // Only one trigger can be used for matching in a given run
   int run = iEvent.run() ; 
@@ -202,36 +204,114 @@ HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
   for (unsigned int i=0; i<electronTriggers_.size(); i++) 
     if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(electronTriggers_.at(i)) ; 
 
-  std::cout << "Looking for trigger match for e1 with pT " << e1.pt() 
-    	    << " and eta " << e1.eta() 
-	    << "; e2 with pT " << e2.pt() << " and eta " << e2.eta() << std::endl ; 
+  // for (unsigned int i=0; i<validHLTpaths.size(); i++) { 
+  //   std::cout << "Valid HLT paths: " << validHLTpaths.at(i) << std::endl ; 
+  // }
 
-  if ( matchingEnabled_ ) {
+  edm::Handle< pat::TriggerEvent > triggerEvent;
+  
+  iEvent.getByLabel( trigEventTag_, triggerEvent );
+  if ( !triggerEvent.isValid() ) {
+    std::cerr << "triggerEvent not found " << std::endl;
+    return false;
+  }
 
-    const pat::TriggerObjectStandAloneCollection e1MatchCollection = e1.triggerObjectMatches();
-    const pat::TriggerObjectStandAloneCollection e2MatchCollection = e2.triggerObjectMatches();
-    std::cout << "Trigger object matches size: " << e1MatchCollection.size() 
-	      << " " << e2MatchCollection.size() << std::endl ; 
+  // const pat::TriggerPathCollection* trigPaths = triggerEvent->paths() ; 
+  // for ( pat::TriggerPathCollection::const_iterator iPath = trigPaths->begin(); iPath != trigPaths->end(); ++iPath ) {
+  for (unsigned int i=0; i<validHLTpaths.size(); i++) { 
 
-    for (unsigned int i=0; i<e1MatchCollection.size(); i++) { 
-      if ( matched ) break ; // Quit as soon as we find a match
-      std::cout << "Trigger object " << i+1 << " of " << e1MatchCollection.size() << std::endl ; 
-      pat::TriggerObject electronTrigger = e1MatchCollection.at(i) ; 
-      pat::TriggerObjectStandAlone electronTriggerInfo = e1MatchCollection.at(i) ; 
-      // Look for a match with one of our paths
-      std::vector<std::string> hltPaths = electronTriggerInfo.pathNames(true,false) ; 
-      bool hltPathMatch = false ; 
-      for (unsigned int j=0; j<hltPaths.size(); j++) { 
-	if (hltPathMatch) break ; 
-	std::cout << "HLT Path: " << hltPaths.at(j) << std::endl ; 
-	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
-	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
-            // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
-	    hltPathMatch = true ; 
-	    break ; 
+    // std::cout << "Investigating path: " << validHLTpaths.at(i) << std::endl ; 
+    const pat::TriggerPathRef iPath = triggerEvent->pathRef( validHLTpaths.at(i) ) ; 
+    if ( iPath.isNonnull() && iPath->wasAccept() ) { 
+      // std::cout << "Found path!" << std::endl ; 
+
+      // std::cout << "Path information: " 
+      // 		<< iPath->name() << " " 
+      // 		<< iPath->index() << " " 
+      // 		<< iPath->prescale() << " " 
+      // 		<< iPath->wasRun() << " " 
+      // 		<< iPath->wasAccept() << " " 
+      // 		<< iPath->wasError() << " " 
+      // 		<< iPath->lastActiveFilterSlot() << " " 
+      // 		<< iPath->modules().size() ; 
+      // std::cout // << iPath->modules().at(iPath->lastActiveFilterSlot()) << " "
+      // 	<< iPath->l3Filters() << " " 
+      // 	<< iPath->xTrigger() << " " ; 
+      // // for (unsigned int j=0; j<iPath->filterIndices().size(); j++) { 
+      // //   std::cout << iPath->modules().at(iPath->filterIndices().at(j)) << " " ; 
+      // // }
+      // std::cout << " " 
+      // 		<< std::endl ; 
+      
+      // std::cout << "Looking for trigger objects involved in this path" << std::endl ; 
+      
+      pat::TriggerObjectRefVector objectsInPath = triggerEvent->pathObjects(iPath->name(),true) ; // assuming firing path
+      pat::TriggerFilterRefVector filtersInPath = triggerEvent->pathFilters(iPath->name(),true) ; // assuming firing path
+      
+      bool matched_e1 = false ; 
+      bool matched_e2 = false ; 
+      for ( pat::TriggerFilterRefVector::const_iterator ifRef = filtersInPath.begin(); ifRef != filtersInPath.end(); ifRef++) { 
+	pat::TriggerFilterRef filterRef = *ifRef ; 
+	if ( filterRef->isFiring() &&
+	     ( std::find(electronFilters_.begin(), electronFilters_.end(), filterRef->label()) != electronFilters_.end() ) ) { 
+	  
+	  for ( pat::TriggerObjectRefVector::const_iterator iobjRef = objectsInPath.begin(); iobjRef != objectsInPath.end(); ++iobjRef ) {
+	    pat::TriggerObjectRef objRef = *iobjRef ; 
+	    // std::cout << "Found an object with pT = " << objRef->pt() << " and eta " << objRef->eta() << std::endl ; 
+	    if ( triggerEvent->objectInFilter(objRef,filterRef->label()) ) { // Trigger object was used by the filter
+	      
+	      // Electron selection is tighter than the trigger everywhere, so just perform dR matching
+	      // std::cout << "Object in filter: " << filterRef->label() << " with status " << filterRef->status() << std::endl ; 
+	      double dr2_e1  = reco::deltaR2 <pat::Electron,pat::TriggerObject>( e1,(*objRef) );
+	      double dr2_e2  = reco::deltaR2 <pat::Electron,pat::TriggerObject>( e2,(*objRef) );
+
+	      // std::cout << "Distance to electron 1 with pT " << e1.pt() 
+	      // 		<< " and eta " << e1.eta() << " is " << sqrt(dr2_e1) << std::endl ; 
+	      // std::cout << "Distance to electron 2 with pT " << e2.pt() 
+	      // 		<< " and eta " << e2.eta() << " is " << sqrt(dr2_e2) << std::endl ; 
+	      if ( sqrt(dr2_e1) < 0.1 && (dr2_e1 < dr2_e2) ) matched_e1 = true ; 
+	      if ( sqrt(dr2_e2) < 0.1 && (dr2_e2 < dr2_e1) ) matched_e2 = true ; 
+	    }
 	  }
 	}
       }
+      matched = matched_e1 && matched_e2 ; 
+      // std::cout << matched << " = " << matched_e1 << " && " << matched_e2 << std::endl ; 
+    }
+  }
+
+  return matched ; 
+
+  // std::cout << "Looking for trigger match for e1 with pT " << e1.pt() 
+  //   	    << " and eta " << e1.eta() 
+  // 	    << "; e2 with pT " << e2.pt() << " and eta " << e2.eta() << std::endl ; 
+
+  // if ( matchingEnabled_ ) {
+
+  //   const pat::TriggerObjectStandAloneCollection e1MatchCollection = e1.triggerObjectMatches();
+  //   const pat::TriggerObjectStandAloneCollection e2MatchCollection = e2.triggerObjectMatches();
+  //   std::cout << "Trigger object matches size: " << e1MatchCollection.size() 
+  // 	      << " " << e2MatchCollection.size() << std::endl ; 
+
+  //   for (unsigned int i=0; i<e1MatchCollection.size(); i++) { 
+  //     if ( matched ) break ; // Quit as soon as we find a match
+  //     std::cout << "Trigger object " << i+1 << " of " << e1MatchCollection.size() << std::endl ; 
+  //     pat::TriggerObject electronTrigger = e1MatchCollection.at(i) ; 
+  //     pat::TriggerObjectStandAlone electronTriggerInfo = e1MatchCollection.at(i) ; 
+  //     // Look for a match with one of our paths
+  //     std::vector<std::string> hltPaths = electronTriggerInfo.pathNames(true,false) ; 
+  //     bool hltPathMatch = false ; 
+  //     for (unsigned int j=0; j<hltPaths.size(); j++) { 
+  // 	if (hltPathMatch) break ; 
+  // 	std::cout << "HLT Path: " << hltPaths.at(j) << std::endl ; 
+  // 	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
+  // 	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
+  //           // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
+  // 	    hltPathMatch = true ; 
+  // 	    break ; 
+  // 	  }
+  // 	}
+  //     }
       // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
       // Requirements to see if the trigger would have accepted the event based on this muon
 //       if ( hltPathMatch && electronTrigger.pt() > triggerPt_ ) { 
@@ -259,14 +339,14 @@ HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
 // 	  thist->trigUnmatchedEtaPhi->Fill( m.eta(),m.phi() );
 // 	}
 //       }
-    }
+  //   }
 
-    // if ( thist ) { 
-    //   thist->trigAllCandMuPt->Fill( m.pt() );
-    //   thist->trigAllCandMuEtaPhi->Fill( m.eta(),m.phi() );
-    // }
-  }
-  return ( matched ); 
+  //   // if ( thist ) { 
+  //   //   thist->trigAllCandMuPt->Fill( m.pt() );
+  //   //   thist->trigAllCandMuEtaPhi->Fill( m.eta(),m.phi() );
+  //   // }
+  // }
+  // return ( matched ); 
 }                                    // HeavyNuTrigger::isTriggerMatched
 
 //======================================================================

@@ -19,7 +19,7 @@ is42x=False
 isMCsignal=False
 Training=False
 
-#--- Trigger-based luminosity flags ---#'kt6PFJetsCentral','rho','RECO'
+#--- Trigger-based luminosity flags ---#
 #--- only one should be True        ---#
 #--- LoLumi     --> HLT_Mu24        ---#
 #--- HiLumi     --> HLT_Mu40        ---#
@@ -61,7 +61,7 @@ doTriggerStudy = False
 heepVersion = 40
 
 #--- Flags for Top studies ---#
-topStudy      = True
+topStudy      = False
 studyTopScale = False
 
 #--- Flags for QCD studies ---#
@@ -86,15 +86,8 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('/store/mc/Summer12/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S7_START52_V9-v1/0000/FE3A3BCF-F28B-E111-80FD-001A64789D64.root')
-    fileNames=cms.untracked.vstring('/store/mc/Summer12/DYToEE_M_20_TuneZ2star_8TeV_pythia6/AODSIM/PU_S7_START50_V15-v1/0000/70F40D11-207E-E111-9038-003048678D86.root')
-#    fileNames=cms.untracked.vstring('/store/data/Run2012A/DoubleElectron/AOD/PromptReco-v1/000/191/247/66012C08-5888-E111-B2AF-0025901D5C86.root')
-#    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
-#    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_2_3_patch4/src/HeavyNu/AnalysisModules/heavynu_skim.root')
-#    fileNames=cms.untracked.vstring('file:/local/cms/user/turkewitz/eejj_skim_may7/eejj_skim_may7_120.root')
+    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
 )
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 if isData:
     if isRun2012:
@@ -122,6 +115,8 @@ if isData:
                     from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
                             
     process.source.lumisToProcess = lumisToProcess
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
@@ -336,14 +331,13 @@ if isData:
                 process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
             elif isRun2011Mu40:
                 process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
+    if runElectronAnalysis:
+        switchOnTriggerMatching( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
+        switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
+        removeCleaningFromTriggerMatching( process, outputModule = '' )
+        if isRun2012:
+            process.electronTriggerMatchHLTElectrons.matchedCuts = cms.string( 'path( "HLT_*",1,0 )' )
 
-#    if runElectronAnalysis:
-#        switchOnTriggerMatching( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
-#        switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
-#        removeCleaningFromTriggerMatching( process, outputModule = '' )
-#        if isRun2012:
-#            process.electronTriggerMatchHLTElectrons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*",1,0 )' )
- 
 #--- Output histgram file ---#
 process.TFileService = cms.Service("TFileService",
        fileName = cms.string("analysis.root"),
@@ -384,21 +378,16 @@ if isData:
         process.hNu.muonTag     = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
     else:
         process.hNu.muonTag     = cms.InputTag( 'selectedPatMuons' )
-    # if runElectronAnalysis:
-    #     process.hNu.electronTag = cms.InputTag( 'selectedPatElectronsTriggerMatch' )
-    # else:
-    #     process.hNu.electronTag = cms.InputTag( 'selectedPatElectrons' )
-    process.hNu.trigMatchPset.trigEventTag  = cms.InputTag("patTriggerEvent")
-    process.hNu.trigMatchPset.muonMatch     = cms.string('muonTriggerMatchHLTMuons')
-    process.hNu.trigMatchPset.electronMatch = cms.string('electronTriggerMatchHLTElectrons')
-    process.hNu.muIDPset.eraForId           = cms.int32( dataEra )
+    process.hNu.trigMatchPset.trigEventTag    = cms.InputTag("patTriggerEvent")
+    process.hNu.trigMatchPset.electronFilters = cms.vstring('hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter')
+    process.hNu.muIDPset.eraForId             = cms.int32( dataEra )
     if isRun2011Mu24:
         process.hNu.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-        process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_v13','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v6' )
+        process.hNu.trigMatchPset.electronTriggers = cms.vstring( '' )
         process.hNu.trigMatchPset.triggerPt = cms.double( 24. )
     else:
         process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
-        process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_v13','HLT_DoubleEle33_CaloIdL_v12','HLT_DoubleEle33_CaloIdL_v11' )
+        process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5' )
         process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
 else:
     # turn on MC trigger simulation
@@ -497,14 +486,15 @@ process.hNuQCD.pileupEra = cms.int32(pileupEra)
 if isData:
     process.hNuQCD.muonTag                     = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
     process.hNuQCD.trigMatchPset.trigEventTag  = cms.InputTag( 'patTriggerEvent' )
-    process.hNuQCD.trigMatchPset.muonMatch     = cms.string( 'muonTriggerMatchHLTMuons' )
-    process.hNuQCD.trigMatchPset.electronMatch = cms.string( 'electronTriggerMatchHLTElectrons' )
+    process.hNuQCD.trigMatchPset.electronFilters  = cms.vstring('') 
     if isRun2011Mu24:
-        process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-        process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 24. )
+        process.hNuQCD.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
+        process.hNuQCD.trigMatchPset.triggerPt        = cms.double( 24. )
+        process.hNuQCD.trigMatchPset.electronTriggers = cms.vstring( '' )
     else:
         process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
         process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 40. )
+        process.hNuQCD.trigMatchPset.electronTriggers = cms.vstring( '' )
 else:
     # turn on MC trigger simulation
     process.hNuQCD.trigMatchPset.randomSeed = cms.int32( os.getpid() )
@@ -549,18 +539,17 @@ if isPFJets:
     process.hNuTop.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
 
 if isData:
-    process.hNuTop.muonTag                     = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
-    process.hNuTop.trigMatchPset.trigEventTag  = cms.InputTag("patTriggerEvent")
-    process.hNuTop.trigMatchPset.muonMatch     = cms.string('muonTriggerMatchHLTMuons')
-    process.hNuTop.trigMatchPset.electronMatch = cms.string('electronTriggerMatchHLTElectrons')
+    process.hNuTop.muonTag                       = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
+    process.hNuTop.trigMatchPset.trigEventTag    = cms.InputTag("patTriggerEvent")
+    process.hNuTop.trigMatchPset.electronFilters = cms.vstring('')
     if isRun2011Mu24:
         process.hNuTop.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-        process.hNuTop.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_v13','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v6' )
-        process.hNuTop.trigMatchPset.triggerPt    = cms.double( 24. )
+        process.hNuTop.trigMatchPset.triggerPt        = cms.double( 24. )
+        process.hNuTop.trigMatchPset.electronTriggers = cms.vstring( '' )
     else:
         process.hNuTop.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
-        process.hNuTop.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_v13','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v6' )
-        process.hNuTop.trigMatchPset.triggerPt    = cms.double( 40. )
+        process.hNuTop.trigMatchPset.triggerPt        = cms.double( 40. )
+        process.hNuTop.trigMatchPset.electronTriggers = cms.vstring( '' )
 else:
     process.hNuTop.trigMatchPset.randomSeed=cms.int32( os.getpid() )
     

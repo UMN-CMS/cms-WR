@@ -60,6 +60,7 @@ class HeavyNuTrigger {
   std::vector<std::string> muonTriggers_, electronTriggers_;
   std::vector<int> beginRun_, endRun_ ; 
   std::string   muonMatch_, electronMatch_;
+  std::vector<std::string> electronFilters_; 
   double        triggerPt_;
   int           trigEra_;
   int           johnnyApple_;
