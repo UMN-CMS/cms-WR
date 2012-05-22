@@ -11,7 +11,7 @@ import os
 isMC=True
 isData=not isMC
 
-smode = 1 #0 for Z+Jets 1 for other
+smode = 0 #0 for Z+Jets 1 for other
 
 #--- Special flag for 44x/Fall11 ---#
 is44x=False
@@ -39,7 +39,7 @@ isPileupMC = True
 isPFJets   = True
 
 #--- HEEP ID for electrons ---#
-heepVersion = 40
+heepVersion = -1
 
 process = cms.Process("PATSKIM");
 
@@ -53,7 +53,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-   fileNames=cms.untracked.vstring("/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V9-v1/0000/784C239B-8690-E111-BD45-001A92810AC0.root")
+   fileNames=cms.untracked.vstring("/store/mc/Summer12/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S7_START52_V9-v1/0000/D602DE83-F18B-E111-A721-001A64789CF0.root")
 )
 
 if isData:
@@ -314,10 +314,10 @@ process.hNu = cms.EDFilter(
     jetTag       = cms.InputTag( 'selectedPatJetsPFlow' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
     minMu1pt     = cms.double(50.),
-    minMu2pt     = cms.double(30.),
-    minJetPt     = cms.double(30.),
-    maxMuAbsEta  = cms.double(2.4),
-    maxJetAbsEta = cms.double(2.5),
+    minMu2pt     = cms.double(35.),
+    minJetPt     = cms.double(25.),
+    maxMuAbsEta  = cms.double(2.5),
+    maxJetAbsEta = cms.double(2.6),
     minMuonJetdR = cms.double(0.3),
 
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
@@ -326,7 +326,7 @@ process.hNu = cms.EDFilter(
 
     isPFJets = cms.bool(True),
 
-    heepVersion = cms.untracked.int32(2),
+    heepVersion = cms.untracked.int32(heepVersion),
 
     mode = cms.int32(smode), #0 for Z+Jets, 1 for TTBar and other
     electronRho  = cms.InputTag( 'kt6PFJetsCentral','rho','RECO' )
