@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id$
+// $Id: HeavyNuEleTriggerEff.cc,v 1.1 2012/05/22 21:01:39 franzoni Exp $
 //
 //
 
@@ -555,7 +555,7 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
     {       rho_      = ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.) ; 
       if (doDebugMessages_) std::cout << " valid handle to rho found. rho: " << rho_ << std::endl;     }
   else
-    {       std::cout << "NO valid handle to rho found. Bailing out " << std::endl;
+    {       std::cout << "NO valid handle to rho found which was expected: " << rhoTag_ << " Bailing out " << std::endl;
       assert (0);      }
   
   
