@@ -8,8 +8,11 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     #doDebugMessages  = cms.bool(True),
     
     # to implement HEEP ID
-    rhoForHEEPId      = cms.InputTag("kt6PFJetsForIsolation","rho","triggerEfficienciesEle"),
-
+    # rhoForHEEPId      = cms.InputTag("kt6PFJetsForIsolation","rho","triggerEfficienciesEle"),   # this worked in the standalone version
+    #rhoForHEEPId      = cms.InputTag( 'kt6PFJetsForIsolation','rho' ),                            # this should be ok for the usage integrated within heavyNuAnalysis_cfg.py 
+    #rhoForHEEPId      = cms.InputTag( 'selectedPatJetsPFlow','rho','PAT' ),                           # this should be ok for the usage integrated within heavyNuAnalysis_cfg.py 
+    rhoForHEEPId      = cms.InputTag( "kt6PFJetsForIsolation", "rho", "PAT" ),                           # this should be ok for the usage integrated within heavyNuAnalysis_cfg.py 
+    
     electronTag  = cms.InputTag("patElectrons"),
     maxAbsEtaOfflEle = cms.double( 2.5 ),
     minPtOfflEle     = cms.double(  40 ),
@@ -18,7 +21,10 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     eeScale          = cms.double(   1. ),
 
     #jetTag           = cms.InputTag("patJets","pfCandidates",""),
-    jetTag           = cms.InputTag("cleanPatJets","",""),
+    #jetTag           = cms.InputTag("cleanPatJets","",""), # this worked in the standalone version
+    #jetTag           = cms.InputTag("kt6PFJetsForIsolation"),
+    #jetTag           = cms.InputTag("kt6PFJetsForIsolation","","PAT"),
+    jetTag           = cms.InputTag("selectedPatJetsPFlow", "","PAT"),
     numOfflJets      = cms.int32(    2 ),
     minPtOfflJets    = cms.double(   30),
 
