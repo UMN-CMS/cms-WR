@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.1 2012/05/22 21:01:39 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.2 2012/05/23 15:47:12 franzoni Exp $
 //
 //
 
@@ -53,13 +53,7 @@
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-
-//class compareEmTriggerbObjRef {
-//public:
-//  template <class T> bool operator() (const T& a, const T& b) { return (  a->pt() > b->pt()  ); } 
-//};
-
-//std::sort(objectsInPath.begin(),objectsInPath.end(),compareEmTriggerbObjRef()) ; 
+#include "DataFormats/Math/interface/deltaR.h"
 
 
 //
@@ -287,18 +281,6 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
        
        // http://cmslxr.fnal.gov/lxr/source/DataFormats/PatCandidates/interface/T>> Entering Package PhysicsTools/PatAlgos
-       >> copied timingPdfMaker.py
-------- copying files from src/PhysicsTools/PatAlgos/scripts -------
-	    >> copied patReplaceFast.pl
-	    >> copied patReplaceGenerator.sh
-	    >> Entering Package HeavyNu/HeavyNuEleTriggerEff
-	    >> Entering Package HeavyNu/Limits
-	    >> Entering Package DataFormats/PatCandidates
-	    >> copied patReplaceParser.pl
-	    >> Entering Package HeavyNu/NeuralNets
-	    >> Entering Package HeavyNu/AnalysisModules
-	    >> Entering Package HeavyNu/MuFilter
-	    >> Entering Package HeavyNu/ToolsriggerEvent.h#191
        // // Get a reference to a certain L1 algorithm by name,
        // // NULL, if algorithm is not found
        //    const TriggerAlgorithmRef algorithmRef( const std::string & nameAlgorithm ) const;
@@ -315,14 +297,6 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
      }
    }
-
-
-
-#endif
-
-   // if(doDebugMessages_) std::cout << "targetL1Algo is: " << targetL1Algo_ << std::endl;
-
-#ifndef momentarilyIngnore
 
    pat::TriggerAlgorithmRefVector theAlgosActive = triggerEvent->algorithmRefs();
    std::cout << "size of theAlgosActive: " << theAlgosActive.size() << std::endl;
@@ -385,6 +359,10 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    
 
 #endif
+
+
+
+
 
    ////////////////////////////////////////////////////////////////////////
    // HLT efficiencies from here below ////////////////////////////////////
@@ -546,9 +524,11 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
 					  std::vector< std::pair<pat::Jet, float> > & jetCands 
 					  )
 {
+
   eCands  .clear();
   jetCands.clear();
   
+  // needed by the HEEP 
   edm::Handle<double> electronRhoHandle ; 
   iEvent.getByLabel(rhoTag_, electronRhoHandle) ; 
   if ( electronRhoHandle.isValid() ) 
@@ -558,7 +538,9 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
     {       std::cout << "NO valid handle to rho found which was expected: " << rhoTag_ << " Bailing out " << std::endl;
       assert (0);      }
   
-  
+
+
+  // electrons to start with
   edm::Handle<pat::ElectronCollection> patElectronCollection ; 
   iEvent.getByLabel(electronTag_,patElectronCollection) ; 
   if (!patElectronCollection.isValid()) {      
@@ -566,22 +548,25 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
   else{
     if (doDebugMessages_) std::cout << " pat electron collection found with size: " << (*patElectronCollection.product()).size() << std::endl;     }
 
-  eCands =   hnu::getElectronList( patElectronCollection, 
-				   maxAbsEtaOfflEle_,
-				   minPtOfflEle_, minPtOfflEle_, 
-				   heepVersion_,
-				   rho_);
+
+  std::vector< std::pair<pat::Electron, float> >  eList;
+  eList =   hnu::getElectronList( patElectronCollection, 
+				  maxAbsEtaOfflEle_,
+				  minPtOfflEle_, minPtOfflEle_, 
+				  heepVersion_,
+				  rho_);
+  if (eList.size()<2) return false;
   
 
 
+  // jets to start with
   edm::Handle<pat::JetCollection> pJets;
   iEvent.getByLabel(jetTag_, pJets);
   if (!pJets.isValid()) {      
     std::cout << "no pat pJets collection: " << jetTag_ << " found; bailing out." << std::endl;         assert(0); } 
   else{
     if (doDebugMessages_) std::cout << " pat jets collection found with size: " << (*pJets.product()).size() << std::endl;     }
-
-  
+  // corrections for jets
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord > ().get("AK5Calo", JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
@@ -599,18 +584,32 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
 									  jecEta, 
 									  isMC, 
 									  applyJERsign);
-  
-
-  //std::vector< std::pair<pat::Jet, float> >
+  if (jetCandsBefId.size()< static_cast<unsigned int> (numOfflJets_) ) return false;
+  // require JET ID
   for( unsigned int Jcand=0; Jcand<jetCandsBefId.size(); Jcand++ ){
-
     if ( hnu::jetID( jetCandsBefId.at(Jcand).first ) > 1 ) jetCands.push_back( jetCandsBefId.at(Jcand) );
-
   }
 
 
+
+  // check that electrtons are 'far' from any of the jets
+  for (unsigned  int theEl=0; theEl< eList.size(); theEl++ )
+    {
+      bool isFar(true);
+      
+      for( unsigned int Jcand=0; Jcand<jetCands.size(); Jcand++ ){
+	if (  deltaR( eList.at(theEl).first.eta(), eList.at(theEl).first.phi() , 
+		      jetCands.at(Jcand).first.eta(), jetCands.at(Jcand).first.phi() ) 
+	      < 0.5 ) 	  isFar=false;
+      }
+      
+      if (isFar) eCands.push_back( eList.at(theEl) ) ;
+   
+    }
+
+
   
-  if (doDebugMessages_) std::cout << "(inside passOfflineSelection) size of HEEP offline candidates: " << eCands.size() 
+  if (doDebugMessages_) std::cout << "(inside passOfflineSelection - at least 2 ele and numOfflJets_ raw jets) size of HEEP offline candidates: " << eCands.size() 
 				  << " and size of selected jet candidates: " << jetCands.size() 
 				  << " (were: " << jetCandsBefId.size() << " before ID) " << (jetCandsBefId.size()-jetCands.size()) <<  std::endl;
 
