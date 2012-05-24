@@ -26,7 +26,7 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     #jetTag           = cms.InputTag("kt6PFJetsForIsolation","","PAT"),
     jetTag           = cms.InputTag("selectedPatJetsPFlow", "","PAT"),
     numOfflJets      = cms.int32(    2 ),
-    minPtOfflJets    = cms.double(   30),
+    minPtOfflJets    = cms.double(   40),
 
 
     
