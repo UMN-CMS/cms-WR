@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.3 2012/05/24 15:23:18 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.4 2012/05/24 16:03:53 franzoni Exp $
 //
 //
 
@@ -524,6 +524,8 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
      counterEvtsWithTargetFired_++;
      eventsFate_->Fill(5);
      massNumerator_ -> Fill( ( theEleOfflineCands.at(0).first.p4() +  theEleOfflineCands.at(1).first.p4() ).M() ); 
+     pTele1Numerator_ -> Fill( theEleOfflineCands.at(0).first.pt() );
+     pTele2Numerator_ -> Fill( theEleOfflineCands.at(1).first.pt() );
    }
    else return;
 
