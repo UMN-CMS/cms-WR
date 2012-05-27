@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.25 2012/05/09 17:07:35 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.26 2012/05/15 21:47:20 bdahmes Exp $
 //
 //
 
@@ -168,6 +168,8 @@ private:
     {
         TH1 *nelec, *njet, *nmet, *nmuAll, *nmuLoose, *nmuTight;
         TH1 *muPt, *muEta, *muPhi, *looseMuPt, *tightMuPt ;
+
+        TH1* cutlevel;
 
         // Muon quality histos as a function of Pt
         TH2 *muNvalidHitsVsPt, *mudBvsPt, *muNormChi2vsPt, *muQualVsPt;
@@ -377,6 +379,15 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
     hists.trkIsoStudy = fs->make<TH1D > ("trkIsoStudy", ";Tracker Relative Isolation", 100, 0., 1.);
 
+    hists.cutlevel = fs->make<TH1D > ("cutlevel", "Cut Level", 11, -1.5, 9.5);
+    hists.cutlevel->GetXaxis()->SetBinLabel(1, "Raw");
+    hists.cutlevel->GetXaxis()->SetBinLabel(2, "No cuts");
+    hists.cutlevel->GetXaxis()->SetBinLabel(3, "mmjj p_{T}");
+    hists.cutlevel->GetXaxis()->SetBinLabel(4, "M1 (Trigger)");
+    hists.cutlevel->GetXaxis()->SetBinLabel(5, "M2 (Vertex)");
+    hists.cutlevel->GetXaxis()->SetBinLabel(6, "M3 (high p_{T})");
+    hists.cutlevel->GetXaxis()->SetBinLabel(7, "M4 (M_{#mu#mu})");
+    hists.cutlevel->GetXaxis()->SetBinLabel(8, "M5 (M(W_{R})");
 
     // Histos per cut:
     //
@@ -590,25 +601,18 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     else
         hists.met->Fill(0);
 
+    hists.cutlevel->Fill(-1.0, hnuEvent.eventWgt);
+
     // Basic selection requirements: Require at least two muons, two jets
     if ( pMuons->size() >= 1 && pElecs->size() >= 1 && pJets->size() >= 2 )
     {
+        hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
         fill( *pMuons, *pElecs, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, hists.noCuts);
     }
     else return false;
 
     if ( dolog_ ) std::cout << "Found an event with " << pMuons->size() << " muons and "
         << pElecs->size() << " electrons, and " << pJets->size() << " jets" << std::endl ;
-
-    // Look for valid electrons and put them in the event
-    std::vector< std::pair<pat::Electron, float> > eCands =
-            hnu::getElectronList(pElecs, cuts.maximum_elec_abseta,
-                                 cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, heepVersion_, elecRho_) ;
-    hnuEvent.nElectrons = eCands.size() ;
-    if(hnuEvent.nElectrons >= 1) hnuEvent.nLeptons++;
-    if ( hnuEvent.nLeptons < 1 ) return false ;
-    hnuEvent.e1        = eCands.at(0).first ;
-    hnuEvent.ElecScale = eCands.at(0).second ;
 
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet, float> > jetCands =
@@ -617,27 +621,45 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         if ( hnuEvent.nJets == 2 ) break ;
         pat::Jet iJ = jetCands.at(i).first ;
-        double dRej = deltaR(iJ.eta(), iJ.phi(), hnuEvent.e1.eta(), hnuEvent.e1.phi()) ;
-        if (dRej > cuts.minimum_lep_jet_dR)
-        {
-            hnuEvent.nJets++ ;
-            if ( hnuEvent.nJets == 1 )
-            {
-                hnuEvent.j1 = iJ ;
-                hnuEvent.j1scale = 1.0 ; // No jet corrections are applied for Top!
-            }
-            else if ( hnuEvent.nJets == 2 )
-            {
-                hnuEvent.j2 = iJ ;
-                hnuEvent.j2scale = 1.0 ;
-            }
-            else
-                std::cout << "WARNING: Expected empty jet position" << std::endl ;
-        }
+        // double dRej = deltaR(iJ.eta(), iJ.phi(), hnuEvent.e1.eta(), hnuEvent.e1.phi()) ;
+        // if (dRej > cuts.minimum_lep_jet_dR)
+        // {
+	hnuEvent.nJets++ ;
+	if ( hnuEvent.nJets == 1 )
+	  {
+	    hnuEvent.j1 = iJ ;
+	    hnuEvent.j1scale = 1.0 ; // No jet corrections are applied for Top!
+	  }
+	else if ( hnuEvent.nJets == 2 )
+	  {
+	    hnuEvent.j2 = iJ ;
+	    hnuEvent.j2scale = 1.0 ;
+	  }
+	else
+	  std::cout << "WARNING: Expected empty jet position" << std::endl ;
+        // }
     }
     if ( hnuEvent.nJets < 2 ) return false ;
     hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
     hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
+
+    // Look for valid electrons and put them in the event
+    std::vector< std::pair<pat::Electron, float> > eCands =
+      hnu::getElectronList(pElecs, cuts.maximum_elec_abseta,
+			   cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, heepVersion_, elecRho_) ;
+    for (unsigned int i=0; i<eCands.size(); i++) { 
+      pat::Electron iE = eCands.at(i).first;
+      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+      if(dRj1 > cuts.minimum_lep_jet_dR && dRj2 > cuts.minimum_lep_jet_dR)
+	{
+	  hnuEvent.nLeptons++;
+	  hnuEvent.e1 = iE;
+	  hnuEvent.ElecScale = eCands.at(i).second ; 
+	  break ; 
+	}
+    }
+    if ( hnuEvent.nLeptons < 1 ) return false ;
 
     // Finally, look for valid muons and put them in the event
     std::vector<pat::Muon> muCands = hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
@@ -664,21 +686,23 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hnuEvent.eventWgt *= mu1wgt ;
     }
 
+    hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
+
     hnuEvent.met1 = pMET->at(0);
 
     hnuEvent.regularize(); // assign internal primary lepton variables
     //hnuEvent.scaleMuE(applyMESfactor_,hnuEvent.ElecScale);
     hnuEvent.calculate(); // calculate various details
 
-    // Require mu1 meets tight requirements
-    bool mu1isTight = hnu::isVBTFtight(hnuEvent.mu1);
-    if ( !mu1isTight ) return false;
+    // Require mu1 meets tight requirements: not necessary as getMuonList already assures this is true
+    // bool mu1isTight = hnu::is2012MuTight(hnuEvent.mu1,pvHandle);
+    // if ( !mu1isTight ) return false;
 
     // Basic requirements on muon, electron, jets
     hists.LLJJptCuts->fill(hnuEvent);
 
     // require that one muon be BOTH tight and trigger-matched
-    bool mu1trig = mu1isTight;
+    bool mu1trig = false ;
     if ( trig_->matchingEnabled() && iEvent.isRealData() )
     {
         mu1trig = mu1trig &&
@@ -692,6 +716,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if( !mu1trig ) return false;
     hists.TrigMatches->fill(hnuEvent);
+    hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Trigger
 
     //--- Impose vertex requirement here ---//
     float deltaVzJ1J2 = fabs(hnuEvent.tjV1 - hnuEvent.tjV2);
@@ -706,6 +731,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         (deltaVzJ2M1 >= cuts.maxJetVZsepCM) || (deltaVzM1E1 >= cuts.maxVertexZsep)) )
         return false ;
     hists.VertexCuts->fill(hnuEvent);
+    hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Vertex
 
     double mu1pt = hnuEvent.mu1.pt() ;
     double e1pt  = hnu::getElectronEt(hnuEvent.e1,(heepVersion_ != 40)) ;
@@ -723,6 +749,8 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(highestPt < cuts.minimum_lep1_pt)
         return false;
 
+    hists.cutlevel->Fill(4.0, hnuEvent.eventWgt); // Primary lepton pT
+
     if ( studyScaleFactorEvolution_ )
     {
         if ( hnuEvent.n_primary_vertex == 1 )
@@ -734,8 +762,10 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     hists.Mu1HighPtCut->fill(hnuEvent);
 
-    if(hnuEvent.mLL >= cuts.minimum_mumu_mass)
+    if(hnuEvent.mLL >= cuts.minimum_mumu_mass) { 
         hists.diLmassCut->fill(hnuEvent);
+	hists.cutlevel->Fill(5.0, hnuEvent.eventWgt); // Dilepton mass 
+    }
 
     if ( iEvent.isRealData() )
     {
@@ -759,8 +789,10 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Change the final logic of the filter for e/mu studies:
     // Keep anything passing the 60 GeV lepton 1 cut
-    if ( hnuEvent.mLL >= cuts.minimum_mumu_mass && hnuEvent.mWR >= cuts.minimum_mWR_mass )
-        hists.mWRmassCut->fill(hnuEvent);
+    if ( hnuEvent.mLL >= cuts.minimum_mumu_mass && hnuEvent.mWR >= cuts.minimum_mWR_mass ) { 
+      hists.cutlevel->Fill(6.0, hnuEvent.eventWgt); // Event meets W_R mass requirements
+      hists.mWRmassCut->fill(hnuEvent);
+    }
 
     return true;
 }

@@ -45,7 +45,7 @@ class HeavyNuTrigger {
 			const edm::Event & iEvent,
 			trigHistos_t *thist = NULL);
   bool isTriggerMatched(const pat::Electron & e1,  const pat::Electron & e2,
-			const edm::Event & iEvent, trigHistos_t *thist = NULL);
+			const edm::Event & iEvent, int nTriggers=2, trigHistos_t *thist = NULL);
 
   bool simulateForMC(double pt,double eta,int signOfError2apply=0);
   bool simulateForMC(double pt,int signOfError2apply=0) { return simulateForMC(pt,0.,signOfError2apply); }  

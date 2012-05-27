@@ -1,4 +1,5 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuMuHist.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 
 
 static const int muonQualityFlags = 4;
@@ -104,6 +105,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
 
     t = "p_{T}(probe) " + post;
     ptProbe = td->make<TH1F > ("ptProbe", t.c_str(), 100, 0., 1000.);
+    t = "p_{T}(EB probe) " + post;
+    ebPtProbe = td->make<TH1F > ("ebPtProbe", t.c_str(), 100, 0., 1000.);
+    t = "p_{T}(EE probe) " + post;
+    eePtProbe = td->make<TH1F > ("eePtProbe", t.c_str(), 100, 0., 1000.);
     t = "p_{T}(probe) 100% probe relIso " + post;
     ptProbeRiso100 = td->make<TH1F > ("ptProbeRiso100", t.c_str(), 100, 0., 1000.);
     t = "p_{T}(probe) 50% probe relIso " + post;
@@ -117,6 +122,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
 
     t = "#eta(probe) " + post;
     etaProbe = td->make<TH1F > ("etaProbe", t.c_str(), 50, -2.5, 2.5);
+    t = "#eta(EB probe) " + post;
+    ebEtaProbe = td->make<TH1F > ("ebEtaProbe", t.c_str(), 50, -2.5, 2.5);
+    t = "#eta(EE probe) " + post;
+    eeEtaProbe = td->make<TH1F > ("eeEtaProbe", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe p_{T} > 30 GeV) " + post;
     etaProbePt30 = td->make<TH1F > ("etaProbePt30", t.c_str(), 50, -2.5, 2.5);
     t = "#eta(probe p_{T} > 40 GeV) " + post;
@@ -154,6 +163,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
 
     t = "#phi(probe) " + post;
     phiProbe = td->make<TH1F > ("phiProbe", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(EB probe) " + post;
+    ebPhiProbe = td->make<TH1F > ("ebPhiProbe", t.c_str(), 30, -3.14159, 3.14159);
+    t = "#phi(EE probe) " + post;
+    eePhiProbe = td->make<TH1F > ("eePhiProbe", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(probe p_{T} > 30 GeV) " + post;
     phiProbePt30 = td->make<TH1F > ("phiProbePt30", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(probe p_{T} > 40 GeV) " + post;
@@ -218,6 +231,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
 
     t = "p_{T}(probe) vs. #mu#mu mass " + post;
     ptProbe_mass = td->make<TH2F > ("ptProbe_mass", t.c_str(), 100, 0., 1000., 60, 60., 120.);
+    t = "p_{T}(EB probe) vs. #mu#mu mass " + post;
+    ebPtProbe_mass = td->make<TH2F > ("ebPtProbe_mass", t.c_str(), 100, 0., 1000., 60, 60., 120.);
+    t = "p_{T}(EE probe) vs. #mu#mu mass " + post;
+    eePtProbe_mass = td->make<TH2F > ("eePtProbe_mass", t.c_str(), 100, 0., 1000., 60, 60., 120.);
     t = "p_{T}(probe) 100% probe relIso vs. #mu#mu mass " + post;
     ptProbeRiso100_mass = td->make<TH2F > ("ptProbeRiso100_mass", t.c_str(), 100, 0., 1000., 60, 60., 120.);
     t = "p_{T}(probe) 50% probe relIso vs. #mu#mu mass " + post;
@@ -231,6 +248,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
 
     t = "#eta(probe) vs. #mu#mu mass " + post;
     etaProbe_mass = td->make<TH2F > ("etaProbe_mass", t.c_str(), 50, -2.5, 2.5, 60, 60., 120.);
+    t = "#eta(EB probe) vs. #mu#mu mass " + post;
+    ebEtaProbe_mass = td->make<TH2F > ("ebEtaProbe_mass", t.c_str(), 50, -2.5, 2.5, 60, 60., 120.);
+    t = "#eta(EE probe) vs. #mu#mu mass " + post;
+    eeEtaProbe_mass = td->make<TH2F > ("eeEtaProbe_mass", t.c_str(), 50, -2.5, 2.5, 60, 60., 120.);
     t = "#eta(probe p_{T} > 30 GeV) vs. #mu#mu mass " + post;
     etaProbePt30_mass = td->make<TH2F > ("etaProbePt30_mass", t.c_str(), 50, -2.5, 2.5, 60, 60., 120.);
     t = "#eta(probe p_{T} > 40 GeV) vs. #mu#mu mass " + post;
@@ -268,6 +289,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
 
     t = "#phi(probe) vs. #mu#mu mass " + post;
     phiProbe_mass = td->make<TH2F > ("phiProbe_mass", t.c_str(), 30, -3.14159, 3.14159, 60, 60., 120.);
+    t = "#phi(EB probe) vs. #mu#mu mass " + post;
+    ebPhiProbe_mass = td->make<TH2F > ("ebPhiProbe_mass", t.c_str(), 30, -3.14159, 3.14159, 60, 60., 120.);
+    t = "#phi(EE probe) vs. #mu#mu mass " + post;
+    eePhiProbe_mass = td->make<TH2F > ("eePhiProbe_mass", t.c_str(), 30, -3.14159, 3.14159, 60, 60., 120.);
     t = "#phi(probe p_{T} > 30 GeV) vs. #mu#mu mass " + post;
     phiProbePt30_mass = td->make<TH2F > ("phiProbePt30_mass", t.c_str(), 30, -3.14159, 3.14159, 60, 60., 120.);
     t = "#phi(probe p_{T} > 40 GeV) vs. #mu#mu mass " + post;
@@ -326,6 +351,10 @@ void HeavyNuMuHist::tapbook(TFileDirectory * td, const std::string& post)
     // ----------  Composite histograms  ----------
     t = "M(#mu #mu) " + post;
     mMuMuTP = td->make<TH1F > ("mMuMuTP", t.c_str(), 60, 60, 120);
+    t = "M(#mu #mu) (EB) " + post;
+    ebmMuMuTP = td->make<TH1F > ("ebmMuMuTP", t.c_str(), 60, 60, 120);
+    t = "M(#mu #mu) (EE) " + post;
+    eemMuMuTP = td->make<TH1F > ("eemMuMuTP", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) (probe p_{T} > 30 GeV)" + post;
     mMuMuPt30TP = td->make<TH1F > ("mMuMuPt30TP", t.c_str(), 60, 60, 120);
     t = "M(#mu #mu) (probe p_{T} > 40 GeV)" + post;
@@ -642,4 +671,78 @@ void HeavyNuMuHist::tapfill(const pat::Muon& theTag, const pat::GenericParticle&
     pat::Muon muonProbe;
     muonProbe.setP4( theProbe.p4() );
     HeavyNuMuHist::tapfill( theTag, muonProbe, trkIso, wgt );
+}
+
+
+void HeavyNuMuHist::tapfill(const pat::Electron& theTag, const pat::Electron& theProbe, const double wgt)
+{
+    tpEvtWeight->Fill(wgt) ;
+
+    // Need to take the *uncorrected* energy to be consistent with rest of analysis
+    // pat::Electron tag ; 
+    // tag.setP4( theTag.p4() * (theTag.superCluster()->energy()/theTag.caloEnergy()) ) ; 
+    // pat::Electron probe ; 
+    // probe.setP4( theProbe.p4() * (theProbe.superCluster()->energy()/theProbe.caloEnergy()) ) ; 
+
+    reco::Particle::LorentzVector ee = theTag.p4() + theProbe.p4();
+
+    bool isEB = ( fabs(hnu::getElectronSCEta(theProbe)) < 1.4442 ) ;
+    bool isEE = ( fabs(hnu::getElectronSCEta(theProbe)) < 2.5 && fabs(hnu::getElectronSCEta(theProbe)) > 1.56 ) ;
+
+    ptTag->Fill(theTag.pt(), wgt);
+    etaTag->Fill(theTag.eta(), wgt);
+    phiTag->Fill(theTag.phi(), wgt);
+    ptTag_mass->Fill(theTag.pt(), ee.M(), wgt);
+    etaTag_mass->Fill(theTag.eta(), ee.M(), wgt);
+    phiTag_mass->Fill(theTag.phi(), ee.M(), wgt);
+
+    ptProbe->Fill(theProbe.pt(), wgt);
+    etaProbe->Fill(theProbe.eta(), wgt);
+    phiProbe->Fill(theProbe.phi(), wgt);
+    ptProbe_mass->Fill(theProbe.pt(), ee.M(), wgt);
+    etaProbe_mass->Fill(theProbe.eta(), ee.M(), wgt);
+    phiProbe_mass->Fill(theProbe.phi(), ee.M(), wgt);
+
+    mMuMuTP->Fill(ee.M(), wgt);
+
+    if ( isEB ) { 
+      ebPtProbe->Fill(theProbe.pt(), wgt) ; 
+      ebEtaProbe->Fill(theProbe.eta(), wgt) ; 
+      ebPhiProbe->Fill(theProbe.eta(), wgt) ; 
+      ebPtProbe_mass->Fill(theProbe.pt(), ee.M(), wgt);
+      ebEtaProbe_mass->Fill(theProbe.eta(), ee.M(), wgt);
+      ebPhiProbe_mass->Fill(theProbe.phi(), ee.M(), wgt);
+
+      ebmMuMuTP->Fill(ee.M(), wgt);
+    } else if ( isEE ) { 
+      eePtProbe->Fill(theProbe.pt(), wgt) ; 
+      eeEtaProbe->Fill(theProbe.eta(), wgt) ; 
+      eePhiProbe->Fill(theProbe.eta(), wgt) ; 
+      eePtProbe_mass->Fill(theProbe.pt(), ee.M(), wgt);
+      eeEtaProbe_mass->Fill(theProbe.eta(), ee.M(), wgt);
+      eePhiProbe_mass->Fill(theProbe.phi(), ee.M(), wgt);
+
+      eemMuMuTP->Fill(ee.M(), wgt);
+    }
+
+    // Special histograms for extra checking
+    if ( theProbe.pt() > 30. )
+    {
+        etaProbePt30->Fill(theProbe.eta(), wgt) ;
+        phiProbePt30->Fill(theProbe.phi(), wgt) ;
+        etaProbePt30_mass->Fill(theProbe.eta(), ee.M(), wgt) ;
+        phiProbePt30_mass->Fill(theProbe.phi(), ee.M(), wgt) ;
+
+        mMuMuPt30TP->Fill(ee.M(), wgt);
+
+        if ( theProbe.pt() > 40. )
+        {
+            etaProbePt40->Fill(theProbe.eta(), wgt) ;
+            phiProbePt40->Fill(theProbe.phi(), wgt) ;
+            etaProbePt40_mass->Fill(theProbe.eta(), ee.M(), wgt) ;
+            phiProbePt40_mass->Fill(theProbe.phi(), ee.M(), wgt) ;
+
+            mMuMuPt40TP->Fill(ee.M(), wgt);
+        }
+    }
 }

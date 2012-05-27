@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.94 2012/05/09 17:07:35 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.1 2012/05/17 23:12:39 pastika Exp $
 //
 //
 
@@ -118,6 +118,7 @@ private:
         double minimum_mu2_pt;
         double minimum_jet_pt;
         double maximum_mu_abseta;
+        double maximum_elec_abseta;
         double maximum_jet_abseta;
         double minimum_mumu_mass;
         double minimum_mWR_mass;
@@ -156,6 +157,7 @@ HeavyNuFilter::HeavyNuFilter(const edm::ParameterSet& iConfig)
     cuts.minimum_mu2_pt = iConfig.getParameter<double>("minMu2pt");
     cuts.minimum_jet_pt = iConfig.getParameter<double>("minJetPt");
     cuts.maximum_mu_abseta = iConfig.getParameter<double>("maxMuAbsEta");
+    cuts.maximum_elec_abseta = iConfig.getParameter<double>("maxElecAbsEta");
     cuts.maximum_jet_abseta = iConfig.getParameter<double>("maxJetAbsEta");
     cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
     cuts.muon_trackiso_limit = iConfig.getParameter<double>("muonTrackRelIsoLimit");
@@ -178,6 +180,7 @@ HeavyNuFilter::HeavyNuFilter(const edm::ParameterSet& iConfig)
     std::cout << "minMu2pt          = " << cuts.minimum_mu2_pt << " GeV" << std::endl;
     std::cout << "minJetPt          = " << cuts.minimum_jet_pt << " GeV" << std::endl;
     std::cout << "maxMuAbsEta       = " << cuts.maximum_mu_abseta << std::endl;
+    std::cout << "maxElecAbsEta     = " << cuts.maximum_mu_abseta << std::endl;
     std::cout << "maxJetAbsEta      = " << cuts.maximum_jet_abseta << std::endl;
     std::cout << "minMuonJetdR      = " << cuts.minimum_muon_jet_dR << std::endl;
     std::cout << "muonTrackRelIso   = " << cuts.muon_trackiso_limit << std::endl;
@@ -250,7 +253,7 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
-            hnu::getElectronList(pElecs, cuts.maximum_mu_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, heepVersion_, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
+            hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, heepVersion_, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
 
 
     if(hnuEvent.nJets < 2) return false;

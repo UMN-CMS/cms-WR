@@ -8,7 +8,7 @@ import os
 #analysisMode = 'HNUE'
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Special flag for 44x/Fall11 ---#
@@ -86,9 +86,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
-#    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_2_3_patch4/src/HeavyNu/AnalysisModules/heavynu_skim.root')
-fileNames=cms.untracked.vstring("/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V9-v1/0000/784C239B-8690-E111-BD45-001A92810AC0.root")
+    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
 )
 
 if isData:
@@ -231,6 +229,11 @@ if isPFJets:
         getattr(process,"patPF2PATSequence"+postfix)
     )
     
+# Corrections to isolation for electrons
+from RecoJets.JetProducers.kt4PFJets_cfi import *
+process.kt6PFJetsForIsolation            = kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
+process.kt6PFJetsForIsolation.Rho_EtaMax = cms.double(2.5)
+
 #------------------------------#
 #--- Include Generic Tracks ---#
 #------------------------------#
@@ -265,11 +268,11 @@ if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence
+       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
-       process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence
+       process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
    )
 if isPFJets:
     process.AnalysisIntroSequence += process.modifiedPF2PATSequence
@@ -356,13 +359,15 @@ if isMCsignal:
 
 process.hNu.minMu2pt         = cms.double(40.)
 if not isRun2012:
-    process.hNu.minMu2pt         = cms.double(30.)
+    process.hNu.minMu2pt     = cms.double(30.)
 process.hNu.ZmassWinMinGeV   = cms.double(60.)
 process.hNu.ZmassWinMaxGeV   = cms.double(120.)
 process.hNu.isPFJets         = cms.bool(isPFJets)
 process.hNu.studyMuSelectEff = cms.bool(tagandprobe)
+process.hNu.oneTPcand        = cms.bool(True)
 process.hNu.studyScaleFactor = cms.bool(False)
 process.hNu.studyRatePerRun  = cms.bool(isData)
+process.hNu.electronRho      = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
 #--- Values below zero disable the vertex requirement ---#
 process.hNu.maxVertexZsepCM = cms.double(-1)
 process.hNu.maxJetVZsepCM   = cms.double(-1)
@@ -389,7 +394,7 @@ if isData:
         process.hNu.trigMatchPset.triggerPt = cms.double( 24. )
     else:
         process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
-        process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5' )
+        process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v6' )
         process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
 else:
     # turn on MC trigger simulation
@@ -522,6 +527,7 @@ process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 # process.hNuTop.minLep2pt        = cms.double(30.)
 process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
 process.hNuTop.heepVersion      = cms.int32(heepVersion)
+process.hNuTop.electronRho      = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
 
 #--- Some corrections re-enabled ---#
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)

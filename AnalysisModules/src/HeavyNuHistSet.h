@@ -22,8 +22,9 @@ public:
     virtual void tapbook(TFileDirectory *, const std::string&) {}
 
     // add function to fill tag and probe for muons
-    virtual void tapfill(const pat::Muon& theTag, const pat::Muon& theProbe,            const double probeTrkIso, const double wgt) {}
-    virtual void tapfill(const pat::Muon& theTag, const pat::GenericParticle& theProbe, const double trkIso,      const double wgt) {}
+    virtual void tapfill(const pat::Muon& theTag,     const pat::Muon& theProbe,            const double probeTrkIso, const double wgt) {}
+    virtual void tapfill(const pat::Muon& theTag,     const pat::GenericParticle& theProbe, const double trkIso,      const double wgt) {}
+    virtual void tapfill(const pat::Electron& theTag, const pat::Electron& theProbe,                                  const double wgt) {}
 
 private:
     TH1 *evtWeight;

@@ -114,6 +114,9 @@ namespace hnu {
     std::pair<float,double> pileupReweighting(const edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
 					      edm::LumiReWeighting& mcWeight);
 
+    std::vector< std::pair<pat::Electron,pat::Electron> > 
+      getTagProbePair(const std::vector<pat::Electron>& tags,const std::vector<pat::Electron>& probes,
+		      double minMass, double maxMass,double rval,bool sanityCheck=true) ; 
 
     // Object of this code is to find all tag and probe pairs for a given event
     // The tag will *always* be in the first position, and the probe collection 

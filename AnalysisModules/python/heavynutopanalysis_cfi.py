@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
+# 2012 defaults
 hNuTop = cms.EDFilter(
     "HeavyNuTop",
 
@@ -8,7 +9,7 @@ hNuTop = cms.EDFilter(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
         electronTriggers = cms.vstring( '' ),
-        trigEra      = cms.int32( 20111 ),
+        trigEra      = cms.int32( 20121 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
@@ -18,33 +19,33 @@ hNuTop = cms.EDFilter(
         electronFilters = cms.vstring('')
     ),
     muIDPset = cms.PSet(
-        eraForId     = cms.int32( 20111 )
+        eraForId     = cms.int32( 20121 )
     ),
     DoLog          = cms.bool( False ),
     muonTag        = cms.InputTag( 'selectedPatMuons' ),
     jetTag         = cms.InputTag( 'selectedPatJets' ),
     metTag         = cms.InputTag( 'patMETs' ),
     electronTag    = cms.InputTag( 'selectedPatElectrons' ),
-    electronRho    = cms.InputTag( 'kt6PFJetsCentral','rho','RECO' ),
+    electronRho    = cms.InputTag( 'kt6PFJetsForIsolation','rho' ),
     BtagName       = cms.string('trackCountingHighEffBJetTags'),
     minBtagDiscr   = cms.double(0.669), # yields 0.1% fake rate, see SWGuideBTagPerformance twiki
     minLep1pt      = cms.double(60.),
-    minLep2pt      = cms.double(30.),
+    minLep2pt      = cms.double(40.), # 2012 defaults
     minJetPt       = cms.double(40),
     maxMuAbsEta    = cms.double(2.4),
     maxElecAbsEta  = cms.double(2.5),
     maxJetAbsEta   = cms.double(2.5),
     minMuMuMass    = cms.double(200),
-    min4objMass    = cms.double(520),
+    min4objMass    = cms.double(600),
     minLeptonJetdR = cms.double(0.5),
     
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
-    maxVertexZsepCM       = cms.double(0.03),
-    maxVertexJetVZsepCM   = cms.double(0.1),
+    maxVertexZsepCM       = cms.double(-1),
+    maxVertexJetVZsepCM   = cms.double(-1),
 
-    pileupEra         = cms.int32(20111),
+    pileupEra         = cms.int32(20121),
 
-    heepVersion       = cms.int32(1),
+    heepVersion       = cms.int32(40),
 
     applyEleEScale    = cms.bool(False),
     EBscalefactor     = cms.double(1.0),

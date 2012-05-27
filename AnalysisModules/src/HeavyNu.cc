@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.95 2012/05/15 21:47:20 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.97 2012/05/17 13:07:36 bdahmes Exp $
 //
 //
 
@@ -139,7 +139,9 @@ private:
 				       const edm::Handle<reco::TrackCollection>& gTracks,
 				       const edm::Handle<reco::BeamSpot>& beamspot, 
 				       double wgt, int nJets);
-
+    virtual void studyElectronSelectionEff(const std::vector< std::pair<pat::Electron,pat::Electron> >& TP,
+					   const std::vector< std::pair<pat::Electron,float> >& heepElectrons,
+					   double wgt, int nJets, edm::Event& iEvent) ; 
     virtual void studyJetVertex(edm::Handle<pat::JetCollection>& pJets,
                                 edm::Handle<reco::JPTJetCollection>& jptJets,
                                 edm::Handle<pat::MuonCollection>& pMuons, int npue);
@@ -309,6 +311,12 @@ private:
         HeavyNuHistSet* TightTagTrigProbePassesInZwin;
         HeavyNuHistSet* Mu1TrigMatchesInZwin;
         HeavyNuHistSet* Mu2TrigMatchesInZwin;
+        HeavyNuHistSet* HeepTagGsfProbeInZwin0jets;
+        HeavyNuHistSet* HeepTagGsfProbeInZwin1jet;
+        HeavyNuHistSet* HeepTagGsfProbeInZwin2jets;
+        HeavyNuHistSet* HeepTagGsfProbePassesInZwin0jets;
+        HeavyNuHistSet* HeepTagGsfProbePassesInZwin1jet;
+        HeavyNuHistSet* HeepTagGsfProbePassesInZwin2jets;
         // HeavyNuHistSet* Mu1Mu2TrigMatchesInZwin;
     } hists;
 
@@ -317,6 +325,7 @@ private:
         double minimum_mu1_pt;
         double minimum_mu2_pt;
         double minimum_jet_pt;
+        double maximum_elec_abseta;
         double maximum_mu_abseta;
         double maximum_jet_abseta;
         double minimum_mumu_mass;
@@ -439,6 +448,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     cuts.minimum_mu2_pt = iConfig.getParameter<double>("minMu2pt");
     cuts.minimum_jet_pt = iConfig.getParameter<double>("minJetPt");
     cuts.maximum_mu_abseta = iConfig.getParameter<double>("maxMuAbsEta");
+    cuts.maximum_elec_abseta = iConfig.getParameter<double>("maxElecAbsEta");
     cuts.maximum_jet_abseta = iConfig.getParameter<double>("maxJetAbsEta");
     cuts.minimum_mumu_mass = iConfig.getParameter<double>("minMuMuMass");
     cuts.minimum_mWR_mass = iConfig.getParameter<double>("min4objMass");
@@ -520,8 +530,10 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     //
     edm::Service<TFileService> fs;
     hists.mc_type = fs->make<TH1D > ("mc_type", "MC Type Code", 100, -0.5, 99.5);
-    if ( studyRatePerRun_ )
-        hists.z2jetPerRun = fs->make<TH1I > ("z2jetPerRun","M3 Z #to #mu#mu events per run",20000,160000,180000); 
+    if ( studyRatePerRun_ ) { 
+      hists.z2jetPerRun = ( ((muid_->idEra()/10) == 2011) ? (fs->make<TH1I > ("z2jetPerRun","M3 Z #to ee/#mu#mu events per run",20000,160000,180000)) : 
+			    (fs->make<TH1I > ("z2jetPerRun","M3 Z #to ee/#mu#mu events per run",20000,190000,210000)) ) ; 
+    }
     hists.nelec = fs->make<TH1D > ("nelec", "N(e^{#pm})", 10, -0.5, 9.5);
     hists.nmuAll = fs->make<TH1D > ("nmuAll", "N(#mu^{#pm})", 10, -0.5, 9.5);
     hists.nmuLoose = fs->make<TH1D > ("nmuLoose", "N(#mu^{#pm}) passes Loose", 10, -0.5, 9.5);
@@ -685,6 +697,15 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.Mu1HighPtCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(L1 High pt cut:4)");
         hists.diLmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(ee mass cut:5)");
         hists.mWRmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
+
+        if(studyMuonSelectionEff_) {
+            hists.HeepTagGsfProbeInZwin0jets = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbeInZwin0jets")), "(probe_{0}, ID in Z mass Window)", 2);
+            hists.HeepTagGsfProbeInZwin1jet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbeInZwin1jet")), "(probe_{1}, ID in Z mass Window)", 2);
+            hists.HeepTagGsfProbeInZwin2jets = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbeInZwin2jets")), "(probe_{2}, ID in Z mass Window)", 2);
+            hists.HeepTagGsfProbePassesInZwin0jets = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbePassesInZwin0jets")), "(probe_{0} passes, ID in Z mass Window)", 2);
+            hists.HeepTagGsfProbePassesInZwin1jet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbePassesInZwin1jet")), "(probe_{1} passes, ID in Z mass Window)", 2);
+            hists.HeepTagGsfProbePassesInZwin2jets = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbePassesInZwin2jets")), "(probe_{2} passes, ID in Z mass Window)", 2);
+	}
     }
 
     hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -725,6 +746,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "minMu1pt          = " << cuts.minimum_mu1_pt << " GeV" << std::endl;
     std::cout << "minMu2pt          = " << cuts.minimum_mu2_pt << " GeV" << std::endl;
     std::cout << "minJetPt          = " << cuts.minimum_jet_pt << " GeV" << std::endl;
+    std::cout << "maxElecAbsEta     = " << cuts.maximum_elec_abseta << std::endl;
     std::cout << "maxMuAbsEta       = " << cuts.maximum_mu_abseta << std::endl;
     std::cout << "maxJetAbsEta      = " << cuts.maximum_jet_abseta << std::endl;
     std::cout << "minMuonJetdR      = " << cuts.minimum_muon_jet_dR << std::endl;
@@ -739,10 +761,13 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "applyTrigEffsign  = " << applyTrigEffsign_ << std::endl;
     std::cout << "studyMuSelectEff  = " << studyMuonSelectionEff_ << std::endl;
     std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
-
     std::cout << "pileup era        = " << pileupEra_ << std::endl;
     std::cout << "DisableTriggerCorrection = " << disableTriggerCorrection_ << std::endl;
     std::cout << "isPFJets          = " << isPFJets_ << std::endl;
+    if ( studyRatePerRun_ ) { 
+      std::cout << "Study rate of Z+2 jets events for run range " << hists.z2jetPerRun->GetXaxis()->GetBinLowEdge(1)
+		<< " to " << hists.z2jetPerRun->GetXaxis()->GetBinUpEdge(hists.z2jetPerRun->GetNbinsX()) << std::endl ; 
+    }
 
 }
 
@@ -919,6 +944,56 @@ void HeavyNu::studyMuonSelectionEff(const std::vector< std::pair<pat::Muon,pat::
           if ( nJets >= 2 ) hists.TightTagTightCJProbePassesInZwin2jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
       }
     }            
+}
+
+void HeavyNu::studyElectronSelectionEff(const std::vector< std::pair<pat::Electron,pat::Electron> >& TP, 
+					const std::vector< std::pair<pat::Electron,float> >& heepElectrons, 
+					double wgt, int nJets, edm::Event& iEvent)
+{
+    
+  // Only case: Check HEEP ID
+  // Probe is GSF track that passes pT, eta, trigger requirements
+  for (unsigned int i=0; i<TP.size(); i++) {
+    pat::Electron theTag   = TP.at(i).first ; 
+    pat::Electron theProbe = TP.at(i).second ; 
+
+    if ( nJets >= 0 ) hists.HeepTagGsfProbeInZwin0jets->tapfill( theTag,theProbe,wgt ) ;
+    if ( nJets >= 1 ) hists.HeepTagGsfProbeInZwin1jet->tapfill( theTag,theProbe,wgt ) ;
+    if ( nJets >= 2 ) hists.HeepTagGsfProbeInZwin2jets->tapfill( theTag,theProbe,wgt ) ;
+    
+    // std::cout << "Tag electron pT " << hnu::getElectronEt(theTag,false) 
+    // 		<< " and probe electron pT " << hnu::getElectronEt(theProbe,false) << std::endl ; 
+
+    // Does the probe pass tight ID selection?
+    unsigned int eIdx = heepElectrons.size() ;
+    for (unsigned int k=0; k<heepElectrons.size(); k++) {
+      pat::Electron heepElectron = heepElectrons.at(k).first ; 
+      // std::cout << "Comparing a probe with pT " << hnu::getElectronEt(theProbe,false) 
+      // 		<< " and eta " << hnu::getElectronSCEta(theProbe) << " to heep electron with pT " 
+      // 		<< hnu::getElectronEt(heepElectron,false) 
+      // 		<< " and eta " << hnu::getElectronSCEta(heepElectron) 
+      // 		<< std::endl ; 
+      // std::cout << "dR: " << deltaR(heepElectron.eta(), heepElectron.phi(), theProbe.eta(), theProbe.phi())
+      // 		<< " and dPt: " << fabs(hnu::getElectronEt(theProbe,false)-hnu::getElectronEt(heepElectron,false))/hnu::getElectronEt(theProbe,false)
+      // 		<< std::endl ; 
+      
+      if ( deltaR(heepElectron.eta(), heepElectron.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
+	   fabs(hnu::getElectronEt(theProbe,false)-hnu::getElectronEt(heepElectron,false))/hnu::getElectronEt(theProbe,false) < 0.05 ) {
+	eIdx = k ; break ; 
+      }
+    }
+
+    // if ( eIdx < heepElectrons.size() ) 
+    //   std::cout << "TNP SUCCESS: Found a match in position " << eIdx << std::endl ; 
+    // else 
+    //   std::cout << "TNP FAILURE: Found no match in the good electrons list!!! " << iEvent.id() << std::endl ; 
+    
+    if ( eIdx < heepElectrons.size() ) {
+      if ( nJets >= 0 ) hists.HeepTagGsfProbePassesInZwin0jets->tapfill( theTag,theProbe,wgt ) ;
+      if ( nJets >= 1 ) hists.HeepTagGsfProbePassesInZwin1jet->tapfill( theTag,theProbe,wgt ) ;
+      if ( nJets >= 2 ) hists.HeepTagGsfProbePassesInZwin2jets->tapfill( theTag,theProbe,wgt ) ;
+    }
+  }        
 }
 
 
@@ -1231,7 +1306,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
-      hnu::getElectronList(pElecs, cuts.maximum_mu_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
+      hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
 			   heepVersion_,elecRho_);
 
     // if (analysisMode_ == HeavyNuEvent::HNUE)
@@ -1314,7 +1389,14 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    pat::GenericParticle trackCand = trackCands.at(i) ; 
             if ( trackCand.pt() <= cuts.minimum_mu2_pt ) break ; // Sorted collection: quit once below
             if ( fabs(trackCand.eta()) >= cuts.maximum_mu_abseta ) continue ;
-	    trackProbes.push_back( trackCand ) ; 
+
+	    bool jetOverlap  = false ; 
+	    for (unsigned int j=0; j<validJets.size(); j++) { 
+	      pat::Jet jet = validJets.at(j) ; 
+	      double dR = deltaR(trackCand.eta(), trackCand.phi(), jet.eta(), jet.phi()) ;
+	      if (dR < cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; } 
+	    }
+	    if ( !jetOverlap ) trackProbes.push_back( trackCand ) ; 
 	  } 
 	  std::vector< std::pair<pat::Muon,pat::GenericParticle> > tagTrackProbes = 
               hnu::getTagProbePair<pat::GenericParticle>( tagMuons,trackProbes,ZwinMinGeV_,ZwinMaxGeV_,
@@ -1338,6 +1420,103 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  }
 	}
     }
+
+    if (studyMuonSelectionEff_ && analysisMode_ == HeavyNuEvent::HNUE) {
+
+      std::vector<pat::Electron> tagElectrons ;
+      for (unsigned int i=0; i<eCands.size(); i++) {
+	// Electrons already pass HEEP selection, in proper detector region, with sufficient pT
+	pat::Electron tagCand = eCands.at(i).first ;
+	// std::cout << "I am looking at a HEEP candidate tag with pT " << hnu::getElectronEt(tagCand,false) 
+	// 	  << " and eta " << hnu::getElectronSCEta(tagCand) << std::endl ; 
+	if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, tagCand, iEvent, 1)) || 
+	     !iEvent.isRealData() ) { // For data we can check a trigger match...for MC it will happen later
+	  bool jetOverlap = false ;
+	  // std::cout << "Found a trigger match" << std::endl ; 
+	  int nValidJets = 0 ; 
+	  for (unsigned int j=0; j<jetCands.size(); j++) {
+	    pat::Jet jet = jetCands.at(j).first ;
+	    if ( hnu::jetID(jet) > 0 ) {
+	      nValidJets++ ; 
+	      double dR = deltaR(tagCand.eta(), tagCand.phi(), jet.eta(), jet.phi()) ;
+	      if (dR <= cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; }
+	    }
+	  }
+	  // std::cout << "There are " << nValidJets << " jets in the event" << std::endl ; 
+	  // std::cout << "Far enough away from a jet...ok it is a tag" << std::endl ; 
+	  // If electron is separated from jets, is isolated, it is a tag candidate
+	  // NOTE: Both tag and probe must match to trigger, so full TP pair not settled!
+	  if ( !jetOverlap ) tagElectrons.push_back( tagCand ) ;
+	}
+      } // List of all possible electron tag candidates
+
+      // std::cout << "I have a tag list of size " << tagElectrons.size() << std::endl ; 
+
+      // Make sure that we have at least two jets
+      // keeping in mind that we only study efficiency for the nominal case
+      std::vector<pat::Jet> validJets ; 
+      for (unsigned int i=0; i<jetCands.size(); i++) { 
+	pat::Jet jet = jetCands.at(i).first ;
+	// std::cout << "Jet " << (i+1) << " of " << jetCands.size() << " with pt " << jet.pt() << " and quality: " << hnu::jetID(jet) << std::endl ; 
+	if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
+      }
+      // std::cout << "I have created a list of validJets of size " << validJets.size() << std::endl ; 
+
+      if ( tagElectrons.size() > 0 ) { // Allow for checks of ID efficiency for different jet multiplicity
+	//--- Create the list of probe electrons ---//
+	std::vector<pat::Electron> gsfElectronProbes ; 
+	std::vector<pat::Electron> gsfCands = *(pElecs.product()) ; 
+	std::sort(gsfCands.begin(),gsfCands.end(),hnu::pTcompare()) ; 
+
+	// std::cout << "I have a list of candidate probes of size " << gsfCands.size() << std::endl ; 
+
+	for (unsigned int i=0; i<gsfCands.size(); i++) {
+	  pat::Electron gsfCand = gsfCands.at(i) ; 
+	  // std::cout << "GSF candidate probe with pT " << hnu::getElectronEt(gsfCand,false) 
+	  // 	    << " and eta " << hnu::getElectronSCEta(gsfCand) << std::endl ; 
+	  if ( hnu::getElectronEt(gsfCand,false) < cuts.minimum_mu2_pt ) break ; // Sorted collection, quit once below
+	  bool jetProbeOverlap = false ; 
+	  for (unsigned int j=0; j<jetCands.size(); j++) {
+	    pat::Jet jet = jetCands.at(j).first ;
+	    if ( hnu::jetID(jet) > 0 ) {
+	      double dR = deltaR(gsfCand.eta(), gsfCand.phi(), jet.eta(), jet.phi()) ;
+	      // std::cout << "dR between the probe and the jet is " << dR << std::endl ; 
+	      if (dR <= cuts.minimum_muon_jet_dR) { jetProbeOverlap = true ; break ; }
+	    }
+	  }
+	  if ( jetProbeOverlap ) { 
+	    // std::cout << "REJECTED: This probe should not be used for anything...it is too near a jet!!!" << std::endl ; 
+	    continue ; 
+	  }
+
+	  bool isEB = ( fabs(hnu::getElectronSCEta(gsfCand)) < 1.4442 ) ;
+	  bool isEE = ( fabs(hnu::getElectronSCEta(gsfCand)) < 2.5 && fabs(hnu::getElectronSCEta(gsfCand)) > 1.56 ) ;
+	  // if ( isEB ) std::cout << "This is a barrel electron" << std::endl ; 
+	  // if ( isEE ) std::cout << "This is an endcap electron" << std::endl ; 
+	  if ( !isEB && !isEE ) continue ;
+	  // Probe must participate in the trigger!
+	  if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(gsfCand, gsfCand, iEvent, 1)) || 
+	       !iEvent.isRealData() ) { 
+	    // std::cout << "This counts as a valid probe" << std::endl ; 
+	    gsfElectronProbes.push_back( gsfCand ) ; 
+	  }
+	}
+	// std::cout << "Total number of probes: " << gsfElectronProbes.size() << std::endl ;
+
+	// 
+	// Now need to introduce a trigger requirement for MC...something to be done later
+	// 
+
+	std::vector< std::pair<pat::Electron,pat::Electron> > heepTagGsfProbes = 
+	  hnu::getTagProbePair( tagElectrons,gsfElectronProbes,ZwinMinGeV_,ZwinMaxGeV_,
+				((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
+
+	// std::cout << "I have " << heepTagGsfProbes.size() << " tag/probe pairs" << std::endl ; 
+
+	studyElectronSelectionEff(heepTagGsfProbes,eCands,hnuEvent.eventWgt,validJets.size(),iEvent);
+      }
+    }
+
 
     // if (analysisMode_ == HeavyNuEvent::HNUE)
     //   std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ; 
@@ -1471,12 +1650,14 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
                 else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
                 else std::cout << "WARNING: Expected empty electron position" << std::endl;
-            }
+            } else { 
+	      std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ; 
+	    }
         }
 
 	// if ( hnuEvent.nLeptons > 1 ) std::cout << "Examining electron trigger" << std::endl ; 
 	bool l12trig = (hnuEvent.nLeptons > 1) &&
-	  trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent, &(((HeavyNuMuHist*)hists.Mu2TrigMatchesInZwin)->trigHistos));
+	  trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent) ; 
 	// if ( l12trig ) std::cout << "I have an electron trigger match!" << std::endl ; 
 
 	l1trig = l2trig = l12trig ;

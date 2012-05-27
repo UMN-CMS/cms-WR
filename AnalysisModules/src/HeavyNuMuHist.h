@@ -32,8 +32,9 @@ public:
     void fill(HeavyNuEvent& hne);
 
     // add function to fill tag and probe
-    void tapfill(const pat::Muon& theTag, const pat::Muon& theProbe,            const double probeTrkIso, const double wgt);
-    void tapfill(const pat::Muon& theTag, const pat::GenericParticle& theProbe, const double trkIso,      const double wgt);
+    void tapfill(const pat::Muon& theTag,     const pat::Muon& theProbe,            const double probeTrkIso, const double wgt);
+    void tapfill(const pat::Muon& theTag,     const pat::GenericParticle& theProbe, const double trkIso,      const double wgt);
+    void tapfill(const pat::Electron& theTag, const pat::Electron& theProbe,                                  const double wgt);
 
     HeavyNuTrigger::trigHistos_t trigHistos;
 
@@ -54,7 +55,9 @@ private:
     //tag and probe histograms
     TH1 *tpEvtWeight;
     TH1 *ptTag, *etaTag, *phiTag;
-    TH1 *ptProbe, *etaProbe, *phiProbe;
+    TH1 *ptProbe, *ebPtProbe, *eePtProbe ; 
+    TH1 *etaProbe, *ebEtaProbe, *eeEtaProbe ; 
+    TH1 *phiProbe, *ebPhiProbe, *eePhiProbe;
     TH1 *etaProbePt30, *etaProbePt40, *phiProbePt30, *phiProbePt40;
     TH1 *ptProbeRiso100, *etaProbeRiso100, *phiProbeRiso100;
     TH1 *etaProbePt30Riso100, *phiProbePt30Riso100;
@@ -73,12 +76,14 @@ private:
     TH1 *etaProbePt40Riso5, *phiProbePt40Riso5;
     TH1 *tagTrackIso, *tagTrackRelIso, *probeTrackIso, *probeTrackRelIso;
     TH1 *probePt30TrackIso, *probePt30TrackRelIso, *probePt40TrackIso, *probePt40TrackRelIso;
-    TH1 *mMuMuTP, *mMuMuTPRiso100, *mMuMuTPRiso50, *mMuMuTPRiso20, *mMuMuTPRiso10, *mMuMuTPRiso5;
+    TH1 *mMuMuTP, *ebmMuMuTP, *eemMuMuTP, *mMuMuTPRiso100, *mMuMuTPRiso50, *mMuMuTPRiso20, *mMuMuTPRiso10, *mMuMuTPRiso5;
     TH1 *mMuMuPt30TP, *mMuMuPt30TPRiso100, *mMuMuPt30TPRiso50, *mMuMuPt30TPRiso20, *mMuMuPt30TPRiso10, *mMuMuPt30TPRiso5;
     TH1 *mMuMuPt40TP, *mMuMuPt40TPRiso100, *mMuMuPt40TPRiso50, *mMuMuPt40TPRiso20, *mMuMuPt40TPRiso10, *mMuMuPt40TPRiso5;
 
     TH2 *ptTag_mass, *etaTag_mass, *phiTag_mass;
-    TH2 *ptProbe_mass, *etaProbe_mass, *phiProbe_mass;
+    TH2 *ptProbe_mass, *ebPtProbe_mass, *eePtProbe_mass ; 
+    TH2 *etaProbe_mass, *ebEtaProbe_mass, *eeEtaProbe_mass ; 
+    TH2 *phiProbe_mass, *ebPhiProbe_mass, *eePhiProbe_mass;
     TH2 *etaProbePt30_mass, *etaProbePt40_mass, *phiProbePt30_mass, *phiProbePt40_mass;
     TH2 *ptProbeRiso100_mass, *etaProbeRiso100_mass, *phiProbeRiso100_mass;
     TH2 *etaProbePt30Riso100_mass, *phiProbePt30Riso100_mass;

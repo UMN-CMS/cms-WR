@@ -82,36 +82,56 @@ namespace hnu {
   bool passesHEEP(const pat::Electron& e, int heepVersion, double rho) { 
 
     if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) return false ; 
-    
-    // All electrons must be ECAL driven
-    if ( !e.ecalDriven() ) return false ; 
 
     double ePt  = getElectronEt(e,(heepVersion != 40)) ; 
+    // if ( ePt < 35.0 ) std::cout << "Removing low pT electron from consideration" << std::endl ; 
+    // if ( ePt < 35.0 ) return false ; 
+
+    // std::cout << "heepVersion: " << heepVersion << " and rho " << rho << std::endl ; 
+    
+    // All electrons must be ECAL driven
+    // if ( !e.ecalDriven() ) std::cout << "FAILURE: electron is not ecal driven!!!" << std::endl ; 
+    if ( !e.ecalDriven() ) return false ; 
 
     double eEta = getElectronSCEta(e) ; 
     bool isEB   = ( fabs(eEta) < 1.4442 ) ; 
     bool isEE   = ( fabs(eEta) < 2.5 && fabs(eEta) > 1.56 ) ; 
+    // std::cout << "Electron pT: " << ePt << std::endl ; 
+    // std::cout << "Electron SC eta: " << eEta << std::endl ; 
+    // if ( !isEB && !isEE) std::cout << "FAILURE: electron is not in EB or EE: " << eEta << std::endl ; 
     if ( !isEB && !isEE ) return false ; 
     
     double HoE = e.hadronicOverEm() ; 
+    // std::cout << "Electron HoE: " << HoE << std::endl ; 
+    // if ( HoE > 0.05 ) std::cout << "FAILURE: HOE = " << HoE << std::endl ; 
     if ( HoE > 0.05 ) return false ; 
 
     double dEtaIn = fabs(e.deltaEtaSuperClusterTrackAtVtx()) ; 
+    // std::cout << "Electron dEtaIn: " << dEtaIn << std::endl ; 
+    // if ( ( isEB && dEtaIn > 0.005 ) || ( isEE && dEtaIn > 0.007 ) ) std::cout << "FAILURE: Electron dEtaIn: " << dEtaIn << std::endl ; 
     if ( isEB && dEtaIn > 0.005 ) return false ; 
     if ( isEE && dEtaIn > 0.007 ) return false ; 
 
     double dPhiIn = fabs(e.deltaPhiSuperClusterTrackAtVtx()) ; 
+    // std::cout << "Electron dPhiIn: " << dPhiIn << std::endl ; 
+    // if ( heepVersion == 40 && dPhiIn > 0.06 ) std::cout << "FAILURE: Electron dPhiIn = " << dPhiIn << std::endl ; 
     if (  heepVersion == 31                       && dPhiIn > 0.09 ) return false ; 
     if ( (heepVersion == 32 || heepVersion == 40) && dPhiIn > 0.06 ) return false ; 
 
     double sig_iEiE = e.sigmaIetaIeta() ; 
+    // if ( isEE ) std::cout << "Electron sigiEiE: " << sig_iEiE << std::endl ; 
+    // if ( isEE && sig_iEiE > 0.03 ) std::cout << "FAILURE: Electron sigiEiE = " << sig_iEiE << std::endl ; 
     if ( isEE && sig_iEiE > 0.03 ) return false ; 
 
     double e1x5_5x5 = e.e1x5() / e.e5x5() ; 
     double e2x5_5x5 = e.e2x5Max() / e.e5x5() ; 
+    // if ( isEB ) std::cout << "Electron 1x5, 2x5: " << e1x5_5x5 << ", " << e2x5_5x5 << std::endl ; 
+    // if ( isEB && (e2x5_5x5 < 0.94 && e1x5_5x5 < 0.83) ) std::cout << "FAILURE: Electron 1x5, 2x5 = " << e1x5_5x5 << ", " << e2x5_5x5 << std::endl ; 
     if ( isEB && (e2x5_5x5 < 0.94 && e1x5_5x5 < 0.83) ) return false ; 
 
     int nLostHits = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
+    // std::cout << "Electron nLostHits: " << nLostHits << std::endl ; 
+    // if ( nLostHits != 0 ) std::cout << "FAILURE: Electron nLostHits = " << nLostHits << std::endl ; 
     if ( nLostHits != 0 ) return false ; 
     
     double ecalHcalIso = e.dr03EcalRecHitSumEt() + e.dr03HcalDepth1TowerSumEt() ; 
@@ -122,6 +142,13 @@ namespace hnu {
       thresholdEB += ( 0.28 * rho ) ; 
       thresholdEE += ( 0.28 * rho ) ; 
     }
+    // std::cout << "Electron caloIso: " << ecalHcalIso << " = " << e.dr03EcalRecHitSumEt() << " + " << e.dr03HcalDepth1TowerSumEt() 
+    // 	      << std::endl ; 
+    // std::cout << "Electron threshold: " << thresholdEB << " (EB) " << thresholdEE << " (EE) " << std::endl ; 
+    
+    // if ( isEB && ecalHcalIso > thresholdEB ) std::cout << "FAILURE: EB and caloIso" << std::endl ; 
+    // if ( isEE && ecalHcalIso > thresholdEE ) std::cout << "FAILURE: EE and caloIso" << std::endl ; 
+
     if ( isEB && ecalHcalIso > thresholdEB ) return false ; 
     if ( isEE && ecalHcalIso > thresholdEE ) return false ; 
 
@@ -129,9 +156,13 @@ namespace hnu {
     if ( (heepVersion == 31) && isEE && hcalIsoDepth2 > 0.5 ) return false ; 
 
     double trkIso = e.dr03TkSumPt() ;
+    // if ( heepVersion == 40 && trkIso > 5. ) std::cout << "FAILURE: Electron trkIso = " << trkIso << std::endl ; 
+    // std::cout << "Electron trkIso: " << trkIso << std::endl ; 
     if ( (heepVersion == 31) &&
 	 ((isEB && trkIso > 7.5) || (isEE && trkIso > 15.)) ) return false ; 
     if ( (heepVersion == 32 || heepVersion == 40) && (trkIso > 5.) ) return false ; 
+
+    // std::cout << "Congratulations!  The electron passes HEEP selection" << std::endl ; 
 
     // Passes HEEP selection
     return true ; 
@@ -206,6 +237,59 @@ namespace hnu {
       return ( shape && dEta && isolated ) ; 
     }
     return false ; 
+  }
+
+  std::vector< std::pair<pat::Electron,pat::Electron> > 
+  getTagProbePair(const std::vector<pat::Electron>& tags,const std::vector<pat::Electron>& probes,
+		  double minMass, double maxMass,double rval,bool sanityCheck) {
+
+    std::vector< std::pair<pat::Electron,pat::Electron> > tagprobes ; 
+    
+    // Sanity check to make sure tag collection is subset of probes
+    std::vector<unsigned int> tagLocs ; 
+    for (unsigned int i=0; i<tags.size(); i++) { 
+      double minDR = 999. ; 
+      for (unsigned int j=0; j<probes.size(); j++) { 
+	double dR = ROOT::Math::VectorUtil::DeltaR(tags.at(i).p4(),probes.at(j).p4()) ; 
+	if ( dR < minDR ) minDR = dR ; 
+	if ( dR < 0.02 ) { // Found the tag in the probe list
+	  tagLocs.push_back(j) ;
+	  break ; 
+	}
+      }
+      if ( sanityCheck && minDR > 0.02 ) 
+	std::cout << "WARNING: Tag does not match any probe candidate, closest is dR = " << minDR << std::endl ; 
+    }
+    if ( sanityCheck && tagLocs.size() != tags.size() ) 
+      std::cout << "WARNING!!! Expected to find all tags in probe list, but for " 
+		<< tags.size() << " tags found " << tagLocs.size() << " in probe list" 
+		<< std::endl ; 
+    
+    for (unsigned int i=0; i<tags.size(); i++) { 
+      for (unsigned int j=0; j<probes.size(); j++) { 
+	// By skipping known tags, tag+probe sample is biased towards failing probes
+	// if (std::find(tagLocs.begin(),tagLocs.end(),j) != tagLocs.end()) continue ; 
+	double mass = (tags.at(i).p4()+probes.at(j).p4()).M() ; 
+	// std::cout << "Tag " << (i+1) << " of " << tags.size() << " and probe " << (j+1) 
+	// 	  << " of " << probes.size() << " has a mass of " << mass << std::endl ; 
+	// if ( mass < minMass || mass > maxMass ) std::cout << "This tag/probe combination is rejected" << std::endl ;
+	if ( mass < minMass || mass > maxMass ) continue ; 
+
+	// double dR = ROOT::Math::VectorUtil::DeltaR(tags.at(i).p4(),probes.at(j).p4()) ; 
+	// if ( dR < 0.3 ) std::cout << "The tag and probe are too close: " << dR << std::endl ; 
+
+	std::pair<pat::Electron,pat::Electron> tp = std::make_pair(tags.at(i),probes.at(j)) ; 
+	tagprobes.push_back( tp ) ; 
+      }
+    }
+    
+    // Return all tag+probe combinations
+    if ( rval < 0 || tagprobes.size() <= 1 ) return tagprobes ; 
+    // Randomly pick one tag+probe combination from those available
+    unsigned int idx = (unsigned int)(rval * tagprobes.size()) ; 
+    std::vector< std::pair<pat::Electron,pat::Electron> > singletp ; 
+    singletp.push_back( tagprobes.at(idx) ) ; 
+    return singletp ; 
   }
 
   double muIsolation(const pat::Muon& m, const double pTscale) {
@@ -516,28 +600,41 @@ namespace hnu {
     } ; 
 
     const double json_2012a_run193557[] = { 
-            59.3073,       156.1,     6681.18, 2.79236e+06, 7.28453e+06,
-	    66597.5,     60190.1,     48270.5,      155944, 1.19828e+06, 
-	7.83965e+06, 2.16456e+07, 3.29565e+07, 4.09794e+07, 4.95412e+07, 
-	5.83303e+07, 6.37098e+07, 6.28154e+07, 5.53595e+07, 4.38815e+07, 
-	3.23858e+07, 2.31768e+07, 1.65636e+07, 1.22208e+07, 9.41924e+06, 
-	7.42174e+06, 5.82024e+06,  4.4711e+06,  3.3413e+06, 2.42264e+06, 
-	1.70269e+06, 1.15991e+06,      766260,      491354,      306205, 
-	     185700,      109734,     63248.8,     35581.5,     19541.5, 
-	    10475.4,     5477.99,     2792.36,     1386.16,     669.462, 
-	    314.265,      143.27,     63.3834,     27.1948,     11.3099, 
-	    4.55733,     1.77868,    0.672206,    0.245942,   0.0870985, 
-	  0.0298523,  0.00990102,  0.00317743, 0.000986567,      402199
+           59.3073,      156.1,    6681.18,  2.79236E06, 7.28453E06,
+	   66597.5,    60190.1,    48270.5,      155944, 1.19828E06, 
+	7.83965E06, 2.16456E07, 3.29565E07,  4.09794E07, 4.95412E07, 
+	5.83303E07, 6.37098E07, 6.28154E07,  5.53595E07, 4.38815E07, 
+	3.23858E07, 2.31768E07, 1.65636E07,  1.22208E07, 9.41924E06, 
+	7.42174E06, 5.82024E06,  4.4711E06,   3.3413E06, 2.42264E06, 
+	1.70269E06, 1.15991E06,     766260,      491354,     306205, 
+	    185700,     109734,    63248.8,     35581.5,    19541.5, 
+	   10475.4,    5477.99,    2792.36,     1386.16,    669.462, 
+	   314.265,     143.27,    63.3834,     27.1948,    11.3099, 
+	   4.55733,    1.77868,   0.672206,    0.245942,  0.0870985, 
+	 0.0298523, 0.00990102, 0.00317743, 0.000986567,     402199
     } ; 
 
-
+    const double json_2012ab_run194479[] = { 
+         3406.69,    1451.68,    44962.9, 3.38365E06, 6.32382E06, 
+          297883,     436959, 4.08972E06, 1.52368E07,  3.2064E07, 
+      5.22548E07, 7.72319E07, 1.05651E08, 1.30586E08, 1.51566E08, 
+      1.68137E08, 1.69745E08,  1.5168E08, 1.23428E08, 9.59067E07, 
+      7.37087E07, 5.70831E07, 4.47301E07,  3.5483E07, 2.83527E07, 
+      2.25922E07, 1.78088E07, 1.38281E07,  1.0551E07, 7.89647E06, 
+      5.78782E06, 4.14984E06, 2.90835E06, 1.99147E06,   1.332E06, 
+          870110,     555021,     345635,     210081,     124590, 
+         72072.4,      40655,    22356.3,      11982,    6257.83, 
+         3184.45,    1578.79,    762.576,    358.843,    164.512
+    } ; 
 
     const double* pileupDist=default_pd;
     int npt = 35;
     if (era == 20121) 
     {
-        npt = sizeof(json_2012a_run193557)/sizeof(double);
-        pileupDist=json_2012a_run193557;
+        // npt = sizeof(json_2012a_run193557)/sizeof(double);
+        // pileupDist=json_2012a_run193557;
+        npt = sizeof(json_2012ab_run194479)/sizeof(double);
+        pileupDist=json_2012ab_run194479;
     }
     if (era == 20111) 
     {
@@ -681,6 +778,9 @@ namespace hnu {
 	jpt *= jecuscale;
 	iJ.setP4(iJ.p4()*jecuscale);
       }
+      // std::cout << "Jet cand with pt " << jpt << " eta " << jeta << " and electron energy fraction " 
+      // 		<< iJ.electronEnergyFraction() << "%.  " << iJ.photonEnergy() << " + " 
+      // 		<< iJ.electronEnergy() << " attributed to EM photons and electrons (in GeV)" << std::endl ; 
       if (jpt > minPt) { 
 	std::pair<pat::Jet,float> jetCand = std::make_pair(iJ,jecuscale) ;
 	jetList.push_back( jetCand ) ; 
@@ -774,6 +874,9 @@ namespace hnu {
     }
     for (unsigned int iElectron=0; iElectron < pElecs->size(); iElectron++) {
       pat::Electron iE = pElecs->at(iElectron); 
+      // std::cout << "Considering electron with pT: " << getElectronEt(iE,(heepVersion != 40)) 
+      // 		<< " and eta: " << getElectronSCEta(iE) << std::endl ; 
+      // if ( getElectronSCEta(iE) > maxAbsEta ) std::cout << "Event outside boundary, ignoring" << std::endl ; 
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
       // if ( (heepVersion == 31) && !passesHEEPv31(iE) ) continue ; 
       // if ( (heepVersion == 32) && !passesHEEPv32(iE) ) continue ; 

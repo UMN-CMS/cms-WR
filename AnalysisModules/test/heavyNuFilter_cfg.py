@@ -11,7 +11,7 @@ import os
 isMC=True
 isData=not isMC
 
-smode = 0 #0 for Z+Jets 1 for other
+smode = 1 #0 for Z+Jets 1 for other
 
 #--- Special flag for 44x/Fall11 ---#
 is44x=False
@@ -39,7 +39,7 @@ isPileupMC = True
 isPFJets   = True
 
 #--- HEEP ID for electrons ---#
-heepVersion = -1
+heepVersion = 40
 
 process = cms.Process("PATSKIM");
 
@@ -53,7 +53,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-   fileNames=cms.untracked.vstring("/store/mc/Summer12/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/AODSIM/PU_S7_START52_V9-v1/0000/D602DE83-F18B-E111-A721-001A64789CF0.root")
+   fileNames=cms.untracked.vstring("/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V9-v1/0000/784C239B-8690-E111-BD45-001A92810AC0.root")
 )
 
 if isData:
@@ -223,6 +223,11 @@ process.patTrackSequence = cms.Sequence(
         process.patTracksPt10
 )
 
+# Corrections to isolation for electrons
+from RecoJets.JetProducers.kt4PFJets_cfi import *
+process.kt6PFJetsForIsolation            = kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
+process.kt6PFJetsForIsolation.Rho_EtaMax = cms.double(2.5)
+
 ## --------------------- ##
 ## Define the basic path ##
 ## --------------------- ##
@@ -230,11 +235,11 @@ if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence
+       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
-       process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence
+       process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
    )
 if isPFJets:
     process.AnalysisIntroSequence += process.modifiedPF2PATSequence
@@ -314,22 +319,23 @@ process.hNu = cms.EDFilter(
     jetTag       = cms.InputTag( 'selectedPatJetsPFlow' ),
     electronTag  = cms.InputTag( 'selectedPatElectrons' ),
     minMu1pt     = cms.double(50.),
-    minMu2pt     = cms.double(35.),
-    minJetPt     = cms.double(25.),
-    maxMuAbsEta  = cms.double(2.5),
-    maxJetAbsEta = cms.double(2.6),
+    minMu2pt     = cms.double(30.),
+    minJetPt     = cms.double(30.),
+    maxMuAbsEta  = cms.double(2.4),
+    maxElecAbsEta = cms.double(2.5),
+    maxJetAbsEta = cms.double(2.5),
     minMuonJetdR = cms.double(0.3),
 
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
-    maxVertexZsepCM       = cms.double(0.03),
-    maxJetVZsepCM         = cms.double(0.1),
+    maxVertexZsepCM       = cms.double(-1), # disabled
+    maxJetVZsepCM         = cms.double(-1), # disabled
 
     isPFJets = cms.bool(True),
 
-    heepVersion = cms.untracked.int32(heepVersion),
+    heepVersion = cms.untracked.int32(40),
 
     mode = cms.int32(smode), #0 for Z+Jets, 1 for TTBar and other
-    electronRho  = cms.InputTag( 'kt6PFJetsCentral','rho','RECO' )
+    electronRho  = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
     )
 
 process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') )

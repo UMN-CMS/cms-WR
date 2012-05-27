@@ -192,6 +192,7 @@ bool
 HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
 				 const pat::Electron& e2,
 				 const edm::Event& iEvent,
+				 int nMatchesNeeded,
 				 trigHistos_t *thist)
 {
   bool matched=false;
@@ -249,7 +250,7 @@ HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
       pat::TriggerFilterRefVector filtersInPath = triggerEvent->pathFilters(iPath->name(),true) ; // assuming firing path
       
       bool matched_e1 = false ; 
-      bool matched_e2 = false ; 
+      bool matched_e2 = ((nMatchesNeeded < 2) ? true : false) ; 
       for ( pat::TriggerFilterRefVector::const_iterator ifRef = filtersInPath.begin(); ifRef != filtersInPath.end(); ifRef++) { 
 	pat::TriggerFilterRef filterRef = *ifRef ; 
 	if ( filterRef->isFiring() &&
@@ -259,18 +260,34 @@ HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
 	    pat::TriggerObjectRef objRef = *iobjRef ; 
 	    // std::cout << "Found an object with pT = " << objRef->pt() << " and eta " << objRef->eta() << std::endl ; 
 	    if ( triggerEvent->objectInFilter(objRef,filterRef->label()) ) { // Trigger object was used by the filter
-	      
+
 	      // Electron selection is tighter than the trigger everywhere, so just perform dR matching
 	      // std::cout << "Object in filter: " << filterRef->label() << " with status " << filterRef->status() << std::endl ; 
 	      double dr2_e1  = reco::deltaR2 <pat::Electron,pat::TriggerObject>( e1,(*objRef) );
 	      double dr2_e2  = reco::deltaR2 <pat::Electron,pat::TriggerObject>( e2,(*objRef) );
 
-	      // std::cout << "Distance to electron 1 with pT " << e1.pt() 
-	      // 		<< " and eta " << e1.eta() << " is " << sqrt(dr2_e1) << std::endl ; 
-	      // std::cout << "Distance to electron 2 with pT " << e2.pt() 
-	      // 		<< " and eta " << e2.eta() << " is " << sqrt(dr2_e2) << std::endl ; 
-	      if ( sqrt(dr2_e1) < 0.1 && (dr2_e1 < dr2_e2) ) matched_e1 = true ; 
-	      if ( sqrt(dr2_e2) < 0.1 && (dr2_e2 < dr2_e1) ) matched_e2 = true ; 
+	      if ( nMatchesNeeded < 2 ) { // Special case when you care only if the electron was involved in a passing trigger
+		if ( sqrt(dr2_e1) < 0.1 ) { 
+		  matched_e1 = true ; 
+		  // std::cout << "Matched to this object" << std::endl ; 
+		}
+		// std::cout << "Distance to electron 1 with pT " << e1.pt() 
+		// 	  << " and eta " << e1.eta() << " is " << sqrt(dr2_e1) << std::endl ; 
+	      } else { 
+		// std::cout << "Distance to electron 1 with pT " << e1.pt() 
+		// 	  << " and eta " << e1.eta() << " is " << sqrt(dr2_e1) << std::endl ; 
+		// std::cout << "Distance to electron 2 with pT " << e2.pt() 
+		// 	  << " and eta " << e2.eta() << " is " << sqrt(dr2_e2) << std::endl ; 
+		if ( sqrt(dr2_e1) < 0.1 && (dr2_e1 < dr2_e2) ) { 
+		  // std::cout << "e1 Matched to this object" << std::endl ; 
+		  matched_e1 = true ;
+		} 
+		if ( sqrt(dr2_e2) < 0.1 && (dr2_e2 < dr2_e1) ) { 
+		  // std::cout << "e2 Matched to this object" << std::endl ; 
+		  matched_e2 = true ; 
+		}
+		// std::cout << "This object matched at least one of the electrons" << std::endl ; 
+	      }
 	    }
 	  }
 	}
@@ -282,72 +299,8 @@ HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
 
   return matched ; 
 
-  // std::cout << "Looking for trigger match for e1 with pT " << e1.pt() 
-  //   	    << " and eta " << e1.eta() 
-  // 	    << "; e2 with pT " << e2.pt() << " and eta " << e2.eta() << std::endl ; 
-
-  // if ( matchingEnabled_ ) {
-
-  //   const pat::TriggerObjectStandAloneCollection e1MatchCollection = e1.triggerObjectMatches();
-  //   const pat::TriggerObjectStandAloneCollection e2MatchCollection = e2.triggerObjectMatches();
-  //   std::cout << "Trigger object matches size: " << e1MatchCollection.size() 
-  // 	      << " " << e2MatchCollection.size() << std::endl ; 
-
-  //   for (unsigned int i=0; i<e1MatchCollection.size(); i++) { 
-  //     if ( matched ) break ; // Quit as soon as we find a match
-  //     std::cout << "Trigger object " << i+1 << " of " << e1MatchCollection.size() << std::endl ; 
-  //     pat::TriggerObject electronTrigger = e1MatchCollection.at(i) ; 
-  //     pat::TriggerObjectStandAlone electronTriggerInfo = e1MatchCollection.at(i) ; 
-  //     // Look for a match with one of our paths
-  //     std::vector<std::string> hltPaths = electronTriggerInfo.pathNames(true,false) ; 
-  //     bool hltPathMatch = false ; 
-  //     for (unsigned int j=0; j<hltPaths.size(); j++) { 
-  // 	if (hltPathMatch) break ; 
-  // 	std::cout << "HLT Path: " << hltPaths.at(j) << std::endl ; 
-  // 	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
-  // 	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
-  //           // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
-  // 	    hltPathMatch = true ; 
-  // 	    break ; 
-  // 	  }
-  // 	}
-  //     }
-      // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
-      // Requirements to see if the trigger would have accepted the event based on this muon
-//       if ( hltPathMatch && electronTrigger.pt() > triggerPt_ ) { 
-// 	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( m,muonTrigger );
-// 	double dpt  = 1.-(muonTrigger.pt()/m.pt());
-// 	double dphi = reco::deltaPhi( m.phi(),muonTrigger.phi() );
-// 	double deta = m.eta() - muonTrigger.eta();
-
-// 	// One more requirement: make sure that the muon is nearby the trigger object
-// 	if ( sqrt(dr2) < 0.1 ) matched = true ; 
-
-// //         std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
-// //         std::cout << "dR is " << sqrt(dr2) << std::endl ; 
-
-// 	if (thist) {	  
-// 	  thist->trigMatchPtCorrel->Fill( m.pt(),muonTrigger.pt() );
-// 	  thist->trigMatchDR2     ->Fill( dr2 );
-// 	  thist->trigMatchDRDPt   ->Fill( dr2,dpt );
-// 	  thist->trigMatchDetaPhi ->Fill( deta,dphi );
-// 	}
-//       }
-//       if ( !matched ) {
-// 	if ( thist ) {
-// 	  thist->trigUnmatchedPt->Fill( m.pt() );
-// 	  thist->trigUnmatchedEtaPhi->Fill( m.eta(),m.phi() );
-// 	}
-//       }
-  //   }
-
-  //   // if ( thist ) { 
-  //   //   thist->trigAllCandMuPt->Fill( m.pt() );
-  //   //   thist->trigAllCandMuEtaPhi->Fill( m.eta(),m.phi() );
-  //   // }
-  // }
-  // return ( matched ); 
 }                                    // HeavyNuTrigger::isTriggerMatched
+
 
 //======================================================================
 
