@@ -54,7 +54,8 @@ runMuonAnalysis     = True
 runElectronAnalysis = True
 systematics    = False
 tagandprobe    = False
-doTriggerStudy = False
+#doTriggerStudy = False
+doTriggerStudy = True
 
 #--- HEEP ID for electrons ---#
 #--- Recognized values: 40 (2012), 31 or 32 (2011) ---#
@@ -342,6 +343,36 @@ if isData:
         removeCleaningFromTriggerMatching( process, outputModule = '' )
         if isRun2012:
             process.electronTriggerMatchHLTElectrons.matchedCuts = cms.string( 'path( "HLT_*",1,0 )' )
+
+
+#--- Electrons trigger analysis ---#
+process.dumpEvContent = cms.EDAnalyzer("EventContentAnalyzer")
+#
+#  the analysis comes in from here
+#
+import HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi
+
+if runElectronAnalysis:
+    if doTriggerStudy:
+        process.hNuEtriggerEff                     = HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi.HeavyNuEleTriggerEff.clone()
+        process.hNuEtriggerEff.plotFolderName      = cms.string('inclusive')
+        process.hNuEtriggerEff.numOfflJets         = cms.int32(  0 )
+
+        process.hNuEtriggerEffOneJ                 = HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi.HeavyNuEleTriggerEff.clone()
+        process.hNuEtriggerEffOneJ.plotFolderName  = cms.string('OneJet')
+        process.hNuEtriggerEffOneJ.numOfflJets     = cms.int32(  1 )
+
+        process.hNuEtriggerEffTwoJ                 = HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi.HeavyNuEleTriggerEff.clone()
+        process.hNuEtriggerEffTwoJ.plotFolderName  = cms.string('TwoJet')
+        process.hNuEtriggerEffTwoJ.numOfflJets     = cms.int32(  2 )
+
+        process.TriggerStudyElectronSequence = cms.Sequence( process.kt6PFJetsForIsolation
+                                                             #* process.dumpEvContent
+                                                             * process.hNuEtriggerEff
+                                                             * process.hNuEtriggerEffOneJ
+                                                             * process.hNuEtriggerEffTwoJ
+                                                             )
+
 
 #--- Output histgram file ---#
 process.TFileService = cms.Service("TFileService",
@@ -659,10 +690,12 @@ if runElectronAnalysis:
       process.pEjesLo = cms.Path(process.AnalysisIntroSequence + process.hNuEjesLo);
       process.pEpuHi = cms.Path(process.AnalysisIntroSequence + process.hNuEpuHi);
       process.pEpuLo = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
-
+      
+   if doTriggerStudy:
+       process.pENominal = cms.Path(  process.TriggerStudyElectronSequence + process.AnalysisIntroSequence + process.hNuE  )
    else:
-        process.pENominal = cms.Path( process.AnalysisIntroSequence + process.hNuE )
-
+       process.pENominal = cms.Path( process.AnalysisIntroSequence + process.hNuE )
+          
 if qcdStudy:
     if isMC:
         if isRun2011A:
