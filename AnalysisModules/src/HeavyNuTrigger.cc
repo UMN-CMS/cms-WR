@@ -55,6 +55,12 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
       endRun_.push_back(999999) ; 
     }
   }
+  
+  if ( ! ( trigEra_==20121) ) 
+    {
+      std::cout << "WARNING: trigEra_ is set to " << trigEra_ << " but only 20121 is supported in electron trigger efficiencies" << std::endl;  
+    }
+  
 }                                      // HeavyNuTrigger::HeavyNuTrigger
 
 //======================================================================
@@ -357,7 +363,7 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   }
 
   int i;
-  const double *upedge = upedge2012 ; 
+  const double *         upedge = upedge2012 ; 
   if (trigEra_ == 20111) upedge = upedge2011a ; 
   if (trigEra_ == 20112) upedge = upedge2011b ; 
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
@@ -367,6 +373,119 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
 }
 
 //======================================================================
+
+bool
+HeavyNuTrigger::simulateForMCElePt(double pt,double eta,int signOfError2apply)
+{
+  // what follows is somewhat of a dummy method, which returns true basucally always
+  // it's put in place in case we will want to switch over from using dielectron mass to single electron pt
+  // to parameterize trigger efficiencies
+
+  if (matchingEnabled_)
+    throw cms::Exception("invalid trigger configuration");
+
+  // Triggers outside |eta| < 2.5 not allowed
+  if ( fabs(eta) >= 2.5 ) return false ; 
+  // Cannot trigger if you do not meet the minimum pT threshold
+  if ( pt < triggerPt_ ) return false ;
+
+  // Trigger studies updated 28 May 2012;
+  // so far we don't have measurements for 2011 => set them the same as 2012 and throw a warning 
+  // if you want to make them sensible, modify these arrays BUT ALSO the code below
+
+  //const double effElelo2011a[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effElenom2011a[] = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effElehi2011a[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double upedgeEle2011a[]  = {      50,      60,      80,     100,     200,    3500,      -1};
+  //
+  //const double effElelo2011b[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effElenom2011b[] = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effElehi2011b[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double upedgeEle2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
+
+  const double effElelo2012[]   = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  const double effElenom2012[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  const double effElehi2012[]   = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  const double upedgeEle2012[]   = {      50,      60,      80,     100,     200,    3500,      -1};
+
+  // 2012 is the default
+  // actually, at the moment we only have 2012, so use twose in all cases (there was a warning about trigEra_ )
+   const double *         effs = effElenom2012 ; 
+  if (trigEra_ == 20111) effs = effElenom2012 ;
+  if (trigEra_ == 20112) effs = effElenom2012 ;
+  if ( signOfError2apply ) {
+    if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
+    if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
+    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
+  }
+
+  int i;
+  const double *         upedge = upedgeEle2012 ; 
+  if (trigEra_ == 20111) upedge = upedgeEle2012 ; 
+  if (trigEra_ == 20112) upedge = upedgeEle2012 ; 
+  for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
+  double eff=effs[i];
+    
+  return (triggerRandom_->Uniform()<eff);
+}
+
+//======================================================================
+
+
+bool
+HeavyNuTrigger::simulateForMCdiEleMass(double m,double eta,int signOfError2apply)
+{
+  // what follows incorporates the trigger efficiency measurements
+  // as shown here:  http://homepages.spa.umn.edu/~franzoni/reps/12/may25/ 
+
+  if (matchingEnabled_)
+    throw cms::Exception("invalid trigger configuration");
+
+  // Triggers outside |eta| < 2.5 not allowed
+  if ( fabs(eta) >= 2.5 ) return false ; 
+  // eta may end up being used to separate EB,EE combinations?
+
+  // Trigger studies updated 28 May 2012;
+  // so far we don't have measurements for 2011 => set them the same as 2012 and throw a warning 
+  // if you want to make them sensible, modify these arrays BUT ALSO the code below
+  //const double effEleMasslo2011a[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effEleMassnom2011a[] = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effEleMasshi2011a[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double upedgeEleMass2011a[]  = {      50,      60,      80,     100,     200,    3500,      -1};
+  //
+  //const double effEleMasslo2011b[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effEleMassnom2011b[] = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double effEleMasshi2011b[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
+  //const double upedgeEleMass2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
+  
+  const double upedgeEleMass2012[]   = {70,80,90,100,110,120,130,140,160,180,200,300,-1};
+  const double effEleMassnom2012[]  = {1,1,0.979488,0.962445,0.918403,0.81,1,0.81,1,1,1,1,1};
+  const double effEleMasshi2012[]   = {1,1,0.992667,0.975271,0.984532,0.925816,1,0.959204,1,1,1,1,1};
+  const double effEleMasslo2012[]   = {0.383681,0.735776,0.95288,0.944351,0.74699,0.599341,0.753433,0.460385,0.69163,0.58867,0.261936,0.663539,0.471301};
+
+  // 2012 is the default
+  // actually, at the moment we only have 2012, so use twose in all cases (there was a warning about trigEra_ )
+   const double *         effs = effEleMassnom2012 ; 
+  if (trigEra_ == 20111) effs = effEleMassnom2012 ;
+  if (trigEra_ == 20112) effs = effEleMassnom2012 ;
+  if ( signOfError2apply ) {
+    if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
+    if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
+    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
+  }
+
+  int i;
+  const double *upedge = upedgeEleMass2012 ; 
+  if (trigEra_ == 20111) upedge = upedgeEleMass2012 ; 
+  if (trigEra_ == 20112) upedge = upedgeEleMass2012 ; 
+  for (i=0; upedge[i]>0 && upedge[i]<m; i++);
+  double eff=effs[i];
+    
+  return (triggerRandom_->Uniform()<eff);
+}
+
+//======================================================================
+
 
 void HeavyNuTrigger::endJob()
 {

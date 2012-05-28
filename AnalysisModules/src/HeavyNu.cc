@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.97 2012/05/17 13:07:36 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.98 2012/05/27 12:02:59 bdahmes Exp $
 //
 //
 
@@ -1430,7 +1430,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	// std::cout << "I am looking at a HEEP candidate tag with pT " << hnu::getElectronEt(tagCand,false) 
 	// 	  << " and eta " << hnu::getElectronSCEta(tagCand) << std::endl ; 
 	if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, tagCand, iEvent, 1)) || 
-	     !iEvent.isRealData() ) { // For data we can check a trigger match...for MC it will happen later
+	     !iEvent.isRealData() ) { // 1) for data we can check a trigger match...for MC it will happen later
+	                              // 2) in the muon case tags are also selected according to the HLT efficiency;
+	                              //    deemed an overkill + now we're doing HLT efficiencies as a function of mass => ignore this for electrons
 	  bool jetOverlap = false ;
 	  // std::cout << "Found a trigger match" << std::endl ; 
 	  int nValidJets = 0 ; 
@@ -1635,7 +1637,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
         }
         // std::cout << "Trigger results: " << mu1trig << ", " << mu2trig << std::endl ;
-    }
+    }// HeavyNuEvent::HNUMU
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
         for(unsigned int i = 0; i < eCands.size(); i++)
@@ -1655,13 +1657,19 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    }
         }
 
-	// if ( hnuEvent.nLeptons > 1 ) std::cout << "Examining electron trigger" << std::endl ; 
+	// at this stage we need to assume we have >=2 electrons
+	// use the first two in the list eCands to build a di-lepton mass
+	double diEleMass(0.);
+	double dummyEta(0.);
+	if( hnuEvent.nLeptons >= 2 ){
+	  diEleMass = ( eCands.at(0).first.p4() +  eCands.at(0).first.p4() ).M() ;
+	}
+	
 	bool l12trig = (hnuEvent.nLeptons > 1) &&
-	  trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent) ; 
-	// if ( l12trig ) std::cout << "I have an electron trigger match!" << std::endl ; 
+	  trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent)  &&
+	  trig_->simulateForMCdiEleMass(diEleMass,dummyEta, applyTrigEffsign_) ; 
 
 	l1trig = l2trig = l12trig ;
-	// std::cout << l1trig << ", " << l2trig << std::endl ; 
     }
 
     hnuEvent.regularize();

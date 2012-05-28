@@ -49,7 +49,13 @@ class HeavyNuTrigger {
 
   bool simulateForMC(double pt,double eta,int signOfError2apply=0);
   bool simulateForMC(double pt,int signOfError2apply=0) { return simulateForMC(pt,0.,signOfError2apply); }  
-
+  
+  bool simulateForMCElePt(double pt,double eta,int signOfError2apply=0);
+  bool simulateForMCElePt(double pt,int signOfError2apply=0) { return simulateForMCElePt(pt,0.,signOfError2apply); }  
+  
+  bool simulateForMCdiEleMass(double m,double eta,int signOfError2apply=0);
+  bool simulateForMCdiEleMass(double m,int signOfError2apply=0) { return simulateForMCdiEleMass(m,0.,signOfError2apply); }  
+  
   void endJob();
 
  private:
