@@ -8,7 +8,7 @@ import os
 #analysisMode = 'HNUE'
 
 #--- Data/MC switch ---#
-isMC=False
+isMC=True
 isData=not isMC
 
 #--- Special flag for 44x/Fall11 ---#
@@ -54,8 +54,8 @@ runMuonAnalysis     = True
 runElectronAnalysis = True
 systematics    = False
 tagandprobe    = False
-#doTriggerStudy = False
 doTriggerStudy = True
+addSlopeTrees  = True
 
 #--- HEEP ID for electrons ---#
 #--- Recognized values: 40 (2012), 31 or 32 (2011) ---#
@@ -87,7 +87,10 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
+#    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
+    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_2_3_patch4/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
+#    fileNames=cms.untracked.vstring("/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V9-v1/0000/784C239B-8690-E111-BD45-001A92810AC0.root")
+#    fileNames=cms.untracked.vstring("file:/local/cms/user/turkewitz/heavynu_candevents_May21_res_TEST/res/heavynu_candevents_146_1_lRc.root")
 )
 
 if isData:
@@ -407,6 +410,7 @@ process.hNu.pileupEra = cms.int32(pileupEra)
 #options are HNUMU, HNUE, TOP, QCD, CLO
 process.hNu.analysisMode = cms.untracked.string('HNUMU')
 process.hNu.heepVersion = cms.untracked.int32(heepVersion)
+process.hNu.addSlopeTree = cms.untracked.bool(addSlopeTrees)
 
 #--- Muon ID corrections are taken from Dec 11, 2011 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)

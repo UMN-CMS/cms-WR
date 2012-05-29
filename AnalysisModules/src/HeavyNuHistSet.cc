@@ -236,43 +236,41 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
     // Leptons
     if(hne.nLeptons >= 1)
     {
-        double L1pt = hne.l1->p4().pt();
-        ptL1->Fill(L1pt, wgt);
-        etaL1->Fill(hne.l1->p4().eta(), wgt);
-        phiL1->Fill(hne.l1->p4().phi(), wgt);
-        if ( L1pt > 30. )
+        ptL1->Fill(hne.l1pt, wgt);
+        etaL1->Fill(hne.l1eta, wgt);
+        phiL1->Fill(hne.l1phi, wgt);
+        if ( hne.l1pt > 30. )
         {
-            etaL1pt30->Fill(hne.l1->p4().eta(), wgt);
-            phiL1pt30->Fill(hne.l1->p4().phi(), wgt);
-            if ( L1pt > 40. )
+            etaL1pt30->Fill(hne.l1eta, wgt);
+            phiL1pt30->Fill(hne.l1phi, wgt);
+            if ( hne.l1pt > 40. )
             {
-                etaL1pt40->Fill(hne.l1->p4().eta(), wgt);
-                phiL1pt40->Fill(hne.l1->p4().phi(), wgt);
+                etaL1pt40->Fill(hne.l1eta, wgt);
+                phiL1pt40->Fill(hne.l1phi, wgt);
             }
         }
     }
 
     if(hne.nLeptons >= 2)
     {
-        double L2pt = hne.l2->p4().pt();
-        ptL2->Fill(L2pt, wgt);
-        etaL2->Fill(hne.l2->p4().eta(), wgt);
-        phiL2->Fill(hne.l2->p4().phi(), wgt);
-        if ( L2pt > 30. )
+        ptL2->Fill(hne.l2pt, wgt);
+        etaL2->Fill(hne.l2eta, wgt);
+        phiL2->Fill(hne.l2phi, wgt);
+        if ( hne.l2pt > 30. )
         {
-            etaL2pt30->Fill(hne.l2->p4().eta(), wgt);
-            phiL2pt30->Fill(hne.l2->p4().phi(), wgt);
-            if ( L2pt > 40. )
+            etaL2pt30->Fill(hne.l2eta, wgt);
+            phiL2pt30->Fill(hne.l2phi, wgt);
+            if ( hne.l2pt > 40. )
             {
-                etaL2pt40->Fill(hne.l2->p4().eta(), wgt);
-                phiL2pt40->Fill(hne.l2->p4().phi(), wgt);
+                etaL2pt40->Fill(hne.l2eta, wgt);
+                phiL2pt40->Fill(hne.l2phi, wgt);
             }
         }
 
-        dPhiL->Fill(fabs(deltaPhi(hne.l1->p4().phi(), hne.l2->p4().phi())), wgt);
-        dEtaL->Fill(fabs(hne.l1->p4().eta() - hne.l2->p4().eta()), wgt);
-        dEtaPhiL->Fill(fabs(hne.l1->p4().eta() - hne.l2->p4().eta()),
-                       fabs(deltaPhi(hne.l1->p4().phi(), hne.l2->p4().phi())), wgt);
+        dPhiL->Fill(fabs(deltaPhi(hne.l1phi, hne.l2phi)), wgt);
+        dEtaL->Fill(fabs(hne.l1eta - hne.l2eta), wgt);
+        dEtaPhiL->Fill(fabs(hne.l1eta - hne.l2eta),
+                       fabs(deltaPhi(hne.l1phi, hne.l2phi)), wgt);
 
         vtx_LL->Fill(fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z()), wgt);
     }
@@ -317,7 +315,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
             mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
             mJJ->Fill(hne.mJJ, wgt);
 
-            L1ptFracWRmass->Fill(hne.l1->p4().pt() / hne.mWR, wgt);
+            L1ptFracWRmass->Fill(hne.l1pt / hne.mWR, wgt);
 
             float deltaVzJ1J2 = fabs(hne.tjV1 - hne.tjV2);
             float deltaVzJ1M1 = fabs(hne.tjV1 - hne.l1->vertex().Z());
@@ -373,16 +371,16 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         if(hne.l1->charge() == hne.l2->charge())
         {
             mLLSS->Fill(hne.mLL, wgt);
-            ptL1VsPtL2ss->Fill(hne.l1->p4().pt(), hne.l2->p4().pt(), wgt);
+            ptL1VsPtL2ss->Fill(hne.l1pt, hne.l2pt, wgt);
         }
         else
         {
             mLLOS->Fill(hne.mLL, wgt);
-            ptL1VsPtL2os->Fill(hne.l1->p4().pt(), hne.l2->p4().pt(), wgt);
+            ptL1VsPtL2os->Fill(hne.l1pt, hne.l2pt, wgt);
         }
 
         diLCharge->Fill(0.5 * hne.l1->charge() * hne.l2->charge(), wgt);
-        mLLZoomvsptL1vsptL2->Fill(hne.mLL, hne.l1->p4().pt(), hne.l2->p4().pt(), wgt);
+        mLLZoomvsptL1vsptL2->Fill(hne.mLL, hne.l1pt, hne.l2pt, wgt);
     }
 
     mLLZoom->Fill(hne.mLL, wgt);

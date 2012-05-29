@@ -63,7 +63,8 @@ namespace hnu {
     double muIsolation     ( const pat::Muon& m, const double scale=1.0 ) ; 
     
     double getElectronEt    ( const pat::Electron& e, bool useCorrectedEnergy ) ; 
-    double getElectronSCEta ( const pat::Electron& e ) ; 
+    double getElectronSCEta ( const pat::Electron& e ) ;
+    double getElectronSCPhi(const pat::Electron& e);
     bool passesHEEP         ( const pat::Electron& e, int heepVersion, double rho ) ; 
     bool passesHEEPv31      ( const pat::Electron& e ) ; 
     bool passesHEEPv32      ( const pat::Electron& e ) ; 

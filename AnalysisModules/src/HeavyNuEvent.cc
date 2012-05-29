@@ -1,4 +1,5 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 #include "TVector3.h"
 
 HeavyNuEvent::HeavyNuEvent(anal_type theMode)
@@ -49,21 +50,22 @@ void HeavyNuEvent::calculateLL()
 
 void HeavyNuEvent::calculate()
 {
+    regularize();
 
     reco::Particle::LorentzVector j1p4 = j1.p4();
     reco::Particle::LorentzVector j2p4 = j2.p4();
-    
+
     reco::Particle::LorentzVector lep1p4, lep2p4;
 
     switch(mode)
     {
         case HNUE:
-            lep1p4 = e1.p4();
-            lep2p4 = e2.p4();
+            lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0);
+            lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
             break;
         case TOP:
             lep1p4 = mu1.p4();
-            lep2p4 = e1.p4();
+            lep2p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0);
             break;
         case HNUMU:
             lep1p4 = mu1.p4();
@@ -173,16 +175,52 @@ void HeavyNuEvent::regularize()
     switch(mode)
     {
         case HNUE:
-            if(nLeptons >= 1) l1 = new pat::GenericParticle(e1);
-            if(nLeptons >= 2) l2 = new pat::GenericParticle(e2);
+            if(nLeptons >= 1)
+            {
+                l1 = new pat::GenericParticle(e1);
+                l1pt = hnu::getElectronEt(e1, false);
+                l1eta = hnu::getElectronSCEta(e1);
+                l1phi = hnu::getElectronSCPhi(e1);
+            }
+            if(nLeptons >= 2)
+            {
+                l2 = new pat::GenericParticle(e2);
+                l2pt = hnu::getElectronEt(e2, false);
+                l2eta = hnu::getElectronSCEta(e2);
+                l2phi = hnu::getElectronSCPhi(e2);
+            }
             break;
         case TOP:
-            if(nLeptons >= 2) l1 = new pat::GenericParticle(mu1);
-            if(nLeptons >= 2) l2 = new pat::GenericParticle(e1);
+            if(nLeptons >= 2)
+            {
+                l1 = new pat::GenericParticle(mu1);
+                l1pt = mu1.pt();
+                l1eta = mu1.eta();
+                l1phi = mu1.phi();
+            }
+            if(nLeptons >= 2)
+            {
+                l2 = new pat::GenericParticle(e1);
+                l2pt = hnu::getElectronEt(e1, false);
+                l2eta = hnu::getElectronSCEta(e1);
+                l2phi = hnu::getElectronSCPhi(e1);
+            }
             break;
         case HNUMU:
-            if(nLeptons >= 1) l1 = new pat::GenericParticle(mu1);
-            if(nLeptons >= 2) l2 = new pat::GenericParticle(mu2);
+            if(nLeptons >= 1)
+            {
+                l1 = new pat::GenericParticle(mu1);
+                l1pt = mu1.pt();
+                l1eta = mu1.eta();
+                l1phi = mu1.phi();
+            }
+            if(nLeptons >= 2)
+            {
+                l2 = new pat::GenericParticle(mu2);
+                l2pt = mu2.pt();
+                l2eta = mu2.eta();
+                l2phi = mu2.phi();
+            }
             break;
         case QCD:
         case CLO:

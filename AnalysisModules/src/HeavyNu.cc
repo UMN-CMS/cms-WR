@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.98 2012/05/27 12:02:59 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.99 2012/05/28 15:38:43 franzoni Exp $
 //
 //
 
@@ -72,6 +72,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuMuHist.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuTree.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -202,6 +203,7 @@ private:
     std::string currentFile_;
     bool dolog_;
     bool firstEvent_;
+    bool addSlopeTree_;
 
     int heepVersion_;
 
@@ -218,6 +220,8 @@ private:
     bool doPDFreweight_;
     std::string pdfReweightBaseName, pdfReweightTargetName;
     int pdfReweightBaseId, pdfReweightTargetId;
+
+    HeavyNuTree *hnuTree_;
 
 
     // ----------member data ---------------------------
@@ -497,6 +501,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     isPFJets_ = iConfig.getParameter<bool>("isPFJets");
     studyRatePerRun_ = iConfig.getParameter<bool>("studyRatePerRun");
 
+    addSlopeTree_ = iConfig.getUntrackedParameter<bool>("addSlopeTree");
+
     // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion");
     if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ;     
@@ -529,7 +535,12 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     // ==================== Book the histos ====================
     //
     edm::Service<TFileService> fs;
+
     hists.mc_type = fs->make<TH1D > ("mc_type", "MC Type Code", 100, -0.5, 99.5);
+
+    //this must be after at least 1 call of fs->make<...>(...) in order for the directory to have been created.
+    if(addSlopeTree_) hnuTree_ = new HeavyNuTree(*fs->getBareDirectory(), true);
+
     if ( studyRatePerRun_ ) { 
       hists.z2jetPerRun = ( ((muid_->idEra()/10) == 2011) ? (fs->make<TH1I > ("z2jetPerRun","M3 Z #to ee/#mu#mu events per run",20000,160000,180000)) : 
 			    (fs->make<TH1I > ("z2jetPerRun","M3 Z #to ee/#mu#mu events per run",20000,190000,210000)) ) ; 
@@ -764,6 +775,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "pileup era        = " << pileupEra_ << std::endl;
     std::cout << "DisableTriggerCorrection = " << disableTriggerCorrection_ << std::endl;
     std::cout << "isPFJets          = " << isPFJets_ << std::endl;
+    std::cout << "addSlopeTree      = " << addSlopeTree_ << std::endl;
     if ( studyRatePerRun_ ) { 
       std::cout << "Study rate of Z+2 jets events for run range " << hists.z2jetPerRun->GetXaxis()->GetBinLowEdge(1)
 		<< " to " << hists.z2jetPerRun->GetXaxis()->GetBinUpEdge(hists.z2jetPerRun->GetNbinsX()) << std::endl ; 
@@ -1031,6 +1043,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using namespace edm;
     HeavyNuEvent hnuEvent(analysisMode_);
+    if(addSlopeTree_) hnuTree_->clear();
 
     evtCounter++;
     // std::cout << "Event number: " << evtCounter << std::endl ; 
@@ -1672,7 +1685,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	l1trig = l2trig = l12trig ;
     }
 
-    hnuEvent.regularize();
+    //hnuEvent.regularize();  (this is now done in calculate and so this call is redundent
 
     if(hnuEvent.nLeptons < 2) return false;
 
@@ -1684,9 +1697,28 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.LLJJptCuts->fill(hnuEvent);
     if(pMET->size()) hnuEvent.met1 = pMET->at(0);
 
+    // Fill slope fit tuple here
+    if(addSlopeTree_)
+    {
+        hnuTree_->event_.mll = hnuEvent.mLL;
+        hnuTree_->event_.mlljj = hnuEvent.mWR;
+        hnuTree_->event_.l1pt = hnuEvent.l1pt;
+        hnuTree_->event_.l2pt = hnuEvent.l2pt;
+        hnuTree_->event_.weight = hnuEvent.eventWgt;
+        hnuTree_->event_.flavor = hnuEvent.mode;
+        hnuTree_->event_.n_pileup = hnuEvent.n_pue;
+        hnuTree_->event_.n_primaryVertex = hnuEvent.n_primary_vertex;
+        hnuTree_->event_.cutlevel = 1;
+    }
+
     //--- Trigger code needs to be updated...placeholder for now ---//
-    if(!l1trig && !l2trig) return false;
+    if(!l1trig && !l2trig) 
+    {
+        if(addSlopeTree_) hnuTree_->fill();
+        return false;
+    }
     hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Event meets trigger requirements
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 2;
     hists.TrigMatches->fill(hnuEvent);
 
     // hists.LLJJptCuts->fill(hnuEvent);
@@ -1703,16 +1735,21 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
          (deltaVzJ2M1 >= cuts.maxJetVZsepCM)) )
         return false;
     float deltaVzM1M2 = fabs(hnuEvent.l1->vertex().Z() - hnuEvent.l2->vertex().Z());
-    if(cuts.maxVertexZsep > 0 && deltaVzM1M2 >= cuts.maxVertexZsep) return false;
+    if(cuts.maxVertexZsep > 0 && deltaVzM1M2 >= cuts.maxVertexZsep) 
+    {
+        if(addSlopeTree_) hnuTree_->fill();
+        return false;
+    }
 
     hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Event meets vertex requirements
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 3;
     //hists.VertexCuts->fill(hnuEvent);
 
     //--- The "basic" object, trigger, and (possibly) vertex requirements should be done ---//
     //--- Consider alternative selection requirements ---//
     if ( studyAlternativeSelection_ ) {
-        double l1pt = hnuEvent.l1->pt() ;
-        double l2pt = hnuEvent.l2->pt() ;
+        double l1pt = hnuEvent.l1pt ;
+        double l2pt = hnuEvent.l2pt ;
         //double j1pt  = hnuEvent.j1scale * hnuEvent.j1.pt() ;
         double j2pt  = hnuEvent.j2.pt() ; 
         if ( hnuEvent.mLL >= cuts.minimum_mumu_mass ) { // Standard dimuon requirement
@@ -1749,7 +1786,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     if(studyScaleFactorEvolution_)
     {
-        double l1pt = hnuEvent.l1->pt();
+        double l1pt = hnuEvent.l1pt;
         if(l1pt > 40.) hists.Mu1Pt40GeVCut->fill(hnuEvent);
         if(l1pt > 50.) hists.Mu1Pt50GeVCut->fill(hnuEvent);
         if(l1pt > 60.) hists.Mu1Pt60GeVCut->fill(hnuEvent);
@@ -1757,8 +1794,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if(l1pt > 100.) hists.Mu1Pt100GeVCut->fill(hnuEvent);
     }
 
-    if(hnuEvent.l1->pt() < cuts.minimum_mu1_pt)
+    if(hnuEvent.l1pt < cuts.minimum_mu1_pt)
+    {
+        if(addSlopeTree_) hnuTree_->fill();
         return false;
+    }
 
     if(studyScaleFactorEvolution_)
     {
@@ -1770,6 +1810,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hists.Mu1HighPtCutVtxGt5->fill(hnuEvent);
     }
     hists.cutlevel->Fill(4.0, hnuEvent.eventWgt); // Event meets high muon pT requirements
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 4;
     hists.Mu1HighPtCut->fill(hnuEvent);
 
     if(hnuEvent.mLL < 40) return false; // Sanity check...remove low mass points
@@ -1777,8 +1818,13 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( studyRatePerRun_ && inZmassWindow(hnuEvent.mLL) )
         hists.z2jetPerRun->Fill( iEvent.id().run() ) ; 
     
-    if(hnuEvent.mLL < cuts.minimum_mumu_mass) return false; // dimuon mass cut
+    if(hnuEvent.mLL < cuts.minimum_mumu_mass) 
+    {
+        if(addSlopeTree_) hnuTree_->fill();
+        return false; // dimuon mass cut
+    }
     hists.cutlevel->Fill(5.0, hnuEvent.eventWgt); // Event meets dimuon mass requirements
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 5;
     hists.diLmassCut->fill(hnuEvent);
 
     if(iEvent.isRealData())
@@ -1812,8 +1858,10 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.mWR >= cuts.minimum_mWR_mass)
     {
         hists.cutlevel->Fill(6.0, hnuEvent.eventWgt); // Event meets W_R mass requirements
+        if(addSlopeTree_) hnuTree_->event_.cutlevel = 6;
         hists.mWRmassCut->fill(hnuEvent);
     }
+    if(addSlopeTree_) hnuTree_->fill();
     return true;
 }
 

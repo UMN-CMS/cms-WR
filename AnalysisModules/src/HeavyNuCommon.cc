@@ -79,6 +79,10 @@ namespace hnu {
     return e.caloPosition().eta() ; 
   }
 
+  double getElectronSCPhi(const pat::Electron& e) {
+    return e.caloPosition().phi() ;
+  }
+
   bool passesHEEP(const pat::Electron& e, int heepVersion, double rho) { 
 
     if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) return false ; 
@@ -526,11 +530,11 @@ namespace hnu {
 
 
   std::vector<float> get_standard_pileup_data(int era) {
-    const double default_pd[] = { 100, 100, 100, 0, 0, 0, 0, 0, 0,
-			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  };
+    const double default_pd[] = { 100, 100, 100, 0, 0, 0, 0, 0, 0, 0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  };
     const double may10_json[]= {
       3920760.81, 6081805.28, 13810357.99, 22505758.94, 28864043.84, 30917427.86, 28721324.56, 23746403.90, 17803439.77, 12274902.61, 
       7868110.47, 4729915.40, 2686011.14, 1449831.56, 747892.03, 370496.38, 177039.19, 81929.35, 36852.78, 16164.45, 
@@ -624,7 +628,9 @@ namespace hnu {
       5.78782E06, 4.14984E06, 2.90835E06, 1.99147E06,   1.332E06, 
           870110,     555021,     345635,     210081,     124590, 
          72072.4,      40655,    22356.3,      11982,    6257.83, 
-         3184.45,    1578.79,    762.576,    358.843,    164.512
+         3184.45,    1578.79,    762.576,    358.843,    164.512,
+             0.0,        0.0,        0.0,        0.0,        0.0,
+             0.0,        0.0,        0.0,        0.0,        0.0
     } ; 
 
     const double* pileupDist=default_pd;
@@ -864,13 +870,16 @@ namespace hnu {
     
     std::vector< std::pair<pat::Electron,float> > electronList ; 
     // Just in case...
-    if ( heepVersion < 30 || heepVersion > 40 ) { 
-      if ( heepVersion <= 2 ) heepVersion += 30 ; 
-      else                    heepVersion = 40 ; 
-    }
-    if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) { 
-      std::cout << "WARNING Invalid HEEP version: " << heepVersion << std::endl ; 
-      return electronList ; 
+    if(heepVersion > 0)
+    {
+        if ( heepVersion < 30 || heepVersion > 40 ) {
+          if ( heepVersion <= 2 ) heepVersion += 30 ;
+          else                    heepVersion = 40 ;
+        }
+        if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) {
+          std::cout << "WARNING Invalid HEEP version: " << heepVersion << std::endl ;
+          return electronList ;
+        }
     }
     for (unsigned int iElectron=0; iElectron < pElecs->size(); iElectron++) {
       pat::Electron iE = pElecs->at(iElectron); 
@@ -881,7 +890,7 @@ namespace hnu {
       // if ( (heepVersion == 31) && !passesHEEPv31(iE) ) continue ; 
       // if ( (heepVersion == 32) && !passesHEEPv32(iE) ) continue ; 
       // if ( (heepVersion == 40) && !passesHEEPv40(iE) ) continue ; 
-      if ( !passesHEEP(iE,heepVersion,rho) ) continue ; 
+      if(heepVersion > 0) if ( !passesHEEP(iE,heepVersion,rho) ) continue ;
 
       float scale  = ( (iE.isEB()) ? ebScale : eeScale ) ;
       float elecEt = getElectronEt(iE,(heepVersion != 40)) * scale ; 

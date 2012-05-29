@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.26 2012/05/15 21:47:20 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.27 2012/05/27 12:02:59 bdahmes Exp $
 //
 //
 
@@ -693,10 +693,6 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.regularize(); // assign internal primary lepton variables
     //hnuEvent.scaleMuE(applyMESfactor_,hnuEvent.ElecScale);
     hnuEvent.calculate(); // calculate various details
-
-    // Require mu1 meets tight requirements: not necessary as getMuonList already assures this is true
-    // bool mu1isTight = hnu::is2012MuTight(hnuEvent.mu1,pvHandle);
-    // if ( !mu1isTight ) return false;
 
     // Basic requirements on muon, electron, jets
     hists.LLJJptCuts->fill(hnuEvent);

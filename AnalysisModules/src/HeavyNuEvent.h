@@ -55,6 +55,8 @@ public:
     // Only options common to all leptons should included here.
     pat::GenericParticle *l1, *l2;
 
+    double l1pt, l2pt, l1eta, l2eta, l1phi, l2phi;
+
     // This function sets the generic leptons
     void regularize();
 
