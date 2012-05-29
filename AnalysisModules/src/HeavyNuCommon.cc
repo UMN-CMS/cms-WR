@@ -875,8 +875,8 @@ namespace hnu {
         if ( heepVersion < 30 || heepVersion > 40 ) {
           if ( heepVersion <= 2 ) heepVersion += 30 ;
           else                    heepVersion = 40 ;
-        }
-        if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) {
+        }   // the 0 case is meant to provide: "do no HEEP selection"
+        if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 && heepVersion != 0) {
           std::cout << "WARNING Invalid HEEP version: " << heepVersion << std::endl ;
           return electronList ;
         }
@@ -892,9 +892,9 @@ namespace hnu {
       // if ( (heepVersion == 40) && !passesHEEPv40(iE) ) continue ; 
       if(heepVersion > 0) if ( !passesHEEP(iE,heepVersion,rho) ) continue ;
 
-      float scale  = ( (iE.isEB()) ? ebScale : eeScale ) ;
-      float elecEt = getElectronEt(iE,(heepVersion != 40)) * scale ; 
-      bool passEtCuts = ( (iE.isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ;
+      float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
+      float elecEt     = getElectronEt(iE,(heepVersion != 40)) * scale ; 
+      bool  passEtCuts = ( (iE.isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ;
 
       if (passEtCuts) {
         iE.setP4(iE.p4() * scale);
