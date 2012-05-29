@@ -8,22 +8,20 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     #doDebugMessages  = cms.bool(True),
     
     # to implement HEEP ID
-    # rhoForHEEPId      = cms.InputTag("kt6PFJetsForIsolation","rho","triggerEfficienciesEle"),   # this worked in the standalone version
-    #rhoForHEEPId      = cms.InputTag( 'kt6PFJetsForIsolation','rho' ),                            # this should be ok for the usage integrated within heavyNuAnalysis_cfg.py 
-    #rhoForHEEPId      = cms.InputTag( 'selectedPatJetsPFlow','rho','PAT' ),                           # this should be ok for the usage integrated within heavyNuAnalysis_cfg.py 
-    rhoForHEEPId      = cms.InputTag( "kt6PFJetsForIsolation", "rho", "PAT" ),                           # this should be ok for the usage integrated within heavyNuAnalysis_cfg.py 
+    rhoForHEEPId      = cms.InputTag( "kt6PFJetsForIsolation", "rho", "PAT" ),
     
     electronTag  = cms.InputTag("patElectrons"),
     maxAbsEtaOfflEle = cms.double( 2.5 ),
     minPtOfflEle     = cms.double(  40 ),
+
+    # 40 is the HEEP version customary for signal selection of the 2012 analysis 
     heepVersion      = cms.int32(   40 ),
+    # 0 is meant to avoid any HEEP selection, just leave gsf electrons as they come from pat 
+    #heepVersion      = cms.int32(    0 ),
+    
     ebScale          = cms.double(   1. ),
     eeScale          = cms.double(   1. ),
 
-    #jetTag           = cms.InputTag("patJets","pfCandidates",""),
-    #jetTag           = cms.InputTag("cleanPatJets","",""), # this worked in the standalone version
-    #jetTag           = cms.InputTag("kt6PFJetsForIsolation"),
-    #jetTag           = cms.InputTag("kt6PFJetsForIsolation","","PAT"),
     jetTag           = cms.InputTag("selectedPatJetsPFlow", "","PAT"),
     numOfflJets      = cms.int32(    2 ),
     minPtOfflJets    = cms.double(   40),
@@ -62,7 +60,7 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     #electronSeedingFilters = cms.vstring('HLTEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17Mass50Sequence'),
     #electronSeedingFilters = cms.vstring('HLTEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17Mass50Sequence'),
 
-
+    # this filter is the last filter in the path HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50_v3
     electronSeedingFilters = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter'),
     # documentation of this choice partly addressed here: 
     # https://hypernews.cern.ch/HyperNews/CMS/get/egamma-hlt/168/1.html
