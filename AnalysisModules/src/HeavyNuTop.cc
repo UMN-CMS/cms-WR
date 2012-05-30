@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.27 2012/05/27 12:02:59 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.28 2012/05/29 01:57:35 pastika Exp $
 //
 //
 
@@ -698,7 +698,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.LLJJptCuts->fill(hnuEvent);
 
     // require that one muon be BOTH tight and trigger-matched
-    bool mu1trig = false ;
+    bool mu1trig = true ;
     if ( trig_->matchingEnabled() && iEvent.isRealData() )
     {
         mu1trig = mu1trig &&
