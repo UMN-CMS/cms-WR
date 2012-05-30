@@ -2,10 +2,16 @@ import FWCore.ParameterSet.Config as cms
 
 HeavyNuEleTriggerEff = cms.EDAnalyzer(
     'HeavyNuEleTriggerEff',
+
+
+    runMin      = cms.int32(   0 ),
+    #runMax      = cms.int32(   191717),
+    #runMin      = cms.int32(   191718),
+    runMax      = cms.int32(   999999999 ),
     
     trigEventTag     = cms.InputTag("patTriggerEvent"),
-    doDebugMessages  = cms.bool(False),
-    #doDebugMessages  = cms.bool(True),
+    #doDebugMessages  = cms.bool(False),
+    doDebugMessages  = cms.bool(True),
     
     # to implement HEEP ID
     rhoForHEEPId      = cms.InputTag( "kt6PFJetsForIsolation", "rho", "PAT" ),
