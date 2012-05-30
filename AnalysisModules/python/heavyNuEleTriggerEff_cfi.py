@@ -55,15 +55,15 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7',
     ),
 
-    #electronFilters = cms.vstring('hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter')
-    # the last filter of 'HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50_vx'
-    #electronSeedingFilters = cms.vstring('HLTEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17Mass50Sequence'),
-    #electronSeedingFilters = cms.vstring('HLTEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17Mass50Sequence'),
 
-    # this filter is the last filter in the path HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50_v3
-    electronSeedingFilters = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter'),
+    # this filter is the last filter in the path:
+    #                                            HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50_v3
+    electronSeedingPathEndFilter = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter'),
     # documentation of this choice partly addressed here: 
     # https://hypernews.cern.ch/HyperNews/CMS/get/egamma-hlt/168/1.html
+    #electronSeedingFilters = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter'),
+
+    electronSeedingPathTagFilter = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter'),
 
     
     electronTargetFilters  = cms.vstring('hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter'),
