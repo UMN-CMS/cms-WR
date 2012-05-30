@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.99 2012/05/28 15:38:43 franzoni Exp $
+// $Id: HeavyNu.cc,v 1.100 2012/05/29 01:57:35 pastika Exp $
 //
 //
 
@@ -1678,9 +1678,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  diEleMass = ( eCands.at(0).first.p4() +  eCands.at(0).first.p4() ).M() ;
 	}
 	
-	bool l12trig = (hnuEvent.nLeptons > 1) &&
-	  trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent)  &&
-	  trig_->simulateForMCdiEleMass(diEleMass,dummyEta, applyTrigEffsign_) ; 
+	bool l12trig = false ; 
+	if ( iEvent.isRealData() ) 
+	  l12trig = (hnuEvent.nLeptons > 1) && trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent) ; 
+	else 
+	  l12trig = (hnuEvent.nLeptons > 1) && trig_->simulateForMCdiEleMass(diEleMass,dummyEta, applyTrigEffsign_) ; 
 
 	l1trig = l2trig = l12trig ;
     }

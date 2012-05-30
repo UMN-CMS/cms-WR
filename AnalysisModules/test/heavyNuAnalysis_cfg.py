@@ -8,7 +8,7 @@ import os
 #analysisMode = 'HNUE'
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Special flag for 44x/Fall11 ---#
@@ -51,9 +51,9 @@ if not isRun2012:
 
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
-runElectronAnalysis = True
+runElectronAnalysis = False
 systematics    = False
-tagandprobe    = False
+tagandprobe    = True
 doTriggerStudy = True
 addSlopeTrees  = True
 
@@ -87,10 +87,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-#    fileNames=cms.untracked.vstring('/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V5-v1/0000/46565F4D-3981-E111-8C87-002618943945.root')
-    fileNames=cms.untracked.vstring('file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_2_3_patch4/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
-#    fileNames=cms.untracked.vstring("/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S7_START52_V9-v1/0000/784C239B-8690-E111-BD45-001A92810AC0.root")
-#    fileNames=cms.untracked.vstring("file:/local/cms/user/turkewitz/heavynu_candevents_May21_res_TEST/res/heavynu_candevents_146_1_lRc.root")
+    fileNames=cms.untracked.vstring('file:input.root')
 )
 
 if isData:
