@@ -65,7 +65,7 @@ void HeavyNuEvent::calculate()
             break;
         case TOP:
             lep1p4 = mu1.p4();
-            lep2p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0);
+            lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
             break;
         case HNUMU:
             lep1p4 = mu1.p4();
