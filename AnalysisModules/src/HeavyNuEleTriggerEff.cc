@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.7 2012/05/29 22:37:40 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.8 2012/05/30 15:53:57 franzoni Exp $
 //
 //
 
@@ -242,7 +242,7 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 {
   using namespace edm;
 
-  if (iEvent.run() < runMin_ || runMax_ > iEvent.run()) return;
+  if (iEvent.run() < runMin_ || runMax_ < iEvent.run()) return;
 
   if (firstRunForPlotting_ > iEvent.run() && verbosityForRunPlotting_)
     {
