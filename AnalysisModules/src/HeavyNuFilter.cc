@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.1 2012/05/17 23:12:39 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.2 2012/05/27 12:02:59 bdahmes Exp $
 //
 //
 
@@ -297,9 +297,9 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(iM->pt() > cuts.minimum_mu2_pt && std::min(dRlj1, dRlj2) > cuts.minimum_muon_jet_dR) return true;
             }
 
-            if(hnuEvent.nElectrons >= 1 &&  hnuEvent.e1.pt() > cuts.minimum_mu2_pt)
+            if(hnuEvent.nElectrons >= 1 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt)
             {
-                if(hnuEvent.nElectrons >= 2 && hnuEvent.e2.pt() > cuts.minimum_mu2_pt) return true;
+                if(hnuEvent.nElectrons >= 2 && hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
 
                 edm::Handle<reco::SuperClusterCollection> ebSCCollection ;
                 iEvent.getByLabel("correctedHybridSuperClusters", ebSCCollection) ;
@@ -346,10 +346,10 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             if(hnuEvent.nMuons + hnuEvent.nElectrons < 2) return false;
 
             if(hnuEvent.nMuons >= 2     && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) return true;
-            if(hnuEvent.nElectrons >= 2 &&  hnuEvent.e1.pt() > cuts.minimum_mu2_pt &&  hnuEvent.e2.pt() > cuts.minimum_mu2_pt) return true;
+            if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
             if(hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1)
             {
-                if(hnuEvent.e1.pt()  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
+                if(hnu::getElectronEt(hnuEvent.e1, false)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
             }
             break;
     }
