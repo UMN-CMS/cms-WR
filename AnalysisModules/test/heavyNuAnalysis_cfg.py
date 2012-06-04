@@ -326,7 +326,7 @@ if isData:
 process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
-    if runMuonAnalysis:
+    if runMuonAnalysis or topStudy:
         switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
