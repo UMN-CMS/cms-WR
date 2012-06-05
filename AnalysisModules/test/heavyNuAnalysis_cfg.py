@@ -87,8 +87,8 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-    fileNames=cms.untracked.vstring('file:input.root')
-)
+                            fileNames=cms.untracked.vstring('file:input.root')
+                            )
 
 if isData:
     if isRun2012:
@@ -118,6 +118,7 @@ if isData:
     process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+
 
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
@@ -350,29 +351,10 @@ process.dumpEvContent = cms.EDAnalyzer("EventContentAnalyzer")
 #
 #  the analysis comes in from here
 #
-import HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi
 
 if runElectronAnalysis:
     if doTriggerStudy:
-        process.hNuEtriggerEff                     = HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi.HeavyNuEleTriggerEff.clone()
-        process.hNuEtriggerEff.plotFolderName      = cms.string('inclusive')
-        process.hNuEtriggerEff.numOfflJets         = cms.int32(  0 )
-
-        process.hNuEtriggerEffOneJ                 = HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi.HeavyNuEleTriggerEff.clone()
-        process.hNuEtriggerEffOneJ.plotFolderName  = cms.string('OneJet')
-        process.hNuEtriggerEffOneJ.numOfflJets     = cms.int32(  1 )
-
-        process.hNuEtriggerEffTwoJ                 = HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cfi.HeavyNuEleTriggerEff.clone()
-        process.hNuEtriggerEffTwoJ.plotFolderName  = cms.string('TwoJet')
-        process.hNuEtriggerEffTwoJ.numOfflJets     = cms.int32(  2 )
-
-        process.TriggerStudyElectronSequence = cms.Sequence( process.kt6PFJetsForIsolation
-                                                             #* process.dumpEvContent
-                                                             * process.hNuEtriggerEff
-                                                             * process.hNuEtriggerEffOneJ
-                                                             * process.hNuEtriggerEffTwoJ
-                                                             )
-
+        process.load("HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cff")
 
 #--- Output histgram file ---#
 process.TFileService = cms.Service("TFileService",
