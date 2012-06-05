@@ -8,8 +8,12 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     #runMax      = cms.int32(   191717),
     #runMin      = cms.int32(   191718),
     runMax      = cms.int32(   999999999 ),
-    
-    trigEventTag     = cms.InputTag("patTriggerEvent"),
+
+    # this is the HLT object
+    trigEventHLTTag     = cms.InputTag("hltTriggerSummaryAOD","","HLT"),
+    # this is the pat object
+    trigEventPatTag     = cms.InputTag("patTriggerEvent"),
+
     doDebugMessages  = cms.bool(False),
     #doDebugMessages  = cms.bool(True),
     
@@ -31,8 +35,7 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     jetTag           = cms.InputTag("selectedPatJetsPFlow", "","PAT"),
     numOfflJets      = cms.int32(    2 ),
     minPtOfflJets    = cms.double(   40),
-
-
+    
     
     seedHLTForL1Efficiency =  cms.vstring(
     'HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_SC17_Mass50_v3',
@@ -69,6 +72,7 @@ HeavyNuEleTriggerEff = cms.EDAnalyzer(
     # https://hypernews.cern.ch/HyperNews/CMS/get/egamma-hlt/168/1.html
     #electronSeedingFilters = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17PMMassFilter'),
 
+    # filter which is fired by the 'good electron' of the tag-and-probe seeding HLT path
     electronSeedingPathTagFilter = cms.vstring('hltEle32CaloIdTCaloIsoTTrkIdTTrkIsoTSC17TrackIsoFilter'),
 
     
