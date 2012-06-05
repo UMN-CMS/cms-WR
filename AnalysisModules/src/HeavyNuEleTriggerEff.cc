@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.8 2012/05/30 15:53:57 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.9 2012/05/31 08:47:10 franzoni Exp $
 //
 //
 
@@ -37,6 +37,7 @@
 
 
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 #include "DataFormats/L1Trigger/interface/L1EmParticleFwd.h"
 
@@ -78,7 +79,10 @@ private:
   virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
   bool passOfflineSelection( const edm::Event & , const edm::EventSetup &, std::vector< std::pair<pat::Electron, float> > &, std::vector< std::pair<pat::Jet, float> > & );
+
   pat::TriggerObjectRefVector findObjectsMatchedToPath( const edm::Handle< pat::TriggerEvent > triggerEvent, const pat::TriggerPathRef seedingAcceptedPath,  const std::vector<std::string>& electronFilters );
+
+  pat::TriggerObjectRefVector findObjectsMatchedToPathNew( const edm::Handle< pat::TriggerEvent > triggerEvent, const pat::TriggerPathRef seedingAcceptedPath,  const std::vector<std::string>& electronFilters );
   
   
   // ----------member data ---------------------------
@@ -102,7 +106,8 @@ private:
   unsigned int runMin_;
   unsigned int runMax_;
 
-  edm::InputTag trigEventTag_;
+  edm::InputTag trigEventPatTag_;
+  edm::InputTag trigEventHLTTag_;
   edm::InputTag isolatedEmSource_;
   edm::InputTag nonIsolatedEmSource_;
   bool          doDebugMessages_;
@@ -119,11 +124,16 @@ private:
   std::vector<std::string> electronSeedingPathTagFilter_;
   std::vector<std::string> electronTargetFilters_;
 
+  unsigned int counterExecutions_;
   unsigned int counterEvtsAll_;
   unsigned int counterEvtsPassingOfflineSelection_;
   unsigned int counterEvtsWithSeedingFired_;
   unsigned int counterEvtsWithSeedingAbovePt_;
   unsigned int counterEvtsWithTargetValid_;
+  unsigned int counterEvtsWithSeedingPathProbesMatchedToOfflineObj_;
+  unsigned int counterEvtsWithTagFound_;
+  unsigned int counterEvtsWithProbeFound_;
+  unsigned int counterEvtsTangProbeMatchedOffl_;
   unsigned int counterEvtsWithTargetFired_;
 
   std::string plotFolderName_;
@@ -177,7 +187,8 @@ HeavyNuEleTriggerEff::HeavyNuEleTriggerEff(const edm::ParameterSet& iConfig) :
   minPtOfflJets_       ( iConfig.getParameter< double >("minPtOfflJets") ), 
   runMin_              ( iConfig.getParameter< int >("runMin") ), 
   runMax_              ( iConfig.getParameter< int >("runMax") ), 
-  trigEventTag_        ( iConfig.getParameter< edm::InputTag > ( "trigEventTag" ) ),
+  trigEventPatTag_     ( iConfig.getParameter< edm::InputTag > ( "trigEventPatTag" ) ),
+  trigEventHLTTag_     ( iConfig.getParameter< edm::InputTag > ( "trigEventHLTTag" ) ),
   isolatedEmSource_    ( iConfig.getParameter< edm::InputTag > ( "nonIsolatedEmSource" ) ),
   nonIsolatedEmSource_ ( iConfig.getParameter< edm::InputTag > ( "nonIsolatedEmSource" ) ),
   doDebugMessages_     ( iConfig.getParameter< bool > ( "doDebugMessages" )       ),
@@ -189,11 +200,16 @@ HeavyNuEleTriggerEff::HeavyNuEleTriggerEff(const edm::ParameterSet& iConfig) :
   electronSeedingPathEndFilter_       ( iConfig.getParameter< std::vector<std::string> > ( "electronSeedingPathEndFilter" ) ),
   electronSeedingPathTagFilter_       ( iConfig.getParameter< std::vector<std::string> > ( "electronSeedingPathTagFilter" ) ),
   electronTargetFilters_       ( iConfig.getParameter< std::vector<std::string> > ( "electronTargetFilters" ) ),
+  counterExecutions_(0),
   counterEvtsAll_ (0),
   counterEvtsPassingOfflineSelection_ (0),
   counterEvtsWithSeedingFired_ (0),
   counterEvtsWithSeedingAbovePt_(0),
   counterEvtsWithTargetValid_ (0),
+  counterEvtsWithSeedingPathProbesMatchedToOfflineObj_(0),
+  counterEvtsWithTagFound_(0),
+  counterEvtsWithProbeFound_(0),
+  counterEvtsTangProbeMatchedOffl_(0),
   counterEvtsWithTargetFired_ (0),
   plotFolderName_                ( iConfig.getParameter< std::string > ( "plotFolderName" ) )
 {
@@ -201,24 +217,24 @@ HeavyNuEleTriggerEff::HeavyNuEleTriggerEff(const edm::ParameterSet& iConfig) :
   //now do what ever initialization is needed
 
   edm::Service<TFileService> fs;
-  monitorRuns_       = (TH1F*)   fs->make<TH1F>("monitorRuns","monitorRuns; run (starting coll 2012)",10000,firstRunForPlotting_,firstRunForPlotting_+20000);
-  massDenominator_   = (TH1F*)   fs->make<TH1F>("massDenominator","massDenominator; m(ee) [GeV]",1000,0.,2000);
-  massNumerator_     = (TH1F*)   fs->make<TH1F>("massNumerator","massNumerator; m(ee) [GeV]",1000,0.,2000);
-  massFail_          = (TH1F*)   fs->make<TH1F>("massFail","massFail; m(ee) [GeV]",1000,0.,2000);
-  pTele1Denominator_ = (TH1F*)   fs->make<TH1F>("pTele1Denominator","pTele1Denominator; p_{T}(e1) [GeV]",1000,0.,2000.);
-  pTele1Numerator_   = (TH1F*)   fs->make<TH1F>("pTele1Numerator","pTele1Numerator; p_{T}(e1) [GeV]",1000,0.,2000);
-  pTele1Fail_        = (TH1F*)   fs->make<TH1F>("pTele1Fail","pTele1Fail; p_{T}(e1) [GeV]",1000,0.,2000);
-  pTele2Denominator_ = (TH1F*)   fs->make<TH1F>("pTele2Denominator","pTele2Denominator; p_{T}(e2) [GeV]",1000,0.,2000.);
-  pTele2Numerator_   = (TH1F*)   fs->make<TH1F>("pTele2Numerator","pTele2Numerator; p_{T}(e2) [GeV]",1000,0.,2000);
-  pTele2Fail_        = (TH1F*)   fs->make<TH1F>("pTele2Fail","pTele2Fail; p_{T}(e1) [GeV]",1000,0.,2000);
+  monitorRuns_       = (TH1F*)   fs->make<TH1F>("monitorRuns","monitorRuns; run (starting coll 2012)",20000,firstRunForPlotting_,firstRunForPlotting_+20000);
+  massDenominator_   = (TH1F*)   fs->make<TH1F>("massDenominator","massDenominator; m(ee) [GeV]",2000,0.,2000);
+  massNumerator_     = (TH1F*)   fs->make<TH1F>("massNumerator","massNumerator; m(ee) [GeV]",2000,0.,2000);
+  massFail_          = (TH1F*)   fs->make<TH1F>("massFail","massFail; m(ee) [GeV]",2000,0.,2000);
+  pTele1Denominator_ = (TH1F*)   fs->make<TH1F>("pTele1Denominator","pTele1Denominator; p_{T}(e1) [GeV]",2000,0.,2000.);
+  pTele1Numerator_   = (TH1F*)   fs->make<TH1F>("pTele1Numerator","pTele1Numerator; p_{T}(e1) [GeV]",2000,0.,2000);
+  pTele1Fail_        = (TH1F*)   fs->make<TH1F>("pTele1Fail","pTele1Fail; p_{T}(e1) [GeV]",2000,0.,2000);
+  pTele2Denominator_ = (TH1F*)   fs->make<TH1F>("pTele2Denominator","pTele2Denominator; p_{T}(e2) [GeV]",2000,0.,2000.);
+  pTele2Numerator_   = (TH1F*)   fs->make<TH1F>("pTele2Numerator","pTele2Numerator; p_{T}(e2) [GeV]",2000,0.,2000);
+  pTele2Fail_        = (TH1F*)   fs->make<TH1F>("pTele2Fail","pTele2Fail; p_{T}(e1) [GeV]",2000,0.,2000);
   eventsFate_        = (TH1F*)   fs->make<TH1F>("eventsFate","eventsFate; the events fate",10,0.,10);
   
-  pTTagDenominator_   = (TH1F*)   fs->make<TH1F>("pTTagDenominator","pTTagDenominator; p_{T}(tag,denom) [GeV]",1000,0.,2000);
-  pTTagNumerator_     = (TH1F*)   fs->make<TH1F>("pTTagNumerator","pTTagNumerator; p_{T}(tag,num) [GeV]",1000,0.,2000);
-  pTTagFail_          = (TH1F*)   fs->make<TH1F>("pTTagFail","pTTagFail; p_{T}(tag,fail) [GeV]",1000,0.,2000);
-  pTProbeDenominator_ = (TH1F*)   fs->make<TH1F>("pTProbeDenominator","pTProbeDenominator; p_{T}(probe,denom) [GeV]",1000,0.,2000);
-  pTProbeNumerator_   = (TH1F*)   fs->make<TH1F>("pTProbeNumerator","pTProbeNumerator; p_{T}(probe,num) [GeV]",1000,0.,2000);
-  pTProbeFail_        = (TH1F*)   fs->make<TH1F>("pTProbeFail","pTProbeFail; p_{T}(probe,fail) [GeV]",1000,0.,2000);
+  pTTagDenominator_   = (TH1F*)   fs->make<TH1F>("pTTagDenominator","pTTagDenominator; p_{T}(tag,denom) [GeV]",2000,0.,2000);
+  pTTagNumerator_     = (TH1F*)   fs->make<TH1F>("pTTagNumerator","pTTagNumerator; p_{T}(tag,num) [GeV]",2000,0.,2000);
+  pTTagFail_          = (TH1F*)   fs->make<TH1F>("pTTagFail","pTTagFail; p_{T}(tag,fail) [GeV]",2000,0.,2000);
+  pTProbeDenominator_ = (TH1F*)   fs->make<TH1F>("pTProbeDenominator","pTProbeDenominator; p_{T}(probe,denom) [GeV]",2000,0.,2000);
+  pTProbeNumerator_   = (TH1F*)   fs->make<TH1F>("pTProbeNumerator","pTProbeNumerator; p_{T}(probe,num) [GeV]",2000,0.,2000);
+  pTProbeFail_        = (TH1F*)   fs->make<TH1F>("pTProbeFail","pTProbeFail; p_{T}(probe,fail) [GeV]",2000,0.,2000);
 
 }
 
@@ -241,9 +257,16 @@ void
 HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
+  
+  // count how many times analyzer was executed 
+  counterExecutions_++;
+  eventsFate_->Fill(0);
 
+  // allow local run selection
   if (iEvent.run() < runMin_ || runMax_ < iEvent.run()) return;
 
+
+  // warning in case of unusual run range. But not an error.
   if (firstRunForPlotting_ > iEvent.run() && verbosityForRunPlotting_)
     {
       std::cout << "PROBLEM: in HeavyNuEleTriggerEff there's an event from run: " << iEvent.run() 
@@ -251,15 +274,14 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		<< " are properly monitored; will continue, and not repeat this message" << std::endl;
 	verbosityForRunPlotting_ = false; 
     }
-  monitorRuns_->Fill( iEvent.run() );
   
-
+  monitorRuns_->Fill( iEvent.run() );
   counterEvtsAll_++;
-  eventsFate_->Fill(0);
+  eventsFate_->Fill(1);
 
 
   // require offline selections:
-  // - 2 electrons passing HEEP, agove 40 GeV
+  // - 2 electrons passing HEEP, above 40 GeV
   // - a numer of jets which is configurable ( typically 0 or 2 ) pass jet ID
   // - the two electrons are 'far enough' from the jets
   // if these requirements fail, don't consider the event
@@ -270,10 +292,10 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   if ( passOfflineSelection( iEvent , iSetup, theEleOfflineCands, jetCands) ){
     if (doDebugMessages_) std::cout << "passOfflineSelection returns: " << passOfflineSelection( iEvent , iSetup, theEleOfflineCands, jetCands) << std::endl;
     counterEvtsPassingOfflineSelection_ ++;
-    eventsFate_->Fill(1);
+    eventsFate_->Fill(2);
   }
   else {
-    if (doDebugMessages_) { std::cout << "(in analyze) size of theEleOfflineCands: " 
+    if (doDebugMessages_) { std::cout << "(in analyze) size of theEleOfflineCands which pass the offline selections: " 
 				      << theEleOfflineCands.size() << " and size of jet coll is: " << jetCands.size() 
 				      << std::endl; }
 
@@ -281,15 +303,29 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     return;
   }  
 
-  // all sorts of information about trigger, from pat
-  edm::Handle< pat::TriggerEvent > triggerEvent;
-  iEvent.getByLabel( trigEventTag_, triggerEvent );
-   if ( !triggerEvent.isValid() ) {
-     std::cout << "triggerEvent not found " << std::endl;
+  
+
+  // get all sorts of information about trigger, from pat
+  edm::Handle< pat::TriggerEvent > triggerPatEvent;
+  iEvent.getByLabel( trigEventPatTag_, triggerPatEvent );
+   if ( !triggerPatEvent.isValid() ) {
+     std::cout << "triggerPatEvent not found " << std::endl;
      assert(0);
    }
-   else { if(doDebugMessages_ && 0) std::cout << " triggerEvent was fuond " << std::endl;}
+   else { if(doDebugMessages_ ) std::cout << " triggerPatEvent was fuond " << std::endl;}
    
+   //get trigger HLT event
+   edm::Handle<trigger::TriggerEvent> trigEvent; 
+   iEvent.getByLabel(trigEventHLTTag_,trigEvent);
+   if ( !trigEvent.isValid() ) {
+     std::cout << "trigHLTEvent not found. Bailing out. " << std::endl;
+     assert(0);
+   }
+   else { if(doDebugMessages_ ) std::cout << " trigHLTEvent was fuond " << std::endl;}
+
+
+
+
    /*********************************************************
  
       there used to be a lot of RELIC L1 code here
@@ -298,17 +334,19 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
    ************************************************************/
 
+
    ////////////////////////////////////////////////////////////////////////
    // HLT efficiencies from here below ////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////
 
 
+
    /////////// prepare seeding trigger path /////////////////
    std::vector <std::string> seedHLTForHLTEfficiencyAccepted;
    std::vector <std::string> targetHLTPathsAccepted;
-   pat::TriggerPathRefVector theAcceptedPaths =  triggerEvent->acceptedPaths();
+   pat::TriggerPathRefVector theAcceptedPaths =  triggerPatEvent->acceptedPaths();
 
-   // check if any of the seeding HLT paths have passed
+   // check if any of the seeding / target HLT paths has fired
    for ( pat::TriggerPathRefVector::const_iterator iPath = theAcceptedPaths.begin(); iPath != theAcceptedPaths.end(); ++iPath ) {
 
      for (unsigned int i=0; i<seedHLTForHLTEfficiency_.size(); i++) { 
@@ -322,11 +360,10 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    }// loop over HLT-eff seeding paths
   
 
-
    // if the seeding path has not fired, stop execution
    if ( seedHLTForHLTEfficiencyAccepted.size()>0 ) {
      counterEvtsWithSeedingFired_++;
-     eventsFate_->Fill(2);
+     eventsFate_->Fill(3);
    }
    else                                            return; 
 
@@ -335,14 +372,14 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 
    //////////////////////////// prepare target trigger path /////////////////
-   // at least one target HLT path must be provided; if not, bail out
    if (targetHLTPaths_.size()==0) {
      std::cout << "you've not provided targetHLTPaths; bailing out" << std::endl;
      assert(0);
-   }
-   std::vector <std::string> targetHLTPathsInMenu;
+   }   // at least one target HLT path must be provided; if not, bail out
+
    //check if any of the provided target triggers are in the menu
-   pat::TriggerPathRefVector thePathsInMenu =  triggerEvent->pathRefs();
+   std::vector <std::string> targetHLTPathsInMenu;
+   pat::TriggerPathRefVector thePathsInMenu =  triggerPatEvent->pathRefs();
    for (unsigned int i=0; i<targetHLTPaths_.size(); i++) { 
      for ( pat::TriggerPathRefVector::const_iterator iPath = thePathsInMenu.begin(); iPath != thePathsInMenu.end(); ++iPath ) {
        if ( targetHLTPaths_.at(i) == (*iPath)->name() ) 	 { targetHLTPathsInMenu.push_back( (*iPath)->name() ); }
@@ -350,35 +387,38 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    }// loop over HLT-eff seeding paths
 
 
-
    // if there's not at least one target path which is validly in the menu, stop execution
    if ( targetHLTPathsInMenu.size()>0 ) {
      counterEvtsWithTargetValid_++;
-     eventsFate_->Fill(3);
+     eventsFate_->Fill(4);
    }
    else                                 return;
 
   
    if (doDebugMessages_) {
-     std::cout << "number of active HLT paths: " << thePathsInMenu.size() << std::endl; // why do I care?
+     std::cout << "number of active HLT paths: "       << thePathsInMenu.size() << std::endl; // why do I care?
      std::cout << "seedHLTForHLTEfficiency has size: " << seedHLTForHLTEfficiency_.size() 
-	       << " of which  " << seedHLTForHLTEfficiencyAccepted.size() << " were 'run in the menu' && 'PASSED'" << std::endl;
-     std::cout << "targetHLTPaths.at(0) is: " << targetHLTPaths_.at(0) << std::endl;
-     std::cout << "targetHLTPaths size: " << targetHLTPaths_.size() 
-	       << " of which  " << targetHLTPathsInMenu.size() << " were run in the menu (they may have passed or failed)" << std::endl;
+	       << " of which  "                        << seedHLTForHLTEfficiencyAccepted.size() << " were 'run in the menu' && 'PASSED'" << std::endl;
+     std::cout << "targetHLTPaths.at(0) is: "          << targetHLTPaths_.at(0) << std::endl;
+     std::cout << "targetHLTPaths size: "              << targetHLTPaths_.size() 
+	       << " of which: "                        << targetHLTPathsInMenu.size() 
+	       << " were run in the menu (they may have passed or failed)" << std::endl;
    }
    
 
 
    ////////////////////////////////////////////////////////////////////////////////
-   // do the HLT efficnecy study only if there's at least:
+   // in summary, at this point: do the HLT efficnecy study only if there's at least:
    // - a seeding path which was accepted
    // - a target path which was specified in input by the user and is in the menu
    // ==> conditions are guaranteed by the return statements of above
    
+
+
+
    
-   // one of the seding HLT paths has fired. Chose the first one as a base trigger
-   const pat::TriggerPathRef seedingAcceptedPath = triggerEvent->pathRef( seedHLTForHLTEfficiencyAccepted.at(0) ) ; 
+   // one of the seding HLT paths has fired. Chose the first one as a base trigger to do the efficiency
+   const pat::TriggerPathRef seedingAcceptedPath = triggerPatEvent->pathRef( seedHLTForHLTEfficiencyAccepted.at(0) ) ; 
    
    if (doDebugMessages_) {
      std::cout << "\n\n\t\tSeeding path information: " 
@@ -390,263 +430,418 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	       << " " << seedingAcceptedPath->wasError() << " " 
 	       << " last: " << seedingAcceptedPath->lastActiveFilterSlot() << " " 
 	       << " " << seedingAcceptedPath->modules().size() ; 
-     std::cout // << seedingAcceptedPath->modules().at(seedingAcceptedPath->lastActiveFilterSlot()) << " "
-       << seedingAcceptedPath->l3Filters() << " " 
-       << seedingAcceptedPath->xTrigger() << " " ; 
+     std::cout       << seedingAcceptedPath->l3Filters() << " " 
+		     << seedingAcceptedPath->xTrigger() << " " ; 
    }
+
    
-   
-   // get the HLT objects which match the LAST filter of the seeding HLT path
-   pat::TriggerObjectRefVector objectsMatchedToEndOfSeedingPath = findObjectsMatchedToPath(triggerEvent, seedingAcceptedPath , electronSeedingPathEndFilter_);
+
+
+   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // get the HLT objects which match the LAST filter of the seeding HLT path  => I'll build the TAG and the PROBE out of these
+   std::vector<math::XYZTLorentzVector> trigObjP4sLastFilterSeedPath;
+   // process name comes from the trigger event process as they have to be the same...
+   trigtools::getP4sOfObsPassingFilter(trigObjP4sLastFilterSeedPath,*trigEvent,electronSeedingPathEndFilter_.at(0),trigEventHLTTag_.process()); 
    if (doDebugMessages_) 
-     {  std::cout << "found: "<<objectsMatchedToEndOfSeedingPath.size()<<" objects matching the path: "<<seedingAcceptedPath->name()<<"\n" << std::endl; }
+     { 
+       std::cout << "\n\nfound: "                                    << trigObjP4sLastFilterSeedPath.size() 
+		 <<" (HLT) objects matching the SEED last filter: "<< electronSeedingPathEndFilter_.at(0) <<"\n" << std::endl; 
 
-   // check how many of those objects have pt>minPtOfObjects_=33 (which is required by target trigger)
-   unsigned int counterSeedingObjectsAbovePt(0); 
-   for (pat::TriggerObjectRefVector::const_iterator funct = objectsMatchedToEndOfSeedingPath.begin(); funct !=objectsMatchedToEndOfSeedingPath.end(); funct++){
-     if (doDebugMessages_) std::cout << "objectsMatchedToPath SEED = " << (*funct)->pt() << " and eta " << (*funct)->eta() << std::endl ;
-     if ( (*funct)->pt() >minPtOfObjects_ ) {
-       counterSeedingObjectsAbovePt++;
-     }
-   }
+       for(size_t objNr=0;objNr<trigObjP4sLastFilterSeedPath.size();objNr++){
+	 std::cout <<"     et obj "<<objNr<<" : "<<trigObjP4sLastFilterSeedPath[objNr].Et() 
+		   << "\t eta: " << trigObjP4sLastFilterSeedPath[objNr].Eta() 
+		   << "\t phi: " << trigObjP4sLastFilterSeedPath[objNr].Phi() 
+		   <<std::endl;
+       }// loop over HLT objects passing last filter of HLT seed path
 
+     }// if debug
 
-   // now see if the objects which come from electronSeedingPathEndFilter_ match any of the offline electrons 
-   unsigned int counterSeedingPathMatchedObjects(0);
-   for (pat::TriggerObjectRefVector::const_iterator seedPathObj = objectsMatchedToEndOfSeedingPath.begin(); 
-	seedPathObj !=objectsMatchedToEndOfSeedingPath.end(); seedPathObj++)
+   
+
+   // do the objects which fired electronSeedingPathEndFilter match any of the offline electrons ?
+   unsigned int counterSeedingPathHLTMatchedObjects(0);
+   for(size_t objNr=0; objNr<trigObjP4sLastFilterSeedPath.size(); objNr++)
      {
-       
-       // theEleOfflineCands
        for (unsigned  int theEl=0; theEl< theEleOfflineCands.size(); theEl++ )
 	 {
 	   
-	   if (  deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
-			 (*seedPathObj)->eta(), (*seedPathObj)->phi() ) 
-		 < 0.1 ) {
-	     counterSeedingPathMatchedObjects++;
-	     break;
-	   }// if there's matching
+	   if (  deltaR( theEleOfflineCands.at(theEl).first.eta(), 
+			 theEleOfflineCands.at(theEl).first.phi() , 
+			 trigObjP4sLastFilterSeedPath[objNr].Eta(),
+			 trigObjP4sLastFilterSeedPath[objNr].Phi()
+			 )  < 0.1 ) 
+	     {
+	       counterSeedingPathHLTMatchedObjects++;
+	       break;
+	     }// if there's matching with an offline electron
 	   
 	 }// loop over offline electrons 
      }//loop over HLT objects from the electronSeedingPathEndFilter_ filter of the seeding path
 
-   // if the online objects are not matched to offline objects , remove this event from denominator
-   if(counterSeedingPathMatchedObjects < objectsMatchedToEndOfSeedingPath.size() ) return;
+
+
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // require that _all_ the online objects which fired the last filter of SEED path be matched to an offline HEEP electron
+   // if one of them is not matched an  offline object,
+   // reject the event from the sample of the measurement (reduction of background!)
+   if(counterSeedingPathHLTMatchedObjects < trigObjP4sLastFilterSeedPath.size() ){
+     if (doDebugMessages_) std::cout << "only: " << counterSeedingPathHLTMatchedObjects 
+				     << " hlt objects out of: " << trigObjP4sLastFilterSeedPath.size()
+				     << " are matched to the : " << theEleOfflineCands.size()
+				     << " offline HEEP electrons. Rejecting event from test sample."
+				     << std::endl;
+     return;
+   } 
+   else{
+     counterEvtsWithSeedingPathProbesMatchedToOfflineObj_++;
+     eventsFate_->Fill(5);
+   }
+   
+
+
+   
+
+   
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // now I need to find, among objectsMatchedToEndOfSeedingPath, the TAG object, 
+   // i.e. the one which has passed the tight requirements 
+   // if an object in objectsMatchedToEndOfSeedingPath matches any of the object in electronSeedingPathTagFilter
+   // => it's tighter than a simple supercluster => it's the TIGHT electron of the ele-SC pair of the seeding path
+   // ==> this one is going to be my TAG 
+
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // get the HLT objects which match the TAG filter of the seeding HLT path
+   std::vector<math::XYZTLorentzVector> trigObjP4sTagFilterSeedPath;
+   // process name comes from the trigger event process as they have to be the same...
+   trigtools::getP4sOfObsPassingFilter(trigObjP4sTagFilterSeedPath,*trigEvent,electronSeedingPathTagFilter_.at(0),trigEventHLTTag_.process()); 
+   if (doDebugMessages_) 
+     { 
+       std::cout << "\nfound: "<< trigObjP4sTagFilterSeedPath.size() <<" (HLT) objects matching the TAG SEED filter: "
+		 << electronSeedingPathTagFilter_.at(0) <<"\n" << std::endl; 
+       for(size_t objNr=0;objNr<trigObjP4sTagFilterSeedPath.size();objNr++){
+	 std::cout <<"     et obj "<<objNr<<" : "<<trigObjP4sTagFilterSeedPath[objNr].Et() 
+		   << "\t eta: " << trigObjP4sTagFilterSeedPath[objNr].Eta() 
+		   << "\t phi: " << trigObjP4sTagFilterSeedPath[objNr].Phi() 
+		   <<std::endl;
+       }// loop over HLT objects passing TAG filter of HLT seed path
+     }// if debug
+
+
+
+   // find one (possible) tag among the objects which passed the end-filter  of the seeding path
+   // match objects from 'end-of-path filter' to objects that have passed the 'tag filter';
+   std::vector<math::XYZTLorentzVector> SeedingPathTagObjectsHLT;
+   for(size_t objNrLast=0; objNrLast< trigObjP4sLastFilterSeedPath.size(); objNrLast++){
+
+     for(size_t objNrTag=0; objNrTag< trigObjP4sTagFilterSeedPath.size(); objNrTag++){
+
+
+       if (doDebugMessages_) {
+	 std::cout << "comparing LastFilterSeedPath : " 
+		   << trigObjP4sLastFilterSeedPath[objNrLast].Et() 
+		   << "\t" << trigObjP4sLastFilterSeedPath[objNrLast].Eta() << "\t" <<   trigObjP4sLastFilterSeedPath[objNrLast].Phi()
+		   << "\nto TagFilterSeedPath      : " 
+		   << trigObjP4sTagFilterSeedPath [objNrTag] .Et() << "\t" 
+		   << trigObjP4sTagFilterSeedPath [objNrTag] .Eta() << "\t" <<   trigObjP4sTagFilterSeedPath [objNrTag] .Phi()
+		   << "\n deltaR: " 
+		   << deltaR( trigObjP4sLastFilterSeedPath[objNrLast].Eta(),  trigObjP4sLastFilterSeedPath[objNrLast].Phi() ,
+			      trigObjP4sTagFilterSeedPath [objNrTag] .Eta(),  trigObjP4sTagFilterSeedPath [objNrTag] .Phi()  )
+		   << std::endl;
+       }//debug
+       
+       if (  deltaR( trigObjP4sLastFilterSeedPath[objNrLast].Eta(),  trigObjP4sLastFilterSeedPath[objNrLast].Phi() , 
+		     trigObjP4sTagFilterSeedPath [objNrTag] .Eta(),  trigObjP4sTagFilterSeedPath [objNrTag] .Phi()  ) 
+	     < 0.1 ) 
+	 {
+	   // If I get here, I've found one object among those of the seeding path end which is tighter than a SC
+	   // => this is one of the possible tags (I'll randomize later to choose a specific tag, if more than one tag is found)
+	   SeedingPathTagObjectsHLT.push_back(  trigObjP4sLastFilterSeedPath[objNrLast]  );
+	   break;
+	 }// if there's matching
+       
+     }// loop over HLT objects passing TAG filter of HLT seed path
+   }// loop over HLT objects passing LAST filter of HLT seed path
+   
+   if(SeedingPathTagObjectsHLT.size() ==0 ){
+     std::cout << "Problem: found no objects (SeedingPathTagObjectsHLT) among those at the end of seeding path which match the output of the TAG filter."
+	       << " Discardig event." << std::endl; 
+     //assert(0);
+     return;
+   }
+   else
+     { 
+       if (doDebugMessages_) {
+	 std::cout << "found: " << SeedingPathTagObjectsHLT.size() << " objects at the end of seeding path which match the output of the seeding TAG filter;"
+		   << " these are the TAG candidates. " << std::endl; }
+       counterEvtsWithTagFound_++;
+       eventsFate_->Fill(6);
+     }
+   
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // randomly choose THE tag among the possible tags
+   // reproducible random selection based on orbit number
+   unsigned int theSeedingPathTagHLTIndex =  static_cast<unsigned int>(  (( iEvent.orbitNumber()%100 ) *1.0 / 100. ) * SeedingPathTagObjectsHLT.size()  ) ;
+   if (doDebugMessages_) {
+     std::cout << "there are " << SeedingPathTagObjectsHLT.size() << " HLT objects from the end of the seeding path matched to TAG filter of the seeding path; I've chosen: " << theSeedingPathTagHLTIndex << " -th \t" << ( ( iEvent.orbitNumber()%100 ) *1.0 / 100. )  << std::endl ;
+     
+   }
+
+   
+
+
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // choose the PROBE among the end-of-path objects of the seed path, which is away from the chosen TAG
+   int theSeedingPathProbeHLTIndex(-1);
+   for(size_t objNrP=0; objNrP< trigObjP4sLastFilterSeedPath.size(); objNrP++){
+     
+     if (  deltaR( trigObjP4sLastFilterSeedPath[objNrP].Eta(),
+		   trigObjP4sLastFilterSeedPath[objNrP].Phi(),
+		   SeedingPathTagObjectsHLT[theSeedingPathTagHLTIndex].Eta(),  
+		   SeedingPathTagObjectsHLT[theSeedingPathTagHLTIndex].Phi()  
+		   ) 
+	   > 0.1 ) {
+       theSeedingPathProbeHLTIndex = objNrP;
+       break;
+       // stop after you've found the first possible PROBE   => use that as probe
+     }// if probe candidate is separate from chosen TAG
+   }// loop over probe candidates
+   
+
+   // do the sanity check: there needs to be a PROBE
+   if (theSeedingPathProbeHLTIndex==-1)
+     {
+       // this case should never happen: there needs to be at least a second object from the seeding path last filter distinct from theT AG object
+       std::cout << "no second object from HLT path: " << seedingAcceptedPath->name() 
+		 << " was found to act as a probe. Problem. Skipping event." << std::endl;
+       return;
+     }
+   else
+     {
+       if (doDebugMessages_) {
+       std::cout << "PROBE (HLT) found; there are " << trigObjP4sLastFilterSeedPath.size() << " HLT objects from the end of the seeding path; "
+		 <<" I've chosen the number: " << theSeedingPathProbeHLTIndex << " to be the probe online object."  << std::endl ;
+
+       std::cout << "the PROBE is: " 
+		 << trigObjP4sLastFilterSeedPath[theSeedingPathProbeHLTIndex].Et() 
+		 << "\t" << trigObjP4sLastFilterSeedPath[theSeedingPathProbeHLTIndex].Eta() 
+		 << "\t" << trigObjP4sLastFilterSeedPath[theSeedingPathProbeHLTIndex].Phi()
+		 << std::endl;
+       }
+       counterEvtsWithProbeFound_++;       
+       eventsFate_->Fill(7);
+     }
+   math::XYZTLorentzVector theTag   =  SeedingPathTagObjectsHLT[theSeedingPathTagHLTIndex];
+   math::XYZTLorentzVector theProbe =  trigObjP4sLastFilterSeedPath[theSeedingPathProbeHLTIndex];
+
+
+
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // match tag and probe hlt objects to offline objects
+   // the object which fired the last filter of the seeding path have already been matched to the offline objects =>
+   // matching hlt objects to offline is guaranteed
+   
+   int theOfflineEleMatchingProbeIndex(-1);
+   for (unsigned  int theEl=0; theEl< theEleOfflineCands.size(); theEl++ )
+     {
+       
+       if (  
+	   deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
+		   theProbe.Eta(),  		     theProbe.Phi())  < 0.1  
+	   && 
+	   deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
+		   theTag.Eta(),  		     theTag.Phi())    > 0.1  	     
+	   ) 
+	 {
+	   theOfflineEleMatchingProbeIndex = theEl;
+	   break;
+	 }// if there's matching to probe HLT obhect from end of seeding path
+     }//loop over offline objects    
+
+
+   int theOfflineEleMatchingTagIndex(-1);
+   for (unsigned  int theEl=0; theEl< theEleOfflineCands.size(); theEl++ )
+     {
+       
+       if (  
+	   deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
+		   theTag.Eta(),  theTag.Phi())        < 0.1  
+	   && 
+	   deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
+		   theProbe.Eta(),  theProbe.Phi())    > 0.1  	     
+	   ) 
+	 {
+	   theOfflineEleMatchingTagIndex = theEl;
+	   break;
+	 }// if there's matching to tag HLT obhect from end of seeding path
+     }//loop over offline objects    
+
+
+   // do the sanity check: there need to be an offline object matching both the PROBE and the TAG
+   if (theOfflineEleMatchingProbeIndex==-1 || theOfflineEleMatchingTagIndex==-1)
+     {
+       std::cout << "no offline object fuond which can matche either the probe or the tag (" 
+		 << theOfflineEleMatchingProbeIndex << "\t" << theOfflineEleMatchingTagIndex   
+		 << ") among online objects from the seeding path: " << seedingAcceptedPath->name() 
+		 << " Problem. Bailig out." << std::endl;
+       assert(0);
+     }
+   else
+     {
+       if (doDebugMessages_) { std::cout << "offline electrons found which matches both the online PROBE and the online TAG object for the path: "
+					 << seedingAcceptedPath->name()  << std::endl ; }
+       counterEvtsTangProbeMatchedOffl_++;
+       eventsFate_->Fill(8);
+     }
+
+
+
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // get the HLT objects which match the LAST filter of the TARGET HLT path
+   // will be needed later to decide if the probe has passed or not 
+   std::vector<math::XYZTLorentzVector> trigObjP4sLastFilterTargetPath;
+   // process name comes from the trigger event process as they have to be the same...
+   trigtools::getP4sOfObsPassingFilter(trigObjP4sLastFilterTargetPath,*trigEvent,electronTargetFilters_.at(0),trigEventHLTTag_.process()); 
+   if (doDebugMessages_) 
+     { 
+       
+       std::cout << "found: "<< trigObjP4sLastFilterTargetPath.size() 
+		 <<" (HLT) objects matching the TARGET filter: "<< electronTargetFilters_.at(0) <<"\n" << std::endl; 
+
+       for(size_t objNr=0;objNr<trigObjP4sLastFilterTargetPath.size();objNr++){
+	 std::cout <<"     et obj "<<objNr
+		   <<" : "<<trigObjP4sLastFilterTargetPath[objNr].Et() 
+		   << "\t" << trigObjP4sLastFilterTargetPath[objNr].Eta() 
+		   << "\t" << trigObjP4sLastFilterTargetPath[objNr].Phi() 
+		   <<std::endl;
+       }// loop over HLT objects passing last filter of HLT target path
+       
+     }// if debug
+
+
+   
+   
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // if an event passes this point, it has entered the _denominator_
    // i.e. I have two online objects which have  fired the seeding trigger and which are matched to offline objects
-
    // how do I chose which of the offline candidates are to be used? For now, chose the first two in the collection... REVISIT? 
-   massDenominator_ -> Fill( ( theEleOfflineCands.at(0).first.p4() +  theEleOfflineCands.at(1).first.p4() ).M() ); 
-   if ( theEleOfflineCands.at(0).first.pt() > theEleOfflineCands.at(1).first.pt()){
-     pTele1Denominator_ -> Fill( theEleOfflineCands.at(0).first.pt() );
-     pTele2Denominator_ -> Fill( theEleOfflineCands.at(1).first.pt() );
-   }
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   massDenominator_    -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				.M() ); 
+   pTTagDenominator_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+   pTProbeDenominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+   if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
+     {
+       pTele1Denominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+       pTele2Denominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+     }
+   else 
+     {
+       pTele1Denominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+       pTele2Denominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+     }
 
-
-//   // COMMENT FROM HERE
-//
-//   // get the HLT objects which match the target HLT path;
-//   // if more than one target HLT path, chose the first one (should be irrelevant if analysis ORs them all)
-//   pat::TriggerPathRef targetHLTPath = triggerEvent->pathRef( targetHLTPathsInMenu.at(0) ) ; 
-//   pat::TriggerObjectRefVector objectsMatchedToTargetPath = findObjectsMatchedToPath(triggerEvent, targetHLTPath , electronTargetFilters_);
-//   if (doDebugMessages_) {
-//     std::cout << "outside found: " << objectsMatchedToTargetPath.size() << " objects matching the path: " << targetHLTPath->name() << "\n" << std::endl;}
-//   for (pat::TriggerObjectRefVector::const_iterator funct2 = objectsMatchedToTargetPath.begin(); funct2 !=objectsMatchedToTargetPath.end(); funct2++){
-//     if (doDebugMessages_) std::cout << "objectsMatchedToPath TARGET = " << (*funct2)->pt() << " and eta " << (*funct2)->eta() << std::endl ;
-//   }
-//   
-//   
-//   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//   // now I need to find, among objectsMatchedToEndOfSeedingPath, the TAG object, i.e. the one which has passed the tight requirements 
-//   // if an object in objectsMatchedToEndOfSeedingPath matches any of the object in electronSeedingPathTagFilter
-//   // => it's tighter than a simple supercluster => it's the TIGHT electron of the ele-SC pair of the seeding path
-//   // ==> this one is going to be my TAG 
-//   pat::TriggerObjectRefVector objectsMatchedToSeedingPathTagFilter = findObjectsMatchedToPath(triggerEvent, seedingAcceptedPath, electronSeedingPathTagFilter_);
-//   if(objectsMatchedToSeedingPathTagFilter.size()==0){
-//     std::cout << "problem: found no objects matched to the TAG filter electronSeedingPathTagFilter: " << electronSeedingPathTagFilter_.at(0) 
-//	       << " of the seeding path: " << seedingAcceptedPath->name() << ". This is a problem, bailing out. " << std::endl;
-//     assert(0);
-//   }
-//   else
-//     {  
-//       if (doDebugMessages_) {std::cout << "found " << objectsMatchedToSeedingPathTagFilter.size()
-//					<< " HLT objects matched to the TAG filter  " << electronSeedingPathTagFilter_.at(0)
-//					<< " of the seeding path: " << seedingAcceptedPath->name() << std::endl ;}
-//       eventsFate_->Fill(4);
-//     }
-//   
-//
-//   pat::TriggerObjectRefVector SeedingPathTagObjects;
-//   for (pat::TriggerObjectRefVector::const_iterator seedPathEndObj = objectsMatchedToEndOfSeedingPath.begin(); 
-//	seedPathEndObj !=objectsMatchedToEndOfSeedingPath.end(); seedPathEndObj++)
-//     {
-//       
-//       for (pat::TriggerObjectRefVector::const_iterator seedPathTagObj = objectsMatchedToSeedingPathTagFilter.begin();
-//	    seedPathTagObj !=objectsMatchedToTargetPath.end(); seedPathTagObj++)
-//	 {
-//	   
-//	   if (  deltaR( (*seedPathEndObj)->eta(),  (*seedPathEndObj)->phi() , 
-//			 (*seedPathTagObj)->eta(),  (*seedPathTagObj)->phi() ) 
-//		 < 0.1 ) {
-//	     
-//	     // If I get here, I've found an objects among those of the seeding path which is tighter than a SC
-//	     // => I'll chose this as a tag
-//	     SeedingPathTagObjects.push_back( (*seedPathEndObj) );
-//	     break;
-//	     
-//	   }
-//	 }//loop over HLT objects from the objectsMatchedToTargetPath_ filter of the seeding path
-//     }//loop over HLT objects from the electronSeedingPathEndFilter_ filter of the seeding path
-//
-//
-//   if(SeedingPathTagObjects.size() ==0 ){
-//     std::cout << "Problem: found no objects among those at the end of seeding path which match the output of the TAG filter. Bailing out." << std::endl; 
-//     assert(0);
-//   }
-//   else
-//     { 
-//       if (doDebugMessages_) {
-//	 std::cout << "found: " << SeedingPathTagObjects.size() << " objects at the end of seeding path which match the output of the TAG filter " << std::endl; }
-//       eventsFate_->Fill(5);
-//     }
-//   
-//   
-//   
-//   // randomly select a tag among the possible tags
-//   unsigned int theSeedingPathTagIndex =  static_cast<unsigned int>(  (( iEvent.orbitNumber()%100 ) *1.0 / 100. ) * SeedingPathTagObjects.size()  ) ;
-//   if (doDebugMessages_) {
-//     std::cout << "there are " << SeedingPathTagObjects.size() << " HLT objects from the end of the seeding path matched to TAG filter of the seeding path; I've chosen: " << theSeedingPathTagIndex << " -th \t" << ( ( iEvent.orbitNumber()%100 ) *1.0 / 100. )  << std::endl ;
-//   }
-//   
-//
-//
-//   // determine the PROBE object among the seeding path objects from the end filter
-//   int theSeedingPathProbeIndex(-1);
-//   for (pat::TriggerObjectRefVector::const_iterator seedPathEndObj = objectsMatchedToEndOfSeedingPath.begin(); 
-//	seedPathEndObj !=objectsMatchedToEndOfSeedingPath.end(); seedPathEndObj++)
-//     {
-//       
-//       if (  deltaR( (*seedPathEndObj)->eta(),    (*seedPathEndObj)->phi() , 
-//		     SeedingPathTagObjects.at(theSeedingPathTagIndex)->eta(),  
-//		     SeedingPathTagObjects.at(theSeedingPathTagIndex)->phi()  
-//		     // objectsMatchedToEndOfSeedingPath.at(theSeedingPathTagIndex)->eta(),  // ==> WRONG!
-//		     // objectsMatchedToEndOfSeedingPath.at(theSeedingPathTagIndex)->phi()   // ==> WRONG!
-//		     ) 
-//	     > 0.1 ) {
-//	 
-//	 
-//	 theSeedingPathProbeIndex = ( seedPathEndObj-objectsMatchedToEndOfSeedingPath.begin() );
-//	 break;
-//	 // stop after you've found the first possible PROBE
-//
-//       }// if object is distinct from the TAG
-//     }// loop over seeding HLT object, in order to determined the probe
-//   
-//   
-//
-//   // do the sanity check: there needs to be a PROBE
-//   if (theSeedingPathProbeIndex==-1)
-//     {
-//       // this case should never happen: there needs to be at least a second object from the seeding path distinct from the TAG object
-//       std::cout << "no second object from HLT path: " << seedingAcceptedPath->name() 
-//		 << " was found to act as a probe. Problem. Bailig out." << std::endl;
-//       return;
-//     }
-//   else
-//     {
-//       std::cout << "there are " << objectsMatchedToEndOfSeedingPath.size() << " HLT objects from the end of the seeding path;  I've chosen the number: " << theSeedingPathProbeIndex << " to be the probe online object."  << std::endl ;
-//       eventsFate_->Fill(5);
-//     }
-//   
-//
-//
-//   // now that you have the PROBE HLT object from from the end of  the seeding path, match it to one of the offline objects
-//   // there must be a matching since this is a requirement earlier, in the selection in order to enter the denominator
-//   int theOfflineEleMatchingProbeIndex(-1);
-//   for (unsigned  int theEl=0; theEl< theEleOfflineCands.size(); theEl++ )
-//     {
-//       
-//       if (  deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
-//		     objectsMatchedToEndOfSeedingPath.at(theSeedingPathProbeIndex)->eta(),  
-//		     objectsMatchedToEndOfSeedingPath.at(theSeedingPathProbeIndex)->phi() ) 
-//	     < 0.1 ) {
-//	 theOfflineEleMatchingProbeIndex = theEl;
-//	 break;
-//       }// if there's matching to probe HLT obhect from end of seeding path
-//     }//loop over offline objects    
-//
-//
-//   int theOfflineEleMatchingTagIndex(-1);
-//   for (unsigned  int theEl=0; theEl< theEleOfflineCands.size(); theEl++ )
-//     {
-//       
-//       if (  deltaR( theEleOfflineCands.at(theEl).first.eta(), theEleOfflineCands.at(theEl).first.phi() , 
-//		     objectsMatchedToEndOfSeedingPath.at(theSeedingPathTagIndex)->eta(),  
-//		     objectsMatchedToEndOfSeedingPath.at(theSeedingPathTagIndex)->phi() ) 
-//	     < 0.1 ) {
-//	 theOfflineEleMatchingTagIndex = theEl;
-//	 break;
-//       }// if there's matching to tag HLT obhect from end of seeding path
-//     }//loop over offline objects    
-//   
-//   
-//
-//   // do the sanity check: there need to be an offline object matching both the PROBE and the TAG
-//   if (theOfflineEleMatchingProbeIndex==-1 || theOfflineEleMatchingTagIndex==-1)
-//     {
-//       std::cout << "no offline object fuond which can matche either the probe or the tag (" 
-//		 << theOfflineEleMatchingProbeIndex << "\t" << theOfflineEleMatchingTagIndex   
-//		 << ") among online objects from the seeding path: " << seedingAcceptedPath->name() 
-//		 << " Problem. Bailig out." << std::endl;
-//       assert(0);
-//     }
-//   else
-//     {
-//       if (doDebugMessages_) { std::cout << "offline electrons found which matches both the online PROBE and the online TAG object for the path: "
-//					 << seedingAcceptedPath->name()  << std::endl ; }
-//       eventsFate_->Fill(6);
-//     }
-//   
-//   // ALL THE WAY TO HERE
 
    
+   ///////////////////////////////////////////////////////////////////////////////////////////////////
+   // does the probe match any of the objects from the last filter of the TARGET HLT path?  
+   ///////////////////////////////////////////////////////////////////////////////////////////////////
+   bool hasProbeFiredTargetPath(false);
+   int lastFilterTargetMatchedObjIndex(-1);
+   for(size_t objNrP=0; objNrP< trigObjP4sLastFilterTargetPath.size(); objNrP++){
+     
+     if (  deltaR( trigObjP4sLastFilterTargetPath[objNrP].Eta(),
+		   trigObjP4sLastFilterTargetPath[objNrP].Phi(),
+		   theProbe.Eta(),  
+		   theProbe.Phi()  
+		   )  < 0.1 ) 
+       {
+	 hasProbeFiredTargetPath         =true;
+	 counterEvtsWithTargetFired_ ++;
+	 lastFilterTargetMatchedObjIndex =objNrP;
+	 break;
+	 // stop after you've found the first end-of-target-path object matching the probe => the probe has fired the trigger!
+       }// if probe is matched to end-of-target-path object 
+   }// loop over end-of-target-path object
    
-   //pTTagDenominator_    -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
-   //pTProbeDenominator_  -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
-   // now make fill the plots for the the numerator! Has the HLT target bit PASSED?
-   if ( targetHLTPathsAccepted.size()>0) {
-     counterEvtsWithTargetFired_++;
-     eventsFate_->Fill(7);
-     massNumerator_   -> Fill( ( theEleOfflineCands.at(0).first.p4() +  theEleOfflineCands.at(1).first.p4() ).M() ); 
-     pTele1Numerator_ -> Fill( theEleOfflineCands.at(0).first.pt() );
-     pTele2Numerator_ -> Fill( theEleOfflineCands.at(1).first.pt() );
-     //pTTagNumerator_     -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );  
-     //     pTProbeNumerator_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
-    }
-   else {
-     // if target PATH has not passed, fill histograms for FAIL
-     massFail_   -> Fill( ( theEleOfflineCands.at(0).first.p4() +  theEleOfflineCands.at(1).first.p4() ).M() ); 
-     pTele1Fail_ -> Fill( theEleOfflineCands.at(0).first.pt() );
-     pTele2Fail_ -> Fill( theEleOfflineCands.at(1).first.pt() );
-     // pTTagFail_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
-     //pTProbeFail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
-    return;
-   }
 
-
+   if (doDebugMessages_) 
+     { 
+       std::cout << "++ conclusion:\nthe TAG is: et: " 
+		 << theTag.Et() 
+		 << "\t eta: " << theTag.Eta() 
+		 << "\t phi: " << theTag.Phi()
+		 << "\nthe PROBE is: et: " 
+		 << theProbe.Et() 
+		 << "\t eta: " << theProbe.Eta() 
+		 << "\t phi: " << theProbe.Phi();
+       if(hasProbeFiredTargetPath)
+	 {
+	   std::cout << "\n PROBE passes and is matched to: et: "
+		     << trigObjP4sLastFilterTargetPath[lastFilterTargetMatchedObjIndex].Et() 
+		     << "\t eta: " << trigObjP4sLastFilterTargetPath[lastFilterTargetMatchedObjIndex].Eta() 
+		     << "\t phi: " << trigObjP4sLastFilterTargetPath[lastFilterTargetMatchedObjIndex].Phi();
+	 }
+       else 
+	 {
+	   std::cout << "\n PROBE failed. " << std::endl;
+	 }
+     }// end debug
+   
+   
+   if(hasProbeFiredTargetPath)
+     {
+       eventsFate_->Fill(9);
+       massNumerator_    -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				    theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				  .M() ); 
+       pTTagNumerator_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+       pTProbeNumerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+       
+       if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
+	 {
+	   pTele1Numerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+	   pTele2Numerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+	 }
+       else 
+	 {
+	   pTele1Numerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+	   pTele2Numerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+	 }
+     }// end "if probe passed"
+   else
+     {// "if probe failed"
+       massFail_    -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+			       theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+			     .M() ); 
+       pTTagFail_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+       pTProbeFail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+       
+       if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
+	 {
+	   pTele1Fail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+	   pTele2Fail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+	 }
+       else 
+	 {
+	   pTele1Fail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+	   pTele2Fail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
+	 }
+     }// end "if probe failed"
+   
    
    
 }// end analyze
 
 
-bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent, 
-					  const edm::EventSetup& iSetup,
-					  std::vector< std::pair<pat::Electron, float> > & eCands,
-					  std::vector< std::pair<pat::Jet, float> > & jetCands 
-					  )
-{
 
+bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent, 
+						 const edm::EventSetup& iSetup,
+						 std::vector< std::pair<pat::Electron, float> > & eCands,
+						 std::vector< std::pair<pat::Jet, float> > & jetCands 
+						 )
+{// passOfflineSelection
+  
   eCands  .clear();
   jetCands.clear();
   
@@ -739,22 +934,22 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
 
 
   return (
-	  eCands.size()   >= 2  &&
+	  eCands.size()   >= 2  && // not so good this '2' is hard coded, but leave it for now. FIXME
 	  jetCands.size() >= static_cast<unsigned int> (numOfflJets_)
-	  )
-    ;
-}
+	  )    ;
+
+}// end of passOfflineSelection 
 
 
 
 // ------------ method which returns references to objects that match a certain trigger  ------------
-pat::TriggerObjectRefVector HeavyNuEleTriggerEff::findObjectsMatchedToPath( const edm::Handle< pat::TriggerEvent > triggerEvent , 
+pat::TriggerObjectRefVector HeavyNuEleTriggerEff::findObjectsMatchedToPath( const edm::Handle< pat::TriggerEvent > triggerPatEvent , 
 								     const pat::TriggerPathRef seedingAcceptedPath,
 								     const std::vector<std::string>& electronFilters )
 {
 
   // one of the seding HLT paths has fired. Chose the first one as a base trigger
-  //const pat::TriggerPathRef seedingAcceptedPath = triggerEvent->pathRef( seedHLTForHLTEfficiencyAccepted.at(0) ) ; 
+  //const pat::TriggerPathRef seedingAcceptedPath = triggerPatEvent->pathRef( seedHLTForHLTEfficiencyAccepted.at(0) ) ; 
   
   if (doDebugMessages_) {
     std::cout << "\n\n\t\tPath information: " 
@@ -777,8 +972,8 @@ pat::TriggerObjectRefVector HeavyNuEleTriggerEff::findObjectsMatchedToPath( cons
       std::cout  << std::endl ; 
   }
  
-  pat::TriggerObjectRefVector objectsInPath = triggerEvent->pathObjects(seedingAcceptedPath->name(),true) ;
-  pat::TriggerFilterRefVector filtersInPath = triggerEvent->pathFilters(seedingAcceptedPath->name(),true) ;
+  pat::TriggerObjectRefVector objectsInPath = triggerPatEvent->pathObjects(seedingAcceptedPath->name(),true) ;
+  pat::TriggerFilterRefVector filtersInPath = triggerPatEvent->pathFilters(seedingAcceptedPath->name(),true) ;
   if (doDebugMessages_) { std::cout << "for path: " << seedingAcceptedPath->name()  << " size of objectsInPath : " << objectsInPath.size() 
 				    << " and filtersInPath: " << filtersInPath.size() << std::endl; }
   
@@ -802,7 +997,82 @@ pat::TriggerObjectRefVector HeavyNuEleTriggerEff::findObjectsMatchedToPath( cons
 	pat::TriggerObjectRef objRef = *iobjRef ; 
 	if (doDebugMessages_) std::cout << "Found an object with pT = " << objRef->pt() << " and eta " << objRef->eta() << std::endl ; 
 	
-	if ( triggerEvent->objectInFilter(objRef,filterRef->label()) ) { // Trigger object was used by the filter
+	if ( triggerPatEvent->objectInFilter(objRef,filterRef->label()) ) { // Trigger object was used by the filter
+	  if (doDebugMessages_)  {std::cout << "found candidate requested IN FILTER: " << filterRef->label() 
+					    << " object with pt: " <<  objRef->pt() 
+					    << " and phi " << objRef->phi()
+					    << " and eta " << objRef->eta() << std::endl;   }
+	  objectsMatchedToPath.push_back(objRef);
+	}
+	
+      }// if filter found
+    }// loop on the _last_ filters of the seed path
+  }//loop on  the filters of the path
+  
+  if (doDebugMessages_) std::cout << "inside found: " << objectsMatchedToPath.size() << " objects matching the path: " 
+				  << /*seedHLTForHLTEfficiencyAccepted.at(0)*/ seedingAcceptedPath->name() << std::endl;
+  
+  return objectsMatchedToPath;
+}
+
+
+
+// ------------ method which returns references to objects that match a certain trigger  ------------
+pat::TriggerObjectRefVector HeavyNuEleTriggerEff::findObjectsMatchedToPathNew( const edm::Handle< pat::TriggerEvent > triggerPatEvent , 
+									       const pat::TriggerPathRef seedingAcceptedPath,
+									       const std::vector<std::string>& electronFilters )
+{
+
+  // one of the seding HLT paths has fired. Chose the first one as a base trigger
+  //const pat::TriggerPathRef seedingAcceptedPath = triggerPatEvent->pathRef( seedHLTForHLTEfficiencyAccepted.at(0) ) ; 
+  
+  if (doDebugMessages_) {
+    std::cout << "\n\n\t\tPath information: " 
+	      << " " << seedingAcceptedPath->name() << " " 
+	      << " " << seedingAcceptedPath->index() << " " 
+	      << " pr: " << seedingAcceptedPath->prescale() << " " 
+	      << " r: " << seedingAcceptedPath->wasRun() << " " 
+	      << " acc: " << seedingAcceptedPath->wasAccept() << " " 
+	      << " " << seedingAcceptedPath->wasError() << " " 
+	      << " last: " << seedingAcceptedPath->lastActiveFilterSlot() << " " 
+	      << " " << seedingAcceptedPath->modules().size() ; 
+    std::cout	   << seedingAcceptedPath->l3Filters() << " " 
+		   << seedingAcceptedPath->xTrigger() << " " << std::endl;; 
+  }
+
+  if (doDebugMessages_) {
+    std::cout << "\nLooking for trigger objects involved in this path: " 
+	      <<  seedingAcceptedPath->name() ;
+    if(electronFilters.size()>0) std::cout << " pertaining this filter: " << electronFilters.at(0) ;
+      std::cout  << std::endl ; 
+  }
+ 
+  pat::TriggerObjectRefVector objectsInPath = triggerPatEvent->pathObjects(seedingAcceptedPath->name(),true) ;
+  pat::TriggerFilterRefVector filtersInPath = triggerPatEvent->pathFilters(seedingAcceptedPath->name(),true) ;
+  if (doDebugMessages_) { std::cout << "for path: " << seedingAcceptedPath->name()  << " size of objectsInPath : " << objectsInPath.size() 
+				    << " and filtersInPath: " << filtersInPath.size() << std::endl; }
+  
+  
+  pat::TriggerObjectRefVector objectsMatchedToPath;
+  
+  // find the two objects from the seeding path
+  // code largely inspired to Bryan's 
+  // =->  http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/Minnesota/HeavyNu/AnalysisModules/src/HeavyNuTrigger.cc?revision=1.22&view=markup&sortby=date
+  for ( pat::TriggerFilterRefVector::const_iterator ifRef = filtersInPath.begin(); ifRef != filtersInPath.end(); ifRef++) { 
+    
+    pat::TriggerFilterRef filterRef = *ifRef ; 
+    if (doDebugMessages_)  std::cout << "filter in path : " << filterRef->label() <<  std::endl; 
+    
+    if ( filterRef->isFiring() &&
+	 ( std::find(electronFilters.begin(), electronFilters.end(), filterRef->label()) != electronFilters.end() ) ) { 
+      if (doDebugMessages_)  std::cout << "\n==> found filter which is among electronFilters: " << filterRef->label() << std::endl;
+      
+      
+      for ( pat::TriggerObjectRefVector::const_iterator iobjRef = objectsInPath.begin(); iobjRef != objectsInPath.end(); ++iobjRef ) {
+	pat::TriggerObjectRef objRef = *iobjRef ; 
+	if (doDebugMessages_) std::cout << "Found an object with pT = " << objRef->pt() << " and eta " << objRef->eta() << std::endl ; 
+	
+	if ( triggerPatEvent->objectInFilter(objRef,filterRef->label()) ) { // Trigger object was used by the filter
 	  if (doDebugMessages_)  {std::cout << "found candidate requested IN FILTER: " << filterRef->label() 
 					    << " object with pt: " <<  objRef->pt() 
 					    << " and phi " << objRef->phi()
@@ -832,14 +1102,18 @@ void
 HeavyNuEleTriggerEff::endJob() 
 {
 
-  std::cout << "\n\nHeavyNuEleTriggerEff has seen: " << counterEvtsAll_ << " events;" << std::endl;
-  
+  std::cout << "\n\n\nHeavyNuEleTriggerEff was executed: " << counterExecutions_ << " times " << std::endl;
+  std::cout << "\n\nHeavyNuEleTriggerEff and has seen / analyzed: " << counterEvtsAll_ << " events (fitting desired run range);" << std::endl;
   std::cout << "\t\t ++ of which: " << counterEvtsPassingOfflineSelection_ << " pass the offline selection : 2 HEEP ele pt > "
-	    << minPtOfflEle_ << " and" << numOfflJets_ << " jets pt > " << minPtOfflJets_ << std::endl;
+	      << minPtOfflEle_ << " and" << numOfflJets_ << " jets pt > " << minPtOfflJets_ << std::endl;
   std::cout << "\t\t ++ of which: " << counterEvtsWithSeedingFired_ << " with >=1 seeding paths firing" << std::endl;
   std::cout << "\t\t ++ of which: " << counterEvtsWithTargetValid_  << " with >=1 valid target path" << std::endl;
   std::cout << "\t\t ++ of which: " << counterEvtsWithSeedingAbovePt_ << " with >=2 seeding objects above pt " << minPtOfObjects_ << std::endl;
-  std::cout << "\t\t ++ of which: " << counterEvtsWithTargetFired_  << " with >=1 fired target path" << std::endl;
+  std::cout << "\t\t ++ of which: " << counterEvtsWithSeedingPathProbesMatchedToOfflineObj_ << " all end-path-objects of seed path are matched to offline ele's " << std::endl;
+  std::cout << "\t\t ++ of which: " << counterEvtsWithTagFound_ << " tag was found  " << std::endl;
+  std::cout << "\t\t ++ of which: " << counterEvtsWithProbeFound_ << " probe was found " << std::endl;
+  std::cout << "\t\t ++ of which: " << counterEvtsTangProbeMatchedOffl_ << " tag and probe are matched to offline objs" << std::endl;
+  std::cout << "\t\t ++ of which: " << counterEvtsWithTargetFired_  << " the probe passed " << std::endl;
   std::cout << "\n" << std::endl;
 
 }
@@ -880,143 +1154,3 @@ HeavyNuEleTriggerEff::fillDescriptions(edm::ConfigurationDescriptions& descripti
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HeavyNuEleTriggerEff);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   float a;
-
-//#ifndef momentarilyIngnore
-//   if (doDebugMessages_) std::cout << "seedHLTForL1Efficiency has size: " << seedHLTForL1Efficiency_.size() << std::endl;
-//
-//
-//   for (unsigned int i=0; i<seedHLTForL1Efficiency_.size(); i++) { 
-//
-//     // std::cout << "Investigating path: " << seedHLTForL1Efficiency_.at(i) << std::endl ; 
-//     const pat::TriggerPathRef iPath = triggerEvent->pathRef( seedHLTForL1Efficiency_.at(i) ) ; 
-//     if ( iPath.isNonnull() && iPath->wasAccept() ) { 
-//       std::cout << "Found path!" << std::endl ; 
-//       
-//       std::cout << "Path information: " 
-//		 << " " << iPath->name() << " " 
-//		 << " " << iPath->index() << " " 
-//		 << " pr: " << iPath->prescale() << " " 
-//		 << " r: " << iPath->wasRun() << " " 
-//		 << " acc: " << iPath->wasAccept() << " " 
-//		 << " " << iPath->wasError() << " " 
-//		 << " last: " << iPath->lastActiveFilterSlot() << " " 
-//		 << " " << iPath->modules().size() ; 
-//       std::cout // << iPath->modules().at(iPath->lastActiveFilterSlot()) << " "
-//	 << iPath->l3Filters() << " " 
-//	 << iPath->xTrigger() << " " ; 
-//       // for (unsigned int j=0; j<iPath->filterIndices().size(); j++) { 
-//       //   std::cout << iPath->modules().at(iPath->filterIndices().at(j)) << " " ; 
-//       // }
-//       std::cout << " \n\n\n\n" 
-//		 << std::endl ; 
-//       
-//       std::cout << "Looking for trigger objects involved in this path: " <<  iPath->name() << std::endl ; 
-// 
-//       pat::TriggerObjectRefVector objectsInPath = triggerEvent->pathObjects(iPath->name(),true) ;
-//       pat::TriggerFilterRefVector filtersInPath = triggerEvent->pathFilters(iPath->name(),true) ;
-//       std::cout  << "size of objectsInPath : " << objectsInPath.size() << std::endl; 
-//
-//       
-//       // http://cmslxr.fnal.gov/lxr/source/DataFormats/PatCandidates/interface/T>> Entering Package PhysicsTools/PatAlgos
-//       // // Get a reference to a certain L1 algorithm by name,
-//       // // NULL, if algorithm is not found
-//       //    const TriggerAlgorithmRef algorithmRef( const std::string & nameAlgorithm ) const;
-//
-//
-//       // http://cmslxr.fnal.gov/lxr/source/DataFormats/PatCandidates/interface/TriggerEvent.h#308
-//       // 
-//       // TriggerObjectRefVector algorithmObjects( const std::string & nameAlgorithm ) const;
-//
-//       //       http://cmslxr.fnal.gov/lxr/source/DataFormats/PatCandidates/interface/TriggerEvent.h#310 
-//       //       /// Checks, if an object was used in a certain algorithm given by name
-//       //       bool objectInAlgorithm( const TriggerObjectRef & objectRef, const std::string & nameAlgorithm ) const;
-//
-//
-//     }
-//   }
-//
-//   pat::TriggerAlgorithmRefVector theAlgosActive = triggerEvent->algorithmRefs();
-//   std::cout << "size of theAlgosActive: " << theAlgosActive.size() << std::endl;
-//
-//   pat::TriggerAlgorithmRefVector theAlgosPassed = triggerEvent->acceptedAlgorithms();
-//   std::cout << "size of theAlgosPassed: " << theAlgosPassed.size() << std::endl;
-//
-//   pat::TriggerAlgorithmRefVector thePhysicsAlgosPassed = triggerEvent->acceptedPhysAlgorithms();
-//   std::cout << "size of thePhysicsAlgosPassed: " << thePhysicsAlgosPassed.size() << std::endl;
-//
-//   // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTrigger#PATTriggerProducer
-//   std::cout << "physics algos which passed: " << std::endl;
-//   for(unsigned int phAl=0; phAl<thePhysicsAlgosPassed.size(); phAl++)
-//     {
-//       std::cout << thePhysicsAlgosPassed.at(phAl)->name() << "\n";
-//       pat::TriggerObjectRefVector objectsInAlgo =  triggerEvent->algorithmObjects( thePhysicsAlgosPassed.at(phAl)->name() );
-//       // std::cout << "\t\t\t\t size of objectsInAlgo: " << objectsInAlgo.size() << std::endl;
-//     }
-//   std::cout << std::endl;
-//
-//
-//
-//   // Isolated EM particles
-//   Handle< l1extra::L1EmParticleCollection > isoEmColl ;
-//   iEvent.getByLabel( isolatedEmSource_, isoEmColl ) ;
-//   std::cout << "++ HeavyNuEleTriggerEff: Number of isolated EM " << isoEmColl->size() << std::endl ;
-//   
-//   for( l1extra::L1EmParticleCollection::const_iterator emItr = isoEmColl->begin() ;
-//	emItr != isoEmColl->end() ;
-//	++emItr )
-//     {
-//       std::cout << "\t  p4 (" << emItr->px()
-//	    << ", " << emItr->py()
-//	    << ", " << emItr->pz()
-//	    << ", " << emItr->energy()
-//	    << ") et " << emItr->et()
-//	    << " eta " << emItr->eta()
-//	    << " phi " << emItr->phi()
-//		 << std::endl ;
-//     }
-//   
-//   // Non-isolated EM particles
-//   Handle< l1extra::L1EmParticleCollection > nonIsoEmColl ;
-//   iEvent.getByLabel( nonIsolatedEmSource_, nonIsoEmColl ) ;
-//   std::cout << "++ HeavyNuEleTriggerEff: Number of non-isolated EM " << nonIsoEmColl->size() << std::endl ;
-//   
-//   for( l1extra::L1EmParticleCollection::const_iterator emItr = nonIsoEmColl->begin() ;
-//	emItr != nonIsoEmColl->end() ;
-//	++emItr )
-//     {
-//       std::cout << "\t\t  p4 (" << emItr->px()
-//	    << ", " << emItr->py()
-//	    << ", " << emItr->pz()
-//	    << ", " << emItr->energy()
-//	    << ") et " << emItr->et()
-//	    << " eta " << emItr->eta()
-//	    << " phi " << emItr->phi()
-//		 << std::endl ;
-//     }
-//   
-//
-//#endif
-
