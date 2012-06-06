@@ -175,7 +175,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     PerBinInfo abin;
     abin.lowEdge=ibin*200+600;
     abin.highEdge=(ibin+1)*200+600;
-    abin.signal=db.get(process,"sigeff",ibin)*mp.lumi*mp.xsec;
+    abin.signal=db.get(process,signame,ibin)*mp.lumi*mp.xsec;
     for (int j=1; j<=3; j++) 
       if (mp.year==2011) {
 	abin.bkgd[j-1]=db.get(snames[j],"2011A",ibin)+

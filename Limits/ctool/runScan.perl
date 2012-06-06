@@ -73,7 +73,12 @@ foreach $item (@items) {
 #    print $item;
 #    next if (!($item=~/WRToNuLeptonToLLJJ_MW-([0-9]+)_MNu-([0-9]+)/));
     next if (!($item=~/signal_([0-9]+)_([0-9]+)/));
-    next if (!($item=~/$year/));
+    if ($year==2012) {
+	next if (!($item=~/2012/));
+    } else {   
+	next if (!($item=~/2011/));
+    }
+
     $mw=$1; $mn=$2;
 
     next if ($mw < $minmwAllowed);
