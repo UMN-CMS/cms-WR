@@ -27,6 +27,7 @@ struct PerBinInfo {
 struct LimitPoint {
   double lumi;
   double xsec;
+  int year;
   int mwr, mwr_syst;
   int mnr, mnr_syst;
 };

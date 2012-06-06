@@ -139,6 +139,11 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
   case (23) :
   case (24) : ilow=3; ihigh=10; break;
   case (25) : ilow=3; ihigh=10; break;
+  case (26) : ilow=3; ihigh=10; break;
+  case (27) : ilow=4; ihigh=10; break;
+  case (28) : ilow=4; ihigh=10; break;
+  case (29) : ilow=4; ihigh=10; break;
+  case (30) : ilow=4; ihigh=10; break;
   };
   
   
@@ -163,17 +168,24 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
   char process[200];
   sprintf(process,snames[0],mp.mwr,mp.mnr);
   
+  char signame[20];
+  sprintf(signame,"eff_%d",mp.year);
+
   for (int ibin=ilow; ibin<=ihigh; ibin++) {
     PerBinInfo abin;
     abin.lowEdge=ibin*200+600;
     abin.highEdge=(ibin+1)*200+600;
     abin.signal=db.get(process,"sigeff",ibin)*mp.lumi*mp.xsec;
     for (int j=1; j<=3; j++) 
-      abin.bkgd[j-1]=db.get(snames[j],"2011A",ibin)+
-	db.get(snames[j],"2011B",ibin);    
+      if (mp.year==2011) {
+	abin.bkgd[j-1]=db.get(snames[j],"2011A",ibin)+
+	  db.get(snames[j],"2011B",ibin);    
+      } else {
+	abin.bkgd[j-1]=db.get(snames[j],"2012",ibin);
+      }
     abin.sourceBin=ibin;
     abin.lumi=mp.lumi;
-    abin.year=2011;
+    abin.year=mp.year;
     abin.data=int(vdata[ibin]);
     char name[10];
     sprintf(name,"b%02d",ibin);

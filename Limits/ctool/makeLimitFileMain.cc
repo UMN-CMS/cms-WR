@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
   std::string istring;
   bool interpolate=false;
 
-  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:")) != -1) {
+  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:")) != -1) {
                switch (opt) {
 	       case 'l':
 		 pt.lumi=atof(optarg);
@@ -26,6 +26,11 @@ int main(int argc, char* argv[]) {
 		 pt.xsec=atof(optarg);
 		 pt1.xsec=atof(optarg);
 		 pt2.xsec=atof(optarg);
+		 break;
+	       case 'y':
+		 pt.year=atof(optarg);
+		 pt1.year=atof(optarg);
+		 pt2.year=atof(optarg);
 		 break;
 	       case 'w':
 		 pt.mwr=atoi(optarg);
