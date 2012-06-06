@@ -11,6 +11,7 @@ $systmode=0;
 $xsec=0.01;
 $minmwAllowed=1000;
 $maxmwAllowed=2500;
+$year=2012;
 
 GetOptions("toys=i" => \$toys,
 	   "systmode=i" => \$systmode,
@@ -19,6 +20,7 @@ GetOptions("toys=i" => \$toys,
 	   "maxmw=i" => \$maxmwAllowed,
 	   "xsec=f" => \$xsec,
 	   "step=i" => \$step,
+	   "year=i" => \$year,
 	   "special=s" => \$special,
 	   "jobname=s" => \$jobBase);
 
@@ -33,8 +35,11 @@ if ($jobBase ne "default") {
 }
 
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
-
 $lumi2011=4990;
+
+$data2012_mu="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
+$lumi2012_mu=2400;
+
 #$lumi2011=4700;
 $systdb="systematicsdb.csv";
 $ratesdb="ratesdb.csv";
@@ -68,6 +73,7 @@ foreach $item (@items) {
 #    print $item;
 #    next if (!($item=~/WRToNuLeptonToLLJJ_MW-([0-9]+)_MNu-([0-9]+)/));
     next if (!($item=~/signal_([0-9]+)_([0-9]+)/));
+    next if (!($item=~/$year/));
     $mw=$1; $mn=$2;
 
     next if ($mw < $minmwAllowed);
@@ -79,7 +85,11 @@ foreach $item (@items) {
     $mwmax=$mw if ($mwwax<$mw);
 
     $ofname="$fileLoc/limit_".$mw."_".$mn;
-    $cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
+    if ($year==2011) {
+	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
+    } else {
+	$cmd="./makeLimitFile.exe -l $lumi2012_mu -w $mw -n $mn -y $year -x $xsec -d $data2012_mu -r $ratesdb -o $ofname -s $systdb ";
+    }
     system($cmd);
 
     $mass=sprintf("%04d%04d",$mw,$mn);
@@ -91,30 +101,30 @@ foreach $item (@items) {
     
 }
 # interpolations
-for ($amw=$mwmin; $amw<$mwmax; $amw+=$step) {
-    next if (($amw%100)==0);
-    $mwb=((int($amw/100))*100);
-    $mwa=((int($amw/100)+1)*100);
-    $mnb=$mwr_mn{$mwb};
-    $mna=$mwr_mn{$mwa};
-#    print "$mwa $mwb $mna $mnb\n";
-
-    $amn=$mnb;
-	
-    $ofname="$fileLoc/limit_".$amw."_".$amn;
-    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -r $ratesdb -s $systdb ";
-    $cmd.=sprintf(" -I %d,%d:%d,%d",$mwb,$mnb,$mwa,$mna);
-    print "$cmd\n";
-    system($cmd);
-
-    $mass=sprintf("%04d%04d",$amw,$amn);
-
-    $comments="xsec=$xsec";
-
-    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${amw}_${amn}.log ${method} ${toys} \\\"${comments}\\\" ${special}\n";
-    print CONDOR "Queue \n";
-    
-}
+#for ($amw=$mwmin; $amw<$mwmax; $amw+=$step) {
+#    next if (($amw%100)==0);
+#    $mwb=((int($amw/100))*100);
+#    $mwa=((int($amw/100)+1)*100);
+#    $mnb=$mwr_mn{$mwb};
+#    $mna=$mwr_mn{$mwa};
+##    print "$mwa $mwb $mna $mnb\n";
+#
+#    $amn=$mnb;
+#	
+#    $ofname="$fileLoc/limit_".$amw."_".$amn;
+#    $cmd="./makeLimitFile.exe -l $lumi2011 -w $amw -n $amn -x $xsec -d $data2011 -o $ofname -r $ratesdb -s $systdb ";
+#    $cmd.=sprintf(" -I %d,%d:%d,%d",$mwb,$mnb,$mwa,$mna);
+#    print "$cmd\n";
+#    system($cmd);
+#
+#    $mass=sprintf("%04d%04d",$amw,$amn);
+#
+#    $comments="xsec=$xsec";
+#
+#    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${amw}_${amn}.log ${method} ${toys} \\\"${comments}\\\" ${special}\n";
+#    print CONDOR "Queue \n";
+#    
+#}
  
 
    
