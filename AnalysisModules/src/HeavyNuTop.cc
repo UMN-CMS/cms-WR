@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.28 2012/05/29 01:57:35 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.29 2012/05/30 10:05:15 bdahmes Exp $
 //
 //
 
@@ -134,6 +134,7 @@ private:
     int    applyTrigEffsign_;           // for Trigger Efficiency studies
     bool   applyMuIDCorrections_ ;
     int applyMuIDEffsign_ ;
+    bool correctEscale_ ; 
     // bool   applyEleScaleCorrections_ ; 
     // bool   applyEleIDWeightFactor_ ; 
     bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
@@ -333,6 +334,7 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     eeIDwgt_ = iConfig.getParameter<double>("EEidWgt") ;
 
     applyMESfactor_ = 1.0 ; // Hardcoded for Top studies
+    correctEscale_  = iConfig.getParameter<bool>("correctEscale") ; 
     applyTrigEffsign_ = iConfig.getParameter<int>("applyTrigEffsign");
     if(applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
 
@@ -692,7 +694,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     hnuEvent.regularize(); // assign internal primary lepton variables
     //hnuEvent.scaleMuE(applyMESfactor_,hnuEvent.ElecScale);
-    hnuEvent.calculate(); // calculate various details
+    hnuEvent.calculate(correctEscale_); // calculate various details
 
     // Basic requirements on muon, electron, jets
     hists.LLJJptCuts->fill(hnuEvent);

@@ -28,18 +28,24 @@ void HeavyNuEvent::scaleMuE(double mufactor, double efactor)
     ElecScale = efactor ;
 }
 
-void HeavyNuEvent::calculateLL()
+void HeavyNuEvent::calculateLL(bool correctEscale)
 {
+
+    double scale = 1.0 ; 
     switch(mode)
     {
         case HNUE:
-            vLL = MuScale * (e1.p4() + e2.p4());
-            break;
+	    if ( isMC && correctEscale ) 
+	      scale = hnu::getElectronEscale( hnu::getElectronSCEta(e1),hnu::getElectronSCEta(e2) ) ;  
+	    vLL = scale * ( e1.p4() + e2.p4() ) ;
+	    break;
         case TOP:
-            vLL = MuScale * (e1.p4() + mu1.p4());
+	    if ( isMC && correctEscale ) 
+	      scale = hnu::getElectronEscale( hnu::getElectronSCEta(e1) ) ;  
+            vLL = (scale * e1.p4()) + mu1.p4();
             break;
         case HNUMU:
-            vLL = MuScale * (mu1.p4() + mu2.p4());
+            vLL = mu1.p4() + mu2.p4();
             break;
         case QCD:
         case CLO:
@@ -48,7 +54,7 @@ void HeavyNuEvent::calculateLL()
     mLL = vLL.M();
 }
 
-void HeavyNuEvent::calculate()
+void HeavyNuEvent::calculate(bool correctEscale)
 {
     regularize();
 
@@ -99,7 +105,23 @@ void HeavyNuEvent::calculate()
     reco::Particle::Vector lep1mom = lep1p4.Vect();
     reco::Particle::Vector lep2mom = lep2p4.Vect();
 
-    vLL  = lep1p4 + lep2p4;
+    double scale = 1.0 ; 
+    switch(mode)
+    {
+        case HNUE:
+	    if ( isMC && correctEscale ) scale = hnu::getElectronEscale( l1eta,l2eta ) ; 
+	    vLL = scale * ( lep1p4 + lep2p4 ) ;
+	    break;
+        case TOP:
+	    if ( isMC && correctEscale ) scale = hnu::getElectronEscale( l2eta ) ; 
+            vLL = lep1p4 + (scale * lep2p4) ; 
+            break;
+        default:
+	    vLL = lep1p4 + lep2p4 ; 
+            break;
+    }
+
+    // vLL  = lep1p4 + lep2p4;
     vJJ    = j1p4 + j2p4;
     lv_evt = vLL + vJJ;
 

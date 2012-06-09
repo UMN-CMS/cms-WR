@@ -69,6 +69,8 @@ namespace hnu {
     bool passesHEEPv31      ( const pat::Electron& e ) ; 
     bool passesHEEPv32      ( const pat::Electron& e ) ; 
 
+    double getElectronEscale( double eta1, double eta2 = 999.0 ) ; 
+
     int  jetID             ( const pat::Jet& j );
 
     void initPDFSet(int i, std::string name) ; 

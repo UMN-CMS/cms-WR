@@ -1,4 +1,5 @@
 #include "HeavyNuCommon.h"
+#include "TVector3.h"
 
 #ifdef DO_LHAPDF
 #include "LHAPDF/LHAPDF.h"
@@ -7,10 +8,11 @@
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
 
-const float pileup2010A = 1.2;
-const float pileup2010B = 2.2;
-const float pileup2011A = 5.0;
+// const float pileup2010A = 1.2;
+// const float pileup2010B = 2.2;
+// const float pileup2011A = 5.0;
 
 // Data corrections provided by N. Kypreos.
 // MC corrections are inverse of data, and given below
@@ -85,9 +87,9 @@ namespace hnu {
 
   bool passesHEEP(const pat::Electron& e, int heepVersion, double rho) { 
 
-    if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 ) return false ; 
+    if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40 ) return false ; 
 
-    double ePt  = getElectronEt(e,(heepVersion != 40)) ; 
+    double ePt  = getElectronEt(e,(abs(heepVersion) != 40)) ; 
     // if ( ePt < 35.0 ) std::cout << "Removing low pT electron from consideration" << std::endl ; 
     // if ( ePt < 35.0 ) return false ; 
 
@@ -98,7 +100,7 @@ namespace hnu {
     if ( !e.ecalDriven() ) return false ; 
 
     double eEta = getElectronSCEta(e) ; 
-    bool isEB   = ( fabs(eEta) < 1.4442 ) ; 
+    bool isEB   = ( fabs(eEta) < 1.442 ) ; 
     bool isEE   = ( fabs(eEta) < 2.5 && fabs(eEta) > 1.56 ) ; 
     // std::cout << "Electron pT: " << ePt << std::endl ; 
     // std::cout << "Electron SC eta: " << eEta << std::endl ; 
@@ -119,8 +121,8 @@ namespace hnu {
     double dPhiIn = fabs(e.deltaPhiSuperClusterTrackAtVtx()) ; 
     // std::cout << "Electron dPhiIn: " << dPhiIn << std::endl ; 
     // if ( heepVersion == 40 && dPhiIn > 0.06 ) std::cout << "FAILURE: Electron dPhiIn = " << dPhiIn << std::endl ; 
-    if (  heepVersion == 31                       && dPhiIn > 0.09 ) return false ; 
-    if ( (heepVersion == 32 || heepVersion == 40) && dPhiIn > 0.06 ) return false ; 
+    if (  heepVersion == 31                            && dPhiIn > 0.09 ) return false ; 
+    if ( (heepVersion == 32 || abs(heepVersion) == 40) && dPhiIn > 0.06 ) return false ; 
 
     double sig_iEiE = e.sigmaIetaIeta() ; 
     // if ( isEE ) std::cout << "Electron sigiEiE: " << sig_iEiE << std::endl ; 
@@ -142,7 +144,7 @@ namespace hnu {
     double thresholdEB = 2. + 0.03 * ePt ; 
     double thresholdEE = 2.5 ;
     if ( isEE && ePt > 50 ) thresholdEE += (0.03 * (ePt - 50.)) ; 
-    if ( heepVersion == 40 ) { 
+    if ( abs(heepVersion) == 40 ) { 
       thresholdEB += ( 0.28 * rho ) ; 
       thresholdEE += ( 0.28 * rho ) ; 
     }
@@ -164,7 +166,7 @@ namespace hnu {
     // std::cout << "Electron trkIso: " << trkIso << std::endl ; 
     if ( (heepVersion == 31) &&
 	 ((isEB && trkIso > 7.5) || (isEE && trkIso > 15.)) ) return false ; 
-    if ( (heepVersion == 32 || heepVersion == 40) && (trkIso > 5.) ) return false ; 
+    if ( (heepVersion == 32 || abs(heepVersion) == 40) && (trkIso > 5.) ) return false ; 
 
     // std::cout << "Congratulations!  The electron passes HEEP selection" << std::endl ; 
 
@@ -759,21 +761,34 @@ namespace hnu {
       float jpt = iJ.pt();
       float jeta = iJ.eta();
       if (fabs(jeta) > maxAbsEta) continue ; 
+      // std::cout << "I have a jet with pt " << jpt 
+      // 		<< " and eta " << fabs(iJ.eta()) << std::endl ; 
       int jpdgId = 0;
       if (iJ.genParton()) jpdgId = iJ.genParton()->pdgId();
       bool isBjet = (abs(jpdgId) == 5);
       float jecuscale = 1.0f;
+      // Corrections for Jet Energy Resolution differences in data vs. MC
+      // Updated for 2012 analysis
       if ( isMC ) { // Known jet energy resolution difference between data and MC
-	double factor = 0.1 ; 
-	if      ( fabs(iJ.eta()) < 1.5 ) factor += 0.10 * double(jerSign) ; 
-	else if ( fabs(iJ.eta()) < 2.0 ) factor += 0.15 * double(jerSign) ; 
-	else                             factor += 0.20 * double(jerSign) ; 
+	std::vector<double> etaBin = {   0.5,   1.1,   1.7,   2.3,   5.0 } ; 
+	std::vector<double> factor = { 1.052, 1.057, 1.096, 1.134, 1.288 } ; 
+	std::vector<double> uncHi  = { 0.063, 0.057, 0.065, 0.094, 0.200 } ; 
+	std::vector<double> uncLo  = { 0.062, 0.056, 0.064, 0.092, 0.199 } ; 
+
+	unsigned int ibin = 0 ; 
+	for (ibin=0; etaBin.at(ibin) < fabs(iJ.eta()); ibin++) ;
+	double corrFactor = factor.at(ibin) ; 
+	if      ( jerSign > 0 ) corrFactor += uncHi.at(ibin) ; 
+	else if ( jerSign < 0 ) corrFactor -= uncLo.at(ibin) ; 
+	// std::cout << "Correction factor (" << jerSign << "): " << corrFactor << std::endl ; 
+
 	const reco::GenJet* iG = iJ.genJet() ; 
 	if ( iG ) { 
-	  double corr_delta_pt = ( iJ.pt() - iG->pt() ) * factor ; 
+	  double corr_delta_pt = ( iJ.pt() - iG->pt() ) * corrFactor ; 
 	  // std::cout << "Corrected delta pt is: " << corr_delta_pt << " (" << iJ.pt() << "," << iG->pt() 
 	  // 	    << "," << factor << ")" << std::endl ; 
-	  double jerscale = std::max(0.0,((iJ.pt()+corr_delta_pt)/iJ.pt())) ;
+	  double jerscale = std::max(0.0,((iG->pt()+corr_delta_pt)/iJ.pt())) ;
+	  // std::cout << "jerscale is " << jerscale << std::endl ; 
 	  jpt *= jerscale ; 
 	  iJ.setP4( iJ.p4()*jerscale ) ; 
 	}
@@ -781,12 +796,14 @@ namespace hnu {
       if (jecSign) {
 	float jecu = jecTotalUncertainty(jpt, jeta, jecUnc, jecEra, isBjet, (jecSign > 0));
 	jecuscale = (1.0 + (float(jecSign) * jecu));
+	// std::cout << "jecuscale is " << jecuscale << std::endl ; 
 	jpt *= jecuscale;
 	iJ.setP4(iJ.p4()*jecuscale);
       }
       // std::cout << "Jet cand with pt " << jpt << " eta " << jeta << " and electron energy fraction " 
       // 		<< iJ.electronEnergyFraction() << "%.  " << iJ.photonEnergy() << " + " 
       // 		<< iJ.electronEnergy() << " attributed to EM photons and electrons (in GeV)" << std::endl ; 
+      // std::cout << "Corrected jet pT: " << jpt << std::endl ; 
       if (jpt > minPt) { 
 	std::pair<pat::Jet,float> jetCand = std::make_pair(iJ,jecuscale) ;
 	jetList.push_back( jetCand ) ; 
@@ -823,16 +840,46 @@ namespace hnu {
     std::vector<pat::Muon> muonList ; 
     for (unsigned int iMuon = 0; iMuon < pMuons->size(); iMuon++) {
       pat::Muon iM = pMuons->at(iMuon) ; 
+      if ( !iM.isGlobalMuon() ) continue ; 
+      // std::cout << "Investigating muon with pt " << iM.pt() << std::endl ; 
       if ( fabs(iM.eta()) > maxAbsEta ) continue ; 
+      // std::cout << "Checking tevOptimized" << std::endl ; 
+      // std::cout << iM.isGlobalMuon() << std::endl ; 
+      // std::cout << iM.globalTrack().isNull() << std::endl ; 
+      // std::cout << iM.innerTrack().isNull() << std::endl ; 
+      // std::cout << iM.tpfmsTrack().isNull() << std::endl ; 
+      // std::cout << iM.pickyTrack().isNull() << std::endl ; 
+      // reco::Muon::MuonTrackTypePair muPair = muon::tevOptimized(iM,200.,4.,6.) ; 
+      // std::cout << "Got here" << std::endl ; 
+
+      reco::TrackRef muRef = muon::tevOptimized(iM,200.,4.,6.).first ; 
+      // reco::TrackRef muRef = muPair.first ; 
+      // std::cout << "Is muRef null? " << muRef.isNull() << std::endl ; 
+
       if ( muBiasUnc ) { 
 	int charge = iM.charge() / abs(iM.charge()) ; 
-	double k   = muScaleLUT(iM) ; 
-	double pt  = iM.pt() ; 
-	ptScale = ( double(charge) / ( double(charge) + k*pt ) ) ; 
+	// std::cout << "Charge is " << charge << std::endl ; 
+	// Modification of muon scale uncertainty: 5% per TeV, only for barrel
+	// double k   = muScaleLUT(iM) ;
+	double k  = 0. ; 
+	if ( fabs(iM.eta()) < 1.2 ) k = 0.05 / 1000. ; 
+	double pt = (muRef.isNull() ? iM.pt() : muRef->pt() ) ; 
+	ptScale   = ( double(charge) / ( double(charge) + k*pt ) ) ; 
       }
-      double mupt = ptScale * (iM.pt());
+
+      // Method for getting high pT muons has changed in 50X - 52X
+      if ( muRef.isNonnull() ) { 
+	reco::Particle::PolarLorentzVector muP4( muRef->pt(),muRef->eta(),muRef->phi(),0.1057) ; 
+	iM.setP4( muP4 * ptScale ) ; 
+      } else { 
+	iM.setP4( iM.p4() * ptScale ) ; 
+      }
+
+      double mupt = iM.pt() ;
       if ( mupt < minPt ) continue ; 
+      // std::cout << "Checking ID " << iM.pt() << std::endl ; 
       bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM,pvHandle) ) : ( isVBTFtight(iM) ) ) ; 
+      // std::cout << "Muon ID: " << passesID << std::endl ; 
       if ( !passesID ) continue ; 
       // if ( !isVBTFtight(iM) ) continue ; 
 
@@ -842,16 +889,19 @@ namespace hnu {
 			      0.1057 * 0.1057 ) ; // Track p^2 + muon_mass^2 
 	reco::Particle::LorentzVector trackP4(iM.innerTrack()->px(),iM.innerTrack()->py(),iM.innerTrack()->pz(),energy) ;  
 	iM.setP4( trackP4 ) ; 
-      } else { 
-	for (unsigned int iTeV=0; iTeV<tevMuons->size() ; iTeV++) { 
-	  reco::Muon tevMuon = tevMuons->at(iTeV) ; 
-	  double tevMuPt = tevMuon.pt() * ptScale ; 
-	  if ( tevMuPt < minPt ) continue ;  
-	  double dR = ROOT::Math::VectorUtil::DeltaR(tevMuon.p4(),iM.p4()) ;
-	  if ( dR < 0.001 ) { // Replace muon p4 with refit (TeV) muon p4
-	    iM.setP4( tevMuon.p4() * ptScale ) ;
-	  }
-	}
+      // } else { 
+      // 	// Method for getting high pT muons has changed in 50X - 52X
+      // 	iM.setP4( (muon::tevOptimized(iM,200.,4.,6.).first->p4()) * ptScale ) ; 
+
+      // 	// for (unsigned int iTeV=0; iTeV<tevMuons->size() ; iTeV++) { 
+      // 	//   reco::Muon tevMuon = tevMuons->at(iTeV) ; 
+      // 	//   double tevMuPt = tevMuon.pt() * ptScale ; 
+      // 	//   if ( tevMuPt < minPt ) continue ;  
+      // 	//   double dR = ROOT::Math::VectorUtil::DeltaR(tevMuon.p4(),iM.p4()) ;
+      // 	//   if ( dR < 0.001 ) { // Replace muon p4 with refit (TeV) muon p4
+      // 	//     iM.setP4( tevMuon.p4() * ptScale ) ;
+      // 	//   }
+      // 	// }
       }
 
       muonList.push_back(iM) ; 
@@ -860,6 +910,35 @@ namespace hnu {
     std::sort(muonList.begin(),muonList.end(),pTcompare()) ; 
     return muonList ; 
   }
+
+  double getElectronEscale(double eta1, double eta2) { 
+    
+    double scaleCorrection = 1.0 ; 
+    int nEB = 0 ; 
+    int nEE = 0 ; 
+
+    if ( fabs(eta1) < 1.442 ) nEB++ ; 
+    if ( fabs(eta2) < 1.442 ) nEB++ ; 
+    if ( fabs(eta1) < 2.5 && fabs(eta1) > 1.56 ) nEE++ ; 
+    if ( fabs(eta2) < 2.5 && fabs(eta2) > 1.56 ) nEE++ ; 
+    
+    // All corrections to MC, bringing energy down to match data
+    double ebebCorr = 1.0 - 0.0092 ; 
+    double ebeeCorr = 1.0 - 0.0141 ; 
+    double eeeeCorr = 1.0 - 0.0122 ; 
+
+    if ( nEB + nEE < 2 ) { // Special case for top
+      if      ( nEB ) scaleCorrection = sqrt( ebebCorr ) ; 
+      else if ( nEE ) scaleCorrection = sqrt( eeeeCorr ) ; 
+    } else { 
+      if      ( nEB == 2 ) scaleCorrection = ebebCorr ; 
+      else if ( nEE == 2 ) scaleCorrection = eeeeCorr ; 
+      else                 scaleCorrection = ebeeCorr ; 
+    }
+
+    return scaleCorrection ; 
+  }
+
 
   std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
 								double maxAbsEta, 

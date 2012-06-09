@@ -151,6 +151,36 @@ else:
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
+#--- Temporary fix to get new Jet Corrections (not yet available in Global Tag ---#
+process.load("CondCore.DBCommon.CondDBCommon_cfi")
+from CondCore.DBCommon.CondDBSetup_cfi import *
+dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_DATA_AK5PFchs'
+dbConnect = 'sqlite:Summer12_V7_DATA.db'
+if isMC: 
+    dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'
+    dbConnect = 'sqlite:Summer12_V7_MC.db'
+
+process.jec = cms.ESSource("PoolDBESSource",
+       DBParameters = cms.PSet(
+           messageLevel = cms.untracked.int32(0)
+       ),
+       timetype = cms.string('runnumber'),
+       toGet = cms.VPSet(
+             cms.PSet(
+                 record = cms.string('JetCorrectionsRecord'),
+                 tag    = cms.string( dbTag ),
+                 # tag    = cms.string('JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'),
+                 label  = cms.untracked.string('AK5PFchs')
+             ),
+       ), 
+       connect = cms.string( dbConnect )
+       # connect = cms.string('sqlite:Summer12_V7_MC.db')
+)
+
+## add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
+
+
 ################################################################################################
 ###    P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D  ###
 ################################################################################################
@@ -266,15 +296,35 @@ process.patTrackSequence = cms.Sequence(
 ## --------------------- ##
 ## Define the basic path ##
 ## --------------------- ##
+
+#--- Beam background removal ---#
+process.scrapingFilter      = cms.EDFilter("FilterOutScraping",
+                                           applyfilter = cms.untracked.bool(True),
+                                           debugOn = cms.untracked.bool(False),
+                                           numtrack = cms.untracked.uint32(10),
+                                           thresh = cms.untracked.double(0.25)
+                                           )
+#--- Primary vertex requirement ---#
+process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
+                                           vertexCollection = cms.InputTag('offlinePrimaryVertices'),
+                                           minimumNDOF = cms.uint32(4) ,
+                                           maxAbsZ = cms.double(24), 
+                                           maxd0 = cms.double(2) 
+                                           )
+#--- HB/HE event-level noise filter ---#
+process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi') 
+
+process.eventFilters = cms.Sequence( process.scrapingFilter + process.primaryVertexFilter + process.HBHENoiseFilter ) 
+
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
+       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
-       process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
+       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
    )
 if isPFJets:
     process.AnalysisIntroSequence += process.modifiedPF2PATSequence
@@ -353,7 +403,7 @@ process.dumpEvContent = cms.EDAnalyzer("EventContentAnalyzer")
 #
 
 if runElectronAnalysis:
-    if doTriggerStudy:
+    if doTriggerStudy and isData:
         process.load("HeavyNu.AnalysisModules.heavyNuEleTriggerEff_cff")
 
 #--- Output histgram file ---#
@@ -428,7 +478,8 @@ process.hNuMu24       = process.hNu.clone()
 process.hNuMu40       = process.hNu.clone() 
 process.hNuMu40eta2p1 = process.hNu.clone()
 
-process.hNuE          = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'))
+process.hNuE               = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'))
+process.hNuE.correctEscale = cms.bool(isMC)
 
 process.hNuMu24.trigMatchPset.triggerPt    = cms.double( 24. )
 process.hNuMu24.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
@@ -445,18 +496,19 @@ process.hNuMu24jesLo = process.hNuMu24.clone( applyJECUsign = cms.int32(-1) )
 process.hNuMu40jesHi = process.hNuMu40.clone( applyJECUsign = cms.int32(1) )
 process.hNuMu40jesLo = process.hNuMu40.clone( applyJECUsign = cms.int32(-1) )
 
-process.hNuEjesHi = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), applyJECUsign = cms.int32(1) )
-process.hNuEjesLo = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), applyJECUsign = cms.int32(-1) )
+process.hNuEjesHi  = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), applyJECUsign = cms.int32(1) )
+process.hNuEjesLo  = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), applyJECUsign = cms.int32(-1) )
+process.hNuEescale = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), correctEscale = cms.bool(False) )
 
 process.hNuMu24jerHi = process.hNuMu24.clone( applyJERsign = cms.int32(1) )
 process.hNuMu24jerLo = process.hNuMu24.clone( applyJERsign = cms.int32(-1) )
 process.hNuMu40jerHi = process.hNuMu40.clone( applyJERsign = cms.int32(1) )
 process.hNuMu40jerLo = process.hNuMu40.clone( applyJERsign = cms.int32(-1) )
 
-process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
-process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
-process.hNuMu40mesHi = process.hNuMu40.clone( applyMESfactor = cms.double(1.01) )
-process.hNuMu40mesLo = process.hNuMu40.clone( applyMESfactor = cms.double(0.99) )
+# process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
+# process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
+# process.hNuMu40mesHi = process.hNuMu40.clone( applyMESfactor = cms.double(1.01) )
+# process.hNuMu40mesLo = process.hNuMu40.clone( applyMESfactor = cms.double(0.99) )
 
 process.hNuMu24mer = process.hNuMu24.clone( checkMERUnc = cms.bool(True) )
 process.hNuMu40mer = process.hNuMu40.clone( checkMERUnc = cms.bool(True) )
@@ -476,13 +528,18 @@ process.hNuMu40trigHi = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(1) 
 process.hNuMu40trigLo = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(-1) )
 
 # Pileup uncertainty: +/- 8% on number of interactions leads to 0.4 in 2011A, 0.7 in 2011B
-process.hNuMu24puHi = process.hNuMu24.clone( systPileupShift = cms.double(0.4) )
-process.hNuMu24puLo = process.hNuMu24.clone( systPileupShift = cms.double(-0.4) )
-process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.7) )
-process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.7) )
+#                     +/- 5% on number of interactions (16.85, 12/06/09) leads to 0.84 in 2012AB
+if isRun2012:
+    process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.84) )
+    process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.84) )
+else:
+    process.hNuMu24puHi = process.hNuMu24.clone( systPileupShift = cms.double(0.4) )
+    process.hNuMu24puLo = process.hNuMu24.clone( systPileupShift = cms.double(-0.4) )
+    process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.7) )
+    process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.7) )
 
-process.hNuEpuHi = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(0.7) )
-process.hNuEpuLo = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(-0.7) )
+process.hNuEpuHi = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(0.84) )
+process.hNuEpuLo = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(-0.84) )
 
 ## ============ ##
 ## QCD Analysis ##
@@ -547,6 +604,7 @@ process.hNuTop.electronRho      = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
 process.hNuTop.applyMuIDEffsign      = cms.int32(0)
 process.hNuTop.applyEleEScale        = cms.bool(isMC) 
+process.hNuTop.correctEscale         = cms.bool(isMC) 
 process.hNuTop.applyEleIDweight      = cms.bool(isMC) 
 process.hNuTop.pileupEra             = cms.int32(pileupEra)
 process.hNuTop.trigMatchPset.trigEra = cms.int32(dataEra)
@@ -628,8 +686,8 @@ if runMuonAnalysis:
                 process.p24jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesLo )
                 process.p24jerHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jerHi )
                 process.p24jerLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jerLo )
-                process.p24mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesHi )
-                process.p24mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesLo )
+                # process.p24mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesHi )
+                # process.p24mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesLo )
                 process.p24mer    = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mer )
                 process.p24midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midHi )
                 process.p24midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midLo )
@@ -642,8 +700,8 @@ if runMuonAnalysis:
             process.p40jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesLo )
             process.p40jerHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jerHi )
             process.p40jerLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jerLo )
-            process.p40mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesHi )
-            process.p40mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesLo )
+            # process.p40mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesHi )
+            # process.p40mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesLo )
             process.p40mer    = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mer )
             process.p40midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midHi )
             process.p40midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midLo )
@@ -669,12 +727,13 @@ if runElectronAnalysis:
 
    process.pE = cms.Path(process.AnalysisIntroSequence + process.hNuE)
    if systematics:
-      process.pEjesHi = cms.Path(process.AnalysisIntroSequence + process.hNuEjesHi);
-      process.pEjesLo = cms.Path(process.AnalysisIntroSequence + process.hNuEjesLo);
+      process.pEjesHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesHi);
+      process.pEjesLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesLo);
+      process.pEescale = cms.Path(process.AnalysisIntroSequence + process.hNuEescale);
       process.pEpuHi = cms.Path(process.AnalysisIntroSequence + process.hNuEpuHi);
       process.pEpuLo = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
       
-   if doTriggerStudy:
+   if doTriggerStudy and isData:
        process.pENominal = cms.Path(  process.TriggerStudyElectronSequence + process.AnalysisIntroSequence + process.hNuE  )
    else:
        process.pENominal = cms.Path( process.AnalysisIntroSequence + process.hNuE )

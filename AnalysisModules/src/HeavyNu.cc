@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.100 2012/05/29 01:57:35 pastika Exp $
+// $Id: HeavyNu.cc,v 1.101 2012/05/30 09:18:52 bdahmes Exp $
 //
 //
 
@@ -182,6 +182,7 @@ private:
     int applyJERsign_; // for Jet Energy Resolution and Resolution Uncertainty studies
     double applyMESfactor_; // for Muon Energy Scale studies
     bool merUncertainty_ ; 
+    bool correctEscale_ ; 
     int applyTrigEffsign_; // for Trigger Efficiency studies
     bool highestPtTriggerOnly_;
     bool applyMuIDCorrections_;
@@ -413,8 +414,8 @@ void HeavyNu::fill(pat::MuonCollection muons,
 
     hne.met1 = metc[0];
 
-    hne.calculateLL();
-    hne.calculate();
+    hne.calculateLL(correctEscale_);
+    hne.calculate(correctEscale_);
 
     hnmh->fill(hne);
 }
@@ -479,6 +480,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
     applyMESfactor_ = iConfig.getParameter<double>("applyMESfactor");
     merUncertainty_ = iConfig.getParameter<bool>("checkMERUnc");
+    correctEscale_  = iConfig.getParameter<bool>("correctEscale");
 
     applyMuIDCorrections_ = iConfig.getParameter<bool>("applyMuIDEffcorr");
     applyMuIDEffsign_ = iConfig.getParameter<int>("applyMuIDEffsign");
@@ -767,6 +769,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "jecEra            = " << jecVal_ << std::endl;
     std::cout << "applyJECUsign     = " << applyJECUsign_ << std::endl;
     std::cout << "applyMESfactor    = " << applyMESfactor_ << std::endl;
+    std::cout << "Mu Scale Unc.     = " << merUncertainty_ << std::endl;
+    std::cout << "Correct E Scale   = " << correctEscale_ << std::endl;
     std::cout << "applyMuIDEffcorr  = " << applyMuIDCorrections_ << std::endl;
     std::cout << "applyMuIDEffsign  = " << applyMuIDEffsign_ << std::endl;
     std::cout << "applyTrigEffsign  = " << applyTrigEffsign_ << std::endl;
@@ -1163,7 +1167,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         // get the jet corrector parameters collection from the global tag
         //
         edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-        iSetup.get<JetCorrectionsRecord > ().get("AK5Calo", JetCorParColl);
+        if ( isPFJets_ ) iSetup.get<JetCorrectionsRecord > ().get("AK5PFchs", JetCorParColl) ; 
+        else             iSetup.get<JetCorrectionsRecord > ().get("AK5Calo", JetCorParColl) ;
 
         // get the uncertainty parameters from the collection,
         // instantiate the jec uncertainty object
@@ -1184,16 +1189,23 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if(studyScaleFactorEvolution_) std::cout << "Histograms for Z scale factor cross checks will be created" << std::endl;
         if(applyJECUsign_)
         {
-            std::cout << "Studies will be used to estimate JEC uncertainty" << std::endl;
-            if(studyMuonSelectionEff_ || studyScaleFactorEvolution_)
-                std::cout << "WARNING: You are performing studies with modified jets.  This is most likely wrong!" << std::endl;
+	  std::cout << "Studies will be used to estimate JEC uncertainty" << std::endl;
+	  if(studyMuonSelectionEff_ || studyScaleFactorEvolution_) {
+	    // std::cout << "WARNING: You are performing studies with modified jets.  This is most likely wrong!" << std::endl;
+	    std::cout << "WARNING: Tag-and-probe and/or scale factor studies with modified jets.  Disabling!" << std::endl;
+	    studyMuonSelectionEff_     = false ; 
+	    studyScaleFactorEvolution_ = false ; 
+	  }
         }
         else std::cout << "Nominal Jet corrections applied" << std::endl;
         if(applyMESfactor_ != 1.0)
         {
             std::cout << "Studies will be used to estimate MES uncertainty: " << applyMESfactor_ << std::endl;
-            if(studyMuonSelectionEff_ || studyScaleFactorEvolution_)
-                std::cout << "WARNING: You are performing studies with MES factor != 1.  This is most likely wrong!" << std::endl;
+            if(studyMuonSelectionEff_ || studyScaleFactorEvolution_) { 
+	      std::cout << "WARNING: Tag-and-probe and/or scale factor studies with modified muons.  Disabling!" << std::endl;
+	      studyMuonSelectionEff_     = false ; 
+	      studyScaleFactorEvolution_ = false ; 
+	    }
         }
         else std::cout << "No MES corrections applied" << std::endl;
         if(!disableTriggerCorrection_)
@@ -1300,27 +1312,32 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     
     if(pJets->size() < 2) return false;
+    // std::cout << "Event number pjets: " << evtCounter << std::endl ; 
 
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet, float> > jetCands =
       hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_);
     hnuEvent.nJets = jetCands.size();
+    // std::cout << "Event number jet list: " << evtCounter << std::endl ; 
 
     if(hnuEvent.nJets >= 2) 
     {
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
         fill(*pMuons, *pElecs, jetCands, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
     }
+    // std::cout << "Event number basic fill: " << evtCounter << std::endl ; 
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
       hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
 		       cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_, merUncertainty_, false);
+    // std::cout << "Event number mu cands: " << evtCounter << std::endl ; 
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
 			   heepVersion_,elecRho_);
+    // std::cout << "Event number ecands: " << evtCounter << std::endl ; 
 
     // if (analysisMode_ == HeavyNuEvent::HNUE)
     //   std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ; 
@@ -1531,12 +1548,14 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	studyElectronSelectionEff(heepTagGsfProbes,eCands,hnuEvent.eventWgt,validJets.size(),iEvent);
       }
     }
+    // std::cout << "Event number before njets cut: " << evtCounter << std::endl ; 
 
 
     // if (analysisMode_ == HeavyNuEvent::HNUE)
     //   std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ; 
 
     if(hnuEvent.nJets < 2) return false;
+    // std::cout << "Event number njets: " << evtCounter << std::endl ; 
 
     hnuEvent.j1 = jetCands.at(0).first;
     hnuEvent.j2 = jetCands.at(1).first;
@@ -1665,8 +1684,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
                 else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
                 else std::cout << "WARNING: Expected empty electron position" << std::endl;
-            } else { 
-	      std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ; 
+            // } else { 
+	    //   std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ; 
 	    }
         }
 
@@ -1686,16 +1705,19 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	l1trig = l2trig = l12trig ;
     }
+    // std::cout << "Event number trig0: " << evtCounter << std::endl ; 
 
     //hnuEvent.regularize();  (this is now done in calculate and so this call is redundent
 
     if(hnuEvent.nLeptons < 2) return false;
+    // std::cout << "Event number nleptons: " << evtCounter << std::endl ; 
 
     if(hnu::jetID(hnuEvent.j1) < 1 || hnu::jetID(hnuEvent.j2) < 1) return false;
+    // std::cout << "Event number njets: " << evtCounter << std::endl ; 
 
     hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
     hnuEvent.scaleMuE(applyMESfactor_);
-    hnuEvent.calculate(); // calculate various details
+    hnuEvent.calculate(correctEscale_); // calculate various details
     hists.LLJJptCuts->fill(hnuEvent);
     if(pMET->size()) hnuEvent.met1 = pMET->at(0);
 
@@ -1722,6 +1744,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Event meets trigger requirements
     if(addSlopeTree_) hnuTree_->event_.cutlevel = 2;
     hists.TrigMatches->fill(hnuEvent);
+    // std::cout << "Event number trig: " << evtCounter << std::endl ; 
 
     // hists.LLJJptCuts->fill(hnuEvent);
 
@@ -1801,6 +1824,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if(addSlopeTree_) hnuTree_->fill();
         return false;
     }
+    // std::cout << "Event number pt: " << evtCounter << std::endl ; 
 
     if(studyScaleFactorEvolution_)
     {
@@ -1816,6 +1840,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.Mu1HighPtCut->fill(hnuEvent);
 
     if(hnuEvent.mLL < 40) return false; // Sanity check...remove low mass points
+    // std::cout << "Event number mass: " << evtCounter << std::endl ; 
     //hists.loDiLmassCut->fill(hnuEvent);
     if ( studyRatePerRun_ && inZmassWindow(hnuEvent.mLL) )
         hists.z2jetPerRun->Fill( iEvent.id().run() ) ; 

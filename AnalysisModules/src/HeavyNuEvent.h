@@ -47,8 +47,8 @@ public:
     // void initialize(int mode);
 
     void scaleMuE(double mufactor = 1.0, double efactor = 1.0);
-    void calculateLL();
-    void calculate();
+    void calculateLL(bool correctEscale = false);
+    void calculate(bool correctEscale = false);
     void decayID(const reco::GenParticleCollection& gpc);
 
     // These generic particles are used to pass features common to all leptons.

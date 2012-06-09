@@ -48,6 +48,7 @@ hNuTop = cms.EDFilter(
     heepVersion       = cms.int32(40),
 
     applyEleEScale    = cms.bool(False),
+    correctEscale     = cms.bool(False),
     EBscalefactor     = cms.double(1.0),
     EEscalefactor     = cms.double(1.0),
     applyEleIDweight  = cms.bool(False),
