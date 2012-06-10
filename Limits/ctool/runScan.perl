@@ -9,8 +9,8 @@ $jobBase="default";
 $special="";
 $systmode=0;
 $xsec=0.01;
-$minmwAllowed=1000;
-$maxmwAllowed=2500;
+$minmwAllowed=700;
+$maxmwAllowed=3000;
 $year=2012;
 
 GetOptions("toys=i" => \$toys,
@@ -74,12 +74,14 @@ foreach $item (@items) {
 #    next if (!($item=~/WRToNuLeptonToLLJJ_MW-([0-9]+)_MNu-([0-9]+)/));
     next if (!($item=~/signal_([0-9]+)_([0-9]+)/));
     if ($year==2012) {
-	next if (!($item=~/2012/));
+	next if (!($item=~/_2012/));
     } else {   
-	next if (!($item=~/2011/));
+	next if (!($item=~/_2011/));
     }
 
     $mw=$1; $mn=$2;
+
+    print "Got $mw $mn\n";
 
     next if ($mw < $minmwAllowed);
     next if ($mw > $maxmwAllowed);
@@ -134,5 +136,5 @@ foreach $item (@items) {
 
    
 close(CONDOR);
-system("condor_submit for_condor.txt");
+#system("condor_submit for_condor.txt");
 
