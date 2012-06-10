@@ -3,6 +3,7 @@
 // #include "PhysicsTools/PatUtils/interface/TriggerHelper.h"
 #include "DataFormats/PatCandidates/interface/TriggerPath.h"
 #include "DataFormats/PatCandidates/interface/TriggerObject.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 #include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 
@@ -10,6 +11,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+#include "HeavyNuCommon.h"
 
 //======================================================================
 
@@ -194,116 +196,57 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
   return ( matched ); 
 }                                    // HeavyNuTrigger::isTriggerMatched
 
-bool
-HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
-				 const pat::Electron& e2,
-				 const edm::Event& iEvent,
-				 int nMatchesNeeded,
-				 trigHistos_t *thist)
+bool HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,
+                                      const pat::Electron& e2,
+                                      const edm::Event& iEvent,
+                                      int nMatchesNeeded,
+                                      trigHistos_t *thist)
 {
-  bool matched=false;
-  if ( !matchingEnabled_ ) return false ; 
-  
-  // Only one trigger can be used for matching in a given run
-  int run = iEvent.run() ; 
-  std::vector<std::string> validHLTpaths ; 
-  
-  for (unsigned int i=0; i<electronTriggers_.size(); i++) 
-    if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(electronTriggers_.at(i)) ; 
+    if ( !matchingEnabled_ ) return false ;
 
-  // for (unsigned int i=0; i<validHLTpaths.size(); i++) { 
-  //   std::cout << "Valid HLT paths: " << validHLTpaths.at(i) << std::endl ; 
-  // }
+    // This code is adopted from HeavyNuEleTrigger.cc
 
-  edm::Handle< pat::TriggerEvent > triggerEvent;
-  
-  iEvent.getByLabel( trigEventTag_, triggerEvent );
-  if ( !triggerEvent.isValid() ) {
-    std::cerr << "triggerEvent not found " << std::endl;
-    return false;
-  }
-
-  // const pat::TriggerPathCollection* trigPaths = triggerEvent->paths() ; 
-  // for ( pat::TriggerPathCollection::const_iterator iPath = trigPaths->begin(); iPath != trigPaths->end(); ++iPath ) {
-  for (unsigned int i=0; i<validHLTpaths.size(); i++) { 
-
-    // std::cout << "Investigating path: " << validHLTpaths.at(i) << std::endl ; 
-    const pat::TriggerPathRef iPath = triggerEvent->pathRef( validHLTpaths.at(i) ) ; 
-    if ( iPath.isNonnull() && iPath->wasAccept() ) { 
-      // std::cout << "Found path!" << std::endl ; 
-
-      // std::cout << "Path information: " 
-      // 		<< iPath->name() << " " 
-      // 		<< iPath->index() << " " 
-      // 		<< iPath->prescale() << " " 
-      // 		<< iPath->wasRun() << " " 
-      // 		<< iPath->wasAccept() << " " 
-      // 		<< iPath->wasError() << " " 
-      // 		<< iPath->lastActiveFilterSlot() << " " 
-      // 		<< iPath->modules().size() ; 
-      // std::cout // << iPath->modules().at(iPath->lastActiveFilterSlot()) << " "
-      // 	<< iPath->l3Filters() << " " 
-      // 	<< iPath->xTrigger() << " " ; 
-      // // for (unsigned int j=0; j<iPath->filterIndices().size(); j++) { 
-      // //   std::cout << iPath->modules().at(iPath->filterIndices().at(j)) << " " ; 
-      // // }
-      // std::cout << " " 
-      // 		<< std::endl ; 
-      
-      // std::cout << "Looking for trigger objects involved in this path" << std::endl ; 
-      
-      pat::TriggerObjectRefVector objectsInPath = triggerEvent->pathObjects(iPath->name(),true) ; // assuming firing path
-      pat::TriggerFilterRefVector filtersInPath = triggerEvent->pathFilters(iPath->name(),true) ; // assuming firing path
-      
-      bool matched_e1 = false ; 
-      bool matched_e2 = ((nMatchesNeeded < 2) ? true : false) ; 
-      for ( pat::TriggerFilterRefVector::const_iterator ifRef = filtersInPath.begin(); ifRef != filtersInPath.end(); ifRef++) { 
-	pat::TriggerFilterRef filterRef = *ifRef ; 
-	if ( filterRef->isFiring() &&
-	     ( std::find(electronFilters_.begin(), electronFilters_.end(), filterRef->label()) != electronFilters_.end() ) ) { 
-	  
-	  for ( pat::TriggerObjectRefVector::const_iterator iobjRef = objectsInPath.begin(); iobjRef != objectsInPath.end(); ++iobjRef ) {
-	    pat::TriggerObjectRef objRef = *iobjRef ; 
-	    // std::cout << "Found an object with pT = " << objRef->pt() << " and eta " << objRef->eta() << std::endl ; 
-	    if ( triggerEvent->objectInFilter(objRef,filterRef->label()) ) { // Trigger object was used by the filter
-
-	      // Electron selection is tighter than the trigger everywhere, so just perform dR matching
-	      // std::cout << "Object in filter: " << filterRef->label() << " with status " << filterRef->status() << std::endl ; 
-	      double dr2_e1  = reco::deltaR2 <pat::Electron,pat::TriggerObject>( e1,(*objRef) );
-	      double dr2_e2  = reco::deltaR2 <pat::Electron,pat::TriggerObject>( e2,(*objRef) );
-
-	      if ( nMatchesNeeded < 2 ) { // Special case when you care only if the electron was involved in a passing trigger
-		if ( sqrt(dr2_e1) < 0.1 ) { 
-		  matched_e1 = true ; 
-		  // std::cout << "Matched to this object" << std::endl ; 
-		}
-		// std::cout << "Distance to electron 1 with pT " << e1.pt() 
-		// 	  << " and eta " << e1.eta() << " is " << sqrt(dr2_e1) << std::endl ; 
-	      } else { 
-		// std::cout << "Distance to electron 1 with pT " << e1.pt() 
-		// 	  << " and eta " << e1.eta() << " is " << sqrt(dr2_e1) << std::endl ; 
-		// std::cout << "Distance to electron 2 with pT " << e2.pt() 
-		// 	  << " and eta " << e2.eta() << " is " << sqrt(dr2_e2) << std::endl ; 
-		if ( sqrt(dr2_e1) < 0.1 && (dr2_e1 < dr2_e2) ) { 
-		  // std::cout << "e1 Matched to this object" << std::endl ; 
-		  matched_e1 = true ;
-		} 
-		if ( sqrt(dr2_e2) < 0.1 && (dr2_e2 < dr2_e1) ) { 
-		  // std::cout << "e2 Matched to this object" << std::endl ; 
-		  matched_e2 = true ; 
-		}
-		// std::cout << "This object matched at least one of the electrons" << std::endl ; 
-	      }
-	    }
-	  }
-	}
-      }
-      matched = matched_e1 && matched_e2 ; 
-      // std::cout << matched << " = " << matched_e1 << " && " << matched_e2 << std::endl ; 
+    edm::InputTag hltTrigInfoTag("hltTriggerSummaryAOD","","HLT");
+    edm::Handle<trigger::TriggerEvent> trigEvent;
+    iEvent.getByLabel(hltTrigInfoTag, trigEvent);
+    if ( !trigEvent.isValid() )
+    {
+        std::cout << "hltTrigInfoTag not found. Bailing out. " << std::endl;
+        assert(0);
     }
-  }
 
-  return matched ; 
+    bool matched_e1 = false, matched_e2 = false;
+    for(std::vector<std::string>::const_iterator ieFilters = electronFilters_.begin(); ieFilters != electronFilters_.end(); ++ieFilters)
+    {
+        std::vector<math::XYZTLorentzVector> trigObjects;
+        trigtools::getP4sOfObsPassingFilter(trigObjects, *trigEvent, *ieFilters, hltTrigInfoTag.process());
+        for(std::vector<math::XYZTLorentzVector>::const_iterator iTP = trigObjects.begin(); iTP != trigObjects.end(); ++iTP)
+        {
+            double dr2_e1 = reco::deltaR2<pat::Electron, math::XYZTLorentzVector > (e1, *iTP);
+            double dr2_e2 = reco::deltaR2<pat::Electron, math::XYZTLorentzVector > (e2, *iTP);
+            if ( sqrt(dr2_e1) < 0.1 && (dr2_e1 <= dr2_e2) )
+            {
+                // std::cout << "e1 Matched to this object" << std::endl ;
+                matched_e1 = true ;
+            }
+            if ( sqrt(dr2_e2) < 0.1 && (dr2_e2 <= dr2_e1) )
+            {
+                // std::cout << "e2 Matched to this object" << std::endl ;
+                matched_e2 = true ;
+            }
+        }
+    }
+
+    if(nMatchesNeeded <= 1) 
+    {
+        //std::cout << "One Trig Match: " << matched_e1 << "\t" << matched_e2 << std::endl;
+        return matched_e1 || matched_e2;
+    }
+    else
+    {
+        //std::cout << "Two Trig Match: " << matched_e1 << "\t" << matched_e2 << std::endl;
+        return matched_e1 && matched_e2;
+    }
 
 }                                    // HeavyNuTrigger::isTriggerMatched
 

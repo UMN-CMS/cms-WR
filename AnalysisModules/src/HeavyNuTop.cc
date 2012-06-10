@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.29 2012/05/30 10:05:15 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.30 2012/06/09 23:30:58 bdahmes Exp $
 //
 //
 
@@ -68,6 +68,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTopHist.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuTree.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -115,7 +116,6 @@ private:
     void fill(pat::MuonCollection muons,
               pat::ElectronCollection electrons,
               pat::JetCollection  jets,
-              pat::METCollection  metc,
               bool isMC,
               double wgt,
               HeavyNuHistSet* hnhs);
@@ -127,8 +127,8 @@ private:
     edm::InputTag metTag_;
     edm::InputTag elecTag_;
 
-  edm::InputTag elecRhoTag_ ; 
-  double elecRho_ ; 
+    edm::InputTag elecRhoTag_ ;
+    double elecRho_ ;
 
     double applyMESfactor_;             // for Muon Energy Scale studies
     int    applyTrigEffsign_;           // for Trigger Efficiency studies
@@ -162,6 +162,9 @@ private:
     // ----------member data ---------------------------
 
     bool init_;
+
+    bool addSlopeTree_;
+    HeavyNuTree *hnuTree_;
 
     // gf set of histo for all Z definitions in a stack
 
@@ -242,7 +245,6 @@ inline void labelMuonQualAxis(TAxis *ax)
 void HeavyNuTop::fill(pat::MuonCollection muons,
                       pat::ElectronCollection electrons,
                       pat::JetCollection  jets,
-                      pat::METCollection  metc,
                       bool isMC,
                       double wgt,
                       HeavyNuHistSet* hnhs)
@@ -339,6 +341,7 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     if(applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
 
     isPFJets_ = iConfig.getParameter<bool>("isPFJets");
+    addSlopeTree_ = iConfig.getUntrackedParameter<bool>("addSlopeTree");
 
     // applyEleScaleCorrections_ = iConfig.getParameter<bool>("applyEleEScale") ; ;
     // applyEleIDWeightFactor_   = iConfig.getParameter<bool>("applyEleIDweight") ;
@@ -360,6 +363,10 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     //
     edm::Service<TFileService> fs;
     hists.nelec    = fs->make<TH1D > ("nelec",     "N(e^{#pm})", 10, -0.5, 9.5);
+
+    //this must be after at least 1 call of fs->make<...>(...) in order for the directory to have been created.
+    if(addSlopeTree_) hnuTree_ = new HeavyNuTree(*fs->getBareDirectory(), true);
+
     hists.nmuAll   = fs->make<TH1D > ("nmuAll",    "N(#mu^{#pm})", 10, -0.5, 9.5);
     hists.nmuLoose = fs->make<TH1D > ("nmuLoose",  "N(#mu^{#pm}) passes Loose", 10, -0.5, 9.5);
     hists.nmuTight = fs->make<TH1D > ("nmuTight",  "N(#mu^{#pm}) passes Tight", 10, -0.5, 9.5);
@@ -453,6 +460,7 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
     std::cout << "pileup era        = " << pileupEra_ << std::endl;
     std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
+    std::cout << "addSlopeTree      = " << addSlopeTree_ << std::endl;
 }
 
 HeavyNuTop::~HeavyNuTop(){
@@ -473,6 +481,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using namespace edm;
     HeavyNuEvent hnuEvent(HeavyNuEvent::TOP);
+    if(addSlopeTree_) hnuTree_->clear();
 
     hnuEvent.isMC = !iEvent.isRealData();
     hnuEvent.pfJets = isPFJets_;
@@ -537,8 +546,8 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if ( !pElecs.isValid() ||
         !pMuons.isValid() ||
-        !pJets.isValid()  ||
-        !(pMET.isValid() && pMET->size() > 0))
+        !pJets.isValid() )// ||
+        //!(pMET.isValid() && pMET->size() > 0))
     {
         std::cout << "Exiting as valid PAT objects not found" << std::endl ;
         return false;
@@ -596,12 +605,12 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.nelec ->Fill(pElecs->size()) ;
     hists.nmuAll->Fill(pMuons->size()) ;
     hists.njet  ->Fill(pJets->size()) ;
-    hists.nmet  ->Fill(pMET->size()) ;
+    //hists.nmet  ->Fill(pMET->size()) ;
 
-    if (pMET->size())
-        hists.met->Fill(pMET->at(0).pt());
-    else
-        hists.met->Fill(0);
+    //if (pMET->size())
+    //    hists.met->Fill(pMET->at(0).pt());
+    //else
+    //    hists.met->Fill(0);
 
     hists.cutlevel->Fill(-1.0, hnuEvent.eventWgt);
 
@@ -609,7 +618,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( pMuons->size() >= 1 && pElecs->size() >= 1 && pJets->size() >= 2 )
     {
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
-        fill( *pMuons, *pElecs, *pJets, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, hists.noCuts);
+        fill( *pMuons, *pElecs, *pJets, hnuEvent.isMC, hnuEvent.eventWgt, hists.noCuts);
     }
     else return false;
 
@@ -690,11 +699,25 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
 
-    hnuEvent.met1 = pMET->at(0);
+    //hnuEvent.met1 = pMET->at(0);
 
-    hnuEvent.regularize(); // assign internal primary lepton variables
+    //hnuEvent.regularize(); // assign internal primary lepton variables  //this is called in calculate now and no longer needs to be called here
     //hnuEvent.scaleMuE(applyMESfactor_,hnuEvent.ElecScale);
     hnuEvent.calculate(correctEscale_); // calculate various details
+
+    // Fill slope fit tuple here
+    if(addSlopeTree_)
+    {
+        hnuTree_->event_.mll = hnuEvent.mLL;
+        hnuTree_->event_.mlljj = hnuEvent.mWR;
+        hnuTree_->event_.l1pt = hnuEvent.l1pt;
+        hnuTree_->event_.l2pt = hnuEvent.l2pt;
+        hnuTree_->event_.weight = hnuEvent.eventWgt;
+        hnuTree_->event_.flavor = hnuEvent.mode;
+        hnuTree_->event_.n_pileup = hnuEvent.n_pue;
+        hnuTree_->event_.n_primaryVertex = hnuEvent.n_primary_vertex;
+        hnuTree_->event_.cutlevel = 1;
+    }
 
     // Basic requirements on muon, electron, jets
     hists.LLJJptCuts->fill(hnuEvent);
@@ -712,9 +735,14 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 trig_->simulateForMC( hnuEvent.mu1.pt(), hnuEvent.mu1.eta(), applyTrigEffsign_ );
     }
 
-    if( !mu1trig ) return false;
+    if( !mu1trig ) 
+    {
+        if(addSlopeTree_) hnuTree_->fill();
+        return false;
+    }
     hists.TrigMatches->fill(hnuEvent);
     hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Trigger
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 2;
 
     //--- Impose vertex requirement here ---//
     float deltaVzJ1J2 = fabs(hnuEvent.tjV1 - hnuEvent.tjV2);
@@ -727,9 +755,13 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         ((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
         (deltaVzJ2E1 >= cuts.maxJetVZsepCM) || (deltaVzJ1E1 >= cuts.maxJetVZsepCM) ||
         (deltaVzJ2M1 >= cuts.maxJetVZsepCM) || (deltaVzM1E1 >= cuts.maxVertexZsep)) )
+    {
+        if(addSlopeTree_) hnuTree_->fill();
         return false ;
+    }
     hists.VertexCuts->fill(hnuEvent);
     hists.cutlevel->Fill(3.0, hnuEvent.eventWgt); // Vertex
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 3;
 
     double mu1pt = hnuEvent.mu1.pt() ;
     double e1pt  = hnu::getElectronEt(hnuEvent.e1,(heepVersion_ != 40)) ;
@@ -745,9 +777,13 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
 
     if(highestPt < cuts.minimum_lep1_pt)
+    {
+        if(addSlopeTree_) hnuTree_->fill();
         return false;
+    }
 
     hists.cutlevel->Fill(4.0, hnuEvent.eventWgt); // Primary lepton pT
+    if(addSlopeTree_) hnuTree_->event_.cutlevel = 4;
 
     if ( studyScaleFactorEvolution_ )
     {
@@ -762,7 +798,13 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if(hnuEvent.mLL >= cuts.minimum_mumu_mass) { 
         hists.diLmassCut->fill(hnuEvent);
-	hists.cutlevel->Fill(5.0, hnuEvent.eventWgt); // Dilepton mass 
+	hists.cutlevel->Fill(5.0, hnuEvent.eventWgt); // Dilepton mass
+
+        if(addSlopeTree_ && !(hnuEvent.mWR >= cuts.minimum_mWR_mass))
+        {
+            hnuTree_->event_.cutlevel = 5;
+            hnuTree_->fill();
+        }
     }
 
     if ( iEvent.isRealData() )
@@ -790,6 +832,12 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( hnuEvent.mLL >= cuts.minimum_mumu_mass && hnuEvent.mWR >= cuts.minimum_mWR_mass ) { 
       hists.cutlevel->Fill(6.0, hnuEvent.eventWgt); // Event meets W_R mass requirements
       hists.mWRmassCut->fill(hnuEvent);
+
+      if(addSlopeTree_)
+      {
+          hnuTree_->event_.cutlevel = 5;
+          hnuTree_->fill();
+      }
     }
 
     return true;

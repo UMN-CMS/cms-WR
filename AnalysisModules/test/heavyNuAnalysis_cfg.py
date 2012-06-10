@@ -8,7 +8,7 @@ import os
 #analysisMode = 'HNUE'
 
 #--- Data/MC switch ---#
-isMC=False
+isMC=True
 isData=not isMC
 
 #--- Special flag for 44x/Fall11 ---#
@@ -48,10 +48,9 @@ if not isRun2012:
         if is44x: 
             pileupEra = 20114
 
-
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
-runElectronAnalysis = False
+runElectronAnalysis = True
 systematics    = False
 tagandprobe    = True
 doTriggerStudy = True
@@ -71,6 +70,9 @@ doDijet   = False
 doQuadJet = False
 doClosure = False
 
+#--- Tau Flag ---#
+ishpsPFTau = False
+
 #--- Should always be True ---#
 isPileupMC = True
 isPFJets   = True
@@ -87,8 +89,8 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:input.root')
-                            )
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavynu/skims/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START52_V9-v2/heavynu_candevents_97_0_PZv.root')
+)
 
 if isData:
     if isRun2012:
@@ -192,6 +194,104 @@ process.refitMuons.src = cms.InputTag("muons")
 process.myRefitMuonSequence = cms.Sequence( process.refitMuons )
 from PhysicsTools.PatAlgos.tools.pfTools import *
 
+def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, postfix="", jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']), pvCollection=cms.InputTag('offlinePrimaryVertices'), typeIMetCorrections=False, outputModules=['out']):
+    # PLEASE DO NOT CLOBBER THIS FUNCTION WITH CODE SPECIFIC TO A GIVEN PHYSICS OBJECT.
+    # CREATE ADDITIONAL FUNCTIONS IF NEEDED.
+
+    """Switch PAT to use PF2PAT instead of AOD sources. if 'runPF2PAT' is true, we'll also add PF2PAT in front of the PAT sequence"""
+
+    # -------- CORE ---------------
+    if runPF2PAT:
+        process.load("CommonTools.ParticleFlow.PF2PAT_cff")
+        #add Pf2PAT *before* cloning so that overlapping modules are cloned too
+        #process.patDefaultSequence.replace( process.patCandidates, process.PF2PAT+process.patCandidates)
+        process.patPF2PATSequence = cms.Sequence( process.PF2PAT + process.patDefaultSequence)
+    else:
+        process.patPF2PATSequence = cms.Sequence( process.patDefaultSequence )
+
+    if not postfix == "":
+        from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
+        cloneProcessingSnippet(process, process.patPF2PATSequence, postfix)
+        #delete everything pat PF2PAT modules! if you want to test the postfixing for completeness
+        #from PhysicsTools.PatAlgos.tools.helpers import listModules,listSequences
+        #for module in listModules(process.patDefaultSequence):
+        #    if not module.label() is None: process.__delattr__(module.label())
+        #for sequence in listSequences(process.patDefaultSequence):
+        #    if not sequence.label() is None: process.__delattr__(sequence.label())
+        #del process.patDefaultSequence
+
+    removeCleaning(process, postfix=postfix, outputModules=outputModules)
+
+    # -------- OBJECTS ------------
+    # Muons
+    #adaptPFMuons(process,
+    #             applyPostfix(process,"patMuons",postfix),
+    #             postfix)
+
+    # Electrons
+    #adaptPFElectrons(process,
+    #                 applyPostfix(process,"patElectrons",postfix),
+    #                 postfix)
+
+    # Photons
+    print "Temporarily switching off photons completely"
+
+    removeSpecificPATObjects(process,names=['Photons', 'Taus', "Muons", "Electrons"],outputModules=outputModules,postfix=postfix)
+    removeIfInSequence(process,"patPhotonIsolation","patDefaultSequence",postfix)
+
+    # Jets
+    if runOnMC :
+       if ishpsPFTau:
+         switchToPFJets( process, cms.InputTag('pfNoTau'+postfix), jetAlgo, postfix=postfix,
+                        jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
+       else:
+         switchToPFJets( process, cms.InputTag('pfJets'+postfix), jetAlgo, postfix=postfix,
+                           jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
+         applyPostfix(process,"patDefaultSequence",postfix).replace(
+            applyPostfix(process,"patJetGenJetMatch",postfix),
+            getattr(process,"genForPF2PATSequence") *
+            applyPostfix(process,"patJetGenJetMatch",postfix)
+            )
+    else :
+        if not 'L2L3Residual' in jetCorrections[1]:
+            print '#################################################'
+            print 'WARNING! Not using L2L3Residual but this is data.'
+            print 'If this is okay with you, disregard this message.'
+            print '#################################################'
+        if ishpsPFTau:
+            switchToPFJets( process, cms.InputTag('pfNoTau'+postfix), jetAlgo, postfix=postfix,
+                            jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
+        else:
+            switchToPFJets( process, cms.InputTag('pfJets'+postfix), jetAlgo, postfix=postfix,
+                            jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
+
+    # Taus
+    #adaptPFTaus( process, tauType='shrinkingConePFTau', postfix=postfix )
+    #adaptPFTaus( process, tauType='fixedConePFTau', postfix=postfix )
+    if ishpsPFTau:
+        adaptPFTaus( process, tauType='hpsPFTau', postfix=postfix )
+
+    # MET
+    switchToPFMET(process, cms.InputTag('pfMET'+postfix), type1=typeIMetCorrections, postfix=postfix)
+
+    # Unmasked PFCandidates
+    addPFCandidates(process,cms.InputTag('pfNoJet'+postfix),patLabel='PFParticles'+postfix,cut="",postfix=postfix)
+
+    # adapt primary vertex collection
+    adaptPVs(process, pvCollection=pvCollection, postfix=postfix)
+
+    if runOnMC:
+        process.load("CommonTools.ParticleFlow.genForPF2PAT_cff")
+        getattr(process, "patDefaultSequence"+postfix).replace(
+            applyPostfix(process,"patCandidates",postfix),
+            process.genForPF2PATSequence+applyPostfix(process,"patCandidates",postfix)
+            )
+    else:
+        removeMCMatchingPF2PAT(process,postfix=postfix,outputModules=outputModules)
+
+    print "Done: PF2PAT interfaced to PAT, postfix=", postfix
+
+
 #--- Output module: 
 #--- Must be defined before PAT python tools will work
 process.out = cms.OutputModule("PoolOutputModule",
@@ -203,14 +303,14 @@ process.out = cms.OutputModule("PoolOutputModule",
 if isPFJets:
     postfix = "PFlow"
     if isMC:
-        usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+        usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
                   jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
     else:
         if isRun2012:
-            usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+            usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
                       jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
         else:
-            usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix, 
+            usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
                       jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
@@ -261,6 +361,17 @@ if isPFJets:
         getattr(process,"patPF2PATSequence"+postfix)
     )
     
+    # Remove unneeded tau sequences, some of which are very time consuming
+    if not ishpsPFTau:
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauIsoDepositPFCandidates"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauIsoDepositPFChargedHadrons"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauIsoDepositPFNeutralHadrons"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauIsoDepositPFGammas"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauMatch"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauGenJets"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauGenJetsSelectorAllHadrons"+postfix) )
+       process.modifiedPF2PATSequence.remove(getattr(process,"tauGenJetMatch"+postfix) )
+
 # Corrections to isolation for electrons
 from RecoJets.JetProducers.kt4PFJets_cfi import *
 process.kt6PFJetsForIsolation            = kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
@@ -364,10 +475,14 @@ process.patJetCorrFactors.useRho = cms.bool(False)
 ## ============================== ##
 
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
-if (is44x): 
+from PhysicsTools.PatAlgos.tools.coreTools import removeSpecificPATObjects
+if (is42x):
+    removeCleaning( process, False )
+elif (is44x):
     removeCleaning( process, outputModules = [] )
 else:
-    removeCleaning( process, False )
+    removeCleaning( process, outputModules = [] )
+    removeSpecificPATObjects(process, names = ['Jets','Taus','METs'], outputModules = [])
 
 # Special change for saving good products in data
 if isData:
@@ -615,6 +730,8 @@ process.hNuTop.EEidWgt = cms.double( 1.000 )
 process.hNuTop.maxVertexZsepCM     = cms.double(-1)
 process.hNuTop.maxVertexJetVZsepCM = cms.double(-1)
 
+process.hNuTop.addSlopeTree        = cms.untracked.bool(addSlopeTrees)
+
 if isPFJets:
     process.hNuTop.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
 
@@ -650,6 +767,15 @@ process.hNuTopMu24trigHi = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int
 process.hNuTopMu24trigLo = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int32(-1) )
 process.hNuTopMu40trigHi = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(1) )
 process.hNuTopMu40trigLo = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(-1) )
+
+#----------------#
+#--- LumiList ---#
+#----------------#
+
+process.lumilist = cms.EDAnalyzer('LumiList')
+
+if not isMC:
+    process.llPath = cms.Path(process.lumilist)
 
 #-------------#
 #--- Paths ---#

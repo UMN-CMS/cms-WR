@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.101 2012/05/30 09:18:52 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.102 2012/06/09 23:30:58 bdahmes Exp $
 //
 //
 
@@ -154,8 +154,7 @@ private:
 
     void fill(pat::MuonCollection muons,
               pat::ElectronCollection electrons,
-              std::vector< std::pair<pat::Jet, float> >& jets,
-              pat::METCollection metc,
+              std::vector< std::pair<pat::Jet, float> >& jets, 
               bool isMC,
               double wgt,
               bool pfJets,
@@ -355,7 +354,6 @@ bool HeavyNu::isWrDaughter(const reco::Candidate* mother)
 void HeavyNu::fill(pat::MuonCollection muons,
                    pat::ElectronCollection electrons,
                    std::vector< std::pair<pat::Jet, float> >& jets,
-                   pat::METCollection metc,
                    bool isMC,
                    double wgt,
                    bool pfJets,
@@ -412,7 +410,7 @@ void HeavyNu::fill(pat::MuonCollection muons,
         hne.isBJet2 = j2bdisc >= minBtagDiscVal;
     }
 
-    hne.met1 = metc[0];
+    //hne.met1 = metc[0];
 
     hne.calculateLL(correctEscale_);
     hne.calculate(correctEscale_);
@@ -1151,13 +1149,13 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
     hnuEvent.n_primary_vertex = hnu::numberOfPrimaryVertices(pvHandle);
 
-    if(!pElecs.isValid() || !pMuons.isValid() || !pJets.isValid() || !(pMET.isValid() && (pMET->size() > 0)))
+    if(!pElecs.isValid() || !pMuons.isValid() || !pJets.isValid())// || !(pMET.isValid() && (pMET->size() > 0)))
     {
         std::cout << "Exiting as valid PAT objects not found" << std::endl;
         std::cout << "Electrons: " << pElecs.isValid() << std::endl;
         std::cout << "Muons:     " << pMuons.isValid() << std::endl;
         std::cout << "Jets:      " << pJets.isValid() << std::endl;
-        std::cout << "MET:       " << pMET.isValid() << std::endl;
+        //std::cout << "MET:       " << pMET.isValid() << std::endl;
         return false;
     }
 
@@ -1261,14 +1259,14 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.nelec->Fill(pElecs->size());
     hists.nmuAll->Fill(pMuons->size());
     hists.njet->Fill(pJets->size());
-    hists.nmet->Fill(pMET->size());
+    //hists.nmet->Fill(pMET->size());
 
     studyJetVertex(pJets, jptJets, pMuons, hnuEvent.n_primary_vertex);
 
-    if(pMET->size())
-        hists.met->Fill(pMET->at(0).pt());
-    else
-        hists.met->Fill(0);
+    //if(pMET->size())
+    //    hists.met->Fill(pMET->at(0).pt());
+    //else
+    //    hists.met->Fill(0);
 
     for(size_t iJet = 0; iJet < pJets->size(); iJet++)
     {
@@ -1323,7 +1321,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.nJets >= 2) 
     {
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
-        fill(*pMuons, *pElecs, jetCands, *pMET, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
+        fill(*pMuons, *pElecs, jetCands, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
     }
     // std::cout << "Event number basic fill: " << evtCounter << std::endl ; 
 
@@ -1451,102 +1449,122 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
     }
 
-    if (studyMuonSelectionEff_ && analysisMode_ == HeavyNuEvent::HNUE) {
+    if (studyMuonSelectionEff_ && analysisMode_ == HeavyNuEvent::HNUE)
+    {
 
-      std::vector<pat::Electron> tagElectrons ;
-      for (unsigned int i=0; i<eCands.size(); i++) {
-	// Electrons already pass HEEP selection, in proper detector region, with sufficient pT
-	pat::Electron tagCand = eCands.at(i).first ;
-	// std::cout << "I am looking at a HEEP candidate tag with pT " << hnu::getElectronEt(tagCand,false) 
-	// 	  << " and eta " << hnu::getElectronSCEta(tagCand) << std::endl ; 
-	if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, tagCand, iEvent, 1)) || 
-	     !iEvent.isRealData() ) { // 1) for data we can check a trigger match...for MC it will happen later
-	                              // 2) in the muon case tags are also selected according to the HLT efficiency;
-	                              //    deemed an overkill + now we're doing HLT efficiencies as a function of mass => ignore this for electrons
-	  bool jetOverlap = false ;
-	  // std::cout << "Found a trigger match" << std::endl ; 
-	  int nValidJets = 0 ; 
-	  for (unsigned int j=0; j<jetCands.size(); j++) {
-	    pat::Jet jet = jetCands.at(j).first ;
-	    if ( hnu::jetID(jet) > 0 ) {
-	      nValidJets++ ; 
-	      double dR = deltaR(tagCand.eta(), tagCand.phi(), jet.eta(), jet.phi()) ;
-	      if (dR <= cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; }
-	    }
-	  }
-	  // std::cout << "There are " << nValidJets << " jets in the event" << std::endl ; 
-	  // std::cout << "Far enough away from a jet...ok it is a tag" << std::endl ; 
-	  // If electron is separated from jets, is isolated, it is a tag candidate
-	  // NOTE: Both tag and probe must match to trigger, so full TP pair not settled!
-	  if ( !jetOverlap ) tagElectrons.push_back( tagCand ) ;
-	}
-      } // List of all possible electron tag candidates
+        std::vector<pat::Electron> tagElectrons ;
+        for (unsigned int i = 0; i < eCands.size(); i++)
+        {
+            // Electrons already pass HEEP selection, in proper detector region, with sufficient pT
+            pat::Electron tagCand = eCands.at(i).first ;
+            // std::cout << "I am looking at a HEEP candidate tag with pT " << hnu::getElectronEt(tagCand,false)
+            // 	  << " and eta " << hnu::getElectronSCEta(tagCand) << std::endl ;
+            if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, tagCand, iEvent, 1)) ||
+                !iEvent.isRealData() )
+            { // 1) for data we can check a trigger match...for MC it will happen later
+                // 2) in the muon case tags are also selected according to the HLT efficiency;
+                //    deemed an overkill + now we're doing HLT efficiencies as a function of mass => ignore this for electrons
+                bool jetOverlap = false ;
+                // std::cout << "Found a trigger match" << std::endl ;
+                int nValidJets = 0 ;
+                for (unsigned int j = 0; j < jetCands.size(); j++)
+                {
+                    pat::Jet jet = jetCands.at(j).first ;
+                    if ( hnu::jetID(jet) > 0 )
+                    {
+                        nValidJets++ ;
+                        double dR = deltaR(tagCand.eta(), tagCand.phi(), jet.eta(), jet.phi()) ;
+                        if (dR <= cuts.minimum_muon_jet_dR)
+                        {
+                            jetOverlap = true ;
+                            break ;
+                        }
+                    }
+                }
+                // std::cout << "There are " << nValidJets << " jets in the event" << std::endl ;
+                // std::cout << "Far enough away from a jet...ok it is a tag" << std::endl ;
+                // If electron is separated from jets, is isolated, it is a tag candidate
+                // NOTE: Both tag and probe must match to trigger, so full TP pair not settled!
+                if ( !jetOverlap ) tagElectrons.push_back( tagCand ) ;
+            }
+        } // List of all possible electron tag candidates
 
-      // std::cout << "I have a tag list of size " << tagElectrons.size() << std::endl ; 
+        // std::cout << "I have a tag list of size " << tagElectrons.size() << std::endl ;
 
-      // Make sure that we have at least two jets
-      // keeping in mind that we only study efficiency for the nominal case
-      std::vector<pat::Jet> validJets ; 
-      for (unsigned int i=0; i<jetCands.size(); i++) { 
-	pat::Jet jet = jetCands.at(i).first ;
-	// std::cout << "Jet " << (i+1) << " of " << jetCands.size() << " with pt " << jet.pt() << " and quality: " << hnu::jetID(jet) << std::endl ; 
-	if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
-      }
-      // std::cout << "I have created a list of validJets of size " << validJets.size() << std::endl ; 
+        // Make sure that we have at least two jets
+        // keeping in mind that we only study efficiency for the nominal case
+        std::vector<pat::Jet> validJets ;
+        for (unsigned int i = 0; i < jetCands.size(); i++)
+        {
+            pat::Jet jet = jetCands.at(i).first ;
+            // std::cout << "Jet " << (i+1) << " of " << jetCands.size() << " with pt " << jet.pt() << " and quality: " << hnu::jetID(jet) << std::endl ;
+            if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
+        }
+        // std::cout << "I have created a list of validJets of size " << validJets.size() << std::endl ;
 
-      if ( tagElectrons.size() > 0 ) { // Allow for checks of ID efficiency for different jet multiplicity
-	//--- Create the list of probe electrons ---//
-	std::vector<pat::Electron> gsfElectronProbes ; 
-	std::vector<pat::Electron> gsfCands = *(pElecs.product()) ; 
-	std::sort(gsfCands.begin(),gsfCands.end(),hnu::pTcompare()) ; 
+        if ( tagElectrons.size() > 0 )
+        { // Allow for checks of ID efficiency for different jet multiplicity
+            //--- Create the list of probe electrons ---//
+            std::vector<pat::Electron> gsfElectronProbes ;
+            std::vector<pat::Electron> gsfCands = *(pElecs.product()) ;
+            std::sort(gsfCands.begin(), gsfCands.end(), hnu::pTcompare()) ;
 
-	// std::cout << "I have a list of candidate probes of size " << gsfCands.size() << std::endl ; 
+            // std::cout << "I have a list of candidate probes of size " << gsfCands.size() << std::endl ;
 
-	for (unsigned int i=0; i<gsfCands.size(); i++) {
-	  pat::Electron gsfCand = gsfCands.at(i) ; 
-	  // std::cout << "GSF candidate probe with pT " << hnu::getElectronEt(gsfCand,false) 
-	  // 	    << " and eta " << hnu::getElectronSCEta(gsfCand) << std::endl ; 
-	  if ( hnu::getElectronEt(gsfCand,false) < cuts.minimum_mu2_pt ) break ; // Sorted collection, quit once below
-	  bool jetProbeOverlap = false ; 
-	  for (unsigned int j=0; j<jetCands.size(); j++) {
-	    pat::Jet jet = jetCands.at(j).first ;
-	    if ( hnu::jetID(jet) > 0 ) {
-	      double dR = deltaR(gsfCand.eta(), gsfCand.phi(), jet.eta(), jet.phi()) ;
-	      // std::cout << "dR between the probe and the jet is " << dR << std::endl ; 
-	      if (dR <= cuts.minimum_muon_jet_dR) { jetProbeOverlap = true ; break ; }
-	    }
-	  }
-	  if ( jetProbeOverlap ) { 
-	    // std::cout << "REJECTED: This probe should not be used for anything...it is too near a jet!!!" << std::endl ; 
-	    continue ; 
-	  }
+            for (unsigned int i = 0; i < gsfCands.size(); i++)
+            {
+                pat::Electron gsfCand = gsfCands.at(i) ;
+                // std::cout << "GSF candidate probe with pT " << hnu::getElectronEt(gsfCand,false)
+                // 	    << " and eta " << hnu::getElectronSCEta(gsfCand) << std::endl ;
+                if ( hnu::getElectronEt(gsfCand, false) < cuts.minimum_mu2_pt ) break ; // Sorted collection, quit once below
+                bool jetProbeOverlap = false ;
+                for (unsigned int j = 0; j < jetCands.size(); j++)
+                {
+                    pat::Jet jet = jetCands.at(j).first ;
+                    if ( hnu::jetID(jet) > 0 )
+                    {
+                        double dR = deltaR(gsfCand.eta(), gsfCand.phi(), jet.eta(), jet.phi()) ;
+                        // std::cout << "dR between the probe and the jet is " << dR << std::endl ;
+                        if (dR <= cuts.minimum_muon_jet_dR)
+                        {
+                            jetProbeOverlap = true ;
+                            break ;
+                        }
+                    }
+                }
+                if ( jetProbeOverlap )
+                {
+                    // std::cout << "REJECTED: This probe should not be used for anything...it is too near a jet!!!" << std::endl ;
+                    continue ;
+                }
 
-	  bool isEB = ( fabs(hnu::getElectronSCEta(gsfCand)) < 1.4442 ) ;
-	  bool isEE = ( fabs(hnu::getElectronSCEta(gsfCand)) < 2.5 && fabs(hnu::getElectronSCEta(gsfCand)) > 1.56 ) ;
-	  // if ( isEB ) std::cout << "This is a barrel electron" << std::endl ; 
-	  // if ( isEE ) std::cout << "This is an endcap electron" << std::endl ; 
-	  if ( !isEB && !isEE ) continue ;
-	  // Probe must participate in the trigger!
-	  if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(gsfCand, gsfCand, iEvent, 1)) || 
-	       !iEvent.isRealData() ) { 
-	    // std::cout << "This counts as a valid probe" << std::endl ; 
-	    gsfElectronProbes.push_back( gsfCand ) ; 
-	  }
-	}
-	// std::cout << "Total number of probes: " << gsfElectronProbes.size() << std::endl ;
+                bool isEB = ( fabs(hnu::getElectronSCEta(gsfCand)) < 1.4442 ) ;
+                bool isEE = ( fabs(hnu::getElectronSCEta(gsfCand)) < 2.5 && fabs(hnu::getElectronSCEta(gsfCand)) > 1.56 ) ;
+                // if ( isEB ) std::cout << "This is a barrel electron" << std::endl ;
+                // if ( isEE ) std::cout << "This is an endcap electron" << std::endl ;
+                if ( !isEB && !isEE ) continue ;
+                // Probe must participate in the trigger!
+                if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(gsfCand, gsfCand, iEvent, 1)) ||
+                    !iEvent.isRealData() )
+                {
+                    // std::cout << "This counts as a valid probe" << std::endl ;
+                    gsfElectronProbes.push_back( gsfCand ) ;
+                }
+            }
+            // std::cout << "Total number of probes: " << gsfElectronProbes.size() << std::endl ;
 
-	// 
-	// Now need to introduce a trigger requirement for MC...something to be done later
-	// 
+            //
+            // Now need to introduce a trigger requirement for MC...something to be done later
+            //
 
-	std::vector< std::pair<pat::Electron,pat::Electron> > heepTagGsfProbes = 
-	  hnu::getTagProbePair( tagElectrons,gsfElectronProbes,ZwinMinGeV_,ZwinMaxGeV_,
-				((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
+            std::vector< std::pair<pat::Electron, pat::Electron> > heepTagGsfProbes =
+                    hnu::getTagProbePair( tagElectrons, gsfElectronProbes, ZwinMinGeV_, ZwinMaxGeV_,
+                                         ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ;
 
-	// std::cout << "I have " << heepTagGsfProbes.size() << " tag/probe pairs" << std::endl ; 
+            // std::cout << "I have " << heepTagGsfProbes.size() << " tag/probe pairs" << std::endl ;
 
-	studyElectronSelectionEff(heepTagGsfProbes,eCands,hnuEvent.eventWgt,validJets.size(),iEvent);
-      }
+            studyElectronSelectionEff(heepTagGsfProbes, eCands, hnuEvent.eventWgt, validJets.size(), iEvent);
+        }
     }
     // std::cout << "Event number before njets cut: " << evtCounter << std::endl ; 
 
@@ -1684,9 +1702,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
                 else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
                 else std::cout << "WARNING: Expected empty electron position" << std::endl;
-            // } else { 
-	    //   std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ; 
-	    }
+            } //else {
+	     // std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ;
+	    //}
         }
 
 	// at this stage we need to assume we have >=2 electrons
@@ -1719,7 +1737,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.scaleMuE(applyMESfactor_);
     hnuEvent.calculate(correctEscale_); // calculate various details
     hists.LLJJptCuts->fill(hnuEvent);
-    if(pMET->size()) hnuEvent.met1 = pMET->at(0);
+    //if(pMET->size()) hnuEvent.met1 = pMET->at(0);
 
     // Fill slope fit tuple here
     if(addSlopeTree_)
