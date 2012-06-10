@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.9 2012/05/31 08:47:10 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.10 2012/06/05 21:57:21 franzoni Exp $
 //
 //
 
@@ -35,6 +35,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "TH1F.h"
+#include "TH2F.h"
 
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
@@ -144,6 +146,7 @@ private:
   TH1F*  massDenominator_;
   TH1F*  massNumerator_;
   TH1F*  massFail_;
+
   TH1F*  eventsFate_;
 
   TH1F*  pTele1Denominator_;
@@ -158,6 +161,11 @@ private:
   TH1F*  pTProbeDenominator_;
   TH1F*  pTProbeNumerator_;
   TH1F*  pTProbeFail_;
+
+  TH2F*  ptProbeVSmassDenom_;
+  TH2F*  ptProbeVSmassNum_;
+  TH2F*  ptProbeVSmassFail_;
+  
 
 };
 
@@ -235,6 +243,11 @@ HeavyNuEleTriggerEff::HeavyNuEleTriggerEff(const edm::ParameterSet& iConfig) :
   pTProbeDenominator_ = (TH1F*)   fs->make<TH1F>("pTProbeDenominator","pTProbeDenominator; p_{T}(probe,denom) [GeV]",2000,0.,2000);
   pTProbeNumerator_   = (TH1F*)   fs->make<TH1F>("pTProbeNumerator","pTProbeNumerator; p_{T}(probe,num) [GeV]",2000,0.,2000);
   pTProbeFail_        = (TH1F*)   fs->make<TH1F>("pTProbeFail","pTProbeFail; p_{T}(probe,fail) [GeV]",2000,0.,2000);
+  
+  ptProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("ptProbeVSmassDenom","ptProbeVSmassDenom; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,400,0.,2000);
+  ptProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("ptProbeVSmassNum","ptProbeVSmassNum; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,400,0.,2000);
+  ptProbeVSmassFail_  = (TH2F*)   fs->make<TH2F>("ptProbeVSmassFail","ptProbeVSmassFail; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,400,0.,2000);
+  
 
 }
 
@@ -725,11 +738,18 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    // i.e. I have two online objects which have  fired the seeding trigger and which are matched to offline objects
    // how do I chose which of the offline candidates are to be used? For now, chose the first two in the collection... REVISIT? 
    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
    massDenominator_    -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
 				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
 				.M() ); 
    pTTagDenominator_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
    pTProbeDenominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+   
+   ptProbeVSmassDenom_ -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				.M(),
+				theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() ); 
+   
    if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
      {
        pTele1Denominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
@@ -797,6 +817,10 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 				  .M() ); 
        pTTagNumerator_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
        pTProbeNumerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+       ptProbeVSmassNum_ -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				    theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				  .M(),
+				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() ); 
        
        if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
 	 {
@@ -816,6 +840,10 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 			     .M() ); 
        pTTagFail_   -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
        pTProbeFail_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );
+       ptProbeVSmassFail_ -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				    theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				  .M(),
+				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );        
        
        if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
 	 {
