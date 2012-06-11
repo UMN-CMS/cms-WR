@@ -401,10 +401,18 @@ HeavyNuTrigger::simulateForMCdiEleMass(double m,double eta,int signOfError2apply
   //const double effEleMasshi2011b[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
   //const double upedgeEleMass2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
   
+  //const double upedgeEleMass2012[]   = {70,80,90,100,110,120,130,140,160,180,200,300,-1};
+  //const double effEleMassnom2012[]  = {1,1,0.979488,0.962445,0.918403,0.81,1,0.81,1,1,1,1,1};
+  //const double effEleMasshi2012[]   = {1,1,0.992667,0.975271,0.984532,0.925816,1,0.959204,1,1,1,1,1};
+  //const double effEleMasslo2012[]   = {0.383681,0.735776,0.95288,0.944351,0.74699,0.599341,0.753433,0.460385,0.69163,0.58867,0.261936,0.663539,0.471301};
+
+  // central value is _two legs_ electron efficiency from the 2.4fb-1 0jet sample shown here:
+  // http://homepages.spa.umn.edu/~franzoni/reps/12/jun06/trEffplots-wholeDataset/efficiency-vs-mass-all-cases.png
+  // errors of 0jet measurement added in quadrature to 0.94% taken as uncertainty on the approximation 0jetEff == 2jetEff
   const double upedgeEleMass2012[]   = {70,80,90,100,110,120,130,140,160,180,200,300,-1};
-  const double effEleMassnom2012[]  = {1,1,0.979488,0.962445,0.918403,0.81,1,0.81,1,1,1,1,1};
-  const double effEleMasshi2012[]   = {1,1,0.992667,0.975271,0.984532,0.925816,1,0.959204,1,1,1,1,1};
-  const double effEleMasslo2012[]   = {0.383681,0.735776,0.95288,0.944351,0.74699,0.599341,0.753433,0.460385,0.69163,0.58867,0.261936,0.663539,0.471301};
+  const double effEleMassnom2012[]  = {1,1,0.986038,0.980371,0.976956,0.987253,0.981439,0.975156,0.989305,0.98374,1,0.991886,0.977901};
+  const double effEleMasshi2012[]   = {1.,1.,0.995974,0.990061,0.989615,1.,1.,1.,1.,1.,1.,1.,1.};
+  const double effEleMasslo2012[]   = {0.81523,0.942082,0.975966,0.970645,0.963076,0.967828,0.951222,0.935872,0.959933,0.940711,0.951521,0.953847,0.879276};
 
   // 2012 is the default
   // actually, at the moment we only have 2012, so use twose in all cases (there was a warning about trigEra_ )
