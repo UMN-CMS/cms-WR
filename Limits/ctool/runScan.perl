@@ -41,15 +41,26 @@ $lumi2011=4990;
 
 
 #$lumi2011=4700;
-$systdb="systematicsdb.csv";
 if ($channel=~/mu/) {
     $ratesdb="ratesdb.csv";
     $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
     $lumi2012=2400;
+
+    if ($year==2012) {
+	$systdb="systematicsdb_mu_2012.csv";
+    } else {
+	$systdb="systematicsdb.csv";
+    }
+
 } else {
     $ratesdb="ratesdb_elec.csv";
     $data2012="/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
     $lumi2012=2400;
+
+    if ($year==2012) {
+	$systdb="systematicsdb_elec_2012.csv";
+    }
+
 }
 
 $fileLoc=$workloc."/input";
