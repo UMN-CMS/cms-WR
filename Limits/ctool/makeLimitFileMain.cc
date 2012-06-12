@@ -15,7 +15,9 @@ int main(int argc, char* argv[]) {
   std::string istring;
   bool interpolate=false;
 
-  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:")) != -1) {
+  pt.mode=LimitPoint::lp_Muon1ECM; // historical default
+
+  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:m:")) != -1) {
                switch (opt) {
 	       case 'l':
 		 pt.lumi=atof(optarg);
@@ -58,6 +60,10 @@ int main(int argc, char* argv[]) {
 		 break;
 	       case 'o':
 		 of_name=optarg;
+		 break;
+	       case 'm':
+		 if (!strcasecmp(optarg,"mu2ecm")) pt.mode=LimitPoint::lp_Muon2ECM;
+		 if (!strcasecmp(optarg,"elec")) pt.mode=LimitPoint::lp_Elec1ECM;
 		 break;
 	       default:
 		 break;

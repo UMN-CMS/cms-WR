@@ -12,6 +12,7 @@ $xsec=0.01;
 $minmwAllowed=700;
 $maxmwAllowed=3000;
 $year=2012;
+$channel="mu";
 
 GetOptions("toys=i" => \$toys,
 	   "systmode=i" => \$systmode,
@@ -19,6 +20,7 @@ GetOptions("toys=i" => \$toys,
 	   "minmw=i" => \$minmwAllowed,
 	   "maxmw=i" => \$maxmwAllowed,
 	   "xsec=f" => \$xsec,
+	   "channel=s" => \$channel,
 	   "step=i" => \$step,
 	   "year=i" => \$year,
 	   "special=s" => \$special,
@@ -37,12 +39,18 @@ if ($jobBase ne "default") {
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 $lumi2011=4990;
 
-$data2012_mu="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
-$lumi2012_mu=2400;
 
 #$lumi2011=4700;
 $systdb="systematicsdb.csv";
-$ratesdb="ratesdb.csv";
+if ($channel=~/mu/) {
+    $ratesdb="ratesdb.csv";
+    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
+    $lumi2012=2400;
+} else {
+    $ratesdb="ratesdb_elec.csv";
+    $data2012="/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
+    $lumi2012=2400;
+}
 
 $fileLoc=$workloc."/input";
 system("mkdir -p $fileLoc");
@@ -95,7 +103,7 @@ foreach $item (@items) {
     if ($year==2011) {
 	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
     } else {
-	$cmd="./makeLimitFile.exe -l $lumi2012_mu -w $mw -n $mn -y $year -x $xsec -d $data2012_mu -r $ratesdb -o $ofname -s $systdb ";
+	$cmd="./makeLimitFile.exe -l $lumi2012 -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
     }
     system($cmd);
 

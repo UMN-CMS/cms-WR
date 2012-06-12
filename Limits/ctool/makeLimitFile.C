@@ -16,7 +16,8 @@ struct BShape { BShape(double v, double s) : value(v),slope(s) {}
 };
 
 // name of the histogram containing the observations
-const char* data_hist_name = "hNu/cut6_mWRmass/mWR";
+const char* data_hist_name_muon = "hNu/cut6_mWRmass/mWR";
+const char* data_hist_name_elec = "hNuE/cut6_mWRmass/mWR";
 
 // names
 const char* jnames[]= {"WR","TT","ZJ","OT"};
@@ -118,6 +119,10 @@ std::vector<double> extractBins(TFile* f, const std::string& histname) {
 
 static void binRanger(int mw, int& ilow, int& ihigh) {
   int mweff=((mw+50)/100);
+
+  ilow=0; ihigh=16;
+
+  return;
   
   switch (mweff) {
   case (7) : ihigh=4; break;
@@ -157,12 +162,15 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
   std::vector<double> vdata;
 
   //  vsignal=extractBins(signalf,signal_hist_name);
-  vdata=extractBins(dataf,data_hist_name);
+  if (mp.mode==LimitPoint::lp_Muon1ECM || mp.mode==LimitPoint::lp_Muon2ECM) 
+    vdata=extractBins(dataf,data_hist_name_muon);
+  else
+    vdata=extractBins(dataf,data_hist_name_elec);
 
   std::vector<PerBinInfo> pbi;
 
   int ilow=0;
-  int ihigh=9;
+  int ihigh=16;
 
   if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
   char process[200];
@@ -175,7 +183,8 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     PerBinInfo abin;
     abin.lowEdge=ibin*200+600;
     abin.highEdge=(ibin+1)*200+600;
-    abin.signal=db.get(process,signame,ibin)*mp.lumi*mp.xsec;
+    double sigbineff=db.get(process,signame,ibin);
+    abin.signal=sigbineff*mp.lumi*mp.xsec;
     for (int j=1; j<=3; j++) 
       if (mp.year==2011) {
 	abin.bkgd[j-1]=db.get(snames[j],"2011A",ibin)+
@@ -190,7 +199,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     char name[10];
     sprintf(name,"b%02d",ibin);
     abin.binName=name;
-    if (abin.signal>0.01 || fullRange) 
+    if (sigbineff>0.01 || fullRange) 
       pbi.push_back(abin);
   }
   return pbi;
