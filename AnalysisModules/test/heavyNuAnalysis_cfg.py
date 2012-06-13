@@ -860,7 +860,7 @@ if runElectronAnalysis:
       process.pEpuLo = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
       
    if doTriggerStudy and isData:
-       process.pENominal = cms.Path(  process.TriggerStudyElectronSequence + process.AnalysisIntroSequence + process.hNuE  )
+       process.pENominal = cms.Path( process.AnalysisIntroSequence + process.TriggerStudyElectronSequence + process.hNuE  )
    else:
        process.pENominal = cms.Path( process.AnalysisIntroSequence + process.hNuE )
           
