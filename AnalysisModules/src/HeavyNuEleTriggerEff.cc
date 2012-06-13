@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.10 2012/06/05 21:57:21 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.11 2012/06/10 10:02:31 franzoni Exp $
 //
 //
 
@@ -165,6 +165,9 @@ private:
   TH2F*  ptProbeVSmassDenom_;
   TH2F*  ptProbeVSmassNum_;
   TH2F*  ptProbeVSmassFail_;
+  TH2F*  etaProbeVSmassDenom_;
+  TH2F*  etaProbeVSmassNum_;
+  TH2F*  etaProbeVSmassFail_;
   
 
 };
@@ -244,9 +247,15 @@ HeavyNuEleTriggerEff::HeavyNuEleTriggerEff(const edm::ParameterSet& iConfig) :
   pTProbeNumerator_   = (TH1F*)   fs->make<TH1F>("pTProbeNumerator","pTProbeNumerator; p_{T}(probe,num) [GeV]",2000,0.,2000);
   pTProbeFail_        = (TH1F*)   fs->make<TH1F>("pTProbeFail","pTProbeFail; p_{T}(probe,fail) [GeV]",2000,0.,2000);
   
-  ptProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("ptProbeVSmassDenom","ptProbeVSmassDenom; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,400,0.,2000);
-  ptProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("ptProbeVSmassNum","ptProbeVSmassNum; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,400,0.,2000);
-  ptProbeVSmassFail_  = (TH2F*)   fs->make<TH2F>("ptProbeVSmassFail","ptProbeVSmassFail; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,400,0.,2000);
+  double yAxisPt[4] = {0, 60., 80., 2000};
+  ptProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("ptProbeVSmassDenom","ptProbeVSmassDenom; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",100,30.,130,3,yAxisPt);
+  ptProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("ptProbeVSmassNum","ptProbeVSmassNum; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,3,yAxisPt);
+  ptProbeVSmassFail_  = (TH2F*)   fs->make<TH2F>("ptProbeVSmassFail","ptProbeVSmassFail; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",400,0.,2000,3,yAxisPt);
+
+  double yAxisEta[5] = {-2.5, -1.4, 0., 1.4, 2.5};
+  etaProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("etaProbeVSmassDenom","etaProbeVSmassDenom; m(ee) [GeV]; #eta(probe,fail) [GeV]",100,30.,130,3,yAxisEta);
+  etaProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("etaProbeVSmassNum","etaProbeVSmassNum; m(ee) [GeV]; #eta(probe,fail) [GeV]",400,0.,2000,3,yAxisEta);
+  etaProbeVSmassFail_  = (TH2F*)   fs->make<TH2F>("etaProbeVSmassFail","etaProbeVSmassFail; m(ee) [GeV]; #eta(probe,fail) [GeV]",400,0.,2000,3,yAxisEta);
   
 
 }
@@ -750,6 +759,11 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 				.M(),
 				theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() ); 
    
+   etaProbeVSmassDenom_ -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				   theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				 .M(),
+				 theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.eta() ); 
+   
    if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
      {
        pTele1Denominator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
@@ -822,6 +836,11 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 				  .M(),
 				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() ); 
        
+       etaProbeVSmassNum_ -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				    theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				  .M(),
+				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.eta() ); 
+       
        if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
 	 {
 	   pTele1Numerator_ -> Fill( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() );
@@ -844,6 +863,10 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 				    theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
 				  .M(),
 				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt() );        
+       etaProbeVSmassFail_ -> Fill( ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.p4() + 
+				    theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.p4() )
+				  .M(),
+				  theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.eta() );
        
        if ( theEleOfflineCands.at(theOfflineEleMatchingTagIndex).first.pt() > theEleOfflineCands.at(theOfflineEleMatchingProbeIndex).first.pt())
 	 {
