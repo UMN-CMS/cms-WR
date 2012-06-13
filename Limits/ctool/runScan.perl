@@ -41,7 +41,14 @@ $lumi2011=4990;
 
 
 #$lumi2011=4700;
-if ($channel=~/mu/) {
+if ($channel eq "e-mu") {
+    $ratesdb="ratesdb.csv,ratesdb_elec.csv";
+    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root".",".
+	"/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
+    $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
+    $lumi2012="2400,2400";
+    $xsec=$xsec.",".$xsec;
+} elsif ($channel=~/mu/) {
     $ratesdb="ratesdb.csv";
     $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
     $lumi2012=2400;
@@ -115,7 +122,7 @@ foreach $item (@items) {
 	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
     } else {
 	$mode=$channel;
-	$cmd="./makeLimitFile.exe -l $lumi2012 -w $mw -n $mn -m $mode -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
+	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
     }
     system($cmd);
 
