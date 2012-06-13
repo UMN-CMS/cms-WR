@@ -97,7 +97,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
       if (pbsi==pbi[ibin].perBinSyst.end()) continue;
 
       if (pbsi->second.signal<0) fprintf(limitFile,"  -   ");
-      fprintf(limitFile,"%5.3f ", pbsi->second.signal);
+      else fprintf(limitFile,"%5.3f ", pbsi->second.signal);
 
       for (int j=1; j<=jmax; j++) {
 	double systLevel=pbsi->second.bkgd[j-1];
