@@ -119,6 +119,9 @@ int main(int argc, char* argv[]) {
     RateDB rates1,rates2;
     rates1.load(ratedb_name[0].c_str());
     rates2.load(ratedb_name[1].c_str());
+
+    pt1.mode=LimitPoint::lp_Muon1ECM;
+    pt2.mode=LimitPoint::lp_Elec1ECM;
    
     std::vector<PerBinInfo> bins1=makeLimitContent(pt1, &df1, rates1, syst1, 'm');
     std::vector<PerBinInfo> bins2=makeLimitContent(pt2, &df2, rates2, syst2, 'e');
