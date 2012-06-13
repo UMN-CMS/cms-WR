@@ -410,9 +410,9 @@ HeavyNuTrigger::simulateForMCdiEleMass(double m,double eta,int signOfError2apply
   // http://homepages.spa.umn.edu/~franzoni/reps/12/jun11/trEffplots-superBins/efficiency-vs-mass-all-cases.png
   // errors of 0jet measurement added in quadrature to 0.94% taken as uncertainty on the approximation 0jetEff == 2jetEff
   const double upedgeEleMass2012[]  = {0.     ,70      ,120,      200,      -1};
-  const double effEleMassnom2012[]  = {1.     ,1       ,0.981803, 0.984283, 0.988131};
-  const double effEleMasshi2012[]   = {1.     ,1.      ,0.991383, 0.997178, 1.};
-  const double effEleMasslo2012[]   = {0.81523,0.81523,0.972204,  0.969239, 0.955896};
+  const double effEleMassnom2012[]  = {1       ,0.981803, 0.984283, 0.988131,  0.988131};
+  const double effEleMasshi2012[]   = {1.      ,0.991383, 0.997178, 1., 1.};
+  const double effEleMasslo2012[]   = {0.81523,0.972204,  0.969239, 0.955896, 0.955896};
 
 
   // 2012 is the default
