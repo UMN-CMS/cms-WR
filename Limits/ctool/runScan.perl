@@ -43,6 +43,7 @@ $lumi2011=4990;
 #$lumi2011=4700;
 if ($channel eq "e-mu") {
     $ratesdb="ratesdb.csv,ratesdb_elec.csv";
+    
     $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root".",".
 	"/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
     $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
@@ -74,7 +75,10 @@ $fileLoc=$workloc."/input";
 system("mkdir -p $fileLoc");
 system("rm -rf ${workloc}/roostats*");
 
-open(PLIST,$ratesdb);
+$ratesdblist=$ratesdb;
+$ratesdblist=~s/,.*//;
+
+open(PLIST,$ratesdblist);
 @items=<PLIST>;
 close(PLIST);
 
