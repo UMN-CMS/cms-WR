@@ -11,12 +11,21 @@ class SystematicsDB;
 class RateDB;
 
 #include <vector>
+#include <map>
 #include <string>
+
+struct PerBinSystematic {
+  double signal;
+  double bkgd[3];
+};
 
 struct PerBinInfo {
   double lumi;
   double signal;
   double bkgd[3];
+
+  std::map<std::string,PerBinSystematic> perBinSyst;
+  
   int data;
   int sourceBin;
   double lowEdge, highEdge;
@@ -33,11 +42,12 @@ struct LimitPoint {
   int mnr, mnr_syst;
 };
 
-void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& pt, const char* limitFileName, const SystematicsDB& syst);
+void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& pt, const char* limitFileName);
 
 std::vector<double> extractBins(TFile* f, const std::string& histName);
 
-std::vector<PerBinInfo> makeLimitContent(const LimitPoint& pt, TFile* dataf, const RateDB& dbr, bool fullRange=false);
+std::vector<PerBinInfo> makeLimitContent(const LimitPoint& pt, TFile* dataf, const RateDB& dbr, 
+					 const SystematicsDB& syst, char bin_prefix='b',bool fullRange=false);
 
 void makeLimitFile(const LimitPoint& pt, TFile* dataf, const RateDB& dbr, const char* limitFileName, const SystematicsDB& syst);
 

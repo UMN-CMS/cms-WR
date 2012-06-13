@@ -9,6 +9,7 @@ Some important constants are set at the top of the file.
 #include "ratedb.hh"
 #include "makeLimitFile.hh"
 #include "systematics.h"
+#include <set>
 
 struct BShape { BShape(double v, double s) : value(v),slope(s) {}
   double value;
@@ -34,17 +35,18 @@ const double minimum_signal_content=0.01;
 
 std::string whichSyst() { return "MUON"; }
 
-void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, const char* limitFileName, const SystematicsDB& syst) {
+void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, const char* limitFileName) {
   const int nbins=int(pbi.size());
-  char temp[128];
-  std::vector<std::string> procName;
-  std::vector<std::string> systematicsList=syst.getSystematicsList();
+  std::set<std::string> systematicList;
 
-  // set up the official names for the systematics DB
-  sprintf(temp,snames[0],mp.mwr_syst,mp.mnr_syst);
-  procName.push_back(temp);
-  for (int j=1; j<=jmax; j++) procName.push_back(snames[j]);
-   
+  // assemble the list of _all_ systematics
+  for (int i=0; i<nbins; i++) {
+    std::map<std::string,PerBinSystematic>::const_iterator jj;
+    for (jj=pbi[i].perBinSyst.begin();jj!=pbi[i].perBinSyst.end();jj++) {
+      systematicList.insert(jj->first);
+    }
+  }
+
   FILE* limitFile=fopen(limitFileName,"wt");
 
   if (limitFile==0) {
@@ -54,7 +56,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
   
   fprintf(limitFile,"imax %d\n",nbins);
   fprintf(limitFile,"jmax %d  # tt and zjets\n",jmax);
-  fprintf(limitFile,"kmax %d \n",int(systematicsList.size()));  
+  fprintf(limitFile,"kmax %d \n",int(systematicList.size()));  
 
   // these are the data loops
   fprintf(limitFile,"bin            ");
@@ -87,13 +89,18 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 
 
   // systematics
-  for (std::vector<std::string>::const_iterator i=systematicsList.begin();
-       i!=systematicsList.end(); i++) {
+  for (std::set<std::string>::const_iterator i=systematicList.begin();
+       i!=systematicList.end(); i++) {
     fprintf(limitFile,"%-10s lnN  ",i->c_str());
     for (int ibin=0; ibin<nbins; ibin++) {
-      int srcBin=pbi[ibin].sourceBin;
-      for (int j=0; j<=jmax; j++) {
-	double systLevel=syst.getSystematic(*i,procName[j],srcBin);
+      std::map<std::string,PerBinSystematic>::const_iterator pbsi=pbi[ibin].perBinSyst.find(*i);
+      if (pbsi==pbi[ibin].perBinSyst.end()) continue;
+
+      if (pbsi->second.signal<0) fprintf(limitFile,"  -   ");
+      fprintf(limitFile,"%5.3f ", pbsi->second.signal);
+
+      for (int j=1; j<=jmax; j++) {
+	double systLevel=pbsi->second.bkgd[j-1];
 	if (systLevel<0.001 || fabs(systLevel-1.0)<0.0015) fprintf(limitFile,"  -   ");
 	else fprintf(limitFile,"%5.3f ", systLevel);
       }
@@ -155,11 +162,12 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
 }
 
 
-std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, const RateDB& db, bool fullRange) {
+std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, const RateDB& db, const SystematicsDB& syst, char binprefix, bool fullRange) {
   //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->Integral();
   //  double normSignal=1.0/((TH1*)(signalf->Get(signal_norm_hist)))->GetBinContent(3);  //  double min_level_abs=minimum_signal_content*sigh->Integral();
 
   std::vector<double> vdata;
+  std::vector<std::string> systematicsList=syst.getSystematicsList();
 
   //  vsignal=extractBins(signalf,signal_hist_name);
   if (mp.mode==LimitPoint::lp_Muon1ECM || mp.mode==LimitPoint::lp_Muon2ECM) 
@@ -192,12 +200,29 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
       } else {
 	abin.bkgd[j-1]=db.get(snames[j],"2012",ibin);
       }
+    // Systematics
+    for (std::vector<std::string>::const_iterator isyst=systematicsList.begin();
+	 isyst!=systematicsList.end(); isyst++) {
+      PerBinSystematic pbs;
+      
+      double systLevel=syst.getSystematic(*isyst,process,ibin);
+      if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
+      pbs.signal=systLevel;
+      
+      for (int j=1; j<=3; j++) {
+	systLevel=syst.getSystematic(*isyst,snames[j],ibin);
+	if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
+	pbs.bkgd[j-1]=systLevel;
+      }
+      abin.perBinSyst.insert(std::pair<std::string,PerBinSystematic>(*isyst,pbs));
+    }
+
     abin.sourceBin=ibin;
     abin.lumi=mp.lumi;
     abin.year=mp.year;
     abin.data=int(vdata[ibin]);
     char name[10];
-    sprintf(name,"b%02d",ibin);
+    sprintf(name,"%c%02d",binprefix,ibin);
     abin.binName=name;
     if (sigbineff>0.01 || fullRange) 
       pbi.push_back(abin);
@@ -206,8 +231,8 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 }
 
 void makeLimitFile(const LimitPoint& mp, TFile* dataf, const RateDB& rates, const char* limitFileName, const SystematicsDB& syst) {
-  std::vector<PerBinInfo> pbi = makeLimitContent(mp,dataf,rates);
-  formatLimitFile(pbi,mp,limitFileName,syst);
+  std::vector<PerBinInfo> pbi = makeLimitContent(mp,dataf,rates,syst);
+  formatLimitFile(pbi,mp,limitFileName);
 }
 
 void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf,
@@ -216,8 +241,8 @@ void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf,
 			      const LimitPoint& signalp2, 
 			      const char* limitFileName, const SystematicsDB& syst) {
 
-  std::vector<PerBinInfo> pbi1=makeLimitContent(signalp1,dataf,ratedb,true);
-  std::vector<PerBinInfo> pbi2=makeLimitContent(signalp2,dataf,ratedb,true);
+  std::vector<PerBinInfo> pbi1=makeLimitContent(signalp1,dataf,ratedb,syst,'b',true);
+  std::vector<PerBinInfo> pbi2=makeLimitContent(signalp2,dataf,ratedb,syst,'b',true);
 
   std::vector<PerBinInfo> pbiFinal;
 
@@ -235,6 +260,6 @@ void makeLimitFileInterpolate(const LimitPoint& pt, TFile* dataf,
     //    printf("%f\n",bin.signal);
     pbiFinal.push_back(bin);
   }
-  formatLimitFile(pbiFinal,pt,limitFileName,syst);
+  formatLimitFile(pbiFinal,pt,limitFileName);
 
 }
