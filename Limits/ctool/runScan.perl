@@ -138,19 +138,21 @@ foreach $item (@items) {
 	$mode=$channel;
 	$cmd="./makeLimitFile.exe -m $mode -l $lumi2011,$lumi2012 -w $mw -n $mntext -y 2011,2012 -x $xseceff,$xsec -d $data_both -r $ratesdb -o $ofname -s $systdb ";
 
-	$xsec="$xsec,$xseceff";
+	$comments="xsec=$xsec,$xseceff";
     } elsif ($year==2011) {
 	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
+	$comments="xsec=$xsec";
+
     } else {
 
 	$mode=$channel;
 	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
+	$comments="xsec=$xsec";
     }
     system($cmd);
 
     $mass=sprintf("%04d%04d",$mw,$mn);
 
-    $comments="xsec=$xsec";
 
     print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${mw}_${mn}.log ${method} ${toys} \\\"${comments}\\\" ${special}\n";
     print CONDOR "Queue \n";
