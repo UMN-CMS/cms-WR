@@ -49,6 +49,14 @@ if ($channel eq "e-mu") {
     $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
     $lumi2012="2400,2400";
     $xsec=$xsec.",".$xsec;
+} elsif ($channel eq "mu2ecm") {
+    $ratesdb="ratesdb.csv,ratesdb.csv";
+    
+    $data_both=$data2011.",".
+	"/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";	
+    $systdb="systematicsdb.csv,systematicsdb_elec_2012.csv";
+    $lumi2012=2400;
+    $xsec=$xsec.",".$xsec;
 } elsif ($channel=~/mu/) {
     $ratesdb="ratesdb.csv";
     $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
@@ -122,9 +130,18 @@ foreach $item (@items) {
     $mwmax=$mw if ($mwwax<$mw);
 
     $ofname="$fileLoc/limit_".$mw."_".$mn;
-    if ($year==2011) {
+    if ($channel eq "mu2ecm") {
+	$mn2011=(int($mw/100)/2+1)*100;
+	$mn=$mn2011.",".$mn;
+	$xseceff=$xsec*xsecratio($mw);
+	    	
+	$mode=$channel;
+	$cmd="./makeLimitFile.exe -m $mode -l $lumi2011,$lumi2012 -w $mw -n $mn -y 2011,2012 -x $xseceff,$xsec -d $databoth -r $ratesdb -o $ofname -s $systdb ";
+
+    } elsif ($year==2011) {
 	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
     } else {
+
 	$mode=$channel;
 	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
     }
@@ -169,3 +186,34 @@ foreach $item (@items) {
 close(CONDOR);
 #system("condor_submit for_condor.txt");
 
+
+sub xsecratio($) {
+
+    @ratios=(1.346322,
+	     1.380845,
+	     1.401951,
+	     1.447967,
+	     1.471503,
+	     1.516183,
+	     1.574026,
+	     1.632000,
+	     1.683206,
+	     1.724256,
+	     1.829525,
+	     1.862078,
+	     1.956977,
+	     2.068023,
+	     2.137391,
+	     2.221935,
+	     2.361538,
+	     2.478674,
+	     2.605128,
+	     2.768387,
+	     2.923077,
+	     3.025788,
+	     3.269565,
+	     3.455446);
+    
+    my($amw)=@_;
+    return 1.0/$ratios[($amw/100)-7];    
+}
