@@ -51,7 +51,7 @@ if not isRun2012:
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
 runElectronAnalysis = True
-systematics    = False
+systematics    = True
 tagandprobe    = True
 doTriggerStudy = True
 addSlopeTrees  = True
@@ -135,7 +135,7 @@ if (isMC):
         elif is42x: 
             process.GlobalTag.globaltag=cms.string('START42_V13::All')
         else:
-            process.GlobalTag.globaltag=cms.string('START52_V9::All')
+            process.GlobalTag.globaltag=cms.string('START52_V11::All')
         print "=============> isPileupMC flag is SET <================"
     # else:
     #     print "========> Fall10 MC with Spring10 JEC applied <========"
@@ -143,7 +143,7 @@ if (isMC):
 else:
     print "===============> Running on DATA <===================="
     if (isRun2012):
-        process.GlobalTag.globaltag = cms.string('GR_R_50_V13::All')
+        process.GlobalTag.globaltag = cms.string('GR_R_52_V9::All')
     else:
         if (is44x):
             process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
@@ -153,34 +153,34 @@ else:
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
-#--- Temporary fix to get new Jet Corrections (not yet available in Global Tag ---#
-process.load("CondCore.DBCommon.CondDBCommon_cfi")
-from CondCore.DBCommon.CondDBSetup_cfi import *
-dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_DATA_AK5PFchs'
-dbConnect = 'sqlite:Summer12_V7_DATA.db'
-if isMC: 
-    dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'
-    dbConnect = 'sqlite:Summer12_V7_MC.db'
-
-process.jec = cms.ESSource("PoolDBESSource",
-       DBParameters = cms.PSet(
-           messageLevel = cms.untracked.int32(0)
-       ),
-       timetype = cms.string('runnumber'),
-       toGet = cms.VPSet(
-             cms.PSet(
-                 record = cms.string('JetCorrectionsRecord'),
-                 tag    = cms.string( dbTag ),
-                 # tag    = cms.string('JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'),
-                 label  = cms.untracked.string('AK5PFchs')
-             ),
-       ), 
-       connect = cms.string( dbConnect )
-       # connect = cms.string('sqlite:Summer12_V7_MC.db')
-)
-
-## add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
-process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
+##--- Temporary fix to get new Jet Corrections (not yet available in Global Tag ---#
+#process.load("CondCore.DBCommon.CondDBCommon_cfi")
+#from CondCore.DBCommon.CondDBSetup_cfi import *
+#dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_DATA_AK5PFchs'
+#dbConnect = 'sqlite:Summer12_V7_DATA.db'
+#if isMC:
+#    dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'
+#    dbConnect = 'sqlite:Summer12_V7_MC.db'
+#
+#process.jec = cms.ESSource("PoolDBESSource",
+#       DBParameters = cms.PSet(
+#           messageLevel = cms.untracked.int32(0)
+#       ),
+#       timetype = cms.string('runnumber'),
+#       toGet = cms.VPSet(
+#             cms.PSet(
+#                 record = cms.string('JetCorrectionsRecord'),
+#                 tag    = cms.string( dbTag ),
+#                 # tag    = cms.string('JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'),
+#                 label  = cms.untracked.string('AK5PFchs')
+#             ),
+#       ),
+#       connect = cms.string( dbConnect )
+#       # connect = cms.string('sqlite:Summer12_V7_MC.db')
+#)
+#
+### add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
+#process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
 
 
 ################################################################################################
