@@ -47,6 +47,12 @@ hNuTop = cms.EDFilter(
 
     heepVersion       = cms.int32(40),
 
+    #--- QCD closure test variables ---#
+    useDirtyElectrons = cms.bool(False), 
+    useDirtyMuons     = cms.bool(False), 
+    #--- Set flavor to 11 (e) or 13 (mu) to add weight to events ---#
+    fakeWeightFlavor  = cms.int32(0), 
+
     applyEleEScale    = cms.bool(False),
     correctEscale     = cms.bool(False),
     EBscalefactor     = cms.double(1.0),

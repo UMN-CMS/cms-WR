@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.102 2012/06/09 23:30:58 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.103 2012/06/10 04:20:10 pastika Exp $
 //
 //
 
@@ -204,6 +204,8 @@ private:
     bool dolog_;
     bool firstEvent_;
     bool addSlopeTree_;
+
+    int nDirtyCands_ ; 
 
     int heepVersion_;
 
@@ -504,7 +506,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     addSlopeTree_ = iConfig.getUntrackedParameter<bool>("addSlopeTree");
 
     // Default HEEP version is 4.0 (2012 selection)
-    heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion");
+    heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion",40);
     if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ;     
 
     std::string am = iConfig.getUntrackedParameter<std::string>("analysisMode");
@@ -514,6 +516,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     else if(!am.compare("QCD")) analysisMode_ = HeavyNuEvent::QCD;
     else if(!am.compare("CLO")) analysisMode_ = HeavyNuEvent::CLO;
     else std::cout << "!!!!!!!!INVALID ANALYSIS MODE : " << am << " !!!!!!!!\noptions are: HNUMU, HNUE, TOP, QCD, CLO" << std::endl;
+
+    nDirtyCands_ = iConfig.getUntrackedParameter<int>("nFakeLeptons",0);
 
     doPDFreweight_=iConfig.getUntrackedParameter<bool>("doPDFReweight",false);
     if (doPDFreweight_) {
@@ -1639,11 +1643,55 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if(analysisMode_ == HeavyNuEvent::HNUMU)
     {
+        unsigned int dirtyPosition = muCands.size() + 1 ; 
+        unsigned int cleanPosition = muCands.size() + 1 ; 
         for(unsigned int i = 0; i < muCands.size(); i++)
         {
             if(hnuEvent.nLeptons == 2) break;
             pat::Muon iM = muCands.at(i);
-            if(hnu::muIsolation(iM) < cuts.muon_trackiso_limit)
+	    if ( nDirtyCands_ > 0 ) { 
+	      double caloIso = iM.ecalIso() + iM.hcalIso() ;
+	      bool   isDirty = ( (iM.pt() < 100.) ? (caloIso > 10.) : ((caloIso/iM.pt()) > 0.10) ) ; 
+	      if ( nDirtyCands_ == 2 ) { 
+		if ( isDirty ) { 
+		  double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+		  double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+		  double dRm1 = 999. ; 
+		  if ( hnuEvent.nLeptons > 0 ) dRm1 = deltaR(iM.eta(), iM.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi());
+		  if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR && dRm1 > 0.3) {
+		    hnuEvent.nLeptons++ ;
+		    if(hnuEvent.nLeptons == 1)      hnuEvent.mu1 = iM;
+                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
+                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
+		  }
+		}
+	      } else if ( nDirtyCands_ == 1 ) { 
+		if ( isDirty && dirtyPosition > muCands.size() ) { 
+		  double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+		  double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+		  double dRm1 = 999. ; 
+		  if ( hnuEvent.nLeptons > 0 ) dRm1 = deltaR(iM.eta(), iM.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi());
+		  if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR && dRm1 > 0.3) {
+		    hnuEvent.nLeptons++ ;
+		    dirtyPosition = i ; 
+		    if(hnuEvent.nLeptons == 1)      hnuEvent.mu1 = iM;
+                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
+                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
+		  }
+		} else if ( !isDirty && cleanPosition > muCands.size() && hnu::muIsolation(iM) < cuts.muon_trackiso_limit) { 
+		  double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+		  double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+		  if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {  
+		    hnuEvent.nLeptons++ ;
+		    cleanPosition = i ; 
+		    if(hnuEvent.nLeptons == 1)      hnuEvent.mu1 = iM;
+                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
+                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
+		  }
+		}
+	      }
+	    } 
+	    else if(hnu::muIsolation(iM) < cuts.muon_trackiso_limit)
             {
                 double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
                 double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
@@ -1664,6 +1712,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
             hnuEvent.eventWgt *= (mu1wgt * mu2wgt);
         }
+
+	if ( nDirtyCands_ > 0 && hnuEvent.nLeptons > 1 ) { 
+	  if ( nDirtyCands_ == 2 ) hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.mu1) * hnu::fakeProbability(hnuEvent.mu2) ) ; 
+	  if ( nDirtyCands_ == 1 ) hnuEvent.eventWgt *= ( hnu::fakeProbability(muCands.at(dirtyPosition)) ) ; 
+	}
 
         //--- Trigger Matching needed for efficiency studies ---//
         if(trig_->matchingEnabled() && iEvent.isRealData())
@@ -1690,29 +1743,90 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }// HeavyNuEvent::HNUMU
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
-        for(unsigned int i = 0; i < eCands.size(); i++)
-        {
-            if(hnuEvent.nLeptons == 2) break;
-            pat::Electron iE = eCands.at(i).first;
-            double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-            double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-            if(dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR)
-            {
-                hnuEvent.nLeptons++;
-                if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
-                else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
-                else std::cout << "WARNING: Expected empty electron position" << std::endl;
-            } //else {
-	     // std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ;
-	    //}
-        }
+	if ( nDirtyCands_ == 0 ) { 
+	  for(unsigned int i = 0; i < eCands.size(); i++)
+	    {
+	      if(hnuEvent.nLeptons == 2) break;
+	      pat::Electron iE = eCands.at(i).first;
+	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+	      if(dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR)
+		{
+		  hnuEvent.nLeptons++;
+		  if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
+		  else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
+		  else std::cout << "WARNING: Expected empty electron position" << std::endl;
+		} //else {
+	      // std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ;
+	      //}
+	    }
+	} else { 
+	  std::vector< std::pair<pat::Electron, float> > eDirtyCands =
+	    hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
+				 (-1*heepVersion_),elecRho_);
+	  unsigned int dirtyPosition = eDirtyCands.size() + 1 ; 
+	  unsigned int cleanPosition = eCands.size() + 1 ; 
+	  if ( nDirtyCands_ == 2 ) { 
+	    for(unsigned int i = 0; i < eDirtyCands.size(); i++) {
+	      if(hnuEvent.nLeptons == 2) break;
+	      pat::Electron iE = eDirtyCands.at(i).first;
+	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+	      if(dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {
+		hnuEvent.nLeptons++;
+		if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
+		else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
+		else std::cout << "WARNING: Expected empty electron position" << std::endl;
+	      } 
+	    }
+	    if ( hnuEvent.nLeptons == 2 ) {
+	      // Need also to correct for the fact that "fake" electrons are required to fail nominal ID
+	      hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e1) / ( 1.0 - hnu::fakeProbability(hnuEvent.e1) ) ) ; 
+	      hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e2) / ( 1.0 - hnu::fakeProbability(hnuEvent.e2) ) ) ; 
+	    }
+	  } else if ( nDirtyCands_ == 1 ) { 
+	    for (unsigned int i = 0; i < eDirtyCands.size(); i++) {
+	      pat::Electron iE = eDirtyCands.at(i).first;
+	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+	      if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {
+		dirtyPosition = i ; 
+		hnuEvent.nLeptons++ ; 
+		break ; 
+	      } 
+	    }
+	    for (unsigned int i = 0; i < eCands.size(); i++) {
+	      pat::Electron iE = eCands.at(i).first;
+	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+	      if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {
+		cleanPosition = i ; 
+		hnuEvent.nLeptons++ ; 
+		break ; 
+	      } 
+	    }
+	    if ( dirtyPosition < eDirtyCands.size() && cleanPosition < eCands.size() ) { 
+	      double dirtyPt = hnu::getElectronEt(eDirtyCands.at(dirtyPosition).first,false) ; 
+	      double cleanPt = hnu::getElectronEt(eCands.at(cleanPosition).first,false) ; 
 
+	      if ( cleanPt > dirtyPt ) { 
+		hnuEvent.e1 = eCands.at(cleanPosition).first ; 
+		hnuEvent.e2 = eDirtyCands.at(dirtyPosition).first ; 
+	      } else {
+		hnuEvent.e1 = eDirtyCands.at(dirtyPosition).first ; 
+		hnuEvent.e2 = eCands.at(cleanPosition).first ; 
+	      }
+	      hnuEvent.eventWgt *= ( hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first) / 
+				     (1.0-hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ;  
+	    }
+	  }
+	}
 	// at this stage we need to assume we have >=2 electrons
 	// use the first two in the list eCands to build a di-lepton mass
 	double diEleMass(0.);
 	double dummyEta(0.);
 	if( hnuEvent.nLeptons >= 2 ){
-	  diEleMass = ( eCands.at(0).first.p4() +  eCands.at(0).first.p4() ).M() ;
+	  diEleMass = ( hnuEvent.e1.p4() +  hnuEvent.e2.p4() ).M() ;
 	}
 	
 	bool l12trig = false ; 

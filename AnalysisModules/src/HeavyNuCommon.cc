@@ -85,6 +85,56 @@ namespace hnu {
     return e.caloPosition().phi() ;
   }
 
+  bool passesFakeRateMinimum(const pat::Electron& e) { 
+
+    if ( !e.ecalDriven() ) return false ; 
+
+    double eEta = getElectronSCEta(e) ; 
+    bool isEB   = ( fabs(eEta) < 1.442 ) ; 
+    bool isEE   = ( fabs(eEta) < 2.5 && fabs(eEta) > 1.56 ) ; 
+    if ( !isEB && !isEE ) return false ; 
+
+    double HoE      = e.hadronicOverEm() ; 
+    double sig_iEiE = e.sigmaIetaIeta() ; 
+    int nLostHits   = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
+
+    if ( nLostHits != 0 ) return false ; 
+    if ( isEB ) { 
+      if ( HoE > 0.15 )       return false ; 
+      if ( sig_iEiE > 0.013 ) return false ; 
+    } else if ( isEE ) { 
+      if ( HoE > 0.10 )       return false ; 
+      if ( sig_iEiE > 0.034 ) return false ; 
+    }
+
+    return true ; 
+  } 
+
+  double fakeProbability(const pat::Electron& e) { 
+
+    double prob = 0. ; 
+
+    double eEta = getElectronSCEta(e) ; 
+    double ePt  = getElectronEt(e,false) ; 
+
+    if ( fabs(eEta) < 1.442 ) { 
+      prob =  (( ePt < 94.2 ) ?  ( 0.021 - 0.00012 * ePt ) : ( 0.0097 )) ; 
+    } else if ( fabs(eEta) < 2.0 && fabs(eEta) > 1.56 ) { 
+      prob = (( ePt < 100.3 ) ? ( 0.0711 - 0.00035 * ePt ) : ( 0.036 )) ; 
+    } else if ( fabs(eEta) < 2.5 && fabs(eEta) > 2.0 ) { 
+      prob = (( ePt < 109.5 ) ?  ( 0.118 - 0.00047 * ePt ) : ( 0.062 + 0.000041 * ePt )) ; 
+    }
+
+    return prob ; 
+  }
+
+  // Placeholder until real values are known
+  double fakeProbability(const pat::Muon& mu) { 
+
+    double prob = 0.15 ; 
+    return prob ; 
+  }
+
   bool passesHEEP(const pat::Electron& e, int heepVersion, double rho) { 
 
     if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40 ) return false ; 
@@ -605,34 +655,34 @@ namespace hnu {
 	     0.0,        0.0,        0.0,        0.0,        0.0
     } ; 
 
-    const double json_2012a_run193557[] = { 
-           59.3073,      156.1,    6681.18,  2.79236E06, 7.28453E06,
-	   66597.5,    60190.1,    48270.5,      155944, 1.19828E06, 
-	7.83965E06, 2.16456E07, 3.29565E07,  4.09794E07, 4.95412E07, 
-	5.83303E07, 6.37098E07, 6.28154E07,  5.53595E07, 4.38815E07, 
-	3.23858E07, 2.31768E07, 1.65636E07,  1.22208E07, 9.41924E06, 
-	7.42174E06, 5.82024E06,  4.4711E06,   3.3413E06, 2.42264E06, 
-	1.70269E06, 1.15991E06,     766260,      491354,     306205, 
-	    185700,     109734,    63248.8,     35581.5,    19541.5, 
-	   10475.4,    5477.99,    2792.36,     1386.16,    669.462, 
-	   314.265,     143.27,    63.3834,     27.1948,    11.3099, 
-	   4.55733,    1.77868,   0.672206,    0.245942,  0.0870985, 
-	 0.0298523, 0.00990102, 0.00317743, 0.000986567,     402199
-    } ; 
+    // const double json_2012a_run193557[] = { 
+    //        59.3073,      156.1,    6681.18,  2.79236E06, 7.28453E06,
+    // 	   66597.5,    60190.1,    48270.5,      155944, 1.19828E06, 
+    // 	7.83965E06, 2.16456E07, 3.29565E07,  4.09794E07, 4.95412E07, 
+    // 	5.83303E07, 6.37098E07, 6.28154E07,  5.53595E07, 4.38815E07, 
+    // 	3.23858E07, 2.31768E07, 1.65636E07,  1.22208E07, 9.41924E06, 
+    // 	7.42174E06, 5.82024E06,  4.4711E06,   3.3413E06, 2.42264E06, 
+    // 	1.70269E06, 1.15991E06,     766260,      491354,     306205, 
+    // 	    185700,     109734,    63248.8,     35581.5,    19541.5, 
+    // 	   10475.4,    5477.99,    2792.36,     1386.16,    669.462, 
+    // 	   314.265,     143.27,    63.3834,     27.1948,    11.3099, 
+    // 	   4.55733,    1.77868,   0.672206,    0.245942,  0.0870985, 
+    // 	 0.0298523, 0.00990102, 0.00317743, 0.000986567,     402199
+    // } ; 
 
-    const double json_2012ab_run194479[] = { 
-         3406.69,    1451.68,    44962.9, 3.38365E06, 6.32382E06, 
-          297883,     436959, 4.08972E06, 1.52368E07,  3.2064E07, 
-      5.22548E07, 7.72319E07, 1.05651E08, 1.30586E08, 1.51566E08, 
-      1.68137E08, 1.69745E08,  1.5168E08, 1.23428E08, 9.59067E07, 
-      7.37087E07, 5.70831E07, 4.47301E07,  3.5483E07, 2.83527E07, 
-      2.25922E07, 1.78088E07, 1.38281E07,  1.0551E07, 7.89647E06, 
-      5.78782E06, 4.14984E06, 2.90835E06, 1.99147E06,   1.332E06, 
-          870110,     555021,     345635,     210081,     124590, 
-         72072.4,      40655,    22356.3,      11982,    6257.83, 
-         3184.45,    1578.79,    762.576,    358.843,    164.512,
-             0.0,        0.0,        0.0,        0.0,        0.0,
-             0.0,        0.0,        0.0,        0.0,        0.0
+    const double json_2012ab_run195868[] = { 
+         6499.89,    8805.91,    86264.8, 4.14212E06, 5.65696E06, 
+       2.1853E06, 1.11201E07, 2.88172E07, 5.71031E07,  8.9966E07, 
+      1.21335E08,  1.6028E08, 2.06592E08, 2.50997E08, 2.95318E08, 
+      3.25967E08, 3.17726E08, 2.76024E08, 2.29525E08, 1.93205E08, 
+      1.66461E08, 1.45222E08, 1.26966E08, 1.10733E08, 9.59231E07, 
+      8.21369E07, 6.92822E07,  5.7453E07, 4.67855E07, 3.73841E07, 
+      2.92965E07,  2.2509E07,  1.6952E07, 1.25127E07, 9.05136E06, 
+      6.41617E06, 4.45669E06, 3.03318E06, 2.02257E06, 1.32128E06, 
+          845530,     529977,     325328,     195551,     115083, 
+         66298.5,    37383.3,    20628.8,    11138.9,    5884.91, 
+         3041.82,    1538.17,    760.925,    368.254,    174.355, 
+         80.7658,    36.6066,    16.2357,    7.04718,    2.99396
     } ; 
 
     const double* pileupDist=default_pd;
@@ -641,8 +691,8 @@ namespace hnu {
     {
         // npt = sizeof(json_2012a_run193557)/sizeof(double);
         // pileupDist=json_2012a_run193557;
-        npt = sizeof(json_2012ab_run194479)/sizeof(double);
-        pileupDist=json_2012ab_run194479;
+        npt = sizeof(json_2012ab_run195868)/sizeof(double);
+        pileupDist=json_2012ab_run195868;
     }
     if (era == 20111) 
     {
@@ -969,7 +1019,12 @@ namespace hnu {
       // if ( (heepVersion == 31) && !passesHEEPv31(iE) ) continue ; 
       // if ( (heepVersion == 32) && !passesHEEPv32(iE) ) continue ; 
       // if ( (heepVersion == 40) && !passesHEEPv40(iE) ) continue ; 
-      if(heepVersion > 0) if ( !passesHEEP(iE,heepVersion,rho) ) continue ;
+
+      // Apply selection if requested
+      if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho) ) continue ;
+      // Apply anti-selection if requested (fake electron sample)
+      if ( (heepVersion < 0) && 
+	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho)) ) continue ; 
 
       float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
       float elecEt     = getElectronEt(iE,(heepVersion != 40)) * scale ; 

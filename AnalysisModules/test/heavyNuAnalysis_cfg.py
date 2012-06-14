@@ -182,7 +182,6 @@ process.load('Configuration.StandardSequences.Services_cff')
 ### add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
 #process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
 
-
 ################################################################################################
 ###    P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D  ###
 ################################################################################################
@@ -553,8 +552,9 @@ process.hNu.maxJetVZsepCM   = cms.double(-1)
 process.hNu.pileupEra = cms.int32(pileupEra)
 #options are HNUMU, HNUE, TOP, QCD, CLO
 process.hNu.analysisMode = cms.untracked.string('HNUMU')
-process.hNu.heepVersion = cms.untracked.int32(heepVersion)
+process.hNu.heepVersion  = cms.untracked.int32(heepVersion)
 process.hNu.addSlopeTree = cms.untracked.bool(addSlopeTrees)
+process.hNu.nFakeLeptons = cms.untracked.int32(0)
 
 #--- Muon ID corrections are taken from Dec 11, 2011 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
@@ -606,55 +606,57 @@ process.hNuMu40eta2p1.trigMatchPset.triggerPt    = cms.double( 40. )
 process.hNuMu40eta2p1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
 process.hNuMu40eta2p1.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
 
-process.hNuMu24jesHi = process.hNuMu24.clone( applyJECUsign = cms.int32(1) )
-process.hNuMu24jesLo = process.hNuMu24.clone( applyJECUsign = cms.int32(-1) )
-process.hNuMu40jesHi = process.hNuMu40.clone( applyJECUsign = cms.int32(1) )
-process.hNuMu40jesLo = process.hNuMu40.clone( applyJECUsign = cms.int32(-1) )
+process.hNuMu24jesHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(1) )
+process.hNuMu24jesLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(-1) )
+process.hNuMu40jesHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(1) )
+process.hNuMu40jesLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(-1) )
 
-process.hNuEjesHi  = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), applyJECUsign = cms.int32(1) )
-process.hNuEjesLo  = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), applyJECUsign = cms.int32(-1) )
-process.hNuEescale = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), correctEscale = cms.bool(False) )
+process.hNuMu24jerHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
+process.hNuMu24jerLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
+process.hNuMu40jerHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
+process.hNuMu40jerLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
 
-process.hNuMu24jerHi = process.hNuMu24.clone( applyJERsign = cms.int32(1) )
-process.hNuMu24jerLo = process.hNuMu24.clone( applyJERsign = cms.int32(-1) )
-process.hNuMu40jerHi = process.hNuMu40.clone( applyJERsign = cms.int32(1) )
-process.hNuMu40jerLo = process.hNuMu40.clone( applyJERsign = cms.int32(-1) )
+process.hNuEjesHi  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(1) )
+process.hNuEjesLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(-1) )
+process.hNuEjerHi  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
+process.hNuEjerLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
+process.hNuEescale = process.hNuE.clone( studyMuSelectEff = cms.bool(False), correctEscale = cms.bool(False) )
 
 # process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
 # process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
 # process.hNuMu40mesHi = process.hNuMu40.clone( applyMESfactor = cms.double(1.01) )
 # process.hNuMu40mesLo = process.hNuMu40.clone( applyMESfactor = cms.double(0.99) )
 
-process.hNuMu24mer = process.hNuMu24.clone( checkMERUnc = cms.bool(True) )
-process.hNuMu40mer = process.hNuMu40.clone( checkMERUnc = cms.bool(True) )
+process.hNuMu24mer = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), checkMERUnc = cms.bool(True) )
+process.hNuMu40mer = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), checkMERUnc = cms.bool(True) )
 
-process.hNuMu24midHi = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(1) )
-process.hNuMu24midLo = process.hNuMu24.clone( applyMuIDEffsign = cms.int32(-1) )
-process.hNuMu40midHi = process.hNuMu40.clone( applyMuIDEffsign = cms.int32(1) )
-process.hNuMu40midLo = process.hNuMu40.clone( applyMuIDEffsign = cms.int32(-1) )
+process.hNuMu24midHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
+process.hNuMu24midLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
+process.hNuMu40midHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
+process.hNuMu40midLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
 process.hNuMu24midHi.applyMuIDEffcorr = cms.bool( isMC )
 process.hNuMu24midLo.applyMuIDEffcorr = cms.bool( isMC )
 process.hNuMu40midHi.applyMuIDEffcorr = cms.bool( isMC )
 process.hNuMu40midLo.applyMuIDEffcorr = cms.bool( isMC )
 
-process.hNuMu24trigHi = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(1) )
-process.hNuMu24trigLo = process.hNuMu24.clone( applyTrigEffsign  = cms.int32(-1) )
-process.hNuMu40trigHi = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(1) )
-process.hNuMu40trigLo = process.hNuMu40.clone( applyTrigEffsign  = cms.int32(-1) )
+process.hNuMu24trigHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(1) )
+process.hNuMu24trigLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(-1) )
+process.hNuMu40trigHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(1) )
+process.hNuMu40trigLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(-1) )
 
 # Pileup uncertainty: +/- 8% on number of interactions leads to 0.4 in 2011A, 0.7 in 2011B
 #                     +/- 5% on number of interactions (16.85, 12/06/09) leads to 0.84 in 2012AB
 if isRun2012:
-    process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.84) )
-    process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.84) )
+    process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.84) )
+    process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.84) )
 else:
-    process.hNuMu24puHi = process.hNuMu24.clone( systPileupShift = cms.double(0.4) )
-    process.hNuMu24puLo = process.hNuMu24.clone( systPileupShift = cms.double(-0.4) )
-    process.hNuMu40puHi = process.hNuMu40.clone( systPileupShift = cms.double(0.7) )
-    process.hNuMu40puLo = process.hNuMu40.clone( systPileupShift = cms.double(-0.7) )
+    process.hNuMu24puHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.4) )
+    process.hNuMu24puLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.4) )
+    process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.7) )
+    process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.7) )
 
-process.hNuEpuHi = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(0.84) )
-process.hNuEpuLo = process.hNuE.clone( analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(-0.84) )
+process.hNuEpuHi = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(0.84) )
+process.hNuEpuLo = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(-0.84) )
 
 ## ============ ##
 ## QCD Analysis ##
@@ -675,6 +677,11 @@ process.hNuQCD.dimuonMaxVertexZsepCM = cms.double( -1.0 )
 process.hNuQCD.maxJetVZsepCM         = cms.double( -1.0 )
 #--- Pileup corrections: needed even for data! ---#
 process.hNuQCD.pileupEra = cms.int32(pileupEra)
+
+process.hNuMu1QCD = process.hNu.clone( studyMuSelectEff = cms.bool(False), nFakeLeptons = cms.untracked.int32(1) )
+process.hNuMu2QCD = process.hNu.clone( studyMuSelectEff = cms.bool(False), nFakeLeptons = cms.untracked.int32(2) )
+process.hNuE1QCD  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), nFakeLeptons = cms.untracked.int32(1) )
+process.hNuE2QCD  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), nFakeLeptons = cms.untracked.int32(2) )
 
 if isData:
     process.hNuQCD.muonTag                     = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
@@ -711,9 +718,12 @@ process.hNuQCDMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
 ## ============ ##
 process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
 # process.hNuTop.minLep2pt        = cms.double(30.)
-process.hNuTop.studyScaleFactor = cms.bool(studyTopScale)
-process.hNuTop.heepVersion      = cms.int32(heepVersion)
-process.hNuTop.electronRho      = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
+process.hNuTop.studyScaleFactor  = cms.bool(studyTopScale)
+process.hNuTop.heepVersion       = cms.int32(heepVersion)
+process.hNuTop.electronRho       = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
+process.hNuTop.useDirtyElectrons = cms.bool( False ) 
+process.hNuTop.useDirtyMuons     = cms.bool( False ) 
+process.hNuTop.fakeWeightFlavor  = cms.int32( 0 ) 
 
 #--- Some corrections re-enabled ---#
 process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
@@ -768,6 +778,12 @@ process.hNuTopMu24trigLo = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int
 process.hNuTopMu40trigHi = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(1) )
 process.hNuTopMu40trigLo = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(-1) )
 
+process.hNuGoodMuFakeE   = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(False) )
+process.hNuFakeMuGoodE   = process.hNuTop.clone( useDirtyElectrons = cms.bool(False), useDirtyMuons = cms.bool(True) )
+process.hNuFakeMuEwgtE   = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(11) )
+process.hNuFakeMuEwgtMu  = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(13) )
+process.hNuFakeMuEwgtMuE = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(1113) )
+
 #----------------#
 #--- LumiList ---#
 #----------------#
@@ -782,20 +798,20 @@ if not isMC:
 #-------------#
 if runMuonAnalysis:
     if qcdStudy and topStudy:
-        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pQCD','pTop') )
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pMu1QCD','pMu2QCD','pTop') )
     if qcdStudy and not topStudy:
-        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pQCD') )
+        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pMu1QCD','pMu2QCD') )
     if topStudy and not qcdStudy:
         process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal','pTop') )
     if not qcdStudy and not topStudy:
         process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pNominal') )
 else: 
-    if qcdStudy and topStudy:
-        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pQCD','pTop') )
-    if qcdStudy and not topStudy:
-        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pQCD') )
-    if topStudy and not qcdStudy:
-        process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pTop') )
+    # if qcdStudy and topStudy:
+    #     process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pMu1QCD','pMu2QCD','pTop') )
+    # if qcdStudy and not topStudy:
+    #     process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pMu1QCD','pMu2QCD') )
+    # if topStudy and not qcdStudy:
+    process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pTop') )
 
 if runMuonAnalysis:
     if isMC:
@@ -855,9 +871,11 @@ if runElectronAnalysis:
    if systematics:
       process.pEjesHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesHi);
       process.pEjesLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesLo);
+      process.pEjerHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjerHi);
+      process.pEjerLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjerLo);
       process.pEescale = cms.Path(process.AnalysisIntroSequence + process.hNuEescale);
-      process.pEpuHi = cms.Path(process.AnalysisIntroSequence + process.hNuEpuHi);
-      process.pEpuLo = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
+      process.pEpuHi   = cms.Path(process.AnalysisIntroSequence + process.hNuEpuHi);
+      process.pEpuLo   = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
       
    if doTriggerStudy and isData:
        process.pENominal = cms.Path( process.AnalysisIntroSequence + process.TriggerStudyElectronSequence + process.hNuE  )
@@ -865,12 +883,23 @@ if runElectronAnalysis:
        process.pENominal = cms.Path( process.AnalysisIntroSequence + process.hNuE )
           
 if qcdStudy:
-    if isMC:
-        if isRun2011A:
-            process.pQCD24 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu24 )
-        process.pQCD40 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu40 ) 
-    else:
-        process.pQCD = cms.Path( process.AnalysisIntroSequence + process.hNuQCD )
+    process.pMu1QCD = cms.Path( process.AnalysisIntroSequence + process.hNuMu1QCD )
+    process.pMu2QCD = cms.Path( process.AnalysisIntroSequence + process.hNuMu2QCD )
+    process.pE1QCD  = cms.Path( process.AnalysisIntroSequence + process.hNuE1QCD )
+    process.pE2QCD  = cms.Path( process.AnalysisIntroSequence + process.hNuE2QCD )
+
+    process.pGoodMuFakeE   = cms.Path( process.AnalysisIntroSequence + process.hNuGoodMuFakeE )
+    process.pFakeMuGoodE   = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuGoodE )
+    process.pFakeMuEwgtMu  = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMu )
+    process.pFakeMuEwgtE   = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtE )
+    process.pFakeMuEwgtMuE = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMuE )
+
+    # if isMC:
+    #     if isRun2011A:
+    #         process.pQCD24 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu24 )
+    #     process.pQCD40 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu40 ) 
+    # else:
+    #     process.pQCD = cms.Path( process.AnalysisIntroSequence + process.hNuQCD )
         
 if topStudy:
     if isMC:

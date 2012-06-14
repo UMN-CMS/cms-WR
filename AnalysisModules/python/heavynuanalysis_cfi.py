@@ -80,6 +80,8 @@ hNu = cms.EDFilter(
     #options are HNUMU, HNUE, TOP, QCD, CLO
     analysisMode = cms.untracked.string('HNUMU'),
 
+    nFakeLeptons = cms.untracked.int32(0), 
+
     heepVersion = cms.untracked.int32(40),
     addSlopeTree = cms.untracked.bool(False)
     )

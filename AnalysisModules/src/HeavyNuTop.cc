@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.30 2012/06/09 23:30:58 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.31 2012/06/10 04:20:10 pastika Exp $
 //
 //
 
@@ -138,6 +138,9 @@ private:
     // bool   applyEleScaleCorrections_ ; 
     // bool   applyEleIDWeightFactor_ ; 
     bool   studyScaleFactorEvolution_;  // for Top, Z+jets scale factors (by Mu1 pT) studies
+
+    bool useDirtyElectrons_, useDirtyMuons_ ; 
+    int  fakeFlavorToWeight_ ; 
 
     int    pileupEra_;
 
@@ -329,6 +332,10 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getParameter<int>("heepVersion");
     if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ; 
+
+    useDirtyElectrons_  = iConfig.getParameter<bool>("useDirtyElectrons") ; 
+    useDirtyMuons_      = iConfig.getParameter<bool>("useDirtyMuons") ; 
+    fakeFlavorToWeight_ = iConfig.getParameter<int>("fakeWeightFlavor") ; 
 
     EBscalefactor_ = iConfig.getParameter<double>("EBscalefactor") ;
     EEscalefactor_ = iConfig.getParameter<double>("EEscalefactor") ;
@@ -655,9 +662,12 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
 
     // Look for valid electrons and put them in the event
+    int eidVersion = abs(heepVersion_) ; 
+    if ( useDirtyElectrons_ ) eidVersion = -1 * heepVersion_ ; 
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta,
-			   cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, heepVersion_, elecRho_) ;
+			   cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, eidVersion, elecRho_) ;
+
     for (unsigned int i=0; i<eCands.size(); i++) { 
       pat::Electron iE = eCands.at(i).first;
       double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
@@ -678,8 +688,23 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     for (unsigned int i = 0; i < muCands.size(); i++)
     {
         pat::Muon iM = muCands.at(i) ;
-        if ( hnu::muIsolation(iM) < cuts.muon_trackiso_limit )
-        {
+
+	if ( useDirtyMuons_ ) { 
+	  double caloIso = iM.ecalIso() + iM.hcalIso() ;
+	  bool   isDirty = ( (iM.pt() < 100.) ? (caloIso > 10.) : ((caloIso/iM.pt()) > 0.10) ) ; 
+	  if ( isDirty && deltaR(iM.eta(), iM.phi(), hnuEvent.e1.eta(), hnuEvent.e1.phi()) < 0.3 ) isDirty = false ; 
+
+	  if ( isDirty ) { // Calo non-isolated muon 
+	    double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi()) ;
+	    double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi()) ;
+            if (dRj1 > cuts.minimum_lep_jet_dR && dRj2 > cuts.minimum_lep_jet_dR)
+            {
+                hnuEvent.nLeptons++ ;
+                hnuEvent.mu1 = iM ;
+                break;
+            }
+	  }
+	} else if ( hnu::muIsolation(iM) < cuts.muon_trackiso_limit ) {
             double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi()) ;
             double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi()) ;
             if (dRj1 > cuts.minimum_lep_jet_dR && dRj2 > cuts.minimum_lep_jet_dR)
@@ -691,6 +716,22 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
     }
     if ( hnuEvent.nLeptons < 2 ) return false ; // No muons
+
+    // Determine weight factors for dirty-e + dirty-mu jj
+    // NOTE: For emjj closure tests, only relative rates matter (absolute scale less important)
+    if ( useDirtyElectrons_ && useDirtyMuons_ ) { 
+      double fakeWeight = 1.0 ; 
+      // Note: "fake" electrons must pass minimal cuts but FAIL full selection
+      if      (fakeFlavorToWeight_ == 11) 
+	fakeWeight = (hnu::fakeProbability(hnuEvent.e1)/(1.0-hnu::fakeProbability(hnuEvent.e1))) ; 
+      else if (fakeFlavorToWeight_ == 13) fakeWeight = hnu::fakeProbability( hnuEvent.mu1 ) ; 
+      // Special case: Consider trying to estimate QCD background to e/mu jj:
+      else if (fakeFlavorToWeight_ == 1113 || fakeFlavorToWeight_ == 1311) 
+	fakeWeight = (hnu::fakeProbability(hnuEvent.e1)/(1.0-hnu::fakeProbability(hnuEvent.e1))) * 
+	  hnu::fakeProbability( hnuEvent.mu1 ) ; 
+      hnuEvent.eventWgt *= fakeWeight ; 
+    }
+
     if (applyMuIDCorrections_ && hnuEvent.isMC)
     {
         double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_) ;
