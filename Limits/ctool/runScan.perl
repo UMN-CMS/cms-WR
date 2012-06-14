@@ -48,7 +48,7 @@ if ($channel eq "e-mu") {
 	"/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
     $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
     $lumi2012="2400,2400";
-    $xsec=$xsec.",".$xsec;
+    $xsec=$xsec;
 } elsif ($channel eq "mu2ecm") {
     $ratesdb="ratesdb.csv,ratesdb.csv";
     
@@ -131,12 +131,12 @@ foreach $item (@items) {
 
     $ofname="$fileLoc/limit_".$mw."_".$mn;
     if ($channel eq "mu2ecm") {
-	$mn2011=(int($mw/100)/2+1)*100;
-	$mn=$mn2011.",".$mn;
+	$mn2011=(int($mw/200)+1)*100;
+	$mntext=$mn2011.",".$mn;
 	$xseceff=$xsec*xsecratio($mw);
 	    	
 	$mode=$channel;
-	$cmd="./makeLimitFile.exe -m $mode -l $lumi2011,$lumi2012 -w $mw -n $mn -y 2011,2012 -x $xseceff,$xsec -d $databoth -r $ratesdb -o $ofname -s $systdb ";
+	$cmd="./makeLimitFile.exe -m $mode -l $lumi2011,$lumi2012 -w $mw -n $mntext -y 2011,2012 -x $xseceff,$xsec -d $data_both -r $ratesdb -o $ofname -s $systdb ";
 
     } elsif ($year==2011) {
 	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
