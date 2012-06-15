@@ -78,6 +78,9 @@ void HeavyNuEvent::calculate(bool correctEscale)
             lep2p4 = mu2.p4();
             break;
         case QCD:
+            lep1p4 = mu1.p4();
+            lep2p4 = mu2.p4();
+            break;
         case CLO:
             break;
     }

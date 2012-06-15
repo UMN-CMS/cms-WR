@@ -13,10 +13,10 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.24 2012/05/09 17:07:35 pastika Exp $
+// $Id: MuJetBackground.cc,v 1.25 2012/05/15 21:47:20 bdahmes Exp $
 //
 //
-/*
+
 // system include files
 #include <memory>
 #include <iostream>
@@ -451,11 +451,11 @@ MuJetBackground::HistPerDef::fill(const HeavyNuEvent& hne, double w1, double w2)
   }
 
   if ( hne.nMuons > 1 ) { 
-    mMuMu->Fill( hne.mMuMu,weight*hne.eventWgt );
-    mMuMuZoom->Fill( hne.mMuMu,weight*hne.eventWgt );
+    mMuMu->Fill( hne.mLL,weight*hne.eventWgt );
+    mMuMuZoom->Fill( hne.mLL,weight*hne.eventWgt );
 
-    mMuMu_raw->Fill( hne.mMuMu,hne.eventWgt );
-    mMuMuZoom_raw->Fill( hne.mMuMu,hne.eventWgt );
+    mMuMu_raw->Fill( hne.mLL,hne.eventWgt );
+    mMuMuZoom_raw->Fill( hne.mLL,hne.eventWgt );
   }
 }// end of fill()
 
@@ -1057,7 +1057,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                               std::cout << "\tM(W_R)  = " << hnuQuadjet.mWR << " GeV";
                               std::cout << ", M(NuR1) = " << hnuQuadjet.mNuR1 << " GeV";
                               std::cout << ", M(NuR2) = " << hnuQuadjet.mNuR2 << " GeV" << std::endl;
-                              std::cout << "\tM(mumu) = " << hnuQuadjet.mMuMu << " GeV";
+                              std::cout << "\tM(mumu) = " << hnuQuadjet.mLL << " GeV";
                               std::cout << ", M(JJ) = " << hnuQuadjet.mJJ << " GeV" << std::endl;
                               std::cout << "\tJets:   j1 ";
                               std::cout << "pt=" << hnuQuadjet.j1.pt() << " GeV, eta=" << hnuQuadjet.j1.eta() << ", phi=" << hnuQuadjet.j1.phi();
@@ -1073,7 +1073,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                           
                           if ( hnuQuadjet.mu1.pt() > cuts.minimum_mu1_pt ) {
                               hists.Mu1HighPtCut.fill( hnuQuadjet,mu1scaleFactor,mu2scaleFactor ) ;
-                              if ( hnuQuadjet.mMuMu > cuts.minimum_mumu_mass ) { // dimuon mass rqmt
+                              if ( hnuQuadjet.mLL > cuts.minimum_mumu_mass ) { // dimuon mass rqmt
                                   hists.diLmassCut.fill( hnuQuadjet,mu1scaleFactor,mu2scaleFactor ) ; 
                               }
                           }
@@ -1130,7 +1130,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                             (deltaVzM1M2 < cuts.maxVertexZsep)) ) {
                           if (iEvent.isRealData()) {
                               std::cout << "\tTWOMUINJET: " << iEvent.id() << std::endl;
-                              std::cout << "\tM(mumu) = " << mmjet.mMuMu << " GeV";
+                              std::cout << "\tM(mumu) = " << mmjet.mLL << " GeV";
                               std::cout << "\tJets:   j1 ";
                               std::cout << "pt=" << mmjet.j1.pt() << " GeV, eta=" << mmjet.j1.eta() << ", phi=" << mmjet.j1.phi();
                               std::cout << std::endl;
@@ -1222,7 +1222,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                         if (iEvent.isRealData()) {
                             std::cout << "\tONEMUINJET: " << iEvent.id() << std::endl;
-                            std::cout << "\tM(mumu) = " << mMjet.mMuMu << " GeV";
+                            std::cout << "\tM(mumu) = " << mMjet.mLL << " GeV";
                             std::cout << "\tJets:   j1 ";
                             std::cout << "pt=" << mMjet.j1.pt() << " GeV, eta=" << mMjet.j1.eta() << ", phi=" << mMjet.j1.phi();
                             std::cout << std::endl;
@@ -1410,4 +1410,4 @@ MuJetBackground::endJob() {
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MuJetBackground);
-*/
+
