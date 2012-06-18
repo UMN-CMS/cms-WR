@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.13 2012/06/15 11:48:45 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.14 2012/06/15 12:25:42 franzoni Exp $
 //
 //
 
@@ -248,13 +248,13 @@ HeavyNuEleTriggerEff::HeavyNuEleTriggerEff(const edm::ParameterSet& iConfig) :
   pTProbeFail_        = (TH1F*)   fs->make<TH1F>("pTProbeFail","pTProbeFail; p_{T}(probe,fail) [GeV]",2000,0.,2000);
   
   double yAxisPt[8] = {0, 40., 50., 60., 80., 100., 200., 2000};
-  ptProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("ptProbeVSmassDenom","ptProbeVSmassDenom; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",200,30.,230,7,yAxisPt);
-  ptProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("ptProbeVSmassNum","ptProbeVSmassNum; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",200,30.,230,7,yAxisPt);
+  ptProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("ptProbeVSmassDenom","ptProbeVSmassDenom; m(ee) [GeV]; p_{T}(probe,denom) [GeV]",200,30.,230,7,yAxisPt);
+  ptProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("ptProbeVSmassNum","ptProbeVSmassNum; m(ee) [GeV]; p_{T}(probe,num) [GeV]",200,30.,230,7,yAxisPt);
   ptProbeVSmassFail_  = (TH2F*)   fs->make<TH2F>("ptProbeVSmassFail","ptProbeVSmassFail; m(ee) [GeV]; p_{T}(probe,fail) [GeV]",200,30.,230,7,yAxisPt);
 
   double yAxisEta[11] = {-2.5, -2, -1.6, -1.4, -1., 0., 1., 1.4, 1.6, 2., 2.5};
-  etaProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("etaProbeVSmassDenom","etaProbeVSmassDenom; m(ee) [GeV]; #eta(probe,fail) [GeV]",200,30.,230,10,yAxisEta);
-  etaProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("etaProbeVSmassNum","etaProbeVSmassNum; m(ee) [GeV]; #eta(probe,fail) [GeV]",200,30.,230,10,yAxisEta);
+  etaProbeVSmassDenom_ = (TH2F*)   fs->make<TH2F>("etaProbeVSmassDenom","etaProbeVSmassDenom; m(ee) [GeV]; #eta(probe,denom) [GeV]",200,30.,230,10,yAxisEta);
+  etaProbeVSmassNum_   = (TH2F*)   fs->make<TH2F>("etaProbeVSmassNum","etaProbeVSmassNum; m(ee) [GeV]; #eta(probe,num) [GeV]",200,30.,230,10,yAxisEta);
   etaProbeVSmassFail_  = (TH2F*)   fs->make<TH2F>("etaProbeVSmassFail","etaProbeVSmassFail; m(ee) [GeV]; #eta(probe,fail) [GeV]",200,30.,230,10,yAxisEta);
   
 
