@@ -121,7 +121,7 @@ foreach $item (@items) {
 
     $mw=$1; $mn=$2;
 
-    next if (($mn%$step)!=0);
+    next if (($mw%$step)!=0);
 
     next if ($mw < $minmwAllowed);
     next if ($mw > $maxmwAllowed);
