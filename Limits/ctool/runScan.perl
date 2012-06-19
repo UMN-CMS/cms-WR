@@ -150,7 +150,11 @@ foreach $item (@items) {
     } else {
 
 	$mode=$channel;
-	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -b $max_mllqq -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
+	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
+	if ($max_mllqq>0) {
+	    $cmd.=" -b $max_mllqq";
+	}
+
 	$comments="xsec=$xsec";
     }
     system($cmd);
