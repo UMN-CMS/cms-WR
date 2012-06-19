@@ -11,6 +11,7 @@ $systmode=0;
 $xsec=0.01;
 $minmwAllowed=700;
 $maxmwAllowed=3000;
+$max_mllqq=-1;
 $year=2012;
 $channel="mu";
 
@@ -23,6 +24,7 @@ GetOptions("toys=i" => \$toys,
 	   "channel=s" => \$channel,
 	   "step=i" => \$step,
 	   "year=i" => \$year,
+	   "maxllqq=d" => \$max_mllqq,
 	   "special=s" => \$special,
 	   "jobname=s" => \$jobBase);
 
@@ -119,10 +121,10 @@ foreach $item (@items) {
 
     $mw=$1; $mn=$2;
 
-    print "Got $mw $mn ($channel)\n";
-
     next if ($mw < $minmwAllowed);
     next if ($mw > $maxmwAllowed);
+
+    print "Got $mw $mn ($channel)\n";
 
     $mwr_mn{$mw}=$mn;
 
@@ -146,7 +148,7 @@ foreach $item (@items) {
     } else {
 
 	$mode=$channel;
-	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
+	$cmd="./makeLimitFile.exe -m $mode -l $lumi2012 -b $max_mllqq -w $mw -n $mn -y $year -x $xsec -d $data2012 -r $ratesdb -o $ofname -s $systdb ";
 	$comments="xsec=$xsec";
     }
     system($cmd);

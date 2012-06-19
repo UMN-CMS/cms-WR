@@ -175,7 +175,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
   else
     vdata=extractBins(dataf,data_hist_name_elec);
 
-  std::vector<PerBinInfo> pbi;
+  std::vector<PerBinInfo> pbi, pbi_alt;
 
   int ilow=0;
   int ihigh=16;
@@ -227,6 +227,59 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     if (sigbineff>0.01 || fullRange) 
       pbi.push_back(abin);
   }
+  
+
+  if (mp.rebin_above_mlljj>0) {
+    pbi_alt.swap(pbi);
+
+    int srcabove=(int(mp.rebin_above_mlljj+0.5)-600)/200;
+
+    PerBinInfo abin;
+    abin.sourceBin=srcabove;
+    abin.year=mp.year;
+    abin.lumi=mp.lumi;
+    abin.lowEdge=srcabove*200+600;
+    abin.highEdge=4000;
+    abin.data=0;
+    for (int j=0; j<3; j++) abin.bkgd[j]=0;
+    abin.signal=0;
+    
+    std::map<std::string,PerBinSystematic>::iterator ss;
+
+    for (std::vector<PerBinInfo>::const_iterator jj=pbi_alt.begin();jj!=pbi_alt.end(); jj++) {
+      if (jj->sourceBin<srcabove) pbi.push_back(*jj);
+      else {
+	abin.data+=jj->data;
+	abin.signal+=jj->signal;
+	for (int j=0; j<3; j++) abin.bkgd[j]+=jj->bkgd[j];
+
+	std::map<std::string,PerBinSystematic>::const_iterator is;
+	for (is=jj->perBinSyst.begin(); is!=jj->perBinSyst.end(); is++) {
+	  ss=abin.perBinSyst.find(is->first);
+	  if (ss==abin.perBinSyst.end()) {
+	    PerBinSystematic blank;
+	    blank.signal=0;
+	    blank.bkgd[0]=0;	    blank.bkgd[1]=0;	    blank.bkgd[2]=0;
+	    abin.perBinSyst.insert(std::pair<std::string,PerBinSystematic>(is->first,blank));
+	    ss=abin.perBinSyst.find(is->first);
+	  }
+	  // weighted sum...
+	  ss->second.signal+=jj->signal*is->second.signal;
+	  for (int q=0; q<3; q++)
+	    ss->second.bkgd[q]+=jj->bkgd[q]*is->second.bkgd[q];
+	}
+      }
+    }
+    // normalize systematics...
+    for (ss=abin.perBinSyst.begin(); ss!=abin.perBinSyst.end(); ss++) {
+      ss->second.signal/=std::max(1e-9,abin.signal);
+      for (int q=0; q<3; q++)
+	ss->second.bkgd[q]/=std::max(1e-9,abin.bkgd[q]);      
+      
+    }
+    pbi.push_back(abin); // combined bin
+  }
+
   return pbi;
 }
 

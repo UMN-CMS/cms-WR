@@ -38,6 +38,7 @@ struct LimitPoint {
   double xsec;
   int year;
   enum { lp_Muon1ECM, lp_Elec1ECM, lp_Muon2ECM, lp_MuonElec } mode;
+  double rebin_above_mlljj;
   int mwr, mwr_syst;
   int mnr, mnr_syst;
 };

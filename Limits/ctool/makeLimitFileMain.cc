@@ -16,10 +16,17 @@ int main(int argc, char* argv[]) {
   std::string istring;
   bool interpolate=false;
 
+  pt.rebin_above_mlljj=-1;
+  pt1.rebin_above_mlljj=-1;
+  pt2.rebin_above_mlljj=-1;
   pt.mode=LimitPoint::lp_Muon1ECM; // historical default
 
-  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:m:")) != -1) {
+  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:m:b:")) != -1) {
                switch (opt) {
+	       case 'b':
+		 pt.rebin_above_mlljj=atof(optarg);
+		 pt1.rebin_above_mlljj=atof(optarg);
+		 pt2.rebin_above_mlljj=atof(optarg);
 	       case 'l':
 		 if (pt.mode==LimitPoint::lp_MuonElec || pt.mode==LimitPoint::lp_Muon2ECM) {
 		   sscanf(optarg,"%lf,%lf",&pt1.lumi,&pt2.lumi);
