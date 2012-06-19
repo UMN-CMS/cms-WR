@@ -180,9 +180,11 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
   int ilow=0;
   int ihigh=16;
 
-  fullRange=fullRange || (mp.rebin_above_mlljj>0);
 
   if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
+
+  if (mp.rebin_above_mlljj>0) ihigh=16;
+
   char process[200];
   sprintf(process,snames[0],mp.mwr,mp.mnr);
   
@@ -226,7 +228,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     char name[10];
     sprintf(name,"%c%02d",binprefix,ibin);
     abin.binName=name;
-    if (sigbineff>0.01 || fullRange) 
+    if (sigbineff>0.01 || fullRange || mp.rebin_above_mlljj>0) 
       pbi.push_back(abin);
   }
   
