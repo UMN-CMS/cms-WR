@@ -24,7 +24,7 @@ GetOptions("toys=i" => \$toys,
 	   "channel=s" => \$channel,
 	   "step=i" => \$step,
 	   "year=i" => \$year,
-	   "maxllqq=d" => \$max_mllqq,
+	   "maxllqq=i" => \$max_mllqq,
 	   "special=s" => \$special,
 	   "jobname=s" => \$jobBase);
 
