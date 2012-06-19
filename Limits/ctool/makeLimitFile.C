@@ -185,6 +185,8 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 
   if (mp.rebin_above_mlljj>0) ihigh=16;
 
+  int rebinabove=(int(mp.rebin_above_mlljj+0.5)-600)/200;
+
   char process[200];
   sprintf(process,snames[0],mp.mwr,mp.mnr);
   
@@ -228,7 +230,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     char name[10];
     sprintf(name,"%c%02d",binprefix,ibin);
     abin.binName=name;
-    if (sigbineff>0.01 || fullRange || mp.rebin_above_mlljj>0) 
+    if (sigbineff>0.01 || fullRange || (mp.rebin_above_mlljj>0 && ibin>=rebinabove)) 
       pbi.push_back(abin);
   }
   
