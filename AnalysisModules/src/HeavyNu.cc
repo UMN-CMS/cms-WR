@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.104 2012/06/14 21:52:22 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.105 2012/06/20 01:20:52 pastika Exp $
 //
 //
 
@@ -350,7 +350,7 @@ bool HeavyNu::isWrDaughter(const reco::Candidate* mother)
 {
     for(size_t i = 0; i < mother->numberOfMothers(); i++)
     {
-        if(mother->mother(i)->pdgId() == (analysisMode_ == HeavyNuEvent::HNUMU)?9900014:9900012 || isWrDaughter(mother->mother(i))) return true;
+        if((mother->mother(i)->pdgId() == ((analysisMode_ == HeavyNuEvent::HNUMU)?9900014:9900012)) || isWrDaughter(mother->mother(i))) return true;
     }
     return false;
 }

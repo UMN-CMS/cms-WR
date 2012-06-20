@@ -59,7 +59,7 @@ hNu = cms.EDFilter(
     applyMuIDEffsign  = cms.int32(0),
 
     studyMuSelectEff      = cms.bool(True),
-    oneTPcand             = cms.bool(True),
+    oneTPcand             = cms.bool(False),
     tpRandomSeed          = cms.int32(122674),
     studyScaleFactor      = cms.bool(False),
     studyRatePerRun       = cms.bool(False),

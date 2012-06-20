@@ -131,7 +131,20 @@ namespace hnu {
   // Placeholder until real values are known
   double fakeProbability(const pat::Muon& mu) { 
 
-    double prob = 0.15 ; 
+    double eta  = mu.eta() ; 
+    double prob = 0. ; 
+
+    if ( abs(eta) < 2.4 ) { // Values determined from data on 20 June 2012
+      if      ( eta < -2.1 ) prob = 0.25938 ; 
+      else if ( eta < -1.2 ) prob = 0.13414 ; 
+      else if ( eta < -0.9 ) prob = 0.105791 ; 
+      else if ( eta < 0.0 )  prob = 0.0944799 ; 
+      else if ( eta < 0.9 )  prob = 0.095889 ; 
+      else if ( eta < 1.2 )  prob = 0.108 ; 
+      else if ( eta < 2.1 )  prob = 0.135556 ; 
+      else if ( eta < 2.4 )  prob = 0.25242 ; 
+    }
+
     return prob ; 
   }
 
@@ -973,9 +986,10 @@ namespace hnu {
     if ( fabs(eta2) < 2.5 && fabs(eta2) > 1.56 ) nEE++ ; 
     
     // All corrections to MC, bringing energy down to match data
-    double ebebCorr = 1.0 - 0.0092 ; 
-    double ebeeCorr = 1.0 - 0.0141 ; 
-    double eeeeCorr = 1.0 - 0.0122 ; 
+    // Updated to AN 12/171, v8 results
+    double ebebCorr = 1.0 - 0.0088 ; 
+    double ebeeCorr = 1.0 - 0.0143 ; 
+    double eeeeCorr = 1.0 - 0.0145 ; 
 
     if ( nEB + nEE < 2 ) { // Special case for top
       if      ( nEB ) scaleCorrection = sqrt( ebebCorr ) ; 
