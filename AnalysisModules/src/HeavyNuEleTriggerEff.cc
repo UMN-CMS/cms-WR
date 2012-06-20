@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.14 2012/06/15 12:25:42 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.15 2012/06/18 09:18:44 franzoni Exp $
 //
 //
 
@@ -553,36 +553,48 @@ HeavyNuEleTriggerEff::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    // find one (possible) tag among the objects which passed the end-filter  of the seeding path
    // match objects from 'end-of-path filter' to objects that have passed the 'tag filter';
    std::vector<math::XYZTLorentzVector> SeedingPathTagObjectsHLT;
-   for(size_t objNrLast=0; objNrLast< trigObjP4sLastFilterSeedPath.size(); objNrLast++){
+   //for(size_t objNrLast=0; objNrLast< trigObjP4sLastFilterSeedPath.size(); objNrLast++){
+   
+   // because the requirements on the TAG (of the seeding path) is not the same as
+   // (it's tighter than) 
+   // the requirements on the PROBE, we cannot use all events which have generically one tag;
+   // it's necessary to target one electron and keep the event if it passes the tag requirements
+   // and test the probe chosen among the electron different from the tag
+   // see the refreshing explanation from Ivano Mikulec quoted below [1]
 
-     for(size_t objNrTag=0; objNrTag< trigObjP4sTagFilterSeedPath.size(); objNrTag++){
+   size_t objNrLast =  static_cast<size_t>(  (( iEvent.bunchCrossing()%100 ) *1.0 / 100. ) * trigObjP4sLastFilterSeedPath.size() ) ;
+   if (doDebugMessages_) {
+     std::cout << "there are " << trigObjP4sLastFilterSeedPath.size() << " HLT objects from the end of the seeding path; I've chosen: " << objNrLast << " -th \t" << ( ( iEvent.bunchCrossing()%100 ) *1.0 / 100. )  << " to be tested as TAG." << std::endl ;
+     
+   }
 
-
-       if (doDebugMessages_) {
-	 std::cout << "comparing LastFilterSeedPath : " 
-		   << trigObjP4sLastFilterSeedPath[objNrLast].Et() 
-		   << "\t" << trigObjP4sLastFilterSeedPath[objNrLast].Eta() << "\t" <<   trigObjP4sLastFilterSeedPath[objNrLast].Phi()
-		   << "\nto TagFilterSeedPath      : " 
-		   << trigObjP4sTagFilterSeedPath [objNrTag] .Et() << "\t" 
-		   << trigObjP4sTagFilterSeedPath [objNrTag] .Eta() << "\t" <<   trigObjP4sTagFilterSeedPath [objNrTag] .Phi()
-		   << "\n deltaR: " 
-		   << deltaR( trigObjP4sLastFilterSeedPath[objNrLast].Eta(),  trigObjP4sLastFilterSeedPath[objNrLast].Phi() ,
-			      trigObjP4sTagFilterSeedPath [objNrTag] .Eta(),  trigObjP4sTagFilterSeedPath [objNrTag] .Phi()  )
-		   << std::endl;
-       }//debug
-       
-       if (  deltaR( trigObjP4sLastFilterSeedPath[objNrLast].Eta(),  trigObjP4sLastFilterSeedPath[objNrLast].Phi() , 
-		     trigObjP4sTagFilterSeedPath [objNrTag] .Eta(),  trigObjP4sTagFilterSeedPath [objNrTag] .Phi()  ) 
-	     < 0.1 ) 
-	 {
-	   // If I get here, I've found one object among those of the seeding path end which is tighter than a SC
-	   // => this is one of the possible tags (I'll randomize later to choose a specific tag, if more than one tag is found)
-	   SeedingPathTagObjectsHLT.push_back(  trigObjP4sLastFilterSeedPath[objNrLast]  );
-	   break;
-	 }// if there's matching
-       
-     }// loop over HLT objects passing TAG filter of HLT seed path
-   }// loop over HLT objects passing LAST filter of HLT seed path
+   for(size_t objNrTag=0; objNrTag< trigObjP4sTagFilterSeedPath.size(); objNrTag++){
+     
+     if (doDebugMessages_) {
+       std::cout << "comparing LastFilterSeedPath : " 
+		 << trigObjP4sLastFilterSeedPath[objNrLast].Et() 
+		 << "\t" << trigObjP4sLastFilterSeedPath[objNrLast].Eta() << "\t" <<   trigObjP4sLastFilterSeedPath[objNrLast].Phi()
+		 << "\nto TagFilterSeedPath      : " 
+		 << trigObjP4sTagFilterSeedPath [objNrTag] .Et() << "\t" 
+		 << trigObjP4sTagFilterSeedPath [objNrTag] .Eta() << "\t" <<   trigObjP4sTagFilterSeedPath [objNrTag] .Phi()
+		 << "\n deltaR: " 
+		 << deltaR( trigObjP4sLastFilterSeedPath[objNrLast].Eta(),  trigObjP4sLastFilterSeedPath[objNrLast].Phi() ,
+			    trigObjP4sTagFilterSeedPath [objNrTag] .Eta(),  trigObjP4sTagFilterSeedPath [objNrTag] .Phi()  )
+		 << std::endl;
+     }//debug
+     
+     if (  deltaR( trigObjP4sLastFilterSeedPath[objNrLast].Eta(),  trigObjP4sLastFilterSeedPath[objNrLast].Phi() , 
+		   trigObjP4sTagFilterSeedPath [objNrTag] .Eta(),  trigObjP4sTagFilterSeedPath [objNrTag] .Phi()  ) 
+	   < 0.1 ) 
+       {
+	 // If I get here, I've found one object among those of the seeding path end which is tighter than a SC
+	 // => this is one of the possible tags (I'll randomize later to choose a specific tag, if more than one tag is found)
+	 SeedingPathTagObjectsHLT.push_back(  trigObjP4sLastFilterSeedPath[objNrLast]  );
+	 break;
+       }// if there's matching
+     
+   }// loop over HLT objects passing TAG filter of HLT seed path
+   //}// loop over HLT objects passing LAST filter of HLT seed path
    
    if(SeedingPathTagObjectsHLT.size() ==0 ){
      std::cout << "Problem: found no objects (SeedingPathTagObjectsHLT) among those at the end of seeding path which match the output of the TAG filter."
@@ -1205,3 +1217,12 @@ HeavyNuEleTriggerEff::fillDescriptions(edm::ConfigurationDescriptions& descripti
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HeavyNuEleTriggerEff);
+
+
+// [1]
+// "Imagine you have exactly the same requirements for Tag and Passing Probe (which is I guess almost true in your case). 
+// You have 100 events in your sample and your true efficiency is 90%. If the two muons are uncorrelated and we abstract from stat fluctuations, 
+// you will have 99 events with at least one Tag. Out of those 81 will have two Tags and Two Passing Probes. If you count the efficiency the way you do you will have: 
+// eff = 81/99 = 82%. This is wrong and you have to count all probes. The right calculation is eff = (2*81)/(2*81+18) = 90%! Here the events with 
+// two Tags and two Passing Probes count twice, while the events with one Tag (and one failing Probe) count once. 
+// An alternative would be to completely randomize the role of each muon (one can be only a Tag and one only a Probe) but this reduces your statistics."two
