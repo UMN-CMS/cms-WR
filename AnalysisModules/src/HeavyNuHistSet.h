@@ -54,6 +54,8 @@ private:
 
     TH1 *btagJet1, *btagJet2;
     TH1 *numBjets, *njets;
+    
+    TH1 *mWR_1b, *mWR_2b, *mLL_1b, *mLL_2b, *mLLZoom_1b, *mLLZoom_2b;
 
     TH1* met;
 

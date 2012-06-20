@@ -165,21 +165,34 @@ void HeavyNuHistSet::book(TFileDirectory *td, const std::string& post)
     t = "M(N_{R}) #L_{1} vs. #L_{2} " + post;
     mNuR2D = td->make<TH2F > ("mNuR2D", t.c_str(), 100, 0, 4000, 100, 0, 4000);
 
-    t = "#L_{1} p_{T} / M(W_{R}) " + post;
+    t = "L_{1} p_{T} / M(W_{R}) " + post;
     L1ptFracWRmass = td->make<TH1F > ("L1ptFracWRmass", t.c_str(), 100, 0, 1.);
 
     t = "M(jj) " + post;
     mJJ = td->make<TH1F > ("mJJ", t.c_str(), 50, 0, 2000);
-    t = "M(#L #L) " + post;
+    t = "M(LL) " + post;
     mLL = td->make<TH1F > ("mLL", t.c_str(), 100, 0, 2000);
-    t = "M(#L #L)(OS) " + post;
+    t = "M(LL)(OS) " + post;
     mLLOS = td->make<TH1F > ("mLLOS", t.c_str(), 100, 0, 2000);
-    t = "M(#L #L)(SS) " + post;
+    t = "M(LL)(SS) " + post;
     mLLSS = td->make<TH1F > ("mLLSS", t.c_str(), 100, 0, 2000);
-    t = "M(#L #L) " + post;
+    t = "M(LL) " + post;
     mLLZoom = td->make<TH1F > ("mLLZoom", t.c_str(), 400, 0, 400);
     t = "DiLon Charge " + post;
     diLCharge = td->make<TH1F > ("diLCharge", t.c_str(), 2, -1, 1);
+
+    t = "M(W_{R}) 1 BJet " + post;
+    mWR_1b  = td->make<TH1F > ("mWR_1b", t.c_str(), 100, 0, 4000);
+    t = "M(W_{R}) 2 BJet " + post;
+    mWR_2b  = td->make<TH1F > ("mWR_2b", t.c_str(), 100, 0, 4000);
+    t = "M(LL) 1 BJet " + post;
+    mLL_1b = td->make<TH1F > ("mLL_1b", t.c_str(), 100, 0, 2000);
+    t = "M(LL) 2 BJet " + post;
+    mLL_2b = td->make<TH1F > ("mLL_2b", t.c_str(), 100, 0, 2000);
+    t = "M(LL) 1 BJet " + post;
+    mLLZoom_1b = td->make<TH1F > ("mLLZoom_1b", t.c_str(), 400, 0, 400);
+    t = "M(LL) 2 BJet " + post;
+    mLLZoom_2b = td->make<TH1F > ("mLLZoom_2b", t.c_str(), 400, 0, 400);
 
     diLCharge->GetXaxis()->SetBinLabel(1, "OS");
     diLCharge->GetXaxis()->SetBinLabel(2, "SS");
@@ -221,7 +234,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 {
     double wgt = hne.eventWgt;
 
-    if(hne.l1 == NULL && hne.l2 == NULL && hne.nLeptons >=2)
+    if(hne.l1 == NULL && hne.l2 == NULL && hne.nLeptons >= 2)
     {
         std::cout << "INVALID LEPTON in HeavyNuHistSet fill" << std::endl;
     }
@@ -294,7 +307,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         if(hne.nJets >= 2 && hne.nLeptons >= 2)
         {
             double j2bdisc = hne.j2.bDiscriminator(hne.btagName);
-            
+
             ptJet2->Fill(hne.j2.pt(), wgt);
             etaJet2->Fill(hne.j2.eta(), wgt);
             phiJet2->Fill(hne.j2.phi(), wgt);
@@ -381,6 +394,19 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 
         diLCharge->Fill(0.5 * hne.l1->charge() * hne.l2->charge(), wgt);
         mLLZoomvsptL1vsptL2->Fill(hne.mLL, hne.l1pt, hne.l2pt, wgt);
+    }
+
+    if(hne.isBJet1 || hne.isBJet2)
+    {
+        mWR_1b->Fill(hne.mWR, wgt);
+        mLL_1b->Fill(hne.mLL, wgt);
+        mLLZoom_1b->Fill(hne.mLL, wgt);
+    }
+    if(hne.isBJet1 && hne.isBJet2)
+    {
+        mWR_2b->Fill(hne.mWR, wgt);
+        mLL_2b->Fill(hne.mLL, wgt);
+        mLLZoom_2b->Fill(hne.mLL, wgt);
     }
 
     mLLZoom->Fill(hne.mLL, wgt);

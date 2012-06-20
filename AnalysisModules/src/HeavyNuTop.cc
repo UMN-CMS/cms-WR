@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.31 2012/06/10 04:20:10 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.32 2012/06/14 21:52:22 bdahmes Exp $
 //
 //
 
@@ -197,6 +197,8 @@ private:
         HeavyNuHistSet* TrigMatches;
         HeavyNuHistSet* VertexCuts;
         HeavyNuHistSet* Mu1HighPtCut;
+        HeavyNuHistSet* Mu1HighPtCut_1bjet;
+        HeavyNuHistSet* Mu1HighPtCut_2bjet;
         HeavyNuHistSet* Mu1Pt30GeVCut;
         HeavyNuHistSet* Mu1Pt40GeVCut;
         HeavyNuHistSet* Mu1Pt50GeVCut;
@@ -412,6 +414,8 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
     hists.TrigMatches = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:M1)");
     hists.VertexCuts = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut3_Vertex")),     "(vertex requirements:M2)");
     hists.Mu1HighPtCut = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut4_Mu1HighPt")),  "(Mu1 High pt cut:M3)");
+    hists.Mu1HighPtCut_1bjet = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut4a_Mu1HighPt_1b")),  "(Mu1 High pt cut:M3a)");
+    hists.Mu1HighPtCut_2bjet = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut4b_Mu1HighPt_2b")),  "(Mu1 High pt cut:M3b)");
     hists.diLmassCut = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut5_diLmass")),    "(mumu mass cut:M4)");
     hists.mWRmassCut = new HeavyNuTopHist( new TFileDirectory(fs->mkdir("cut6_mWRmass")),    "(mumujj mass cut:M5)");
 
@@ -737,6 +741,10 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_) ;
         hnuEvent.eventWgt *= mu1wgt ;
     }
+    
+    hnuEvent.btagName = btagName;
+    hnuEvent.isBJet1 = hnuEvent.j1.bDiscriminator(btagName) >= minBtagDiscVal;
+    hnuEvent.isBJet2 = hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal;
 
     hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
 
@@ -836,6 +844,8 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hists.Mu1HighPtCutVtxGt5->fill(hnuEvent);
     }
     hists.Mu1HighPtCut->fill(hnuEvent);
+    if(hnuEvent.isBJet1 || hnuEvent.isBJet2) hists.Mu1HighPtCut_1bjet->fill(hnuEvent);
+    if(hnuEvent.isBJet1 && hnuEvent.isBJet2) hists.Mu1HighPtCut_2bjet->fill(hnuEvent);
 
     if(hnuEvent.mLL >= cuts.minimum_mumu_mass) { 
         hists.diLmassCut->fill(hnuEvent);

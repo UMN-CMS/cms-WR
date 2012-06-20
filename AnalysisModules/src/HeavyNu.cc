@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.103 2012/06/10 04:20:10 pastika Exp $
+// $Id: HeavyNu.cc,v 1.104 2012/06/14 21:52:22 bdahmes Exp $
 //
 //
 
@@ -264,6 +264,8 @@ private:
         HeavyNuHistSet* LLJJptCuts;
         //HeavyNuHistSet* VertexCuts;
         HeavyNuHistSet* Mu1HighPtCut;
+        HeavyNuHistSet* Mu1HighPtCut_1bjet;
+        HeavyNuHistSet* Mu1HighPtCut_2bjet;
         HeavyNuHistSet* Mu1Pt40GeVCut;
         HeavyNuHistSet* Mu1Pt50GeVCut;
         HeavyNuHistSet* Mu1Pt60GeVCut;
@@ -635,6 +637,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.LLJJptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)");
         hists.TrigMatches = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)");
         hists.Mu1HighPtCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(Mu1 High pt cut:4)");
+        hists.Mu1HighPtCut_1bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(Mu1 High pt cut:4)");
+        hists.Mu1HighPtCut_2bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(Mu1 High pt cut:4)");
         hists.diLmassCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)");
         hists.mWRmassCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)");
 
@@ -710,6 +714,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.LLJJptCuts =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)");
         hists.TrigMatches =  new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)");
         hists.Mu1HighPtCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(L1 High pt cut:4)");
+        hists.Mu1HighPtCut_1bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(Mu1 High pt cut:4)");
+        hists.Mu1HighPtCut_2bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(Mu1 High pt cut:4)");
         hists.diLmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(ee mass cut:5)");
         hists.mWRmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
 
@@ -1970,6 +1976,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.cutlevel->Fill(4.0, hnuEvent.eventWgt); // Event meets high muon pT requirements
     if(addSlopeTree_) hnuTree_->event_.cutlevel = 4;
     hists.Mu1HighPtCut->fill(hnuEvent);
+    if(hnuEvent.isBJet1 || hnuEvent.isBJet2) hists.Mu1HighPtCut_1bjet->fill(hnuEvent);
+    if(hnuEvent.isBJet1 && hnuEvent.isBJet2) hists.Mu1HighPtCut_2bjet->fill(hnuEvent);
 
     if(hnuEvent.mLL < 40) return false; // Sanity check...remove low mass points
     // std::cout << "Event number mass: " << evtCounter << std::endl ; 

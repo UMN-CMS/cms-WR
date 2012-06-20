@@ -51,9 +51,9 @@ if not isRun2012:
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
 runElectronAnalysis = True
-systematics    = True
-tagandprobe    = True
-doTriggerStudy = True
+systematics    = False
+tagandprobe    = False
+doTriggerStudy = False
 addSlopeTrees  = True
 
 #--- HEEP ID for electrons ---#
@@ -89,7 +89,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavynu/skims/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START52_V9-v2/heavynu_candevents_97_0_PZv.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/Summer12/heavyNuFilter_TTJets_TuneZ2star_8TeV-madgraph-tauola/heavyNuFilter_TTJets_TuneZ2star_8TeV-madgraph-tauola_113.root')
 )
 
 if isData:
@@ -402,6 +402,22 @@ process.patTrackSequence = cms.Sequence(
         process.allPatTracks *
         process.patTracksPt10
 )
+
+## ---- ##
+## Btag ##
+## ---- ##
+
+## https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagJetProbabilityCalibration?redirectedfrom=CMS.SWGuideBTagJetProbabilityCalibration#Calibration_in_52x_and_53x_Data
+
+process.GlobalTag.toGet = cms.VPSet(
+  cms.PSet(record = cms.string("BTagTrackProbability2DRcd"),
+       tag = cms.string("TrackProbabilityCalibration_2D_2012DataTOT_v1_offline"),
+       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU")),
+  cms.PSet(record = cms.string("BTagTrackProbability3DRcd"),
+       tag = cms.string("TrackProbabilityCalibration_3D_2012DataTOT_v1_offline"),
+       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
+)
+
 
 ## --------------------- ##
 ## Define the basic path ##
