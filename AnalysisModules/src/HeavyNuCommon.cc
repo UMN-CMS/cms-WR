@@ -118,11 +118,11 @@ namespace hnu {
     double ePt  = getElectronEt(e,false) ; 
 
     if ( fabs(eEta) < 1.442 ) { 
-      prob =  (( ePt < 94.2 ) ?  ( 0.021 - 0.00012 * ePt ) : ( 0.0097 )) ; 
+      prob =  (( ePt < 91.4 ) ?  ( 0.022 - 0.000128 * ePt ) : ( 0.0097 )) ; 
     } else if ( fabs(eEta) < 2.0 && fabs(eEta) > 1.56 ) { 
-      prob = (( ePt < 100.3 ) ? ( 0.0711 - 0.00035 * ePt ) : ( 0.036 )) ; 
+      prob = (( ePt < 108.7 ) ? ( 0.061 - 0.00023 * ePt ) : ( 0.036 )) ; 
     } else if ( fabs(eEta) < 2.5 && fabs(eEta) > 2.0 ) { 
-      prob = (( ePt < 109.5 ) ?  ( 0.118 - 0.00047 * ePt ) : ( 0.062 + 0.000041 * ePt )) ; 
+      prob = (( ePt < 109.8 ) ?  ( 0.115 - 0.00041 * ePt ) : ( 0.070 )) ; 
     }
 
     return prob ; 
