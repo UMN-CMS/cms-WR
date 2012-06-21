@@ -409,11 +409,19 @@ HeavyNuTrigger::simulateForMCdiEleMass(double m,double eta,int signOfError2apply
   // central value is _two legs_ electron efficiency from the 2.4fb-1 0jet sample shown here:
   // http://homepages.spa.umn.edu/~franzoni/reps/12/jun11/trEffplots-superBins/efficiency-vs-mass-all-cases.png
   // errors of 0jet measurement added in quadrature to 0.94% taken as uncertainty on the approximation 0jetEff == 2jetEff
-  const double upedgeEleMass2012[]  = {0.     ,70      ,120,      200,      -1};
-  const double effEleMassnom2012[]  = {1       ,0.981803, 0.984283, 0.988131,  0.988131};
-  const double effEleMasshi2012[]   = {1.      ,0.991383, 0.997178, 1., 1.};
-  const double effEleMasslo2012[]   = {0.81523,0.972204,  0.969239, 0.955896, 0.955896};
+  //const double upedgeEleMass2012[]  = {0.     ,70      ,120,      200,      -1};
+  //const double effEleMassnom2012[]  = {1       ,0.981803, 0.984283, 0.988131,  0.988131};
+  //const double effEleMasshi2012[]   = {1.      ,0.991383, 0.997178, 1., 1.};
+  //const double effEleMasslo2012[]   = {0.81523,0.972204,  0.969239, 0.955896, 0.955896};
 
+  // update on Jun 21, with 2.9 fb-1 and V02-01-11
+  //  ==> m.p.v. for single leg efficiency: hNuEtriggerEff is: 99.5345 %
+  //  'transport' systematic between 0jets and >=2jets: 0.3%
+  //  ==> arrays below are for DOUBLE leg efficiency: 
+  const double upedgeEleMass2012[]  = {0.,       70,        120,      200       ,-1};
+  const double effEleMassnom2012[]  = {0.965815, 0.990676,  0.993142, 0.987408  ,0.987408};
+  const double effEleMasshi2012[]   = {1.,       0.99389,   0.999,    1.        ,1.};
+  const double effEleMasslo2012[]   = {0.81685,  0.987434,  0.985218, 0.963095  ,0.963095};
 
   // 2012 is the default
   // actually, at the moment we only have 2012, so use twose in all cases (there was a warning about trigEra_ )
