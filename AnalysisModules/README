@@ -1,3 +1,10 @@
-You will need 
-V08-03-09      PhysicsTools/Utilitie
-to compile.
+You will need to check out the following to get the correct PF2PAT version
+addpkg DataFormats/PatCandidates V06-05-01
+addpkg PhysicsTools/PatAlgos V08-09-12
+addpkg RecoBTag/SecondaryVertex V01-08-00      
+addpkg RecoVertex/AdaptiveVertexFinder V02-02-00 
+addpkg CommonTools/ParticleFlow V00-03-14
+addpkg JetMETCorrections/Type1MET V04-06-05
+addpkg PhysicsTools/PatUtils V03-09-22
+addpkg CommonTools/RecoUtils V00-00-09
+

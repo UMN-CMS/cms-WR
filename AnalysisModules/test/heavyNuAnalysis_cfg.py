@@ -89,7 +89,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/hdfs/cms/user/pastika/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START52_V9-v2/heavynu_candevents_255_0_FOu.root')
+                            fileNames=cms.untracked.vstring('/store/mc/Summer12/ZZ_TuneZ2star_8TeV_pythia6_tauola/AODSIM/PU_S7_START52_V9-v1/0001/88C71A4C-6C9A-E111-A7C3-008CFA001F78.root')
 )
 
 if isData:
@@ -359,10 +359,13 @@ if isPFJets:
 #        getattr(process,"pfNoElectron"+postfix)*process.kt6PFJetsPFlow 
 #    )
 
+    process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
+    process.load("RecoBTag.Configuration.RecoBTag_cff")
     process.modifiedPF2PATSequence = cms.Sequence(    
-        process.goodOfflinePrimaryVertices*
+        process.goodOfflinePrimaryVertices*process.inclusiveVertexing * process.btagging *
         getattr(process,"patPF2PATSequence"+postfix)
     )
+
     
     # Remove unneeded tau sequences, some of which are very time consuming
     if not ishpsPFTau:
