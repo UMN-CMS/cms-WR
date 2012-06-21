@@ -65,7 +65,7 @@ topStudy      = True
 studyTopScale = False
 
 #--- Flags for QCD studies ---#
-qcdStudy  = False
+qcdStudy  = True
 doDijet   = False
 doQuadJet = False
 doClosure = False
@@ -89,7 +89,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/Summer12/heavyNuFilter_TTJets_TuneZ2star_8TeV-madgraph-tauola/heavyNuFilter_TTJets_TuneZ2star_8TeV-madgraph-tauola_113.root')
+                            fileNames=cms.untracked.vstring('file:/hdfs/cms/user/pastika/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START52_V9-v2/heavynu_candevents_255_0_FOu.root')
 )
 
 if isData:
@@ -300,17 +300,27 @@ process.out = cms.OutputModule("PoolOutputModule",
                                outputCommands = cms.untracked.vstring("keep *")
                                )
 if isPFJets:
+    from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
+    process.goodOfflinePrimaryVertices = cms.EDFilter(
+        "PrimaryVertexObjectFilter",
+        filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) ),
+        src=cms.InputTag('offlinePrimaryVertices')
+    )
+
     postfix = "PFlow"
     if isMC:
         usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
-                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']))
+                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']),
+                  pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
     else:
         if isRun2012:
             usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
-                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
+                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']),
+                  pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
         else:
             usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
-                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']))
+                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']),
+                  pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
     getattr(process,"pfNoPileUp"+postfix).enable   = True
@@ -332,28 +342,22 @@ if isPFJets:
     #--- twiki reference: CMSPublic/WorkBookJetEnergyCorrections         ---#
     #--- See also: PhysicsTools/PatExamples/test/patTuple_42x_jec_cfg.py ---#
     #-----------------------------------------------------------------------#
-    from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
-    process.goodOfflinePrimaryVertices = cms.EDFilter(
-        "PrimaryVertexObjectFilter",
-        filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) ),
-        src=cms.InputTag('offlinePrimaryVertices')
-    )
+# Fastjet rho is calculated in reco, we need not calculate it
+#    # Compute the mean pt per unit area (rho) from the PFchs inputs
+#    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
+#    process.kt6PFJetsPFlow = kt4PFJets.clone(
+#        rParam = cms.double(0.6),
+#        src = cms.InputTag('pfNoElectron'+postfix),
+#        doAreaFastjet = cms.bool(True),
+#        doRhoFastjet = cms.bool(True)
+#    )
+#    process.patJetCorrFactorsPFlow.rho = cms.InputTag("kt6PFJetsPFlow", "rho")
 
-    # Compute the mean pt per unit area (rho) from the PFchs inputs
-    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
-    process.kt6PFJetsPFlow = kt4PFJets.clone(
-        rParam = cms.double(0.6),
-        src = cms.InputTag('pfNoElectron'+postfix),
-        doAreaFastjet = cms.bool(True),
-        doRhoFastjet = cms.bool(True)
-    )
-    process.patJetCorrFactorsPFlow.rho = cms.InputTag("kt6PFJetsPFlow", "rho")
-
-    # Add the PV selector and KT6 producer to the sequence
-    getattr(process,"patPF2PATSequence"+postfix).replace(
-        getattr(process,"pfNoElectron"+postfix),
-        getattr(process,"pfNoElectron"+postfix)*process.kt6PFJetsPFlow 
-    )
+#    # Add the PV selector and KT6 producer to the sequence
+#    getattr(process,"patPF2PATSequence"+postfix).replace(
+#        getattr(process,"pfNoElectron"+postfix),
+#        getattr(process,"pfNoElectron"+postfix)*process.kt6PFJetsPFlow 
+#    )
 
     process.modifiedPF2PATSequence = cms.Sequence(    
         process.goodOfflinePrimaryVertices*

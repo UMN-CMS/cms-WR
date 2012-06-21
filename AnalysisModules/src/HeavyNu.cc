@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.105 2012/06/20 01:20:52 pastika Exp $
+// $Id: HeavyNu.cc,v 1.106 2012/06/20 15:47:20 bdahmes Exp $
 //
 //
 
@@ -1616,7 +1616,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
         }
 
-        //after finding the matching gen jets we track their parentage and try to match them to a Nu_mu
+        //after finding the matching gen jets we track their parentage and try to match them to a Nu_L
         bool gmj1 = false, gmj2 = false;
         std::vector<const reco::GenParticle*> mothers = hnuEvent.gj1.getGenConstituents();
         for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
