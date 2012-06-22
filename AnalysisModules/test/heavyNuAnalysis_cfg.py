@@ -647,6 +647,12 @@ process.hNuEjesLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), app
 process.hNuEjerHi  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
 process.hNuEjerLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
 process.hNuEescale = process.hNuE.clone( studyMuSelectEff = cms.bool(False), correctEscale = cms.bool(False) )
+process.hNuEidHi   = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
+process.hNuEidLo   = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
+process.hNuEidHi.applyMuIDEffcorr = cms.bool( isMC )
+process.hNuEidLo.applyMuIDEffcorr = cms.bool( isMC )
+process.hNuEtrigHi = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(1) )
+process.hNuEtrigLo = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(-1) )
 
 # process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
 # process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
@@ -897,12 +903,16 @@ if runElectronAnalysis:
    if systematics:
       process.pEjesHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesHi);
       process.pEjesLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesLo);
+      process.pEidHi   = cms.Path(process.AnalysisIntroSequence + process.hNuEidHi);
+      process.pEidLo   = cms.Path(process.AnalysisIntroSequence + process.hNuEidLo);
+      process.pEtrigHi = cms.Path(process.AnalysisIntroSequence + process.hNuEtrigHi);
+      process.pEtrigLo = cms.Path(process.AnalysisIntroSequence + process.hNuEtrigLo);
       process.pEjerHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjerHi);
       process.pEjerLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjerLo);
       process.pEescale = cms.Path(process.AnalysisIntroSequence + process.hNuEescale);
       process.pEpuHi   = cms.Path(process.AnalysisIntroSequence + process.hNuEpuHi);
       process.pEpuLo   = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
-      
+
    if doTriggerStudy and isData:
        process.pENominal = cms.Path( process.AnalysisIntroSequence + process.TriggerStudyElectronSequence + process.hNuE  )
    else:
