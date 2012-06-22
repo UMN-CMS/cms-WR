@@ -279,10 +279,11 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
   const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
-  const double effslo2012[]   = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
-  const double effsnom2012[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
-  const double effshi2012[]   = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000};
-  const double upedge2012[]   = {      50,      60,      80,     100,     200,    3500,      -1};
+  // For 2012, the trigger corrections are made as a function of eta
+  const double effslo2012[]   = {0.776442,0.844443,0.931687,0.941174,0.846101,0.807243};
+  const double effsnom2012[]  = {0.786102,0.856497,0.936184,0.945360,0.858314,0.816294};
+  const double effshi2012[]   = {0.795555,0.868014,0.940492,0.949355,0.869968,0.825120};
+  const double upedge2012[]   = {    -1.2,    -0.9,     0.0,     0.9,     1.2,     2.1};
 
   //These uncertainties are inflated by a factor of 3!!!!!!!
   //const double effslo2011a[]  = {0.855641,0.837779,0.841069,0.853867,0.853420,0.849358,0.727483,0.727483};
@@ -306,10 +307,14 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   }
 
   int i;
-  const double *         upedge = upedge2012 ; 
-  if (trigEra_ == 20111) upedge = upedge2011a ; 
-  if (trigEra_ == 20112) upedge = upedge2011b ; 
-  for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
+  const double * upedge = upedge2012 ; 
+  if ( trigEra_ == 20111 || trigEra_ == 20112 ) { 
+    if (trigEra_ == 20111) upedge = upedge2011a ; 
+    if (trigEra_ == 20112) upedge = upedge2011b ; 
+    for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
+  } else { 
+    for (i=0; abs(eta)<2.1 && upedge[i]<eta; i++);
+  }
   double eff=effs[i];
     
   return (triggerRandom_->Uniform()<eff);

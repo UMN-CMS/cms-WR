@@ -33,10 +33,10 @@ HeavyNuID::weightForMC(double pt,int signOfError2apply)
   const double scalenom2011B[] = {1.000590,0.991830,1.015460,1.005710,1.011420,1.018780,1.000000,1.000000} ; 
   const double scalehi2011B[]  = {1.005300,1.000890,1.032230,1.023370,1.034980,1.040900,1.105010,1.105010} ; 
 
-  // studies pending for 2012...
-  const double scalelo2012[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000} ; 
+  // No corrections for 2012, assign 3% uncertainty across the board
+  const double scalelo2012[]  = {0.970000,0.970000,0.970000,0.970000,0.970000,0.970000,0.970000} ; 
   const double scalenom2012[] = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000} ; 
-  const double scalehi2012[]  = {1.000000,1.000000,1.000000,1.000000,1.000000,1.000000,1.000000} ; 
+  const double scalehi2012[]  = {1.030000,1.030000,1.030000,1.030000,1.030000,1.030000,1.030000} ; 
 
   const double upedge2011[]   = {      40,      50,      60,      80,     100,     200,    3500,      -1} ;
   const double upedge2012[]   = {      50,      60,      80,     100,     200,    4000,      -1} ;
@@ -56,6 +56,28 @@ HeavyNuID::weightForMC(double pt,int signOfError2apply)
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
   double factor=scale[i];
     
+  return factor ; 
+}
+
+double
+HeavyNuID::weightElectronsForMC(double eta, int signOfError2apply) {
+
+  // EB/EE efficiency scale factors
+  const double ebScale    = 0.958523 * 0.998 ; // Bias of probe  
+  const double ebScaleErr = 0.0434 ; // Deviation from unity
+  // const double ebScaleErr = 0.004742 ; // Stat error on scale factor
+
+  const double eeScale    = 0.955377 * 0.994 ; 
+  const double eeScaleErr = 0.0504 ; // Deviation from unity
+  // const double eeScaleErr = 0.009480 ; // Stat error on scale factor
+
+  double factor  = 1.0 ;
+  int systUpDown = signOfError2apply / abs(signOfError2apply) ; 
+  bool isEB = ( fabs(eta) < 1.442 ) ; 
+  bool isEE = ( fabs(eta) < 2.5 && fabs(eta) > 1.56 ) ; 
+  if ( isEB ) factor = ebScale + (ebScaleErr * double(systUpDown)) ; 
+  if ( isEE ) factor = eeScale + (eeScaleErr * double(systUpDown)) ; 
+
   return factor ; 
 }
 
