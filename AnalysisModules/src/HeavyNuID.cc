@@ -72,7 +72,8 @@ HeavyNuID::weightElectronsForMC(double eta, int signOfError2apply) {
   // const double eeScaleErr = 0.009480 ; // Stat error on scale factor
 
   double factor  = 1.0 ;
-  int systUpDown = signOfError2apply / abs(signOfError2apply) ; 
+  int systUpDown = 0.0 ;
+  if ( signOfError2apply) systUpDown = signOfError2apply / abs(signOfError2apply) ; 
   bool isEB = ( fabs(eta) < 1.442 ) ; 
   bool isEE = ( fabs(eta) < 2.5 && fabs(eta) > 1.56 ) ; 
   if ( isEB ) factor = ebScale + (ebScaleErr * double(systUpDown)) ; 

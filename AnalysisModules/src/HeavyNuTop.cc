@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.33 2012/06/20 01:20:52 pastika Exp $
+// $Id: HeavyNuTop.cc,v 1.34 2012/06/22 01:39:28 bdahmes Exp $
 //
 //
 
@@ -740,7 +740,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         double mu1wgt = muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_) ;
         double e1wgt  = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_) ;
-        hnuEvent.eventWgt *= mu1wgt ;
+        hnuEvent.eventWgt *= mu1wgt * e1wgt ;
     }
     
     hnuEvent.btagName = btagName;
