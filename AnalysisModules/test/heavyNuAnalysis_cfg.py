@@ -579,7 +579,7 @@ process.hNu.heepVersion  = cms.untracked.int32(heepVersion)
 process.hNu.addSlopeTree = cms.untracked.bool(addSlopeTrees)
 process.hNu.nFakeLeptons = cms.untracked.int32(0)
 
-#--- Muon ID corrections are taken from Dec 11, 2011 studies---#
+#--- Muon ID corrections are taken from June 22, 2012 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
 
 if isData:
@@ -618,6 +618,9 @@ process.hNuMu40eta2p1 = process.hNu.clone()
 
 process.hNuE               = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'))
 process.hNuE.correctEscale = cms.bool(isMC)
+
+#--- Electron ID corrections are taken from June 22, 2012 studies---#
+process.hNu.applyMuIDEffcorr = cms.bool(isMC)
 
 process.hNuMu24.trigMatchPset.triggerPt    = cms.double( 24. )
 process.hNuMu24.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )

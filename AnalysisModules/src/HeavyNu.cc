@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.106 2012/06/20 15:47:20 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.107 2012/06/21 15:51:32 pastika Exp $
 //
 //
 
@@ -1749,6 +1749,15 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }// HeavyNuEvent::HNUMU
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
+
+        if(applyMuIDCorrections_ && hnuEvent.isMC)
+        {
+	  double e1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_)):1.0;
+	  double e2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_)):1.0;
+
+	  hnuEvent.eventWgt *= (e1wgt * e2wgt);
+        }
+
 	if ( nDirtyCands_ == 0 ) { 
 	  for(unsigned int i = 0; i < eCands.size(); i++)
 	    {
