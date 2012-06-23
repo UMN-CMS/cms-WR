@@ -46,23 +46,23 @@ $lumi2011=4990;
 if ($channel eq "e-mu") {
     $ratesdb="ratesdb.csv,ratesdb_elec.csv";
     
-    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root".",".
-	"/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
+    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root".",".
+	"/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
     $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
-    $lumi2012="2400,2400";
+    $lumi2012="3600,3600";
     $xsec=$xsec.",".$xsec;
 } elsif ($channel eq "mu2ecm") {
     $ratesdb="ratesdb.csv,ratesdb.csv";
     
     $data_both=$data2011.",".
-	"/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";	
+	"/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root";
     $systdb="systematicsdb.csv,systematicsdb_elec_2012.csv";
-    $lumi2012=2400;
+    $lumi2012=3600;
     $xsec=$xsec;
 } elsif ($channel=~/mu/) {
     $ratesdb="ratesdb.csv";
-    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/jun4/data-mu-top-2400ipb-jun5.root";
-    $lumi2012=2400;
+    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root";
+    $lumi2012=3600;
 
     if ($year==2012) {
 	$systdb="systematicsdb_mu_2012.csv";
@@ -72,8 +72,8 @@ if ($channel eq "e-mu") {
 
 } else {
     $ratesdb="ratesdb_elec.csv";
-    $data2012="/local/cms/user/pastika/heavynu/heavynu_2012Data_heavyNuAnalysis_Electron_notap_Jun6.root";
-    $lumi2012=2400;
+    $data2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
+    $lumi2012=3600;
 
     if ($year==2012) {
 	$systdb="systematicsdb_elec_2012.csv";
