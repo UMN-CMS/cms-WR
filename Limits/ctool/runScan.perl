@@ -11,7 +11,7 @@ $systmode=0;
 $xsec=0.01;
 $minmwAllowed=700;
 $maxmwAllowed=3000;
-$max_mllqq=-1;
+$max_mllqq=1600;
 $year=2012;
 $channel="mu";
 

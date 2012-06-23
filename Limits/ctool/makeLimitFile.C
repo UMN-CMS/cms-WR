@@ -103,7 +103,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 	if (pbsi==pbi[ibin].perBinSyst.end()) continue;
 
 	if (pbsi->second.signalN>0) {
-	  fprintf(limitFile,"gss%s gmN %d",pbi[ibin].binName.c_str(),pbsi->second.signalN);
+	  fprintf(limitFile,"gss%s gmN %d ",pbi[ibin].binName.c_str(),pbsi->second.signalN);
 	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks
 	  fprintf(limitFile,"%5.3f   -   -   - ",pbsi->second.signal);
 	  for (int iib=ibin+1; iib<nbins; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks	  
@@ -257,7 +257,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 	    pbs.bkgd[j-1]=-1;
 	    pbs.bkgdN[j-1]=0;
 	  } else {
-	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel);
+	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel+0.5);
 	    pbs.bkgd[j-1]=systLevel;
 	  }
 	}       
