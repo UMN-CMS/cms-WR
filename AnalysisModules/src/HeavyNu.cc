@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.107 2012/06/21 15:51:32 pastika Exp $
+// $Id: HeavyNu.cc,v 1.108 2012/06/22 01:39:28 bdahmes Exp $
 //
 //
 
@@ -1750,14 +1750,6 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
 
-        if(applyMuIDCorrections_ && hnuEvent.isMC)
-        {
-	  double e1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_)):1.0;
-	  double e2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_)):1.0;
-
-	  hnuEvent.eventWgt *= (e1wgt * e2wgt);
-        }
-
 	if ( nDirtyCands_ == 0 ) { 
 	  for(unsigned int i = 0; i < eCands.size(); i++)
 	    {
@@ -1844,6 +1836,19 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  diEleMass = ( hnuEvent.e1.p4() +  hnuEvent.e2.p4() ).M() ;
 	}
 	
+        if(applyMuIDCorrections_ && hnuEvent.isMC)
+        {
+	  // std::cout << "I want to apply electron weights for " << hnuEvent.nLeptons << " leptons" << std::endl ; 
+	  double e1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_)):1.0;
+	  double e2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_)):1.0;
+
+	  // std::cout << "e1 weight = " << e1wgt << " and e2 weight is " << e2wgt << std::endl ; 
+	  hnuEvent.eventWgt *= (e1wgt * e2wgt);
+        }
+
+	// std::cout << "I have " << hnuEvent.nLeptons << " leptons in the event with mass " << diEleMass << std::endl ; 
+	// std::cout << "applyTrigEffsign = " << applyTrigEffsign_ << std::endl ; 
+
 	bool l12trig = false ; 
 	if ( iEvent.isRealData() ) 
 	  l12trig = (hnuEvent.nLeptons > 1) && trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent) ; 
@@ -1852,7 +1857,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	l1trig = l2trig = l12trig ;
     }
-    // std::cout << "Event number trig0: " << evtCounter << std::endl ; 
+    // std::cout << "Event number trig0: " << evtCounter << " with trigger decision " << l1trig << " " << l2trig << std::endl ; 
+    // if ( !l1trig && !l2trig && hnuEvent.nLeptons > 1 ) std::cout << "TRIGGER FAILURE: This event will be rejected!!!" << std::endl ; 
 
     //hnuEvent.regularize();  (this is now done in calculate and so this call is redundent
 
@@ -1867,6 +1873,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hnuEvent.calculate(correctEscale_); // calculate various details
     hists.LLJJptCuts->fill(hnuEvent);
     //if(pMET->size()) hnuEvent.met1 = pMET->at(0);
+
+    // std::cout << "dilepton mass is " << hnuEvent.mLL << std::endl ; 
 
     // Fill slope fit tuple here
     if(addSlopeTree_)

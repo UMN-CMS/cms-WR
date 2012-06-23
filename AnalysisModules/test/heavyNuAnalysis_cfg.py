@@ -810,11 +810,13 @@ process.hNuTopMu24trigLo = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int
 process.hNuTopMu40trigHi = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(1) )
 process.hNuTopMu40trigLo = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(-1) )
 
-process.hNuGoodMuFakeE   = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(False) )
-process.hNuFakeMuGoodE   = process.hNuTop.clone( useDirtyElectrons = cms.bool(False), useDirtyMuons = cms.bool(True) )
-process.hNuFakeMuEwgtE   = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(11) )
-process.hNuFakeMuEwgtMu  = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(13) )
-process.hNuFakeMuEwgtMuE = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(1113) )
+process.hNuGoodMuFakeE      = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(False) )
+process.hNuFakeMuGoodE      = process.hNuTop.clone( useDirtyElectrons = cms.bool(False), useDirtyMuons = cms.bool(True) )
+process.hNuGoodMuFakeEwgtE  = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(False), fakeWeightFlavor = cms.int32(11) )
+process.hNuFakeMuGoodEwgtMu = process.hNuTop.clone( useDirtyElectrons = cms.bool(False), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(13) )
+process.hNuFakeMuEwgtE      = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(11) )
+process.hNuFakeMuEwgtMu     = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(13) )
+process.hNuFakeMuEwgtMuE    = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(1113) )
 
 #----------------#
 #--- LumiList ---#
@@ -924,11 +926,13 @@ if qcdStudy:
     process.pE1QCD  = cms.Path( process.AnalysisIntroSequence + process.hNuE1QCD )
     process.pE2QCD  = cms.Path( process.AnalysisIntroSequence + process.hNuE2QCD )
 
-    process.pGoodMuFakeE   = cms.Path( process.AnalysisIntroSequence + process.hNuGoodMuFakeE )
-    process.pFakeMuGoodE   = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuGoodE )
-    process.pFakeMuEwgtMu  = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMu )
-    process.pFakeMuEwgtE   = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtE )
-    process.pFakeMuEwgtMuE = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMuE )
+    process.pGoodMuFakeE      = cms.Path( process.AnalysisIntroSequence + process.hNuGoodMuFakeE )
+    process.pFakeMuGoodE      = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuGoodE )
+    process.pGoodMuFakeEwgtE  = cms.Path( process.AnalysisIntroSequence + process.hNuGoodMuFakeEwgtE )
+    process.pFakeMuGoodEwgtMu = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuGoodEwgtMu )
+    process.pFakeMuEwgtMu     = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMu )
+    process.pFakeMuEwgtE      = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtE )
+    process.pFakeMuEwgtMuE    = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMuE )
 
     # if isMC:
     #     if isRun2011A:

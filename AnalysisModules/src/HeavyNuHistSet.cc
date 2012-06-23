@@ -323,9 +323,23 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
                              fabs(deltaPhi(hne.j1.phi(), hne.j2.phi())), wgt);
 
             mWR->Fill(hne.mWR, wgt);
-            mNuR1->Fill(hne.mNuR1, wgt);
-            mNuR2->Fill(hne.mNuR2, wgt);
-            mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
+	    // Special work-around for top, where the 1st lepton is always the muon
+	    // This ensures that the neutrino candidate with the highest pT lepton is always NuR1
+	    if ( hne.mode == HeavyNuEvent::TOP ) { 
+	      if ( hne.l1pt > hne.l2pt ) { 
+		mNuR1->Fill(hne.mNuR1, wgt);
+		mNuR2->Fill(hne.mNuR2, wgt);
+		mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
+	      } else { 
+		mNuR1->Fill(hne.mNuR2, wgt);
+		mNuR2->Fill(hne.mNuR1, wgt);
+		mNuR2D->Fill(hne.mNuR2, hne.mNuR1, wgt);
+	      }	      
+	    } else { 
+	      mNuR1->Fill(hne.mNuR1, wgt);
+	      mNuR2->Fill(hne.mNuR2, wgt);
+	      mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
+	    }
             mJJ->Fill(hne.mJJ, wgt);
 
             L1ptFracWRmass->Fill(hne.l1pt / hne.mWR, wgt);
@@ -411,8 +425,20 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 
     mLLZoom->Fill(hne.mLL, wgt);
     mLLvsmWR->Fill(hne.mLL, hne.mWR, wgt);
-    mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
-    mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
+    // Special work-around for top, where the 1st lepton is always the muon
+    // This ensures that the neutrino candidate with the highest pT lepton is always NuR1
+    if ( hne.mode == HeavyNuEvent::TOP ) { 
+      if ( hne.l1pt > hne.l2pt ) { 
+	mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
+	mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
+      } else { 
+	mWRvsmNuR1->Fill(hne.mWR, hne.mNuR2, wgt);
+	mWRvsmNuR2->Fill(hne.mWR, hne.mNuR1, wgt);
+      }
+    } else { 
+      mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
+      mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
+    }
     mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
     mLLZoomvsNPV->Fill(hne.mLL, hne.n_primary_vertex, wgt);
 

@@ -443,9 +443,9 @@ HeavyNuTrigger::simulateForMCdiEleMass(double m,double eta,int signOfError2apply
   const double *upedge = upedgeEleMass2012 ; 
   if (trigEra_ == 20111) upedge = upedgeEleMass2012 ; 
   if (trigEra_ == 20112) upedge = upedgeEleMass2012 ; 
-  for (i=0; upedge[i]>0 && upedge[i]<m; i++);
+  for (i=0; upedge[i]>=0 && upedge[i]<m; i++);
   double eff=effs[i];
-    
+
   return (triggerRandom_->Uniform()<eff);
 }
 
