@@ -38,14 +38,20 @@ std::string whichSyst() { return "MUON"; }
 void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, const char* limitFileName) {
   const int nbins=int(pbi.size());
   std::set<std::string> systematicList;
+  int nextraSyst=0;
 
   // assemble the list of _all_ systematics
   for (int i=0; i<nbins; i++) {
     std::map<std::string,PerBinSystematic>::const_iterator jj;
     for (jj=pbi[i].perBinSyst.begin();jj!=pbi[i].perBinSyst.end();jj++) {
+      if (jj->first==SystematicsDB::GAMMASTATS) {
+	if (jj->second.signalN>0) nextraSyst++;
+	for (int j=0; j<3; j++) if (jj->second.bkgdN[j]>0) nextraSyst++; 
+      } 
       systematicList.insert(jj->first);
     }
   }
+  if (nextraSyst>0) nextraSyst--; // because the name of the gammastats counts as one
 
   FILE* limitFile=fopen(limitFileName,"wt");
 
@@ -56,7 +62,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
   
   fprintf(limitFile,"imax %d\n",nbins);
   fprintf(limitFile,"jmax %d  # tt and zjets\n",jmax);
-  fprintf(limitFile,"kmax %d \n",int(systematicList.size()));  
+  fprintf(limitFile,"kmax %d \n",int(systematicList.size())+nextraSyst);  
 
   // these are the data loops
   fprintf(limitFile,"bin            ");
@@ -91,27 +97,54 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
   // systematics
   for (std::set<std::string>::const_iterator i=systematicList.begin();
        i!=systematicList.end(); i++) {
-    fprintf(limitFile,"%-10s lnN  ",i->c_str());
-    for (int ibin=0; ibin<nbins; ibin++) {
-      std::map<std::string,PerBinSystematic>::const_iterator pbsi=pbi[ibin].perBinSyst.find(*i);
-      if (pbsi==pbi[ibin].perBinSyst.end()) continue;
+    if (*i==SystematicsDB::GAMMASTATS) {
+      for (int ibin=0; ibin<nbins; ibin++) {
+	std::map<std::string,PerBinSystematic>::const_iterator pbsi=pbi[ibin].perBinSyst.find(*i);
+	if (pbsi==pbi[ibin].perBinSyst.end()) continue;
 
-      if (pbsi->second.signal<0) fprintf(limitFile,"  -   ");
-      else fprintf(limitFile,"%5.3f ", pbsi->second.signal);
+	if (pbsi->second.signalN>0) {
+	  fprintf(limitFile,"gss%s gmN %d",pbi[ibin].binName.c_str(),pbsi->second.signalN);
+	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks
+	  fprintf(limitFile,"%5.3f   -   -   - ",pbsi->second.signal);
+	  for (int iib=ibin+1; iib<nbins; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks	  
+	  fprintf(limitFile,"\n");
+	}
+	for (int j=0; j<3; j++) {
+	  if (pbsi->second.bkgdN[j]<=0) continue; // no such systematic here
 
-      for (int j=1; j<=jmax; j++) {
-	double systLevel=pbsi->second.bkgd[j-1];
-	if (systLevel<0.001 || fabs(systLevel-1.0)<0.0015) fprintf(limitFile,"  -   ");
-	else fprintf(limitFile,"%5.3f ", systLevel);
+	  fprintf(limitFile,"gs%d%s gmN %d",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
+	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks
+	  if (j==0) fprintf(limitFile,"-  %5.3f   -  - ",pbsi->second.bkgd[0]);
+	  if (j==1) fprintf(limitFile,"-  -  %5.3f - ",pbsi->second.bkgd[1]);
+	  if (j==2) fprintf(limitFile,"-  -   -  %5.3f  ",pbsi->second.bkgd[2]);
+	  for (int iib=ibin+1; iib<nbins; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks	  
+	  fprintf(limitFile,"\n");
+	  
+	}
+	
+      } 
+    } else {
+	
+      fprintf(limitFile,"%-10s lnN  ",i->c_str());
+      for (int ibin=0; ibin<nbins; ibin++) {
+	std::map<std::string,PerBinSystematic>::const_iterator pbsi=pbi[ibin].perBinSyst.find(*i);
+	if (pbsi==pbi[ibin].perBinSyst.end()) continue;
+	
+	if (pbsi->second.signal<0) fprintf(limitFile,"  -   ");
+	else fprintf(limitFile,"%5.3f ", pbsi->second.signal);
+	
+	for (int j=1; j<=jmax; j++) {
+	  double systLevel=pbsi->second.bkgd[j-1];
+	  if (systLevel<0.001 || fabs(systLevel-1.0)<0.0015) fprintf(limitFile,"  -   ");
+	  else fprintf(limitFile,"%5.3f ", systLevel);
+	}
       }
+      
+      fprintf(limitFile,"\n");
     }
-    fprintf(limitFile,"\n");
-  }
-  
-
+  }     
   fclose(limitFile);
-
-  
+      
 }
 
 std::vector<double> extractBins(TFile* f, const std::string& histname) {
@@ -210,15 +243,36 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     for (std::vector<std::string>::const_iterator isyst=systematicsList.begin();
 	 isyst!=systematicsList.end(); isyst++) {
       PerBinSystematic pbs;
-      
-      double systLevel=syst.getSystematic(*isyst,process,ibin);
-      if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
-      pbs.signal=systLevel;
-      
-      for (int j=1; j<=3; j++) {
-	systLevel=syst.getSystematic(*isyst,snames[j],ibin);
+
+      if (*isyst==SystematicsDB::GAMMASTATS) {
+	pbs.isGammaFn=false;
+	double systLevel=syst.getSystematic(*isyst,process,ibin);
+	if (systLevel<0) {
+	  pbs.signal=-1;
+	  pbs.signalN=-1;
+	} // really not ready for weighted signal.  Ignore this case.
+
+	for (int j=1; j<=3; j++) {
+	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
+	  if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
+	    pbs.bkgd[j-1]=-1;
+	    pbs.bkgdN[j-1]=0;
+	  } else {
+	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel);
+	    pbs.bkgd[j-1]=systLevel;
+	  }
+	}       
+      } else {
+	pbs.isGammaFn=false;
+	double systLevel=syst.getSystematic(*isyst,process,ibin);
 	if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
-	pbs.bkgd[j-1]=systLevel;
+	pbs.signal=systLevel;
+      
+	for (int j=1; j<=3; j++) {
+	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
+	  if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
+	  pbs.bkgd[j-1]=systLevel;
+	}
       }
       abin.perBinSyst.insert(std::pair<std::string,PerBinSystematic>(*isyst,pbs));
     }

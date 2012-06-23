@@ -17,6 +17,9 @@ class RateDB;
 struct PerBinSystematic {
   double signal;
   double bkgd[3];
+  bool isGammaFn;
+  int signalN;
+  int bkgdN[3];
 };
 
 struct PerBinInfo {

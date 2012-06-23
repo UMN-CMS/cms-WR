@@ -8,6 +8,7 @@
 class SystematicsDB {
  public:
   static const int NO_PDF_FOR_SIGNAL = 0x001;
+  static const char* GAMMASTATS ;
 
   SystematicsDB();
 

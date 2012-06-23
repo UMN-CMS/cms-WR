@@ -10,6 +10,8 @@
 
 static const int NMASSBIN=11;
 
+const char* SystematicsDB::GAMMASTATS = "GAMMASTATS";
+
 static std::string to_upper(const std::string& item) {
   std::string retval;
   for (std::string::const_iterator i=item.begin(); i!=item.end(); i++) 
@@ -123,7 +125,6 @@ void SystematicsDB::standardSystematics(const std::string& which) {
   std::vector<std::string> systContents;
 
   if (which=="ELEC") {
-    systContents.push_back("SHAPE");
     systContents.push_back("NORM");
     
     defineSingleChannelSyst("TTONLY","TTJETS",systContents);
@@ -149,10 +150,10 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     systContents.push_back("ISRFSR");
     defineCommonSyst("PDFSCALE",systContents);
 
+    setSimpleSystematic(GAMMASTATS);
     setSimpleSystematic("LUMI");
   } else { 
 
-    systContents.push_back("SHAPE");
     systContents.push_back("NORM");
     
     defineSingleChannelSyst("TTONLY","TTJETS",systContents);
@@ -177,7 +178,8 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     systContents.push_back("FACT");
     systContents.push_back("ISRFSR");
     defineCommonSyst("PDFSCALE",systContents);
-    
+
+    setSimpleSystematic(GAMMASTATS);    
     setSimpleSystematic("LUMI");
   }
 }
