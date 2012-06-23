@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.108 2012/06/22 01:39:28 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.109 2012/06/23 17:54:04 bdahmes Exp $
 //
 //
 
@@ -1788,8 +1788,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    }
 	    if ( hnuEvent.nLeptons == 2 ) {
 	      // Need also to correct for the fact that "fake" electrons are required to fail nominal ID
+	      // std::cout << "Event weight is     " << hnuEvent.eventWgt << std::endl ; 
 	      hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e1) / ( 1.0 - hnu::fakeProbability(hnuEvent.e1) ) ) ; 
+	      // std::cout << "Event weight is now " << hnuEvent.eventWgt << std::endl ; 
 	      hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e2) / ( 1.0 - hnu::fakeProbability(hnuEvent.e2) ) ) ; 
+	      // std::cout << "Event weight is now " << hnuEvent.eventWgt << std::endl ; 
 	    }
 	  } else if ( nDirtyCands_ == 1 ) { 
 	    for (unsigned int i = 0; i < eDirtyCands.size(); i++) {
@@ -1816,6 +1819,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      double dirtyPt = hnu::getElectronEt(eDirtyCands.at(dirtyPosition).first,false) ; 
 	      double cleanPt = hnu::getElectronEt(eCands.at(cleanPosition).first,false) ; 
 
+	      // std::cout << "Found a dirty electron at " << dirtyPosition << " of " << eDirtyCands.size() << std::endl ; 
+	      // std::cout << "Found a clean electron at " << cleanPosition << " of " << eCands.size() << std::endl ; 
+
 	      if ( cleanPt > dirtyPt ) { 
 		hnuEvent.e1 = eCands.at(cleanPosition).first ; 
 		hnuEvent.e2 = eDirtyCands.at(dirtyPosition).first ; 
@@ -1823,8 +1829,16 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		hnuEvent.e1 = eDirtyCands.at(dirtyPosition).first ; 
 		hnuEvent.e2 = eCands.at(cleanPosition).first ; 
 	      }
+	      // std::cout << "Single fake weight is     " << hnuEvent.eventWgt << std::endl ; 
 	      hnuEvent.eventWgt *= ( hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first) / 
-				     (1.0-hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ;  
+				     (1.0-hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ; 
+	      // std::cout << "Single fake weight is now " << hnuEvent.eventWgt << std::endl ; 
+	    } else if ( dirtyPosition < eDirtyCands.size() ) { 
+	      hnuEvent.e1 = eDirtyCands.at(dirtyPosition).first ; 
+	      hnuEvent.eventWgt *= ( hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first) / 
+				     (1.0-hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ; 
+	    } else if ( cleanPosition < eCands.size() ) { 
+	      hnuEvent.e1 = eCands.at(cleanPosition).first ; 
 	    }
 	  }
 	}
@@ -1836,14 +1850,18 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  diEleMass = ( hnuEvent.e1.p4() +  hnuEvent.e2.p4() ).M() ;
 	}
 	
-        if(applyMuIDCorrections_ && hnuEvent.isMC)
+        if(applyMuIDCorrections_ && hnuEvent.isMC) // Only care about applying weights if you have two candidates
         {
 	  // std::cout << "I want to apply electron weights for " << hnuEvent.nLeptons << " leptons" << std::endl ; 
-	  double e1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_)):1.0;
-	  double e2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_)):1.0;
+	  if ( hnuEvent.nLeptons > 1 ) { // Only care about applying weights if you have two candidates
+	    double e1wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_) ;
+	    // std::cout << "e1wgt is " << e1wgt << std::endl ; 
+	    double e2wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_) ;
+	    // std::cout << "e2wgt is " << e2wgt << std::endl ; 
 
-	  // std::cout << "e1 weight = " << e1wgt << " and e2 weight is " << e2wgt << std::endl ; 
-	  hnuEvent.eventWgt *= (e1wgt * e2wgt);
+	    // std::cout << "e1 weight = " << e1wgt << " and e2 weight is " << e2wgt << std::endl ; 
+	    hnuEvent.eventWgt *= (e1wgt * e2wgt);
+	  }
         }
 
 	// std::cout << "I have " << hnuEvent.nLeptons << " leptons in the event with mass " << diEleMass << std::endl ; 
