@@ -103,17 +103,17 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 	if (pbsi==pbi[ibin].perBinSyst.end()) continue;
 
 	if (pbsi->second.signalN>0) {
-	  fprintf(limitFile,"gss%s gmN %d ",pbi[ibin].binName.c_str(),pbsi->second.signalN);
-	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks
+	  fprintf(limitFile,"gss%s gmN %4d ",pbi[ibin].binName.c_str(),pbsi->second.signalN);
+	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"   -    -    -    -  "); // blanks
 	  fprintf(limitFile,"%5.3f   -   -   - ",pbsi->second.signal);
-	  for (int iib=ibin+1; iib<nbins; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks	  
+	  for (int iib=ibin+1; iib<nbins; iib++) fprintf(limitFile,"  -    -    -    -  "); // blanks	  
 	  fprintf(limitFile,"\n");
 	}
 	for (int j=0; j<3; j++) {
 	  if (pbsi->second.bkgdN[j]<=0) continue; // no such systematic here
 
-	  fprintf(limitFile,"gs%d%s gmN %d ",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
-	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks
+	  fprintf(limitFile,"gs%d%s gmN %4d ",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
+	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"   -    -    -    -  "); // blanks
 	  if (j==0) fprintf(limitFile,"-  %5.3f   -  - ",pbsi->second.bkgd[0]);
 	  if (j==1) fprintf(limitFile,"-  -  %5.3f - ",pbsi->second.bkgd[1]);
 	  if (j==2) fprintf(limitFile,"-  -   -  %5.3f  ",pbsi->second.bkgd[2]);
@@ -339,12 +339,19 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     // normalize systematics...
     for (ss=abin.perBinSyst.begin(); ss!=abin.perBinSyst.end(); ss++) {
       ss->second.signal/=std::max(1e-9,abin.signal);
-      for (int q=0; q<3; q++)
-	ss->second.bkgd[q]/=std::max(1e-9,abin.bkgd[q]);      
+      for (int q=0; q<3; q++) 
+	if (ss->first==SystematicsDB::GAMMASTATS) 
+	  ss->second.bkgd[q]=abin.bkgd[q]/ss->second.bkgdN[q];
+	else
+	  ss->second.bkgd[q]/=std::max(1e-9,abin.bkgd[q]);      
+      
       
     }
-    pbi.push_back(abin); // combined bin
+    double sigbineff=abin.signal/(mp.lumi*mp.xsec);
+    if (sigbineff>0.01)
+      pbi.push_back(abin); // combined bin
   }
+
 
   return pbi;
 }
