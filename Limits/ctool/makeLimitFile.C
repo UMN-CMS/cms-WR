@@ -112,7 +112,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 	for (int j=0; j<3; j++) {
 	  if (pbsi->second.bkgdN[j]<=0) continue; // no such systematic here
 
-	  fprintf(limitFile,"gs%d%s gmN %d",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
+	  fprintf(limitFile,"gs%d%s gmN %d ",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
 	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks
 	  if (j==0) fprintf(limitFile,"-  %5.3f   -  - ",pbsi->second.bkgd[0]);
 	  if (j==1) fprintf(limitFile,"-  -  %5.3f - ",pbsi->second.bkgd[1]);
@@ -246,10 +246,10 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 
       if (*isyst==SystematicsDB::GAMMASTATS) {
 	double systLevel=syst.getSystematic(*isyst,process,ibin);
-	if (systLevel<0) {
+	//	if (systLevel<0) {
 	  pbs.signal=-1;
 	  pbs.signalN=-1;
-	} // really not ready for weighted signal.  Ignore this case.
+	  //} // really not ready for weighted signal.  Ignore this case.
 
 	for (int j=1; j<=3; j++) {
 	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
