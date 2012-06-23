@@ -103,7 +103,7 @@ void SystematicsDB::defineSingleChannelSyst(const std::string& systName, const s
       asyst-=1;
       dbi.values[i]+=pow(asyst,2);
     }
-    dbi.values[i]=sqrt(dbi.values[i]);
+    dbi.values[i]=1+sqrt(dbi.values[i]);
   }
   
   m_db.insert(std::pair<std::string,DBitem>(key,dbi));
