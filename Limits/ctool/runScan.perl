@@ -56,7 +56,7 @@ if ($channel eq "e-mu") {
     
     $data_both=$data2011.",".
 	"/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root";
-    $systdb="systematicsdb.csv,systematicsdb_elec_2012.csv";
+    $systdb="systematicsdb.csv,systematicsdb_mu_2012.csv";
     $lumi2012=3600;
     $xsec=$xsec;
 } elsif ($channel=~/mu/) {
