@@ -245,7 +245,6 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
       PerBinSystematic pbs;
 
       if (*isyst==SystematicsDB::GAMMASTATS) {
-	pbs.isGammaFn=false;
 	double systLevel=syst.getSystematic(*isyst,process,ibin);
 	if (systLevel<0) {
 	  pbs.signal=-1;
@@ -263,7 +262,6 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 	  }
 	}       
       } else {
-	pbs.isGammaFn=false;
 	double systLevel=syst.getSystematic(*isyst,process,ibin);
 	if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
 	pbs.signal=systLevel;
@@ -322,15 +320,19 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 	  ss=abin.perBinSyst.find(is->first);
 	  if (ss==abin.perBinSyst.end()) {
 	    PerBinSystematic blank;
-	    blank.signal=0;
+	    blank.signal=0;  blank.signalN=0;
 	    blank.bkgd[0]=0;	    blank.bkgd[1]=0;	    blank.bkgd[2]=0;
+	    blank.bkgdN[0]=0;	    blank.bkgdN[1]=0;	    blank.bkgdN[2]=0;
 	    abin.perBinSyst.insert(std::pair<std::string,PerBinSystematic>(is->first,blank));
 	    ss=abin.perBinSyst.find(is->first);
 	  }
 	  // weighted sum...
 	  ss->second.signal+=jj->signal*is->second.signal;
-	  for (int q=0; q<3; q++)
+	  ss->second.signalN+=jj->signal*is->second.signalN;
+	  for (int q=0; q<3; q++) {
 	    ss->second.bkgd[q]+=jj->bkgd[q]*is->second.bkgd[q];
+	    ss->second.bkgdN[q]+=jj->bkgd[q]*is->second.bkgdN[q];
+	  }
 	}
       }
     }
