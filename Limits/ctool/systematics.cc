@@ -137,6 +137,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     
     systContents.clear();
     systContents.push_back("JES");
+    systContents.push_back("JER");
     systContents.push_back("EES");
     systContents.push_back("EID");
     systContents.push_back("PU");
@@ -166,6 +167,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     
     systContents.clear();
     systContents.push_back("JES");
+    systContents.push_back("JER");
     systContents.push_back("MES");
     systContents.push_back("MUONID");
     systContents.push_back("PU");
