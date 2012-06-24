@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   int opt;
   LimitPoint pt,pt1,pt2;
   std::string df_name[2], systf_name[2], of_name, ratedb_name[2];
-  char temp1[100],temp2[100];
+  char temp1[1000],temp2[1000];
   std::string istring;
   bool interpolate=false;
 
