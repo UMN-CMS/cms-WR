@@ -49,7 +49,7 @@ $lumi2012=3600;
 if ($channel eq "e-mu") {
     $ratesdb="ratesdb.csv,ratesdb_elec.csv";
     
-    $data2012=$datamu2012.",".$datael2012;
+    $data2012="$datamu2012,$datael2012";
     $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
     $lumi2012=$lumi2012.",".$lumi2012;
     $xsec=$xsec.",".$xsec;
