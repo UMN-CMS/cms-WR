@@ -257,8 +257,8 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 	    pbs.bkgd[j-1]=-1;
 	    pbs.bkgdN[j-1]=0;
 	  } else {
-	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel+0.5);
-	    pbs.bkgd[j-1]=systLevel;
+	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel+0.51);
+	    pbs.bkgd[j-1]=abin.bkgd[j-1]/pbs.bkgdN[j-1];
 	  }
 	}       
       } else {
@@ -286,7 +286,6 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
       pbi.push_back(abin);
   }
   
-
   if (mp.rebin_above_mlljj>0) {
     pbi_alt.swap(pbi);
 
@@ -303,8 +302,10 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     sprintf(name,"%c%02d",binprefix,srcabove);
     abin.binName=name;
 
-    for (int j=0; j<3; j++) abin.bkgd[j]=0;
-    abin.signal=0;
+    for (int j=0; j<3; j++) {
+	abin.bkgd[j]=0;
+    }
+    abin.signal=0; 
     
     std::map<std::string,PerBinSystematic>::iterator ss;
 
@@ -328,10 +329,10 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 	  }
 	  // weighted sum...
 	  ss->second.signal+=jj->signal*is->second.signal;
-	  ss->second.signalN+=jj->signal*is->second.signalN;
+	  ss->second.signalN+=is->second.signalN;
 	  for (int q=0; q<3; q++) {
 	    ss->second.bkgd[q]+=jj->bkgd[q]*is->second.bkgd[q];
-	    ss->second.bkgdN[q]+=jj->bkgd[q]*is->second.bkgdN[q];
+	    ss->second.bkgdN[q]+=is->second.bkgdN[q];
 	  }
 	}
       }
@@ -351,7 +352,6 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     if (sigbineff>0.01)
       pbi.push_back(abin); // combined bin
   }
-
 
   return pbi;
 }
