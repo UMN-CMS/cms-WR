@@ -8,7 +8,7 @@
 #include "systematics.h"
 #include <algorithm>
 
-static const int NMASSBIN=21;
+static const int NMASSBIN=20;
 
 const char* SystematicsDB::GAMMASTATS = "GAMMASTATS";
 
