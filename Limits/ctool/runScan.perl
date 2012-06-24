@@ -41,28 +41,28 @@ if ($jobBase ne "default") {
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 $lumi2011=4990;
 
+$datamu2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun23.root"
+$datael2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
+$lumi2012=3600;
 
 #$lumi2011=4700;
 if ($channel eq "e-mu") {
     $ratesdb="ratesdb.csv,ratesdb_elec.csv";
     
-    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root".",".
-	"/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
+    $data2012=$datamu2012.",".$datael2012;
     $systdb="systematicsdb_mu_2012.csv,systematicsdb_elec_2012.csv";
-    $lumi2012="3600,3600";
+    $lumi2012=$lumi2012.",".$lumi2012;
     $xsec=$xsec.",".$xsec;
 } elsif ($channel eq "mu2ecm") {
     $ratesdb="ratesdb.csv,ratesdb.csv";
     
-    $data_both=$data2011.",".
-	"/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root";
+    $data_both=$data2011.",".$datamu2012;
     $systdb="systematicsdb.csv,systematicsdb_mu_2012.csv";
     $lumi2012=3600;
     $xsec=$xsec;
 } elsif ($channel=~/mu/) {
     $ratesdb="ratesdb.csv";
-    $data2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun22.root";
-    $lumi2012=3600;
+    $data2012=$datamu2012;
 
     if ($year==2012) {
 	$systdb="systematicsdb_mu_2012.csv";
@@ -72,8 +72,7 @@ if ($channel eq "e-mu") {
 
 } else {
     $ratesdb="ratesdb_elec.csv";
-    $data2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
-    $lumi2012=3600;
+    $data2012=$datael2012;
 
     if ($year==2012) {
 	$systdb="systematicsdb_elec_2012.csv";
