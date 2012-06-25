@@ -28,6 +28,9 @@ isRun2011Mu24       = False
 isRun2011Mu40       = False
 isRun2011Mu40eta2p1 = False
 isRun2012           = True
+#--- Special flag to use the *full* 5/fb for ICHEP ---#
+#--- Default (i.e. False) is to use the 3.6/fb specified by EXO HN as acceptable ---#
+isRun2012topoff     = False 
 
 #--- This flag must be set to ensure Monte Carlo gets the right corrections
 isRun2011A          = False
@@ -50,7 +53,7 @@ if not isRun2012:
 
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
-runElectronAnalysis = True
+runElectronAnalysis = False
 systematics    = False
 tagandprobe    = False
 doTriggerStudy = False
@@ -94,8 +97,12 @@ process.source = cms.Source("PoolSource",
 
 if isData:
     if isRun2012:
-        print "===========> Flag is SET for 2012 data <============"
-        from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_cfi import lumisToProcess
+        if isRun2012topoff:
+            print "===========> Flag is SET for 5/fb 2012 data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_topoff_ichep_cfi import lumisToProcess
+        else:
+            print "===========> Flag is SET for 3.6/fb 2012 data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_cfi import lumisToProcess
     else:
         if isRun2011Mu24:
             print "===========> Flag is SET for 2011 LOW luminosity data <============"
