@@ -135,13 +135,16 @@ foreach $item (@items) {
     $ofname="$fileLoc/limit_".$mw."_".$mn;
     if ($channel eq "mu2ecm") {
 	$mn2011=(int($mw/200)+1)*100;
+	if ($mw>2500) {
+	    $mn2011=$mn;
+	}
 	$mntext=$mn2011.",".$mn;
 	$xseceff=$xsec*xsecratio($mw);
 	    	
 	$mode=$channel;
 	$cmd="./makeLimitFile.exe -m $mode -l $lumi2011,$lumi2012 -w $mw -n $mntext -y 2011,2012 -x $xseceff,$xsec -d $data_both -r $ratesdb -o $ofname -s $systdb ";
 
-	$comments="xsec=$xsec,$xseceff";
+	$comments="xsec=$xseceff,$xsec";
     } elsif ($year==2011) {
 	$cmd="./makeLimitFile.exe -l $lumi2011 -w $mw -n $mn -x $xsec -d $data2011 -r $ratesdb -o $ofname -s $systdb ";
 	$comments="xsec=$xsec";
