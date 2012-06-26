@@ -6,7 +6,7 @@
 class AcceptanceDB {
  public:
   AcceptanceDB(const char* which=0) { loadDB(which); }
-  void add(int mw, int mn, double a2010, double a2011);
+  void add(int mw, int mn, double a2010, double a2011, double a2012=-1);
   double getBestEstimate(int mw, int mn, int year) const;
 
  private:
@@ -15,9 +15,11 @@ class AcceptanceDB {
     double forYear(int year) const {
       if (year==2010) return a2010;
       if (year==2011) return a2011;
+      if (year==2012) return a2012;
+
       return 0;
     }
-    double a2010, a2011;
+    double a2010, a2011, a2012;
   };
 
 

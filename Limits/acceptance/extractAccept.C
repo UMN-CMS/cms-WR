@@ -9,6 +9,9 @@ double extractAccept(TFile* f,int year) {
   if (year==2011) {
     steps=(TH1*)f->Get("hNuGen2011/cutProgress");
   } 
+  if (year==2012) {
+    steps=(TH1*)f->Get("hNuGen2012/cutProgress");
+  } 
   if (steps==0) return 0.0;
   return steps->GetBinContent(7)/steps->GetBinContent(1);
 }
@@ -40,9 +43,10 @@ int main(int argc, char* argv[]) {
 
   double a2010=extractAccept(&af,2010);
   double a2011=extractAccept(&af,2011);
+  double a2012=extractAccept(&af,2012);
 
 
-  printf("  add(%d,%d,%f,%f);\n",mw,mn,a2010,a2011);
+  printf("  add(%d,%d,%f,%f,%f);\n",mw,mn,a2010,a2011,a2012);
   return 0;
 }
 
