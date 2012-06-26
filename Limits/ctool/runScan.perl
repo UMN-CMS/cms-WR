@@ -143,6 +143,9 @@ foreach $item (@items) {
 	    	
 	$mode=$channel;
 	$cmd="./makeLimitFile.exe -m $mode -l $lumi2011,$lumi2012 -w $mw -n $mntext -y 2011,2012 -x $xseceff,$xsec -d $data_both -r $ratesdb -o $ofname -s $systdb ";
+	if ($max_mllqq>0) {
+	    $cmd.=" -b $max_mllqq";
+	}
 
 	$comments="xsec=$xseceff,$xsec";
     } elsif ($year==2011) {
