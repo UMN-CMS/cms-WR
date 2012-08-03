@@ -13,7 +13,7 @@
 //
 // Original Author:  Bryan Dahmes
 //         Created:  Wed Sep 22 04:49:56 CDT 2010
-// $Id: MuFilter.cc,v 1.3 2011/05/28 18:25:11 bdahmes Exp $
+// $Id: MuFilter.cc,v 1.4 2011/07/28 07:18:07 bdahmes Exp $
 //
 //
 
@@ -60,10 +60,12 @@ private:
   // ----------member data ---------------------------
   double minMuPt_, minEleEt_ ; // minimum Et/pt cut on skimming objects
   edm::InputTag muonTag_, trackTag_, ebTag_, eeTag_ ; 
-  double overlap_ ; 
+  double overlap_, trackMassLo_, trackMassHi_; 
+  int trackPrescale_;
+  bool trackOnly_;
 
   // Counters
-  int nEvt, nMu1, nMu2, nTrk, nEB, nEE ; 
+  int nEvt, nMu1, nMu2, nTrk, nEB, nEE, nTrkKeep ; 
 
 };
 
@@ -83,6 +85,8 @@ MuFilter::MuFilter(const edm::ParameterSet& iConfig)
   //now do what ever initialization is needed
   minMuPt_  = iConfig.getParameter<double>("minMuonPt") ;
   minEleEt_ = iConfig.getParameter<double>("minSCEt") ; 
+  trackPrescale_ = iConfig.getParameter<int>("trackPrescale");
+  trackOnly_ = iConfig.getParameter<bool>("trackOnly");
 
   muonTag_  = iConfig.getParameter<edm::InputTag>("muonTag") ; 
   trackTag_ = iConfig.getParameter<edm::InputTag>("trackTag") ; 
@@ -90,6 +94,8 @@ MuFilter::MuFilter(const edm::ParameterSet& iConfig)
   eeTag_    = iConfig.getParameter<edm::InputTag>("eeTag") ; 
 
   overlap_  = iConfig.getParameter<double>("overlap") ; 
+  trackMassLo_ = iConfig.getParameter<double>("trackMassLow") ; 
+  trackMassHi_ = iConfig.getParameter<double>("trackMassHigh") ; 
 }
 
 
@@ -145,21 +151,51 @@ MuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if ( pMuons.at(0).pt() < minMuPt_ ) return false ; 
   nMu1++ ; 
   for (unsigned int i=1; i<pMuons.size(); i++) {
-    if ( pMuons.at(i).pt() >= minMuPt_ ) { nMu2++ ; return true ; }
+    if ( pMuons.at(i).pt() >= minMuPt_ ) { 
+      nMu2++ ; 
+      if (trackOnly_) {
+	double mass=(pMuons.at(i).p4()+pMuons.at(0).p4()).M();
+	if (trackMassLo_<0 || trackMassHi_<0 || (mass>trackMassLo_ && mass<trackMassHi_)) {
+	  nTrk++ ; 
+	  if (trackPrescale_<2 || (nTrk%trackPrescale_)==0) {
+	    nTrkKeep++;
+	    return true ; 
+	  } else return false;
+	} else return false;
+      } else return true ; 
+    }
   }
 
-  // Check for generic tracks with sufficient pT
-  for (unsigned int i=0; i<pTracks.size(); i++) 
-    if ( pTracks.at(i).pt() >= minMuPt_ &&
-	 !Overlap(muEta,muPhi,pTracks.at(i).eta(),pTracks.at(i).phi()) ) { nTrk++ ; return true ; }
+  /// At this point, if we had two muons over threshold, we would have passed, so we can assume that
+  /// we only have _one_ muon over threshold.  Therefore, we only care about the invarient mass relative
+  /// to that muon.
 
-  // Check for ECAL clusters
-  for (unsigned int i=0; i<ebSCs.size(); i++)
-    if ( ebSCs.at(i).energy()/cosh(ebSCs.at(i).eta()) >= minEleEt_ && 
-	 !Overlap(muEta,muPhi,ebSCs.at(i).eta(),ebSCs.at(i).phi()) ) { nEB++ ; return true ; }
-  for (unsigned int i=0; i<eeSCs.size(); i++) 
-    if ( eeSCs.at(i).energy()/cosh(eeSCs.at(i).eta()) >= minEleEt_ && 
-	 !Overlap(muEta,muPhi,eeSCs.at(i).eta(),eeSCs.at(i).phi()) ) { nEE++ ; return true ; }
+  // Check for generic tracks with sufficient pT
+  if (trackPrescale_>=0) {
+    for (unsigned int i=0; i<pTracks.size(); i++) 
+      if ( pTracks.at(i).pt() >= minMuPt_ &&
+	   !Overlap(muEta,muPhi,pTracks.at(i).eta(),pTracks.at(i).phi()) ) {
+	
+	double mass=(pTracks.at(i).p4()+pMuons.at(0).p4()).M();
+	if (trackMassLo_<0 || trackMassHi_<0 || (mass>trackMassLo_ && mass<trackMassHi_))
+	  { nTrk++ ; 
+	    if (trackPrescale_<2 || (nTrk%trackPrescale_)==0) {
+	      nTrkKeep++;
+	      return true ; 
+	    }
+	  }
+      }
+  }
+
+  if (minEleEt_>0) {
+    // Check for ECAL clusters
+    for (unsigned int i=0; i<ebSCs.size(); i++)
+      if ( ebSCs.at(i).energy()/cosh(ebSCs.at(i).eta()) >= minEleEt_ && 
+	   !Overlap(muEta,muPhi,ebSCs.at(i).eta(),ebSCs.at(i).phi()) ) { nEB++ ; return true ; }
+    for (unsigned int i=0; i<eeSCs.size(); i++) 
+      if ( eeSCs.at(i).energy()/cosh(eeSCs.at(i).eta()) >= minEleEt_ && 
+	   !Overlap(muEta,muPhi,eeSCs.at(i).eta(),eeSCs.at(i).phi()) ) { nEE++ ; return true ; }
+  }
 
   return false ;
 }
@@ -168,7 +204,7 @@ MuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 MuFilter::beginJob()
 {
-  nEvt = 0 ; nMu1 = 0 ; nMu2 = 0 ; nEB = 0 ; nEE = 0 ; nTrk = 0 ; 
+  nEvt = 0 ; nMu1 = 0 ; nMu2 = 0 ; nEB = 0 ; nEE = 0 ; nTrk = 0 ; nTrkKeep=0;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -177,7 +213,7 @@ MuFilter::endJob() {
   std::cout << "Results of filtering: " << std::endl ; 
   std::cout << "Saw " << nEvt << " events with at least one muon" << std::endl ; 
   std::cout << "    " << nMu1 << " events with one muon above min pT" << std::endl ; 
-  std::cout << "    " << nTrk << " events with one muon, one generic track above min pT" << std::endl ; 
+  std::cout << "    " << nTrk << " events with one muon, one generic track above min pT.  Kept" << nTrkKeep << std::endl ; 
   std::cout << "    " << nMu2 << " events with two muons above min pT" << std::endl ; 
   std::cout << "    " << nEB  << " events with one muon, EB SC above min pT" << std::endl ; 
   std::cout << "    " << nEE  << " events with one muon, EE SC above min pT" << std::endl ; 

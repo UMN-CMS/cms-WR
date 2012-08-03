@@ -20,7 +20,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
-process.GlobalTag.globaltag = cms.string('GR_P_V21::All')
+process.GlobalTag.globaltag = cms.string('GR_R_50_V13::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
@@ -32,7 +32,7 @@ process.out = cms.OutputModule( "PoolOutputModule",
    SelectEvents = cms.untracked.PSet(
       SelectEvents = cms.vstring('p'),
    ),
-   outputCommands = cms.untracked.vstring("keep *")
+   outputCommands = cms.untracked.vstring("keep *","drop *_*_*_SKIM","keep edmTriggerResults_TriggerResults__SKIM")
 )
 
 ###########################################################################
@@ -59,33 +59,37 @@ process.patAODTrackCandsUnfiltered = cms.EDProducer("ConcreteChargedCandidatePro
 )
 process.patAODTrackCands = cms.EDFilter("CandViewSelector",
     src = cms.InputTag("patAODTrackCandsUnfiltered"),
-    cut = cms.string('pt > 10')
+    cut = cms.string('pt > 20')
 )
 from PhysicsTools.PatAlgos.producersLayer1.genericParticleProducer_cfi import patGenericParticles
 process.allPatTracks = patGenericParticles.clone(
     src = cms.InputTag("patAODTrackCands")
 )
 from PhysicsTools.PatAlgos.selectionLayer1.trackSelector_cfi import *
-process.patTracksPt10 = selectedPatTracks.clone(
-    cut = 'pt > 10.'
+process.patTracksPt20 = selectedPatTracks.clone(
+    cut = 'pt > 30.'
 )
 
 process.muFilter = cms.EDFilter("MuFilter",
     muonTag  = cms.InputTag("patMuons"),
-    trackTag = cms.InputTag("patTracksPt10"),
+    trackTag = cms.InputTag("patTracksPt20"),
     ebTag    = cms.InputTag("correctedHybridSuperClusters"),
     eeTag    = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower"),
 
-    minMuonPt = cms.double( 20.0 ),
-    minSCEt   = cms.double( 20.0 ), 
-    overlap   = cms.double( 0.05 ) 
+    minMuonPt = cms.double( 32.0 ),
+    minSCEt   = cms.double( 32.0 ), 
+    overlap   = cms.double( 0.05 ),
+    trackPrescale = cms.int32( -1 ),
+    trackOnly = cms.bool(False),
+    trackMassLow = cms.double( 40.0),
+    trackMassHigh = cms.double( 150.0)
 )
 
 process.patTrackSequence = cms.Sequence( 
         process.patAODTrackCandsUnfiltered *
         process.patAODTrackCands *
         process.allPatTracks *
-        process.patTracksPt10
+        process.patTracksPt20
 )
 
 process.p = cms.Path( 
