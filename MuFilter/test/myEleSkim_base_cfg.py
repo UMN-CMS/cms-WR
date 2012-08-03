@@ -28,7 +28,7 @@ process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012A/Photon/AOD/PromptReco-v1/000/190/736/C87655EF-FB83-E111-A922-003048D3733E.root')
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
@@ -36,7 +36,8 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
-process.GlobalTag.globaltag = 'GR_R_50_V13::All'
+#process.GlobalTag.globaltag = 'GR_R_50_V13::All'
+process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
 
 
 ### Output needs to be created before working with PAT objects ###
