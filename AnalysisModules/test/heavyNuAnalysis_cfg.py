@@ -3,17 +3,13 @@ import FWCore.ParameterSet.Config as cms
 from operator import isSequenceType
 import os
 
-#--- Analysis Mode ---#
-#options are HNUMU, HNUE, TOP, QCD, CLO
-#analysisMode = 'HNUE'
-
 #--- Data/MC switch ---#
 isMC=True
 isData=not isMC
 
-#--- Special flag for 44x/Fall11 ---#
-is44x=False
-is42x=False
+#--- Specify CMSSW release (53, 52, 44, 42, 37) ---#
+cmsswRelease = 53
+isRereco = True
 
 #--- Signal MC flags ---#
 isMCsignal=False
@@ -43,17 +39,17 @@ if not isRun2012:
     if isRun2011A:
         dataEra   = 20111
         pileupEra = 20111
-        if is44x: 
+        if cmsswRelease == 44: 
             pileupEra = 20113
     else:
         dataEra   = 20112
         pileupEra = 20112
-        if is44x: 
+        if cmsswRelease == 44: 
             pileupEra = 20114
 
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
-runElectronAnalysis = False
+runElectronAnalysis = True
 systematics    = False
 tagandprobe    = False
 doTriggerStudy = False
@@ -68,7 +64,7 @@ topStudy      = True
 studyTopScale = False
 
 #--- Flags for QCD studies ---#
-qcdStudy  = True
+qcdStudy  = False
 doDijet   = False
 doQuadJet = False
 doClosure = False
@@ -92,7 +88,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('/store/mc/Summer12/ZZ_TuneZ2star_8TeV_pythia6_tauola/AODSIM/PU_S7_START52_V9-v1/0001/88C71A4C-6C9A-E111-A7C3-008CFA001F78.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root')
 )
 
 if isData:
@@ -106,20 +102,20 @@ if isData:
     else:
         if isRun2011Mu24:
             print "===========> Flag is SET for 2011 LOW luminosity data <============"
-            if is44x:
+            if cmsswRelease == 44:
                 from HeavyNu.AnalysisModules.goodLumiList_novRereco_160404_163869_mu24_cfi import lumisToProcess
             else:
                 from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
         else:
             if isRun2011Mu40eta2p1:
                 print "===========> Flag is SET for 2011 HIGH luminosity data <============"
-                if is44x:
+                if cmsswRelease == 44:
                     from HeavyNu.AnalysisModules.goodLumiList_novRereco_173236_180252_mu40_eta2p1_cfi import lumisToProcess
                 else:
                     from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
             elif isRun2011Mu40:
                 print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
-                if is44x:
+                if cmsswRelease == 44:
                     from HeavyNu.AnalysisModules.goodLumiList_novRereco_165088_173198_mu40_cfi import lumisToProcess
                 else:
                     from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
@@ -130,64 +126,40 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 
 ## Load additional processes
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 ## Global Tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
-    if (isPileupMC):
-        if (is44x): 
-            process.GlobalTag.globaltag=cms.string('START44_V12::All')
-        elif is42x: 
-            process.GlobalTag.globaltag=cms.string('START42_V13::All')
-        else:
-            process.GlobalTag.globaltag=cms.string('START52_V11::All')
-        print "=============> isPileupMC flag is SET <================"
-    # else:
-    #     print "========> Fall10 MC with Spring10 JEC applied <========"
-    #     process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    if cmsswRelease == 42:
+        process.GlobalTag.globaltag=cms.string('START44_V12::All')
+    elif cmsswRelease == 44:
+        process.GlobalTag.globaltag=cms.string('START44_V12::All')
+    elif cmsswRelease == 52:
+        process.GlobalTag.globaltag=cms.string('START52_V11::All')
+    elif cmsswRelease == 53:
+        process.GlobalTag.globaltag=cms.string('START53_V7A::All')
+    else:
+        print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 else:
     print "===============> Running on DATA <===================="
-    if (isRun2012):
+    if cmsswRelease == 42:
+        process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
+    elif cmsswRelease == 44:
+        process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
+    elif cmsswRelease == 52:
         process.GlobalTag.globaltag = cms.string('GR_R_52_V9::All')
-    else:
-        if (is44x):
-            process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
+    elif cmsswRelease == 53:
+        if isRereco:
+            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN1::All')
         else:
-            process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
+            process.GlobalTag.globaltag = cms.string('GR_P_V40::All')
+    else:
+        print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
-
-##--- Temporary fix to get new Jet Corrections (not yet available in Global Tag ---#
-#process.load("CondCore.DBCommon.CondDBCommon_cfi")
-#from CondCore.DBCommon.CondDBSetup_cfi import *
-#dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_DATA_AK5PFchs'
-#dbConnect = 'sqlite:Summer12_V7_DATA.db'
-#if isMC:
-#    dbTag     = 'JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'
-#    dbConnect = 'sqlite:Summer12_V7_MC.db'
-#
-#process.jec = cms.ESSource("PoolDBESSource",
-#       DBParameters = cms.PSet(
-#           messageLevel = cms.untracked.int32(0)
-#       ),
-#       timetype = cms.string('runnumber'),
-#       toGet = cms.VPSet(
-#             cms.PSet(
-#                 record = cms.string('JetCorrectionsRecord'),
-#                 tag    = cms.string( dbTag ),
-#                 # tag    = cms.string('JetCorrectorParametersCollection_Summer12_V7_MC_AK5PFchs'),
-#                 label  = cms.untracked.string('AK5PFchs')
-#             ),
-#       ),
-#       connect = cms.string( dbConnect )
-#       # connect = cms.string('sqlite:Summer12_V7_MC.db')
-#)
-#
-### add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
-#process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
 
 ################################################################################################
 ###    P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D  ###
@@ -201,10 +173,6 @@ process.myRefitMuonSequence = cms.Sequence( process.refitMuons )
 from PhysicsTools.PatAlgos.tools.pfTools import *
 
 def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, postfix="", jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']), pvCollection=cms.InputTag('offlinePrimaryVertices'), typeIMetCorrections=False, outputModules=['out']):
-    # PLEASE DO NOT CLOBBER THIS FUNCTION WITH CODE SPECIFIC TO A GIVEN PHYSICS OBJECT.
-    # CREATE ADDITIONAL FUNCTIONS IF NEEDED.
-
-    """Switch PAT to use PF2PAT instead of AOD sources. if 'runPF2PAT' is true, we'll also add PF2PAT in front of the PAT sequence"""
 
     # -------- CORE ---------------
     if runPF2PAT:
@@ -344,28 +312,6 @@ if isPFJets:
     process.pfJetsPFlow.doAreaFastjet = True
     process.pfJetsPFlow.doRhoFastjet = False
 
-    #-----------------------------------------------------------------------#
-    #--- Jet Corrections using PF and PF2PAT                             ---#
-    #--- twiki reference: CMSPublic/WorkBookJetEnergyCorrections         ---#
-    #--- See also: PhysicsTools/PatExamples/test/patTuple_42x_jec_cfg.py ---#
-    #-----------------------------------------------------------------------#
-# Fastjet rho is calculated in reco, we need not calculate it
-#    # Compute the mean pt per unit area (rho) from the PFchs inputs
-#    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
-#    process.kt6PFJetsPFlow = kt4PFJets.clone(
-#        rParam = cms.double(0.6),
-#        src = cms.InputTag('pfNoElectron'+postfix),
-#        doAreaFastjet = cms.bool(True),
-#        doRhoFastjet = cms.bool(True)
-#    )
-#    process.patJetCorrFactorsPFlow.rho = cms.InputTag("kt6PFJetsPFlow", "rho")
-
-#    # Add the PV selector and KT6 producer to the sequence
-#    getattr(process,"patPF2PATSequence"+postfix).replace(
-#        getattr(process,"pfNoElectron"+postfix),
-#        getattr(process,"pfNoElectron"+postfix)*process.kt6PFJetsPFlow 
-#    )
-
     process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
     process.load("RecoBTag.Configuration.RecoBTag_cff")
     process.modifiedPF2PATSequence = cms.Sequence(    
@@ -373,7 +319,6 @@ if isPFJets:
         getattr(process,"patPF2PATSequence"+postfix)
     )
 
-    
     # Remove unneeded tau sequences, some of which are very time consuming
     if not ishpsPFTau:
        process.modifiedPF2PATSequence.remove(getattr(process,"tauIsoDepositPFCandidates"+postfix) )
@@ -423,14 +368,15 @@ process.patTrackSequence = cms.Sequence(
 
 ## https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagJetProbabilityCalibration?redirectedfrom=CMS.SWGuideBTagJetProbabilityCalibration#Calibration_in_52x_and_53x_Data
 
-process.GlobalTag.toGet = cms.VPSet(
-  cms.PSet(record = cms.string("BTagTrackProbability2DRcd"),
-       tag = cms.string("TrackProbabilityCalibration_2D_2012DataTOT_v1_offline"),
-       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU")),
-  cms.PSet(record = cms.string("BTagTrackProbability3DRcd"),
-       tag = cms.string("TrackProbabilityCalibration_3D_2012DataTOT_v1_offline"),
-       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
-)
+if cmsswRelease == 52:
+    process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("BTagTrackProbability2DRcd"),
+          tag = cms.string("TrackProbabilityCalibration_2D_2012DataTOT_v1_offline"),
+          connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU")),
+    cms.PSet(record = cms.string("BTagTrackProbability3DRcd"),
+          tag = cms.string("TrackProbabilityCalibration_3D_2012DataTOT_v1_offline"),
+          connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
+    )
 
 
 ## --------------------- ##
@@ -479,7 +425,7 @@ if isData:
     from PhysicsTools.PatAlgos.tools.coreTools import *
     if isPFJets:
         removeMCMatchingPF2PAT( process, '' )
-    if (is42x):
+    if cmsswRelease == 42:
         removeMCMatching(process, ['All'], outputInProcess = False)
     else:
         removeMCMatching(process, ['All'], outputModules = [])
@@ -505,9 +451,9 @@ process.patJetCorrFactors.useRho = cms.bool(False)
 
 from PhysicsTools.PatAlgos.tools.coreTools import removeCleaning
 from PhysicsTools.PatAlgos.tools.coreTools import removeSpecificPATObjects
-if (is42x):
+if (cmsswRelease == 42):
     removeCleaning( process, False )
-elif (is44x):
+elif (cmsswRelease == 44):
     removeCleaning( process, outputModules = [] )
 else:
     removeCleaning( process, outputModules = [] )
