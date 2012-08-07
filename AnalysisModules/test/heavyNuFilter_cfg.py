@@ -78,7 +78,7 @@ ishpsPFTau = False
 isPileupMC = True
 isPFJets   = True
 
-process = cms.Process("PAT");
+process = cms.Process("PATSKIM");
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -495,7 +495,7 @@ process.hNu = cms.EDFilter(
     )
 
 process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') )
-process.out.outputCommands = cms.untracked.vstring("drop *", "keep *_*_*_RECO", "keep *_*_*_LHE", "keep *_*_*_SIM", "keep *_*_*_HLT", "keep *_*_*_PATSKIM",
-                                                   "drop patTaus_*_*_PATSKIM", "drop recoPFCandidates_*_*_PATSKIM", "drop recoIsoDepositedmValueMap_*_*_PATSKIM")
+process.out.outputCommands = cms.untracked.vstring("drop *", "keep *_*_*_RECO", "keep *_*_*_LHE", "keep *_*_*_SIM", "keep *_*_*_HLT", "keep *_*_*_PATSKIM")
+#                                                   "drop patTaus_*_*_PATSKIM", "drop recoPFCandidates_*_*_PATSKIM", "drop recoIsoDepositedmValueMap_*_*_PATSKIM")
 process.p = cms.Path( process.AnalysisIntroSequence * process.hNu )
 process.end = cms.EndPath(process.out)
