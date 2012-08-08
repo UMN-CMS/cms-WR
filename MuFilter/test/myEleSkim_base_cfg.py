@@ -25,7 +25,8 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 # source
 process.source = cms.Source("PoolSource",
                             #fileNames=cms.untracked.vstring('file:input.root')
-                            fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012A/Photon/AOD/PromptReco-v1/000/190/736/C87655EF-FB83-E111-A922-003048D3733E.root')
+                            #fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012A/Photon/AOD/PromptReco-v1/000/190/736/C87655EF-FB83-E111-A922-003048D3733E.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012B/DoublePhotonHighPt/AOD/13Jul2012-v1/00000/00FD2120-45D9-E111-863D-848F69FD28AA.root')
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -98,13 +99,13 @@ process.patDefaultSequence = cms.Sequence( process.patCandidates )
 
 
 # this does not filter event, only reduces the collection
-process.ElectronsAbove30 = cms.EDFilter("CandViewSelector",
+process.ElectronsAbove35 = cms.EDFilter("CandViewSelector",
                                         src = cms.InputTag("patElectrons"),
-                                        cut = cms.string('(ecalEnergy*sin(superClusterPosition.theta)) >' + str(30) )
+                                        cut = cms.string('(ecalEnergy*sin(superClusterPosition.theta)) >' + str(35) )
                                         )
 #here's the real filter
-process.twoElectronsAbove30 = cms.EDFilter("CandViewCountFilter",
-                                           src = cms.InputTag("ElectronsAbove30"),
+process.twoElectronsAbove35 = cms.EDFilter("CandViewCountFilter",
+                                           src = cms.InputTag("ElectronsAbove35"),
                                            minNumber = cms.uint32(2)
                                            )
 
@@ -115,11 +116,11 @@ process.pA = cms.Path(
     
     process.patDefaultSequence *
     
-    # select electron candidates above 30 (no filtering)
-    process.ElectronsAbove30 *
+    # select electron candidates above 35 (no filtering)
+    process.ElectronsAbove35 *
     
-    # filter on presence of electron(s)>30
-    process.twoElectronsAbove30
+    # filter on presence of electron(s)>35
+    process.twoElectronsAbove35
     
     # * process.dumpEvContent
     )
