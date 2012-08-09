@@ -3,8 +3,8 @@
 <use   name="FWCore/ParameterSet"/>
 <use   name="DataFormats/RecoCandidate"/>
 <use   name="DataFormats/PatCandidates"/>
+<use   name="HeavyNu/AnalysisModules"/>
+<use   name="CondFormats/JetMETObjects"/>
+<use   name="PhysicsTools/Utilities"/>
 <use   name="DataFormats/Math"/>
 <flags   EDM_PLUGIN="1"/>
-<export>
-  <lib   name="1"/>
-</export>
