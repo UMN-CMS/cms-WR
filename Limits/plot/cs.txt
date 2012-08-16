@@ -597,6 +597,7 @@
 7 2500 2350 2.624e-05 1.23
 7 2500 2400 1.391e-05 1.23
 7 2500 2450 5.983e-06 1.23
+7 2600 1300 1.55e-3  0.45
 ## Note: because cs provided by Alex used 3 channels, while Russian 7 TeV
 ## numbers used 1 channel, Alex's cs was multiplied by 3/8 
 8 700 350 3.226125 1.351
