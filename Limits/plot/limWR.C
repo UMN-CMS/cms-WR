@@ -224,7 +224,7 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   
   //  gROOT->SetStyle("Plain");
   TCanvas* c1=new TCanvas("c1","c1",800,800);
-  c1->SetTopMargin(0.04);
+  c1->SetTopMargin(0.07);
   c1->SetLeftMargin(0.15);
   c1->SetRightMargin(0.05);
   c1->SetBottomMargin(0.13);
@@ -265,9 +265,10 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
 
   TLegend* tl;
   if (which==0 || which==1) {
-    tl=new TLegend(0.50,0.93,0.95,0.60);//,"CL_{S} Method          M_{N_{#mu}}=M_{W_{R}}/2");
+    tl=new TLegend(0.55,0.55,0.99,0.90);//,"CL_{S} Method          M_{N_{#mu}}=M_{W_{R}}/2");
     tl->SetTextFont(42);
-    tl->SetHeader("CL_{S} Method          M_{N_{#mu}}=M_{W_{R}}/2");
+    tl->SetHeader("CL_{S} Method    95% CL");
+    //    tl->SetHeader("CL_{S} Method    95% CL     M_{N_{#mu}}= M_{W_{R}}/2");
   } else if (which==3) {
     tl=new TLegend(0.50,0.93,0.95,0.62,"CL_{S} Method          M_{N}=M_{W_{R}}/2");
   } else if (which==2) {
@@ -327,16 +328,17 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
 
 
   TGraph* tg_theory=new TGraph(nx,mwt,xsec);
-  tg_theory->SetLineWidth(2);
+  tg_theory->SetLineWidth(3);
   tg_theory->SetLineColor(kRed);
+  tg_theory->SetLineStyle(3);
   tg_theory->Draw("L SAME");
 
   TGraph* tg_obs=new TGraph(n,mw,obs);
   tg_obs->SetLineWidth(2);
   tg_obs->Draw("L SAME");
 
-  tl->AddEntry(tg_obs,"Observed Limit (95%CL)","L");
-  tl->AddEntry(tg_exp,"Expected Limit (95%CL)","L");
+  tl->AddEntry(tg_obs,"Observed Limit","L");
+  tl->AddEntry(tg_exp,"Expected Limit","L");
   tl->AddEntry(tg_e1s,"Expected #pm 1 #sigma","F");
   tl->AddEntry(tg_e2s,"Expected #pm 2 #sigma","F");
 
@@ -345,7 +347,7 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
     tl->AddEntry(tg_theory,"Theory Expectation","L");
     tl->AddEntry((TObject*)0,"(g_{R}=g_{L}, M_{N}_{e}=M_{N}_{#mu}=M_{N}_{#tau})","");
   } else {
-    tl->AddEntry(tg_theory,"Theory Expectation (g_{R}=g_{L})","L");
+    tl->AddEntry(tg_theory,"Theory (g_{R}= g_{L})","L");
   }
 
   TText *text;
@@ -359,7 +361,13 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
    text->SetNDC();
    text->SetTextFont(42);
    //   text->SetTextSize(0.03);
-   text->SetTextSize(0.03);
+   text->SetTextSize(0.05);
+   //   text->Draw();
+
+   text = new TLatex(0.2,0.2,"M_{N_{#mu}}= M_{W_{R}}/2");
+   text->SetNDC();
+   text->SetTextFont(42);
+   text->SetTextSize(0.05);
    text->Draw();
 
    /*
@@ -405,17 +413,19 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
      tex->SetLineWidth(2);
      tex->Draw();
    } else {
+     /*
      TLatex *   texa = new TLatex(0.152,0.972,"#int");
      texa->SetNDC();
      texa->SetTextFont(42);
      texa->SetTextSize(0.017);
      texa->SetLineWidth(2);
      texa->Draw();
-     sprintf(buffer,"L dt = %.1f fb^{-1} at #sqrt{s}=%d TeV",lumi,ecm);
-     TLatex *   tex = new TLatex(0.162,0.97,buffer);
+     */
+     sprintf(buffer,"CMS    #sqrt{s} = %d TeV    %.1f fb^{-1}",ecm,lumi);
+     TLatex *   tex = new TLatex(0.280,0.94,buffer);
      tex->SetNDC();
      tex->SetTextFont(42);
-     tex->SetTextSize(0.025);
+     tex->SetTextSize(0.05);
      tex->SetLineWidth(2);
      tex->Draw();
    }
