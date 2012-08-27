@@ -38,7 +38,8 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
 #process.GlobalTag.globaltag = 'GR_R_50_V13::All'
-process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
+#process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
+process.GlobalTag.globaltag = 'GR_R_53_V11::All'
 
 
 ### Output needs to be created before working with PAT objects ###
