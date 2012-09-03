@@ -93,7 +93,10 @@ process.source = cms.Source("PoolSource",
 
 if isData:
     if isRun2012:
-        if isRun2012topoff:
+        if isRereco:
+            print "===========> Flag is SET for Reprocessing 5/fb 2012 data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
+        elif isRun2012topoff:
             print "===========> Flag is SET for 5/fb 2012 data <============"
             from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_topoff_ichep_cfi import lumisToProcess
         else:
