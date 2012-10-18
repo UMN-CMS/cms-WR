@@ -2,6 +2,7 @@
 #define HEAVY_NU_HISTSET_INCLUDED 1
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "TH1.h"

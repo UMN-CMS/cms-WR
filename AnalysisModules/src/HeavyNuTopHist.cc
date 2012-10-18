@@ -87,6 +87,21 @@ void HeavyNuTopHist::book(TFileDirectory * td, const std::string& post)
     mWRvsminLPt = td->make<TH2F > ("mWRvsminLPt",  t.c_str(), 70, 0, 2800, 6, edges);
     t = "M(W_{R}) vs. N primary vertices " + post;
     mWRvsNPV = td->make<TH2F > ("mWRvsNPV",  t.c_str(), 70, 0, 2800, 30, 0, 30);
+    
+    // -------- particular lepton flavor histograms ---------
+    t = "p_{t} #mu "         + post;
+    muonpt = td->make<TH1F > ("ptMu", t.c_str(), 100, 0., 1000.);
+    t = "#eta #mu "         + post;
+    muoneta = td->make<TH1F > ("etaMu", t.c_str(), 50, -2.5, 2.5);
+    t = "#phi #mu "         + post;
+    muonphi = td->make<TH1F > ("phiMu", t.c_str(), 30, -3.14159, 3.14159);
+    
+    t = "p_{t} e "         + post;
+    elecpt = td->make<TH1F > ("ptE", t.c_str(), 100, 0., 1000.);
+    t = "#eta e "         + post;
+    eleceta = td->make<TH1F > ("etaE", t.c_str(), 50, -2.5, 2.5);
+    t = "#phi e "         + post;
+    elecphi = td->make<TH1F > ("phiE", t.c_str(), 30, -3.14159, 3.14159);
 }
 
 // fill all histos of the set with the two lepton candidates
@@ -99,7 +114,7 @@ void HeavyNuTopHist::fill(HeavyNuEvent& hne)
 
     // Muons
     double mu1pt = hne.mu1.pt();
-    double e1pt  = hne.e1.pt();
+    double e1pt  = hnu::getElectronEt(hne.e1, false);
 
     mu1trackIso->Fill(hne.mu1.trackIso(), wgt);
     mu1hcalIso ->Fill(hne.mu1.hcalIso(), wgt);
@@ -142,5 +157,12 @@ void HeavyNuTopHist::fill(HeavyNuEvent& hne)
         mWRBarrel->Fill(hne.mWR, wgt);
         if(hne.mu1.eta() < 1.44) mWRBB->Fill(hne.mWR, wgt);
     }
-
+    
+    muonpt->Fill(hne.mu1.pt(), wgt);
+    muoneta->Fill(hne.mu1.eta(), wgt);
+    muonphi->Fill(hne.mu1.phi(), wgt);
+    
+    elecpt->Fill(hnu::getElectronEt(hne.e1, false));
+    eleceta->Fill(hnu::getElectronSCEta(hne.e1));
+    elecphi->Fill(hnu::getElectronSCPhi(hne.e1));
 }

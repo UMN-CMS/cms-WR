@@ -22,6 +22,48 @@ HeavyNuEvent::HeavyNuEvent(anal_type theMode)
     l1 = l2 = NULL;
 }
 
+HeavyNuEvent::HeavyNuEvent(const HeavyNuEvent& hne)
+{
+    mode = hne.mode;
+    eventWgt = hne.eventWgt;
+    cutlevel = hne.cutlevel;
+    nLeptons = hne.nLeptons;
+    nJets = hne.nJets;
+    nMuons = hne.nMuons;
+    nElectrons = hne.nElectrons;
+    numNuLJetsMatched = hne.numNuLJetsMatched;
+    isBJet1 = hne.isBJet1;
+    isBJet2 = hne.isBJet2;
+    numBJets = hne.numBJets;
+
+
+    // Protection: set all scale factors to 1 by default
+    j1scale = hne.j1scale;
+    j2scale = hne.j2scale;
+    MuScale = hne.MuScale;
+    ElecScale = hne.ElecScale;
+    
+    mu1 = hne.mu1;
+    mu2 = hne.mu2;
+    j1 = hne.j1;
+    j2 = hne.j2;
+    e1 = hne.e1;
+    e2 = hne.e2;
+
+    gm1 = hne.gm1;
+    gm2 = hne.gm2;
+    gj1 = hne.gj1;
+    gj2 = hne.gj2;
+
+    tjV1 = hne.tjV1;
+    tjV2 = hne.tjV2;
+    
+    n_primary_vertex = hne.n_primary_vertex;
+    n_pue = hne.n_pue;
+
+    met1 = hne.met1;
+}
+
 void HeavyNuEvent::scaleMuE(double mufactor, double efactor)
 {
     MuScale   = mufactor ;
@@ -218,17 +260,30 @@ void HeavyNuEvent::regularize()
         case TOP:
             if(nLeptons >= 2)
             {
-                l1 = new pat::GenericParticle(mu1);
-                l1pt = mu1.pt();
-                l1eta = mu1.eta();
-                l1phi = mu1.phi();
-            }
-            if(nLeptons >= 2)
-            {
-                l2 = new pat::GenericParticle(e1);
-                l2pt = hnu::getElectronEt(e1, false);
-                l2eta = hnu::getElectronSCEta(e1);
-                l2phi = hnu::getElectronSCPhi(e1);
+                if(mu1.pt() > hnu::getElectronEt(e1, false))
+                {
+                    l1 = new pat::GenericParticle(mu1);
+                    l1pt = mu1.pt();
+                    l1eta = mu1.eta();
+                    l1phi = mu1.phi();
+
+                    l2 = new pat::GenericParticle(e1);
+                    l2pt = hnu::getElectronEt(e1, false);
+                    l2eta = hnu::getElectronSCEta(e1);
+                    l2phi = hnu::getElectronSCPhi(e1);
+                }
+                else
+                {
+                    l2 = new pat::GenericParticle(mu1);
+                    l2pt = mu1.pt();
+                    l2eta = mu1.eta();
+                    l2phi = mu1.phi();
+
+                    l1 = new pat::GenericParticle(e1);
+                    l1pt = hnu::getElectronEt(e1, false);
+                    l1eta = hnu::getElectronSCEta(e1);
+                    l1phi = hnu::getElectronSCPhi(e1);
+                }
             }
             break;
         case HNUMU:

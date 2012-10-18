@@ -21,6 +21,8 @@ private:
     TH1 *dptMu1gen, *dptMu2gen ;
     TH1 *dRMu1gen, *dRMu2gen ;
     TH1 *qualMu1, *qualMu2 ;
+    
+    TH1 *muonpt, *muoneta, *muonphi, *elecpt, *eleceta, *elecphi;
 
     TH1 *mu1trackIso, *mu1hcalIso, *mu1ecalIso, *mu1caloIso, *mu1dB;
     TH1 *e1trackIso, *e1hcalIso, *e1ecalIso, *e1caloIso, *e1dB;

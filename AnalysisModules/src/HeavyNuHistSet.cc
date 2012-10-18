@@ -73,17 +73,17 @@ void HeavyNuHistSet::book(TFileDirectory *td, const std::string& post)
     // ----------  Jet histograms ----------
 
     t = "p_{T}(j_{1}) " + post;
-    ptJet1 = td->make<TH1F > ("ptJet1", t.c_str(), 50, 0., 500.);
+    ptJet1 = td->make<TH1F > ("ptJ1", t.c_str(), 100, 0., 1000.);
     t = "p_{T}(j_{2}) " + post;
-    ptJet2 = td->make<TH1F > ("ptJet2", t.c_str(), 50, 0., 500.);
+    ptJet2 = td->make<TH1F > ("ptJ2", t.c_str(), 100, 0., 1000.);
     t = "#eta(j_{1}) " + post;
-    etaJet1 = td->make<TH1F > ("etaJet1", t.c_str(), 100, -5, 5);
+    etaJet1 = td->make<TH1F > ("etaJ1", t.c_str(), 100, -5, 5);
     t = "#eta(j_{2}) " + post;
-    etaJet2 = td->make<TH1F > ("etaJet2", t.c_str(), 100, -5, 5);
+    etaJet2 = td->make<TH1F > ("etaJ2", t.c_str(), 100, -5, 5);
     t = "#phi(j_{1}) " + post;
-    phiJet1 = td->make<TH1F > ("phiJet1", t.c_str(), 30, -3.14159, 3.14159);
+    phiJet1 = td->make<TH1F > ("phiJ1", t.c_str(), 30, -3.14159, 3.14159);
     t = "#phi(j_{2}) " + post;
-    phiJet2 = td->make<TH1F > ("phiJet2", t.c_str(), 30, -3.14159, 3.14159);
+    phiJet2 = td->make<TH1F > ("phiJ2", t.c_str(), 30, -3.14159, 3.14159);
 
     t = "#Delta#eta(j_{1},j_{2}) " + post;
     dEtaJet = td->make<TH1F > ("dEtaJet", t.c_str(), 100, 0, 5);
@@ -285,7 +285,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         dEtaPhiL->Fill(fabs(hne.l1eta - hne.l2eta),
                        fabs(deltaPhi(hne.l1phi, hne.l2phi)), wgt);
 
-        vtx_LL->Fill(fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z()), wgt);
+        vtx_LL->Fill(fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z()), wgt);/**/
     }
 
     int jet1id = 0;
@@ -323,23 +323,9 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
                              fabs(deltaPhi(hne.j1.phi(), hne.j2.phi())), wgt);
 
             mWR->Fill(hne.mWR, wgt);
-	    // Special work-around for top, where the 1st lepton is always the muon
-	    // This ensures that the neutrino candidate with the highest pT lepton is always NuR1
-	    if ( hne.mode == HeavyNuEvent::TOP ) { 
-	      if ( hne.l1pt > hne.l2pt ) { 
-		mNuR1->Fill(hne.mNuR1, wgt);
-		mNuR2->Fill(hne.mNuR2, wgt);
-		mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
-	      } else { 
-		mNuR1->Fill(hne.mNuR2, wgt);
-		mNuR2->Fill(hne.mNuR1, wgt);
-		mNuR2D->Fill(hne.mNuR2, hne.mNuR1, wgt);
-	      }	      
-	    } else { 
-	      mNuR1->Fill(hne.mNuR1, wgt);
-	      mNuR2->Fill(hne.mNuR2, wgt);
-	      mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
-	    }
+            mNuR1->Fill(hne.mNuR1, wgt);
+            mNuR2->Fill(hne.mNuR2, wgt);
+            mNuR2D->Fill(hne.mNuR1, hne.mNuR2, wgt);
             mJJ->Fill(hne.mJJ, wgt);
 
             L1ptFracWRmass->Fill(hne.l1pt / hne.mWR, wgt);
@@ -425,20 +411,10 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 
     mLLZoom->Fill(hne.mLL, wgt);
     mLLvsmWR->Fill(hne.mLL, hne.mWR, wgt);
-    // Special work-around for top, where the 1st lepton is always the muon
-    // This ensures that the neutrino candidate with the highest pT lepton is always NuR1
-    if ( hne.mode == HeavyNuEvent::TOP ) { 
-      if ( hne.l1pt > hne.l2pt ) { 
-	mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
-	mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
-      } else { 
-	mWRvsmNuR1->Fill(hne.mWR, hne.mNuR2, wgt);
-	mWRvsmNuR2->Fill(hne.mWR, hne.mNuR1, wgt);
-      }
-    } else { 
-      mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
-      mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
-    }
+
+    mWRvsmNuR1->Fill(hne.mWR, hne.mNuR1, wgt);
+    mWRvsmNuR2->Fill(hne.mWR, hne.mNuR2, wgt);
+    
     mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
     mLLZoomvsNPV->Fill(hne.mLL, hne.n_primary_vertex, wgt);
 

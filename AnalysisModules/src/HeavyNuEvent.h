@@ -43,6 +43,7 @@ public:
     anal_type mode;
 
     HeavyNuEvent(anal_type theMode = HNUMU);
+    HeavyNuEvent(const HeavyNuEvent& hnue);
 
     // void initialize(int mode);
 

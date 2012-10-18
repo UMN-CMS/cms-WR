@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.109 2012/06/23 17:54:04 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.110 2012/06/23 20:26:35 bdahmes Exp $
 //
 //
 
@@ -39,6 +39,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -60,22 +61,14 @@
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TProfile2D.h"
-#include "TVector3.h"
-#include "TRandom.h"
-
+#include "HeavyNu/AnalysisModules/src/HeavyNu.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuEff.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
-#include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
-#include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuCommon.h"
-#include "HeavyNu/AnalysisModules/src/HeavyNuMuHist.h"
-#include "HeavyNu/AnalysisModules/src/HeavyNuTree.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "HeavyNu.h"
 
 
 template <class T>
@@ -86,13 +79,10 @@ inline std::string int2str(T i)
     return ss.str();
 }
 
-const std::vector<hNuMassHypothesis> v_null;
-
 template <class T> void outputCandidate(const T& p)
 {
     std::cout << "pt=" << p.pt() << " GeV, eta=" << p.eta() << ", phi=" << p.phi();
 }
-
 
 static std::string btagName;
 static double minBtagDiscVal; // for discriminating B-tagged jets.
@@ -111,241 +101,6 @@ inline void labelMuonQualAxis(TAxis *ax)
     //}
 }
 
-class HeavyNu : public edm::EDFilter
-{
-public:
-    explicit HeavyNu(const edm::ParameterSet&);
-    ~HeavyNu();
-
-
-private:
-
-    virtual void respondToOpenInputFile(edm::FileBlock const& fb)
-    {
-        currentFile_ = fb.fileName();
-    }
-
-    virtual void beginJob();
-    virtual bool filter(edm::Event&, const edm::EventSetup&);
-    virtual void endJob();
-    virtual void fillBasicMuHistos(const pat::Muon& m);
-    virtual void fillBasicJetHistos(const pat::Jet& j,
-            int jetnum);
-    virtual TH1 *bookRunHisto(uint32_t runNumber);
-
-    virtual void studyMuonSelectionEff(const std::vector< std::pair<pat::Muon,pat::GenericParticle> >& trackTP, 
-				       const std::vector< std::pair<pat::Muon,pat::Muon> >& tightTP, 
-				       const std::vector< std::pair<pat::Muon,pat::Muon> >& cjTP, 
-				       const std::vector< pat::Muon >& tightMuons, 
-				       const edm::Handle<reco::TrackCollection>& gTracks,
-				       const edm::Handle<reco::BeamSpot>& beamspot, 
-				       double wgt, int nJets);
-    virtual void studyElectronSelectionEff(const std::vector< std::pair<pat::Electron,pat::Electron> >& TP,
-					   const std::vector< std::pair<pat::Electron,float> >& heepElectrons,
-					   double wgt, int nJets, edm::Event& iEvent) ; 
-    virtual void studyJetVertex(edm::Handle<pat::JetCollection>& pJets,
-                                edm::Handle<reco::JPTJetCollection>& jptJets,
-                                edm::Handle<pat::MuonCollection>& pMuons, int npue);
-
-    inline bool inZmassWindow(double mMuMu)
-    {
-        return(mMuMu <= ZwinMaxGeV_) && (mMuMu >= ZwinMinGeV_);
-    }
-
-    void fill(pat::MuonCollection muons,
-              pat::ElectronCollection electrons,
-              std::vector< std::pair<pat::Jet, float> >& jets, 
-              bool isMC,
-              double wgt,
-              bool pfJets,
-              int nPU, int nPV,
-              HeavyNuHistSet* hnmh);
-
-    bool isWrDaughter(const reco::Candidate* mother);
-
-    edm::InputTag muonTag_;
-    edm::InputTag trackTag_;
-    edm::InputTag jetTag_;
-    edm::InputTag metTag_;
-    edm::InputTag elecTag_;
-
-  edm::InputTag elecRhoTag_ ; 
-  double elecRho_ ; 
-
-    int evtCounter;
-
-    double ZwinMinGeV_, ZwinMaxGeV_; // for trigger efficiency studies
-
-    int jecVal_; // Jet correction eras: 0 = 2010(A+B), 1 = 2010A, 2 = 2010B, 3 = 2011A
-    int applyJECUsign_; // for Jet Energy Correction Uncertainty studies
-    int applyJERsign_; // for Jet Energy Resolution and Resolution Uncertainty studies
-    double applyMESfactor_; // for Muon Energy Scale studies
-    bool merUncertainty_ ; 
-    bool correctEscale_ ; 
-    int applyTrigEffsign_; // for Trigger Efficiency studies
-    bool highestPtTriggerOnly_;
-    bool applyMuIDCorrections_;
-    int applyMuIDEffsign_; // for Loose+Iso efficiency correction
-    bool studyMuonSelectionEff_; // for Muon Loose ID Efficiency studies
-    bool oneTP_ ;
-    bool studyScaleFactorEvolution_; // for Top, Z+jets scale factors (by Mu1 pT) studies
-    int tpSeed_ ; 
-    TRandom *tpRandom_;
-
-    bool disableTriggerCorrection_; // turn off the trigger emulator
-    int pileupEra_;
-    double puShift_ ;
-    reweight::PoissonMeanShifter poissonNvtxShifter_ ; 
-    bool isPFJets_; // true if PFJets are used (turns off jet id requirement)
-    bool studyRatePerRun_ ; // should only be true for data
-    bool studyAlternativeSelection_ ; 
-    
-    std::string currentFile_;
-    bool dolog_;
-    bool firstEvent_;
-    bool addSlopeTree_;
-
-    int nDirtyCands_ ; 
-
-    int heepVersion_;
-
-    HeavyNuTrigger *trig_;
-    HeavyNuID *muid_;
-    JetCorrectionUncertainty *jecuObj_;
-
-    edm::LumiReWeighting MCweightByVertex_;
-
-    std::map<uint32_t, TH1 *> m_runHistos_;
-
-    HeavyNuEvent::anal_type analysisMode_;
-
-    bool doPDFreweight_;
-    std::string pdfReweightBaseName, pdfReweightTargetName;
-    int pdfReweightBaseId, pdfReweightTargetId;
-
-    HeavyNuTree *hnuTree_;
-
-
-    // ----------member data ---------------------------
-    bool init_;
-
-    // gf set of histo for all Z definitions in a stack
-
-    struct HistStruct
-    {
-        TH1 *nelec, *njet, *nmet, *nmuAll, *nmuLoose, *nmuTight;
-        TH1 *muPt, *muEta, *muPhi, *looseMuPt, *tightMuPt;
-        TH1* mc_type;
-
-        TH1* cutlevel;
-        TH1* weights;
-
-        TH1* z2jetPerRun; 
-        
-        // Muon quality histos as a function of Pt
-        TH2 *muNvalidHitsVsPt, *mudBvsPt, *muNormChi2vsPt, *muQualVsPt;
-        TH2 *muNmatchesVsPt, *muNvalidMuonHitsVsPt, *muNvalidPixelHitsVsPt;
-        TH2 *muTrckIsoVsPt, *muHcalIsoVsPt, *muEcalIsoVsPt, *muCaloIsoVsPt;
-
-        TH1 *jetPt, *jetEta, *jetPhi, *jetID, *jecUncHi, *jecUncLo, *met;
-        TH2 *dVzMuJets, *dVzMuMus;
-        TH2 *jetPtvsNum;
-        TProfile2D *jecUncHiVsEtaPt, *jecUncLoVsEtaPt;
-
-        TH1 *trkIsoStudy;
-        TH1 *closejetMu2tagMu1probeInZwin, *closejetMu2tagMu1passInZwin;
-        TH1 *closejetMu1tagMu2probeInZwin, *closejetMu1tagMu2passInZwin;
-
-        TFileDirectory *rundir;
-        // HistPerDef twoL;
-        HeavyNuHistSet* noCuts;
-        //HeavyNuHistSet* LLptCuts;
-        HeavyNuHistSet* TrigMatches;
-        HeavyNuHistSet* LLJJptCuts;
-        //HeavyNuHistSet* VertexCuts;
-        HeavyNuHistSet* Mu1HighPtCut;
-        HeavyNuHistSet* Mu1HighPtCut_1bjet;
-        HeavyNuHistSet* Mu1HighPtCut_2bjet;
-        HeavyNuHistSet* Mu1Pt40GeVCut;
-        HeavyNuHistSet* Mu1Pt50GeVCut;
-        HeavyNuHistSet* Mu1Pt60GeVCut;
-        HeavyNuHistSet* Mu1Pt80GeVCut;
-        HeavyNuHistSet* Mu1Pt100GeVCut;
-        HeavyNuHistSet* AlternativeElecChanPt;
-        HeavyNuHistSet* AlternativeMu1Pt40;
-        HeavyNuHistSet* AlternativeMu2Pt40;
-        HeavyNuHistSet* AlternativeMu2Pt60;
-        HeavyNuHistSet* AlternativeJetPt60;
-        HeavyNuHistSet* AlternativeBarrelLoose;
-        HeavyNuHistSet* AlternativeBarrelTight;
-        HeavyNuHistSet* AlternativeAtLeastOneBjet;
-        HeavyNuHistSet* AlternativeTwoBjets;
-        HeavyNuHistSet* AlternativeDimuonMass120;
-        HeavyNuHistSet* Mu1HighPtCutVtxEq1;
-        HeavyNuHistSet* Mu1HighPtCutVtx2to5;
-        HeavyNuHistSet* Mu1HighPtCutVtxGt5;
-        HeavyNuHistSet* Mu1HighPtCutNoJets;
-        HeavyNuHistSet* Mu1HighPtCut1Jet;
-        HeavyNuHistSet* diLmassCut;
-        //HeavyNuHistSet* loDiLmassCut;
-        HeavyNuHistSet* mWRmassCut;
-        HeavyNuHistSet* oneBtag;
-        HeavyNuHistSet* twoBtag;
-        // efficiency studies:
-        // HeavyNuHistSet* Mu1tagInZwin;
-        // HeavyNuHistSet* Mu2tagInZwin;
-        // HeavyNuHistSet* Mu1tagMu2passesInZwin;
-        // HeavyNuHistSet* Mu2tagMu1passesInZwin;
-        HeavyNuHistSet* TightTagTrackProbeInZwin0jets;
-        HeavyNuHistSet* TightTagTrackProbeInZwin1jet;
-        HeavyNuHistSet* TightTagTrackProbeInZwin2jets;
-        HeavyNuHistSet* TightTagTrackProbePassesInZwin0jets;
-        HeavyNuHistSet* TightTagTrackProbePassesInZwin1jet;
-        HeavyNuHistSet* TightTagTrackProbePassesInZwin2jets;
-        HeavyNuHistSet* TightTagTightProbeInZwin0jets;
-        HeavyNuHistSet* TightTagTightProbeInZwin1jet;
-        HeavyNuHistSet* TightTagTightProbeInZwin2jets;
-        HeavyNuHistSet* TightTagTightProbePassesInZwin0jets;
-        HeavyNuHistSet* TightTagTightProbePassesInZwin1jet;
-        HeavyNuHistSet* TightTagTightProbePassesInZwin2jets;
-        HeavyNuHistSet* TightTagTightCJProbeInZwin0jets;
-        HeavyNuHistSet* TightTagTightCJProbeInZwin1jet;
-        HeavyNuHistSet* TightTagTightCJProbeInZwin2jets;
-        HeavyNuHistSet* TightTagTightCJProbePassesInZwin0jets;
-        HeavyNuHistSet* TightTagTightCJProbePassesInZwin1jet;
-        HeavyNuHistSet* TightTagTightCJProbePassesInZwin2jets;
-        // Trigger efficiency studies force two jets
-        HeavyNuHistSet* TightTagTrigProbeInZwin;
-        HeavyNuHistSet* TightTagTrigProbePassesInZwin;
-        HeavyNuHistSet* Mu1TrigMatchesInZwin;
-        HeavyNuHistSet* Mu2TrigMatchesInZwin;
-        HeavyNuHistSet* HeepTagGsfProbeInZwin0jets;
-        HeavyNuHistSet* HeepTagGsfProbeInZwin1jet;
-        HeavyNuHistSet* HeepTagGsfProbeInZwin2jets;
-        HeavyNuHistSet* HeepTagGsfProbePassesInZwin0jets;
-        HeavyNuHistSet* HeepTagGsfProbePassesInZwin1jet;
-        HeavyNuHistSet* HeepTagGsfProbePassesInZwin2jets;
-        // HeavyNuHistSet* Mu1Mu2TrigMatchesInZwin;
-    } hists;
-
-    struct CutsStruct
-    {
-        double minimum_mu1_pt;
-        double minimum_mu2_pt;
-        double minimum_jet_pt;
-        double maximum_elec_abseta;
-        double maximum_mu_abseta;
-        double maximum_jet_abseta;
-        double minimum_mumu_mass;
-        double minimum_mWR_mass;
-        double minimum_muon_jet_dR;
-        double muon_trackiso_limit;
-        double maxVertexZsep;
-        double maxJetVZsepCM;
-    } cuts;
-
-};
-
 bool HeavyNu::isWrDaughter(const reco::Candidate* mother)
 {
     for(size_t i = 0; i < mother->numberOfMothers(); i++)
@@ -357,63 +112,62 @@ bool HeavyNu::isWrDaughter(const reco::Candidate* mother)
 
 void HeavyNu::fill(pat::MuonCollection muons,
                    pat::ElectronCollection electrons,
-                   std::vector< std::pair<pat::Jet, float> >& jets,
-                   bool isMC,
-                   double wgt,
-                   bool pfJets,
-                   int nPU, int nPV,
+                   pat::JetCollection jets,
+                   const HeavyNuEvent& hnuEvent,
+                   const bool goodJets,
+                   const bool goodLeps,
                    HeavyNuHistSet *hnmh)
 {
-    HeavyNuEvent hne(analysisMode_);
-    hne.isMC = isMC;
-    hne.eventWgt = wgt;
-    hne.pfJets = pfJets;
-    hne.nJets = jets.size();
-    hne.n_pue = nPU ;
-    hne.n_primary_vertex = nPV ;
+    HeavyNuEvent hne(hnuEvent);
 
     std::sort(muons.begin(), muons.end(), hnu::pTcompare());
     std::sort(electrons.begin(), electrons.end(), hnu::pTcompare());
-    //std::sort(jets.begin(), jets.end(), hnu::pTcompare());
+    std::sort(jets.begin(), jets.end(), hnu::pTcompare());
 
-    if((analysisMode_ == HeavyNuEvent::HNUMU || analysisMode_ == HeavyNuEvent::TOP) && muons.size() > 0)
+    if(!goodLeps)
     {
-        hne.mu1 = muons[0];
-        hne.nLeptons++;
+        if((analysisMode_ == HeavyNuEvent::HNUMU || analysisMode_ == HeavyNuEvent::TOP) && muons.size() > 0)
+        {
+            hne.mu1 = muons[0];
+            hne.nLeptons = 1;
+        }
+        if((analysisMode_ == HeavyNuEvent::HNUE || analysisMode_ == HeavyNuEvent::TOP) && electrons.size() > 0)
+        {
+            hne.e1 = electrons[0];
+            hne.nLeptons = 1;
+        }
+        
+        if(analysisMode_ == HeavyNuEvent::HNUMU && muons.size() > 1)
+        {
+            hne.mu2 = muons[1];
+            hne.nLeptons++;
+        }
+        if(analysisMode_ == HeavyNuEvent::HNUE && electrons.size() > 1)
+        {
+            hne.e2 = electrons[1];
+            hne.nLeptons++;
+        }
     }
-    if(analysisMode_ == HeavyNuEvent::HNUMU && muons.size() > 1)
-    {
-        hne.mu2 = muons[1];
-        hne.nLeptons++;
-    }
-
-    if((analysisMode_ == HeavyNuEvent::HNUE || analysisMode_ == HeavyNuEvent::TOP) && electrons.size() > 0)
-    {
-        hne.e1 = electrons[0];
-        hne.nLeptons++;
-    }
-    if(analysisMode_ == HeavyNuEvent::HNUE && electrons.size() > 1)
-    {
-        hne.e2 = electrons[1];
-        hne.nLeptons++;
-    }
-
-    hne.regularize();
 
     hne.btagName = btagName;
-    if(hne.nJets > 0)
+    if(!goodJets)
     {
-        hne.j1 = jets[0].first;
-        double j1bdisc = hne.j1.bDiscriminator(btagName);
-        hne.isBJet1 = j1bdisc >= minBtagDiscVal;
-    }
-    if(hne.nJets > 1)
-    {
-        hne.j2 = jets[1].first;
-        double j2bdisc = hne.j2.bDiscriminator(btagName);
-        hne.isBJet2 = j2bdisc >= minBtagDiscVal;
-    }
+        if(jets.size() > 0)
+        {
+            hne.j1 = jets[0];
+            double j1bdisc = hne.j1.bDiscriminator(btagName);
+            hne.isBJet1 = j1bdisc >= minBtagDiscVal;
+            hne.nJets = 1;
+        }
 
+        if(jets.size() > 1)
+        {
+            hne.j2 = jets[1];
+            double j1bdisc = hne.j1.bDiscriminator(btagName);
+            hne.isBJet2 = j1bdisc >= minBtagDiscVal;
+            hne.nJets++;
+        }
+    }
     //hne.met1 = metc[0];
 
     hne.calculateLL(correctEscale_);
@@ -464,8 +218,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     cuts.maxVertexZsep = iConfig.getParameter<double>("maxVertexZsepCM");
     cuts.maxJetVZsepCM = iConfig.getParameter<double>("maxJetVZsepCM");
 
-    ZwinMinGeV_ = iConfig.getParameter<double>("ZmassWinMinGeV");
-    ZwinMaxGeV_ = iConfig.getParameter<double>("ZmassWinMaxGeV");
+    effinfo_.ZwinMinGeV = iConfig.getParameter<double>("ZmassWinMinGeV");
+    effinfo_.ZwinMaxGeV = iConfig.getParameter<double>("ZmassWinMaxGeV");
 
     jecVal_ = iConfig.getParameter<int>("jecEra");
 
@@ -493,10 +247,10 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     if(applyTrigEffsign_) applyTrigEffsign_ /= abs(applyTrigEffsign_); // ensure -1,0,+1
 
     studyMuonSelectionEff_ = iConfig.getParameter<bool>("studyMuSelectEff");
-    oneTP_  = iConfig.getParameter<bool>("oneTPcand");
-    if (studyMuonSelectionEff_ && oneTP_) { 
+    effinfo_.oneTP = iConfig.getParameter<bool>("oneTPcand");
+    if (studyMuonSelectionEff_ && effinfo_.oneTP) { 
       tpSeed_   = iConfig.getParameter<int>("tpRandomSeed");
-      tpRandom_ = new TRandom(tpSeed_);
+      effinfo_.tpRandom = new TRandom(tpSeed_);
     }
 
     studyScaleFactorEvolution_ = iConfig.getParameter<bool>("studyScaleFactor");
@@ -634,11 +388,14 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     if(analysisMode_ == HeavyNuEvent::HNUMU)
     {
         hists.noCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)");
+        hists.JJptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0a_JJpt")), "(2 jets with ptcuts:0a)");
+        hists.LLptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0b_LLpt")), "(2 leptons with ptcuts:0b)");
         hists.LLJJptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)");
         hists.TrigMatches = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)");
-        hists.Mu1HighPtCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(Mu1 High pt cut:4)");
-        hists.Mu1HighPtCut_1bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(Mu1 High pt cut:4)");
-        hists.Mu1HighPtCut_2bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(Mu1 High pt cut:4)");
+        hists.Mu1HighPtCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(L1 High pt cut:4)");
+        hists.Mu1HighPtCut_1bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(L1 High pt cut:4a)");
+        hists.Mu1HighPtCut_2bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(L1 High pt cut:4b)");
+        hists.ZRegionCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4c_ZPeak")), "(Z-Peak:4c)");
         hists.diLmassCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(mumu mass cut:5)");
         hists.mWRmassCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(mumujj mass cut:6)");
 
@@ -710,12 +467,15 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     }
     if(analysisMode_ == HeavyNuEvent::HNUE)
     {
-        hists.noCuts =       new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)");
+        hists.noCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)");
+        hists.JJptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0a_JJpt")), "(2 jets with ptcuts:0a)");
+        hists.LLptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0b_LLpt")), "(2 leptons with ptcuts:0b)");
         hists.LLJJptCuts =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)");
         hists.TrigMatches =  new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)");
         hists.Mu1HighPtCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(L1 High pt cut:4)");
-        hists.Mu1HighPtCut_1bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(Mu1 High pt cut:4)");
-        hists.Mu1HighPtCut_2bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(Mu1 High pt cut:4)");
+        hists.Mu1HighPtCut_1bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(L1 High pt cut:4a)");
+        hists.Mu1HighPtCut_2bjet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(L1 High pt cut:4b)");
+        hists.ZRegionCut = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut4c_ZPeak")), "(Z-Peak:4c)");
         hists.diLmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(ee mass cut:5)");
         hists.mWRmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
 
@@ -762,8 +522,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "trackTag          = " << trackTag_ << std::endl;
     std::cout << "btagName          = " << btagName << std::endl;
     std::cout << "minBtagDiscr      = " << minBtagDiscVal << std::endl;
-    std::cout << "ZmassWinMinGeV    = " << ZwinMinGeV_ << " GeV" << std::endl;
-    std::cout << "ZmassWinMaxGeV    = " << ZwinMaxGeV_ << " GeV" << std::endl;
+    std::cout << "ZmassWinMinGeV    = " << effinfo_.ZwinMinGeV << " GeV" << std::endl;
+    std::cout << "ZmassWinMaxGeV    = " << effinfo_.ZwinMaxGeV << " GeV" << std::endl;
     std::cout << "minMu1pt          = " << cuts.minimum_mu1_pt << " GeV" << std::endl;
     std::cout << "minMu2pt          = " << cuts.minimum_mu2_pt << " GeV" << std::endl;
     std::cout << "minJetPt          = " << cuts.minimum_jet_pt << " GeV" << std::endl;
@@ -892,135 +652,6 @@ TH1 * HeavyNu::bookRunHisto(uint32_t runNumber)
     return hists.rundir->make <TH1I > (runstr.c_str(), runstr.c_str(), 1, 1, 2);
 }
 
-void HeavyNu::studyMuonSelectionEff(const std::vector< std::pair<pat::Muon,pat::GenericParticle> >& trackTP, 
-				    const std::vector< std::pair<pat::Muon,pat::Muon> >& tightTP, 
-				    const std::vector< std::pair<pat::Muon,pat::Muon> >& cjTP, 
-				    const std::vector< pat::Muon >& tightMuons, 
-                                    const edm::Handle<reco::TrackCollection>& gTracks,
-                                    const edm::Handle<reco::BeamSpot>& beamspot, 
-                                    double wgt, int nJets)
-{
-    
-    reco::TrackCollection generalTracks = *(gTracks.product()); 
-
-    // First case: Check muon ID
-    // Probe is generic track meeting pT, eta requirements
-    for (unsigned int i=0; i<trackTP.size(); i++) {
-      pat::Muon            theTag   = trackTP.at(i).first ; 
-      pat::GenericParticle theProbe = trackTP.at(i).second ; 
-      // Calculate the isolation for the probe
-      double trkSumPtIsoCone = 0. ; 
-      for (unsigned int k=0; k<generalTracks.size(); k++) {
-	reco::Track track = generalTracks.at(k) ; 
-	double dR = deltaR(track.eta(), track.phi(), theProbe.eta(), theProbe.phi());
-	if ( fabs(dR) > 0.3 || fabs(dR) < 0.01 ) continue ;
-	if ( fabs(track.dxy(beamspot->position())) > 0.1 ) continue ;
-	double dz = fabs( theProbe.vertex().Z() - track.vertex().Z() ) ;
-	if ( dz > 0.2 ) continue ;
-	trkSumPtIsoCone += track.pt() ;
-      }
-      if ( nJets >= 0 ) hists.TightTagTrackProbeInZwin0jets->tapfill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-      if ( nJets >= 1 ) hists.TightTagTrackProbeInZwin1jet->tapfill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-      if ( nJets >= 2 ) hists.TightTagTrackProbeInZwin2jets->tapfill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-      // Does the probe pass tight ID selection?
-      unsigned int muIdx = tightMuons.size() ;
-      for (unsigned int k=0; k<tightMuons.size(); k++) {
-	pat::Muon tightMuon = tightMuons.at(k) ; 
-	if ( deltaR(tightMuon.eta(), tightMuon.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
-	     fabs(theProbe.pt()-tightMuon.pt())/theProbe.pt() < 0.05 ) {
-	  muIdx = k ; break ; 
-	}
-      }
-      if ( muIdx < tightMuons.size() ) {
-          if ( nJets >= 0 ) hists.TightTagTrackProbePassesInZwin0jets->tapfill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-          if ( nJets >= 1 ) hists.TightTagTrackProbePassesInZwin1jet->tapfill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-          if ( nJets >= 2 ) hists.TightTagTrackProbePassesInZwin2jets->tapfill( theTag,theProbe,trkSumPtIsoCone,wgt ) ;
-      }
-    }
-        
-    // Second case: Check isolation
-    // Probe is tight muon separated from jets
-    for (unsigned int i=0; i<tightTP.size(); i++) {
-      pat::Muon theTag   = tightTP.at(i).first ; 
-      pat::Muon theProbe = tightTP.at(i).second ; 
-      // Confirmed: we have a valid probe
-      if ( nJets >= 0 ) hists.TightTagTightProbeInZwin0jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      if ( nJets >= 1 ) hists.TightTagTightProbeInZwin1jet->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      if ( nJets >= 2 ) hists.TightTagTightProbeInZwin2jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) { 
-          if ( nJets >= 0 ) hists.TightTagTightProbePassesInZwin0jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-          if ( nJets >= 1 ) hists.TightTagTightProbePassesInZwin1jet->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-          if ( nJets >= 2 ) hists.TightTagTightProbePassesInZwin2jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      }
-    }
-
-    // Third case:
-    // Probe is tight muon with 0.5 < dR(mu,j) < 0.8
-    for (unsigned int i=0; i<cjTP.size(); i++) {
-      pat::Muon theTag   = cjTP.at(i).first ; 
-      pat::Muon theProbe = cjTP.at(i).second ; 
-      if ( nJets >= 0 ) hists.TightTagTightCJProbeInZwin0jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      if ( nJets >= 1 ) hists.TightTagTightCJProbeInZwin1jet->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      if ( nJets >= 2 ) hists.TightTagTightCJProbeInZwin2jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      if ( hnu::muIsolation(theProbe,1.0) < cuts.muon_trackiso_limit ) { 
-          if ( nJets >= 0 ) hists.TightTagTightCJProbePassesInZwin0jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-          if ( nJets >= 1 ) hists.TightTagTightCJProbePassesInZwin1jet->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-          if ( nJets >= 2 ) hists.TightTagTightCJProbePassesInZwin2jets->tapfill( theTag,theProbe,theProbe.trackIso(),wgt ) ;
-      }
-    }            
-}
-
-void HeavyNu::studyElectronSelectionEff(const std::vector< std::pair<pat::Electron,pat::Electron> >& TP, 
-					const std::vector< std::pair<pat::Electron,float> >& heepElectrons, 
-					double wgt, int nJets, edm::Event& iEvent)
-{
-    
-  // Only case: Check HEEP ID
-  // Probe is GSF track that passes pT, eta, trigger requirements
-  for (unsigned int i=0; i<TP.size(); i++) {
-    pat::Electron theTag   = TP.at(i).first ; 
-    pat::Electron theProbe = TP.at(i).second ; 
-
-    if ( nJets >= 0 ) hists.HeepTagGsfProbeInZwin0jets->tapfill( theTag,theProbe,wgt ) ;
-    if ( nJets >= 1 ) hists.HeepTagGsfProbeInZwin1jet->tapfill( theTag,theProbe,wgt ) ;
-    if ( nJets >= 2 ) hists.HeepTagGsfProbeInZwin2jets->tapfill( theTag,theProbe,wgt ) ;
-    
-    // std::cout << "Tag electron pT " << hnu::getElectronEt(theTag,false) 
-    // 		<< " and probe electron pT " << hnu::getElectronEt(theProbe,false) << std::endl ; 
-
-    // Does the probe pass tight ID selection?
-    unsigned int eIdx = heepElectrons.size() ;
-    for (unsigned int k=0; k<heepElectrons.size(); k++) {
-      pat::Electron heepElectron = heepElectrons.at(k).first ; 
-      // std::cout << "Comparing a probe with pT " << hnu::getElectronEt(theProbe,false) 
-      // 		<< " and eta " << hnu::getElectronSCEta(theProbe) << " to heep electron with pT " 
-      // 		<< hnu::getElectronEt(heepElectron,false) 
-      // 		<< " and eta " << hnu::getElectronSCEta(heepElectron) 
-      // 		<< std::endl ; 
-      // std::cout << "dR: " << deltaR(heepElectron.eta(), heepElectron.phi(), theProbe.eta(), theProbe.phi())
-      // 		<< " and dPt: " << fabs(hnu::getElectronEt(theProbe,false)-hnu::getElectronEt(heepElectron,false))/hnu::getElectronEt(theProbe,false)
-      // 		<< std::endl ; 
-      
-      if ( deltaR(heepElectron.eta(), heepElectron.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
-	   fabs(hnu::getElectronEt(theProbe,false)-hnu::getElectronEt(heepElectron,false))/hnu::getElectronEt(theProbe,false) < 0.05 ) {
-	eIdx = k ; break ; 
-      }
-    }
-
-    // if ( eIdx < heepElectrons.size() ) 
-    //   std::cout << "TNP SUCCESS: Found a match in position " << eIdx << std::endl ; 
-    // else 
-    //   std::cout << "TNP FAILURE: Found no match in the good electrons list!!! " << iEvent.id() << std::endl ; 
-    
-    if ( eIdx < heepElectrons.size() ) {
-      if ( nJets >= 0 ) hists.HeepTagGsfProbePassesInZwin0jets->tapfill( theTag,theProbe,wgt ) ;
-      if ( nJets >= 1 ) hists.HeepTagGsfProbePassesInZwin1jet->tapfill( theTag,theProbe,wgt ) ;
-      if ( nJets >= 2 ) hists.HeepTagGsfProbePassesInZwin2jets->tapfill( theTag,theProbe,wgt ) ;
-    }
-  }        
-}
-
-
 void HeavyNu::studyJetVertex(edm::Handle<pat::JetCollection>& pJets,
                              edm::Handle<reco::JPTJetCollection>& jptJets,
                              edm::Handle<pat::MuonCollection>& pMuons, int npue)
@@ -1045,6 +676,254 @@ void HeavyNu::studyJetVertex(edm::Handle<pat::JetCollection>& pJets,
         {
             double jvz = hnu::caloJetVertex(*iJ, *jptJets);
             hists.dVzMuJets->Fill(m1.vz() - jvz, npue);
+        }
+    }
+}
+
+void HeavyNu::studyJetMatching(HeavyNuEvent& hnuEvent, edm::Handle<std::vector<reco::GenJet> > genjets)
+{
+    if(hnuEvent.nJets < 2) return;  //safty against to few jets.  
+    
+    //here we match the reco jets to gen jets
+    double mindR1 = 100, mindR2 = 100;
+    for(std::vector<reco::GenJet>::const_iterator igj = genjets->begin(); igj != genjets->end(); ++igj)
+    {
+        double dR1 = deltaR(hnuEvent.j1.p4(), igj->p4());
+        double dR2 = deltaR(hnuEvent.j2.p4(), igj->p4());
+
+        if(dR1 < mindR1)
+        {
+            mindR1 = dR1;
+            hnuEvent.gj1 = *igj;
+        }
+        if(dR2 < mindR2)
+        {
+            mindR2 = dR2;
+            hnuEvent.gj2 = *igj;
+        }
+    }
+
+    //after finding the matching gen jets we track their parentage and try to match them to a Nu_L
+    bool gmj1 = false, gmj2 = false;
+    std::vector<const reco::GenParticle*> mothers = hnuEvent.gj1.getGenConstituents();
+    for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
+    {
+        if((gmj1 |= isWrDaughter(*iM))) break;
+    }
+    mothers = hnuEvent.gj2.getGenConstituents();
+    for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
+    {
+        if((gmj2 |= isWrDaughter(*iM))) break;
+    }
+    hnuEvent.numNuLJetsMatched = (int)gmj1 + (int)gmj2;
+}
+
+void HeavyNu::selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEvent, int nDirtyCands)
+{
+    unsigned int dirtyPosition = muCands.size() + 1 ;
+    unsigned int cleanPosition = muCands.size() + 1 ;
+    for(unsigned int i = 0; i < muCands.size(); i++)
+    {
+        if(hnuEvent.nLeptons == 2) break;
+        pat::Muon iM = muCands.at(i);
+        if ( nDirtyCands > 0 )
+        {
+            double caloIso = iM.ecalIso() + iM.hcalIso() ;
+            bool   isDirty = ( (iM.pt() < 100.) ? (caloIso > 10.) : ((caloIso / iM.pt()) > 0.10) ) ;
+            if ( nDirtyCands_ == 2 )
+            {
+                if ( isDirty )
+                {
+                    hnu::addMuon(iM, hnuEvent, cuts.minimum_muon_jet_dR, nDirtyCands);
+                }
+            }
+            else if ( nDirtyCands == 1 )
+            {
+                if ( isDirty && dirtyPosition > muCands.size() )
+                {
+                    if(hnu::addMuon(iM, hnuEvent, cuts.minimum_muon_jet_dR, nDirtyCands)) dirtyPosition = i;
+                }
+                else if ( !isDirty && cleanPosition > muCands.size() && hnu::muIsolation(iM) < cuts.muon_trackiso_limit)
+                {
+                    if(hnu::addMuon(iM, hnuEvent, cuts.minimum_muon_jet_dR, 0)) cleanPosition = i;
+                }
+            }
+        }
+        else if(hnu::muIsolation(iM) < cuts.muon_trackiso_limit)
+        {
+            hnu::addMuon(iM, hnuEvent, cuts.minimum_muon_jet_dR, 0);
+        }
+    }
+
+    if ( nDirtyCands > 0 && hnuEvent.nLeptons > 1 )
+    {
+        if ( nDirtyCands == 2 ) hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.mu1) * hnu::fakeProbability(hnuEvent.mu2) ) ;
+        if ( nDirtyCands == 1 ) hnuEvent.eventWgt *= ( hnu::fakeProbability(muCands.at(dirtyPosition)) ) ;
+    }
+    
+    if(applyMuIDCorrections_ && hnuEvent.isMC)
+    {
+        double mu1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_)):1.0;
+        double mu2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightForMC((hnuEvent.mu2.pt()), applyMuIDEffsign_)):1.0;
+
+        hnuEvent.eventWgt *= (mu1wgt * mu2wgt);
+    }
+}
+
+void HeavyNu::selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, HeavyNuEvent& hnuEvent, int nDirtyCands)
+{
+    if ( nDirtyCands == 0 )
+    {
+        for(unsigned int i = 0; i < eCands.size(); i++)
+        {
+            if(hnuEvent.nLeptons == 2) break;
+            pat::Electron iE = eCands.at(i).first;
+            hnu::addElectron(iE, hnuEvent, cuts.minimum_muon_jet_dR);
+        }
+    }
+    else
+    {
+        std::vector< std::pair<pat::Electron, float> > eDirtyCands =
+                hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt,
+                                     (-1 * heepVersion_), elecRho_);
+        unsigned int dirtyPosition = eDirtyCands.size() + 1 ;
+        unsigned int cleanPosition = eCands.size() + 1 ;
+        if ( nDirtyCands == 2 )
+        {
+            for(unsigned int i = 0; i < eDirtyCands.size(); i++)
+            {
+                if(hnuEvent.nLeptons == 2) break;
+                pat::Electron iE = eDirtyCands.at(i).first;
+                hnu::addElectron(iE, hnuEvent, cuts.minimum_muon_jet_dR);
+            }
+            if ( hnuEvent.nLeptons == 2 )
+            {
+                // Need also to correct for the fact that "fake" electrons are required to fail nominal ID
+                hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e1) / ( 1.0 - hnu::fakeProbability(hnuEvent.e1) ) ) ;
+                hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e2) / ( 1.0 - hnu::fakeProbability(hnuEvent.e2) ) ) ;
+            }
+        }
+        else if ( nDirtyCands == 1 )
+        {
+            for (unsigned int i = 0; i < eDirtyCands.size(); i++)
+            {
+                pat::Electron iE = eDirtyCands.at(i).first;
+                double dRj1 = 999.9, dRj2 = 999.9;
+                if(hnuEvent.nJets > 0) dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+                if(hnuEvent.nJets > 1) dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+                if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR)
+                {
+                    dirtyPosition = i ;
+                    hnuEvent.nLeptons++ ;
+                    break ;
+                }
+            }
+            for (unsigned int i = 0; i < eCands.size(); i++)
+            {
+                pat::Electron iE = eCands.at(i).first;
+                double dRj1 = 999.9, dRj2 = 999.9;
+                if(hnuEvent.nJets > 0) dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+                if(hnuEvent.nJets > 1) dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+                if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR)
+                {
+                    cleanPosition = i ;
+                    hnuEvent.nLeptons++ ;
+                    break ;
+                }
+            }
+            if ( dirtyPosition < eDirtyCands.size() && cleanPosition < eCands.size() )
+            {
+                double dirtyPt = hnu::getElectronEt(eDirtyCands.at(dirtyPosition).first, false) ;
+                double cleanPt = hnu::getElectronEt(eCands.at(cleanPosition).first, false) ;
+
+                // std::cout << "Found a dirty electron at " << dirtyPosition << " of " << eDirtyCands.size() << std::endl ; 
+                // std::cout << "Found a clean electron at " << cleanPosition << " of " << eCands.size() << std::endl ; 
+
+                if ( cleanPt > dirtyPt )
+                {
+                    hnuEvent.e1 = eCands.at(cleanPosition).first ;
+                    hnuEvent.e2 = eDirtyCands.at(dirtyPosition).first ;
+                }
+                else
+                {
+                    hnuEvent.e1 = eDirtyCands.at(dirtyPosition).first ;
+                    hnuEvent.e2 = eCands.at(cleanPosition).first ;
+                }
+                // std::cout << "Single fake weight is     " << hnuEvent.eventWgt << std::endl ; 
+                hnuEvent.eventWgt *= ( hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first) /
+                        (1.0 - hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ;
+                // std::cout << "Single fake weight is now " << hnuEvent.eventWgt << std::endl ; 
+            }
+        }
+    }
+
+    if(applyMuIDCorrections_ && hnuEvent.isMC) // Only care about applying weights if you have two candidates
+    {
+        if ( hnuEvent.nLeptons > 1 )
+        { // Only care about applying weights if you have two candidates
+            double e1wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_) ;
+            double e2wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_) ;
+            hnuEvent.eventWgt *= (e1wgt * e2wgt);
+        }
+    }
+}
+
+void HeavyNu::alternativeSelection(HeavyNuEvent& hnuEvent)
+{
+    if ( studyAlternativeSelection_ && hnuEvent.nJets >= 2) {
+        double l1pt = hnuEvent.l1pt ;
+        double l2pt = hnuEvent.l2pt ;
+        //double j1pt  = hnuEvent.j1scale * hnuEvent.j1.pt() ;
+        double j2pt  = hnuEvent.j2.pt() ; 
+        if ( hnuEvent.mLL >= cuts.minimum_mumu_mass ) { // Standard dimuon requirement
+            if ( l1pt >= 40. ) hists.AlternativeMu1Pt40->fill(hnuEvent) ;
+            if ( l1pt >=  cuts.minimum_mu1_pt ) { // Standard mu1 pT requirement
+                if ( l2pt >= 40. ) {
+                    hists.AlternativeMu2Pt40->fill(hnuEvent) ;
+                    if ( l1pt >= 80. ) hists.AlternativeElecChanPt->fill(hnuEvent) ;
+                }
+                if ( l2pt >= 60. ) hists.AlternativeMu2Pt60->fill(hnuEvent) ;
+                if ( j2pt >= 60. )  hists.AlternativeJetPt60->fill(hnuEvent) ;
+                //--- Requirement for at least one muon to be barrel ---//
+                bool atLeastOneBarrelMuonLoose = ( fabs(hnuEvent.l1->eta()) < 1.2 || fabs(hnuEvent.l2->eta()) < 1.2 ) ;
+                bool atLeastOneBarrelMuonTight = ( fabs(hnuEvent.l1->eta()) < 0.8 || fabs(hnuEvent.l2->eta()) < 0.8 ) ;
+                if ( atLeastOneBarrelMuonLoose )
+                {
+                    hists.AlternativeBarrelLoose->fill(hnuEvent) ;
+                    if ( atLeastOneBarrelMuonTight ) hists.AlternativeBarrelTight->fill(hnuEvent) ;
+                }
+                //--- Checking for b-tagged jets using TCHE Loose ---//
+                int nBtags = 0 ;
+                if ( hnuEvent.j1.bDiscriminator(btagName) >= minBtagDiscVal ) nBtags++ ;  
+                if ( hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal ) nBtags++ ;  
+                if ( nBtags > 0 )  hists.AlternativeAtLeastOneBjet->fill(hnuEvent) ;
+                if ( nBtags == 2 ) hists.AlternativeTwoBjets->fill(hnuEvent) ;
+            }
+        }
+        if ( hnuEvent.mLL >= 120. ) {
+            if ( l1pt >=  cuts.minimum_mu1_pt ) { // Standard mu1 pT requirement
+                hists.AlternativeDimuonMass120->fill(hnuEvent) ;
+            }
+        }
+    }
+    
+    if(studyScaleFactorEvolution_)
+    {
+        double l1pt = hnuEvent.l1pt;
+        if(l1pt > 40.) hists.Mu1Pt40GeVCut->fill(hnuEvent);
+        if(l1pt > 50.) hists.Mu1Pt50GeVCut->fill(hnuEvent);
+        if(l1pt > 60.) hists.Mu1Pt60GeVCut->fill(hnuEvent);
+        if(l1pt > 80.) hists.Mu1Pt80GeVCut->fill(hnuEvent);
+        if(l1pt > 100.) hists.Mu1Pt100GeVCut->fill(hnuEvent);
+
+        if(hnuEvent.l1pt < cuts.minimum_mu1_pt)
+        {
+            if(hnuEvent.n_primary_vertex == 1)
+                hists.Mu1HighPtCutVtxEq1->fill(hnuEvent);
+            else if(hnuEvent.n_primary_vertex <= 5)
+                hists.Mu1HighPtCutVtx2to5->fill(hnuEvent);
+            else if(hnuEvent.n_primary_vertex > 5)
+                hists.Mu1HighPtCutVtxGt5->fill(hnuEvent);
         }
     }
 }
@@ -1319,410 +1198,68 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             break;
     }
     
-    if(pJets->size() < 2) return false;
-    // std::cout << "Event number pjets: " << evtCounter << std::endl ; 
+    //if(pJets->size() < 2) return false;
 
     // Look for valid jets and put them in the event
     std::vector< std::pair<pat::Jet, float> > jetCands =
       hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_);
     hnuEvent.nJets = jetCands.size();
-    // std::cout << "Event number jet list: " << evtCounter << std::endl ; 
 
-    if(hnuEvent.nJets >= 2) 
+    if(hnuEvent.nJets >= 2)
     {
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
-        fill(*pMuons, *pElecs, jetCands, hnuEvent.isMC, hnuEvent.eventWgt, isPFJets_, hnuEvent.n_pue, hnuEvent.n_primary_vertex, hists.noCuts);
     }
-    // std::cout << "Event number basic fill: " << evtCounter << std::endl ; 
+    fill(*pMuons, *pElecs, *pJets, hnuEvent, false, false, hists.noCuts);
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
       hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
 		       cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_, merUncertainty_, false);
-    // std::cout << "Event number mu cands: " << evtCounter << std::endl ; 
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
 			   heepVersion_,elecRho_);
-    // std::cout << "Event number ecands: " << evtCounter << std::endl ; 
-
-    // if (analysisMode_ == HeavyNuEvent::HNUE)
-    //   std::cout << "I have " << muCands.size() << " muons and " << eCands.size() << " electrons" << std::endl ; 
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
     //bool debuggingEvents = false ;
-    if (studyMuonSelectionEff_ && analysisMode_ == HeavyNuEvent::HNUMU) {
-
-        std::vector<pat::Muon> tagMuons ;
-        for (unsigned int i=0; i<muCands.size(); i++) {
-          // Muons already tight, in proper detector region, with sufficient pT
-          pat::Muon tagCand = muCands.at(i) ;
-          if (hnu::muIsolation(tagCand) < cuts.muon_trackiso_limit) {
-            if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, iEvent)) ||
-                 (!iEvent.isRealData() && trig_->simulateForMC(tagCand.pt(), tagCand.eta())) ) {
-              bool jetOverlap = false ;
-              for (unsigned int j=0; j<jetCands.size(); j++) {
-                pat::Jet jet = jetCands.at(j).first ;
-                if ( hnu::jetID(jet) > 0 ) {
-                  double dR = deltaR(tagCand.eta(), tagCand.phi(), jet.eta(), jet.phi()) ;
-                  if (dR <= cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; }
-                }
-              }
-              // If muon is separated from jets, is isolated, and trigger matched, it is a tag
-              if ( !jetOverlap ) tagMuons.push_back( tagCand ) ;
-            }
-          }
-        }
-
-        edm::Handle<reco::BeamSpot> beamSpotHandle;
-        if (!iEvent.getByLabel(InputTag("offlineBeamSpot"), beamSpotHandle))
-            throw cms::Exception("Trying to do efficiency studies, cannot find beam spot");
-
-        // Make sure that we have at least two jets
-        // keeping in mind that we only study efficiency for the nominal case
-        std::vector<pat::Jet> validJets ; 
-        for (unsigned int i=0; i<jetCands.size(); i++) { 
-            pat::Jet jet = jetCands.at(i).first ;
-            if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
-        }
-        // if ( validJets.size() >= 2 && tagMuons.size() > 0 ) {
-        if ( tagMuons.size() > 0 ) { // Allow for checks of ID efficiency for different jet multiplicity
-	  //--- Create the two lists of probe muons ---//
-	  std::vector<pat::Muon> tightMuonProbes ; 
-	  std::vector<pat::Muon> cjMuonProbes ; 
-	  std::vector<pat::Muon> trigProbes ; 
-	  for (unsigned int i=0; i<muCands.size(); i++) {
-	    bool jetOverlap = false ; 
-	    double minDeltaR = 0.8 ; 
-	    for (unsigned int j=0; j<validJets.size(); j++) { 
-	      pat::Jet jet = validJets.at(j) ; 
-	      double dR = deltaR(muCands.at(i).eta(), muCands.at(i).phi(), jet.eta(), jet.phi()) ;
-	      if (dR < minDeltaR) minDeltaR = dR ; 
-	      if (dR <= cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; } 
-	    }
-	    if ( !jetOverlap ) {
-	      tightMuonProbes.push_back( muCands.at(i) ) ; 
-	      if ( minDeltaR < 0.8 ) cjMuonProbes.push_back( muCands.at(i) ) ; 
-	      if ( fabs(muCands.at(i).eta()) < 2.1 && 
-		   hnu::muIsolation(muCands.at(i)) < cuts.muon_trackiso_limit ) 
-		trigProbes.push_back( muCands.at(i) ) ; 
-	    }
-	  }
-	  std::vector< std::pair<pat::Muon,pat::Muon> > tagTightProbes = 
-              hnu::getTagProbePair<pat::Muon>( tagMuons,tightMuonProbes,ZwinMinGeV_,ZwinMaxGeV_,
-                                               ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
-	  std::vector< std::pair<pat::Muon,pat::Muon> > tagCJmuonProbes = 
-              hnu::getTagProbePair<pat::Muon>( tagMuons,cjMuonProbes,ZwinMinGeV_,ZwinMaxGeV_,
-                                               ((oneTP_)?(tpRandom_->Uniform()):(-1.0)),false ) ; 
-	  std::vector< std::pair<pat::Muon,pat::Muon> > tagTrigProbes = 
-              hnu::getTagProbePair<pat::Muon>( tagMuons,trigProbes,ZwinMinGeV_,ZwinMaxGeV_,
-                                               ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
-	  
-	  std::vector<pat::GenericParticle> trackProbes ; 
-	  pat::GenericParticleCollection trackCands = *(pTracks.product());
-	  std::sort(trackCands.begin(), trackCands.end(), hnu::pTcompare());
-	  for (unsigned int i=0; i<trackCands.size(); i++) {
-	    pat::GenericParticle trackCand = trackCands.at(i) ; 
-            if ( trackCand.pt() <= cuts.minimum_mu2_pt ) break ; // Sorted collection: quit once below
-            if ( fabs(trackCand.eta()) >= cuts.maximum_mu_abseta ) continue ;
-
-	    bool jetOverlap  = false ; 
-	    for (unsigned int j=0; j<validJets.size(); j++) { 
-	      pat::Jet jet = validJets.at(j) ; 
-	      double dR = deltaR(trackCand.eta(), trackCand.phi(), jet.eta(), jet.phi()) ;
-	      if (dR < cuts.minimum_muon_jet_dR) { jetOverlap = true ; break ; } 
-	    }
-	    if ( !jetOverlap ) trackProbes.push_back( trackCand ) ; 
-	  } 
-	  std::vector< std::pair<pat::Muon,pat::GenericParticle> > tagTrackProbes = 
-              hnu::getTagProbePair<pat::GenericParticle>( tagMuons,trackProbes,ZwinMinGeV_,ZwinMaxGeV_,
-                                                          ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ; 
-
-	  //if ( tagTightProbes.size() > 0 || tagTrackProbes.size() > 0 ) debuggingEvents = true ;
-
-	  // Defined both tag+probe collections
-	  studyMuonSelectionEff(tagTrackProbes,tagTightProbes,tagCJmuonProbes, 
-				muCands,gTracks,beamSpotHandle,hnuEvent.eventWgt,validJets.size());
-
-	  // Study Trigger Matching efficiency for data only...here 2 or more jets is enforced
-	  if ( trig_->matchingEnabled() && iEvent.isRealData() && validJets.size() >= 2 ) {
-	    for (unsigned int i=0; i<tagTrigProbes.size(); i++) { 
-	      pat::Muon theTag   = tagTrigProbes.at(i).first ; 
-	      pat::Muon theProbe = tagTrigProbes.at(i).second ; 
-	      hists.TightTagTrigProbeInZwin->tapfill( theTag,theProbe,theProbe.trackIso(),hnuEvent.eventWgt ) ;
-	      if ( trig_->isTriggerMatched(theProbe, iEvent) )
-		hists.TightTagTrigProbePassesInZwin->tapfill( theTag,theProbe,theProbe.trackIso(),hnuEvent.eventWgt ) ;
-	    }
-	  }
-	}
+    if (studyMuonSelectionEff_ && analysisMode_ == HeavyNuEvent::HNUMU) 
+    {
+        hnu::studyMuonEff(iEvent, muCands, hnuEvent, jetCands, pTracks, gTracks, trig_, cuts, effinfo_, hists);
     }
 
     if (studyMuonSelectionEff_ && analysisMode_ == HeavyNuEvent::HNUE)
     {
-
-        std::vector<pat::Electron> tagElectrons ;
-        for (unsigned int i = 0; i < eCands.size(); i++)
-        {
-            // Electrons already pass HEEP selection, in proper detector region, with sufficient pT
-            pat::Electron tagCand = eCands.at(i).first ;
-            // std::cout << "I am looking at a HEEP candidate tag with pT " << hnu::getElectronEt(tagCand,false)
-            // 	  << " and eta " << hnu::getElectronSCEta(tagCand) << std::endl ;
-            if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(tagCand, tagCand, iEvent, 1)) ||
-                !iEvent.isRealData() )
-            { // 1) for data we can check a trigger match...for MC it will happen later
-                // 2) in the muon case tags are also selected according to the HLT efficiency;
-                //    deemed an overkill + now we're doing HLT efficiencies as a function of mass => ignore this for electrons
-                bool jetOverlap = false ;
-                // std::cout << "Found a trigger match" << std::endl ;
-                int nValidJets = 0 ;
-                for (unsigned int j = 0; j < jetCands.size(); j++)
-                {
-                    pat::Jet jet = jetCands.at(j).first ;
-                    if ( hnu::jetID(jet) > 0 )
-                    {
-                        nValidJets++ ;
-                        double dR = deltaR(tagCand.eta(), tagCand.phi(), jet.eta(), jet.phi()) ;
-                        if (dR <= cuts.minimum_muon_jet_dR)
-                        {
-                            jetOverlap = true ;
-                            break ;
-                        }
-                    }
-                }
-                // std::cout << "There are " << nValidJets << " jets in the event" << std::endl ;
-                // std::cout << "Far enough away from a jet...ok it is a tag" << std::endl ;
-                // If electron is separated from jets, is isolated, it is a tag candidate
-                // NOTE: Both tag and probe must match to trigger, so full TP pair not settled!
-                if ( !jetOverlap ) tagElectrons.push_back( tagCand ) ;
-            }
-        } // List of all possible electron tag candidates
-
-        // std::cout << "I have a tag list of size " << tagElectrons.size() << std::endl ;
-
-        // Make sure that we have at least two jets
-        // keeping in mind that we only study efficiency for the nominal case
-        std::vector<pat::Jet> validJets ;
-        for (unsigned int i = 0; i < jetCands.size(); i++)
-        {
-            pat::Jet jet = jetCands.at(i).first ;
-            // std::cout << "Jet " << (i+1) << " of " << jetCands.size() << " with pt " << jet.pt() << " and quality: " << hnu::jetID(jet) << std::endl ;
-            if ( hnu::jetID(jet) > 0 && jet.pt() > cuts.minimum_jet_pt ) validJets.push_back( jet ) ;
-        }
-        // std::cout << "I have created a list of validJets of size " << validJets.size() << std::endl ;
-
-        if ( tagElectrons.size() > 0 )
-        { // Allow for checks of ID efficiency for different jet multiplicity
-            //--- Create the list of probe electrons ---//
-            std::vector<pat::Electron> gsfElectronProbes ;
-            std::vector<pat::Electron> gsfCands = *(pElecs.product()) ;
-            std::sort(gsfCands.begin(), gsfCands.end(), hnu::pTcompare()) ;
-
-            // std::cout << "I have a list of candidate probes of size " << gsfCands.size() << std::endl ;
-
-            for (unsigned int i = 0; i < gsfCands.size(); i++)
-            {
-                pat::Electron gsfCand = gsfCands.at(i) ;
-                // std::cout << "GSF candidate probe with pT " << hnu::getElectronEt(gsfCand,false)
-                // 	    << " and eta " << hnu::getElectronSCEta(gsfCand) << std::endl ;
-                if ( hnu::getElectronEt(gsfCand, false) < cuts.minimum_mu2_pt ) break ; // Sorted collection, quit once below
-                bool jetProbeOverlap = false ;
-                for (unsigned int j = 0; j < jetCands.size(); j++)
-                {
-                    pat::Jet jet = jetCands.at(j).first ;
-                    if ( hnu::jetID(jet) > 0 )
-                    {
-                        double dR = deltaR(gsfCand.eta(), gsfCand.phi(), jet.eta(), jet.phi()) ;
-                        // std::cout << "dR between the probe and the jet is " << dR << std::endl ;
-                        if (dR <= cuts.minimum_muon_jet_dR)
-                        {
-                            jetProbeOverlap = true ;
-                            break ;
-                        }
-                    }
-                }
-                if ( jetProbeOverlap )
-                {
-                    // std::cout << "REJECTED: This probe should not be used for anything...it is too near a jet!!!" << std::endl ;
-                    continue ;
-                }
-
-                bool isEB = ( fabs(hnu::getElectronSCEta(gsfCand)) < 1.4442 ) ;
-                bool isEE = ( fabs(hnu::getElectronSCEta(gsfCand)) < 2.5 && fabs(hnu::getElectronSCEta(gsfCand)) > 1.56 ) ;
-                // if ( isEB ) std::cout << "This is a barrel electron" << std::endl ;
-                // if ( isEE ) std::cout << "This is an endcap electron" << std::endl ;
-                if ( !isEB && !isEE ) continue ;
-                // Probe must participate in the trigger!
-                if ( (trig_->matchingEnabled() && iEvent.isRealData() && trig_->isTriggerMatched(gsfCand, gsfCand, iEvent, 1)) ||
-                    !iEvent.isRealData() )
-                {
-                    // std::cout << "This counts as a valid probe" << std::endl ;
-                    gsfElectronProbes.push_back( gsfCand ) ;
-                }
-            }
-            // std::cout << "Total number of probes: " << gsfElectronProbes.size() << std::endl ;
-
-            //
-            // Now need to introduce a trigger requirement for MC...something to be done later
-            //
-
-            std::vector< std::pair<pat::Electron, pat::Electron> > heepTagGsfProbes =
-                    hnu::getTagProbePair( tagElectrons, gsfElectronProbes, ZwinMinGeV_, ZwinMaxGeV_,
-                                         ((oneTP_)?(tpRandom_->Uniform()):(-1.0)) ) ;
-
-            // std::cout << "I have " << heepTagGsfProbes.size() << " tag/probe pairs" << std::endl ;
-
-            studyElectronSelectionEff(heepTagGsfProbes, eCands, hnuEvent.eventWgt, validJets.size(), iEvent);
-        }
+        hnu::studyElectronEff(iEvent, eCands, pElecs, hnuEvent, jetCands, trig_, cuts, effinfo_, hists);
     }
-    // std::cout << "Event number before njets cut: " << evtCounter << std::endl ; 
 
+    //if(hnuEvent.nJets < 2) return false;
 
-    // if (analysisMode_ == HeavyNuEvent::HNUE)
-    //   std::cout << "I have " << hnuEvent.nJets << " jets" << std::endl ; 
-
-    if(hnuEvent.nJets < 2) return false;
-    // std::cout << "Event number njets: " << evtCounter << std::endl ; 
-
-    hnuEvent.j1 = jetCands.at(0).first;
-    hnuEvent.j2 = jetCands.at(1).first;
-    hnuEvent.j1scale = jetCands.at(0).second;
-    hnuEvent.j2scale = jetCands.at(1).second;
+    if(hnuEvent.nJets >= 1)hnuEvent.j1 = jetCands.at(0).first;
+    if(hnuEvent.nJets >= 2)hnuEvent.j2 = jetCands.at(1).first;
+    if(hnuEvent.nJets >= 1)hnuEvent.j1scale = jetCands.at(0).second;
+    if(hnuEvent.nJets >= 2)hnuEvent.j2scale = jetCands.at(1).second;
 
     hnuEvent.btagName = btagName;
-    hnuEvent.isBJet1 = hnuEvent.j1.bDiscriminator(btagName) >= minBtagDiscVal;
-    hnuEvent.isBJet2 = hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal;
+    if(hnuEvent.nJets >= 1) hnuEvent.isBJet1 = hnuEvent.j1.bDiscriminator(btagName) >= minBtagDiscVal;
+    if(hnuEvent.nJets >= 2) hnuEvent.isBJet2 = hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal;
 
     //conduct gen study on jets
     if(hnuEvent.isMC)
     {
-        //here we match the reco jets to gen jets
-        double mindR1 = 100, mindR2 = 100;
-        for(std::vector<reco::GenJet>::const_iterator igj = genjets->begin(); igj != genjets->end(); ++igj)
-        {
-            double dR1 = deltaR(hnuEvent.j1.p4(), igj->p4());
-            double dR2 = deltaR(hnuEvent.j2.p4(), igj->p4());
-
-            if(dR1 < mindR1)
-            {
-                mindR1 = dR1;
-                hnuEvent.gj1 = *igj;
-            }
-            if(dR2 < mindR2)
-            {
-                mindR2 = dR2;
-                hnuEvent.gj2 = *igj;
-            }
-        }
-
-        //after finding the matching gen jets we track their parentage and try to match them to a Nu_L
-        bool gmj1 = false, gmj2 = false;
-        std::vector<const reco::GenParticle*> mothers = hnuEvent.gj1.getGenConstituents();
-        for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
-        {
-            if((gmj1 |= isWrDaughter(*iM))) break;
-            //for(size_t i = 0; i < (*iM)->numberOfMothers(); i++)
-            //{
-            //    if(gmj1 |= isWrDaughter((*iM)->mother(i))) break;
-            //}
-            //if(gmj1) break;
-        }
-        mothers = hnuEvent.gj2.getGenConstituents();
-        for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
-        {
-            if((gmj2 |= isWrDaughter(*iM))) break;
-            //for(size_t i = 0; i < (*iM)->numberOfMothers(); i++)
-            //{
-            //    if(gmj2 |= isWrDaughter((*iM)->mother(i))) break;
-            //}
-            //if(gmj2) break;
-        }
-        hnuEvent.numNuLJetsMatched = (int)gmj1 + (int)gmj2;
+        studyJetMatching(hnuEvent, genjets);
     }
 
-    hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
-    hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
+    if(hnuEvent.nJets >= 1) hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
+    if(hnuEvent.nJets >= 2) hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
 
     bool l1trig = false;
     bool l2trig = false;
 
     if(analysisMode_ == HeavyNuEvent::HNUMU)
     {
-        unsigned int dirtyPosition = muCands.size() + 1 ; 
-        unsigned int cleanPosition = muCands.size() + 1 ; 
-        for(unsigned int i = 0; i < muCands.size(); i++)
-        {
-            if(hnuEvent.nLeptons == 2) break;
-            pat::Muon iM = muCands.at(i);
-	    if ( nDirtyCands_ > 0 ) { 
-	      double caloIso = iM.ecalIso() + iM.hcalIso() ;
-	      bool   isDirty = ( (iM.pt() < 100.) ? (caloIso > 10.) : ((caloIso/iM.pt()) > 0.10) ) ; 
-	      if ( nDirtyCands_ == 2 ) { 
-		if ( isDirty ) { 
-		  double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-		  double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-		  double dRm1 = 999. ; 
-		  if ( hnuEvent.nLeptons > 0 ) dRm1 = deltaR(iM.eta(), iM.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi());
-		  if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR && dRm1 > 0.3) {
-		    hnuEvent.nLeptons++ ;
-		    if(hnuEvent.nLeptons == 1)      hnuEvent.mu1 = iM;
-                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
-                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
-		  }
-		}
-	      } else if ( nDirtyCands_ == 1 ) { 
-		if ( isDirty && dirtyPosition > muCands.size() ) { 
-		  double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-		  double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-		  double dRm1 = 999. ; 
-		  if ( hnuEvent.nLeptons > 0 ) dRm1 = deltaR(iM.eta(), iM.phi(), hnuEvent.mu1.eta(), hnuEvent.mu1.phi());
-		  if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR && dRm1 > 0.3) {
-		    hnuEvent.nLeptons++ ;
-		    dirtyPosition = i ; 
-		    if(hnuEvent.nLeptons == 1)      hnuEvent.mu1 = iM;
-                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
-                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
-		  }
-		} else if ( !isDirty && cleanPosition > muCands.size() && hnu::muIsolation(iM) < cuts.muon_trackiso_limit) { 
-		  double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-		  double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-		  if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {  
-		    hnuEvent.nLeptons++ ;
-		    cleanPosition = i ; 
-		    if(hnuEvent.nLeptons == 1)      hnuEvent.mu1 = iM;
-                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
-                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
-		  }
-		}
-	      }
-	    } 
-	    else if(hnu::muIsolation(iM) < cuts.muon_trackiso_limit)
-            {
-                double dRj1 = deltaR(iM.eta(), iM.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-                double dRj2 = deltaR(iM.eta(), iM.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-                if(dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR)
-                {
-                    hnuEvent.nLeptons++;
-                    if(hnuEvent.nLeptons == 1) hnuEvent.mu1 = iM;
-                    else if(hnuEvent.nLeptons == 2) hnuEvent.mu2 = iM;
-                    else std::cout << "WARNING: Expected empty muon position" << std::endl;
-                }
-            }
-        }
-
-        if(applyMuIDCorrections_ && hnuEvent.isMC)
-        {
-            double mu1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_)):1.0;
-            double mu2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightForMC((hnuEvent.mu2.pt()), applyMuIDEffsign_)):1.0;
-
-            hnuEvent.eventWgt *= (mu1wgt * mu2wgt);
-        }
-
-	if ( nDirtyCands_ > 0 && hnuEvent.nLeptons > 1 ) { 
-	  if ( nDirtyCands_ == 2 ) hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.mu1) * hnu::fakeProbability(hnuEvent.mu2) ) ; 
-	  if ( nDirtyCands_ == 1 ) hnuEvent.eventWgt *= ( hnu::fakeProbability(muCands.at(dirtyPosition)) ) ; 
-	}
+        selectMuons(muCands, hnuEvent, nDirtyCands_);
 
         //--- Trigger Matching needed for efficiency studies ---//
         if(trig_->matchingEnabled() && iEvent.isRealData())
@@ -1745,154 +1282,42 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 l2trig = (hnuEvent.nLeptons > 1) && trig_->simulateForMC(hnuEvent.mu2.pt(), hnuEvent.mu2.eta(), applyTrigEffsign_) && hnuEvent.mu2.pt() > 40;
             }
         }
-        // std::cout << "Trigger results: " << mu1trig << ", " << mu2trig << std::endl ;
     }// HeavyNuEvent::HNUMU
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
+        selectElectrons(eCands, pElecs, hnuEvent, nDirtyCands_);
 
-	if ( nDirtyCands_ == 0 ) { 
-	  for(unsigned int i = 0; i < eCands.size(); i++)
-	    {
-	      if(hnuEvent.nLeptons == 2) break;
-	      pat::Electron iE = eCands.at(i).first;
-	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-	      if(dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR)
-		{
-		  hnuEvent.nLeptons++;
-		  if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
-		  else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
-		  else std::cout << "WARNING: Expected empty electron position" << std::endl;
-		} //else {
-	      // std::cout << "MAJOR WARNING: I found a perfectly valid HEEP electron buried inside my jet" << std::endl ;
-	      //}
-	    }
-	} else { 
-	  std::vector< std::pair<pat::Electron, float> > eDirtyCands =
-	    hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
-				 (-1*heepVersion_),elecRho_);
-	  unsigned int dirtyPosition = eDirtyCands.size() + 1 ; 
-	  unsigned int cleanPosition = eCands.size() + 1 ; 
-	  if ( nDirtyCands_ == 2 ) { 
-	    for(unsigned int i = 0; i < eDirtyCands.size(); i++) {
-	      if(hnuEvent.nLeptons == 2) break;
-	      pat::Electron iE = eDirtyCands.at(i).first;
-	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-	      if(dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {
-		hnuEvent.nLeptons++;
-		if(hnuEvent.nLeptons == 1) hnuEvent.e1 = iE;
-		else if(hnuEvent.nLeptons == 2) hnuEvent.e2 = iE;
-		else std::cout << "WARNING: Expected empty electron position" << std::endl;
-	      } 
-	    }
-	    if ( hnuEvent.nLeptons == 2 ) {
-	      // Need also to correct for the fact that "fake" electrons are required to fail nominal ID
-	      // std::cout << "Event weight is     " << hnuEvent.eventWgt << std::endl ; 
-	      hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e1) / ( 1.0 - hnu::fakeProbability(hnuEvent.e1) ) ) ; 
-	      // std::cout << "Event weight is now " << hnuEvent.eventWgt << std::endl ; 
-	      hnuEvent.eventWgt *= ( hnu::fakeProbability(hnuEvent.e2) / ( 1.0 - hnu::fakeProbability(hnuEvent.e2) ) ) ; 
-	      // std::cout << "Event weight is now " << hnuEvent.eventWgt << std::endl ; 
-	    }
-	  } else if ( nDirtyCands_ == 1 ) { 
-	    for (unsigned int i = 0; i < eDirtyCands.size(); i++) {
-	      pat::Electron iE = eDirtyCands.at(i).first;
-	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-	      if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {
-		dirtyPosition = i ; 
-		hnuEvent.nLeptons++ ; 
-		break ; 
-	      } 
-	    }
-	    for (unsigned int i = 0; i < eCands.size(); i++) {
-	      pat::Electron iE = eCands.at(i).first;
-	      double dRj1 = deltaR(iE.eta(), iE.phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
-	      double dRj2 = deltaR(iE.eta(), iE.phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
-	      if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) {
-		cleanPosition = i ; 
-		hnuEvent.nLeptons++ ; 
-		break ; 
-	      } 
-	    }
-	    if ( dirtyPosition < eDirtyCands.size() && cleanPosition < eCands.size() ) { 
-	      double dirtyPt = hnu::getElectronEt(eDirtyCands.at(dirtyPosition).first,false) ; 
-	      double cleanPt = hnu::getElectronEt(eCands.at(cleanPosition).first,false) ; 
-
-	      // std::cout << "Found a dirty electron at " << dirtyPosition << " of " << eDirtyCands.size() << std::endl ; 
-	      // std::cout << "Found a clean electron at " << cleanPosition << " of " << eCands.size() << std::endl ; 
-
-	      if ( cleanPt > dirtyPt ) { 
-		hnuEvent.e1 = eCands.at(cleanPosition).first ; 
-		hnuEvent.e2 = eDirtyCands.at(dirtyPosition).first ; 
-	      } else {
-		hnuEvent.e1 = eDirtyCands.at(dirtyPosition).first ; 
-		hnuEvent.e2 = eCands.at(cleanPosition).first ; 
-	      }
-	      // std::cout << "Single fake weight is     " << hnuEvent.eventWgt << std::endl ; 
-	      hnuEvent.eventWgt *= ( hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first) / 
-				     (1.0-hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ; 
-	      // std::cout << "Single fake weight is now " << hnuEvent.eventWgt << std::endl ; 
-	    } else if ( dirtyPosition < eDirtyCands.size() ) { 
-	      hnuEvent.e1 = eDirtyCands.at(dirtyPosition).first ; 
-	      hnuEvent.eventWgt *= ( hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first) / 
-				     (1.0-hnu::fakeProbability(eDirtyCands.at(dirtyPosition).first)) ) ; 
-	    } else if ( cleanPosition < eCands.size() ) { 
-	      hnuEvent.e1 = eCands.at(cleanPosition).first ; 
-	    }
-	  }
-	}
-	// at this stage we need to assume we have >=2 electrons
-	// use the first two in the list eCands to build a di-lepton mass
-	double diEleMass(0.);
-	double dummyEta(0.);
-	if( hnuEvent.nLeptons >= 2 ){
-	  diEleMass = ( hnuEvent.e1.p4() +  hnuEvent.e2.p4() ).M() ;
-	}
-	
-        if(applyMuIDCorrections_ && hnuEvent.isMC) // Only care about applying weights if you have two candidates
+        // at this stage we need to assume we have >=2 electrons
+        // use the first two in the list eCands to build a di-lepton mass
+        double diEleMass(0.);
+        double dummyEta(0.);
+        if( hnuEvent.nLeptons >= 2 )
         {
-	  // std::cout << "I want to apply electron weights for " << hnuEvent.nLeptons << " leptons" << std::endl ; 
-	  if ( hnuEvent.nLeptons > 1 ) { // Only care about applying weights if you have two candidates
-	    double e1wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_) ;
-	    // std::cout << "e1wgt is " << e1wgt << std::endl ; 
-	    double e2wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e2), applyMuIDEffsign_) ;
-	    // std::cout << "e2wgt is " << e2wgt << std::endl ; 
-
-	    // std::cout << "e1 weight = " << e1wgt << " and e2 weight is " << e2wgt << std::endl ; 
-	    hnuEvent.eventWgt *= (e1wgt * e2wgt);
-	  }
+            diEleMass = ( hnuEvent.e1.p4() +  hnuEvent.e2.p4() ).M() ;
         }
+        bool l12trig = false ;
+        if ( iEvent.isRealData() )
+            l12trig = (hnuEvent.nLeptons > 1) && trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent) ;
+        else
+            l12trig = (hnuEvent.nLeptons > 1) && trig_->simulateForMCdiEleMass(diEleMass, dummyEta, applyTrigEffsign_) ;
 
-	// std::cout << "I have " << hnuEvent.nLeptons << " leptons in the event with mass " << diEleMass << std::endl ; 
-	// std::cout << "applyTrigEffsign = " << applyTrigEffsign_ << std::endl ; 
-
-	bool l12trig = false ; 
-	if ( iEvent.isRealData() ) 
-	  l12trig = (hnuEvent.nLeptons > 1) && trig_->isTriggerMatched(hnuEvent.e1, hnuEvent.e2, iEvent) ; 
-	else 
-	  l12trig = (hnuEvent.nLeptons > 1) && trig_->simulateForMCdiEleMass(diEleMass,dummyEta, applyTrigEffsign_) ; 
-
-	l1trig = l2trig = l12trig ;
+        l1trig = l2trig = l12trig ;
     }
-    // std::cout << "Event number trig0: " << evtCounter << " with trigger decision " << l1trig << " " << l2trig << std::endl ; 
-    // if ( !l1trig && !l2trig && hnuEvent.nLeptons > 1 ) std::cout << "TRIGGER FAILURE: This event will be rejected!!!" << std::endl ; 
-
-    //hnuEvent.regularize();  (this is now done in calculate and so this call is redundent
-
-    if(hnuEvent.nLeptons < 2) return false;
-    // std::cout << "Event number nleptons: " << evtCounter << std::endl ; 
-
-    if(hnu::jetID(hnuEvent.j1) < 1 || hnu::jetID(hnuEvent.j2) < 1) return false;
-    // std::cout << "Event number njets: " << evtCounter << std::endl ; 
-
-    hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
+    
     hnuEvent.scaleMuE(applyMESfactor_);
     hnuEvent.calculate(correctEscale_); // calculate various details
+    
+    // JJ and LL cutlevel must be made here before definite number cuts are applied
+    if(hnuEvent.nJets >= 2) fill(*pMuons, *pElecs, *pJets, hnuEvent, true, false, hists.JJptCuts);
+    if(hnuEvent.nLeptons >= 2) fill(*pMuons, *pElecs, *pJets, hnuEvent, false, true, hists.LLptCuts);
+
+    if(hnuEvent.nLeptons < 2 || hnuEvent.nJets < 2) return false;
+
+    if((hnuEvent.nJets >= 1 && hnu::jetID(hnuEvent.j1) < 1) || (hnuEvent.nJets >= 2 && hnu::jetID(hnuEvent.j2) < 1)) return false;
+
+    hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
     hists.LLJJptCuts->fill(hnuEvent);
     //if(pMET->size()) hnuEvent.met1 = pMET->at(0);
-
-    // std::cout << "dilepton mass is " << hnuEvent.mLL << std::endl ; 
 
     // Fill slope fit tuple here
     if(addSlopeTree_)
@@ -1908,7 +1333,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hnuTree_->event_.cutlevel = 1;
     }
 
-    //--- Trigger code needs to be updated...placeholder for now ---//
+    //--- Trigger code needs to be updated...placeholder for now ---//  is this still a palce holder? -Joe 9/24/12
     if(!l1trig && !l2trig) 
     {
         if(addSlopeTree_) hnuTree_->fill();
@@ -1917,16 +1342,22 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.cutlevel->Fill(2.0, hnuEvent.eventWgt); // Event meets trigger requirements
     if(addSlopeTree_) hnuTree_->event_.cutlevel = 2;
     hists.TrigMatches->fill(hnuEvent);
-    // std::cout << "Event number trig: " << evtCounter << std::endl ; 
 
     // hists.LLJJptCuts->fill(hnuEvent);
 
     //--- Impose vertex requirement here ---//
-    float deltaVzJ1J2 = fabs(hnuEvent.tjV1 - hnuEvent.tjV2);
-    float deltaVzJ1M1 = fabs(hnuEvent.tjV1 - hnuEvent.l1->vertex().Z());
-    float deltaVzJ2M2 = fabs(hnuEvent.tjV2 - hnuEvent.l2->vertex().Z());
-    float deltaVzJ1M2 = fabs(hnuEvent.tjV1 - hnuEvent.l2->vertex().Z());
-    float deltaVzJ2M1 = fabs(hnuEvent.tjV2 - hnuEvent.l1->vertex().Z());
+    float deltaVzJ1J2 = 0.0, deltaVzJ1M1 = 0.0, deltaVzJ2M2 = 0.0, deltaVzJ1M2 = 0.0, deltaVzJ2M1 = 0.0;
+    if(hnuEvent.nJets >= 1)
+    {
+        deltaVzJ1M1 = fabs(hnuEvent.tjV1 - hnuEvent.l1->vertex().Z());
+        deltaVzJ1M2 = fabs(hnuEvent.tjV1 - hnuEvent.l2->vertex().Z());
+    }
+    if(hnuEvent.nJets >= 2)
+    {
+        deltaVzJ2M2 = fabs(hnuEvent.tjV2 - hnuEvent.l2->vertex().Z());
+        deltaVzJ2M1 = fabs(hnuEvent.tjV2 - hnuEvent.l1->vertex().Z());
+        deltaVzJ1J2 = fabs(hnuEvent.tjV1 - hnuEvent.tjV2);
+    }
     if( (cuts.maxJetVZsepCM > 0) && 
         ((deltaVzJ1J2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M1 >= cuts.maxJetVZsepCM) ||
          (deltaVzJ2M2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M2 >= cuts.maxJetVZsepCM) ||
@@ -1945,80 +1376,28 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     //--- The "basic" object, trigger, and (possibly) vertex requirements should be done ---//
     //--- Consider alternative selection requirements ---//
-    if ( studyAlternativeSelection_ ) {
-        double l1pt = hnuEvent.l1pt ;
-        double l2pt = hnuEvent.l2pt ;
-        //double j1pt  = hnuEvent.j1scale * hnuEvent.j1.pt() ;
-        double j2pt  = hnuEvent.j2.pt() ; 
-        if ( hnuEvent.mLL >= cuts.minimum_mumu_mass ) { // Standard dimuon requirement
-            if ( l1pt >= 40. ) hists.AlternativeMu1Pt40->fill(hnuEvent) ;
-            if ( l1pt >=  cuts.minimum_mu1_pt ) { // Standard mu1 pT requirement
-                if ( l2pt >= 40. ) {
-                    hists.AlternativeMu2Pt40->fill(hnuEvent) ;
-                    if ( l1pt >= 80. ) hists.AlternativeElecChanPt->fill(hnuEvent) ;
-                }
-                if ( l2pt >= 60. ) hists.AlternativeMu2Pt60->fill(hnuEvent) ;
-                if ( j2pt >= 60. )  hists.AlternativeJetPt60->fill(hnuEvent) ;
-                //--- Requirement for at least one muon to be barrel ---//
-                bool atLeastOneBarrelMuonLoose = ( fabs(hnuEvent.l1->eta()) < 1.2 || fabs(hnuEvent.l2->eta()) < 1.2 ) ;
-                bool atLeastOneBarrelMuonTight = ( fabs(hnuEvent.l1->eta()) < 0.8 || fabs(hnuEvent.l2->eta()) < 0.8 ) ;
-                if ( atLeastOneBarrelMuonLoose )
-                {
-                    hists.AlternativeBarrelLoose->fill(hnuEvent) ;
-                    if ( atLeastOneBarrelMuonTight ) hists.AlternativeBarrelTight->fill(hnuEvent) ;
-                }
-                //--- Checking for b-tagged jets using TCHE Loose ---//
-                int nBtags = 0 ;
-                if ( hnuEvent.j1.bDiscriminator(btagName) >= minBtagDiscVal ) nBtags++ ;  
-                if ( hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal ) nBtags++ ;  
-                if ( nBtags > 0 )  hists.AlternativeAtLeastOneBjet->fill(hnuEvent) ;
-                if ( nBtags == 2 ) hists.AlternativeTwoBjets->fill(hnuEvent) ;
-            }
-        }
-        if ( hnuEvent.mLL >= 120. ) {
-            if ( l1pt >=  cuts.minimum_mu1_pt ) { // Standard mu1 pT requirement
-                hists.AlternativeDimuonMass120->fill(hnuEvent) ;
-            }
-        }
-    }
-    
-    if(studyScaleFactorEvolution_)
-    {
-        double l1pt = hnuEvent.l1pt;
-        if(l1pt > 40.) hists.Mu1Pt40GeVCut->fill(hnuEvent);
-        if(l1pt > 50.) hists.Mu1Pt50GeVCut->fill(hnuEvent);
-        if(l1pt > 60.) hists.Mu1Pt60GeVCut->fill(hnuEvent);
-        if(l1pt > 80.) hists.Mu1Pt80GeVCut->fill(hnuEvent);
-        if(l1pt > 100.) hists.Mu1Pt100GeVCut->fill(hnuEvent);
-    }
+    alternativeSelection(hnuEvent);
 
     if(hnuEvent.l1pt < cuts.minimum_mu1_pt)
     {
         if(addSlopeTree_) hnuTree_->fill();
         return false;
     }
-    // std::cout << "Event number pt: " << evtCounter << std::endl ; 
 
-    if(studyScaleFactorEvolution_)
-    {
-        if(hnuEvent.n_primary_vertex == 1)
-            hists.Mu1HighPtCutVtxEq1->fill(hnuEvent);
-        else if(hnuEvent.n_primary_vertex <= 5)
-            hists.Mu1HighPtCutVtx2to5->fill(hnuEvent);
-        else if(hnuEvent.n_primary_vertex > 5)
-            hists.Mu1HighPtCutVtxGt5->fill(hnuEvent);
-    }
     hists.cutlevel->Fill(4.0, hnuEvent.eventWgt); // Event meets high muon pT requirements
     if(addSlopeTree_) hnuTree_->event_.cutlevel = 4;
     hists.Mu1HighPtCut->fill(hnuEvent);
     if(hnuEvent.isBJet1 || hnuEvent.isBJet2) hists.Mu1HighPtCut_1bjet->fill(hnuEvent);
     if(hnuEvent.isBJet1 && hnuEvent.isBJet2) hists.Mu1HighPtCut_2bjet->fill(hnuEvent);
 
-    if(hnuEvent.mLL < 40) return false; // Sanity check...remove low mass points
-    // std::cout << "Event number mass: " << evtCounter << std::endl ; 
-    //hists.loDiLmassCut->fill(hnuEvent);
     if ( studyRatePerRun_ && inZmassWindow(hnuEvent.mLL) )
         hists.z2jetPerRun->Fill( iEvent.id().run() ) ; 
+    
+    //Z-peak cuts
+    if(hnuEvent.mLL > 71 && hnuEvent.mLL < 111)
+    {
+        hists.ZRegionCut->fill(hnuEvent);
+    }
     
     if(hnuEvent.mLL < cuts.minimum_mumu_mass) 
     {
@@ -2029,6 +1408,17 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(addSlopeTree_) hnuTree_->event_.cutlevel = 5;
     hists.diLmassCut->fill(hnuEvent);
 
+    // Change the final logic of the filter based on LQ meeting discussion:
+    // Interest in seeing events that pass the dilepton mass requirement
+    // if ( hnuEvent.mWR<cuts.minimum_mWR_mass ) return false;  // 4-object mass cut
+    if(hnuEvent.mWR >= cuts.minimum_mWR_mass)
+    {
+        hists.cutlevel->Fill(6.0, hnuEvent.eventWgt); // Event meets W_R mass requirements
+        if(addSlopeTree_) hnuTree_->event_.cutlevel = 6;
+        hists.mWRmassCut->fill(hnuEvent);
+    }
+    if(addSlopeTree_) hnuTree_->fill();
+    
     if(iEvent.isRealData())
     {
         bool mu1posChg = (hnuEvent.mu1.charge() > 0) ; 
@@ -2043,9 +1433,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         std::cout << "\tM(mumu) = " << hnuEvent.mLL << " GeV";
         std::cout << ", M(JJ) = " << hnuEvent.mJJ << " GeV" << std::endl;
         std::cout << "\tJets:   j1 ";
-        outputCandidate(hnuEvent.j1);
+        //outputCandidate(hnuEvent.j1);
         std::cout << ", j2 ";
-        outputCandidate(hnuEvent.j2);
+        //outputCandidate(hnuEvent.j2);
         std::cout << std::endl;
         std::cout << "\tMuons: mu1, mu" << (mu1posChg ? "+":"-");
         outputCandidate(*(hnuEvent.l1));
@@ -2053,17 +1443,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         outputCandidate(*(hnuEvent.l2));
         std::cout << std::endl;
     }
-
-    // Change the final logic of the filter based on LQ meeting discussion:
-    // Interest in seeing events that pass the dilepton mass requirement
-    // if ( hnuEvent.mWR<cuts.minimum_mWR_mass ) return false;  // 4-object mass cut
-    if(hnuEvent.mWR >= cuts.minimum_mWR_mass)
-    {
-        hists.cutlevel->Fill(6.0, hnuEvent.eventWgt); // Event meets W_R mass requirements
-        if(addSlopeTree_) hnuTree_->event_.cutlevel = 6;
-        hists.mWRmassCut->fill(hnuEvent);
-    }
-    if(addSlopeTree_) hnuTree_->fill();
+    
     return true;
 }
 

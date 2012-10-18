@@ -1052,10 +1052,51 @@ namespace hnu {
     }
     std::sort(electronList.begin(),electronList.end(),scaleCompare()) ; 
     return electronList ; 
-  }
+    }
+
+    bool addMuon(pat::Muon& m, HeavyNuEvent& hne, double minimum_muon_jet_dR, int nDirtyCands)
+    {
+        double dRj1 = 999.9, dRj2 = 999.9;
+        if(hne.nJets > 0) dRj1 = deltaR(m.eta(), m.phi(), hne.j1.eta(), hne.j1.phi());
+        if(hne.nJets > 1) dRj2 = deltaR(m.eta(), m.phi(), hne.j2.eta(), hne.j2.phi());
+        double dRm1 = 999. ;
+        if ( hne.nLeptons > 0 && nDirtyCands > 0) dRm1 = deltaR(m.eta(), m.phi(), hne.mu1.eta(), hne.mu1.phi());
+        if (dRj1 > minimum_muon_jet_dR && dRj2 > minimum_muon_jet_dR && dRm1 > 0.3)
+        {
+            hne.nLeptons++ ;
+            if(hne.nLeptons == 1)      hne.mu1 = m;
+            else if(hne.nLeptons == 2) hne.mu2 = m;
+            else std::cout << "WARNING: Expected empty muon position" << std::endl;
+            return true;
+        }
+        return false;
+    }
+
+    bool addElectron(pat::Electron& e, HeavyNuEvent& hne, double minimum_muon_jet_dR)
+    {
+        double dRj1 = 999.9, dRj2 = 999.9;
+        if(hne.nJets > 0) dRj1 = deltaR(e.eta(), e.phi(), hne.j1.eta(), hne.j1.phi());
+        if(hne.nJets > 1) dRj2 = deltaR(e.eta(), e.phi(), hne.j2.eta(), hne.j2.phi());
+        if(dRj1 > minimum_muon_jet_dR && dRj2 > minimum_muon_jet_dR)
+        {
+            hne.nLeptons++;
+            if(hne.nLeptons == 1) hne.e1 = e;
+            else if(hne.nLeptons == 2) 
+            {
+                if(getElectronEt(hne.e1, false) > getElectronEt(e, false)) hne.e2 = e;
+                else
+                {
+                    hne.e2 = hne.e1;
+                    hne.e1 = e;
+                }
+            }
+            else std::cout << "WARNING: Expected empty electron position" << std::endl;
+            return true;
+        }
+        return false;
+    }
 
 }
-
 
 
 

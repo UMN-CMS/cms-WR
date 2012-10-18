@@ -18,13 +18,15 @@
 #include "Math/VectorUtil.h"
 #include <math.h>
 
+#include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
+
 //#define CMSSW_3XX
 #define CMSSW_4XX
 
 #undef DO_LHAPDF
 
-namespace hnu {
-
+namespace hnu
+{
   class pTcompareRef
   {
   public:
@@ -119,6 +121,9 @@ namespace hnu {
 
     std::pair<float,double> pileupReweighting(const edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
 					      edm::LumiReWeighting& mcWeight);
+    
+    bool addMuon(pat::Muon& m, HeavyNuEvent& hne, double minimum_muon_jet_dR, int nDirtyCands);
+    bool addElectron(pat::Electron& e, HeavyNuEvent& hne, double minimum_muon_jet_dR);
 
     std::vector< std::pair<pat::Electron,pat::Electron> > 
       getTagProbePair(const std::vector<pat::Electron>& tags,const std::vector<pat::Electron>& probes,
@@ -214,3 +219,4 @@ namespace trigtools {
 }
 
 #endif
+
