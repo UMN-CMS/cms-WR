@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.2 2012/05/27 12:02:59 bdahmes Exp $
+// $Id: HeavyNuFilter.cc,v 1.3 2012/06/03 22:32:21 pastika Exp $
 //
 //
 
@@ -253,7 +253,7 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
-            hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, heepVersion_, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
+            hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, heepVersion_, pvHandle, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
 
 
     if(hnuEvent.nJets < 2) return false;

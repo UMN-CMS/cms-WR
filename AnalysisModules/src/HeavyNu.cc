@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.110 2012/06/23 20:26:35 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.111 2012/10/18 18:38:46 pastika Exp $
 //
 //
 
@@ -770,7 +770,7 @@ void HeavyNu::selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEven
     }
 }
 
-void HeavyNu::selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, HeavyNuEvent& hnuEvent, int nDirtyCands)
+void HeavyNu::selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent, int nDirtyCands)
 {
     if ( nDirtyCands == 0 )
     {
@@ -785,7 +785,7 @@ void HeavyNu::selectElectrons(std::vector< std::pair<pat::Electron, float> >& eC
     {
         std::vector< std::pair<pat::Electron, float> > eDirtyCands =
                 hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt,
-                                     (-1 * heepVersion_), elecRho_);
+                                     (-1 * heepVersion_), pvHandle, elecRho_);
         unsigned int dirtyPosition = eDirtyCands.size() + 1 ;
         unsigned int cleanPosition = eCands.size() + 1 ;
         if ( nDirtyCands == 2 )
@@ -1219,7 +1219,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
-			   heepVersion_,elecRho_);
+			   heepVersion_,pvHandle, elecRho_);
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
@@ -1285,7 +1285,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }// HeavyNuEvent::HNUMU
     else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
-        selectElectrons(eCands, pElecs, hnuEvent, nDirtyCands_);
+        selectElectrons(eCands, pElecs, pvHandle, hnuEvent, nDirtyCands_);
 
         // at this stage we need to assume we have >=2 electrons
         // use the first two in the list eCands to build a di-lepton mass

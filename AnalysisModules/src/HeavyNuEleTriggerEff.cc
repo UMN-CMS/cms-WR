@@ -13,7 +13,7 @@
 //
 // Original Author:  Giovanni Franzoni,27 2-013,+41227678347,
 //         Created:  Fri May 18 12:18:35 CEST 2012
-// $Id: HeavyNuEleTriggerEff.cc,v 1.15 2012/06/18 09:18:44 franzoni Exp $
+// $Id: HeavyNuEleTriggerEff.cc,v 1.16 2012/06/20 17:13:58 franzoni Exp $
 //
 //
 
@@ -928,12 +928,15 @@ bool HeavyNuEleTriggerEff::passOfflineSelection( const edm::Event& iEvent,
   else{
     if (doDebugMessages_) std::cout << " pat electron collection found with size: " << (*patElectronCollection.product()).size() << std::endl;     }
 
+  edm::Handle<reco::VertexCollection> pvHandle;
+  iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
 
   std::vector< std::pair<pat::Electron, float> >  eList;
   eList =   hnu::getElectronList( patElectronCollection, 
 				  maxAbsEtaOfflEle_,
 				  minPtOfflEle_, minPtOfflEle_, 
 				  heepVersion_,
+                                  pvHandle, 
 				  rho_);
   if (eList.size()<2) return false;
   

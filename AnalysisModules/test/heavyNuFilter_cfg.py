@@ -78,7 +78,7 @@ ishpsPFTau = False
 isPileupMC = True
 isPFJets   = True
 
-process = cms.Process("PATSKIM");
+process = cms.Process("PAT");
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -91,11 +91,18 @@ process.options = cms.untracked.PSet(
 # source
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root')
+                            #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/4005DF3C-ABEC-E111-BC0E-00215E21D570.root')
+                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
+                            #file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_3_patch1/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
+                            #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root
 )
 
 if isData:
     if isRun2012:
-        if isRun2012topoff:
+        if isRereco:
+            print "===========> Flag is SET for Reprocessing 5/fb 2012 data <============"
+            from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
+        elif isRun2012topoff:
             print "===========> Flag is SET for 5/fb 2012 data <============"
             from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_topoff_ichep_cfi import lumisToProcess
         else:
@@ -154,7 +161,7 @@ else:
         process.GlobalTag.globaltag = cms.string('GR_R_52_V9::All')
     elif cmsswRelease == 53:
         if isRereco:
-            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN1::All')
+            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN2::All')
         else:
             process.GlobalTag.globaltag = cms.string('GR_P_V40::All')
     else:
@@ -464,7 +471,6 @@ else:
 # Special change for saving good products in data
 if isData:
     process.out.outputCommands = cms.untracked.vstring("keep *")
-
 
 ## ================ ##
 ## Nominal Filter   ##

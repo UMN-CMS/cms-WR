@@ -92,6 +92,7 @@ process.source = cms.Source("PoolSource",
                             #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/4005DF3C-ABEC-E111-BC0E-00215E21D570.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
                             #file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_3_patch1/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
+                            #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root
 )
 
 if isData:
@@ -158,7 +159,7 @@ else:
         process.GlobalTag.globaltag = cms.string('GR_R_52_V9::All')
     elif cmsswRelease == 53:
         if isRereco:
-            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN1::All')
+            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN2::All')
         else:
             process.GlobalTag.globaltag = cms.string('GR_P_V40::All')
     else:

@@ -181,7 +181,8 @@ private:
     void studyJetMatching(HeavyNuEvent& hnuEvent, edm::Handle<std::vector<reco::GenJet> > genjets);
     
     void selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEvent, int nDirtyCands);
-    void selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, HeavyNuEvent& hnuEvent, int nDirtyCands);
+    void selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, 
+                         edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent, int nDirtyCands);
     void alternativeSelection(HeavyNuEvent& hnuEvent);
 
     edm::InputTag muonTag_;

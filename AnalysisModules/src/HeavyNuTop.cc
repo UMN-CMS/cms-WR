@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.34 2012/06/22 01:39:28 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.35 2012/06/22 02:54:49 bdahmes Exp $
 //
 //
 
@@ -670,7 +670,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( useDirtyElectrons_ ) eidVersion = -1 * heepVersion_ ; 
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta,
-			   cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, eidVersion, elecRho_) ;
+			   cuts.minimum_lep2_pt, cuts.minimum_lep2_pt, eidVersion, pvHandle, elecRho_) ;
 
     for (unsigned int i=0; i<eCands.size(); i++) { 
       pat::Electron iE = eCands.at(i).first;

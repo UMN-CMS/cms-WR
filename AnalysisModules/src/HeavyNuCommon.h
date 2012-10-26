@@ -70,9 +70,9 @@ namespace hnu
     bool passesFakeRateMinimum ( const pat::Electron& e ) ; 
     double fakeProbability     ( const pat::Electron& e ) ; 
     double fakeProbability     ( const pat::Muon& mu ) ; 
-    bool passesHEEP         ( const pat::Electron& e, int heepVersion, double rho ) ; 
-    bool passesHEEPv31      ( const pat::Electron& e ) ; 
-    bool passesHEEPv32      ( const pat::Electron& e ) ; 
+    bool passesHEEP         (const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle); 
+    bool passesHEEPv31      (const pat::Electron& e); 
+    bool passesHEEPv32      (const pat::Electron& e); 
 
     double getElectronEscale( double eta1, double eta2 = 999.0 ) ; 
 
@@ -113,7 +113,9 @@ namespace hnu
     std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
 								  double maxAbsEta, 
 								  double minPtEB, double minPtEE, 
-								  int heepVersion, double rho, 
+								  int heepVersion, 
+                                                                  edm::Handle<reco::VertexCollection> pvHandle,
+                                                                  double rho, 
 								  float ebScale=1.0, float eeScale=1.0);
     std::vector<float> generate_flat10_mc(int pileupEra=-1);
 

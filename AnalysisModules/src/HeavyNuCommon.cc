@@ -148,11 +148,11 @@ namespace hnu {
     return prob ; 
   }
 
-  bool passesHEEP(const pat::Electron& e, int heepVersion, double rho) { 
+  bool passesHEEP(const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle) { 
 
-    if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40 ) return false ; 
+    if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40  && abs(heepVersion) != 41) return false ; 
 
-    double ePt  = getElectronEt(e,(abs(heepVersion) != 40)) ; 
+    double ePt  = getElectronEt(e,(abs(heepVersion) != 40) && (abs(heepVersion) != 41)) ; 
     // if ( ePt < 35.0 ) std::cout << "Removing low pT electron from consideration" << std::endl ; 
     // if ( ePt < 35.0 ) return false ; 
 
@@ -160,7 +160,7 @@ namespace hnu {
     
     // All electrons must be ECAL driven
     // if ( !e.ecalDriven() ) std::cout << "FAILURE: electron is not ecal driven!!!" << std::endl ; 
-    if ( !e.ecalDriven() ) return false ; 
+    if ( !e.ecalDriven() ) return false ;
 
     double eEta = getElectronSCEta(e) ; 
     bool isEB   = ( fabs(eEta) < 1.442 ) ; 
@@ -184,8 +184,8 @@ namespace hnu {
     double dPhiIn = fabs(e.deltaPhiSuperClusterTrackAtVtx()) ; 
     // std::cout << "Electron dPhiIn: " << dPhiIn << std::endl ; 
     // if ( heepVersion == 40 && dPhiIn > 0.06 ) std::cout << "FAILURE: Electron dPhiIn = " << dPhiIn << std::endl ; 
-    if (  heepVersion == 31                            && dPhiIn > 0.09 ) return false ; 
-    if ( (heepVersion == 32 || abs(heepVersion) == 40) && dPhiIn > 0.06 ) return false ; 
+    if (  heepVersion == 31                                                      && dPhiIn > 0.09 ) return false ; 
+    if ( (heepVersion == 32 || abs(heepVersion) == 40 || abs(heepVersion) == 41) && dPhiIn > 0.06 ) return false ; 
 
     double sig_iEiE = e.sigmaIetaIeta() ; 
     // if ( isEE ) std::cout << "Electron sigiEiE: " << sig_iEiE << std::endl ; 
@@ -201,13 +201,14 @@ namespace hnu {
     int nLostHits = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
     // std::cout << "Electron nLostHits: " << nLostHits << std::endl ; 
     // if ( nLostHits != 0 ) std::cout << "FAILURE: Electron nLostHits = " << nLostHits << std::endl ; 
-    if ( nLostHits != 0 ) return false ; 
+    if( heepVersion == 31 || heepVersion == 32 || heepVersion == 40) if ( nLostHits != 0 ) return false ; 
+    if( heepVersion == 41) if ( nLostHits > 1 ) return false ; 
     
     double ecalHcalIso = e.dr03EcalRecHitSumEt() + e.dr03HcalDepth1TowerSumEt() ; 
     double thresholdEB = 2. + 0.03 * ePt ; 
     double thresholdEE = 2.5 ;
     if ( isEE && ePt > 50 ) thresholdEE += (0.03 * (ePt - 50.)) ; 
-    if ( abs(heepVersion) == 40 ) { 
+    if ( abs(heepVersion) == 40 || abs(heepVersion) == 41 ) { 
       thresholdEB += ( 0.28 * rho ) ; 
       thresholdEE += ( 0.28 * rho ) ; 
     }
@@ -227,9 +228,15 @@ namespace hnu {
     double trkIso = e.dr03TkSumPt() ;
     // if ( heepVersion == 40 && trkIso > 5. ) std::cout << "FAILURE: Electron trkIso = " << trkIso << std::endl ; 
     // std::cout << "Electron trkIso: " << trkIso << std::endl ; 
-    if ( (heepVersion == 31) &&
-	 ((isEB && trkIso > 7.5) || (isEE && trkIso > 15.)) ) return false ; 
-    if ( (heepVersion == 32 || abs(heepVersion) == 40) && (trkIso > 5.) ) return false ; 
+    if ( (heepVersion == 31) && ((isEB && trkIso > 7.5) || (isEE && trkIso > 15.)) ) return false ; 
+    if ( (heepVersion == 32 || abs(heepVersion) == 40 || abs(heepVersion) == 41) && (trkIso > 5.) ) return false ; 
+    
+    if(pvHandle.isValid())
+    {
+        double absdxy = fabs(e.gsfTrack()->dxy(pvHandle->at(0).position()));
+        if(isEB && absdxy > 0.02) return false;
+        if(isEE && absdxy > 0.05) return false;
+    }
 
     // std::cout << "Congratulations!  The electron passes HEEP selection" << std::endl ; 
 
@@ -1008,6 +1015,7 @@ namespace hnu {
 								double maxAbsEta, 
 								double minEtEB, double minEtEE, 
 								int heepVersion,
+                                                                edm::Handle<reco::VertexCollection> pvHandle,
 								double rho,
 								float ebScale, float eeScale) {
     
@@ -1035,10 +1043,10 @@ namespace hnu {
       // if ( (heepVersion == 40) && !passesHEEPv40(iE) ) continue ; 
 
       // Apply selection if requested
-      if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho) ) continue ;
+      if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
       // Apply anti-selection if requested (fake electron sample)
       if ( (heepVersion < 0) && 
-	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho)) ) continue ; 
+	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ; 
 
       float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
       float elecEt     = getElectronEt(iE,(heepVersion != 40)) * scale ; 
