@@ -20,9 +20,6 @@
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 
-//#define CMSSW_3XX
-#define CMSSW_4XX
-
 #undef DO_LHAPDF
 
 namespace hnu
@@ -60,7 +57,7 @@ namespace hnu
 
     bool isVBTFloose       ( const pat::Muon& m );
     bool isVBTFtight       ( const pat::Muon& m );
-    bool is2012MuTight     ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle) ; 
+    bool is2012MuTight     ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack); 
 
     double muIsolation     ( const pat::Muon& m, const double scale=1.0 ) ; 
     
@@ -104,7 +101,6 @@ namespace hnu
 							      int jecSign=0, int jecEra=3, 
 							      bool isMC=false, int jerSign=0);
     std::vector<pat::Muon>                        getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
-							      edm::Handle<reco::MuonCollection>& tevMuons,
 							      edm::Handle<reco::VertexCollection>& pvHandle,
 							      int idEra, 
 							      double minPt, double maxAbsEta,

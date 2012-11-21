@@ -4,6 +4,7 @@
 
 HeavyNuEvent::HeavyNuEvent(anal_type theMode)
 {
+	//anal_type theMode = HNUMU;
     mode = theMode ;
     eventWgt = 1.0 ;
     cutlevel = -1 ;
@@ -72,28 +73,28 @@ void HeavyNuEvent::scaleMuE(double mufactor, double efactor)
 
 void HeavyNuEvent::calculateLL(bool correctEscale)
 {
-
-    double scale = 1.0 ; 
-    switch(mode)
-    {
-        case HNUE:
-	    if ( isMC && correctEscale ) 
-	      scale = hnu::getElectronEscale( hnu::getElectronSCEta(e1),hnu::getElectronSCEta(e2) ) ;  
-	    vLL = scale * ( e1.p4() + e2.p4() ) ;
-	    break;
-        case TOP:
-	    if ( isMC && correctEscale ) 
-	      scale = hnu::getElectronEscale( hnu::getElectronSCEta(e1) ) ;  
-            vLL = (scale * e1.p4()) + mu1.p4();
-            break;
-        case HNUMU:
-            vLL = mu1.p4() + mu2.p4();
-            break;
-        case QCD:
-        case CLO:
-            break;
-    }
-    mLL = vLL.M();
+	std::cout << "calculateLL is depricated, stop using it, NOW!!!!!!!!!!!!!!!!!!" << std::endl;
+    //double scale = 1.0 ; 
+    //switch(mode)
+    //{
+    //    case HNUE:
+    //if ( isMC && correctEscale ) 
+    //  scale = hnu::getElectronEscale( hnu::getElectronSCEta(e1),hnu::getElectronSCEta(e2) ) ;  
+    //vLL = scale * ( e1.p4() + e2.p4() ) ;
+    //break;
+    //    case TOP:
+    //if ( isMC && correctEscale ) 
+    //  scale = hnu::getElectronEscale( hnu::getElectronSCEta(e1) ) ;  
+    //        vLL = (scale * e1.p4()) + mu1.p4();
+    //        break;
+    //    case HNUMU:
+    //        vLL = mu1.p4() + mu2.p4();
+    //        break;
+    //    case QCD:
+    //    case CLO:
+    //        break;
+    //}
+    //mLL = vLL.M();
 }
 
 void HeavyNuEvent::calculate(bool correctEscale)
@@ -112,8 +113,16 @@ void HeavyNuEvent::calculate(bool correctEscale)
             lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
             break;
         case TOP:
-            lep1p4 = mu1.p4();
-            lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
+            if(mu1.pt() > hnu::getElectronEt(e1, false))
+            {
+                lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0.105);
+                lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
+            }
+            else
+            {
+                lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0);
+                lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0.105);
+            }
             break;
         case HNUMU:
             lep1p4 = mu1.p4();
@@ -154,15 +163,15 @@ void HeavyNuEvent::calculate(bool correctEscale)
     switch(mode)
     {
         case HNUE:
-	    if ( isMC && correctEscale ) scale = hnu::getElectronEscale( l1eta,l2eta ) ; 
+	    if(isMC && correctEscale) scale = hnu::getElectronEscale(l1eta, l2eta); 
 	    vLL = scale * ( lep1p4 + lep2p4 ) ;
 	    break;
         case TOP:
-	    if ( isMC && correctEscale ) scale = hnu::getElectronEscale( l2eta ) ; 
+	    if(isMC && correctEscale) scale = hnu::getElectronEscale(l2eta); 
             vLL = lep1p4 + (scale * lep2p4) ; 
             break;
         default:
-	    vLL = lep1p4 + lep2p4 ; 
+	    	vLL = lep1p4 + lep2p4 ; 
             break;
     }
 

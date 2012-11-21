@@ -34,7 +34,7 @@ isRun2011A          = False
 #--- Flags for data taking era, which are set automatically ---#
 #--- Possible options for dataEra: 20111 (2011A), 20112 (2011B), 20121 (2012) ---#
 dataEra   = 20121 
-pileupEra = 20121
+pileupEra = 0 #20121
 if not isRun2012:
     if isRun2011A:
         dataEra   = 20111
@@ -56,7 +56,7 @@ doTriggerStudy = False
 addSlopeTrees  = True
 
 #--- HEEP ID for electrons ---#
-#--- Recognized values: 40 (2012), 31 or 32 (2011) ---#
+#--- Recognized values: 41 or 40 (2012), 31 or 32 (2011) ---#
 heepVersion = 40
 
 #--- Flags for Top studies ---#
@@ -89,6 +89,7 @@ process.options = cms.untracked.PSet(
 # source
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root')
+                            #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root')
                             #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/4005DF3C-ABEC-E111-BC0E-00215E21D570.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
                             #file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_3_patch1/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
@@ -99,7 +100,7 @@ if isData:
     if isRun2012:
         if isRereco:
             print "===========> Flag is SET for Reprocessing 5/fb 2012 data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
+            #from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
         elif isRun2012topoff:
             print "===========> Flag is SET for 5/fb 2012 data <============"
             from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_topoff_ichep_cfi import lumisToProcess
@@ -127,7 +128,7 @@ if isData:
                 else:
                     from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
                             
-    process.source.lumisToProcess = lumisToProcess
+    #process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -174,18 +175,17 @@ process.load('Configuration.StandardSequences.Services_cff')
 
 ## pat sequences to be loaded:
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
-process.load("RecoMuon.MuonIdentification.refitMuons_cfi")
-process.refitMuons.src = cms.InputTag("muons")
-process.myRefitMuonSequence = cms.Sequence( process.refitMuons )
 from PhysicsTools.PatAlgos.tools.pfTools import *
 
 def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, postfix="", jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']), pvCollection=cms.InputTag('offlinePrimaryVertices'), typeIMetCorrections=False, outputModules=['out']):
+    # PLEASE DO NOT CLOBBER THIS FUNCTION WITH CODE SPECIFIC TO A GIVEN PHYSICS OBJECT.
+    # CREATE ADDITIONAL FUNCTIONS IF NEEDED.
+
+    """Switch PAT to use PF2PAT instead of AOD sources. if 'runPF2PAT' is true, we'll also add PF2PAT in front of the PAT sequence"""
 
     # -------- CORE ---------------
     if runPF2PAT:
         process.load("CommonTools.ParticleFlow.PF2PAT_cff")
-        #add Pf2PAT *before* cloning so that overlapping modules are cloned too
-        #process.patDefaultSequence.replace( process.patCandidates, process.PF2PAT+process.patCandidates)
         process.patPF2PATSequence = cms.Sequence( process.PF2PAT + process.patDefaultSequence)
     else:
         process.patPF2PATSequence = cms.Sequence( process.patDefaultSequence )
@@ -193,26 +193,8 @@ def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, po
     if not postfix == "":
         from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
         cloneProcessingSnippet(process, process.patPF2PATSequence, postfix)
-        #delete everything pat PF2PAT modules! if you want to test the postfixing for completeness
-        #from PhysicsTools.PatAlgos.tools.helpers import listModules,listSequences
-        #for module in listModules(process.patDefaultSequence):
-        #    if not module.label() is None: process.__delattr__(module.label())
-        #for sequence in listSequences(process.patDefaultSequence):
-        #    if not sequence.label() is None: process.__delattr__(sequence.label())
-        #del process.patDefaultSequence
 
     removeCleaning(process, postfix=postfix, outputModules=outputModules)
-
-    # -------- OBJECTS ------------
-    # Muons
-    #adaptPFMuons(process,
-    #             applyPostfix(process,"patMuons",postfix),
-    #             postfix)
-
-    # Electrons
-    #adaptPFElectrons(process,
-    #                 applyPostfix(process,"patElectrons",postfix),
-    #                 postfix)
 
     # Photons
     print "Temporarily switching off photons completely"
@@ -222,13 +204,9 @@ def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, po
 
     # Jets
     if runOnMC :
-       if ishpsPFTau:
-         switchToPFJets( process, cms.InputTag('pfNoTau'+postfix), jetAlgo, postfix=postfix,
+        switchToPFJets( process, cms.InputTag('pfNoTau'+postfix), jetAlgo, postfix=postfix,
                         jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
-       else:
-         switchToPFJets( process, cms.InputTag('pfJets'+postfix), jetAlgo, postfix=postfix,
-                           jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
-         applyPostfix(process,"patDefaultSequence",postfix).replace(
+        applyPostfix(process,"patDefaultSequence",postfix).replace(
             applyPostfix(process,"patJetGenJetMatch",postfix),
             getattr(process,"genForPF2PATSequence") *
             applyPostfix(process,"patJetGenJetMatch",postfix)
@@ -239,21 +217,19 @@ def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, po
             print 'WARNING! Not using L2L3Residual but this is data.'
             print 'If this is okay with you, disregard this message.'
             print '#################################################'
-        if ishpsPFTau:
-            switchToPFJets( process, cms.InputTag('pfNoTau'+postfix), jetAlgo, postfix=postfix,
-                            jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
-        else:
-            switchToPFJets( process, cms.InputTag('pfJets'+postfix), jetAlgo, postfix=postfix,
-                            jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
+        switchToPFJets( process, cms.InputTag('pfNoTau'+postfix), jetAlgo, postfix=postfix,
+                        jetCorrections=jetCorrections, type1=typeIMetCorrections, outputModules=outputModules )
+                        
 
     # Taus
-    #adaptPFTaus( process, tauType='shrinkingConePFTau', postfix=postfix )
-    #adaptPFTaus( process, tauType='fixedConePFTau', postfix=postfix )
     if ishpsPFTau:
         adaptPFTaus( process, tauType='hpsPFTau', postfix=postfix )
 
     # MET
     switchToPFMET(process, cms.InputTag('pfMET'+postfix), type1=typeIMetCorrections, postfix=postfix)
+    if not runOnMC :
+        if hasattr(process,'patPFMet'+postfix):
+            getattr(process,'patPFMet'+postfix).addGenMET = cms.bool(False)
 
     # Unmasked PFCandidates
     addPFCandidates(process,cms.InputTag('pfNoJet'+postfix),patLabel='PFParticles'+postfix,cut="",postfix=postfix)
@@ -271,7 +247,6 @@ def usePF2PAT_WREdition(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=True, po
         removeMCMatchingPF2PAT(process,postfix=postfix,outputModules=outputModules)
 
     print "Done: PF2PAT interfaced to PAT, postfix=", postfix
-
 
 #--- Output module: 
 #--- Must be defined before PAT python tools will work
@@ -292,17 +267,13 @@ if isPFJets:
     postfix = "PFlow"
     if isMC:
         usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
-                  jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']),
-                  pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
+                            jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute']),
+                            pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
     else:
-        if isRun2012:
-            usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
-                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']),
-                  pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
-        else:
-            usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
-                      jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']),
-                  pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
+        usePF2PAT_WREdition(process,runPF2PAT=True, jetAlgo='AK5', runOnMC=isMC, postfix=postfix,
+                            jetCorrections=('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']),
+                            pvCollection=cms.InputTag('goodOfflinePrimaryVertices'))
+                  
     # Remove pileup, muon, and electron candidates from jets 
     # N.B.: This should already be done by default
     getattr(process,"pfNoPileUp"+postfix).enable   = True
@@ -384,6 +355,25 @@ if cmsswRelease == 52:
           tag = cms.string("TrackProbabilityCalibration_3D_2012DataTOT_v1_offline"),
           connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
     )
+elif cmsswRelease == 53:
+	if isMC:
+		process.GlobalTag.toGet = cms.VPSet(
+		  cms.PSet(record = cms.string("BTagTrackProbability2DRcd"),
+		       tag = cms.string("TrackProbabilityCalibration_2D_Data53X_v2"),
+		       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU")),
+		  cms.PSet(record = cms.string("BTagTrackProbability3DRcd"),
+		       tag = cms.string("TrackProbabilityCalibration_3D_Data53X_v2"),
+		       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
+		)
+	else:
+		process.GlobalTag.toGet = cms.VPSet(
+		  cms.PSet(record = cms.string("BTagTrackProbability2DRcd"),
+		       tag = cms.string("TrackProbabilityCalibration_2D_MC53X_v2"),
+		       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU")),
+		  cms.PSet(record = cms.string("BTagTrackProbability3DRcd"),
+		     tag = cms.string("TrackProbabilityCalibration_3D_MC53X_v2"),
+		       connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
+		)
 
 
 ## --------------------- ##
@@ -407,20 +397,23 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
 #--- HB/HE event-level noise filter ---#
 process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi') 
 
-process.eventFilters = cms.Sequence( process.scrapingFilter + process.primaryVertexFilter + process.HBHENoiseFilter ) 
+#--- ECAL laser noise filter ---#
+process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
+
+process.eventFilters = cms.Sequence( process.scrapingFilter * process.primaryVertexFilter * process.HBHENoiseFilter * process.ecalLaserCorrFilter) 
 
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
+       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
-       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.myRefitMuonSequence * process.kt6PFJetsForIsolation
+       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
    )
 if isPFJets:
-    process.AnalysisIntroSequence += process.modifiedPF2PATSequence
+    process.AnalysisIntroSequence *= process.modifiedPF2PATSequence
 
 process.p = cms.Path(
     process.AnalysisIntroSequence
@@ -437,20 +430,6 @@ if isData:
     else:
         removeMCMatching(process, ['All'], outputModules = [])
         
-
-#--- Calo Jet Energy Corrections: No longer used ---#
-process.patJetCorrFactors.useRho = cms.bool(False)
-# Corrections for Calo Jets: no longer used
-# if isMC:
-#     switchJetCollection( process,
-#                          jetCollection=cms.InputTag('ak5CaloJets'),
-#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
-# else:
-#     switchJetCollection( process,
-#                          jetCollection=cms.InputTag('ak5CaloJets'),
-#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute','L2L3Residual']))
-
-
 
 ## ============================== ##
 ## Python tools --> Order matters ##
@@ -474,8 +453,15 @@ if isData:
 process.load("HeavyNu.AnalysisModules.hnutrigmatch_cfi")
 from PhysicsTools.PatAlgos.tools.trigTools import *
 if isData:
+    if (runMuonAnalysis or topStudy) and runElectronAnalysis:
+        triggerMatchersList = [ 'muonTriggerMatchHLTMuons', 'electronTriggerMatchHLTElectrons' ]
+    elif runMuonAnalysis or topStudy:
+        triggerMatchersList = [ 'muonTriggerMatchHLTMuons', ]
+    elif runElectronAnalysis:
+        triggerMatchersList = [ 'electronTriggerMatchHLTElectrons', ]
+	switchOnTriggerMatching( process, triggerMatchers = triggerMatchersList, outputModule = '' )
+    
     if runMuonAnalysis or topStudy:
-        switchOnTriggerMatching( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
         if isRun2011Mu24:
@@ -486,7 +472,6 @@ if isData:
             elif isRun2011Mu40:
                 process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
     if runElectronAnalysis:
-        switchOnTriggerMatching( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
         if isRun2012:
@@ -494,7 +479,7 @@ if isData:
 
 
 #--- Electrons trigger analysis ---#
-process.dumpEvContent = cms.EDAnalyzer("EventContentAnalyzer")
+#process.dumpEvContent = cms.EDAnalyzer("EventContentAnalyzer")
 #
 #  the analysis comes in from here
 #

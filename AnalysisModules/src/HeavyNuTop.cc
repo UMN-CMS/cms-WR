@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuTop.cc,v 1.35 2012/06/22 02:54:49 bdahmes Exp $
+// $Id: HeavyNuTop.cc,v 1.36 2012/10/26 23:25:53 pastika Exp $
 //
 //
 
@@ -280,8 +280,8 @@ void HeavyNuTop::fill(pat::MuonCollection muons,
     hne.eventWgt = wgt;
     hne.isMC = isMC;
 
-    hne.regularize();
-    hne.calculateLL();
+    //hne.regularize();
+    //hne.calculateLL();
     hne.calculate();
 
     hnhs->fill(hne);
@@ -333,7 +333,11 @@ HeavyNuTop::HeavyNuTop(const edm::ParameterSet& iConfig)
 
     // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getParameter<int>("heepVersion");
-    if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ; 
+    if ( heepVersion_ < 30 || heepVersion_ > 41 ) 
+    {
+        std::cout << "!!!!!!!!INVALID HEEP VERSION: " << heepVersion_ << " (setting HEEP 4.1)!!!!!!!!" << std::endl;
+        heepVersion_ = 41;
+    }
 
     useDirtyElectrons_  = iConfig.getParameter<bool>("useDirtyElectrons") ; 
     useDirtyMuons_      = iConfig.getParameter<bool>("useDirtyMuons") ; 
@@ -506,7 +510,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         std::map<uint32_t, TH1 *>::const_iterator it = m_runHistos_.find(runn);
         TH1 *runh;
         if (it == m_runHistos_.end())
-        {
+        {if(pileupEra_ < 20100) hnuEvent.eventWgt = 1.0;
             runh = bookRunHisto(runn);
             m_runHistos_[runn] = runh;
         }
@@ -534,9 +538,6 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::METCollection> pMET ;
     iEvent.getByLabel(metTag_, pMET) ;
 
-    edm::Handle<reco::MuonCollection> tevMuons;
-    iEvent.getByLabel("refitMuons", tevMuons);
-
     //Shirpa reweighting info
     edm::Handle<GenEventInfoProduct> geneventinfo;
     iEvent.getByLabel("generator", geneventinfo);
@@ -545,9 +546,13 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         edm::Handle<std::vector<PileupSummaryInfo> > pPU;
         iEvent.getByLabel("addPileupInfo", pPU);
-        std::pair<float, double> pileup = hnu::pileupReweighting(pPU, MCweightByVertex_) ;
-        hnuEvent.n_pue     = int(pileup.first) ;
-        hnuEvent.eventWgt *= pileup.second ;
+        if(pileupEra_ < 20100) hnuEvent.eventWgt = 1.0;
+        else
+        {
+            std::pair<float, double> pileup = hnu::pileupReweighting(pPU, MCweightByVertex_) ;
+            hnuEvent.n_pue     = int(pileup.first) ;
+            hnuEvent.eventWgt *= pileup.second ;
+        }
         //Shirpa reweighting
         hnuEvent.eventWgt *= geneventinfo->weight();
     }
@@ -687,7 +692,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if ( hnuEvent.nLeptons < 1 ) return false ;
 
     // Finally, look for valid muons and put them in the event
-    std::vector<pat::Muon> muCands = hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
+    std::vector<pat::Muon> muCands = hnu::getMuonList(pMuons, pvHandle, (int(muid_->idEra()/10)), 
 						      cuts.minimum_lep2_pt, cuts.maximum_mu_abseta, applyMESfactor_) ;
     for (unsigned int i = 0; i < muCands.size(); i++)
     {
@@ -814,7 +819,7 @@ bool HeavyNuTop::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(addSlopeTree_) hnuTree_->event_.cutlevel = 3;
 
     double mu1pt = hnuEvent.mu1.pt() ;
-    double e1pt  = hnu::getElectronEt(hnuEvent.e1,(heepVersion_ != 40)) ;
+    double e1pt  = hnu::getElectronEt(hnuEvent.e1,(heepVersion_ != 40 || heepVersion_ != 41)) ;
     double highestPt = std::max(mu1pt, e1pt);
     if ( studyScaleFactorEvolution_ && hnuEvent.mLL >= cuts.minimum_mumu_mass)
     {

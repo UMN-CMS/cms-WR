@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.3 2012/06/03 22:32:21 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.4 2012/10/26 23:25:53 pastika Exp $
 //
 //
 
@@ -249,7 +249,7 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
-            hnu::getMuonList(pMuons, tevMuons, pvHandle, 2012, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, 1.0, false, false);
+            hnu::getMuonList(pMuons, pvHandle, 2012, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, 1.0, false, false);
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =

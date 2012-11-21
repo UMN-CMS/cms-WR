@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.25 2012/05/15 21:47:20 bdahmes Exp $
+// $Id: MuJetBackground.cc,v 1.26 2012/06/15 14:04:22 pastika Exp $
 //
 //
 
@@ -868,9 +868,6 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   // edm::Handle<reco::SuperClusterCollection> multi5x5Clusters ; 
   // iEvent.getByLabel(multiSClabel_, multi5x5Clusters) ; 
 
-  edm::Handle<reco::MuonCollection> tevMuons;
-  iEvent.getByLabel("refitMuons", tevMuons); 
-
   edm::Handle<std::vector<PileupSummaryInfo> > pPU;
   iEvent.getByLabel("addPileupInfo", pPU);    
 
@@ -944,7 +941,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   hists.njet ->Fill(pJets->size()) ;
 
   std::vector<pat::Muon> muCands = 
-    hnu::getMuonList(pMuons,tevMuons,pvHandle,(int(muid_->idEra()/10)), 
+    hnu::getMuonList(pMuons,pvHandle,(int(muid_->idEra()/10)), 
 		     cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0) ; 
   std::vector< std::pair<pat::Jet,float> > jetCands = 
     hnu::getJetList(pJets,jecuObj_,cuts.minimum_dijet_pt,cuts.maximum_jet_abseta,0) ; 

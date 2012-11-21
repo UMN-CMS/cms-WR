@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.111 2012/10/18 18:38:46 pastika Exp $
+// $Id: HeavyNu.cc,v 1.112 2012/10/26 23:25:52 pastika Exp $
 //
 //
 
@@ -170,7 +170,7 @@ void HeavyNu::fill(pat::MuonCollection muons,
     }
     //hne.met1 = metc[0];
 
-    hne.calculateLL(correctEscale_);
+    //hne.calculateLL(correctEscale_);
     hne.calculate(correctEscale_);
 
     hnmh->fill(hne);
@@ -262,8 +262,13 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     addSlopeTree_ = iConfig.getUntrackedParameter<bool>("addSlopeTree");
 
     // Default HEEP version is 4.0 (2012 selection)
-    heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion",40);
-    if ( heepVersion_ < 30 || heepVersion_ > 40 ) heepVersion_ = 40 ;     
+    heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion",41);
+    if ( heepVersion_ < 30 || heepVersion_ > 41 ) 
+    {
+        std::cout << "!!!!!!!!INVALID HEEP VERSION: " << heepVersion_ << " (setting HEEP 4.1)!!!!!!!!" << std::endl;
+        heepVersion_ = 41;
+    }
+        
 
     std::string am = iConfig.getUntrackedParameter<std::string>("analysisMode");
     if(!am.compare("HNUMU")) analysisMode_ = HeavyNuEvent::HNUMU;
@@ -986,9 +991,6 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::METCollection> pMET;
     iEvent.getByLabel(metTag_, pMET);
 
-    edm::Handle<reco::MuonCollection> tevMuons;
-    iEvent.getByLabel("refitMuons", tevMuons);
-
     //Shirpa reweighting info
     edm::Handle<GenEventInfoProduct> geneventinfo;
     iEvent.getByLabel("generator", geneventinfo);
@@ -1000,11 +1002,14 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         edm::Handle<std::vector<PileupSummaryInfo> > pPU;
         iEvent.getByLabel("addPileupInfo", pPU);
-        std::pair<float, double> pileup = hnu::pileupReweighting(pPU, MCweightByVertex_);
-        hnuEvent.n_pue = pileup.first ; // Will only be used for studies, thus no syst. correction necessary
-        if(pileupEra_ < 20100) hnuEvent.eventWgt *= 1.0;
-        else hnuEvent.eventWgt *= pileup.second;
-        if ( fabs(puShift_) > 0.001 ) hnuEvent.eventWgt *= poissonNvtxShifter_.ShiftWeight( pileup.first ) ; 
+        if(pileupEra_ < 20100) hnuEvent.eventWgt = 1.0;
+        else 
+        {
+            std::pair<float, double> pileup = hnu::pileupReweighting(pPU, MCweightByVertex_);
+            hnuEvent.n_pue = pileup.first ; // Will only be used for studies, thus no syst. correction necessary
+            hnuEvent.eventWgt *= pileup.second;
+            if ( fabs(puShift_) > 0.001 ) hnuEvent.eventWgt *= poissonNvtxShifter_.ShiftWeight( pileup.first ) ;
+        }
         //Shirpa reweighting
         hnuEvent.eventWgt *= geneventinfo->weight();
 	// PDF reweighting
@@ -1210,10 +1215,12 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
     }
     fill(*pMuons, *pElecs, *pJets, hnuEvent, false, false, hists.noCuts);
+    
+    return false;
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
-      hnu::getMuonList(pMuons, tevMuons, pvHandle, (int(muid_->idEra()/10)), 
+      hnu::getMuonList(pMuons, pvHandle, (int(muid_->idEra()/10)), 
 		       cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, applyMESfactor_, merUncertainty_, false);
 
     // Look for valid electrons

@@ -43,8 +43,8 @@ namespace hnu {
   } // HeavyNu::isVBTFtight
 
   // Information taken from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId
-  // On 12 May, 2012
-  bool is2012MuTight(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle) { 
+  // On 19 Nov, 2012
+  bool is2012MuTight(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack) { 
 
     reco::TrackRef gt = m.globalTrack();
     reco::TrackRef it = m.innerTrack();
@@ -63,10 +63,10 @@ namespace hnu {
 	     (gt->hitPattern().numberOfValidMuonHits() > 0) &&
 	     (it->hitPattern().numberOfValidPixelHits() > 0) &&
 	     (m.numberOfMatchedStations() > 1) &&
-	     (m.dB() < 0.2) &&
-	     (fabs(it->dz(pv.position())) < 0.5) &&
-	     // (it->hitPattern().trackerLayersWithMeasurement() > 5) ) ; 
-	     (it->hitPattern().trackerLayersWithMeasurement() > 8) ) ; // modification for high pT muons
+	     (fabs(cktTrack->dxy(pv.position())) < 0.2 ) &&
+	     (fabs(cktTrack->dz(pv.position())) < 0.5) &&
+	     (it->hitPattern().trackerLayersWithMeasurement() > 5) ) &&
+	     cktTrack->ptError()/cktTrack->pt()<0.3; 
   }
 
   double getElectronEt(const pat::Electron& e, bool useCorrectedEnergy) { 
@@ -714,32 +714,32 @@ namespace hnu {
         npt = sizeof(json_2012ab_run195868)/sizeof(double);
         pileupDist=json_2012ab_run195868;
     }
-    if (era == 20111) 
+    else if (era == 20111) 
     {
         npt = sizeof(json_2011a)/sizeof(double);
         pileupDist=json_2011a;
     }
-    if (era == 20112) 
+    else if (era == 20112) 
     {
         npt = sizeof(json_2011b)/sizeof(double);
         pileupDist=json_2011b;
     }
-    if (era == 20113) 
+    else if (era == 20113) 
     {
         npt = sizeof(json_2011a_44x)/sizeof(double);
         pileupDist=json_2011a_44x;
     }
-    if (era == 20114) 
+    else if (era == 20114) 
     {
         npt = sizeof(json_2011b_44x)/sizeof(double);
         pileupDist=json_2011b_44x;
     }
-    if (era == 20110) 
+    else if (era == 20110) 
     {
         npt = sizeof(may10_json)/sizeof(double);
         pileupDist=may10_json;
     }
-    if (era>=20100 && era<=20109) 
+    else if (era>=20100 && era<=20109) 
     {
         npt = sizeof(dec22_json)/sizeof(double);
         pileupDist=dec22_json;
@@ -898,7 +898,6 @@ namespace hnu {
   } 
 
   std::vector<pat::Muon> getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
-				     edm::Handle<reco::MuonCollection>& tevMuons,
 				     edm::Handle<reco::VertexCollection>& pvHandle, 
 				     int idEra, double minPt, double maxAbsEta, 
 				     double mesScale, bool muBiasUnc, 
@@ -910,68 +909,38 @@ namespace hnu {
     std::vector<pat::Muon> muonList ; 
     for (unsigned int iMuon = 0; iMuon < pMuons->size(); iMuon++) {
       pat::Muon iM = pMuons->at(iMuon) ; 
+      
+      // For 53 we must recalculate the muon Pt (This needs CMSSW_5_3_6_p1)
+      reco::TrackRef cktTrack = (muon::tevOptimized(iM, 200, 40., 17., 0.25)).first;
+      reco::Particle::PolarLorentzVector p4(cktTrack->pt(),iM.eta(),iM.phi(),0.1057);
+      
       if ( !iM.isGlobalMuon() ) continue ; 
-      // std::cout << "Investigating muon with pt " << iM.pt() << std::endl ; 
-      if ( fabs(iM.eta()) > maxAbsEta ) continue ; 
-      // std::cout << "Checking tevOptimized" << std::endl ; 
-      // std::cout << iM.isGlobalMuon() << std::endl ; 
-      // std::cout << iM.globalTrack().isNull() << std::endl ; 
-      // std::cout << iM.innerTrack().isNull() << std::endl ; 
-      // std::cout << iM.tpfmsTrack().isNull() << std::endl ; 
-      // std::cout << iM.pickyTrack().isNull() << std::endl ; 
-      // reco::Muon::MuonTrackTypePair muPair = muon::tevOptimized(iM,200.,4.,6.) ; 
-      // std::cout << "Got here" << std::endl ; 
-
-      reco::TrackRef muRef = muon::tevOptimized(iM,200.,4.,6.).first ; 
-      // reco::TrackRef muRef = muPair.first ; 
-      // std::cout << "Is muRef null? " << muRef.isNull() << std::endl ; 
+      if ( fabs(iM.eta()) > maxAbsEta ) continue ;
 
       if ( muBiasUnc ) { 
-	int charge = iM.charge() / abs(iM.charge()) ; 
-	// std::cout << "Charge is " << charge << std::endl ; 
-	// Modification of muon scale uncertainty: 5% per TeV, only for barrel
-	// double k   = muScaleLUT(iM) ;
-	double k  = 0. ; 
-	if ( fabs(iM.eta()) < 1.2 ) k = 0.05 / 1000. ; 
-	double pt = (muRef.isNull() ? iM.pt() : muRef->pt() ) ; 
-	ptScale   = ( double(charge) / ( double(charge) + k*pt ) ) ; 
+        int charge = iM.charge() / abs(iM.charge()) ; 
+        double k  = 0. ; 
+        if ( fabs(iM.eta()) < 1.2 ) k = 0.05 / 1000. ; 
+        double pt = (cktTrack.isNull() ? iM.pt() : cktTrack->pt() ) ; 
+        ptScale   = ( double(charge) / ( double(charge) + k*pt ) ) ; 
       }
 
-      // Method for getting high pT muons has changed in 50X - 52X
-      if ( muRef.isNonnull() ) { 
-	reco::Particle::PolarLorentzVector muP4( muRef->pt(),muRef->eta(),muRef->phi(),0.1057) ; 
-	iM.setP4( muP4 * ptScale ) ; 
+      // Method for getting high pT muons has changed in 53X
+      if ( cktTrack.isNonnull() ) {
+        iM.setP4( p4 * ptScale ) ; 
       } else { 
-	iM.setP4( iM.p4() * ptScale ) ; 
+        iM.setP4( iM.p4() * ptScale ) ; 
       }
 
-      double mupt = iM.pt() ;
-      if ( mupt < minPt ) continue ; 
-      // std::cout << "Checking ID " << iM.pt() << std::endl ; 
-      bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM,pvHandle) ) : ( isVBTFtight(iM) ) ) ; 
-      // std::cout << "Muon ID: " << passesID << std::endl ; 
+      if ( iM.pt() < minPt ) continue ; 
+      bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM, pvHandle, cktTrack) ) : ( isVBTFtight(iM) ) ) ;
       if ( !passesID ) continue ; 
-      // if ( !isVBTFtight(iM) ) continue ; 
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting
-      if ( trackerPt ) { 
-	double energy = sqrt( iM.innerTrack()->p()*iM.innerTrack()->p() + 
-			      0.1057 * 0.1057 ) ; // Track p^2 + muon_mass^2 
-	reco::Particle::LorentzVector trackP4(iM.innerTrack()->px(),iM.innerTrack()->py(),iM.innerTrack()->pz(),energy) ;  
-	iM.setP4( trackP4 ) ; 
-      // } else { 
-      // 	// Method for getting high pT muons has changed in 50X - 52X
-      // 	iM.setP4( (muon::tevOptimized(iM,200.,4.,6.).first->p4()) * ptScale ) ; 
-
-      // 	// for (unsigned int iTeV=0; iTeV<tevMuons->size() ; iTeV++) { 
-      // 	//   reco::Muon tevMuon = tevMuons->at(iTeV) ; 
-      // 	//   double tevMuPt = tevMuon.pt() * ptScale ; 
-      // 	//   if ( tevMuPt < minPt ) continue ;  
-      // 	//   double dR = ROOT::Math::VectorUtil::DeltaR(tevMuon.p4(),iM.p4()) ;
-      // 	//   if ( dR < 0.001 ) { // Replace muon p4 with refit (TeV) muon p4
-      // 	//     iM.setP4( tevMuon.p4() * ptScale ) ;
-      // 	//   }
-      // 	// }
+      if ( trackerPt ) {
+        double energy = sqrt( iM.innerTrack()->p()*iM.innerTrack()->p() + 0.1057 * 0.1057 ) ; // Track p^2 + muon_mass^2 
+        reco::Particle::LorentzVector trackP4(iM.innerTrack()->px(),iM.innerTrack()->py(),iM.innerTrack()->pz(),energy) ;  
+        iM.setP4( trackP4 ) ; 
       }
 
       muonList.push_back(iM) ; 
@@ -1015,38 +984,28 @@ namespace hnu {
 								double maxAbsEta, 
 								double minEtEB, double minEtEE, 
 								int heepVersion,
-                                                                edm::Handle<reco::VertexCollection> pvHandle,
+                                edm::Handle<reco::VertexCollection> pvHandle,
 								double rho,
 								float ebScale, float eeScale) {
     
     std::vector< std::pair<pat::Electron,float> > electronList ; 
     // Just in case...
     if(heepVersion > 0)
-    {
-        if ( heepVersion < 30 || heepVersion > 40 ) {
-          if ( heepVersion <= 2 ) heepVersion += 30 ;
-          else                    heepVersion = 40 ;
-        }   // the 0 case is meant to provide: "do no HEEP selection"
-        if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 && heepVersion != 0) {
+    { // heepVersion = 0 for no heep selection
+        if ( heepVersion != 31 && heepVersion != 32 && heepVersion != 40 && heepVersion != 41 && heepVersion != 0) {
           std::cout << "WARNING Invalid HEEP version: " << heepVersion << std::endl ;
           return electronList ;
         }
     }
     for (unsigned int iElectron=0; iElectron < pElecs->size(); iElectron++) {
       pat::Electron iE = pElecs->at(iElectron); 
-      // std::cout << "Considering electron with pT: " << getElectronEt(iE,(heepVersion != 40)) 
-      // 		<< " and eta: " << getElectronSCEta(iE) << std::endl ; 
-      // if ( getElectronSCEta(iE) > maxAbsEta ) std::cout << "Event outside boundary, ignoring" << std::endl ; 
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
-      // if ( (heepVersion == 31) && !passesHEEPv31(iE) ) continue ; 
-      // if ( (heepVersion == 32) && !passesHEEPv32(iE) ) continue ; 
-      // if ( (heepVersion == 40) && !passesHEEPv40(iE) ) continue ; 
 
       // Apply selection if requested
       if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
       // Apply anti-selection if requested (fake electron sample)
       if ( (heepVersion < 0) && 
-	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ; 
+	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;
 
       float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
       float elecEt     = getElectronEt(iE,(heepVersion != 40)) * scale ; 
@@ -1054,8 +1013,8 @@ namespace hnu {
 
       if (passEtCuts) {
         iE.setP4(iE.p4() * scale);
-	std::pair<pat::Electron,float> electronCand = std::make_pair(iE,scale) ;
-	electronList.push_back( electronCand ) ; 
+        std::pair<pat::Electron,float> electronCand = std::make_pair(iE,scale) ;
+        electronList.push_back( electronCand ) ; 
       }
     }
     std::sort(electronList.begin(),electronList.end(),scaleCompare()) ; 
