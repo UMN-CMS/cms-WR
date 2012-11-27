@@ -48,7 +48,7 @@ namespace hnu {
 
     reco::TrackRef gt = m.globalTrack();
     reco::TrackRef it = m.innerTrack();
-    if (gt.isNull() || it.isNull()) {
+    if (gt.isNull() || it.isNull() || cktTrack.isNull()) {
       //std::cerr << "Mu global track or inner track reference is NULL" << std::endl;
       return false;
     }
@@ -66,7 +66,7 @@ namespace hnu {
 	     (fabs(cktTrack->dxy(pv.position())) < 0.2 ) &&
 	     (fabs(cktTrack->dz(pv.position())) < 0.5) &&
 	     (it->hitPattern().trackerLayersWithMeasurement() > 5) ) &&
-	     cktTrack->ptError()/cktTrack->pt()<0.3; 
+	     (cktTrack->ptError()/cktTrack->pt() < 0.3); 
   }
 
   double getElectronEt(const pat::Electron& e, bool useCorrectedEnergy) { 
@@ -908,10 +908,13 @@ namespace hnu {
     double ptScale = mesScale ; 
     std::vector<pat::Muon> muonList ; 
     for (unsigned int iMuon = 0; iMuon < pMuons->size(); iMuon++) {
-      pat::Muon iM = pMuons->at(iMuon) ; 
+      pat::Muon iM = pMuons->at(iMuon);
+      
+      if(iM.globalTrack().isNull() || iM.innerTrack().isNull()) continue;
       
       // For 53 we must recalculate the muon Pt (This needs CMSSW_5_3_6_p1)
       reco::TrackRef cktTrack = (muon::tevOptimized(iM, 200, 40., 17., 0.25)).first;
+      if(cktTrack.isNull()) continue;
       reco::Particle::PolarLorentzVector p4(cktTrack->pt(),iM.eta(),iM.phi(),0.1057);
       
       if ( !iM.isGlobalMuon() ) continue ; 
@@ -929,12 +932,12 @@ namespace hnu {
       if ( cktTrack.isNonnull() ) {
         iM.setP4( p4 * ptScale ) ; 
       } else { 
-        iM.setP4( iM.p4() * ptScale ) ; 
+        iM.setP4( iM.p4() * ptScale ) ;
       }
 
       if ( iM.pt() < minPt ) continue ; 
-      bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM, pvHandle, cktTrack) ) : ( isVBTFtight(iM) ) ) ;
-      if ( !passesID ) continue ; 
+      bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM, pvHandle, cktTrack)) : ( isVBTFtight(iM) ) ) ;
+      if ( !passesID ) continue ;
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting
       if ( trackerPt ) {
@@ -943,7 +946,7 @@ namespace hnu {
         iM.setP4( trackP4 ) ; 
       }
 
-      muonList.push_back(iM) ; 
+      muonList.push_back(iM);
     }
 
     std::sort(muonList.begin(),muonList.end(),pTcompare()) ; 

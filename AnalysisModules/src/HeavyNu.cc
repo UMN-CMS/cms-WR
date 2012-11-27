@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.112 2012/10/26 23:25:52 pastika Exp $
+// $Id: HeavyNu.cc,v 1.113 2012/11/21 18:44:15 pastika Exp $
 //
 //
 
@@ -592,8 +592,11 @@ void HeavyNu::fillBasicMuHistos(const pat::Muon& m)
 
             reco::TrackRef gt = m.globalTrack();
             // gt.isNonnull() guaranteed at this point?
-            hists.muNvalidMuonHitsVsPt ->Fill(mupt, gt->hitPattern().numberOfValidMuonHits());
-            hists.muNvalidPixelHitsVsPt->Fill(mupt, gt->hitPattern().numberOfValidPixelHits());
+            if(!gt.isNull())
+            {
+            	hists.muNvalidMuonHitsVsPt ->Fill(mupt, gt->hitPattern().numberOfValidMuonHits());
+            	hists.muNvalidPixelHitsVsPt->Fill(mupt, gt->hitPattern().numberOfValidPixelHits());
+            }
 
             if(hnu::isVBTFtight(m)) hists.tightMuPt->Fill(mupt);
         }
@@ -1187,7 +1190,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     hists.cutlevel->Fill(-1.0, hnuEvent.eventWgt);
 
     // Basic selection requirements: Require at least two leptons, two jets
-    switch(analysisMode_)
+    /*switch(analysisMode_)
     {
         case HeavyNuEvent::HNUMU:
             if(pMuons->size() < 2) return false;
@@ -1201,7 +1204,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         case HeavyNuEvent::QCD:
         case HeavyNuEvent::CLO:
             break;
-    }
+    }*/
     
     //if(pJets->size() < 2) return false;
 
@@ -1215,8 +1218,6 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hists.cutlevel->Fill(0.0, hnuEvent.eventWgt);
     }
     fill(*pMuons, *pElecs, *pJets, hnuEvent, false, false, hists.noCuts);
-    
-    return false;
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
