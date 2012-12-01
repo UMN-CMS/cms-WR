@@ -7,7 +7,7 @@ import os
 isMC=True
 isData=not isMC
 
-smode = 0
+smode = 1
 
 #--- Specify CMSSW release (53, 52, 44, 42, 37) ---#
 cmsswRelease = 53
@@ -78,7 +78,7 @@ ishpsPFTau = False
 isPileupMC = True
 isPFJets   = True
 
-process = cms.Process("PAT");
+process = cms.Process("PATSKIM");
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -90,7 +90,11 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/24196E6D-99D3-E111-800A-003048D479D8.root',
+                            								'file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/222B3FAE-83D1-E111-BB1B-001E673984FD.root',
+                            								'file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/5C4F8895-8BD1-E111-A7AA-001E673968F1.root',
+                            								'file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/9837BDC9-9ED1-E111-B91C-003048673FC0.root'
+                            								)
                             #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/4005DF3C-ABEC-E111-BC0E-00215E21D570.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
                             #file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_3_patch1/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
@@ -442,16 +446,6 @@ if isData:
 
 #--- Calo Jet Energy Corrections: No longer used ---#
 process.patJetCorrFactors.useRho = cms.bool(False)
-# Corrections for Calo Jets: no longer used
-# if isMC:
-#     switchJetCollection( process,
-#                          jetCollection=cms.InputTag('ak5CaloJets'),
-#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute']))
-# else:
-#     switchJetCollection( process,
-#                          jetCollection=cms.InputTag('ak5CaloJets'),
-#                          jetCorrLabel=('AK5Calo', ['L1Offset','L2Relative','L3Absolute','L2L3Residual']))
-
 
 
 ## ============================== ##
@@ -483,7 +477,7 @@ process.hNu = cms.EDFilter(
     minMu1pt     = cms.double(50.),
     minMu2pt     = cms.double(35.),
     minJetPt     = cms.double(30.),
-    maxMuAbsEta  = cms.double(2.5),
+    maxMuAbsEta  = cms.double(2.55),
     maxElecAbsEta = cms.double(2.6),
     maxJetAbsEta = cms.double(2.6),
     minMuonJetdR = cms.double(0.3),
@@ -501,7 +495,7 @@ process.hNu = cms.EDFilter(
     )
 
 process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') )
-process.out.outputCommands = cms.untracked.vstring("drop *", "keep *_*_*_RECO", "keep *_*_*_LHE", "keep *_*_*_SIM", "keep *_*_*_HLT", "keep *_*_*_PATSKIM")
+process.out.outputCommands = cms.untracked.vstring("drop *", "keep *_*_*_RECO", "keep *_*_*_LHE", "keep *_*_*_SIM", "keep *_*_*_HLT")#, "keep *_*_*_PATSKIM")
 #                                                   "drop patTaus_*_*_PATSKIM", "drop recoPFCandidates_*_*_PATSKIM", "drop recoIsoDepositedmValueMap_*_*_PATSKIM")
 process.p = cms.Path( process.AnalysisIntroSequence * process.hNu )
 process.end = cms.EndPath(process.out)

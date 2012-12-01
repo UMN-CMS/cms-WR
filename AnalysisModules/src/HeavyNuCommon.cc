@@ -937,7 +937,7 @@ namespace hnu {
 
       if ( iM.pt() < minPt ) continue ; 
       bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM, pvHandle, cktTrack)) : ( isVBTFtight(iM) ) ) ;
-      if ( !passesID ) continue ;
+      if ( !passesID && idEra != 0 ) continue ;
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting
       if ( trackerPt ) {

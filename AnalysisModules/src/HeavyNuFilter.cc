@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.4 2012/10/26 23:25:53 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.5 2012/11/21 18:44:15 pastika Exp $
 //
 //
 
@@ -66,7 +66,7 @@
 #include "TH3.h"
 #include "TProfile2D.h"
 #include "TVector3.h"
-#include "TRandom.h"
+#include "TRandom3.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
@@ -109,6 +109,8 @@ private:
 
     // ----------member data ---------------------------
     bool init_;
+    
+    TRandom3 *tr3;
 
     // gf set of histo for all Z definitions in a stack
 
@@ -185,6 +187,8 @@ HeavyNuFilter::HeavyNuFilter(const edm::ParameterSet& iConfig)
     std::cout << "minMuonJetdR      = " << cuts.minimum_muon_jet_dR << std::endl;
     std::cout << "muonTrackRelIso   = " << cuts.muon_trackiso_limit << std::endl;
     std::cout << "isPFJets          = " << isPFJets_ << std::endl;
+    
+    tr3 = new TRandom3(16);
 
 }
 
@@ -249,11 +253,11 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Look for valid muons
     std::vector<pat::Muon> muCands =
-            hnu::getMuonList(pMuons, pvHandle, 2012, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, 1.0, false, false);
+            hnu::getMuonList(pMuons, pvHandle, 0, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, 1.0, false, false);
 
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
-            hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, heepVersion_, pvHandle, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
+            hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 0, pvHandle, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
 
 
     if(hnuEvent.nJets < 2) return false;
@@ -287,9 +291,9 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     if(hnuEvent.j1.pt() < cuts.minimum_jet_pt || hnuEvent.j2.pt() < cuts.minimum_jet_pt) return false;
 
-    switch(mode_)
+  
+    if(tr3->Uniform() > 0.9)
     {
-        case 0: //Z+Jets
             for(std::vector<pat::Muon>::const_iterator iM = muCands.begin(); iM != muCands.end(); ++iM)
             {
                 double dRlj1 = deltaR(iM->p4(), hnuEvent.j1.p4());
@@ -334,26 +338,23 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                     bool reject = false;
                     for(unsigned int sEl = 0; sEl < eCands.size(); sEl++)
                     {
-                        if((reject |= Overlap(eeSCs.at(ebsc).eta(), eeSCs.at(ebsc).phi(), eCands.at(sEl).first.eta(), eCands.at(sEl).first.phi()))) break;
+                        if((reject |= Overlap(ebSCs.at(ebsc).eta(), ebSCs.at(ebsc).phi(), eCands.at(sEl).first.eta(), eCands.at(sEl).first.phi()))) break;
                     }// loop over selected electrons
                     if(reject) continue;
 
                     if ( fabs( ebSCs.at(ebsc).eta() ) < cuts.maximum_mu_abseta) return true;
                 }
             }
-            break;
-        case 1: //TTBar
             if(hnuEvent.nMuons + hnuEvent.nElectrons < 2) return false;
-
-            if(hnuEvent.nMuons >= 2     && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) return true;
-            if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
-            if(hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1)
-            {
-                if(hnu::getElectronEt(hnuEvent.e1, false)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
-            }
-            break;
     }
 
+    if(hnuEvent.nMuons >= 2     && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) return true;
+    if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
+    if(hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1)
+    {
+        if(hnu::getElectronEt(hnuEvent.e1, false)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
+    }
+    
     return false;
 }
 
