@@ -965,10 +965,10 @@ namespace hnu {
     if ( fabs(eta2) < 2.5 && fabs(eta2) > 1.56 ) nEE++ ; 
     
     // All corrections to MC, bringing energy down to match data
-    // Updated to AN 12/171, v8 results
-    double ebebCorr = 1.0 - 0.0088 ; 
-    double ebeeCorr = 1.0 - 0.0143 ; 
-    double eeeeCorr = 1.0 - 0.0145 ; 
+    // No mLL correction to be made for now - 12/21/12
+    double ebebCorr = 1.0;// - 0.0088 ; 
+    double ebeeCorr = 1.0;// - 0.0143 ; 
+    double eeeeCorr = 1.0;// - 0.0145 ; 
 
     if ( nEB + nEE < 2 ) { // Special case for top
       if      ( nEB ) scaleCorrection = sqrt( ebebCorr ) ; 
@@ -1011,7 +1011,7 @@ namespace hnu {
 	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;
 
       float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
-      float elecEt     = getElectronEt(iE,(heepVersion != 40)) * scale ; 
+      float elecEt     = getElectronEt(iE,false) * scale ; 
       bool  passEtCuts = ( (iE.isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ;
 
       if (passEtCuts) {
@@ -1033,9 +1033,10 @@ namespace hnu {
         if ( hne.nLeptons > 0 && nDirtyCands > 0) dRm1 = deltaR(m.eta(), m.phi(), hne.mu1.eta(), hne.mu1.phi());
         if (dRj1 > minimum_muon_jet_dR && dRj2 > minimum_muon_jet_dR && dRm1 > 0.3)
         {
+        	hne.nMuons++ ;
             hne.nLeptons++ ;
-            if(hne.nLeptons == 1)      hne.mu1 = m;
-            else if(hne.nLeptons == 2) hne.mu2 = m;
+            if(hne.nMuons == 1)      hne.mu1 = m;
+            else if(hne.nMuons == 2) hne.mu2 = m;
             else std::cout << "WARNING: Expected empty muon position" << std::endl;
             return true;
         }
@@ -1049,9 +1050,10 @@ namespace hnu {
         if(hne.nJets > 1) dRj2 = deltaR(e.eta(), e.phi(), hne.j2.eta(), hne.j2.phi());
         if(dRj1 > minimum_muon_jet_dR && dRj2 > minimum_muon_jet_dR)
         {
+            hne.nElectrons++ ;
             hne.nLeptons++;
-            if(hne.nLeptons == 1) hne.e1 = e;
-            else if(hne.nLeptons == 2) 
+            if(hne.nElectrons == 1) hne.e1 = e;
+            else if(hne.nElectrons == 2) 
             {
                 if(getElectronEt(hne.e1, false) > getElectronEt(e, false)) hne.e2 = e;
                 else

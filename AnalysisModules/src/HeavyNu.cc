@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.113 2012/11/21 18:44:15 pastika Exp $
+// $Id: HeavyNu.cc,v 1.114 2012/11/27 03:05:06 pastika Exp $
 //
 //
 
@@ -124,17 +124,19 @@ void HeavyNu::fill(pat::MuonCollection muons,
     std::sort(electrons.begin(), electrons.end(), hnu::pTcompare());
     std::sort(jets.begin(), jets.end(), hnu::pTcompare());
 
+	hne.nLeptons = 0;
+
     if(!goodLeps)
     {
         if((analysisMode_ == HeavyNuEvent::HNUMU || analysisMode_ == HeavyNuEvent::TOP) && muons.size() > 0)
         {
             hne.mu1 = muons[0];
-            hne.nLeptons = 1;
+            hne.nLeptons++;
         }
         if((analysisMode_ == HeavyNuEvent::HNUE || analysisMode_ == HeavyNuEvent::TOP) && electrons.size() > 0)
         {
             hne.e1 = electrons[0];
-            hne.nLeptons = 1;
+            hne.nLeptons++;
         }
         
         if(analysisMode_ == HeavyNuEvent::HNUMU && muons.size() > 1)
@@ -470,7 +472,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         }
 
     }
-    if(analysisMode_ == HeavyNuEvent::HNUE)
+    else if(analysisMode_ == HeavyNuEvent::HNUE)
     {
         hists.noCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)");
         hists.JJptCuts = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("cut0a_JJpt")), "(2 jets with ptcuts:0a)");
@@ -491,7 +493,21 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
             hists.HeepTagGsfProbePassesInZwin0jets = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbePassesInZwin0jets")), "(probe_{0} passes, ID in Z mass Window)", 2);
             hists.HeepTagGsfProbePassesInZwin1jet = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbePassesInZwin1jet")), "(probe_{1} passes, ID in Z mass Window)", 2);
             hists.HeepTagGsfProbePassesInZwin2jets = new HeavyNuMuHist(new TFileDirectory(fs->mkdir("HeepTagGsfProbePassesInZwin2jets")), "(probe_{2} passes, ID in Z mass Window)", 2);
-	}
+	    }
+    }
+    else if(analysisMode_ == HeavyNuEvent::TOP)
+    {
+    	hists.noCuts = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)");
+        hists.JJptCuts = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut0a_JJpt")), "(2 jets with ptcuts:0a)");
+        hists.LLptCuts = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut0b_LLpt")), "(2 leptons with ptcuts:0b)");
+        hists.LLJJptCuts =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)");
+        hists.TrigMatches =  new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)");
+        hists.Mu1HighPtCut = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(L1 High pt cut:4)");
+        hists.Mu1HighPtCut_1bjet = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(L1 High pt cut:4a)");
+        hists.Mu1HighPtCut_2bjet = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(L1 High pt cut:4b)");
+        hists.ZRegionCut = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut4c_ZPeak")), "(Z-Peak:4c)");
+        hists.diLmassCut =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(ee mass cut:5)");
+        hists.mWRmassCut =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
     }
 
     hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
@@ -876,6 +892,42 @@ void HeavyNu::selectElectrons(std::vector< std::pair<pat::Electron, float> >& eC
     }
 }
 
+void HeavyNu::selectTop(std::vector< std::pair<pat::Electron, float> >& eCands, std::vector<pat::Muon>& muCands, edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent)
+{
+    for(unsigned int i = 0; i < muCands.size(); i++)
+    {
+        if(hnuEvent.nMuons >= 1) break;
+        pat::Muon iM = muCands.at(i);
+        if(hnu::muIsolation(iM) < cuts.muon_trackiso_limit)
+        {
+            hnu::addMuon(iM, hnuEvent, cuts.minimum_muon_jet_dR, 0);
+        }
+    }
+
+    if(applyMuIDCorrections_ && hnuEvent.isMC)
+    {
+        double mu1wgt = (hnuEvent.nMuons >= 1)? (muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_)):1.0;
+
+        hnuEvent.eventWgt *= mu1wgt;
+    }
+    
+    for(unsigned int i = 0; i < eCands.size(); i++)
+    {
+        if(hnuEvent.nElectrons >= 1) break;
+        pat::Electron iE = eCands.at(i).first;
+        hnu::addElectron(iE, hnuEvent, cuts.minimum_muon_jet_dR);
+    }
+    
+    if(applyMuIDCorrections_ && hnuEvent.isMC) // Only care about applying weights if you have two candidates
+    {
+        if ( hnuEvent.nElectrons >= 1 )
+        { // Only care about applying weights if you have two candidates
+            double e1wgt = muid_->weightElectronsForMC(hnu::getElectronSCEta(hnuEvent.e1), applyMuIDEffsign_) ;
+            hnuEvent.eventWgt *= e1wgt;
+        }
+    }
+}
+
 void HeavyNu::alternativeSelection(HeavyNuEvent& hnuEvent)
 {
     if ( studyAlternativeSelection_ && hnuEvent.nJets >= 2) {
@@ -1189,26 +1241,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     hists.cutlevel->Fill(-1.0, hnuEvent.eventWgt);
 
-    // Basic selection requirements: Require at least two leptons, two jets
-    /*switch(analysisMode_)
-    {
-        case HeavyNuEvent::HNUMU:
-            if(pMuons->size() < 2) return false;
-            break;
-        case HeavyNuEvent::HNUE:
-            if(pElecs->size() < 2) return false;
-            break;
-        case HeavyNuEvent::TOP:
-            if(pElecs->size() < 1 || pMuons->size() < 1) return false;
-            break;
-        case HeavyNuEvent::QCD:
-        case HeavyNuEvent::CLO:
-            break;
-    }*/
-    
-    //if(pJets->size() < 2) return false;
-
     // Look for valid jets and put them in the event
+    
     std::vector< std::pair<pat::Jet, float> > jetCands =
       hnu::getJetList(pJets, jecuObj_, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_);
     hnuEvent.nJets = jetCands.size();
@@ -1227,7 +1261,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
-			   heepVersion_,pvHandle, elecRho_);
+			   heepVersion_,pvHandle, elecRho_, 10.0, 10.0);
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
@@ -1264,6 +1298,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     bool l1trig = false;
     bool l2trig = false;
+    
 
     if(analysisMode_ == HeavyNuEvent::HNUMU)
     {
@@ -1311,7 +1346,30 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         l1trig = l2trig = l12trig ;
     }
-    
+    else if(analysisMode_ == HeavyNuEvent::TOP)
+    {
+        selectTop(eCands, muCands, pvHandle, hnuEvent);
+    	
+    	//--- Trigger Matching needed for efficiency studies ---//
+        if(trig_->matchingEnabled() && iEvent.isRealData())
+        {
+            l1trig = (hnuEvent.nMuons > 0) && trig_->isTriggerMatched(hnuEvent.mu1, iEvent, &(((HeavyNuMuHist*)hists.Mu1TrigMatchesInZwin)->trigHistos));
+        }
+        else if(!iEvent.isRealData())
+        {
+            if(disableTriggerCorrection_)
+            {
+                l1trig = true;
+            }
+            else
+            {
+                l1trig = (hnuEvent.nMuons > 0) && trig_->simulateForMC(hnuEvent.mu1.pt(), hnuEvent.mu1.eta(), applyTrigEffsign_) && hnuEvent.mu1.pt() > 40;
+            }
+        }
+        
+        l2trig = true;
+    }
+
     hnuEvent.scaleMuE(applyMESfactor_);
     hnuEvent.calculate(correctEscale_); // calculate various details
     

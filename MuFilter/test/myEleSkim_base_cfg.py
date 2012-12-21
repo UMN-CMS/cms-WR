@@ -25,8 +25,12 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 # source
 process.source = cms.Source("PoolSource",
                             #fileNames=cms.untracked.vstring('file:input.root')
+<<<<<<< myEleSkim_base_cfg.py
+                            fileNames=cms.untracked.vstring('/store/data/Run2012A/Photon/AOD/13Jul2012-v1/00000/90E8AE4F-0CD0-E111-A060-0025B3E05CDA.root')
+=======
                             #fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012A/Photon/AOD/PromptReco-v1/000/190/736/C87655EF-FB83-E111-A922-003048D3733E.root')
                             fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012B/DoublePhotonHighPt/AOD/13Jul2012-v1/00000/00FD2120-45D9-E111-863D-848F69FD28AA.root')
+>>>>>>> 1.4
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -37,9 +41,13 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
+<<<<<<< myEleSkim_base_cfg.py
+process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
+=======
 #process.GlobalTag.globaltag = 'GR_R_50_V13::All'
 #process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
 process.GlobalTag.globaltag = 'GR_R_53_V11::All'
+>>>>>>> 1.4
 
 
 ### Output needs to be created before working with PAT objects ###

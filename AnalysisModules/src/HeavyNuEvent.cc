@@ -11,6 +11,7 @@ HeavyNuEvent::HeavyNuEvent(anal_type theMode)
     nLeptons = 0 ;
     nJets = 0 ;
     nElectrons = 0 ;
+    nMuons = 0;
     numNuLJetsMatched = 0;
     isBJet1 = isBJet2 = false;
 
@@ -37,8 +38,6 @@ HeavyNuEvent::HeavyNuEvent(const HeavyNuEvent& hne)
     isBJet2 = hne.isBJet2;
     numBJets = hne.numBJets;
 
-
-    // Protection: set all scale factors to 1 by default
     j1scale = hne.j1scale;
     j2scale = hne.j2scale;
     MuScale = hne.MuScale;
@@ -113,16 +112,8 @@ void HeavyNuEvent::calculate(bool correctEscale)
             lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
             break;
         case TOP:
-            if(mu1.pt() > hnu::getElectronEt(e1, false))
-            {
-                lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0.105);
-                lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
-            }
-            else
-            {
-                lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0);
-                lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0.105);
-            }
+            lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, (nLeptons >= 2 && mu1.pt() > hnu::getElectronEt(e1, false))?0.105:0.0);
+            lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, (nLeptons >= 2 && mu1.pt() > hnu::getElectronEt(e1, false))?0.0:0.105);
             break;
         case HNUMU:
             lep1p4 = mu1.p4();

@@ -113,56 +113,66 @@ void HeavyNuTopHist::fill(HeavyNuEvent& hne)
     double wgt = hne.eventWgt ;
 
     // Muons
-    double mu1pt = hne.mu1.pt();
-    double e1pt  = hnu::getElectronEt(hne.e1, false);
-
-    mu1trackIso->Fill(hne.mu1.trackIso(), wgt);
-    mu1hcalIso ->Fill(hne.mu1.hcalIso(), wgt);
-    mu1ecalIso ->Fill(hne.mu1.ecalIso(), wgt);
-    mu1caloIso ->Fill(hne.mu1.caloIso(), wgt);
-    mu1dB      ->Fill(hne.mu1.dB(), wgt);
-    e1trackIso->Fill(hne.e1.trackIso(), wgt);
-    e1hcalIso ->Fill(hne.e1.hcalIso(), wgt);
-    e1ecalIso ->Fill(hne.e1.ecalIso(), wgt);
-    e1caloIso ->Fill(hne.e1.caloIso(), wgt);
-    e1dB      ->Fill(hne.e1.dB(), wgt);
-
-    mu1trackRelIso->Fill(hne.mu1.trackIso() / mu1pt, wgt);
-    mu1hcalRelIso ->Fill(hne.mu1.hcalIso() / mu1pt, wgt);
-    mu1ecalRelIso ->Fill(hne.mu1.ecalIso() / mu1pt, wgt);
-    mu1caloRelIso ->Fill(hne.mu1.caloIso() / mu1pt, wgt);
-    e1trackRelIso->Fill(hne.e1.trackIso() / e1pt, wgt);
-    e1hcalRelIso ->Fill(hne.e1.hcalIso() / e1pt, wgt);
-    e1ecalRelIso ->Fill(hne.e1.ecalIso() / e1pt, wgt);
-    e1caloRelIso ->Fill(hne.e1.caloIso() / e1pt, wgt);
-
-    for (int i = 0; i < muonQualityFlags; i++)
+    if(hne.nLeptons >= 1)
     {
-        if (hne.mu1.muonID(muonQuality[i])) qualMu1->Fill( i, wgt ) ;
-    }
+        double mu1pt = hne.mu1.pt();
 
-    if(hne.e1.isEB())
-    {
-        if(hne.mu1.eta() < 1.44) mMuEBB->Fill(hne.mLL, wgt );
-    }
+        mu1trackIso->Fill(hne.mu1.trackIso(), wgt);
+        mu1hcalIso ->Fill(hne.mu1.hcalIso(), wgt);
+        mu1ecalIso ->Fill(hne.mu1.ecalIso(), wgt);
+        mu1caloIso ->Fill(hne.mu1.caloIso(), wgt);
+        mu1dB      ->Fill(hne.mu1.dB(), wgt);
+    
+        mu1trackRelIso->Fill(hne.mu1.trackIso() / mu1pt, wgt);
+        mu1hcalRelIso ->Fill(hne.mu1.hcalIso() / mu1pt, wgt);
+        mu1ecalRelIso ->Fill(hne.mu1.ecalIso() / mu1pt, wgt);
+        mu1caloRelIso ->Fill(hne.mu1.caloIso() / mu1pt, wgt);    
 
-    mWRvsminLPt->Fill(hne.mWR, std::min(hne.mu1.pt(), hne.e1.pt()), wgt);
-    mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
+        for (int i = 0; i < muonQualityFlags; i++)
+        {
+            if (hne.mu1.muonID(muonQuality[i])) qualMu1->Fill( i, wgt ) ;
+        }
 
-    if(hne.e1.isEB())
-    {
-        mMuEBarrel->Fill(hne.mLL, wgt );
-        if(hne.mu1.eta() < 1.44) mMuEBB->Fill(hne.mLL, wgt );
-
-        mWRBarrel->Fill(hne.mWR, wgt);
-        if(hne.mu1.eta() < 1.44) mWRBB->Fill(hne.mWR, wgt);
+        muonpt->Fill(hne.mu1.pt(), wgt);
+        muoneta->Fill(hne.mu1.eta(), wgt);
+        muonphi->Fill(hne.mu1.phi(), wgt);
     }
     
-    muonpt->Fill(hne.mu1.pt(), wgt);
-    muoneta->Fill(hne.mu1.eta(), wgt);
-    muonphi->Fill(hne.mu1.phi(), wgt);
+    //electron
+    if(hne.nLeptons >= 2)
+    {
+        double e1pt  = hnu::getElectronEt(hne.e1, false);
     
-    elecpt->Fill(hnu::getElectronEt(hne.e1, false));
-    eleceta->Fill(hnu::getElectronSCEta(hne.e1));
-    elecphi->Fill(hnu::getElectronSCPhi(hne.e1));
+        e1trackIso->Fill(hne.e1.trackIso(), wgt);
+        e1hcalIso ->Fill(hne.e1.hcalIso(), wgt);
+        e1ecalIso ->Fill(hne.e1.ecalIso(), wgt);
+        e1caloIso ->Fill(hne.e1.caloIso(), wgt);
+        e1dB      ->Fill(hne.e1.dB(), wgt);
+    
+        e1trackRelIso->Fill(hne.e1.trackIso() / e1pt, wgt);
+        e1hcalRelIso ->Fill(hne.e1.hcalIso() / e1pt, wgt);
+        e1ecalRelIso ->Fill(hne.e1.ecalIso() / e1pt, wgt);
+        e1caloRelIso ->Fill(hne.e1.caloIso() / e1pt, wgt);
+    
+        elecpt->Fill(hnu::getElectronEt(hne.e1, false));
+        eleceta->Fill(hnu::getElectronSCEta(hne.e1));
+        elecphi->Fill(hnu::getElectronSCPhi(hne.e1));
+        
+        if(hne.e1.isEB())
+        {
+            if(hne.mu1.eta() < 1.44) mMuEBB->Fill(hne.mLL, wgt );
+        }
+    
+        mWRvsminLPt->Fill(hne.mWR, std::min(hne.mu1.pt(), hne.e1.pt()), wgt);
+        mWRvsNPV->Fill(hne.mWR, hne.n_primary_vertex, wgt);
+    
+        if(hne.e1.isEB())
+        {
+            mMuEBarrel->Fill(hne.mLL, wgt );
+            if(hne.mu1.eta() < 1.44) mMuEBB->Fill(hne.mLL, wgt );
+
+            mWRBarrel->Fill(hne.mWR, wgt);
+            if(hne.mu1.eta() < 1.44) mWRBB->Fill(hne.mWR, wgt);
+        }  
+    }  
 }

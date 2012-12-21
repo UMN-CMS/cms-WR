@@ -12,6 +12,7 @@
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuTree.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuMuHist.h"
+#include "HeavyNu/AnalysisModules/src/HeavyNuTopHist.h"
 
 namespace hnu
 {
@@ -183,6 +184,7 @@ private:
     void selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEvent, int nDirtyCands);
     void selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, 
                          edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent, int nDirtyCands);
+    void selectTop(std::vector< std::pair<pat::Electron, float> >& eCands, std::vector<pat::Muon>& muCands, edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent);
     void alternativeSelection(HeavyNuEvent& hnuEvent);
 
     edm::InputTag muonTag_;

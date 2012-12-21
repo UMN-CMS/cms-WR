@@ -111,89 +111,99 @@ HeavyNuTrigger::book(const TFileDirectory& tdir, trigHistos_t *thist)
 
 bool
 HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
-				 const edm::Event& iEvent,
-				 trigHistos_t *thist)
+                                 const edm::Event& iEvent,
+                                 trigHistos_t *thist)
 {
-  bool matched=false;
-  // bool passTrig=false;
-  
-  // Only one trigger can be used for matching in a given run
-  int run = iEvent.run() ; 
-  std::vector<std::string> validHLTpaths ; 
-  
-  for (unsigned int i=0; i<muonTriggers_.size(); i++) 
-    if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(muonTriggers_.at(i)) ; 
+    bool matched = false;
+    // bool passTrig=false;
 
-//   std::cout << "Looking for trigger match for muon with pT " << m.pt() 
-//    	    << " and eta " << m.eta() << std::endl ; 
+    // Only one trigger can be used for matching in a given run
+    int run = iEvent.run() ;
+    std::vector<std::string> validHLTpaths ;
 
-  // muon trigger matching is only allowed within |eta|<2.1
-  if ( matchingEnabled_ &&(fabs(m.eta()) < 2.1) ) {
-    // PAT trigger information
-//     edm::Handle< pat::TriggerEvent > triggerEvent;
+    for (unsigned int i = 0; i < muonTriggers_.size(); i++)
+        if (run >= beginRun_.at(i) && run <= endRun_.at(i)) validHLTpaths.push_back(muonTriggers_.at(i)) ;
 
-//     iEvent.getByLabel( trigEventTag_, triggerEvent );
-//     if ( !triggerEvent.isValid() ) {
-//       std::cerr << "triggerEvent not found " << std::endl;
-//       return false;
-//     }
+       //std::cout << "Looking for trigger match for muon with pT " << m.pt() 
+       // 	    << " and eta " << m.eta() << std::endl ; 
 
-    const pat::TriggerObjectStandAloneCollection muonMatchCollection = m.triggerObjectMatches();
-    // std::cout << "Trigger object matches size: " << muonMatchCollection.size() << std::endl ; 
+    // muon trigger matching is only allowed within |eta|<2.1
+    if ( matchingEnabled_ && (fabs(m.eta()) < 2.1) )
+    {
+        // PAT trigger information
+        //     edm::Handle< pat::TriggerEvent > triggerEvent;
 
-    for (unsigned int i=0; i<muonMatchCollection.size(); i++) { 
-      if ( matched ) break ; // Quit as soon as we find a match
-      // std::cout << "Trigger object " << i+1 << " of " << muonMatchCollection.size() << std::endl ; 
-      pat::TriggerObject muonTrigger = muonMatchCollection.at(i) ; 
-      pat::TriggerObjectStandAlone muonTriggerInfo = muonMatchCollection.at(i) ; 
-      // Look for a match with one of our paths
-      std::vector<std::string> hltPaths = muonTriggerInfo.pathNames(true,false) ; 
-      bool hltPathMatch = false ; 
-      for (unsigned int j=0; j<hltPaths.size(); j++) { 
-	if (hltPathMatch) break ; 
-	for (unsigned int k=0; k<validHLTpaths.size(); k++) { 
-	  if (hltPaths.at(j) == validHLTpaths.at(k)) { 
-            // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
-	    hltPathMatch = true ; 
-	    break ; 
-	  }
-	}
-      }
-      // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
-      // Requirements to see if the trigger would have accepted the event based on this muon
-      if ( hltPathMatch && muonTrigger.pt() > triggerPt_ ) { 
-	double dr2  = reco::deltaR2 <pat::Muon,pat::TriggerObject>( m,muonTrigger );
-	double dpt  = 1.-(muonTrigger.pt()/m.pt());
-	double dphi = reco::deltaPhi( m.phi(),muonTrigger.phi() );
-	double deta = m.eta() - muonTrigger.eta();
+        //     iEvent.getByLabel( trigEventTag_, triggerEvent );
+        //     if ( !triggerEvent.isValid() ) {
+        //       std::cerr << "triggerEvent not found " << std::endl;
+        //       return false;
+        //     }
 
-	// One more requirement: make sure that the muon is nearby the trigger object
-	if ( sqrt(dr2) < 0.1 ) matched = true ; 
+        const pat::TriggerObjectStandAloneCollection muonMatchCollection = m.triggerObjectMatches();
+        //std::cout << "Trigger object matches size: " << muonMatchCollection.size() << std::endl ; 
 
-//         std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
-//         std::cout << "dR is " << sqrt(dr2) << std::endl ; 
+        for (unsigned int i = 0; i < muonMatchCollection.size(); i++)
+        {
+            if ( matched ) break ; // Quit as soon as we find a match
+            // std::cout << "Trigger object " << i+1 << " of " << muonMatchCollection.size() << std::endl ; 
+            pat::TriggerObject muonTrigger = muonMatchCollection.at(i) ;
+            pat::TriggerObjectStandAlone muonTriggerInfo = muonMatchCollection.at(i) ;
+            // Look for a match with one of our paths
+            std::vector<std::string> hltPaths = muonTriggerInfo.pathNames(true, false) ;
+            bool hltPathMatch = false ;
+            for (unsigned int j = 0; j < hltPaths.size(); j++)
+            {
+                if (hltPathMatch) break ;
+                for (unsigned int k = 0; k < validHLTpaths.size(); k++)
+                {
+                    if (hltPaths.at(j) == validHLTpaths.at(k))
+                    {
+                        // std::cout << "Found a match to HLT path: " << muonTriggers_.at(k) << std::endl ; 
+                        hltPathMatch = true ;
+                        break ;
+                    }
+                }
+            }
+            // Finding a trigger object is not enough.  Need to impose the last filter (pT) 
+            // Requirements to see if the trigger would have accepted the event based on this muon
+            if ( hltPathMatch && muonTrigger.pt() > triggerPt_ )
+            {
+                double dr2  = reco::deltaR2 <pat::Muon, pat::TriggerObject > ( m, muonTrigger );
+                //double dpt  = 1. - (muonTrigger.pt() / m.pt());
+                //double dphi = reco::deltaPhi( m.phi(), muonTrigger.phi() );
+                //double deta = m.eta() - muonTrigger.eta();
 
-	if (thist) {	  
-	  thist->trigMatchPtCorrel->Fill( m.pt(),muonTrigger.pt() );
-	  thist->trigMatchDR2     ->Fill( dr2 );
-	  thist->trigMatchDRDPt   ->Fill( dr2,dpt );
-	  thist->trigMatchDetaPhi ->Fill( deta,dphi );
-	}
-      }
-      if ( !matched ) {
-	if ( thist ) {
-	  thist->trigUnmatchedPt->Fill( m.pt() );
-	  thist->trigUnmatchedEtaPhi->Fill( m.eta(),m.phi() );
-	}
-      }
+                // One more requirement: make sure that the muon is nearby the trigger object
+                if ( sqrt(dr2) < 0.1 ) matched = true ;
+
+                //         std::cout << "pT is " << muonTrigger.pt() << " with dpt = " << dpt << std::endl ; 
+                //         std::cout << "dR is " << sqrt(dr2) << std::endl ; 
+
+                /*if (thist)
+                {
+                    thist->trigMatchPtCorrel->Fill( m.pt(), muonTrigger.pt() );
+                    thist->trigMatchDR2     ->Fill( dr2 );
+                    thist->trigMatchDRDPt   ->Fill( dr2, dpt );
+                    thist->trigMatchDetaPhi ->Fill( deta, dphi );
+                }*/
+            }
+            /*if ( !matched )
+            {
+                if ( thist )
+                {
+                    thist->trigUnmatchedPt->Fill( m.pt() );
+                    thist->trigUnmatchedEtaPhi->Fill( m.eta(), m.phi() );
+                }
+            }*/
+        }
+
+        /*if ( thist )
+        {
+            thist->trigAllCandMuPt->Fill( m.pt() );
+            thist->trigAllCandMuEtaPhi->Fill( m.eta(), m.phi() );
+        }*/
     }
-
-    if ( thist ) { 
-      thist->trigAllCandMuPt->Fill( m.pt() );
-      thist->trigAllCandMuEtaPhi->Fill( m.eta(),m.phi() );
-    }
-  }
-  return ( matched ); 
+    return ( matched );
 }                                    // HeavyNuTrigger::isTriggerMatched
 
 bool HeavyNuTrigger::isTriggerMatched(const pat::Electron& e1,

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.5 2012/11/21 18:44:15 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.6 2012/12/01 00:35:07 pastika Exp $
 //
 //
 
@@ -236,6 +236,13 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     edm::Handle<reco::VertexCollection> pvHandle;
     iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
+    
+    if(mode_ == 1)
+    { // This mode is to single out 0 Jet events from the inclusive DY sample
+    	edm::Handle<LHEEventProduct> LHEinfo;
+        iEvent.getByLabel("source", LHEinfo);
+        if(LHEinfo->hepeup().NUP != 5) return false;
+    }
 
     if(!pElecs.isValid() || !pMuons.isValid() || !pJets.isValid())
     {

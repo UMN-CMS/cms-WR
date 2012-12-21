@@ -9,43 +9,18 @@ isData=not isMC
 
 #--- Specify CMSSW release (53, 52, 44, 42, 37) ---#
 cmsswRelease = 53
-isRereco = True
 
 #--- Signal MC flags ---#
 isMCsignal=False
-Training=False
 
-#--- Trigger-based luminosity flags ---#
-#--- only one should be True        ---#
-#--- LoLumi     --> HLT_Mu24        ---#
-#--- HiLumi     --> HLT_Mu40        ---#
-#--- VeryHiLumi --> HLT_Mu40_eta2p1 ---#
-isRun2011Mu24       = False
-isRun2011Mu40       = False
-isRun2011Mu40eta2p1 = False
-isRun2012           = True
-#--- Special flag to use the *full* 5/fb for ICHEP ---#
-#--- Default (i.e. False) is to use the 3.6/fb specified by EXO HN as acceptable ---#
-isRun2012topoff     = False 
-
-#--- This flag must be set to ensure Monte Carlo gets the right corrections
-isRun2011A          = False
+#--- Data Run era flags ---#
+# options 2012AB, 2012C
+runEra = "2012C"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- Possible options for dataEra: 20111 (2011A), 20112 (2011B), 20121 (2012) ---#
 dataEra   = 20121 
 pileupEra = 0 #20121
-if not isRun2012:
-    if isRun2011A:
-        dataEra   = 20111
-        pileupEra = 20111
-        if cmsswRelease == 44: 
-            pileupEra = 20113
-    else:
-        dataEra   = 20112
-        pileupEra = 20112
-        if cmsswRelease == 44: 
-            pileupEra = 20114
 
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
@@ -57,11 +32,10 @@ addSlopeTrees  = True
 
 #--- HEEP ID for electrons ---#
 #--- Recognized values: 41 or 40 (2012), 31 or 32 (2011) ---#
-heepVersion = 40
+heepVersion = 41
 
 #--- Flags for Top studies ---#
 topStudy      = True
-studyTopScale = False
 
 #--- Flags for QCD studies ---#
 qcdStudy  = False
@@ -88,13 +62,12 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                                                        fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/24196E6D-99D3-E111-800A-003048D479D8.root',
-                            								'file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/222B3FAE-83D1-E111-BB1B-001E673984FD.root',
-                            								'file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/5C4F8895-8BD1-E111-A7AA-001E673968F1.root',
-                            								'file:/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12/9837BDC9-9ED1-E111-B91C-003048673FC0.root'
-                            								)
+                            fileNames=cms.untracked.vstring('/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
+                            #/store/mc/Summer12_DR53X/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7C-v1/00000/56B5A94D-FB27-E211-901F-AC162DA8C2B0.root')
+                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/DY0JetsToLL_M-50_TuneZ2Star_8TeV-madgraph_START53_V7A/FZJ_000.root')
+                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/TTBar_Partial/heavynu_candevents_425_1_uct.root')
+                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START53_V7A_2/heavynu_candevents_136_1_Hd1.root')
                             #file:/hdfs/cms/skim/elec/hNu_2012/photon/eejj_skim_aug8_rereco_run2012a/eejj_skim_aug8_rereco_run2012a_266.root')
-                            #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-3000_MNu-1500_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/A23F8326-0EFB-E111-B892-E41F13181ADC.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root')
                             #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/4005DF3C-ABEC-E111-BC0E-00215E21D570.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
@@ -103,36 +76,12 @@ process.source = cms.Source("PoolSource",
 )
 
 if isData:
-    if isRun2012:
-        if isRereco:
-            print "===========> Flag is SET for Reprocessing 5/fb 2012 data <============"
-            #from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
-        elif isRun2012topoff:
-            print "===========> Flag is SET for 5/fb 2012 data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_topoff_ichep_cfi import lumisToProcess
-        else:
-            print "===========> Flag is SET for 3.6/fb 2012 data <============"
-            from HeavyNu.AnalysisModules.goodLumiList_2012_dynamic_cfi import lumisToProcess
-    else:
-        if isRun2011Mu24:
-            print "===========> Flag is SET for 2011 LOW luminosity data <============"
-            if cmsswRelease == 44:
-                from HeavyNu.AnalysisModules.goodLumiList_novRereco_160404_163869_mu24_cfi import lumisToProcess
-            else:
-                from HeavyNu.AnalysisModules.goodLumiList_160404_163869_may10rereco_Mu24_cfi import lumisToProcess
-        else:
-            if isRun2011Mu40eta2p1:
-                print "===========> Flag is SET for 2011 HIGH luminosity data <============"
-                if cmsswRelease == 44:
-                    from HeavyNu.AnalysisModules.goodLumiList_novRereco_173236_180252_mu40_eta2p1_cfi import lumisToProcess
-                else:
-                    from HeavyNu.AnalysisModules.goodLumiList_173236_180252_Mu40eta2p1_cfi import lumisToProcess
-            elif isRun2011Mu40:
-                print "===========> Flag is SET for 2011 MEDIUM luminosity data <============"
-                if cmsswRelease == 44:
-                    from HeavyNu.AnalysisModules.goodLumiList_novRereco_165088_173198_mu40_cfi import lumisToProcess
-                else:
-                    from HeavyNu.AnalysisModules.goodLumiList_165088_173198_Mu40_cfi import lumisToProcess
+    if runEra == "2012AB":
+        #from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
+        pass
+    elif runEra == "2012C":
+        #from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
+        pass
                             
     #process.source.lumisToProcess = lumisToProcess
 
@@ -146,29 +95,21 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## Global Tags:
 if (isMC):
     print "=================> MC flag is SET <===================="
-    if cmsswRelease == 42:
-        process.GlobalTag.globaltag=cms.string('START44_V12::All')
-    elif cmsswRelease == 44:
-        process.GlobalTag.globaltag=cms.string('START44_V12::All')
-    elif cmsswRelease == 52:
+    if cmsswRelease == 52:
         process.GlobalTag.globaltag=cms.string('START52_V11::All')
     elif cmsswRelease == 53:
-        process.GlobalTag.globaltag=cms.string('START53_V7A::All')
+        process.GlobalTag.globaltag=cms.string('START53_V15::All')
     else:
         print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 else:
     print "===============> Running on DATA <===================="
-    if cmsswRelease == 42:
-        process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
-    elif cmsswRelease == 44:
-        process.GlobalTag.globaltag = cms.string('GR_R_44_V13::All')
-    elif cmsswRelease == 52:
+    if cmsswRelease == 52:
         process.GlobalTag.globaltag = cms.string('GR_R_52_V9::All')
     elif cmsswRelease == 53:
-        if isRereco:
-            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN2::All')
-        else:
-            process.GlobalTag.globaltag = cms.string('GR_P_V40::All')
+        if runEra == "2012AB":
+            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
+        elif runEra == "2012C":
+            process.GlobalTag.globaltag = cms.string('GR_P_V41_AN3::All')
     else:
         print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 
@@ -176,7 +117,7 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
 ################################################################################################
-###    P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D  ###
+###   P r e p a r a t i o n      o f    t h e    P A T    O b j e c t s   f r o m    A O D   ###
 ################################################################################################
 
 ## pat sequences to be loaded:
@@ -470,17 +411,12 @@ if isData:
     if runMuonAnalysis or topStudy:
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
-        if isRun2011Mu24:
-            process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu24_v*",1,0 )' )
-        else:
-            if isRun2011Mu40eta2p1 or isRun2012:
-                process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
-            elif isRun2011Mu40:
-                process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_v*",1,0 )' )
+        if runEra == "2012AB" or "2012C":
+            process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
     if runElectronAnalysis:
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
-        if isRun2012:
+        if runEra == "2012AB" or "2012C":
             process.electronTriggerMatchHLTElectrons.matchedCuts = cms.string( 'path( "HLT_*",1,0 )' )
 
 
@@ -509,8 +445,6 @@ if isMCsignal:
     process.hNuGenFilter.keepIds = cms.vint32(2,)
 
 process.hNu.minMu2pt         = cms.double(40.)
-if not isRun2012:
-    process.hNu.minMu2pt     = cms.double(30.)
 process.hNu.ZmassWinMinGeV   = cms.double(60.)
 process.hNu.ZmassWinMaxGeV   = cms.double(120.)
 process.hNu.isPFJets         = cms.bool(isPFJets)
@@ -541,14 +475,9 @@ if isData:
     process.hNu.trigMatchPset.trigEventTag    = cms.InputTag("patTriggerEvent")
     process.hNu.trigMatchPset.electronFilters = cms.vstring('hltDiEle33CaloIdLGsfTrkIdVLDPhiDoubleFilter')
     process.hNu.muIDPset.eraForId             = cms.int32( dataEra )
-    if isRun2011Mu24:
-        process.hNu.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-        process.hNu.trigMatchPset.electronTriggers = cms.vstring( '' )
-        process.hNu.trigMatchPset.triggerPt = cms.double( 24. )
-    else:
-        process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
-        process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v6' )
-        process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
+    process.hNu.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9','HLT_Mu40_eta2p1_v10','HLT_Mu40_eta2p1_v11' ) 
+    process.hNu.trigMatchPset.electronTriggers = cms.vstring( 'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v6','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v7' )
+    process.hNu.trigMatchPset.triggerPt = cms.double( 40. )
 else:
     # turn on MC trigger simulation
     process.hNu.trigMatchPset.randomSeed = cms.int32(os.getpid())
@@ -559,23 +488,19 @@ else:
 if isPFJets:
     process.hNu.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
 
-if Training:
-    process.hNu.trainingFileName=cms.untracked.string("changeme_nntraining.txt")
-
 #--- Necessary to sort out trigger complications ---#
-process.hNuMu24       = process.hNu.clone()
 process.hNuMu40       = process.hNu.clone() 
 process.hNuMu40eta2p1 = process.hNu.clone()
 
 process.hNuE               = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'))
 process.hNuE.correctEscale = cms.bool(isMC)
 
+process.hNuEMu               = process.hNu.clone(analysisMode = cms.untracked.string('TOP'))
+process.hNuEMu.correctEscale = cms.bool(isMC)
+
 #--- Electron ID corrections are taken from June 22, 2012 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
 
-process.hNuMu24.trigMatchPset.triggerPt    = cms.double( 24. )
-process.hNuMu24.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-process.hNuMu24.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
 process.hNuMu40.trigMatchPset.triggerPt    = cms.double( 40. )
 process.hNuMu40.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5' ) 
 process.hNuMu40.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
@@ -583,13 +508,9 @@ process.hNuMu40eta2p1.trigMatchPset.triggerPt    = cms.double( 40. )
 process.hNuMu40eta2p1.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
 process.hNuMu40eta2p1.trigMatchPset.randomSeed   = cms.int32( os.getpid() )
 
-process.hNuMu24jesHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(1) )
-process.hNuMu24jesLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(-1) )
 process.hNuMu40jesHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(1) )
 process.hNuMu40jesLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(-1) )
 
-process.hNuMu24jerHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
-process.hNuMu24jerLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
 process.hNuMu40jerHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
 process.hNuMu40jerLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
 
@@ -605,38 +526,22 @@ process.hNuEidLo.applyMuIDEffcorr = cms.bool( isMC )
 process.hNuEtrigHi = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(1) )
 process.hNuEtrigLo = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(-1) )
 
-# process.hNuMu24mesHi = process.hNuMu24.clone( applyMESfactor = cms.double(1.01) )
-# process.hNuMu24mesLo = process.hNuMu24.clone( applyMESfactor = cms.double(0.99) )
-# process.hNuMu40mesHi = process.hNuMu40.clone( applyMESfactor = cms.double(1.01) )
-# process.hNuMu40mesLo = process.hNuMu40.clone( applyMESfactor = cms.double(0.99) )
 
-process.hNuMu24mer = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), checkMERUnc = cms.bool(True) )
 process.hNuMu40mer = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), checkMERUnc = cms.bool(True) )
 
-process.hNuMu24midHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
-process.hNuMu24midLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
 process.hNuMu40midHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
 process.hNuMu40midLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
-process.hNuMu24midHi.applyMuIDEffcorr = cms.bool( isMC )
-process.hNuMu24midLo.applyMuIDEffcorr = cms.bool( isMC )
 process.hNuMu40midHi.applyMuIDEffcorr = cms.bool( isMC )
 process.hNuMu40midLo.applyMuIDEffcorr = cms.bool( isMC )
 
-process.hNuMu24trigHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(1) )
-process.hNuMu24trigLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(-1) )
 process.hNuMu40trigHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(1) )
 process.hNuMu40trigLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), applyTrigEffsign  = cms.int32(-1) )
 
 # Pileup uncertainty: +/- 8% on number of interactions leads to 0.4 in 2011A, 0.7 in 2011B
 #                     +/- 5% on number of interactions (16.85, 12/06/09) leads to 0.84 in 2012AB
-if isRun2012:
+if runEra == "2012AB" or "2012C":
     process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.84) )
     process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.84) )
-else:
-    process.hNuMu24puHi = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.4) )
-    process.hNuMu24puLo = process.hNuMu24.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.4) )
-    process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.7) )
-    process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.7) )
 
 process.hNuEpuHi = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(0.84) )
 process.hNuEpuLo = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(-0.84) )
@@ -670,14 +575,9 @@ if isData:
     process.hNuQCD.muonTag                     = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
     process.hNuQCD.trigMatchPset.trigEventTag  = cms.InputTag( 'patTriggerEvent' )
     process.hNuQCD.trigMatchPset.electronFilters  = cms.vstring('') 
-    if isRun2011Mu24:
-        process.hNuQCD.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-        process.hNuQCD.trigMatchPset.triggerPt        = cms.double( 24. )
-        process.hNuQCD.trigMatchPset.electronTriggers = cms.vstring( '' )
-    else:
-        process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
-        process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 40. )
-        process.hNuQCD.trigMatchPset.electronTriggers = cms.vstring( '' )
+    process.hNuQCD.trigMatchPset.muonTriggers = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
+    process.hNuQCD.trigMatchPset.triggerPt    = cms.double( 40. )
+    process.hNuQCD.trigMatchPset.electronTriggers = cms.vstring( '' )
 else:
     # turn on MC trigger simulation
     process.hNuQCD.trigMatchPset.randomSeed = cms.int32( os.getpid() )
@@ -688,86 +588,10 @@ else:
 if isPFJets:
     process.hNuQCD.jetTag  = cms.InputTag( 'selectedPatJetsPFlow' )
 
-process.hNuQCDMu24 = process.hNuQCD.clone()
 process.hNuQCDMu40 = process.hNuQCD.clone() 
 
-process.hNuQCDMu24.trigMatchPset.triggerPt  = cms.double( 24. )
-process.hNuQCDMu24.trigMatchPset.randomSeed = cms.int32( os.getpid() )
 process.hNuQCDMu40.trigMatchPset.triggerPt  = cms.double( 40. )
 process.hNuQCDMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
-
-## ============ ##
-## Top Analysis ##
-## ============ ##
-process.load("HeavyNu.AnalysisModules.heavynutopanalysis_cfi")
-# process.hNuTop.minLep2pt        = cms.double(30.)
-process.hNuTop.studyScaleFactor  = cms.bool(studyTopScale)
-process.hNuTop.heepVersion       = cms.int32(heepVersion)
-process.hNuTop.electronRho       = cms.InputTag( 'kt6PFJetsForIsolation','rho' )
-process.hNuTop.useDirtyElectrons = cms.bool( False ) 
-process.hNuTop.useDirtyMuons     = cms.bool( False ) 
-process.hNuTop.fakeWeightFlavor  = cms.int32( 0 ) 
-
-#--- Some corrections re-enabled ---#
-process.hNuTop.applyMuIDEffcorr      = cms.bool(isMC)
-process.hNuTop.applyMuIDEffsign      = cms.int32(0)
-process.hNuTop.applyEleEScale        = cms.bool(isMC) 
-process.hNuTop.correctEscale         = cms.bool(isMC) 
-process.hNuTop.applyEleIDweight      = cms.bool(isMC) 
-process.hNuTop.pileupEra             = cms.int32(pileupEra)
-process.hNuTop.trigMatchPset.trigEra = cms.int32(dataEra)
-process.hNuTop.muIDPset.eraForId     = cms.int32(dataEra)
-process.hNuTop.EBidWgt = cms.double( 1.000 ) 
-process.hNuTop.EEidWgt = cms.double( 1.000 ) 
-#--- Values below zero disable the vertex requirement ---#
-process.hNuTop.maxVertexZsepCM     = cms.double(-1)
-process.hNuTop.maxVertexJetVZsepCM = cms.double(-1)
-
-process.hNuTop.addSlopeTree        = cms.untracked.bool(addSlopeTrees)
-
-if isPFJets:
-    process.hNuTop.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
-
-if isData:
-    process.hNuTop.muonTag                       = cms.InputTag( 'selectedPatMuonsTriggerMatch' )
-    process.hNuTop.trigMatchPset.trigEventTag    = cms.InputTag("patTriggerEvent")
-    process.hNuTop.trigMatchPset.electronFilters = cms.vstring('')
-    if isRun2011Mu24:
-        process.hNuTop.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu24_v1','HLT_Mu24_v2' )
-        process.hNuTop.trigMatchPset.triggerPt        = cms.double( 24. )
-        process.hNuTop.trigMatchPset.electronTriggers = cms.vstring( '' )
-    else:
-        process.hNuTop.trigMatchPset.muonTriggers     = cms.vstring( 'HLT_Mu40_v1','HLT_Mu40_v2','HLT_Mu40_v3','HLT_Mu40_v5','HLT_Mu40_eta2p1_v1','HLT_Mu40_eta2p1_v2','HLT_Mu40_eta2p1_v3','HLT_Mu40_eta2p1_v4','HLT_Mu40_eta2p1_v5','HLT_Mu40_eta2p1_v6','HLT_Mu40_eta2p1_v7','HLT_Mu40_eta2p1_v8','HLT_Mu40_eta2p1_v9' ) 
-        process.hNuTop.trigMatchPset.triggerPt        = cms.double( 40. )
-        process.hNuTop.trigMatchPset.electronTriggers = cms.vstring( '' )
-else:
-    process.hNuTop.trigMatchPset.randomSeed=cms.int32( os.getpid() )
-    
-process.hNuTopMu24 = process.hNuTop.clone()
-process.hNuTopMu40 = process.hNuTop.clone() 
-
-process.hNuTopMu24.trigMatchPset.triggerPt  = cms.double( 24. )
-process.hNuTopMu24.trigMatchPset.randomSeed = cms.int32( os.getpid() )
-process.hNuTopMu40.trigMatchPset.triggerPt  = cms.double( 40. )
-process.hNuTopMu40.trigMatchPset.randomSeed = cms.int32( os.getpid() )
-
-process.hNuTopMu24midHi = process.hNuTopMu24.clone( applyMuIDEffsign = cms.int32(1) )
-process.hNuTopMu24midLo = process.hNuTopMu24.clone( applyMuIDEffsign = cms.int32(-1) )
-process.hNuTopMu40midHi = process.hNuTopMu40.clone( applyMuIDEffsign = cms.int32(1) )
-process.hNuTopMu40midLo = process.hNuTopMu40.clone( applyMuIDEffsign = cms.int32(-1) )
-
-process.hNuTopMu24trigHi = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int32(1) )
-process.hNuTopMu24trigLo = process.hNuTopMu24.clone( applyTrigEffsign  = cms.int32(-1) )
-process.hNuTopMu40trigHi = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(1) )
-process.hNuTopMu40trigLo = process.hNuTopMu40.clone( applyTrigEffsign  = cms.int32(-1) )
-
-process.hNuGoodMuFakeE      = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(False) )
-process.hNuFakeMuGoodE      = process.hNuTop.clone( useDirtyElectrons = cms.bool(False), useDirtyMuons = cms.bool(True) )
-process.hNuGoodMuFakeEwgtE  = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(False), fakeWeightFlavor = cms.int32(11) )
-process.hNuFakeMuGoodEwgtMu = process.hNuTop.clone( useDirtyElectrons = cms.bool(False), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(13) )
-process.hNuFakeMuEwgtE      = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(11) )
-process.hNuFakeMuEwgtMu     = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(13) )
-process.hNuFakeMuEwgtMuE    = process.hNuTop.clone( useDirtyElectrons = cms.bool(True), useDirtyMuons = cms.bool(True), fakeWeightFlavor = cms.int32(1113) )
 
 #----------------#
 #--- LumiList ---#
@@ -803,25 +627,9 @@ if runMuonAnalysis:
         if isMCsignal:
             process.AnalysisIntroSequence += process.hNuGenFilter
 
-        if isRun2011A:
-            process.p24 = cms.Path( process.AnalysisIntroSequence + process.hNuMu24 )
         process.p40 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 ) 
 
         if systematics:
-            if isRun2011A:
-                process.p24jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesHi )
-                process.p24jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jesLo )
-                process.p24jerHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jerHi )
-                process.p24jerLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24jerLo )
-                # process.p24mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesHi )
-                # process.p24mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mesLo )
-                process.p24mer    = cms.Path( process.AnalysisIntroSequence + process.hNuMu24mer )
-                process.p24midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midHi )
-                process.p24midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu24midLo )
-                process.p24trigHi = cms.Path( process.AnalysisIntroSequence + process.hNuMu24trigHi )
-                process.p24trigLo = cms.Path( process.AnalysisIntroSequence + process.hNuMu24trigLo )
-                process.p24puHi   = cms.Path( process.AnalysisIntroSequence + process.hNuMu24puHi )
-                process.p24puLo   = cms.Path( process.AnalysisIntroSequence + process.hNuMu24puLo )
 
             process.p40jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesHi )
             process.p40jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesLo )
@@ -839,13 +647,8 @@ if runMuonAnalysis:
     else:
         process.pNominal = cms.Path( process.AnalysisIntroSequence + process.hNu )
         if doTriggerStudy:
-            if isRun2011Mu24:
-                process.p24 = cms.Path( process.AnalysisIntroSequence + process.hNuMu24 )
-            else:
-                if isRun2011Mu40eta2p1 or isRun2012:
-                    process.p40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
-                elif isRun2011Mu40:
-                    process.p40       = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 )
+            if runEra == "2012AB" or "2012C":
+                process.p40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
 
 if runElectronAnalysis:
    if isMC:
@@ -884,30 +687,10 @@ if qcdStudy:
     process.pFakeMuEwgtMu     = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMu )
     process.pFakeMuEwgtE      = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtE )
     process.pFakeMuEwgtMuE    = cms.Path( process.AnalysisIntroSequence + process.hNuFakeMuEwgtMuE )
-
-    # if isMC:
-    #     if isRun2011A:
-    #         process.pQCD24 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu24 )
-    #     process.pQCD40 = cms.Path( process.AnalysisIntroSequence + process.hNuQCDMu40 ) 
-    # else:
-    #     process.pQCD = cms.Path( process.AnalysisIntroSequence + process.hNuQCD )
         
 if topStudy:
     if isMC:
-        if isRun2011A:
-            process.pTop24 = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24 )
-        process.pTop40 = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40 ) 
-        if systematics:
-            if isRun2011A:
-                process.pTop24midHi = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24midHi )
-                process.pTop24midLo = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu24midLo )
-                process.pTop24trigHi = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu24trigHi)
-                process.pTop24trigLo = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu24trigLo)
-
-            process.pTop40midHi = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40midHi )
-            process.pTop40midLo = cms.Path( process.AnalysisIntroSequence + process.hNuTopMu40midLo )
-            process.pTop40trigHi = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu40trigHi)
-            process.pTop40trigLo = cms.Path( process.AnalysisIntroSequence +  process.hNuTopMu40trigLo)
+        process.pEMU = cms.Path( process.AnalysisIntroSequence + process.hNuEMu )
     else:
-        process.pTop = cms.Path( process.AnalysisIntroSequence + process.hNuTop )
+        process.pEMu = cms.Path( process.AnalysisIntroSequence + process.hNuEMu )
 
