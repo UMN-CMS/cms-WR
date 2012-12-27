@@ -24,31 +24,25 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 # source
 process.source = cms.Source("PoolSource",
-                            #fileNames=cms.untracked.vstring('file:input.root')
-<<<<<<< myEleSkim_base_cfg.py
-                            fileNames=cms.untracked.vstring('/store/data/Run2012A/Photon/AOD/13Jul2012-v1/00000/90E8AE4F-0CD0-E111-A060-0025B3E05CDA.root')
-=======
-                            #fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012A/Photon/AOD/PromptReco-v1/000/190/736/C87655EF-FB83-E111-A922-003048D3733E.root')
-                            fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/data/Run2012B/DoublePhotonHighPt/AOD/13Jul2012-v1/00000/00FD2120-45D9-E111-863D-848F69FD28AA.root')
->>>>>>> 1.4
+    fileNames=cms.untracked.vstring('file:input.root')
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Load additional processes
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
-<<<<<<< myEleSkim_base_cfg.py
-process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
-=======
-#process.GlobalTag.globaltag = 'GR_R_50_V13::All'
-#process.GlobalTag.globaltag = 'FT_53_V6_AN1::All'
-process.GlobalTag.globaltag = 'GR_R_53_V11::All'
->>>>>>> 1.4
-
+#--- Global Tag for 2012 A/B ---#
+process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All') 
+#--- Global Tag for 2012 C RERECO (re-reco of C v1) ---#
+process.GlobalTag.globaltag = cms.string('FT_53_V10_AN3::All')
+#--- Global Tag for 2012 C v2 PROMPT RECO ---#
+process.GlobalTag.globaltag = cms.string('GR_P_V41_AN3::All')
+#--- Global Tag for 2012 D PROMPT ---#
+process.GlobalTag.globaltag = cms.string('GR_P_V42_AN3::All')
 
 ### Output needs to be created before working with PAT objects ###
 process.out = cms.OutputModule( "PoolOutputModule",
@@ -71,12 +65,17 @@ process.scrapingFilter = cms.EDFilter("FilterOutScraping",
 
 
 # Get a list of good primary vertices, in 42x, these are DAF vertices
+# Updated for skims of 2012 C/D to conform to newest values
+# - minNdof = 4.0 (was 3.0), now conforms to default value in pvSelector_cfi
+# - maxZ unchanged at 24.0
+# - added maxRho = 2.0, which conforms to default value in pvSelector_cfi
+
 from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
 process.goodOfflinePrimaryVertices = cms.EDFilter(
     "PrimaryVertexObjectFilter",
-    filterParams = pvSelector.clone( minNdof = cms.double(3.0), maxZ = cms.double(24.0) ),
+    filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0), maxRho = cms.double(2.0) ),
     src=cms.InputTag('offlinePrimaryVertices')
-    )
+)
 
 
 
