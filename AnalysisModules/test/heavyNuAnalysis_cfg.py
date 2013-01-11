@@ -14,8 +14,8 @@ cmsswRelease = 53
 isMCsignal=False
 
 #--- Data Run era flags ---#
-# options 2012AB, 2012C
-runEra = "2012C"
+# options 2012AB, 2012Cr, 2012Cp, 2012D
+runEra = "2012Cp"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- Possible options for dataEra: 20111 (2011A), 20112 (2011B), 20121 (2012) ---#
@@ -35,7 +35,7 @@ addSlopeTrees  = True
 heepVersion = 41
 
 #--- Flags for Top studies ---#
-topStudy      = True
+topStudy  = True
 
 #--- Flags for QCD studies ---#
 qcdStudy  = False
@@ -76,14 +76,12 @@ process.source = cms.Source("PoolSource",
 )
 
 if isData:
-    if runEra == "2012AB":
-        #from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
-        pass
-    elif runEra == "2012C":
-        #from HeavyNu.AnalysisModules.goodLumiList_2012_reReco_July13_cfi import lumisToProcess
-        pass
+    if runEra == "2012AB" or runEra == "2012Cr":
+        from HeavyNu.AnalysisModules.goodLumiList_2012abc_rereco_cfi import lumisToProcess
+    elif runEra == "2012Cp" or runEra == "2012D":
+        from HeavyNu.AnalysisModules.goodLumiList_2012cd_prompt_cfi import lumisToProcess
                             
-    #process.source.lumisToProcess = lumisToProcess
+    process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -108,8 +106,12 @@ else:
     elif cmsswRelease == 53:
         if runEra == "2012AB":
             process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
-        elif runEra == "2012C":
+        elif runEra == "2012Cr":
+            process.GlobalTag.globaltag = cms.string('FT_53_V10_AN3::All')
+        elif runEra == "2012Cp":
             process.GlobalTag.globaltag = cms.string('GR_P_V41_AN3::All')
+        elif runEra == "2012D":
+            process.GlobalTag.globaltag = cms.string('GR_P_V42_AN3::All')
     else:
         print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 
@@ -411,13 +413,13 @@ if isData:
     if runMuonAnalysis or topStudy:
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
-        if runEra == "2012AB" or "2012C":
-            process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
+        # if runEra == "2012AB" or "2012Cr" or "2012Cp" or "2012D":
+        process.muonTriggerMatchHLTMuons.matchedCuts = cms.string( 'path( "HLT_Mu40_eta2p1_v*",1,0 )' )
     if runElectronAnalysis:
         switchOnTriggerMatchEmbedding( process, triggerMatchers = [ 'electronTriggerMatchHLTElectrons' ], outputModule = '' )
         removeCleaningFromTriggerMatching( process, outputModule = '' )
-        if runEra == "2012AB" or "2012C":
-            process.electronTriggerMatchHLTElectrons.matchedCuts = cms.string( 'path( "HLT_*",1,0 )' )
+        # if runEra == "2012AB" or "2012Cr" or "2012Cp" or "2012D":
+        process.electronTriggerMatchHLTElectrons.matchedCuts = cms.string( 'path( "HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*",1,0 )' )
 
 
 #--- Electrons trigger analysis ---#
@@ -539,7 +541,7 @@ process.hNuMu40trigLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False
 
 # Pileup uncertainty: +/- 8% on number of interactions leads to 0.4 in 2011A, 0.7 in 2011B
 #                     +/- 5% on number of interactions (16.85, 12/06/09) leads to 0.84 in 2012AB
-if runEra == "2012AB" or "2012C":
+if runEra == "2012AB" or "2012Cr" or "2012Cp" or "2012D":
     process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.84) )
     process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.84) )
 
@@ -647,8 +649,8 @@ if runMuonAnalysis:
     else:
         process.pNominal = cms.Path( process.AnalysisIntroSequence + process.hNu )
         if doTriggerStudy:
-            if runEra == "2012AB" or "2012C":
-                process.p40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
+            # if runEra == "2012AB" or "2012C" or "2012D":
+            process.p40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
 
 if runElectronAnalysis:
    if isMC:
