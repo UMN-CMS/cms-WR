@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.114 2012/11/27 03:05:06 pastika Exp $
+// $Id: HeavyNu.cc,v 1.115 2012/12/21 22:21:17 pastika Exp $
 //
 //
 
@@ -1261,7 +1261,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
       hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 
-			   heepVersion_,pvHandle, elecRho_, 10.0, 10.0);
+			   heepVersion_,pvHandle, elecRho_);
 
     // In order to avoid bias, it is necessary to perform muon studies
     // immediately after first creating the muon list
