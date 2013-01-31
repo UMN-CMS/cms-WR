@@ -19,8 +19,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 ## Load additional processes
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-
-process.GlobalTag.globaltag = cms.string('GR_R_50_V13::All')
+process.GlobalTag.globaltag = cms.string('FT_53_V6_AN1::All')
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Services_cff')
@@ -76,8 +75,8 @@ process.muFilter = cms.EDFilter("MuFilter",
     ebTag    = cms.InputTag("correctedHybridSuperClusters"),
     eeTag    = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower"),
 
-    minMuonPt = cms.double( 32.0 ),
-    minSCEt   = cms.double( 32.0 ), 
+    minMuonPt = cms.double( 35.0 ),
+    minSCEt   = cms.double( 35.0 ), 
     overlap   = cms.double( 0.05 ),
     trackPrescale = cms.int32( -1 ),
     trackOnly = cms.bool(False),
