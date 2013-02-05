@@ -177,7 +177,8 @@ private:
               const bool goodLeps,
               HeavyNuHistSet *hnmh);
 
-    bool isWrDaughter(const reco::Candidate* mother);
+    bool isWrDaughter(const reco::Candidate* mother, int pdgid);
+    reco::Candidate* findGenTau(edm::Handle<reco::GenParticleCollection> gpc, bool primary);
     
     void studyJetMatching(HeavyNuEvent& hnuEvent, edm::Handle<std::vector<reco::GenJet> > genjets);
     
@@ -252,6 +253,9 @@ private:
     bool init_;
 
     hnu::CutsStruct cuts;
+    
+    unsigned int randseed_;
+    int pdgid_;
 
 };
 

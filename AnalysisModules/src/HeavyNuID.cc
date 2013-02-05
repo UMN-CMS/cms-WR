@@ -59,16 +59,42 @@ HeavyNuID::weightForMC(double pt,int signOfError2apply)
   return factor ; 
 }
 
+double HeavyNuID::weightForMCbyEta(double eta,int signOfError2apply)
+{
+  // Latest full 19 ifb 45+ GeV ID efficiencies
+  // https://twiki.cern.ch/twiki/pub/CMS/TWikiEXO-MUO/muon_eff_NewHighPt_Run_ABCD.pdf
+  // systematics here - may change for 100 GeV+ muons
+  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonTagAndProbe
+  //const double scalelo2012[]  = {0.970000,0.970000,0.970000,0.970000}; 
+  const double scalenom2012[] = {0.989900,0.988400,0.995800,0.991000}; 
+  //const double scalehi2012[]  = {1.030000,1.030000,1.030000,1.030000}; 
+
+  const double upedge2012[]   = {     0.9,     1.2,     2.1,     2.4, -1.0};
+
+  const double systematic = sqrt(0.005*0.005+0.002*0.02*2);
+  double scale = 1.0;
+
+  if ( signOfError2apply ) {
+    if ( idEra_ == 20122 ) scale = (signOfError2apply > 0)?(1 + systematic):(1 - systematic);
+  }
+
+  int i;
+  for (i=0; upedge2012[i]>0 && upedge2012[i]<eta; i++);
+  double factor=scalenom2012[i]*scale;
+    
+  return factor ; 
+}
+
 double
 HeavyNuID::weightElectronsForMC(double eta, int signOfError2apply) {
 
   // EB/EE efficiency scale factors
-  const double ebScale    = 0.958523 * 0.998 ; // Bias of probe  
-  const double ebScaleErr = 0.0434 ; // Deviation from unity
+  const double ebScale    = 1.0000; // Bias of probe  
+  const double ebScaleErr = 0.0200; // Deviation from unity
   // const double ebScaleErr = 0.004742 ; // Stat error on scale factor
 
-  const double eeScale    = 0.955377 * 0.994 ; 
-  const double eeScaleErr = 0.0504 ; // Deviation from unity
+  const double eeScale    = 1.0000; 
+  const double eeScaleErr = 0.0400; // Deviation from unity
   // const double eeScaleErr = 0.009480 ; // Stat error on scale factor
 
   double factor  = 1.0 ;

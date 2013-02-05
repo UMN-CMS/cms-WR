@@ -234,7 +234,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 {
     double wgt = hne.eventWgt;
 
-    if(hne.l1 == NULL && hne.l2 == NULL && hne.nLeptons >= 2)
+    if(hne.l1 == NULL && hne.l2 == NULL && hne.nLeptons >= 2 && hne.mode != HeavyNuEvent::TAUX)
     {
         std::cout << "INVALID LEPTON in HeavyNuHistSet fill" << std::endl;
     }
@@ -285,7 +285,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         dEtaPhiL->Fill(fabs(hne.l1eta - hne.l2eta),
                        fabs(deltaPhi(hne.l1phi, hne.l2phi)), wgt);
 
-        vtx_LL->Fill(fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z()), wgt);/**/
+        if(hne.l1 && hne.l2) vtx_LL->Fill(fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z()), wgt);
     }
 
     int jet1id = 0;
@@ -330,25 +330,28 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 
             L1ptFracWRmass->Fill(hne.l1pt / hne.mWR, wgt);
 
-            float deltaVzJ1J2 = fabs(hne.tjV1 - hne.tjV2);
-            float deltaVzJ1M1 = fabs(hne.tjV1 - hne.l1->vertex().Z());
-            float deltaVzJ2M2 = fabs(hne.tjV2 - hne.l2->vertex().Z());
-            float deltaVzJ1M2 = fabs(hne.tjV1 - hne.l2->vertex().Z());
-            float deltaVzJ2M1 = fabs(hne.tjV2 - hne.l1->vertex().Z());
-            float deltaVzM1M2 = fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z());
+            if(hne.l1 && hne.l2)
+            {
+                float deltaVzJ1J2 = fabs(hne.tjV1 - hne.tjV2);
+                float deltaVzJ1M1 = fabs(hne.tjV1 - hne.l1->vertex().Z());
+                float deltaVzJ2M2 = fabs(hne.tjV2 - hne.l2->vertex().Z());
+                float deltaVzJ1M2 = fabs(hne.tjV1 - hne.l2->vertex().Z());
+                float deltaVzJ2M1 = fabs(hne.tjV2 - hne.l1->vertex().Z());
+                float deltaVzM1M2 = fabs(hne.l1->vertex().Z() - hne.l2->vertex().Z());
 
-            vtx_jj->Fill(deltaVzJ1J2, wgt);
-            float minDeltaVzL1J = std::min(deltaVzJ1M1, deltaVzJ2M1);
-            float minDeltaVzL2J = std::min(deltaVzJ2M2, deltaVzJ2M2);
-            vtx_min_L1j->Fill(minDeltaVzL1J, wgt);
-            vtx_min_L2j->Fill(minDeltaVzL2J, wgt);
-            vtx_min_Lj->Fill(std::min(minDeltaVzL1J, minDeltaVzL2J), wgt);
+                vtx_jj->Fill(deltaVzJ1J2, wgt);
+                float minDeltaVzL1J = std::min(deltaVzJ1M1, deltaVzJ2M1);
+                float minDeltaVzL2J = std::min(deltaVzJ2M2, deltaVzJ2M2);
+                vtx_min_L1j->Fill(minDeltaVzL1J, wgt);
+                vtx_min_L2j->Fill(minDeltaVzL2J, wgt);
+                vtx_min_Lj->Fill(std::min(minDeltaVzL1J, minDeltaVzL2J), wgt);
 
-            float maxDeltaVzLJ1 = std::max(deltaVzJ1M1, deltaVzJ1M2);
-            float maxDeltaVzLJ2 = std::max(deltaVzJ2M1, deltaVzJ2M2);
-            float maxDeltaVzMMJJ = std::max(deltaVzM1M2, deltaVzJ1J2);
-            float maxDeltaVzLJ = std::max(maxDeltaVzLJ1, maxDeltaVzLJ2);
-            vtx_max_dist->Fill(std::max(maxDeltaVzMMJJ, maxDeltaVzLJ), wgt);
+                float maxDeltaVzLJ1 = std::max(deltaVzJ1M1, deltaVzJ1M2);
+                float maxDeltaVzLJ2 = std::max(deltaVzJ2M1, deltaVzJ2M2);
+                float maxDeltaVzMMJJ = std::max(deltaVzM1M2, deltaVzJ1J2);
+                float maxDeltaVzLJ = std::max(maxDeltaVzLJ1, maxDeltaVzLJ2);
+                vtx_max_dist->Fill(std::max(maxDeltaVzMMJJ, maxDeltaVzLJ), wgt);
+            }
         }
 
         dRminL1jet->Fill(hne.dRminL1jet, wgt);
@@ -379,7 +382,7 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
 
     mLL->Fill(hne.mLL, wgt);
 
-    if(hne.nLeptons >= 2)
+    if(hne.nLeptons >= 2 && hne.l1 && hne.l2)
     {
         if(hne.l1->charge() == hne.l2->charge())
         {

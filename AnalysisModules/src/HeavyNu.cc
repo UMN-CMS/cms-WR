@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.115 2012/12/21 22:21:17 pastika Exp $
+// $Id: HeavyNu.cc,v 1.116 2013/01/11 20:32:14 bdahmes Exp $
 //
 //
 
@@ -22,6 +22,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <TRandom.h>
 
 // See https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID 
 // Order valid for 38X only.  Can be moved after Frameworkfwd.h in 39X
@@ -60,6 +61,8 @@
 #include "DataFormats/Math/interface/Point3D.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "TLorentzVector.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNu.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuEff.h"
@@ -101,13 +104,26 @@ inline void labelMuonQualAxis(TAxis *ax)
     //}
 }
 
-bool HeavyNu::isWrDaughter(const reco::Candidate* mother)
+bool HeavyNu::isWrDaughter(const reco::Candidate* mother, int pdgid)
 {
     for(size_t i = 0; i < mother->numberOfMothers(); i++)
     {
-        if((mother->mother(i)->pdgId() == ((analysisMode_ == HeavyNuEvent::HNUMU)?9900014:9900012)) || isWrDaughter(mother->mother(i))) return true;
+        if((mother->mother(i)->pdgId() == pdgid || isWrDaughter(mother->mother(i), pdgid))) return true;
     }
     return false;
+}
+
+reco::Candidate* HeavyNu::findGenTau(edm::Handle<reco::GenParticleCollection> gpc, bool primary)
+{
+    for(reco::GenParticleCollection::const_iterator igp = gpc->begin(); igp != gpc->end(); ++igp)
+    {
+        if(abs(igp->pdgId()) == 15 && igp->numberOfDaughters() >= 1)
+        {
+            if( primary && isWrDaughter((reco::Candidate*)&(*igp), 9900024) && !isWrDaughter((reco::Candidate*)&(*igp), 9900016)) return (reco::Candidate*)&(*igp);
+            if(!primary && isWrDaughter((reco::Candidate*)&(*igp), 9900024) &&  isWrDaughter((reco::Candidate*)&(*igp), 9900016)) return (reco::Candidate*)&(*igp);
+        }
+    }
+    return NULL;
 }
 
 void HeavyNu::fill(pat::MuonCollection muons,
@@ -118,13 +134,15 @@ void HeavyNu::fill(pat::MuonCollection muons,
                    const bool goodLeps,
                    HeavyNuHistSet *hnmh)
 {
+    if(analysisMode_ == HeavyNuEvent::TAUX) return;
+
     HeavyNuEvent hne(hnuEvent);
 
     std::sort(muons.begin(), muons.end(), hnu::pTcompare());
     std::sort(electrons.begin(), electrons.end(), hnu::pTcompare());
     std::sort(jets.begin(), jets.end(), hnu::pTcompare());
 
-	hne.nLeptons = 0;
+    hne.nLeptons = 0;
 
     if(!goodLeps)
     {
@@ -262,6 +280,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     studyRatePerRun_ = iConfig.getParameter<bool>("studyRatePerRun");
 
     addSlopeTree_ = iConfig.getUntrackedParameter<bool>("addSlopeTree");
+    
+    randseed_ =  iConfig.getUntrackedParameter<unsigned int>("randseed");
 
     // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion",41);
@@ -270,7 +290,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         std::cout << "!!!!!!!!INVALID HEEP VERSION: " << heepVersion_ << " (setting HEEP 4.1)!!!!!!!!" << std::endl;
         heepVersion_ = 41;
     }
-        
+    
 
     std::string am = iConfig.getUntrackedParameter<std::string>("analysisMode");
     if(!am.compare("HNUMU")) analysisMode_ = HeavyNuEvent::HNUMU;
@@ -278,7 +298,25 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     else if(!am.compare("TOP")) analysisMode_ = HeavyNuEvent::TOP;
     else if(!am.compare("QCD")) analysisMode_ = HeavyNuEvent::QCD;
     else if(!am.compare("CLO")) analysisMode_ = HeavyNuEvent::CLO;
+    else if(!am.compare("TAUX")) analysisMode_ = HeavyNuEvent::TAUX;
     else std::cout << "!!!!!!!!INVALID ANALYSIS MODE : " << am << " !!!!!!!!\noptions are: HNUMU, HNUE, TOP, QCD, CLO" << std::endl;
+    
+    switch(analysisMode_)
+    {
+        case HeavyNuEvent::HNUMU:
+            pdgid_ = 9900014;
+            break;
+        case HeavyNuEvent::HNUE:
+            pdgid_ = 9900012;
+            break;
+        case HeavyNuEvent::TAUX:
+            pdgid_ = 9900016;
+            break;
+        case HeavyNuEvent::TOP:
+        case HeavyNuEvent::QCD:
+        case HeavyNuEvent::CLO:
+            break;
+    }
 
     nDirtyCands_ = iConfig.getUntrackedParameter<int>("nFakeLeptons",0);
 
@@ -509,6 +547,20 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.diLmassCut =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(ee mass cut:5)");
         hists.mWRmassCut =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
     }
+    else if(analysisMode_ == HeavyNuEvent::TAUX)
+      {
+        hists.noCuts = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut0_none")), "(no cuts)");
+        hists.JJptCuts = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut0a_JJpt")), "(2 jets with ptcuts:0a)");
+        hists.LLptCuts = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut0b_LLpt")), "(2 leptons with ptcuts:0b)");
+        hists.LLJJptCuts =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut1_LLJJpt")), "(4objects with ptcuts:1)");
+        hists.TrigMatches =  new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut2_TrigMatches")), "(Trigger match:2)");
+        hists.Mu1HighPtCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4_L1HighPt")), "(L1 High pt cut:4)");
+        hists.Mu1HighPtCut_1bjet = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4a_L1HighPt_1b")), "(L1 High pt cut:4a)");
+        hists.Mu1HighPtCut_2bjet = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4b_L1HighPt_2b")), "(L1 High pt cut:4b)");
+        hists.ZRegionCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4c_ZPeak")), "(Z-Peak:4c)");
+        hists.diLmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut5_diLmass")), "(ee mass cut:5)");
+        hists.mWRmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
+      }
 
     hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
 
@@ -732,12 +784,12 @@ void HeavyNu::studyJetMatching(HeavyNuEvent& hnuEvent, edm::Handle<std::vector<r
     std::vector<const reco::GenParticle*> mothers = hnuEvent.gj1.getGenConstituents();
     for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
     {
-        if((gmj1 |= isWrDaughter(*iM))) break;
+        if((gmj1 |= isWrDaughter(*iM, pdgid_))) break;
     }
     mothers = hnuEvent.gj2.getGenConstituents();
     for(std::vector<const reco::GenParticle*>::const_iterator iM = mothers.begin(); iM != mothers.end(); ++iM)
     {
-        if((gmj2 |= isWrDaughter(*iM))) break;
+        if((gmj2 |= isWrDaughter(*iM, pdgid_))) break;
     }
     hnuEvent.numNuLJetsMatched = (int)gmj1 + (int)gmj2;
 }
@@ -787,8 +839,12 @@ void HeavyNu::selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEven
     
     if(applyMuIDCorrections_ && hnuEvent.isMC)
     {
-        double mu1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_)):1.0;
-        double mu2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightForMC((hnuEvent.mu2.pt()), applyMuIDEffsign_)):1.0;
+        //double mu1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_)):1.0;
+        //double mu2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightForMC((hnuEvent.mu2.pt()), applyMuIDEffsign_)):1.0;
+        
+        double mu1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightForMCbyEta((hnuEvent.mu1.eta()), applyMuIDEffsign_)):1.0;
+        double mu2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightForMCbyEta((hnuEvent.mu2.eta()), applyMuIDEffsign_)):1.0;
+
 
         hnuEvent.eventWgt *= (mu1wgt * mu2wgt);
     }
@@ -906,7 +962,7 @@ void HeavyNu::selectTop(std::vector< std::pair<pat::Electron, float> >& eCands, 
 
     if(applyMuIDCorrections_ && hnuEvent.isMC)
     {
-        double mu1wgt = (hnuEvent.nMuons >= 1)? (muid_->weightForMC((hnuEvent.mu1.pt()), applyMuIDEffsign_)):1.0;
+        double mu1wgt = (hnuEvent.nMuons >= 1)? (muid_->weightForMCbyEta((hnuEvent.mu1.eta()), applyMuIDEffsign_)):1.0;
 
         hnuEvent.eventWgt *= mu1wgt;
     }
@@ -1369,6 +1425,47 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         
         l2trig = true;
     }
+    else if(analysisMode_ == HeavyNuEvent::TAUX && !iEvent.isRealData())
+    {
+        edm::Handle<reco::GenParticleCollection> genInfo;
+        iEvent.getByLabel("genParticles", genInfo);
+        
+        reco::Candidate* ptau = findGenTau(genInfo, true);
+        reco::Candidate* stau = findGenTau(genInfo, false);
+        
+        if(!ptau || !stau) return false;
+        
+        bool firstIsMuon = gRandom->Uniform(0, 1) > 0.5;
+        hnuEvent.tl1 = hnu::decayTau(ptau,  firstIsMuon);
+        hnuEvent.tl2 = hnu::decayTau(stau, !firstIsMuon);
+        
+        double dRj1 = 999.9, dRj2 = 999.9;
+        if(hnuEvent.nJets > 0) dRj1 = deltaR(hnuEvent.tl1.Eta(), hnuEvent.tl1.Phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+        if(hnuEvent.nJets > 1) dRj2 = deltaR(hnuEvent.tl1.Eta(), hnuEvent.tl1.Phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+        if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) hnuEvent.nLeptons++ ;
+        dRj1 = 999.9, dRj2 = 999.9;
+        if(hnuEvent.nJets > 0) dRj1 = deltaR(hnuEvent.tl2.Eta(), hnuEvent.tl2.Phi(), hnuEvent.j1.eta(), hnuEvent.j1.phi());
+        if(hnuEvent.nJets > 1) dRj2 = deltaR(hnuEvent.tl2.Eta(), hnuEvent.tl2.Phi(), hnuEvent.j2.eta(), hnuEvent.j2.phi());
+        if (dRj1 > cuts.minimum_muon_jet_dR && dRj2 > cuts.minimum_muon_jet_dR) hnuEvent.nLeptons++ ;
+        
+        if(hnuEvent.nLeptons < 2 || hnuEvent.tl1.Pt() < 40.0 || hnuEvent.tl2.Pt() < 40) return false;
+    	
+    	//--- Trigger Matching needed for efficiency studies ---//
+        if(disableTriggerCorrection_)
+        {
+            l1trig = true;
+        }
+        else if(firstIsMuon)
+        {
+            l1trig = (hnuEvent.nMuons > 0) && trig_->simulateForMC(hnuEvent.tl1.Pt(), hnuEvent.tl1.Eta(), applyTrigEffsign_) && hnuEvent.tl1.Pt() > 40;
+        }
+        else if(!firstIsMuon)
+        {
+            l1trig = (hnuEvent.nMuons > 0) && trig_->simulateForMC(hnuEvent.tl2.Pt(), hnuEvent.tl2.Eta(), applyTrigEffsign_) && hnuEvent.tl2.Pt() > 40;
+        }
+        
+        l2trig = true;
+    }
 
     hnuEvent.scaleMuE(applyMESfactor_);
     hnuEvent.calculate(correctEscale_); // calculate various details
@@ -1413,12 +1510,12 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     //--- Impose vertex requirement here ---//
     float deltaVzJ1J2 = 0.0, deltaVzJ1M1 = 0.0, deltaVzJ2M2 = 0.0, deltaVzJ1M2 = 0.0, deltaVzJ2M1 = 0.0;
-    if(hnuEvent.nJets >= 1)
+    if(hnuEvent.nJets >= 1 && analysisMode_ != HeavyNuEvent::TAUX)
     {
         deltaVzJ1M1 = fabs(hnuEvent.tjV1 - hnuEvent.l1->vertex().Z());
         deltaVzJ1M2 = fabs(hnuEvent.tjV1 - hnuEvent.l2->vertex().Z());
     }
-    if(hnuEvent.nJets >= 2)
+    if(hnuEvent.nJets >= 2 && analysisMode_ != HeavyNuEvent::TAUX)
     {
         deltaVzJ2M2 = fabs(hnuEvent.tjV2 - hnuEvent.l2->vertex().Z());
         deltaVzJ2M1 = fabs(hnuEvent.tjV2 - hnuEvent.l1->vertex().Z());
@@ -1429,7 +1526,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
          (deltaVzJ2M2 >= cuts.maxJetVZsepCM) || (deltaVzJ1M2 >= cuts.maxJetVZsepCM) ||
          (deltaVzJ2M1 >= cuts.maxJetVZsepCM)) )
         return false;
-    float deltaVzM1M2 = fabs(hnuEvent.l1->vertex().Z() - hnuEvent.l2->vertex().Z());
+    float deltaVzM1M2 = (analysisMode_ != HeavyNuEvent::TAUX)?(fabs(hnuEvent.l1->vertex().Z() - hnuEvent.l2->vertex().Z())):(0.0);
     if(cuts.maxVertexZsep > 0 && deltaVzM1M2 >= cuts.maxVertexZsep) 
     {
         if(addSlopeTree_) hnuTree_->fill();

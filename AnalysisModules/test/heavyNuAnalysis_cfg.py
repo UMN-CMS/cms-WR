@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from operator import isSequenceType
-import os
+import os, random
 
 #--- Data/MC switch ---#
 isMC=True
@@ -11,7 +11,7 @@ isData=not isMC
 cmsswRelease = 53
 
 #--- Signal MC flags ---#
-isMCsignal=False
+isMCsignal=True
 
 #--- Data Run era flags ---#
 # options 2012AB, 2012Cr, 2012Cp, 2012D
@@ -62,14 +62,14 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
+                            fileNames=cms.untracked.vstring('file:/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
+                            #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
                             #/store/mc/Summer12_DR53X/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7C-v1/00000/56B5A94D-FB27-E211-901F-AC162DA8C2B0.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/DY0JetsToLL_M-50_TuneZ2Star_8TeV-madgraph_START53_V7A/FZJ_000.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/TTBar_Partial/heavynu_candevents_425_1_uct.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START53_V7A_2/heavynu_candevents_136_1_Hd1.root')
                             #file:/hdfs/cms/skim/elec/hNu_2012/photon/eejj_skim_aug8_rereco_run2012a/eejj_skim_aug8_rereco_run2012a_266.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root')
-                            #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/4005DF3C-ABEC-E111-BC0E-00215E21D570.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
                             #file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_3_patch1/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root
@@ -441,10 +441,10 @@ process.TFileService = cms.Service("TFileService",
 ## Nominal Analysis ##
 ## ================ ##
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
-if isMCsignal:
-    process.hNu.isSignal = cms.bool(True)
-    process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
-    process.hNuGenFilter.keepIds = cms.vint32(2,)
+#if isMCsignal:
+#    process.hNu.isSignal = cms.bool(True)
+#    process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
+#    process.hNuGenFilter.keepIds = cms.vint32(2,)
 
 process.hNu.minMu2pt         = cms.double(40.)
 process.hNu.ZmassWinMinGeV   = cms.double(60.)
@@ -465,6 +465,7 @@ process.hNu.analysisMode = cms.untracked.string('HNUMU')
 process.hNu.heepVersion  = cms.untracked.int32(heepVersion)
 process.hNu.addSlopeTree = cms.untracked.bool(addSlopeTrees)
 process.hNu.nFakeLeptons = cms.untracked.int32(0)
+process.hNu.randseed     = cms.untracked.uint32(random.randint(0, 1 << 32 -1))
 
 #--- Muon ID corrections are taken from June 22, 2012 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
@@ -499,6 +500,8 @@ process.hNuE.correctEscale = cms.bool(isMC)
 
 process.hNuEMu               = process.hNu.clone(analysisMode = cms.untracked.string('TOP'))
 process.hNuEMu.correctEscale = cms.bool(isMC)
+
+process.hTauX               = process.hNu.clone(analysisMode = cms.untracked.string('TAUX'))
 
 #--- Electron ID corrections are taken from June 22, 2012 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
@@ -626,8 +629,8 @@ else:
 
 if runMuonAnalysis:
     if isMC:
-        if isMCsignal:
-            process.AnalysisIntroSequence += process.hNuGenFilter
+        #if isMCsignal:
+        #    process.AnalysisIntroSequence += process.hNuGenFilter
 
         process.p40 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 ) 
 
@@ -653,9 +656,9 @@ if runMuonAnalysis:
             process.p40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
 
 if runElectronAnalysis:
-   if isMC:
-      if isMCsignal:
-         process.AnalysisIntroSequence += process.hNuGenFilter
+#   if isMC:
+#      if isMCsignal:
+#         process.AnalysisIntroSequence += process.hNuGenFilter
 
    process.pE = cms.Path(process.AnalysisIntroSequence + process.hNuE)
    if systematics:
@@ -695,4 +698,8 @@ if topStudy:
         process.pEMU = cms.Path( process.AnalysisIntroSequence + process.hNuEMu )
     else:
         process.pEMu = cms.Path( process.AnalysisIntroSequence + process.hNuEMu )
+
+if isMCsignal and isMC:
+	process.pTauX = cms.Path( process.AnalysisIntroSequence + process.hTauX )
+	
 

@@ -108,6 +108,7 @@ void HeavyNuEvent::calculate(bool correctEscale)
     switch(mode)
     {
         case HNUE:
+        case TAUX:
             lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, 0);
             lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
             break;
@@ -162,7 +163,7 @@ void HeavyNuEvent::calculate(bool correctEscale)
             vLL = lep1p4 + (scale * lep2p4) ; 
             break;
         default:
-	    	vLL = lep1p4 + lep2p4 ; 
+            vLL = lep1p4 + lep2p4 ;
             break;
     }
 
@@ -300,6 +301,22 @@ void HeavyNuEvent::regularize()
                 l2pt = mu2.pt();
                 l2eta = mu2.eta();
                 l2phi = mu2.phi();
+            }
+            break;
+        case TAUX:
+            if(nLeptons >= 1)
+            {
+                l1 = NULL;
+                l1pt = tl1.Pt();
+                l1eta = tl1.Eta();
+                l1phi = tl1.Phi();
+            }
+            if(nLeptons >= 2)
+            {
+                l2 = NULL;
+                l2pt = tl2.Pt();
+                l2eta = tl2.Eta();
+                l2phi = tl2.Phi();
             }
             break;
         case QCD:

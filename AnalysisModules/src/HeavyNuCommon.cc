@@ -1,5 +1,9 @@
+
+#include <TF1.h>
+
 #include "HeavyNuCommon.h"
 #include "TVector3.h"
+#include "TRandom.h"
 
 #ifdef DO_LHAPDF
 #include "LHAPDF/LHAPDF.h"
@@ -1066,6 +1070,42 @@ namespace hnu {
             return true;
         }
         return false;
+    }
+
+
+    const double ELECTRON_MASS = 0.000511;
+    const double MUON_MASS     = 0.105;
+    const double TAU_MASS      = 1.7768;
+    bool isMuon = false;
+
+    TLorentzVector decayTau(const reco::Candidate* tau, bool isMuon)
+    {
+        const double LEP_MASS = (isMuon)?MUON_MASS:ELECTRON_MASS;
+        const double E_MAX    = (TAU_MASS*TAU_MASS + LEP_MASS*LEP_MASS) / (2 * TAU_MASS);
+        
+        TF1 *energy = new TF1("e_dist", tauDecay, 0.0, E_MAX, 0);
+
+        hnu::isMuon = isMuon;
+        TLorentzVector *v = new TLorentzVector(0.0, 0.0, 0.0, 0.0);
+        v->SetPtEtaPhiM(energy->GetRandom(), 0.0, 0.0, LEP_MASS);
+        
+        double rand_theta = acos(gRandom->Uniform(-1, 1)), rand_phi = gRandom->Uniform(0, 2*3.14159);
+
+        //v->RotateX(cos(rand_phi) * sin(rand_theta));
+        v->RotateY(rand_theta);
+        v->RotateX(rand_phi);
+        
+        double tauE = sqrt(tau->p()*tau->p()+TAU_MASS*TAU_MASS);
+        v->Boost(tau->px()/tauE, tau->py()/tauE, tau->pz()/tauE);
+
+        return *v;
+    }
+
+    double tauDecay(double *x, double *par)
+    {
+        const double LEP_MASS = (isMuon)?MUON_MASS:ELECTRON_MASS;
+        const double E_MAX    = (TAU_MASS*TAU_MASS + LEP_MASS*LEP_MASS) / (2 * TAU_MASS);
+        return (2/E_MAX)*(3*x[0]*x[0]/(E_MAX*E_MAX) - 2*x[0]*x[0]*x[0]/(E_MAX*E_MAX*E_MAX));
     }
 
 }

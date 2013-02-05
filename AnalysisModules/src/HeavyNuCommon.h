@@ -17,6 +17,7 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "Math/VectorUtil.h"
 #include <math.h>
+#include "TLorentzVector.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuEvent.h"
 
@@ -176,7 +177,9 @@ namespace hnu
         singletp.push_back( tagprobes.at(idx) ) ; 
         return singletp ; 
     }
-
+    
+    TLorentzVector decayTau(const reco::Candidate* tau, bool isMuon);
+    double tauDecay(double *x, double *par);
 }
 
 

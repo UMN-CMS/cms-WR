@@ -19,6 +19,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "TH1F.h"
+#include "TLorentzVector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -38,7 +39,7 @@ public:
 
     enum anal_type
     {
-        HNUMU, HNUE, TOP, QCD, CLO
+        HNUMU, HNUE, TOP, QCD, CLO, TAUX
     };
     anal_type mode;
 
@@ -69,6 +70,7 @@ public:
     pat::Muon mu1, mu2;
     pat::Jet j1, j2;
     pat::Electron e1, e2;
+    TLorentzVector tl1, tl2;
 
     reco::GenParticle gm1, gm2;
     reco::GenJet gj1, gj2;
