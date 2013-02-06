@@ -55,6 +55,11 @@ namespace hnu
     }
   };
 
+  class etCompare
+  {
+  public:    
+    bool operator() (const std::pair<pat::Electron,float>& a, const std::pair<pat::Electron,float>& b) ; 
+  };
 
     bool isVBTFloose       ( const pat::Muon& m );
     bool isVBTFtight       ( const pat::Muon& m );
@@ -181,7 +186,6 @@ namespace hnu
     TLorentzVector decayTau(const reco::Candidate* tau, bool isMuon);
     double tauDecay(double *x, double *par);
 }
-
 
 #endif // HEAVY_NU_COMMON_INCLUDED
 

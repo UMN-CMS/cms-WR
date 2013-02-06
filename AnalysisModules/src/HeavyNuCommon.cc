@@ -23,6 +23,11 @@
 const double muScaleLUTarray100[5] = { 0.379012,0.162107,0.144514,0.0125131,-0.392431 } ; 
 
 namespace hnu {
+
+  bool etCompare::operator() (const std::pair<pat::Electron,float>& a, const std::pair<pat::Electron,float>& b) {
+    return (getElectronEt(a.first,false)*a.second) > (getElectronEt(b.first,false)*b.second);
+  }
+
   bool isVBTFloose(const pat::Muon& m)
   {
     return m.muonID("AllGlobalMuons")&&(m.numberOfValidHits()>10);
@@ -836,7 +841,7 @@ namespace hnu {
       float jeta = iJ.eta();
       if (fabs(jeta) > maxAbsEta) continue ; 
       // std::cout << "I have a jet with pt " << jpt 
-      // 		<< " and eta " << fabs(iJ.eta()) << std::endl ; 
+      //  		<< " and eta " << fabs(iJ.eta()) << std::endl ; 
       int jpdgId = 0;
       if (iJ.genParton()) jpdgId = iJ.genParton()->pdgId();
       bool isBjet = (abs(jpdgId) == 5);
@@ -875,8 +880,8 @@ namespace hnu {
 	iJ.setP4(iJ.p4()*jecuscale);
       }
       // std::cout << "Jet cand with pt " << jpt << " eta " << jeta << " and electron energy fraction " 
-      // 		<< iJ.electronEnergyFraction() << "%.  " << iJ.photonEnergy() << " + " 
-      // 		<< iJ.electronEnergy() << " attributed to EM photons and electrons (in GeV)" << std::endl ; 
+      //  		<< iJ.electronEnergyFraction() << "%.  " << iJ.photonEnergy() << " + " 
+      //  		<< iJ.electronEnergy() << " attributed to EM photons and electrons (in GeV)" << std::endl ; 
       // std::cout << "Corrected jet pT: " << jpt << std::endl ; 
       if (jpt > minPt) { 
 	std::pair<pat::Jet,float> jetCand = std::make_pair(iJ,jecuscale) ;
@@ -1024,7 +1029,8 @@ namespace hnu {
         electronList.push_back( electronCand ) ; 
       }
     }
-    std::sort(electronList.begin(),electronList.end(),scaleCompare()) ; 
+    // std::sort(electronList.begin(),electronList.end(),scaleCompare()) ; 
+    std::sort(electronList.begin(),electronList.end(),etCompare()) ; 
     return electronList ; 
     }
 

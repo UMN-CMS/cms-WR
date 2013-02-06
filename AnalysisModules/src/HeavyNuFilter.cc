@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.6 2012/12/01 00:35:07 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.7 2012/12/21 22:21:17 pastika Exp $
 //
 //
 
@@ -103,9 +103,13 @@ private:
     int evtCounter;
     bool isPFJets_; // true if PFJets are used (turns off jet id requirement)
 
+    // Different "modes" considered:
+    // mode_ ==   1: Designed to single out 0-jet events from the exclusive DY sample
+    // mode_ == 991 (skim on data): Two same-flavor leptons meeting pT and eta requirements
+    // mode_ == 992 (skim on data): Two same-flavor leptons, two jets meeting pT and eta requirements
+    // mode_ == 993 (skim on data): Two same-flavor leptons meeting pT and eta requirements, dilepton mass requirement
     int mode_;
-
-    int heepVersion_;
+    int minNmu_, minNelec_; 
 
     // ----------member data ---------------------------
     bool init_;
@@ -125,9 +129,6 @@ private:
         double minimum_mumu_mass;
         double minimum_mWR_mass;
         double minimum_muon_jet_dR;
-        double muon_trackiso_limit;
-        double maxVertexZsep;
-        double maxJetVZsepCM;
     } cuts;
 
 } ;
@@ -150,27 +151,28 @@ HeavyNuFilter::HeavyNuFilter(const edm::ParameterSet& iConfig)
     //
 
     muonTag_ = iConfig.getParameter< edm::InputTag > ("muonTag");
-    jetTag_ = iConfig.getParameter< edm::InputTag > ("jetTag");
+    jetTag_  = iConfig.getParameter< edm::InputTag > ("jetTag");
     elecTag_ = iConfig.getParameter< edm::InputTag > ("electronTag");
 
     mode_ = iConfig.getParameter<int>("mode");
-
+    if ( mode_ > 990 ) { 
+        minNmu_   = iConfig.getParameter<int>("minNmuons");
+        minNelec_ = iConfig.getParameter<int>("minNelecs");
+        if ( (minNmu_ + minNelec_) > 2 || minNmu_ < 0 || minNelec_ < 0 ) 
+            throw cms::Exception("Invalid skimming conditions for leptons");
+    }
+        
     cuts.minimum_mu1_pt = iConfig.getParameter<double>("minMu1pt");
     cuts.minimum_mu2_pt = iConfig.getParameter<double>("minMu2pt");
     cuts.minimum_jet_pt = iConfig.getParameter<double>("minJetPt");
-    cuts.maximum_mu_abseta = iConfig.getParameter<double>("maxMuAbsEta");
+    cuts.maximum_mu_abseta   = iConfig.getParameter<double>("maxMuAbsEta");
     cuts.maximum_elec_abseta = iConfig.getParameter<double>("maxElecAbsEta");
-    cuts.maximum_jet_abseta = iConfig.getParameter<double>("maxJetAbsEta");
+    cuts.maximum_jet_abseta  = iConfig.getParameter<double>("maxJetAbsEta");
     cuts.minimum_muon_jet_dR = iConfig.getParameter<double>("minMuonJetdR");
-    cuts.muon_trackiso_limit = iConfig.getParameter<double>("muonTrackRelIsoLimit");
-    cuts.maxVertexZsep = iConfig.getParameter<double>("maxVertexZsepCM");
-    cuts.maxJetVZsepCM = iConfig.getParameter<double>("maxJetVZsepCM");
 
-    isPFJets_ = iConfig.getParameter<bool>("isPFJets");
+    isPFJets_    = iConfig.getParameter<bool>("isPFJets");
 
-    heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion");
-
-    elecRhoTag_ = iConfig.getParameter< edm::InputTag > ("electronRho");
+    elecRhoTag_  = iConfig.getParameter< edm::InputTag > ("electronRho");
 
 
     // For the record...
@@ -185,7 +187,6 @@ HeavyNuFilter::HeavyNuFilter(const edm::ParameterSet& iConfig)
     std::cout << "maxElecAbsEta     = " << cuts.maximum_mu_abseta << std::endl;
     std::cout << "maxJetAbsEta      = " << cuts.maximum_jet_abseta << std::endl;
     std::cout << "minMuonJetdR      = " << cuts.minimum_muon_jet_dR << std::endl;
-    std::cout << "muonTrackRelIso   = " << cuts.muon_trackiso_limit << std::endl;
     std::cout << "isPFJets          = " << isPFJets_ << std::endl;
     
     tr3 = new TRandom3(16);
@@ -258,21 +259,24 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hnu::getJetList(pJets, NULL, cuts.minimum_jet_pt, cuts.maximum_jet_abseta, 0, 0, false, 0); //the isMC = false is intentional eventhough this is a MC skim
     hnuEvent.nJets = jetCands.size();
 
-    // Look for valid muons
+    // Look for valid muons: No ID or isolation requirements applied
     std::vector<pat::Muon> muCands =
             hnu::getMuonList(pMuons, pvHandle, 0, cuts.minimum_mu2_pt, cuts.maximum_mu_abseta, 1.0, false, false);
 
-    // Look for valid electrons
+    // Look for valid electrons: No ID or isolation requirements applied
     std::vector< std::pair<pat::Electron, float> > eCands =
             hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt, 0, pvHandle, ((electronRhoHandle.isValid()) ? (*(electronRhoHandle.product())) : 0.));
 
+    if(mode_ < 990 && hnuEvent.nJets < 2) return false;
 
-    if(hnuEvent.nJets < 2) return false;
-
-    hnuEvent.j1 = jetCands.at(0).first;
-    hnuEvent.j2 = jetCands.at(1).first;
-    hnuEvent.j1scale = jetCands.at(0).second;
-    hnuEvent.j2scale = jetCands.at(1).second;
+    if ( hnuEvent.nJets > 0 ) { 
+      hnuEvent.j1 = jetCands.at(0).first;
+      hnuEvent.j1scale = jetCands.at(0).second;
+    } 
+    if ( hnuEvent.nJets > 1 ) { 
+      hnuEvent.j2 = jetCands.at(1).first;
+      hnuEvent.j2scale = jetCands.at(1).second;
+    }
 
     if(muCands.size() >= 1)
     {
@@ -296,11 +300,11 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hnuEvent.nElectrons++;
     }
 
-    if(hnuEvent.j1.pt() < cuts.minimum_jet_pt || hnuEvent.j2.pt() < cuts.minimum_jet_pt) return false;
+    if ( mode_ < 990 ) { 
+        if(hnuEvent.j1.pt() < cuts.minimum_jet_pt || hnuEvent.j2.pt() < cuts.minimum_jet_pt) return false;
 
-  
-    if(tr3->Uniform() > 0.9)
-    {
+        if(tr3->Uniform() > 0.9)
+        {
             for(std::vector<pat::Muon>::const_iterator iM = muCands.begin(); iM != muCands.end(); ++iM)
             {
                 double dRlj1 = deltaR(iM->p4(), hnuEvent.j1.p4());
@@ -353,16 +357,57 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 }
             }
             if(hnuEvent.nMuons + hnuEvent.nElectrons < 2) return false;
-    }
+        }
 
-    if(hnuEvent.nMuons >= 2     && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) return true;
-    if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
-    if(hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1)
-    {
-        if(hnu::getElectronEt(hnuEvent.e1, false)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
+        if(hnuEvent.nMuons >= 2     && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) return true;
+        if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
+        if(hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1)
+        {
+            if(hnu::getElectronEt(hnuEvent.e1, false)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
+        }
+        
+        return false;
+    } else { // Skims designed for data
+        bool twoMuons     = (hnuEvent.nMuons >= 2 &&
+                             hnuEvent.mu1.pt() > cuts.minimum_mu1_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) ; 
+        bool twoElectrons = (hnuEvent.nElectrons >= 2 &&
+                             hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu1_pt && 
+			     hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) ; 
+        bool topLike      = ( (hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1) &&
+                              ((hnuEvent.mu1.pt() > cuts.minimum_mu1_pt && hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt) || 
+                               (hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu1_pt)) ) ;  
+        bool twoJets      = (hnuEvent.nJets >= 2 && hnuEvent.j1.pt() > cuts.minimum_jet_pt && hnuEvent.j2.pt() > cuts.minimum_jet_pt) ; 
+
+        if ( mode_ == 991 ) {
+            if ( minNmu_ == 2                   && twoMuons )     return true ;
+            if ( minNelec_ == 2                 && twoElectrons ) return true ; 
+            if ( minNmu_ == 1 && minNelec_ == 1 && topLike )      return true ; 
+        } else if ( mode_ == 992 ) {
+            if ( minNmu_ == 2                   && twoJets && twoMuons )     return true ;
+            if ( minNelec_ == 2                 && twoJets && twoElectrons ) return true ; 
+            if ( minNmu_ == 1 && minNelec_ == 1 && twoJets && topLike )      return true ; 
+        } else if ( mode_ == 993 ) {
+            reco::Particle::LorentzVector lep1p4, lep2p4;
+            if ( minNmu_ == 2 && twoMuons ) {
+                lep1p4 = hnuEvent.mu1.p4() ; 
+                lep2p4 = hnuEvent.mu2.p4() ; 
+            } else if ( minNelec_ == 2 && twoElectrons ) {
+                lep1p4 = reco::Particle::PolarLorentzVector(hnuEvent.l1pt, hnuEvent.l1eta, hnuEvent.l1phi, 0);
+                lep2p4 = reco::Particle::PolarLorentzVector(hnuEvent.l2pt, hnuEvent.l2eta, hnuEvent.l2phi, 0);
+            } else if ( minNmu_ == 1 && minNelec_ == 1 && topLike ) {
+                lep1p4 = reco::Particle::PolarLorentzVector(hnuEvent.l1pt, hnuEvent.l1eta, hnuEvent.l1phi,
+                                                            (hnuEvent.nLeptons >= 2 && hnuEvent.mu1.pt() > hnu::getElectronEt(hnuEvent.e1, false))?0.105:0.0);
+                lep2p4 = reco::Particle::PolarLorentzVector(hnuEvent.l2pt, hnuEvent.l2eta, hnuEvent.l2phi,
+                                                            (hnuEvent.nLeptons >= 2 && hnuEvent.mu1.pt() > hnu::getElectronEt(hnuEvent.e1, false))?0.0:0.105);
+            }
+            reco::Particle::LorentzVector vLL = lep1p4 + lep2p4 ;
+            if ( vLL.M() > cuts.minimum_mumu_mass ) return true ; 
+        }
+        return false ;
     }
-    
-    return false;
+    // You should never, ever get here
+    std::cout << "WARNING: You should never see this message.  To be safe, I will reject the event" << std::endl ;
+    return false ; 
 }
 
 // ------------ method called once each job just before starting event loop  ------------

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.116 2013/01/11 20:32:14 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.117 2013/02/05 00:56:34 pastika Exp $
 //
 //
 
@@ -845,7 +845,6 @@ void HeavyNu::selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEven
         double mu1wgt = (hnuEvent.nLeptons > 0)? (muid_->weightForMCbyEta((hnuEvent.mu1.eta()), applyMuIDEffsign_)):1.0;
         double mu2wgt = (hnuEvent.nLeptons > 1)? (muid_->weightForMCbyEta((hnuEvent.mu2.eta()), applyMuIDEffsign_)):1.0;
 
-
         hnuEvent.eventWgt *= (mu1wgt * mu2wgt);
     }
 }
@@ -1475,7 +1474,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.nLeptons >= 2) fill(*pMuons, *pElecs, *pJets, hnuEvent, false, true, hists.LLptCuts);
 
     if(hnuEvent.nLeptons < 2 || hnuEvent.nJets < 2) return false;
-
+    
     if((hnuEvent.nJets >= 1 && hnu::jetID(hnuEvent.j1) < 1) || (hnuEvent.nJets >= 2 && hnu::jetID(hnuEvent.j2) < 1)) return false;
 
     hists.cutlevel->Fill(1.0, hnuEvent.eventWgt); // Two highest pT muons that are isolated, separated from chosen jets
@@ -1596,9 +1595,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         std::cout << "\tM(mumu) = " << hnuEvent.mLL << " GeV";
         std::cout << ", M(JJ) = " << hnuEvent.mJJ << " GeV" << std::endl;
         std::cout << "\tJets:   j1 ";
-        //outputCandidate(hnuEvent.j1);
+        outputCandidate(hnuEvent.j1);
         std::cout << ", j2 ";
-        //outputCandidate(hnuEvent.j2);
+        outputCandidate(hnuEvent.j2);
         std::cout << std::endl;
         std::cout << "\tMuons: mu1, mu" << (mu1posChg ? "+":"-");
         outputCandidate(*(hnuEvent.l1));

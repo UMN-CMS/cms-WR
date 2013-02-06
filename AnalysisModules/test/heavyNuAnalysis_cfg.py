@@ -22,6 +22,12 @@ runEra = "2012Cp"
 dataEra   = 20121 
 pileupEra = 0 #20121
 
+#--- Filtering for multi-skims ---#
+lljjAnalysisSkim = True
+llPrescaleSkim   = False
+llHighMassSkim   = False
+topSkim          = False
+
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
 runElectronAnalysis = True
@@ -329,6 +335,31 @@ elif cmsswRelease == 53:
 ## Define the basic path ##
 ## --------------------- ##
 
+#--- Trigger filters for new skims ---#
+process.pickTriggered = cms.EDFilter('HeavyNuSkimFilter',
+    triggerResults = cms.InputTag('TriggerResults','','HNUSKIMS'), 
+    filterOnPaths  = cms.vstring('plep35_35_prescale')  
+)
+process.twoLeptonSkimFilter         = process.pickTriggered.clone( filterOnPaths = cms.vstring('plep50_35') )
+process.twoLeptonPrescaleSkimFilter = process.pickTriggered.clone( filterOnPaths = cms.vstring('plep35_35_prescale') )
+process.twoLeptonHighMassSkimFilter = process.pickTriggered.clone( filterOnPaths = cms.vstring('plep35_35_mLL170') )
+process.topSkimFilter               = process.pickTriggered.clone( filterOnPaths = cms.vstring('pemu50_35') )
+process.topAndTwoLeptonSkimFilter   = process.pickTriggered.clone( filterOnPaths = cms.vstring('plep50_35','pemu50_35') )
+
+process.boolTrue = cms.EDFilter( 'HLTBool',
+    result = cms.bool( True )
+)
+process.skimFilterSequence = cms.Sequence(process.boolTrue)
+if lljjAnalysisSkim:
+    if topSkim:
+        process.skimFilterSequence += process.topAndTwoLeptonSkimFilter
+    else:
+        process.skimFilterSequence += process.twoLeptonSkimFilter
+if llPrescaleSkim:
+    process.skimFilterSequence += process.twoLeptonPrescaleSkimFilter
+if llHighMassSkim:
+    process.skimFilterSequence += process.twoLeptonHighMassSkimFilter
+
 #--- Beam background removal ---#
 process.scrapingFilter      = cms.EDFilter("FilterOutScraping",
                                            applyfilter = cms.untracked.bool(True),
@@ -349,7 +380,7 @@ process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi')
 #--- ECAL laser noise filter ---#
 process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
 
-process.eventFilters = cms.Sequence( process.scrapingFilter * process.primaryVertexFilter * process.HBHENoiseFilter * process.ecalLaserCorrFilter) 
+process.eventFilters = cms.Sequence( process.skimFilterSequence * process.scrapingFilter * process.primaryVertexFilter * process.HBHENoiseFilter * process.ecalLaserCorrFilter) 
 
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
@@ -441,7 +472,7 @@ process.TFileService = cms.Service("TFileService",
 ## Nominal Analysis ##
 ## ================ ##
 process.load("HeavyNu.AnalysisModules.heavynuanalysis_cfi")
-#if isMCsignal:
+#if isMC and isMCsignal:
 #    process.hNu.isSignal = cms.bool(True)
 #    process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
 #    process.hNuGenFilter.keepIds = cms.vint32(2,)

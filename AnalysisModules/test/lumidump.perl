@@ -2,6 +2,7 @@
 
 open(MYINPUTFILE, "<foo.txt");
 my %lumis  = ();
+my $duplicates = 0 ; 
 while(<MYINPUTFILE>) {
     $a=<>;
     @sections=split(':',$a);
