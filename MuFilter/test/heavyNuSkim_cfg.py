@@ -482,8 +482,13 @@ if cmsswRelease == 53:
     removeCleaning( process, outputModules = [] )
     removeSpecificPATObjects(process, names = ['Jets','Taus','METs'], outputModules = [])
 
+#-------------------------------#
+#--- Output Module specifics ---#
+#-------------------------------#
 #--- Restore the event content after PAT ---#
 process.out.outputCommands = cms.untracked.vstring("keep *","drop *_*_*_HNUSKIMS","keep edmTriggerResults_TriggerResults__HNUSKIMS")
+#--- List of skims that will be kept ---#
+process.out.SelectEvents = cms.untracked.PSet(SelectEvents=cms.vstring('plep35_35_prescale','plep50_35','pemu50_35'))
 
 #----------------#
 #--- LumiList ---#
