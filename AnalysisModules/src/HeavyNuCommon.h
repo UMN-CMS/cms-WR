@@ -119,9 +119,9 @@ namespace hnu
                                                                   edm::Handle<reco::VertexCollection> pvHandle,
                                                                   double rho, 
 								  float ebScale=1.0, float eeScale=1.0);
-    std::vector<float> generate_flat10_mc(int pileupEra=-1);
+    std::vector<float> get_standard_pileup_mc(int pileupEra=-1);
 
-    std::vector<float> get_standard_pileup_data(int pileupEra); 
+    std::vector<float> get_standard_pileup_data(int pileupEra, int systShift = 0); 
 
     std::pair<float,double> pileupReweighting(const edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
 					      edm::LumiReWeighting& mcWeight);
@@ -185,6 +185,8 @@ namespace hnu
     
     TLorentzVector decayTau(const reco::Candidate* tau, bool isMuon);
     double tauDecay(double *x, double *par);
+    
+    double getBtagSF(double pt);
 }
 
 #endif // HEAVY_NU_COMMON_INCLUDED

@@ -399,16 +399,21 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         mLLZoomvsptL1vsptL2->Fill(hne.mLL, hne.l1pt, hne.l2pt, wgt);
     }
 
-    if(hne.isBJet1 || hne.isBJet2)
+    if((hne.isBJet1 || hne.isBJet2) && !(hne.isBJet1 && hne.isBJet2))
     {
+        double btagWgt = 1.0;
+        if(hne.isMC && hne.isBJet1) btagWgt *= hnu::getBtagSF(hne.j1.pt());
+        if(hne.isMC && hne.isBJet2) btagWgt *= hnu::getBtagSF(hne.j2.pt());
         mWR_1b->Fill(hne.mWR, wgt);
         mLL_1b->Fill(hne.mLL, wgt);
         mLLZoom_1b->Fill(hne.mLL, wgt);
     }
     if(hne.isBJet1 && hne.isBJet2)
     {
-        mWR_2b->Fill(hne.mWR, wgt);
-        mLL_2b->Fill(hne.mLL, wgt);
+        double btagWgt = 1.0;
+        if(hne.isMC) btagWgt = hnu::getBtagSF(hne.j1.pt()) * hnu::getBtagSF(hne.j1.pt());
+        mWR_2b->Fill(hne.mWR, wgt * btagWgt);
+        mLL_2b->Fill(hne.mLL, wgt * btagWgt);
         mLLZoom_2b->Fill(hne.mLL, wgt);
     }
 

@@ -19,11 +19,11 @@ runEra = "2012Cp"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- Possible options for dataEra: 20111 (2011A), 20112 (2011B), 20121 (2012) ---#
-dataEra   = 20121 
-pileupEra = 0 #20121
+dataEra   = 20121
+pileupEra = 20122
 
 #--- Filtering for multi-skims ---#
-lljjAnalysisSkim = True
+lljjAnalysisSkim = False
 llPrescaleSkim   = False
 llHighMassSkim   = False
 topSkim          = False
@@ -386,7 +386,7 @@ if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
+           process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
@@ -522,6 +522,8 @@ else:
 if isPFJets:
     process.hNu.jetTag = cms.InputTag( 'selectedPatJetsPFlow' )
 
+# heavyNuGenFilter setup
+process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
 #--- Necessary to sort out trigger complications ---#
 process.hNuMu40       = process.hNu.clone() 
 process.hNuMu40eta2p1 = process.hNu.clone()
@@ -533,6 +535,15 @@ process.hNuEMu               = process.hNu.clone(analysisMode = cms.untracked.st
 process.hNuEMu.correctEscale = cms.bool(isMC)
 
 process.hTauX               = process.hNu.clone(analysisMode = cms.untracked.string('TAUX'))
+
+process.hNuETrig = process.hNuE.clone()
+
+# signal gen filter
+process.load("HeavyNu.AnalysisModules.heavyNuGenFilter_cfi")
+if isMC and isMCsignal:
+	process.hNuGenFilterElec = process.hNuGenFilter.clone(keepIds = cms.vint32(1,))
+	process.hNuGenFilterMu   = process.hNuGenFilter.clone(keepIds = cms.vint32(2,))
+	process.hNuGenFilterTau  = process.hNuGenFilter.clone(keepIds = cms.vint32(3,))
 
 #--- Electron ID corrections are taken from June 22, 2012 studies---#
 process.hNu.applyMuIDEffcorr = cms.bool(isMC)
@@ -576,11 +587,11 @@ process.hNuMu40trigLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False
 # Pileup uncertainty: +/- 8% on number of interactions leads to 0.4 in 2011A, 0.7 in 2011B
 #                     +/- 5% on number of interactions (16.85, 12/06/09) leads to 0.84 in 2012AB
 if runEra == "2012AB" or "2012Cr" or "2012Cp" or "2012D":
-    process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(0.84) )
-    process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.double(-0.84) )
+    process.hNuMu40puHi = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.int32(1) )
+    process.hNuMu40puLo = process.hNuMu40.clone( studyMuSelectEff = cms.bool(False), systPileupShift = cms.int32(-1) )
 
-process.hNuEpuHi = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(0.84) )
-process.hNuEpuLo = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.double(-0.84) )
+process.hNuEpuHi = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.int32(1) )
+process.hNuEpuLo = process.hNuE.clone( studyMuSelectEff = cms.bool(False), analysisMode = cms.untracked.string('HNUE'), systPileupShift = cms.int32(-1) )
 
 ## ============ ##
 ## QCD Analysis ##
@@ -660,26 +671,28 @@ else:
 
 if runMuonAnalysis:
     if isMC:
-        #if isMCsignal:
-        #    process.AnalysisIntroSequence += process.hNuGenFilter
-
-        process.p40 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40 ) 
+        if isMCsignal:
+        	process.AnalysisIntroSequenceMu = cms.Sequence( process.hNuGenFilterMu * process.AnalysisIntroSequence )
+        else:
+            process.AnalysisIntroSequenceMu = process.AnalysisIntroSequence
+        
+        process.p40 = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40 ) 
 
         if systematics:
 
-            process.p40jesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesHi )
-            process.p40jesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jesLo )
-            process.p40jerHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jerHi )
-            process.p40jerLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40jerLo )
-            # process.p40mesHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesHi )
-            # process.p40mesLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mesLo )
-            process.p40mer    = cms.Path( process.AnalysisIntroSequence + process.hNuMu40mer )
-            process.p40midHi  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midHi )
-            process.p40midLo  = cms.Path( process.AnalysisIntroSequence + process.hNuMu40midLo )
-            process.p40trigHi = cms.Path( process.AnalysisIntroSequence + process.hNuMu40trigHi )
-            process.p40trigLo = cms.Path( process.AnalysisIntroSequence + process.hNuMu40trigLo )
-            process.p40puHi   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40puHi )
-            process.p40puLo   = cms.Path( process.AnalysisIntroSequence + process.hNuMu40puLo )
+            process.p40jesHi  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40jesHi )
+            process.p40jesLo  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40jesLo )
+            process.p40jerHi  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40jerHi )
+            process.p40jerLo  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40jerLo )
+            # process.p40mesHi  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40mesHi )
+            # process.p40mesLo  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40mesLo )
+            process.p40mer    = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40mer )
+            process.p40midHi  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40midHi )
+            process.p40midLo  = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40midLo )
+            process.p40trigHi = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40trigHi )
+            process.p40trigLo = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40trigLo )
+            process.p40puHi   = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40puHi )
+            process.p40puLo   = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40puLo )
     else:
         process.pNominal = cms.Path( process.AnalysisIntroSequence + process.hNu )
         if doTriggerStudy:
@@ -687,28 +700,27 @@ if runMuonAnalysis:
             process.p40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.hNuMu40eta2p1 )
 
 if runElectronAnalysis:
-#   if isMC:
-#      if isMCsignal:
-#         process.AnalysisIntroSequence += process.hNuGenFilter
-
-   process.pE = cms.Path(process.AnalysisIntroSequence + process.hNuE)
+   if isMCsignal:
+       process.AnalysisIntroSequenceElec = cms.Sequence( process.hNuGenFilterElec * process.AnalysisIntroSequence )
+   else:
+       process.AnalysisIntroSequenceElec = process.AnalysisIntroSequence
+   
+   process.pE = cms.Path(process.AnalysisIntroSequenceElec + process.hNuE)
    if systematics:
-      process.pEjesHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesHi);
-      process.pEjesLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjesLo);
-      process.pEidHi   = cms.Path(process.AnalysisIntroSequence + process.hNuEidHi);
-      process.pEidLo   = cms.Path(process.AnalysisIntroSequence + process.hNuEidLo);
-      process.pEtrigHi = cms.Path(process.AnalysisIntroSequence + process.hNuEtrigHi);
-      process.pEtrigLo = cms.Path(process.AnalysisIntroSequence + process.hNuEtrigLo);
-      process.pEjerHi  = cms.Path(process.AnalysisIntroSequence + process.hNuEjerHi);
-      process.pEjerLo  = cms.Path(process.AnalysisIntroSequence + process.hNuEjerLo);
-      process.pEescale = cms.Path(process.AnalysisIntroSequence + process.hNuEescale);
-      process.pEpuHi   = cms.Path(process.AnalysisIntroSequence + process.hNuEpuHi);
-      process.pEpuLo   = cms.Path(process.AnalysisIntroSequence + process.hNuEpuLo);
+      process.pEjesHi  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjesHi);
+      process.pEjesLo  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjesLo);
+      process.pEidHi   = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEidHi);
+      process.pEidLo   = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEidLo);
+      process.pEtrigHi = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEtrigHi);
+      process.pEtrigLo = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEtrigLo);
+      process.pEjerHi  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjerHi);
+      process.pEjerLo  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjerLo);
+      process.pEescale = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEescale);
+      process.pEpuHi   = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEpuHi);
+      process.pEpuLo   = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEpuLo);
 
    if doTriggerStudy and isData:
-       process.pENominal = cms.Path( process.AnalysisIntroSequence + process.TriggerStudyElectronSequence + process.hNuE  )
-   else:
-       process.pENominal = cms.Path( process.AnalysisIntroSequence + process.hNuE )
+       process.pENominal = cms.Path( process.AnalysisIntroSequence + process.TriggerStudyElectronSequence + process.hNuETrig  )
           
 if qcdStudy:
     process.pMu1QCD = cms.Path( process.AnalysisIntroSequence + process.hNuMu1QCD )
@@ -731,6 +743,6 @@ if topStudy:
         process.pEMu = cms.Path( process.AnalysisIntroSequence + process.hNuEMu )
 
 if isMCsignal and isMC:
-	process.pTauX = cms.Path( process.AnalysisIntroSequence + process.hTauX )
+	process.pTauX = cms.Path( process.hNuGenFilterTau * process.AnalysisIntroSequence + process.hTauX )
 	
 

@@ -217,7 +217,7 @@ private:
 
     bool disableTriggerCorrection_; // turn off the trigger emulator
     int pileupEra_;
-    double puShift_ ;
+    int puShift_ ;
     reweight::PoissonMeanShifter poissonNvtxShifter_ ; 
     bool isPFJets_; // true if PFJets are used (turns off jet id requirement)
     bool studyRatePerRun_ ; // should only be true for data

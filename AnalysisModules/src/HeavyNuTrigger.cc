@@ -279,52 +279,51 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   // All other bins combine Mu24, Mu40, Mu40_eta2p1 efficiencies for run 2011a
   // Run 2011b results use Mu40_eta2p1 only
   // Run 2012 results use Mu40_eta2p1 only
-  const double effslo2011a[]  = {0.868979,0.855499,0.862255,0.874853,0.882812,0.876860,0.823287,0.823287};
-  const double effsnom2011a[] = {0.875648,0.864359,0.872848,0.885346,0.897508,0.890611,0.871189,0.871189};
-  const double effshi2011a[]  = {0.882316,0.873220,0.883441,0.895840,0.912204,0.904362,0.919090,0.919090};
-  const double upedge2011a[]  = {      40,      50,      60,      80,     100,     200,    3500,      -1};
-
-  const double effslo2011b[]  = {0.908256,0.922264,0.944146,0.920008,0.906448,0.917130,0.917130};
-  const double effsnom2011b[] = {0.900857,0.913545,0.936445,0.906582,0.893309,0.866667,0.866667};
-  const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
-  const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
-
-  // For 2012, the trigger corrections are made as a function of eta
-  const double effslo2012[]   = {0.776442,0.844443,0.931687,0.941174,0.846101,0.807243};
-  const double effsnom2012[]  = {0.786102,0.856497,0.936184,0.945360,0.858314,0.816294};
-  const double effshi2012[]   = {0.795555,0.868014,0.940492,0.949355,0.869968,0.825120};
-  const double upedge2012[]   = {    -1.2,    -0.9,     0.0,     0.9,     1.2,     2.1};
-
-  //These uncertainties are inflated by a factor of 3!!!!!!!
-  //const double effslo2011a[]  = {0.855641,0.837779,0.841069,0.853867,0.853420,0.849358,0.727483,0.727483};
+  //const double effslo2011a[]  = {0.868979,0.855499,0.862255,0.874853,0.882812,0.876860,0.823287,0.823287};
   //const double effsnom2011a[] = {0.875648,0.864359,0.872848,0.885346,0.897508,0.890611,0.871189,0.871189};
-  //const double effshi2011a[]  = {0.895652,0.890942,0.904627,0.916828,0.941596,0.931864,1.014892,1.014892};
+  //const double effshi2011a[]  = {0.882316,0.873220,0.883441,0.895840,0.912204,0.904362,0.919090,0.919090};
   //const double upedge2011a[]  = {      40,      50,      60,      80,     100,     200,    3500,      -1};
-  //These uncertainties are inflated by a factor of 3!!!!!!!
-  //const double effslo2011b[]  = {0.895652,0.878660,0.887385,0.913339,0.866301,0.853895,0.715275,0.715275};
+
+  //const double effslo2011b[]  = {0.908256,0.922264,0.944146,0.920008,0.906448,0.917130,0.917130};
   //const double effsnom2011b[] = {0.900857,0.913545,0.936445,0.906582,0.893309,0.866667,0.866667};
-  //const double effshi2011b[]  = {0.855641,0.923054,0.939702,0.959548,0.946860,0.932726,1.018056,1.018056};
+  //const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
   //const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
+  // For 2012, the trigger corrections are made as a function of eta
+  //const double effslo2012[]   = {0.776442,0.844443,0.931687,0.941174,0.846101,0.807243};
+  //const double effsnom2012[]  = {0.786102,0.856497,0.936184,0.945360,0.858314,0.816294};
+  //const double effshi2012[]   = {0.795555,0.868014,0.940492,0.949355,0.869968,0.825120};
+  //const double upedge2012[]   = {    -1.2,    -0.9,     0.0,     0.9,     1.2,     2.1};
+  
+  // Trigger Efficiencies for 2012A, B, and C
+  const double effslo2012ABC[]   = {0.000000,0.000000,0.000000};  //UNCERTAINTIES NEED TO BE UPDATED    
+  const double effsnom2012ABC[]  = {0.940100,0.843700,0.821700};
+  const double effshi2012ABC[]   = {0.000000,0.000000,0.000000};
+  const double upedge2012ABC[]   = {     0.9,     1.2,     2.1};
+
   // 2011 A is the default
-  const double *effs = effsnom2012 ; 
-  if (trigEra_ == 20111) effs = effsnom2011a ; 
-  if (trigEra_ == 20112) effs = effsnom2011b ; 
+  const double *effs = effsnom2012ABC; 
+  //if (trigEra_ == 20111) effs = effsnom2011a ; //These are all out of date below the top
+  //if (trigEra_ == 20112) effs = effsnom2011b ; 
   if ( signOfError2apply ) {
-    if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
-    if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
-    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effshi2012 : effslo2012;
+    //if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
+    //if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
+    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effshi2012ABC : effslo2012ABC;
   }
 
   int i;
-  const double * upedge = upedge2012 ; 
-  if ( trigEra_ == 20111 || trigEra_ == 20112 ) { 
-    if (trigEra_ == 20111) upedge = upedge2011a ; 
-    if (trigEra_ == 20112) upedge = upedge2011b ; 
-    for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
-  } else { 
-    for (i=0; abs(eta)<2.1 && upedge[i]<eta; i++);
-  }
+  const double * upedge = upedge2012ABC ;
+  //if ( trigEra_ == 20111 || trigEra_ == 20112 )
+  //{
+  //    if (trigEra_ == 20111) upedge = upedge2011a ;
+  //    if (trigEra_ == 20112) upedge = upedge2011b ;
+  //    for (i = 0; upedge[i] > 0 && upedge[i] < pt; i++);
+  //}
+  //else
+  //{
+  //    for (i = 0; abs(eta) < 2.1 && upedge[i] < eta; i++);
+  //}
+  for (i = 0; abs(eta) < 2.1 && upedge[i] < eta; i++);
   double eff=effs[i];
     
   return (triggerRandom_->Uniform()<eff);

@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.26 2012/06/15 14:04:22 pastika Exp $
+// $Id: MuJetBackground.cc,v 1.27 2012/11/21 18:44:15 pastika Exp $
 //
 //
 
@@ -585,8 +585,7 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   }      
   
   isPFJets_ = iConfig.getParameter<bool>("isPFJets") ; 
-  MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(pileupEra_),
-					   hnu::get_standard_pileup_data(pileupEra_));
+  //MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(pileupEra_), hnu::get_standard_pileup_data(pileupEra_));
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
