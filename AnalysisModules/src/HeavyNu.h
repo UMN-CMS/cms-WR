@@ -155,7 +155,7 @@ private:
     virtual void beginJob();
     virtual bool filter(edm::Event&, const edm::EventSetup&);
     virtual void endJob();
-    virtual void fillBasicMuHistos(const pat::Muon& m);
+    virtual void fillBasicMuHistos(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack);
     virtual void fillBasicJetHistos(const pat::Jet& j,
             int jetnum);
     virtual TH1 *bookRunHisto(uint32_t runNumber);

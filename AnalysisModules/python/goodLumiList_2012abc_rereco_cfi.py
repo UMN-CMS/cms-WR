@@ -1,8 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-#--- This configuration uses the following JSON files:
+#--- This configuration uses the following JSON files, which cover the A/B rereco, the A recover, and the C rereco:
 #--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON.txt
 #--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
+#--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
 lumisToProcess = cms.untracked.VLuminosityBlockRange()
 lumisToProcess.extend([
    #--- 2012 A/B re-reco, July 13 ---# 
@@ -774,7 +775,21 @@ lumisToProcess.extend([
    '196531:288-196531:302',
    '196531:305-196531:422',
    '196531:425-196531:440',
-   #--- 2012 C re-reco, July 13 ---# 
+   #--- 2012 A recover, August 6 ---# 
+   '190782:55-190782:181',
+   '190782:184-190782:233',
+   '190782:236-190782:399',
+   '190782:401-190782:409',
+   '190895:64-190895:202',
+   '190895:210-190895:302',
+   '190895:305-190895:584',
+   '190895:587-190895:948',
+   '190906:73-190906:256',
+   '190906:259-190906:354',
+   '190906:356-190906:496',
+   '190945:124-190945:207',
+   '190949:1-190949:81',
+   #--- 2012 C re-reco, August 24 ---# 
    '198049:1-198049:11',
    '198049:14-198049:57',
    '198050:2-198050:155',

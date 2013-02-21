@@ -14,12 +14,12 @@ cmsswRelease = 53
 isMCsignal=True
 
 #--- Data Run era flags ---#
-# options 2012AB, 2012Cr, 2012Cp, 2012D
+# options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012D
 runEra = "2012Cp"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- Possible options for dataEra: 20111 (2011A), 20112 (2011B), 20121 (2012) ---#
-dataEra   = 20121
+dataEra   = 20121 
 pileupEra = 20122
 
 #--- Filtering for multi-skims ---#
@@ -82,7 +82,7 @@ process.source = cms.Source("PoolSource",
 )
 
 if isData:
-    if runEra == "2012AB" or runEra == "2012Cr":
+    if runEra == "2012AB" or runEra == "2012Ar" or runEra == "2012Cr":
         from HeavyNu.AnalysisModules.goodLumiList_2012abc_rereco_cfi import lumisToProcess
     elif runEra == "2012Cp" or runEra == "2012D":
         from HeavyNu.AnalysisModules.goodLumiList_2012cd_prompt_cfi import lumisToProcess
@@ -112,6 +112,8 @@ else:
     elif cmsswRelease == 53:
         if runEra == "2012AB":
             process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
+        elif runEra == "2012Ar":
+            process.GlobalTag.globaltag = cms.string('FT_53_V6C_AN3::All') 
         elif runEra == "2012Cr":
             process.GlobalTag.globaltag = cms.string('FT_53_V10_AN3::All')
         elif runEra == "2012Cp":
@@ -386,7 +388,7 @@ if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-           process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
+       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
@@ -672,10 +674,10 @@ else:
 if runMuonAnalysis:
     if isMC:
         if isMCsignal:
-        	process.AnalysisIntroSequenceMu = cms.Sequence( process.hNuGenFilterMu * process.AnalysisIntroSequence )
+            process.AnalysisIntroSequenceMu = cms.Sequence( process.hNuGenFilterMu * process.AnalysisIntroSequence )
         else:
             process.AnalysisIntroSequenceMu = process.AnalysisIntroSequence
-        
+
         process.p40 = cms.Path( process.AnalysisIntroSequenceMu + process.hNuMu40 ) 
 
         if systematics:
@@ -704,7 +706,7 @@ if runElectronAnalysis:
        process.AnalysisIntroSequenceElec = cms.Sequence( process.hNuGenFilterElec * process.AnalysisIntroSequence )
    else:
        process.AnalysisIntroSequenceElec = process.AnalysisIntroSequence
-   
+
    process.pE = cms.Path(process.AnalysisIntroSequenceElec + process.hNuE)
    if systematics:
       process.pEjesHi  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjesHi);

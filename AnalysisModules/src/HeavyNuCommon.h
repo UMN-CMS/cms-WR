@@ -61,9 +61,10 @@ namespace hnu
     bool operator() (const std::pair<pat::Electron,float>& a, const std::pair<pat::Electron,float>& b) ; 
   };
 
-    bool isVBTFloose       ( const pat::Muon& m );
-    bool isVBTFtight       ( const pat::Muon& m );
-    bool is2012MuTight     ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack); 
+    bool isLooseMuon       ( const pat::Muon& m );
+    bool isTightMuonCore   ( const pat::Muon& m );
+    bool isTightMuon       ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle );
+    bool isTightHighPtMuon ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack );
 
     double muIsolation     ( const pat::Muon& m, const double scale=1.0 ) ; 
     

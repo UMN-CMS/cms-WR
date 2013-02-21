@@ -28,54 +28,52 @@ namespace hnu {
     return (getElectronEt(a.first,false)*a.second) > (getElectronEt(b.first,false)*b.second);
   }
 
-  bool isVBTFloose(const pat::Muon& m)
+  bool isLooseMuon(const pat::Muon& m)
   {
-    return m.muonID("AllGlobalMuons")&&(m.numberOfValidHits()>10);
+    return (m.isPFMuon() && (m.isGlobalMuon()||m.isTrackerMuon()));
   }
-  
-  bool isVBTFtight(const pat::Muon& m)
+
+  // This selection takes care of what is common to "Tight" and "High pT Tight" muon selection
+  // What is *not* included: PF muon, normalized chi^2, dpT/pT, dxy, dz
+  bool isTightMuonCore(const pat::Muon& m)
   {
-    if( !isVBTFloose(m) ) return false; // this should already have been checked.
-
-    reco::TrackRef gt = m.globalTrack();
-    if (gt.isNull()) {
-      std::cerr << "Mu global track reference is NULL" << std::endl;
-      return false;
-    }
-    return (m.muonID("AllTrackerMuons") &&
-	    (m.dB() < 0.2) &&
-	    (m.normChi2() < 10) &&
-	    (m.numberOfMatches() > 1) &&
-	    (gt->hitPattern().numberOfValidMuonHits()>0) &&
-	    (gt->hitPattern().numberOfValidPixelHits()>0) );
-
-  } // HeavyNu::isVBTFtight
-
-  // Information taken from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId
-  // On 19 Nov, 2012
-  bool is2012MuTight(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack) { 
-
     reco::TrackRef gt = m.globalTrack();
     reco::TrackRef it = m.innerTrack();
-    if (gt.isNull() || it.isNull() || cktTrack.isNull()) {
-      //std::cerr << "Mu global track or inner track reference is NULL" << std::endl;
-      return false;
-    }
-    if ( !pvHandle.isValid() ) { 
-      //std::cerr << "No primary vertex available.  Skipping advanced selection." << std::endl;
-      return false;
-    }      
-    reco::Vertex pv = pvHandle->at(0) ; 
+    if (gt.isNull() || it.isNull()) return false;
 
     return ( (m.isGlobalMuon()) &&
-	     // (m.normChi2() < 10) && --> Ignored for high pT muons
 	     (gt->hitPattern().numberOfValidMuonHits() > 0) &&
 	     (it->hitPattern().numberOfValidPixelHits() > 0) &&
 	     (m.numberOfMatchedStations() > 1) &&
-	     (fabs(cktTrack->dxy(pv.position())) < 0.2 ) &&
+	     (it->hitPattern().trackerLayersWithMeasurement() > 5) ); 
+  }
+    
+  bool isTightMuon(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle)
+  {
+    if ( !isTightMuonCore(m) ) return false;
+    
+    if ( m.muonBestTrack().isNull() ) return false;
+    if ( !pvHandle.isValid() ) return false;
+    reco::Vertex pv = pvHandle->at(0) ; 
+   
+    return ( m.isPFMuon() && (m.normChi2() < 10) &&
+	     (fabs(m.muonBestTrack()->dxy(pv.position())) < 0.2 ) &&
+	     (fabs(m.muonBestTrack()->dz(pv.position())) < 0.5) );
+  } // HeavyNu::isTightMuon
+
+  // Information taken from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId
+  // On 19 Nov, 2012
+  bool isTightHighPtMuon(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack)
+  { 
+    if ( !isTightMuonCore(m) ) return false;    
+
+    if (cktTrack.isNull()) return false;
+    if ( !pvHandle.isValid() ) return false;
+    reco::Vertex pv = pvHandle->at(0) ; 
+
+    return ( (fabs(cktTrack->dxy(pv.position())) < 0.2 ) &&
 	     (fabs(cktTrack->dz(pv.position())) < 0.5) &&
-	     (it->hitPattern().trackerLayersWithMeasurement() > 5) ) &&
-	     (cktTrack->ptError()/cktTrack->pt() < 0.3); 
+	     (cktTrack->ptError()/cktTrack->pt() < 0.3) ); 
   }
 
   double getElectronEt(const pat::Electron& e, bool useCorrectedEnergy) { 
@@ -842,7 +840,7 @@ namespace hnu {
       }
 
       if ( iM.pt() < minPt ) continue ; 
-      bool passesID = ( (idEra == 2012) ? ( is2012MuTight(iM, pvHandle, cktTrack)) : ( isVBTFtight(iM) ) ) ;
+      bool passesID = isTightHighPtMuon(iM, pvHandle, cktTrack) ;
       if ( !passesID && idEra != 0 ) continue ;
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting

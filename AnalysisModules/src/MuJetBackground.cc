@@ -142,10 +142,6 @@ private:
   edm::InputTag muonTag_;
   edm::InputTag jetTag_;
   edm::InputTag jptTag_;
-  edm::InputTag elecTag_;
-  // edm::InputTag photTag_;
-  // edm::InputTag hybridSClabel_ ; 
-  // edm::InputTag multiSClabel_ ; 
 
   std::string currentFile_;
   bool dolog_;
@@ -188,11 +184,11 @@ private:
     TH1 *ptMET, *phiMET ; 
     TH1 *ptMu1trkIso, *etaMu1trkIso, *phiMu1trkIso ; 
 
+    TH3 *ptMu_etaMu_trkIso ; 
+      
     TH1 *ecalIso_muPt100, *hcalIso_muPt100, *hoeIso_muPt100 ; 
     TH1 *ecalIso_muPt200, *hcalIso_muPt200, *hoeIso_muPt200 ;
       
-    TH1 *ptEB, *ptEE ; 
-
     TH1 *mWR, *mNuR1, *mNuR2, *mMuMu, *mMuMuZoom, *mJJ ; 
     TH2 *mNuR2D, *mNuR2D_raw ; 
 
@@ -208,7 +204,7 @@ private:
 
   // gf set of histo for all Z definitions in a stack
   struct HistStruct {
-    TH1 *nelec, *nmu, *njet ;
+    TH1 *nmu, *njet ;
 
     TFileDirectory *rundir;
 
@@ -313,10 +309,9 @@ MuJetBackground::HistPerDef::book(TFileDirectory *td,
   t="#eta(#mu_{1}) " +post;  etaMu1trkIso=td->make<TH1D>("etaMu1trkIso",t.c_str(),40,-2.5,2.5);
   t="#phi(#mu_{1}) " +post;  phiMu1trkIso=td->make<TH1D>("phiMu1trkIso",t.c_str(),30,-3.14159,3.14159);
 
-  // ----------  Electron histograms  ----------
-  t="p_{T}(SC_{EB}) "+post;   ptEB=td->make<TH1D>("ptEB",t.c_str(),200,0.,1000.);
-  t="p_{T}(SC_{EE}) "+post;   ptEE=td->make<TH1D>("ptEE",t.c_str(),200,0.,1000.);
-
+  t="p_{T}(#mu) vs. #eta(#mu) vs. relative tracker isolation "+post;
+  ptMu_etaMu_trkIso = td->make<TH3D>("ptMu_etaMu_trkIso",t.c_str(),200,0.,1000.,50,-2.5,2.5,500.,0.,10.);
+  
   // ----------  Jet histograms ----------
 
   t="p_{T}(j_{1}) "            +post;     ptJet1=td->make<TH1D>("ptJet1",  t.c_str(),50,0.,500.);
@@ -381,6 +376,10 @@ void MuJetBackground::HistPerDef::fill(pat::Muon& theMuon,
   ptMET->Fill(theMET.pt()) ; 
   phiMET->Fill(theMET.phi()) ; 
 
+  // Muon relative track isolation as a function of muon pT
+  double relTrkIso = theMuon.trackIso()/theMuon.pt() ;
+  ptMu_etaMu_trkIso->Fill(theMuon.pt(),theMuon.eta(),relTrkIso) ; 
+  
   if ( (theMuon.trackIso()/theMuon.pt()) < trkIsoLimit ) { // Relative track isolation
     ptMu1trkIso->Fill(theMuon.pt()) ; 
     etaMu1trkIso->Fill(theMuon.eta()) ; 
@@ -483,17 +482,11 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   muonTag_ = iConfig.getParameter< edm::InputTag >( "muonTag" );
   jetTag_  = iConfig.getParameter< edm::InputTag >( "jetTag"  );
   jptTag_  = iConfig.getParameter< edm::InputTag >( "jptTag"  );
-  elecTag_ = iConfig.getParameter< edm::InputTag >( "electronTag" );
-  // photTag_ = iConfig.getParameter< edm::InputTag >( "photonTag" );
-  
-  // hybridSClabel_ = iConfig.getParameter< edm::InputTag >( "hybridSCs" );
-  // multiSClabel_  = iConfig.getParameter< edm::InputTag >( "multi5x5SCs" );
 
   trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
   muid_ = new HeavyNuID(iConfig.getParameter<edm::ParameterSet>("muIDPset"));
 
   edm::Service<TFileService> fs;
-  hists.nelec    = fs->make<TH1D>("nelec", "N(e^{#pm})",10,-0.5,9.5);
   hists.nmu      = fs->make<TH1D>("nmu",   "N(#mu^{#pm})",10,-0.5,9.5);
   hists.njet     = fs->make<TH1D>("njet",  "N(Jet)",50,-0.5,49.5);
   
@@ -504,15 +497,15 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
 
   if ( calcSurvival_ ) { 
     hists.NoCuts.book        ( new TFileDirectory(fs->mkdir("NoCuts")), 
-                               "(VBTF tight, mu+jet)", v_null );
+                               "(Tight, mu+jet)", v_null );
     hists.dPhiCuts.book      ( new TFileDirectory(fs->mkdir("dPhiCuts")), 
-                               "(VBTF tight, NI Calo)", v_null );
+                               "(Tight, NI Calo)", v_null );
     hists.dPhiTrigCuts.book  ( new TFileDirectory(fs->mkdir("dPhiTrigCuts")), 
-                               "(VBTF tight, NI Calo, Trigger)", v_null );
+                               "(Tight, NI Calo, Trigger)", v_null );
     hists.dPhi10pctCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctCuts")), 
-                               "(VBTF tight, NI 10% Calo)", v_null );
+                               "(Tight, NI 10% Calo)", v_null );
     hists.dPhi10pctTrigCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctTrigCuts")), 
-                                   "(VBTF tight, NI 10% Calo, Trigger)", v_null );
+                                   "(Tight, NI 10% Calo, Trigger)", v_null );
   } 
   if ( doQuadJet_ ) { 
     hists.LLJJpTCuts.book   ( new TFileDirectory(fs->mkdir("LLJJpTCuts")), 
@@ -585,15 +578,13 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   }      
   
   isPFJets_ = iConfig.getParameter<bool>("isPFJets") ; 
-  //MCweightByVertex_ = edm::LumiReWeighting(hnu::generate_flat10_mc(pileupEra_), hnu::get_standard_pileup_data(pileupEra_));
+  MCweightByVertex_ = edm::LumiReWeighting(hnu::get_standard_pileup_mc(pileupEra_),hnu::get_standard_pileup_data(pileupEra_));
 
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
   std::cout << "muonTag          = " << muonTag_                 << std::endl;
   std::cout << "jetTag           = " << jetTag_                  << std::endl;
   std::cout << "jptTag           = " << jptTag_                  << std::endl;
-  std::cout << "electronTag      = " << elecTag_                 << std::endl;
-  // std::cout << "photonTag        = " << photTag_                 << std::endl;
   std::cout << "minMu1pt         = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
   std::cout << "minMu2pt         = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
   std::cout << "minJetPt         = " << cuts.minimum_jet_pt      << " GeV" << std::endl;
@@ -784,7 +775,7 @@ std::vector<pat::Muon> MuJetBackground::getNonIsolatedMuons(std::vector<pat::Muo
 
 bool MuJetBackground::secondQualityMuon(const pat::Muon& mu1, const pat::Muon& mu2) { 
 
-  if ( !hnu::isVBTFloose(mu2) ) return false ; 
+  if ( !hnu::isLooseMuon(mu2) ) return false ; 
 
   float relIso = ( mu2.trackIso() + mu2.hcalIso() + mu2.ecalIso() ) / mu2.pt() ;
   if ( relIso < 0.15 ) return true ;
@@ -816,7 +807,7 @@ MuJetBackground::findQCDmuon(const std::vector<pat::Muon>& muons,
 bool MuJetBackground::isDijetCandidate(HeavyNuEvent& hne,pat::MET& theMET) {
 
   if ( theMET.et() < 20. ) return false ; // Absolute MET requirement
-  if ( hnu::jetID(hne.j1) < 1 ) return false ; // Require at least PURE09 Loose
+  if ( hnu::jetID(hne.j1) < 1 ) return false ; 
   return true ; 
 
 } // MuJetBackground::isDijetCandidate
@@ -849,12 +840,6 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<pat::MuonCollection> pMuons ; 
   iEvent.getByLabel(muonTag_,pMuons) ; 
 
-  edm::Handle<pat::ElectronCollection> pElecs ;
-  iEvent.getByLabel(elecTag_, pElecs) ;
-
-  // edm::Handle<pat::PhotonCollection> pGammas ;
-  // iEvent.getByLabel(photTag_, pGammas) ;
-
   edm::Handle<pat::JetCollection> pJets ;
   iEvent.getByLabel(jetTag_, pJets) ;
 
@@ -873,13 +858,9 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<reco::VertexCollection> pvHandle;
   iEvent.getByLabel("offlinePrimaryVertices", pvHandle);
 
-  if ( !pElecs.isValid() || 
-       // !pGammas.isValid() || 
-       !pMuons.isValid() || 
+  if ( !pMuons.isValid() || 
        !pJets.isValid() ) {
     std::cout << "Exiting as valid PAT objects not found: " 
-	      << pElecs.isValid() << " " 
-      // << pGammas.isValid() << " " 
 	      << pMuons.isValid() << " " 
 	      << pJets.isValid() << " " 
 	      << std::endl ;
@@ -935,7 +916,6 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     firstEvent_ = false;
   }
 
-  hists.nelec->Fill(pElecs->size()) ;
   hists.nmu  ->Fill(pMuons->size()) ;
   hists.njet ->Fill(pJets->size()) ;
 
@@ -962,19 +942,19 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    mu1trig = trig_->simulateForMC( hnuDijet.mu1.pt(),hnuDijet.mu1.eta(),0 );
 	  }
 
-	  if ( (hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso()) > 10. ) {
-	    hists.dPhiCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-				 cuts.muon_trackiso_limit ) ;
-            if ( mu1trig ) hists.dPhiTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-						    cuts.muon_trackiso_limit ) ; 
+	  // if ( (hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso()) > 10. ) {
+          hists.dPhiCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                               cuts.muon_trackiso_limit ) ;
+          if ( mu1trig ) hists.dPhiTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                  cuts.muon_trackiso_limit ) ; 
 
-	  }
-	  if ( ((hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso())/hnuDijet.mu1.pt()) > 0.10 ) {
-	    hists.dPhi10pctCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-                                      cuts.muon_trackiso_limit ) ; 
-	    if ( mu1trig ) hists.dPhi10pctTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-							 cuts.muon_trackiso_limit ) ; 
-	  }
+	  // }
+	  // if ( ((hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso())/hnuDijet.mu1.pt()) > 0.10 ) {
+          hists.dPhi10pctCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                    cuts.muon_trackiso_limit ) ; 
+          if ( mu1trig ) hists.dPhi10pctTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                       cuts.muon_trackiso_limit ) ; 
+	  // }
           if ( hnuDijet.mu1.pt() > 100.0 ) {
             keepThisEvent = true ;   
             std::cout << "Dijet event: " << iEvent.id() << std::endl;

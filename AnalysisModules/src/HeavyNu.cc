@@ -49,6 +49,7 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -391,8 +392,8 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     { // otherwise don't bother
 
         // Loose/Tight vs Pt
-        hists.looseMuPt = fs->make<TH1D > ("looseMuPt", "#mu p_{T}, passes VBTF Loose", 100, 0, 2000);
-        hists.tightMuPt = fs->make<TH1D > ("tightMuPt", "#mu p_{T}, passes VBTF Tight", 100, 0, 2000);
+        hists.looseMuPt = fs->make<TH1D > ("looseMuPt", "#mu p_{T}, passes Loose", 100, 0, 2000);
+        hists.tightMuPt = fs->make<TH1D > ("tightMuPt", "#mu p_{T}, passes Tight", 100, 0, 2000);
 
         //  Muon quality variables vs muon p_T
         //
@@ -639,7 +640,7 @@ HeavyNu::~HeavyNu()
 // member functions
 //
 
-void HeavyNu::fillBasicMuHistos(const pat::Muon& m)
+void HeavyNu::fillBasicMuHistos(const pat::Muon& m,edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack)
 {
     double mupt = m.pt();
     hists.muPt->Fill(applyMESfactor_ * mupt);
@@ -650,7 +651,7 @@ void HeavyNu::fillBasicMuHistos(const pat::Muon& m)
     {
         hists.mudBvsPt->Fill(mupt, m.dB());
 
-        if(hnu::isVBTFloose(m))
+        if(hnu::isLooseMuon(m) && m.globalTrack().isNonnull())
         {
             hists.looseMuPt ->Fill(mupt);
             hists.muNvalidHitsVsPt ->Fill(mupt, m.numberOfValidHits());
@@ -658,14 +659,10 @@ void HeavyNu::fillBasicMuHistos(const pat::Muon& m)
             hists.muNmatchesVsPt ->Fill(mupt, m.numberOfMatches());
 
             reco::TrackRef gt = m.globalTrack();
-            // gt.isNonnull() guaranteed at this point?
-            if(!gt.isNull())
-            {
-            	hists.muNvalidMuonHitsVsPt ->Fill(mupt, gt->hitPattern().numberOfValidMuonHits());
-            	hists.muNvalidPixelHitsVsPt->Fill(mupt, gt->hitPattern().numberOfValidPixelHits());
-            }
+            hists.muNvalidMuonHitsVsPt ->Fill(mupt, gt->hitPattern().numberOfValidMuonHits());
+            hists.muNvalidPixelHitsVsPt->Fill(mupt, gt->hitPattern().numberOfValidPixelHits());
 
-            if(hnu::isVBTFtight(m)) hists.tightMuPt->Fill(mupt);
+            if(hnu::isTightHighPtMuon(m,pvHandle,cktTrack)) hists.tightMuPt->Fill(mupt);
         }
         hists.muQualVsPt->Fill(mupt, 0);
         for(int i = 1; i < muonQualityFlags; i++)
@@ -1282,12 +1279,15 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         pat::MuonRef iM = pat::MuonRef(pMuons, iMuon);
         if(!iM.isAvailable()) continue;
-        fillBasicMuHistos(*iM);
-        if(hnu::isVBTFloose(*iM))
-        {
-            nloose++;
-            if(hnu::isVBTFtight(*iM))
-                ntight++;
+        if ( iM->globalTrack().isNonnull() ) {
+            reco::TrackRef cktTrack = (muon::tevOptimized(*iM, 200, 40., 17., 0.25)).first;
+            fillBasicMuHistos(*iM,pvHandle,cktTrack);
+            if(hnu::isLooseMuon(*iM))
+            {
+                nloose++;
+                if ( !cktTrack.isNull() && hnu::isTightHighPtMuon(*iM,pvHandle,cktTrack) )
+                    ntight++;
+            }
         }
     }
     hists.nmuLoose->Fill(nloose);
@@ -1495,7 +1495,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
 
     //--- Trigger code needs to be updated...placeholder for now ---//  is this still a palce holder? -Joe 9/24/12
-    if(!l1trig && !l2trig)
+    if(!l1trig && !l2trig) 
     {
         if(addSlopeTree_) hnuTree_->fill();
         return false;
