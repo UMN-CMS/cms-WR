@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.118 2013/02/06 00:39:26 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.120 2013/02/21 22:17:39 bdahmes Exp $
 //
 //
 
@@ -142,11 +142,10 @@ void HeavyNu::fill(pat::MuonCollection muons,
     std::sort(muons.begin(), muons.end(), hnu::pTcompare());
     std::sort(electrons.begin(), electrons.end(), hnu::pTcompare());
     std::sort(jets.begin(), jets.end(), hnu::pTcompare());
-
-    hne.nLeptons = 0;
-
+    
     if(!goodLeps)
     {
+        hne.nLeptons = 0;
         if((analysisMode_ == HeavyNuEvent::HNUMU || analysisMode_ == HeavyNuEvent::TOP) && muons.size() > 0)
         {
             hne.mu1 = muons[0];
