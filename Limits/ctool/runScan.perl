@@ -33,7 +33,7 @@ $pwd=`pwd`;
 chomp($pwd);
 $exe=$pwd."/scanPoint.sh";
 $workloc="/local/cms/user/".$ENV{"USER"}."/heavyNuLimits";
-$workloc="/tmp/";
+#$workloc="/tmp/";
 if ($jobBase ne "default") {
     $workloc=$workloc."/${jobBase}";
 }
@@ -43,7 +43,7 @@ $lumi2011=4990;
 
 $datael2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_2/heavyun_2012Data_2012ABC_elec.root";
 $datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_2/heavyun_2012Data_2012ABC_mu.root";
-$datamu2012="/home/jmmans/data/heavyun_2012Data_2012ABC_mu.root";
+#$datamu2012="/home/jmmans/data/heavyun_2012Data_2012ABC_mu.root";
 $lumi2012=12089;
 
 #$datamu2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun23.root";
