@@ -112,12 +112,14 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 	for (int j=0; j<3; j++) {
 	  if (pbsi->second.bkgdN[j]<=0) continue; // no such systematic here
 
-	  fprintf(limitFile,"gs%d%s gmN %4d ",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
-	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile,"   -    -    -    -  "); // blanks
-	  if (j==0) fprintf(limitFile,"-  %5.3f   -  - ",pbsi->second.bkgd[0]);
-	  if (j==1) fprintf(limitFile,"-  -  %5.3f - ",pbsi->second.bkgd[1]);
-	  if (j==2) fprintf(limitFile,"-  -   -  %5.3f  ",pbsi->second.bkgd[2]);
-	  for (int iib=ibin+1; iib<nbins; iib++) fprintf(limitFile,"  -   -   -   -  "); // blanks	  
+	  fprintf(limitFile,"gs%d%s gmN %4d  ",j,pbi[ibin].binName.c_str(),pbsi->second.bkgdN[j]);
+	  for (int iib=0; iib<ibin; iib++) fprintf(limitFile," -     -     -     -    "); // blanks
+	  if (j==0) fprintf(limitFile," -   %5.3f   -     - ",pbsi->second.bkgd[0]);
+	  if (j==1) fprintf(limitFile," -     -   %5.3f   - ",pbsi->second.bkgd[1]);
+	  if (j==2) fprintf(limitFile," -     -     -   %5.3f ",pbsi->second.bkgd[2]);
+	  if (ibin+1!=nbins && j!=2) fprintf(limitFile,"    -     -     -     - "); // blanks	  
+	  if (ibin+1!=nbins && j==2) fprintf(limitFile,"  -     -     -     - "); // blanks	  
+	  for (int iib=ibin+2; iib<nbins; iib++) fprintf(limitFile,"    -     -     -     - "); // blanks	  
 	  fprintf(limitFile,"\n");
 	  
 	}
@@ -130,7 +132,7 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 	std::map<std::string,PerBinSystematic>::const_iterator pbsi=pbi[ibin].perBinSyst.find(*i);
 	if (pbsi==pbi[ibin].perBinSyst.end()) continue;
 	
-	if (pbsi->second.signal<0) fprintf(limitFile,"  -   ");
+	if (pbsi->second.signal<=0) fprintf(limitFile,"  -   ");
 	else fprintf(limitFile,"%5.3f ", pbsi->second.signal);
 	
 	for (int j=1; j<=jmax; j++) {
@@ -168,15 +170,15 @@ static void binRanger(int mw, int& ilow, int& ihigh) {
   case (7) : ihigh=4; break;
   case (8) : ihigh=4; break;
   case (9) : ihigh=4; break;
-  case (10) : ihigh=5; break;
-  case (11) : ilow=1; ihigh=5; break;
-  case (12) : ilow=1; ihigh=5; break;
-  case (13) : ilow=1; ihigh=6; break;
-  case (14) : ilow=1; ihigh=6; break;
-  case (15) : ilow=1; ihigh=6; break;
-  case (16) : ilow=1; ihigh=7; break;
+  case (10) : ihigh=6; break;
+  case (11) : ilow=1; ihigh=6; break;
+  case (12) : ilow=1; ihigh=6; break;
+  case (13) : ilow=1; ihigh=7; break;
+  case (14) : ilow=1; ihigh=7; break;
+  case (15) : ilow=1; ihigh=7; break;
+  case (16) : ilow=1; ihigh=8; break;
   case (17) :
-  case (18) : ilow=1; ihigh=7; break;
+  case (18) : ilow=1; ihigh=8; break;
   case (19) :
   case (20) : ilow=2; ihigh=8; break;
   case (21) :
@@ -216,74 +218,76 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 
   if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
 
-  if (mp.rebin_above_mlljj>0) ihigh=16;
-
-  int rebinabove=(int(mp.rebin_above_mlljj+0.5)-600)/200;
-
   char process[200];
   sprintf(process,snames[0],mp.mwr,mp.mnr);
   
   char signame[20];
   sprintf(signame,"eff_%d",mp.year);
 
+
   for (int ibin=ilow; ibin<=ihigh; ibin++) {
     PerBinInfo abin;
+
     if (ibin==0) abin.lowEdge=600;
     else abin.lowEdge=mp.bin_upper_edge[ibin-1];
     abin.highEdge=mp.bin_upper_edge[ibin];
 
-    for (int jk=0; jk<16; jk++) {
-      double bcenter=jk*200+700;
+    // signal and background are already rebinned.  Only data need be rebinned.
+    double sigbineff=db.get(process,signame,ibin);
+    abin.signal=sigbineff*mp.lumi*mp.xsec;
+
+           
+    for (int j=1; j<=3; j++) 
+      if (mp.year==2011) {
+	double v=db.get(snames[j],"2011A",ibin)+
+	  db.get(snames[j],"2011B",ibin);    
+	abin.bkgd[j-1]=v;
+      } else {
+	abin.bkgd[j-1]=db.get(snames[j],"2012",ibin);
+      }
+    
+    
+    for (int jbin=0; jbin<16; jbin++) {
+      double bcenter=jbin*200+700;
       if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
-      
-      double sigbineff=db.get(process,signame,ibin);
-      abin.signal+=sigbineff*mp.lumi*mp.xsec;
-
-      for (int j=1; j<=3; j++) 
-	if (mp.year==2011) {
-	  abin.bkgd[j-1]+=db.get(snames[j],"2011A",ibin)+
-	    db.get(snames[j],"2011B",ibin);    
-	} else {
-	  abin.bkgd[j-1]+=db.get(snames[j],"2012",ibin);
-	}
+      abin.data+=vdata[jbin];
     }
-
+      
     // Systematics
     for (std::vector<std::string>::const_iterator isyst=systematicsList.begin();
 	 isyst!=systematicsList.end(); isyst++) {
       
       PerBinSystematic pbs;
-
-      for (int jbin=0; jbin<16; jbin++) {
-	double bcenter=jbin*200+700;
-	if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
-
-	if (*isyst==SystematicsDB::GAMMASTATS) {
-	  double systLevel=syst.getSystematic(*isyst,process,jbin);
-	  //	if (systLevel<0) {
-	  pbs.signal=-1;
-	  pbs.signalN=-1;
-	  //} // really not ready for weighted signal.  Ignore this case.
-
-	  for (int j=1; j<=3; j++) {
-	    systLevel=syst.getSystematic(*isyst,snames[j],jbin);
-	    if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
-	      pbs.bkgd[j-1]=-1;
-	      pbs.bkgdN[j-1]=0;
-	  } else {
-	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel+0.51);
-	    pbs.bkgd[j-1]=abin.bkgd[j-1]/pbs.bkgdN[j-1];
-	  }
-	}       
-      } else {
-	double systLevel=syst.getSystematic(*isyst,process,ibin);
-	if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
-	pbs.signal=systLevel;
+      if (*isyst==SystematicsDB::GAMMASTATS) {
       
+	  
+	double systLevel=syst.getSystematic(*isyst,process,ibin);
+	  //	if (systLevel<0) {
+	pbs.signal=-1;
+	pbs.signalN=-1;
+	//} // really not ready for weighted signal.  Ignore this case.
+	
 	for (int j=1; j<=3; j++) {
 	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
+	  if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
+	    pbs.bkgdN[j-1]+=0;
+	  } else {
+	    pbs.bkgdN[j-1]+=int(abin.bkgd[j-1]/systLevel+0.51);
+	  }	  
+	}
+	for (int j=1; j<=3; j++) 
+	  pbs.bkgd[j-1]=abin.bkgd[j-1]/std::max(1,pbs.bkgdN[j-1]);
+      } else {
+	double systLevel=syst.getSystematic(*isyst,process,ibin);
+	if (systLevel>1.0) systLevel-=1;
+	if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
+	else pbs.signal=systLevel+1;
+     
+	for (int j=1; j<=3; j++) {
+	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
+	  if (systLevel>1.0) systLevel-=1;
 	  if (systLevel<0.001 || fabs(systLevel-1)<0.0015) systLevel=-1;
-	  pbs.bkgd[j-1]=systLevel;
+	  else pbs.bkgd[j-1]=systLevel+1;
 	}
       }
       abin.perBinSyst.insert(std::pair<std::string,PerBinSystematic>(*isyst,pbs));
@@ -292,81 +296,13 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     abin.sourceBin=ibin;
     abin.lumi=mp.lumi;
     abin.year=mp.year;
-    abin.data=int(vdata[ibin]);
     char name[10];
     sprintf(name,"%c%02d",binprefix,ibin);
     abin.binName=name;
-    if (sigbineff>0.01 || fullRange || (mp.rebin_above_mlljj>0 && ibin>=rebinabove)) 
+    if (sigbineff>0.01 || fullRange)
       pbi.push_back(abin);
   }
-
   
-  pbi_alt.swap(pbi);
-
-    int srcabove=(int(mp.rebin_above_mlljj+0.5)-600)/200;
-
-    PerBinInfo abin;
-    abin.sourceBin=srcabove;
-    abin.year=mp.year;
-    abin.lumi=mp.lumi;
-    abin.lowEdge=srcabove*200+600;
-    abin.highEdge=4000;
-    abin.data=0;
-    char name[10];
-    sprintf(name,"%c%02d",binprefix,srcabove);
-    abin.binName=name;
-
-    for (int j=0; j<3; j++) {
-	abin.bkgd[j]=0;
-    }
-    abin.signal=0; 
-    
-    std::map<std::string,PerBinSystematic>::iterator ss;
-
-    for (std::vector<PerBinInfo>::const_iterator jj=pbi_alt.begin();jj!=pbi_alt.end(); jj++) {
-      if (jj->sourceBin<srcabove) pbi.push_back(*jj);
-      else {
-	abin.data+=jj->data;
-	abin.signal+=jj->signal;
-	for (int j=0; j<3; j++) abin.bkgd[j]+=jj->bkgd[j];
-
-	std::map<std::string,PerBinSystematic>::const_iterator is;
-	for (is=jj->perBinSyst.begin(); is!=jj->perBinSyst.end(); is++) {
-	  ss=abin.perBinSyst.find(is->first);
-	  if (ss==abin.perBinSyst.end()) {
-	    PerBinSystematic blank;
-	    blank.signal=0;  blank.signalN=0;
-	    blank.bkgd[0]=0;	    blank.bkgd[1]=0;	    blank.bkgd[2]=0;
-	    blank.bkgdN[0]=0;	    blank.bkgdN[1]=0;	    blank.bkgdN[2]=0;
-	    abin.perBinSyst.insert(std::pair<std::string,PerBinSystematic>(is->first,blank));
-	    ss=abin.perBinSyst.find(is->first);
-	  }
-	  // weighted sum...
-	  ss->second.signal+=jj->signal*is->second.signal;
-	  ss->second.signalN+=is->second.signalN;
-	  for (int q=0; q<3; q++) {
-	    ss->second.bkgd[q]+=jj->bkgd[q]*is->second.bkgd[q];
-	    ss->second.bkgdN[q]+=is->second.bkgdN[q];
-	  }
-	}
-      }
-    }
-    // normalize systematics...
-    for (ss=abin.perBinSyst.begin(); ss!=abin.perBinSyst.end(); ss++) {
-      ss->second.signal/=std::max(1e-9,abin.signal);
-      for (int q=0; q<3; q++) 
-	if (ss->first==SystematicsDB::GAMMASTATS) 
-	  ss->second.bkgd[q]=abin.bkgd[q]/ss->second.bkgdN[q];
-	else
-	  ss->second.bkgd[q]/=std::max(1e-9,abin.bkgd[q]);      
-      
-      
-    }
-    double sigbineff=abin.signal/(mp.lumi*mp.xsec);
-    if (sigbineff>0.01)
-      pbi.push_back(abin); // combined bin
-  }
-
   return pbi;
 }
 

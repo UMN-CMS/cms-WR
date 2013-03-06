@@ -17,9 +17,9 @@ int main(int argc, char* argv[]) {
   bool interpolate=false;
 
   for (int i=0; i<20; i++) {
-    pt.bin_upper_edge[i]=(i+1)+200+600;
-    pt1.bin_upper_edge[i]=(i+1)+200+600;
-    pt2.bin_upper_edge[i]=(i+1)+200+600;
+    pt.bin_upper_edge[i]=(i+1)*200+600;
+    pt1.bin_upper_edge[i]=(i+1)*200+600;
+    pt2.bin_upper_edge[i]=(i+1)*200+600;
   }
 
   // final 2012 binning
