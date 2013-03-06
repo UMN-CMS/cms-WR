@@ -16,17 +16,20 @@ int main(int argc, char* argv[]) {
   std::string istring;
   bool interpolate=false;
 
-  pt.rebin_above_mlljj=-1;
-  pt1.rebin_above_mlljj=-1;
-  pt2.rebin_above_mlljj=-1;
+  for (int i=0; i<20; i++) {
+    pt.bin_upper_edge[i]=(i+1)+200+600;
+    pt1.bin_upper_edge[i]=(i+1)+200+600;
+    pt2.bin_upper_edge[i]=(i+1)+200+600;
+  }
+
+  // final 2012 binning
+  pt.bin_upper_edge[6]=2200;
+  pt.bin_upper_edge[7]=10000;
+
   pt.mode=LimitPoint::lp_Muon1ECM; // historical default
 
-  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:m:b:")) != -1) {
+  while ((opt = getopt(argc, argv, "l:w:n:x:d:o:s:i:I:r:y:m:")) != -1) {
                switch (opt) {
-	       case 'b':
-		 pt.rebin_above_mlljj=atof(optarg);
-		 pt1.rebin_above_mlljj=atof(optarg);
-		 pt2.rebin_above_mlljj=atof(optarg);
 	       case 'l':
 		 if (pt.mode==LimitPoint::lp_MuonElec || pt.mode==LimitPoint::lp_Muon2ECM) {
 		   sscanf(optarg,"%lf,%lf",&pt1.lumi,&pt2.lumi);
@@ -114,6 +117,8 @@ int main(int argc, char* argv[]) {
 		 break;
 	       }
   };
+
+
 
 
 		   /*

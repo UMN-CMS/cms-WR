@@ -41,9 +41,12 @@ if ($jobBase ne "default") {
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 $lumi2011=4990;
 
-$datamu2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun23.root";
-$datael2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
-$lumi2012=3600;
+$datael2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_2/heavyun_2012Data_2012ABC_elec.root";
+$datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_2/heavyun_2012Data_2012ABC_mu.root";
+$lumi2012=12089;
+
+#$datamu2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun23.root";
+#$datael2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
 
 #$lumi2011=4700;
 if ($channel eq "e-mu") {

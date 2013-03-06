@@ -15,6 +15,7 @@ class RateDB;
 #include <string>
 
 struct PerBinSystematic {
+  PerBinSystematic() { signal=0; bkgd[0]=0;bkgd[1]=0;bkgd[2]=0;signalN=0; bkgdN[0]=0;bkgdN[1]=0;bkgdN[2]=0; }
   double signal;
   double bkgd[3];
   int signalN;
@@ -22,6 +23,7 @@ struct PerBinSystematic {
 };
 
 struct PerBinInfo {
+  PerBinInfo() {signal=0; bkgd[0]=0;bkgd[1]=0;bkgd[2]=0;data=0;}
   double lumi;
   double signal;
   double bkgd[3];
@@ -40,7 +42,8 @@ struct LimitPoint {
   double xsec;
   int year;
   enum { lp_Muon1ECM, lp_Elec1ECM, lp_Muon2ECM, lp_MuonElec } mode;
-  double rebin_above_mlljj;
+  double bin_upper_edge[20];
+
   int mwr, mwr_syst;
   int mnr, mnr_syst;
 };

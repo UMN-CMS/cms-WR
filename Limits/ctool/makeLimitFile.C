@@ -228,34 +228,48 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 
   for (int ibin=ilow; ibin<=ihigh; ibin++) {
     PerBinInfo abin;
-    abin.lowEdge=ibin*200+600;
-    abin.highEdge=(ibin+1)*200+600;
-    double sigbineff=db.get(process,signame,ibin);
-    abin.signal=sigbineff*mp.lumi*mp.xsec;
-    for (int j=1; j<=3; j++) 
-      if (mp.year==2011) {
-	abin.bkgd[j-1]=db.get(snames[j],"2011A",ibin)+
-	  db.get(snames[j],"2011B",ibin);    
-      } else {
-	abin.bkgd[j-1]=db.get(snames[j],"2012",ibin);
-      }
+    if (ibin==0) abin.lowEdge=600;
+    else abin.lowEdge=mp.bin_upper_edge[ibin-1];
+    abin.highEdge=mp.bin_upper_edge[ibin];
+
+    for (int jk=0; jk<16; jk++) {
+      double bcenter=jk*200+700;
+      if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
+      
+      double sigbineff=db.get(process,signame,ibin);
+      abin.signal+=sigbineff*mp.lumi*mp.xsec;
+
+      for (int j=1; j<=3; j++) 
+	if (mp.year==2011) {
+	  abin.bkgd[j-1]+=db.get(snames[j],"2011A",ibin)+
+	    db.get(snames[j],"2011B",ibin);    
+	} else {
+	  abin.bkgd[j-1]+=db.get(snames[j],"2012",ibin);
+	}
+    }
+
     // Systematics
     for (std::vector<std::string>::const_iterator isyst=systematicsList.begin();
 	 isyst!=systematicsList.end(); isyst++) {
+      
       PerBinSystematic pbs;
 
-      if (*isyst==SystematicsDB::GAMMASTATS) {
-	double systLevel=syst.getSystematic(*isyst,process,ibin);
-	//	if (systLevel<0) {
+      for (int jbin=0; jbin<16; jbin++) {
+	double bcenter=jbin*200+700;
+	if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
+
+	if (*isyst==SystematicsDB::GAMMASTATS) {
+	  double systLevel=syst.getSystematic(*isyst,process,jbin);
+	  //	if (systLevel<0) {
 	  pbs.signal=-1;
 	  pbs.signalN=-1;
 	  //} // really not ready for weighted signal.  Ignore this case.
 
-	for (int j=1; j<=3; j++) {
-	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
-	  if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
-	    pbs.bkgd[j-1]=-1;
-	    pbs.bkgdN[j-1]=0;
+	  for (int j=1; j<=3; j++) {
+	    systLevel=syst.getSystematic(*isyst,snames[j],jbin);
+	    if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
+	      pbs.bkgd[j-1]=-1;
+	      pbs.bkgdN[j-1]=0;
 	  } else {
 	    pbs.bkgdN[j-1]=int(abin.bkgd[j-1]/systLevel+0.51);
 	    pbs.bkgd[j-1]=abin.bkgd[j-1]/pbs.bkgdN[j-1];
@@ -285,9 +299,9 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     if (sigbineff>0.01 || fullRange || (mp.rebin_above_mlljj>0 && ibin>=rebinabove)) 
       pbi.push_back(abin);
   }
+
   
-  if (mp.rebin_above_mlljj>0) {
-    pbi_alt.swap(pbi);
+  pbi_alt.swap(pbi);
 
     int srcabove=(int(mp.rebin_above_mlljj+0.5)-600)/200;
 
