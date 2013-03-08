@@ -5,11 +5,15 @@ $ofile=$ARGV[1];
 $log=$ARGV[2];
 $stub=$dfile;
 $stub=~s/.*\///;
-$mw=$stub;
-$mw=~s/[a-z]+_([0-9]+)_.*/$1/;
 $parallelism=12;
 $points=24;
-$wd="/export/scratch/users/jmmans/${stub}";
+$nominalXsecFB=10;
+$username = getpwuid( $< );
+$wd="/export/scratch/users/${username}/${stub}";
+
+$stub=~/[a-z]+_([0-9]+)_([0-9]+)/;
+$mw=$1;
+$mn=$2;
 
 print "$wd\n";
 system("rm -rf $wd");
@@ -20,6 +24,7 @@ chdir($wd);
 $cmd="combine -v0 -n wr -m $mw -M ProfileLikelihood -t 400 $dfile|";
 
 open(LOG,">${log}");
+print LOG "===== $cmd \n";
 open(SEED,$cmd);
 while (<SEED>) {
     print LOG;
@@ -49,10 +54,10 @@ $files="";
 for ($i=0; $i<$points; $i++) {
     $rv=$lp+$i*($hp-$lp)/$points;
     $rv=exp($rv);
-    print LOG "$i $rv\n";
     $seed=$i+248100;
 
     $cmd="combine -v0 -n wr -m $mw -M HybridNew --clsAcc 0 -t 200 --saveToys --saveHybridResult --singlePoint $rv -s $seed --frequentist --testStat LHC $dfile > ${i}.log 2>&1 ";
+    print LOG "===== $cmd \n";
     $files.=sprintf("higgsCombinewr.HybridNew.mH%d.%d.root ",$mw,$seed);
     if (fork()==0) {
 	system($cmd);
@@ -80,3 +85,45 @@ unlink($ofile);
 
 system("hadd $ofile $files >> $log 2>&1 ");
 
+open(LOG,">>${log}");
+$summary=$log;
+$summary=~s/\.log/-summary.log/;
+open(SUM,">$summary");
+
+print SUM "MW=${mw}\n";
+print SUM "MN=${mn}\n";
+
+# now, we extract the limits
+limitFromGrid(-1,"obs");
+limitFromGrid(0.5,"exp");
+limitFromGrid(0.84,"exp_p1s");
+limitFromGrid(0.16,"exp_m1s");
+limitFromGrid(0.975,"exp_p2s");
+limitFromGrid(0.025,"exp_m2s");
+
+close(SUM);
+close(LOG);
+system("xz ${log}");
+
+
+sub limitFromGrid() {
+    my($pt,$label)=@_;
+    
+    if ($pt>0) {
+	$cmd="combine --grid=${ofile} --expectedFromGrid ${pt} -m ${mw} ${ifile}";
+    } else {
+	$cmd="combine --grid=${ofile} -m ${mw} ${ifile}";
+    }
+
+    print LOG "===== $cmd \n";
+    open(CMD,"$cmd |");
+    while (<CMD>) {
+	print LOG;
+	if (/Limit: r < ([0-9.]+)/) {
+	    $rv=$1;
+	}
+    }
+    close(CMD);
+    print SUM "${label} = $rv\n";
+    
+}
