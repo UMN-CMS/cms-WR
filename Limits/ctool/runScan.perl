@@ -31,7 +31,8 @@ GetOptions("toys=i" => \$toys,
 
 $pwd=`pwd`;
 chomp($pwd);
-$exe=$pwd."/scanPoint.sh";
+#$exe=$pwd."/scanPoint.sh";
+$exe=$pwd."/gridBatch.sh";
 $workloc="/local/cms/user/".$ENV{"USER"}."/heavyNuLimits";
 #$workloc="/tmp/";
 if ($jobBase ne "default") {
@@ -165,7 +166,7 @@ foreach $item (@items) {
     $mass=sprintf("%04d%04d",$mw,$mn);
 
 
-    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} ${mass} ${workloc}/limit_${mw}_${mn}.log ${method} ${toys} \\\"${comments}\\\" ${special}\n";
+    print CONDOR "Arguments = ${pwd} ${workloc} ${ofname} limit_${mw}_${mn} \n";
     print CONDOR "Queue \n";
     
 }
