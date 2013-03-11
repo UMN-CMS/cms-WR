@@ -36,7 +36,7 @@ sub limitFromGrid() {
 	$cmd="combine -M HybridNew --grid=${grid} -m ${mw} ${ifile}";
     }
 
-    print LOG "===== $cmd \n";
+    print "===== $cmd \n";
     open(CMD,"$cmd |");
     while (<CMD>) {
 	print LOG;
