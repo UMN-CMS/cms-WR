@@ -110,9 +110,9 @@ sub limitFromGrid() {
     my($pt,$label)=@_;
     
     if ($pt>0) {
-	$cmd="combine --grid=${ofile} --expectedFromGrid ${pt} -m ${mw} ${ifile}";
+	$cmd="combine -M HybridNew --grid=${ofile} --expectedFromGrid ${pt} -m ${mw} ${ifile}";
     } else {
-	$cmd="combine --grid=${ofile} -m ${mw} ${ifile}";
+	$cmd="combine -M HybridNew --grid=${ofile} -m ${mw} ${ifile}";
     }
 
     print LOG "===== $cmd \n";
