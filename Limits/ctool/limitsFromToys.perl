@@ -3,6 +3,9 @@
 $grid=$ARGV[0];
 $loc=$grid;
 $loc=~s|/[^/]+||;
+if ($loc eq $grid) {
+    $loc=".";
+}
 $ifile=$grid;
 $ifile=~s|.*/||;
 $ifile=~s|.root||;
