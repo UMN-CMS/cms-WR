@@ -3,7 +3,7 @@
 use Getopt::Long;
 
 $special=0;
-$xsec=1.0;
+$xsec=10.0;
 
 GetOptions(	   "special=i" => \$special);
 
@@ -30,8 +30,12 @@ foreach $file (@ARGV) {
 	    $xsec=$1;
 	}
 
-	$mode=1 if (/Observed/);
-	$mode=2 if (/Expected/);
+	$mode=1 if (/OBS/);
+	$mode=2 if (/EXP/);
+	$mode=3 if (/EXP_P1S/);
+	$mode=4 if (/EXP_P2S/);
+	$mode=5 if (/EXP_M1S/);
+	$mode=6 if (/EXP_M2S/);
 	
 	if (/Limit: r < ([0-9.]+) /) {
 	    $obs=$1 if ($mode==1);
