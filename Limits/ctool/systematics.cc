@@ -169,7 +169,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     systContents.push_back("JES");
     systContents.push_back("JER");
     //systContents.push_back("MES");
-    systContents.push_back("MUONID");
+    systContents.push_back("MID");
     systContents.push_back("PU");
     systContents.push_back("TRIG");
     defineCommonSyst("RECOID",systContents);
