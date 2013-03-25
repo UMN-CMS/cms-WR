@@ -71,11 +71,11 @@ double HeavyNuID::weightForMCbyEta(double eta,int signOfError2apply)
 
   const double upedge2012[]   = {     0.9,     1.2,     2.1,     2.4, -1.0};
 
-  const double systematic = sqrt(0.005*0.005+0.002*0.02*2);
+  const double systematic = 0.005;
   double scale = 1.0;
 
   if ( signOfError2apply ) {
-    if ( idEra_ == 20122 ) scale = (signOfError2apply > 0)?(1 + systematic):(1 - systematic);
+    scale = (signOfError2apply > 0)?(1 + systematic):(1 - systematic);
   }
 
   int i;

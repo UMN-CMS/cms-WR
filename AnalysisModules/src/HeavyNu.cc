@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.120 2013/02/21 22:17:39 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.121 2013/02/22 00:18:49 bdahmes Exp $
 //
 //
 
@@ -1454,11 +1454,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
         else if(firstIsMuon)
         {
-            l1trig = (hnuEvent.nMuons > 0) && trig_->simulateForMC(hnuEvent.tl1.Pt(), hnuEvent.tl1.Eta(), applyTrigEffsign_) && hnuEvent.tl1.Pt() > 40;
+            l1trig = trig_->simulateForMC(hnuEvent.tl1.Pt(), hnuEvent.tl1.Eta(), 0) && hnuEvent.tl1.Pt() > 40;
         }
         else if(!firstIsMuon)
         {
-            l1trig = (hnuEvent.nMuons > 0) && trig_->simulateForMC(hnuEvent.tl2.Pt(), hnuEvent.tl2.Eta(), applyTrigEffsign_) && hnuEvent.tl2.Pt() > 40;
+            l1trig = trig_->simulateForMC(hnuEvent.tl2.Pt(), hnuEvent.tl2.Eta(), 0) && hnuEvent.tl2.Pt() > 40;
         }
         
         l2trig = false; //the electron never triggers.

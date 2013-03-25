@@ -58,11 +58,6 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
     }
   }
   
-  if ( ! ( trigEra_==20121) ) 
-    {
-      std::cout << "WARNING: trigEra_ is set to " << trigEra_ << " but only 20121 is supported in electron trigger efficiencies" << std::endl;  
-    }
-  
 }                                      // HeavyNuTrigger::HeavyNuTrigger
 
 //======================================================================
@@ -274,20 +269,7 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   // Cannot trigger if you do not meet the minimum pT threshold
   if ( pt < triggerPt_ ) return false ;
 
-  // Trigger studies updated 11 Dec 2011
-  // HLT_Mu24 results are used for 30 < pT < 40 GeV
-  // All other bins combine Mu24, Mu40, Mu40_eta2p1 efficiencies for run 2011a
-  // Run 2011b results use Mu40_eta2p1 only
   // Run 2012 results use Mu40_eta2p1 only
-  //const double effslo2011a[]  = {0.868979,0.855499,0.862255,0.874853,0.882812,0.876860,0.823287,0.823287};
-  //const double effsnom2011a[] = {0.875648,0.864359,0.872848,0.885346,0.897508,0.890611,0.871189,0.871189};
-  //const double effshi2011a[]  = {0.882316,0.873220,0.883441,0.895840,0.912204,0.904362,0.919090,0.919090};
-  //const double upedge2011a[]  = {      40,      50,      60,      80,     100,     200,    3500,      -1};
-
-  //const double effslo2011b[]  = {0.908256,0.922264,0.944146,0.920008,0.906448,0.917130,0.917130};
-  //const double effsnom2011b[] = {0.900857,0.913545,0.936445,0.906582,0.893309,0.866667,0.866667};
-  //const double effshi2011b[]  = {0.893458,0.904825,0.928743,0.893155,0.880171,0.816203,0.816203};
-  //const double upedge2011b[]  = {      50,      60,      80,     100,     200,    3500,      -1};
 
   // For 2012, the trigger corrections are made as a function of eta
   //const double effslo2012[]   = {0.776442,0.844443,0.931687,0.941174,0.846101,0.807243};
@@ -295,38 +277,33 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   //const double effshi2012[]   = {0.795555,0.868014,0.940492,0.949355,0.869968,0.825120};
   //const double upedge2012[]   = {    -1.2,    -0.9,     0.0,     0.9,     1.2,     2.1};
   
+  
   // Trigger Efficiencies for 2012A, B, and C
-  const double effslo2012ABC[]   = {0.000000,0.000000,0.000000};  //UNCERTAINTIES NEED TO BE UPDATED    
-  const double effsnom2012ABC[]  = {0.940100,0.843700,0.821700};
-  const double effshi2012ABC[]   = {0.000000,0.000000,0.000000};
+  // https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffs#2012_data
+  //const double effslo2012ABC[]   = {0.000000,0.000000,0.000000};  //UNCERTAINTIES +/- 0.2%
+  // https://twiki.cern.ch/twiki/bin/view/CMS/MuonTagAndProbe
+  const double effsnom2012ABC[]  = {0.940100,0.843685,0.830823};
+  //const double effshi2012ABC[]   = {0.000000,0.000000,0.000000};
   const double upedge2012ABC[]   = {     0.9,     1.2,     2.1};
 
   // 2011 A is the default
   const double *effs = effsnom2012ABC; 
-  //if (trigEra_ == 20111) effs = effsnom2011a ; //These are all out of date below the top
-  //if (trigEra_ == 20112) effs = effsnom2011b ; 
-  if ( signOfError2apply ) {
-    //if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effshi2011a : effslo2011a;
-    //if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effshi2011b : effslo2011b;
-    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effshi2012ABC : effslo2012ABC;
+  double scale = 1.0;
+  if ( signOfError2apply )
+  {
+      if(pt < 45) // add extra uncertainty for possible trigger efficiency turn-on below 45 GeV
+      {
+          scale = (signOfError2apply > 0) ? (1 + 0.002) : (1 - 0.10);
+      }
+      else scale = (signOfError2apply > 0) ? (1 + 0.002) : (1 - 0.002);
   }
 
   int i;
   const double * upedge = upedge2012ABC ;
-  //if ( trigEra_ == 20111 || trigEra_ == 20112 )
-  //{
-  //    if (trigEra_ == 20111) upedge = upedge2011a ;
-  //    if (trigEra_ == 20112) upedge = upedge2011b ;
-  //    for (i = 0; upedge[i] > 0 && upedge[i] < pt; i++);
-  //}
-  //else
-  //{
-  //    for (i = 0; abs(eta) < 2.1 && upedge[i] < eta; i++);
-  //}
   for (i = 0; abs(eta) < 2.1 && upedge[i] < eta; i++);
   double eff=effs[i];
     
-  return (triggerRandom_->Uniform()<eff);
+  return (triggerRandom_->Uniform()<(eff*scale));
 }
 
 //======================================================================
@@ -432,26 +409,26 @@ HeavyNuTrigger::simulateForMCdiEleMass(double m,double eta,int signOfError2apply
   //  ==> m.p.v. for single leg efficiency: hNuEtriggerEff is: 99.5345 %
   //  'transport' systematic between 0jets and >=2jets: 0.3%
   //  ==> arrays below are for DOUBLE leg efficiency: 
+  //const double upedgeEleMass2012[]  = {0.,       70,        120,      200       ,-1};
+  //const double effEleMassnom2012[]  = {0.965815, 0.990676,  0.993142, 0.987408  ,0.987408};
+  //const double effEleMasshi2012[]   = {1.,       0.99389,   0.999,    1.        ,1.};
+  //const double effEleMasslo2012[]   = {0.81685,  0.987434,  0.985218, 0.963095  ,0.963095};
+  
+  //we have decided to use flat 1 for the trigger for electrons and allow the scale normalization to deal with it
   const double upedgeEleMass2012[]  = {0.,       70,        120,      200       ,-1};
-  const double effEleMassnom2012[]  = {0.965815, 0.990676,  0.993142, 0.987408  ,0.987408};
-  const double effEleMasshi2012[]   = {1.,       0.99389,   0.999,    1.        ,1.};
-  const double effEleMasslo2012[]   = {0.81685,  0.987434,  0.985218, 0.963095  ,0.963095};
+  const double effEleMassnom2012[]  = {1.00000, 1.00000, 1.00000, 1.00000, 1.00000};
+  const double effEleMasshi2012[]   = {1.00000, 1.00000, 1.00000, 1.00000, 1.00000};
+  const double effEleMasslo2012[]   = {1.00000, 1.00000, 1.00000, 1.00000, 1.00000};
 
   // 2012 is the default
   // actually, at the moment we only have 2012, so use twose in all cases (there was a warning about trigEra_ )
-   const double *         effs = effEleMassnom2012 ; 
-  if (trigEra_ == 20111) effs = effEleMassnom2012 ;
-  if (trigEra_ == 20112) effs = effEleMassnom2012 ;
+   const double *effs = effEleMassnom2012 ;
   if ( signOfError2apply ) {
-    if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
-    if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
-    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
+    effs = (signOfError2apply > 0) ? effEleMasshi2012 : effEleMasslo2012;
   }
 
   int i;
   const double *upedge = upedgeEleMass2012 ; 
-  if (trigEra_ == 20111) upedge = upedgeEleMass2012 ; 
-  if (trigEra_ == 20112) upedge = upedgeEleMass2012 ; 
   for (i=0; upedge[i]>=0 && upedge[i]<m; i++);
   double eff=effs[i];
 

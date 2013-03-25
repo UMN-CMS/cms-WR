@@ -1,4 +1,3 @@
-
 #include <TF1.h>
 
 #include "HeavyNuCommon.h"
@@ -869,10 +868,10 @@ namespace hnu {
     if ( fabs(eta2) < 2.5 && fabs(eta2) > 1.56 ) nEE++ ; 
     
     // All corrections to MC, bringing energy down to match data
-    // No mLL correction to be made for now - 12/21/12
-    double ebebCorr = 1.0;// - 0.0088 ; 
-    double ebeeCorr = 1.0;// - 0.0143 ; 
-    double eeeeCorr = 1.0;// - 0.0145 ; 
+    // TAKEN FROM exo-2012_45_V10, PAGE 24 
+    double ebebCorr = 1.0 - 0.0057; 
+    double ebeeCorr = 1.0 - 0.0068; 
+    double eeeeCorr = 1.0 - 0.0056; 
 
     if ( nEB + nEE < 2 ) { // Special case for top
       if      ( nEB ) scaleCorrection = sqrt( ebebCorr ) ; 
