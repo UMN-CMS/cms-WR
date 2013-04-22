@@ -24,7 +24,8 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
   // muonMatch_        ( iConfig.getParameter< std::string >  ( "muonMatch"     ) ),
   electronFilters_  ( iConfig.getParameter< std::vector<std::string > >  ( "electronFilters" ) ),
   triggerPt_        ( iConfig.getParameter< double >       ( "triggerPt" ) ),
-  trigEra_          ( iConfig.getParameter< int >          ( "trigEra"   ) ),
+  muTriggerEta_     ( iConfig.getParameter< double >       ( "muTriggerEta" ) ),
+  // trigEra_          ( iConfig.getParameter< int >          ( "trigEra"   ) ),
   johnnyApple_      ( iConfig.getParameter< int >          ( "randomSeed" ) )
 {
   matchingEnabled_ = false;
@@ -36,9 +37,12 @@ HeavyNuTrigger::HeavyNuTrigger(const edm::ParameterSet & iConfig) :
     std::cout << "Trigger matching is === DISABLED ===" << std::endl;
     std::cout << "   (Trigger sim. random seed = "<<johnnyApple_<<")"<<std::endl;
     triggerRandom_ = new TRandom(johnnyApple_);
-    std::cout << "   (Trigger Era              = "<<trigEra_<<")"<<std::endl;
-    std::cout << "   (Trigger pT               = "<<triggerPt_<<")"<<std::endl;
+    // std::cout << "   (Trigger Era              = "<<trigEra_<<")"<<std::endl;
+  } else {
+    std::cout << "Trigger matching is === ENABLED ===" << std::endl;
   }
+  std::cout << "   (Trigger pT               = " << triggerPt_    << ")" << std::endl;
+  std::cout << "   (Trigger eta (muons)      = " << muTriggerEta_ << ")" << std::endl;
 
   // Safety: first/last run vectors are not the same size as the trigger list
   if ( muonTriggers_.size() != beginRun_.size() || 
@@ -123,7 +127,7 @@ HeavyNuTrigger::isTriggerMatched(const pat::Muon&  m,
        // 	    << " and eta " << m.eta() << std::endl ; 
 
     // muon trigger matching is only allowed within |eta|<2.1
-    if ( matchingEnabled_ && (fabs(m.eta()) < 2.1) )
+    if ( matchingEnabled_ && (fabs(m.eta()) < muTriggerEta_) )
     {
         // PAT trigger information
         //     edm::Handle< pat::TriggerEvent > triggerEvent;
@@ -344,19 +348,19 @@ HeavyNuTrigger::simulateForMCElePt(double pt,double eta,int signOfError2apply)
 
   // 2012 is the default
   // actually, at the moment we only have 2012, so use twose in all cases (there was a warning about trigEra_ )
-   const double *         effs = effElenom2012 ; 
-  if (trigEra_ == 20111) effs = effElenom2012 ;
-  if (trigEra_ == 20112) effs = effElenom2012 ;
+  const double *         effs = effElenom2012 ; 
+//   if (trigEra_ == 20111) effs = effElenom2012 ;
+//   if (trigEra_ == 20112) effs = effElenom2012 ;
   if ( signOfError2apply ) {
-    if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
-    if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
-    if ( trigEra_ == 20121 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
+//     if ( trigEra_ == 20111 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
+//     if ( trigEra_ == 20112 ) effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
+    effs = (signOfError2apply > 0) ? effElehi2012 : effElelo2012;
   }
 
   int i;
   const double *         upedge = upedgeEle2012 ; 
-  if (trigEra_ == 20111) upedge = upedgeEle2012 ; 
-  if (trigEra_ == 20112) upedge = upedgeEle2012 ; 
+//   if (trigEra_ == 20111) upedge = upedgeEle2012 ; 
+//   if (trigEra_ == 20112) upedge = upedgeEle2012 ; 
   for (i=0; upedge[i]>0 && upedge[i]<pt; i++);
   double eff=effs[i];
     

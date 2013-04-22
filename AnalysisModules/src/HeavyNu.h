@@ -34,6 +34,7 @@ namespace hnu
       double minimum_mumu_mass;
       double minimum_mWR_mass;
       double minimum_muon_jet_dR;
+      double qcd_jet_muon_dRoverlap;
       double muon_trackiso_limit;
       double maxVertexZsep;
       double maxJetVZsepCM;
@@ -108,6 +109,8 @@ public:
       HeavyNuHistSet* mWRmassCut;
       HeavyNuHistSet* oneBtag;
       HeavyNuHistSet* twoBtag;
+      HeavyNuHistSet* OneJetTrigHighPt;
+      HeavyNuHistSet* OneJetdiLmassCut;
       // efficiency studies:
       // HeavyNuHistSet* Mu1tagInZwin;
       // HeavyNuHistSet* Mu2tagInZwin;
@@ -155,7 +158,7 @@ private:
     virtual void beginJob();
     virtual bool filter(edm::Event&, const edm::EventSetup&);
     virtual void endJob();
-    virtual void fillBasicMuHistos(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack);
+    virtual void fillBasicMuHistos(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle);
     virtual void fillBasicJetHistos(const pat::Jet& j,
             int jetnum);
     virtual TH1 *bookRunHisto(uint32_t runNumber);
@@ -182,9 +185,11 @@ private:
     
     void studyJetMatching(HeavyNuEvent& hnuEvent, edm::Handle<std::vector<reco::GenJet> > genjets);
     
-    void selectMuons(std::vector<pat::Muon>& muCands, HeavyNuEvent& hnuEvent, int nDirtyCands);
+    void selectMuons(std::vector<pat::Muon>& muCands, std::vector< std::pair<pat::Jet, float> >& jetCands,
+                     edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent);
     void selectElectrons(std::vector< std::pair<pat::Electron, float> >& eCands, edm::Handle<pat::ElectronCollection>& pElecs, 
-                         edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent, int nDirtyCands);
+                         edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent);
+    void reselectJets(std::vector< std::pair<pat::Jet, float> >& jetCands, HeavyNuEvent& hnuEvent);
     void selectTop(std::vector< std::pair<pat::Electron, float> >& eCands, std::vector<pat::Muon>& muCands, edm::Handle<reco::VertexCollection> pvHandle, HeavyNuEvent& hnuEvent);
     void alternativeSelection(HeavyNuEvent& hnuEvent);
 
@@ -212,6 +217,8 @@ private:
     bool studyMuonSelectionEff_; // for Muon Loose ID Efficiency studies
     bool studyScaleFactorEvolution_; // for Top, Z+jets scale factors (by Mu1 pT) studies
     int tpSeed_ ; 
+
+    bool muonsInJets_ ; 
     
     hnu::EffInfo effinfo_;
 

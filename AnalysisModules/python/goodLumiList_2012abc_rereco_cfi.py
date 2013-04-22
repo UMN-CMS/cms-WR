@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 #--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON.txt
 #--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
 #--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
+#--- /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_201191-201191_8TeV_11Dec2012ReReco-recover_Collisions12_JSON.txt
 lumisToProcess = cms.untracked.VLuminosityBlockRange()
 lumisToProcess.extend([
    #--- 2012 A/B re-reco, July 13 ---# 
@@ -860,5 +861,21 @@ lumisToProcess.extend([
    '198487:997-198487:1434',
    '198487:1437-198487:1612',
    '198522:65-198522:144',
-   '198522:147-198522:208'
+   '198522:147-198522:208',
+   #--- 2012 C re-reco, Dec 11 ---# 
+   '201191:75-201191:98',
+   '201191:100-201191:216',
+   '201191:218-201191:389',
+   '201191:392-201191:492',
+   '201191:494-201191:506',
+   '201191:509-201191:585',
+   '201191:587-201191:594',
+   '201191:597-201191:607',
+   '201191:609-201191:794',
+   '201191:796-201191:838',
+   '201191:841-201191:974',
+   '201191:977-201191:1105',
+   '201191:1108-201191:1117',
+   '201191:1120-201191:1382',
+   '201191:1384-201191:1386'
 ])

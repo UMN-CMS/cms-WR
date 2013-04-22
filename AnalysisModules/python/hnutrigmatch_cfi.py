@@ -17,6 +17,7 @@ muonTriggerMatchHLTMuons = cms.EDProducer (
     resolveAmbiguities    = cms.bool( True ),
     resolveByMatchQuality = cms.bool( True )
 )
+qcdMuonTriggerMatchHLTMuons = muonTriggerMatchHLTMuons.clone()
 
 electronTriggerMatchHLTElectrons = cms.EDProducer (
     "PATTriggerMatcherDRDPtLessByR",

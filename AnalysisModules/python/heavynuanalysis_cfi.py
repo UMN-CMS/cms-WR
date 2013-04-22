@@ -6,17 +6,18 @@ hNu = cms.EDFilter(
         trigEventTag = cms.InputTag( "" ),
         muonTriggers = cms.vstring( '' ),
         electronTriggers = cms.vstring( '' ),
-        trigEra      = cms.int32( 20111 ),
+        # trigEra      = cms.int32( 20111 ),
         firstRun     = cms.vint32( 0 ),
         lastRun      = cms.vint32( 999999 ),
         muonMatch    = cms.string( '' ),
         electronMatch = cms.string( '' ),
         triggerPt    = cms.double( 40. ),
+        muTriggerEta = cms.double( 2.1 ),
         randomSeed   = cms.int32( 0 ),  # for MC
         electronFilters = cms.vstring('')
     ),
     muIDPset = cms.PSet(
-        eraForId     = cms.int32( 20111 )
+        eraForId     = cms.int32( 1 )
     ),
     DoLog        = cms.bool( False ),
     muonTag      = cms.InputTag( 'selectedPatMuons' ),
@@ -36,6 +37,7 @@ hNu = cms.EDFilter(
     minMuMuMass  = cms.double(200),
     min4objMass  = cms.double(600),
     minMuonJetdR = cms.double(0.5),
+    qcdMuJetOverlap = cms.double(0.3),
     
     muonTrackRelIsoLimit  = cms.double(0.1), # 10.0),
     maxVertexZsepCM       = cms.double(0.03),

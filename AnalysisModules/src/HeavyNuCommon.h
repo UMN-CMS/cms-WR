@@ -61,17 +61,18 @@ namespace hnu
     bool operator() (const std::pair<pat::Electron,float>& a, const std::pair<pat::Electron,float>& b) ; 
   };
 
+    bool isLooseMuonNoPF   ( const pat::Muon& m );
     bool isLooseMuon       ( const pat::Muon& m );
     bool isTightMuonCore   ( const pat::Muon& m );
     bool isTightMuon       ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle );
-    bool isTightHighPtMuon ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack );
+    bool isTightHighPtMuon ( const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle );
 
     double muIsolation     ( const pat::Muon& m, const double scale=1.0 ) ; 
     
     double getElectronEt    ( const pat::Electron& e, bool useCorrectedEnergy ) ; 
     double getElectronSCEta ( const pat::Electron& e ) ;
     double getElectronSCPhi(const pat::Electron& e);
-    bool passesFakeRateMinimum ( const pat::Electron& e ) ; 
+    bool passesFakeRateMinimum ( const pat::Electron& e, edm::Handle<reco::VertexCollection> pvHandle ) ; 
     double fakeProbability     ( const pat::Electron& e ) ; 
     double fakeProbability     ( const pat::Muon& mu ) ; 
     bool passesHEEP         (const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle); 

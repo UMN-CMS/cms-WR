@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: MuJetBackground.cc,v 1.27 2012/11/21 18:44:15 pastika Exp $
+// $Id: MuJetBackground.cc,v 1.29 2013/02/21 22:17:39 bdahmes Exp $
 //
 //
 
@@ -63,6 +63,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -121,8 +122,8 @@ private:
   void initializeHNE(HeavyNuEvent& hne, edm::Handle< std::vector<PileupSummaryInfo> >& pPU, 
 		     edm::Handle<reco::VertexCollection>& pvHandle, bool isMC, bool isPF, double weight) ;
 
-  virtual bool selectJets        ( std::vector< std::pair<pat::Jet,float> >& jets,
-				   HeavyNuEvent& hne, int minNjets=2 );
+//   virtual bool selectJets        ( std::vector< std::pair<pat::Jet,float> >& jets,
+// 				   HeavyNuEvent& hne, int minNjets=2 );
   virtual void selectMuonsInJets ( std::vector<pat::Muon>& muons,
 				   std::vector< std::pair<pat::Jet,float> >& jets,
 				   HeavyNuEvent& hne );
@@ -140,18 +141,19 @@ private:
   virtual TH1 *bookRunHisto      ( uint32_t runNumber );
   
   edm::InputTag muonTag_;
-  edm::InputTag jetTag_;
+  edm::InputTag jetTag_, metTag_;
   edm::InputTag jptTag_;
 
   std::string currentFile_;
   bool dolog_;
   bool firstEvent_;
-  int theMETtype ; 
+  // int theMETtype ; 
   std::vector<double> rwLowPtbin, rwHighPtbin ; 
   std::vector<double> rw2011A, rw2011B, rwQCD ; 
-    
+
+  // double trigEtaLimit_ ; 
   bool calcSurvival_ ; 
-  bool doClosure_, doQuadJet_ ; 
+  // bool doClosure_, doQuadJet_ ; 
 
   JetCorrectionUncertainty *jecuObj_;
 
@@ -210,30 +212,42 @@ private:
 
     HistPerDef NoCuts;
     HistPerDef dPhiCuts;
-    HistPerDef dPhiTrigCuts;
+    HistPerDef dPhiJetCuts;
+    HistPerDef dPhiCoreCuts;
     HistPerDef dPhi10pctCuts;
+    HistPerDef dPhiTrigCuts;
+    HistPerDef dPhiJetTrigCuts;
+    HistPerDef dPhiCoreTrigCuts;
     HistPerDef dPhi10pctTrigCuts;
+    HistPerDef dPhiTightCuts;
+    HistPerDef dPhiJetTightCuts;
+    HistPerDef dPhiCoreTightCuts;
+    HistPerDef dPhi10pctTightCuts;
+    HistPerDef dPhiTightTrigCuts;
+    HistPerDef dPhiJetTightTrigCuts;
+    HistPerDef dPhiCoreTightTrigCuts;
+    HistPerDef dPhi10pctTightTrigCuts;
 
-    HistPerDef LLJJpTCuts;
-    HistPerDef TrigMatches;
-    HistPerDef VertexCuts;
-    HistPerDef Mu1HighPtCut;
-    HistPerDef diLmassCut;
+//     HistPerDef LLJJpTCuts;
+//     HistPerDef TrigMatches;
+//     HistPerDef VertexCuts;
+//     HistPerDef Mu1HighPtCut;
+//     HistPerDef diLmassCut;
 
-    // Closure tests using two muons --> run automatically with quadjet
-    HistPerDef mmJClosure; 
-    HistPerDef mMuJClosure;
-    HistPerDef mmJClosureMETlt20; 
-    HistPerDef mMuJClosureMETlt20;
+//     // Closure tests using two muons --> run automatically with quadjet
+//     HistPerDef mmJClosure; 
+//     HistPerDef mMuJClosure;
+//     HistPerDef mmJClosureMETlt20; 
+//     HistPerDef mMuJClosureMETlt20;
 
-    HistPerDef ssmmjjClosure; 
-    HistPerDef ssMuMujjClosure; 
+//     HistPerDef ssmmjjClosure; 
+//     HistPerDef ssMuMujjClosure; 
 
-    HistPerDef MuMuJClosure;
+//     HistPerDef MuMuJClosure;
 
-    // Closure test using one muon
-    HistPerDef LJJJClosure; 
-    HistPerDef L2JClosure;
+//     // Closure test using one muon
+//     HistPerDef LJJJClosure; 
+//     HistPerDef L2JClosure;
   } hists;
 
   struct CutsStruct {
@@ -242,14 +256,14 @@ private:
     double minimum_jet_pt;
     double maximum_mu_abseta;
     double maximum_jet_abseta;
-    double minimum_mumu_mass;
+    // double minimum_mumu_mass;
     double minimum_muon_jet_dR;
     double muon_trackiso_limit;
-    double maxVertexZsep;
-    double maxJetVZsepCM;
+    // double maxVertexZsep;
+    // double maxJetVZsepCM;
     double minimum_dijet_dPhi; 
     double minimum_dijet_pt; 
-    double minimum_SCEt; 
+    // double minimum_SCEt; 
     double minimum_extraJet_dR; 
   } cuts;
   
@@ -310,7 +324,7 @@ MuJetBackground::HistPerDef::book(TFileDirectory *td,
   t="#phi(#mu_{1}) " +post;  phiMu1trkIso=td->make<TH1D>("phiMu1trkIso",t.c_str(),30,-3.14159,3.14159);
 
   t="p_{T}(#mu) vs. #eta(#mu) vs. relative tracker isolation "+post;
-  ptMu_etaMu_trkIso = td->make<TH3D>("ptMu_etaMu_trkIso",t.c_str(),200,0.,1000.,50,-2.5,2.5,500.,0.,10.);
+  ptMu_etaMu_trkIso = td->make<TH3D>("ptMu_etaMu_trkIso",t.c_str(),100,0.,1000.,50,-2.5,2.5,100.,0.,10.);
   
   // ----------  Jet histograms ----------
 
@@ -481,6 +495,7 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
 
   muonTag_ = iConfig.getParameter< edm::InputTag >( "muonTag" );
   jetTag_  = iConfig.getParameter< edm::InputTag >( "jetTag"  );
+  metTag_  = iConfig.getParameter< edm::InputTag >( "metTag"  );
   jptTag_  = iConfig.getParameter< edm::InputTag >( "jptTag"  );
 
   trig_ = new HeavyNuTrigger(iConfig.getParameter<edm::ParameterSet>("trigMatchPset"));
@@ -489,50 +504,75 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   edm::Service<TFileService> fs;
   hists.nmu      = fs->make<TH1D>("nmu",   "N(#mu^{#pm})",10,-0.5,9.5);
   hists.njet     = fs->make<TH1D>("njet",  "N(Jet)",50,-0.5,49.5);
-  
+
+  // trigEtaLimit_ = iConfig.getParameter<double>("trigEtaLimit") ; 
   // Histos per cut:
   calcSurvival_ = iConfig.getParameter<bool>("getSurvivalRate") ;
-  doClosure_    = iConfig.getParameter<bool>("doClosureTest") ;
-  doQuadJet_    = iConfig.getParameter<bool>("doQuadJetTest") ;
+//   doClosure_    = iConfig.getParameter<bool>("doClosureTest") ;
+//   doQuadJet_    = iConfig.getParameter<bool>("doQuadJetTest") ;
 
   if ( calcSurvival_ ) { 
     hists.NoCuts.book        ( new TFileDirectory(fs->mkdir("NoCuts")), 
-                               "(Tight, mu+jet)", v_null );
+                               "(mu+jet)", v_null );
     hists.dPhiCuts.book      ( new TFileDirectory(fs->mkdir("dPhiCuts")), 
-                               "(Tight, NI Calo)", v_null );
-    hists.dPhiTrigCuts.book  ( new TFileDirectory(fs->mkdir("dPhiTrigCuts")), 
-                               "(Tight, NI Calo, Trigger)", v_null );
+                               "(Basic)", v_null );
+    hists.dPhiJetCuts.book   ( new TFileDirectory(fs->mkdir("dPhiJetCuts")), 
+                               "(Jet overlap)", v_null );
+    hists.dPhiCoreCuts.book  ( new TFileDirectory(fs->mkdir("dPhiCoreCuts")), 
+                               "(Jet core overlap)", v_null );
     hists.dPhi10pctCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctCuts")), 
-                               "(Tight, NI 10% Calo)", v_null );
+                               "(10+% calorimeter energy)", v_null );
+    hists.dPhiTrigCuts.book      ( new TFileDirectory(fs->mkdir("dPhiTrigCuts")), 
+                                   "(Basic, Trigger)", v_null );
+    hists.dPhiJetTrigCuts.book   ( new TFileDirectory(fs->mkdir("dPhiJetTrigCuts")), 
+                                   "(Jet overlap, Trigger)", v_null );
+    hists.dPhiCoreTrigCuts.book  ( new TFileDirectory(fs->mkdir("dPhiCoreTrigCuts")), 
+                                   "(Jet core overlap, Trigger)", v_null );
     hists.dPhi10pctTrigCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctTrigCuts")), 
-                                   "(Tight, NI 10% Calo, Trigger)", v_null );
+                                   "(10+% calorimeter energy, Trigger)", v_null );
+    hists.dPhiTightCuts.book      ( new TFileDirectory(fs->mkdir("dPhiTightCuts")), 
+                                    "(Tight)", v_null );
+    hists.dPhiJetTightCuts.book   ( new TFileDirectory(fs->mkdir("dPhiJetTightCuts")), 
+                                    "(Jet overlap, Tight)", v_null );
+    hists.dPhiCoreTightCuts.book  ( new TFileDirectory(fs->mkdir("dPhiCoreTightCuts")), 
+                                    "(Jet core overlap, Tight)", v_null );
+    hists.dPhi10pctTightCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctTightCuts")), 
+                                    "(10+% calorimeter energy, Tight)", v_null );
+    hists.dPhiTightTrigCuts.book      ( new TFileDirectory(fs->mkdir("dPhiTightTrigCuts")), 
+                                        "(Tight, Trigger)", v_null );
+    hists.dPhiJetTightTrigCuts.book   ( new TFileDirectory(fs->mkdir("dPhiJetTightTrigCuts")), 
+                                        "(Jet overlap, Tight, Trigger)", v_null );
+    hists.dPhiCoreTightTrigCuts.book  ( new TFileDirectory(fs->mkdir("dPhiCoreTightTrigCuts")), 
+                                        "(Jet core overlap, Tight, Trigger)", v_null );
+    hists.dPhi10pctTightTrigCuts.book ( new TFileDirectory(fs->mkdir("dPhi10pctTightTrigCuts")), 
+                                        "(10+% calorimeter energy, Tight, Trigger)", v_null );
   } 
-  if ( doQuadJet_ ) { 
-    hists.LLJJpTCuts.book   ( new TFileDirectory(fs->mkdir("LLJJpTCuts")), 
-                              "(two muons, two jets)", v_null );
-    hists.TrigMatches.book  ( new TFileDirectory(fs->mkdir("TrigMatches")), 
-                              "(at least one trigger matched muon)", v_null );
-    hists.VertexCuts.book   ( new TFileDirectory(fs->mkdir("VertexCuts")), 
-                              "(all objects share common vtx)", v_null );
-    hists.Mu1HighPtCut.book ( new TFileDirectory(fs->mkdir("Mu1HighPtCut")), 
-                              "(passes mu1 pT rqmt)", v_null );
-    hists.diLmassCut.book   ( new TFileDirectory(fs->mkdir("diLmassCuts")), 
-                              "(passes mumu mass cut)", v_null );
-    hists.mmJClosure.book   ( new TFileDirectory(fs->mkdir("mmJClosure")), 
-                              "(1+ jets, 2 fake muons)", v_null );
-    hists.mmJClosureMETlt20.book   ( new TFileDirectory(fs->mkdir("mmJClosureMETlt20")), 
-                              "(1+ jets, 2 fake muons, MET < 20 GeV)", v_null );
-    hists.mMuJClosure.book  ( new TFileDirectory(fs->mkdir("mMuJClosure")), 
-                              "(1+ jets, one fake muon, one muon)", v_null );
-    hists.mMuJClosureMETlt20.book  ( new TFileDirectory(fs->mkdir("mMuJClosureMETlt20")), 
-                              "(1+ jets, one fake muon, one muon, MET < 20)", v_null );
-  }
-  if ( doClosure_ ) { 
-    hists.LJJJClosure.book ( new TFileDirectory(fs->mkdir("LJJJClosure")), 
-                             "(3 jets, 1 muon in jet)", v_null );
-    hists.L2JClosure.book  ( new TFileDirectory(fs->mkdir("L2JClosure")), 
-                             "(2 jets, tight muon)", v_null );
-  }
+//   if ( doQuadJet_ ) { 
+//     hists.LLJJpTCuts.book   ( new TFileDirectory(fs->mkdir("LLJJpTCuts")), 
+//                               "(two muons, two jets)", v_null );
+//     hists.TrigMatches.book  ( new TFileDirectory(fs->mkdir("TrigMatches")), 
+//                               "(at least one trigger matched muon)", v_null );
+//     hists.VertexCuts.book   ( new TFileDirectory(fs->mkdir("VertexCuts")), 
+//                               "(all objects share common vtx)", v_null );
+//     hists.Mu1HighPtCut.book ( new TFileDirectory(fs->mkdir("Mu1HighPtCut")), 
+//                               "(passes mu1 pT rqmt)", v_null );
+//     hists.diLmassCut.book   ( new TFileDirectory(fs->mkdir("diLmassCuts")), 
+//                               "(passes mumu mass cut)", v_null );
+//     hists.mmJClosure.book   ( new TFileDirectory(fs->mkdir("mmJClosure")), 
+//                               "(1+ jets, 2 fake muons)", v_null );
+//     hists.mmJClosureMETlt20.book   ( new TFileDirectory(fs->mkdir("mmJClosureMETlt20")), 
+//                               "(1+ jets, 2 fake muons, MET < 20 GeV)", v_null );
+//     hists.mMuJClosure.book  ( new TFileDirectory(fs->mkdir("mMuJClosure")), 
+//                               "(1+ jets, one fake muon, one muon)", v_null );
+//     hists.mMuJClosureMETlt20.book  ( new TFileDirectory(fs->mkdir("mMuJClosureMETlt20")), 
+//                               "(1+ jets, one fake muon, one muon, MET < 20)", v_null );
+//   }
+//   if ( doClosure_ ) { 
+//     hists.LJJJClosure.book ( new TFileDirectory(fs->mkdir("LJJJClosure")), 
+//                              "(3 jets, 1 muon in jet)", v_null );
+//     hists.L2JClosure.book  ( new TFileDirectory(fs->mkdir("L2JClosure")), 
+//                              "(2 jets, tight muon)", v_null );
+//   }
 
   hists.rundir = new TFileDirectory(fs->mkdir("RunDir"));
 
@@ -543,39 +583,39 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   cuts.minimum_jet_pt       = iConfig.getParameter<double>("minJetPt");
   cuts.maximum_mu_abseta    = iConfig.getParameter<double>("maxMuAbsEta");
   cuts.maximum_jet_abseta   = iConfig.getParameter<double>("maxJetAbsEta");
-  cuts.minimum_mumu_mass    = iConfig.getParameter<double>("minMuMuMass");
+  // cuts.minimum_mumu_mass    = iConfig.getParameter<double>("minMuMuMass");
   cuts.minimum_muon_jet_dR  = iConfig.getParameter<double>("minMuonJetdR");
   cuts.muon_trackiso_limit  = iConfig.getParameter<double>("muonTrackRelIsoLimit");
-  cuts.maxVertexZsep        = iConfig.getParameter<double>("dimuonMaxVertexZsepCM");
-  cuts.maxJetVZsepCM        = iConfig.getParameter<double>("maxJetVZsepCM");
+  // cuts.maxVertexZsep        = iConfig.getParameter<double>("dimuonMaxVertexZsepCM");
+  // cuts.maxJetVZsepCM        = iConfig.getParameter<double>("maxJetVZsepCM");
   cuts.minimum_dijet_dPhi   = iConfig.getParameter<double>("minimumMuJetdPhi");
   cuts.minimum_dijet_pt     = iConfig.getParameter<double>("minimumJetPtForDijets");
   cuts.minimum_extraJet_dR  = iConfig.getParameter<double>("minimumDeltaRforExtraJets");
-  cuts.minimum_SCEt         = iConfig.getParameter<double>("minimumSuperClusterEt");
+  // cuts.minimum_SCEt         = iConfig.getParameter<double>("minimumSuperClusterEt");
 
-  theMETtype  = iConfig.getParameter<int>("METvariety") ; 
-  rwLowPtbin  = iConfig.getParameter< std::vector<double> >("reweightPtLow") ; 
-  rwHighPtbin = iConfig.getParameter< std::vector<double> >("reweightPtHigh") ; 
-  rw2011A     = iConfig.getParameter< std::vector<double> >("reweight2011A") ; 
-  rw2011B     = iConfig.getParameter< std::vector<double> >("reweight2011B") ; 
+//   theMETtype  = iConfig.getParameter<int>("METvariety") ; 
+//   rwLowPtbin  = iConfig.getParameter< std::vector<double> >("reweightPtLow") ; 
+//   rwHighPtbin = iConfig.getParameter< std::vector<double> >("reweightPtHigh") ; 
+//   rw2011A     = iConfig.getParameter< std::vector<double> >("reweight2011A") ; 
+//   rw2011B     = iConfig.getParameter< std::vector<double> >("reweight2011B") ; 
 
-  // Special check: Make sure all vectors are of the same size
-  unsigned int vecsize = rwLowPtbin.size() ; 
-  if ( ( doClosure_ || doQuadJet_ ) && 
-       ( rwHighPtbin.size() != vecsize ||
-         rw2011A.size() != vecsize ||
- 	 rw2011B.size() != vecsize ) )
-    throw cms::Exception( "Please ensure that all QCD reweighting vectors are equal size");
+//   // Special check: Make sure all vectors are of the same size
+//   unsigned int vecsize = rwLowPtbin.size() ; 
+//   if ( ( doClosure_ || doQuadJet_ ) && 
+//        ( rwHighPtbin.size() != vecsize ||
+//          rw2011A.size() != vecsize ||
+//  	 rw2011B.size() != vecsize ) )
+//     throw cms::Exception( "Please ensure that all QCD reweighting vectors are equal size");
   
   pileupEra_ = iConfig.getParameter<int>("pileupEra");
-  if ( pileupEra_ == 20111 ) { // 2011 A
-      rwQCD = rw2011A ;
-  } else if ( pileupEra_ == 20112 ) { // 2011 B
-      rwQCD = rw2011B ;
-  } else {
-      std::cout << "WARNING: Unknown era for QCD corrections requested.  Assigning 2011 A" << std::endl ;
-      rwQCD = rw2011A ;
-  }      
+//   if ( pileupEra_ == 20111 ) { // 2011 A
+//       rwQCD = rw2011A ;
+//   } else if ( pileupEra_ == 20112 ) { // 2011 B
+//       rwQCD = rw2011B ;
+//   } else {
+//       std::cout << "WARNING: Unknown era for QCD corrections requested.  Assigning 2011 A" << std::endl ;
+//       rwQCD = rw2011A ;
+//   }      
   
   isPFJets_ = iConfig.getParameter<bool>("isPFJets") ; 
   MCweightByVertex_ = edm::LumiReWeighting(hnu::get_standard_pileup_mc(pileupEra_),hnu::get_standard_pileup_data(pileupEra_));
@@ -583,7 +623,9 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   // For the record...
   std::cout << "Configurable cut values applied:" << std::endl;
   std::cout << "muonTag          = " << muonTag_                 << std::endl;
+  // std::cout << "trigEtaLimit     = " << trigEtaLimit_            << std::endl;
   std::cout << "jetTag           = " << jetTag_                  << std::endl;
+  std::cout << "metTag           = " << metTag_                  << std::endl;
   std::cout << "jptTag           = " << jptTag_                  << std::endl;
   std::cout << "minMu1pt         = " << cuts.minimum_mu1_pt      << " GeV" << std::endl;
   std::cout << "minMu2pt         = " << cuts.minimum_mu2_pt      << " GeV" << std::endl;
@@ -592,12 +634,11 @@ MuJetBackground::MuJetBackground(const edm::ParameterSet& iConfig)
   std::cout << "maxJetAbsEta     = " << cuts.maximum_jet_abseta  << std::endl;
   std::cout << "minMuonJetdR     = " << cuts.minimum_muon_jet_dR << std::endl;
   std::cout << "muonTrackIso     = " << 100 * cuts.muon_trackiso_limit << "%" << std::endl;
-  std::cout << "minMuMuMass      = " << cuts.minimum_mumu_mass   << " GeV" << std::endl;
   std::cout << "minimumMuJetdPhi = " << cuts.minimum_dijet_dPhi  << std::endl; 
   std::cout << "minimumQCDjetPt  = " << cuts.minimum_dijet_pt   << " GeV " << std::endl; 
   std::cout << "minExtraJetdR    = " << cuts.minimum_extraJet_dR << std::endl;
-  std::cout << "dimuonMaxVertexZsepCM = " << cuts.maxVertexZsep << std::endl ;
-  std::cout << "maxJetVZsepCM         = " << cuts.maxJetVZsepCM << std::endl ;
+  // std::cout << "dimuonMaxVertexZsepCM = " << cuts.maxVertexZsep << std::endl ;
+  // std::cout << "maxJetVZsepCM         = " << cuts.maxJetVZsepCM << std::endl ;
   std::cout << "pileup era       = " << pileupEra_ << std::endl;
 
 }
@@ -628,35 +669,35 @@ MuJetBackground::bookRunHisto(uint32_t runNumber)
 
 //======================================================================
 
-bool 
-MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> >& jets,
-			    HeavyNuEvent& hne, int minNjets) {
-  for (unsigned int i=0; i<jets.size(); i++) { 
-    if ( hne.nJets == 2 ) return true ; 
-    pat::Jet iJ = jets.at(i).first ;
+// bool 
+// MuJetBackground::selectJets(std::vector< std::pair<pat::Jet,float> >& jets,
+// 			    HeavyNuEvent& hne, int minNjets) {
+//   for (unsigned int i=0; i<jets.size(); i++) { 
+//     if ( hne.nJets == 2 ) return true ; 
+//     pat::Jet iJ = jets.at(i).first ;
 
-    // Must have jets of sufficient transverse momentum
-    if ( iJ.pt() < cuts.minimum_jet_pt ) continue ; 
+//     // Must have jets of sufficient transverse momentum
+//     if ( iJ.pt() < cuts.minimum_jet_pt ) continue ; 
 
-    // Jets must be separated from candidate muon(s)
-    double dRm1j = deltaR(iJ.eta(), iJ.phi(), hne.mu1.eta(), hne.mu1.phi()) ; 
-    double dRm2j = ( hne.nMuons > 1 ) ? 
-      ( deltaR(iJ.eta(), iJ.phi(), hne.mu2.eta(), hne.mu2.phi()) ) : ( 100.0 ) ; 
-    if (std::min(dRm1j,dRm2j) > cuts.minimum_muon_jet_dR) {
-      hne.nJets++ ; 
-      if      ( hne.nJets == 1 ) {
-          hne.j1 = iJ ;
-          hne.j1scale = 1.0 ;
-      }
-      else if ( hne.nJets == 2 ) {
-          hne.j2 = iJ ;
-          hne.j2scale = 1.0 ;
-      }
-      else    std::cout << "WARNING: Expected empty jet position" << std::endl ; 
-    }
-  }
-  return ( hne.nJets >= minNjets ) ; 
-}
+//     // Jets must be separated from candidate muon(s)
+//     double dRm1j = deltaR(iJ.eta(), iJ.phi(), hne.mu1.eta(), hne.mu1.phi()) ; 
+//     double dRm2j = ( hne.nMuons > 1 ) ? 
+//       ( deltaR(iJ.eta(), iJ.phi(), hne.mu2.eta(), hne.mu2.phi()) ) : ( 100.0 ) ; 
+//     if (std::min(dRm1j,dRm2j) > cuts.minimum_muon_jet_dR) {
+//       hne.nJets++ ; 
+//       if      ( hne.nJets == 1 ) {
+//           hne.j1 = iJ ;
+//           hne.j1scale = 1.0 ;
+//       }
+//       else if ( hne.nJets == 2 ) {
+//           hne.j2 = iJ ;
+//           hne.j2scale = 1.0 ;
+//       }
+//       else    std::cout << "WARNING: Expected empty jet position" << std::endl ; 
+//     }
+//   }
+//   return ( hne.nJets >= minNjets ) ; 
+// }
 
 
 bool
@@ -775,7 +816,7 @@ std::vector<pat::Muon> MuJetBackground::getNonIsolatedMuons(std::vector<pat::Muo
 
 bool MuJetBackground::secondQualityMuon(const pat::Muon& mu1, const pat::Muon& mu2) { 
 
-  if ( !hnu::isLooseMuon(mu2) ) return false ; 
+  if ( !hnu::isLooseMuonNoPF(mu2) ) return false ; 
 
   float relIso = ( mu2.trackIso() + mu2.hcalIso() + mu2.ecalIso() ) / mu2.pt() ;
   if ( relIso < 0.15 ) return true ;
@@ -806,7 +847,7 @@ MuJetBackground::findQCDmuon(const std::vector<pat::Muon>& muons,
 
 bool MuJetBackground::isDijetCandidate(HeavyNuEvent& hne,pat::MET& theMET) {
 
-  if ( theMET.et() < 20. ) return false ; // Absolute MET requirement
+  if ( theMET.et() > 20. ) return false ; // Absolute MET requirement
   if ( hnu::jetID(hne.j1) < 1 ) return false ; 
   return true ; 
 
@@ -867,11 +908,11 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     return false; 
   }
 
-  edm::Handle<pat::METCollection> patMetCollection ; 
-  iEvent.getByLabel("patMETs", patMetCollection) ; 
+//   edm::Handle<pat::METCollection> patMetCollection ; 
+//   iEvent.getByLabel("patMETs", patMetCollection) ; 
 
   edm::Handle<reco::PFMETCollection> pfMetCollection ; 
-  iEvent.getByLabel("pfMet", pfMetCollection) ;
+  iEvent.getByLabel(metTag_, pfMetCollection) ;
 
   //Shirpa reweighting info
   double genweight = 1.0;
@@ -879,49 +920,50 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByLabel("generator", geneventinfo);
   if(!iEvent.isRealData()) genweight = geneventinfo->weight();
 
-  if ( ( theMETtype == 1 && !patMetCollection.isValid() ) ||
-       ( theMETtype == 2 && !pfMetCollection.isValid() ) ) { 
+  if ( !pfMetCollection.isValid() ) { 
     std::cout << "Exiting as valid MET collection not found" << std::endl ; 
     return false ; 
   }
   std::auto_ptr<pat::METCollection> pMET(new pat::METCollection) ; 
-  if ( theMETtype == 1 ) pMET->push_back(patMetCollection.product()->at(0)) ;
-  else if ( theMETtype == 2 ) {
-    reco::MET thePFMET(pfMetCollection.product()->at(0).p4(),pfMetCollection.product()->at(0).vertex()) ; 
-    pMET->push_back(pat::MET(thePFMET)) ;
-  }  
+  reco::MET thePFMET(pfMetCollection.product()->at(0).p4(),pfMetCollection.product()->at(0).vertex()) ; 
+  pMET->push_back(pat::MET(thePFMET)) ;
 
   if (firstEvent_) {
     // handle the jet corrector parameters collection,
     // get the jet corrector parameters collection from the global tag
     //
+    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+    if ( isPFJets_ ) iSetup.get<JetCorrectionsRecord > ().get("AK5PFchs", JetCorParColl) ; 
+    else             iSetup.get<JetCorrectionsRecord > ().get("AK5Calo", JetCorParColl) ;
     
     // get the uncertainty parameters from the collection,
     // instantiate the jec uncertainty object
     //
-    if ( !iEvent.isRealData() ) {
-        int pileupYear = pileupEra_ ;
-        int idYear     = muid_->idEra() ;
+//     if ( !iEvent.isRealData() ) {
+//         int pileupYear = pileupEra_ ;
+//         int idYear     = muid_->idEra() ;
         
-        bool allErasMatch = ( pileupYear == idYear ) ;
-        if ( !allErasMatch ) {
-            std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl ;
-            std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
-		      << std::endl ; 
-        } else {
-            std::cout << "Looking at corrections, I assume you are running with the " << pileupYear << " year settings" << std::endl ; 
-        }
-        std::cout << "==================================" << std::endl ; 
-    }  
+//         bool allErasMatch = ( pileupYear == idYear ) ;
+//         if ( !allErasMatch ) {
+//             std::cout << "WARNING: You do not appear to have consistent corrections applied!" << std::endl ;
+//             std::cout << "         pileup year is " << pileupEra_ << ", year for mu ID is " << idYear
+// 		      << std::endl ; 
+//         } else {
+//             std::cout << "Looking at corrections, I assume you are running with the " << pileupYear << " year settings" << std::endl ; 
+//         }
+//         std::cout << "==================================" << std::endl ; 
+//     }  
     firstEvent_ = false;
   }
 
   hists.nmu  ->Fill(pMuons->size()) ;
   hists.njet ->Fill(pJets->size()) ;
 
+  int muonID = ( (muid_->idEra() != 0) ? (muid_->idEra()/abs(muid_->idEra())) : 0 ) ; 
+  
   std::vector<pat::Muon> muCands = 
-    hnu::getMuonList(pMuons,pvHandle,(int(muid_->idEra()/10)), 
-		     cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0) ; 
+    hnu::getMuonList(pMuons,pvHandle,muonID,cuts.minimum_mu2_pt,cuts.maximum_mu_abseta,1.0) ;
+  
   std::vector< std::pair<pat::Jet,float> > jetCands = 
     hnu::getJetList(pJets,jecuObj_,cuts.minimum_dijet_pt,cuts.maximum_jet_abseta,0) ; 
   if ( muCands.size() < 1 || jetCands.size() < 1 ) return false ;
@@ -937,24 +979,79 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	if ( isDijetCandidate( hnuDijet,pMET->at(0) ) ) { 
 	  bool mu1trig = false ; 
 	  if ( trig_->matchingEnabled() && iEvent.isRealData() ) {
-	    mu1trig = trig_->isTriggerMatched( hnuDijet.mu1, iEvent) ; 
+            mu1trig = trig_->isTriggerMatched( hnuDijet.mu1, iEvent ) ; 
 	  } else if ( !iEvent.isRealData() ) {
-	    mu1trig = trig_->simulateForMC( hnuDijet.mu1.pt(),hnuDijet.mu1.eta(),0 );
+            if ( fabs(hnuDijet.mu1.eta()) > 2.1 && fabs(hnuDijet.mu1.eta()) < 2.4 ) mu1trig = true ; 
+	    else mu1trig = trig_->simulateForMC( hnuDijet.mu1.pt(),hnuDijet.mu1.eta(),0 );
 	  }
 
-	  // if ( (hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso()) > 10. ) {
+          reco::TrackRef cktTrack = (muon::tevOptimized(hnuDijet.mu1, 200, 40., 17., 0.25)).first;
+          bool isTightMuon = ( (!cktTrack.isNull()) ? hnu::isTightHighPtMuon(hnuDijet.mu1, pvHandle) : false ) ; 
+          
           hists.dPhiCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
                                cuts.muon_trackiso_limit ) ;
-          if ( mu1trig ) hists.dPhiTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-                                                  cuts.muon_trackiso_limit ) ; 
+          if ( isTightMuon ) hists.dPhiTightCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                       cuts.muon_trackiso_limit ) ;
+          if ( mu1trig ) {
+            hists.dPhiTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                     cuts.muon_trackiso_limit ) ; 
+            if ( isTightMuon ) hists.dPhiTightTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                             cuts.muon_trackiso_limit ) ; 
+          }
 
-	  // }
-	  // if ( ((hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso())/hnuDijet.mu1.pt()) > 0.10 ) {
-          hists.dPhi10pctCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-                                    cuts.muon_trackiso_limit ) ; 
-          if ( mu1trig ) hists.dPhi10pctTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
-                                                       cuts.muon_trackiso_limit ) ; 
-	  // }
+          // Check: Does the muon overlap with a jet?
+          bool jetOverlap = false, jetOverlapCore = false ; 
+          for (unsigned int i=0; i<jetCands.size(); i++) {
+            pat::Jet iJ = jetCands.at(i).first ; 
+            if ( iJ.pt() < cuts.minimum_jet_pt ) continue ; 
+            float dR = deltaR(iJ.eta(),iJ.phi(),hnuDijet.mu1.eta(),hnuDijet.mu1.phi()) ;
+            if ( dR < 0.5 ) {
+              jetOverlap = true ; 
+              if ( dR < 0.3 ) {
+                jetOverlapCore = true ; 
+                break ;
+              }
+            }
+          }
+          
+          if ( jetOverlap ) {
+            hists.dPhiJetCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                   cuts.muon_trackiso_limit ) ; 
+            if ( isTightMuon ) hists.dPhiJetTightCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                           cuts.muon_trackiso_limit ) ; 
+            if ( mu1trig ) {
+              hists.dPhiJetTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                         cuts.muon_trackiso_limit ) ; 
+              if ( isTightMuon ) hists.dPhiJetTightTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                                  cuts.muon_trackiso_limit ) ; 
+            }
+            if ( jetOverlapCore ) { 
+              hists.dPhiCoreCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                       cuts.muon_trackiso_limit ) ; 
+              if ( isTightMuon ) hists.dPhiCoreTightCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                               cuts.muon_trackiso_limit ) ; 
+              if ( mu1trig ) {
+                hists.dPhiCoreTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                             cuts.muon_trackiso_limit ) ; 
+                if ( isTightMuon ) hists.dPhiCoreTightTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                                     cuts.muon_trackiso_limit ) ; 
+              }
+            }
+          }
+          
+          if ( ((hnuDijet.mu1.ecalIso()+hnuDijet.mu1.hcalIso())/hnuDijet.mu1.pt()) > 0.10 ) {
+            hists.dPhi10pctCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                      cuts.muon_trackiso_limit ) ; 
+            if ( isTightMuon ) hists.dPhi10pctTightCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                              cuts.muon_trackiso_limit ) ; 
+            if ( mu1trig ) {
+              hists.dPhi10pctTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                            cuts.muon_trackiso_limit ) ; 
+              if ( isTightMuon ) hists.dPhi10pctTightTrigCuts.fill( hnuDijet.mu1,hnuDijet.j1,pMET->at(0),!iEvent.isRealData(),
+                                                                    cuts.muon_trackiso_limit ) ; 
+            }
+          }
+          
           if ( hnuDijet.mu1.pt() > 100.0 ) {
             keepThisEvent = true ;   
             std::cout << "Dijet event: " << iEvent.id() << std::endl;
@@ -970,6 +1067,9 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
+  // Deprecated 3 Apr 2013 (BMD)
+  // Other functionality, if useful, incorporated into HeavyNu
+  /* 
   double MET = pMET->at(0).pt() ; 
   std::vector<pat::Muon> dirtyMuons = getNonIsolatedMuons( muCands ) ;
   if ( doQuadJet_ ) { 
@@ -1366,6 +1466,7 @@ MuJetBackground::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
       }
   }
+  */
   
   return keepThisEvent ; 
 }

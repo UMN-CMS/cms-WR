@@ -27,9 +27,14 @@ namespace hnu {
     return (getElectronEt(a.first,false)*a.second) > (getElectronEt(b.first,false)*b.second);
   }
 
+  bool isLooseMuonNoPF(const pat::Muon& m)
+  {
+    return (m.isGlobalMuon() || m.isTrackerMuon());
+  }
+    
   bool isLooseMuon(const pat::Muon& m)
   {
-    return (m.isPFMuon() && (m.isGlobalMuon()||m.isTrackerMuon()));
+    return (m.isPFMuon() && isLooseMuonNoPF(m));
   }
 
   // This selection takes care of what is common to "Tight" and "High pT Tight" muon selection
@@ -62,10 +67,11 @@ namespace hnu {
 
   // Information taken from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId
   // On 19 Nov, 2012
-  bool isTightHighPtMuon(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle, reco::TrackRef cktTrack)
+  bool isTightHighPtMuon(const pat::Muon& m, edm::Handle<reco::VertexCollection> pvHandle)
   { 
     if ( !isTightMuonCore(m) ) return false;    
 
+    reco::TrackRef cktTrack = (muon::tevOptimized(m, 200, 40., 17., 0.25)).first;
     if (cktTrack.isNull()) return false;
     if ( !pvHandle.isValid() ) return false;
     reco::Vertex pv = pvHandle->at(0) ; 
@@ -91,7 +97,8 @@ namespace hnu {
     return e.caloPosition().phi() ;
   }
 
-  bool passesFakeRateMinimum(const pat::Electron& e) { 
+  // Updated to HEEP v4.1 ID and new requirements for electron fakes
+  bool passesFakeRateMinimum(const pat::Electron& e, edm::Handle<reco::VertexCollection> pvHandle) { 
 
     if ( !e.ecalDriven() ) return false ; 
 
@@ -103,14 +110,17 @@ namespace hnu {
     double HoE      = e.hadronicOverEm() ; 
     double sig_iEiE = e.sigmaIetaIeta() ; 
     int nLostHits   = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
+    double absdxy   = (pvHandle.isValid()) ? fabs(e.gsfTrack()->dxy(pvHandle->at(0).position())) : 999.0 ; 
 
-    if ( nLostHits != 0 ) return false ; 
+    if ( nLostHits > 1 ) return false ; 
     if ( isEB ) { 
       if ( HoE > 0.15 )       return false ; 
-      if ( sig_iEiE > 0.013 ) return false ; 
+      if ( sig_iEiE > 0.013 ) return false ;
+      if ( absdxy > 0.02 )    return false ; 
     } else if ( isEE ) { 
       if ( HoE > 0.10 )       return false ; 
       if ( sig_iEiE > 0.034 ) return false ; 
+      if ( absdxy > 0.05 )    return false ; 
     }
 
     return true ; 
@@ -123,32 +133,36 @@ namespace hnu {
     double eEta = getElectronSCEta(e) ; 
     double ePt  = getElectronEt(e,false) ; 
 
+    // Values taken from AN/2012-415 (Z' -> ee), v10
     if ( fabs(eEta) < 1.442 ) { 
-      prob =  (( ePt < 91.4 ) ?  ( 0.022 - 0.000128 * ePt ) : ( 0.0097 )) ; 
-    } else if ( fabs(eEta) < 2.0 && fabs(eEta) > 1.56 ) { 
-      prob = (( ePt < 108.7 ) ? ( 0.061 - 0.00023 * ePt ) : ( 0.036 )) ; 
+      prob =  (( ePt < 189.3 ) ?  ( 0.0179 - 0.000056 * ePt ) : ( 0.0073 )) ; 
+    } else if ( fabs(eEta) < 2.0 && fabs(eEta) > 1.56 ) {
+      if ( ePt < 96.6 ) prob = exp(-2.31 - 0.011*ePt) ;
+      else prob = (( ePt < 178.0 ) ? ( 0.040 - 0.000059 * ePt ) : ( 0.0295 )) ; 
     } else if ( fabs(eEta) < 2.5 && fabs(eEta) > 2.0 ) { 
-      prob = (( ePt < 109.8 ) ?  ( 0.115 - 0.00041 * ePt ) : ( 0.070 )) ; 
+      prob = (( ePt < 115.4 ) ?  ( 0.099 - 0.00035 * ePt ) : ( 0.0586 )) ; 
     }
 
     return prob ; 
   }
 
-  // Placeholder until real values are known
+  // Fake rate calculated for loose muons, within 0.3 of a valid jet, passing ID/iso selection
   double fakeProbability(const pat::Muon& mu) { 
 
-    double eta  = mu.eta() ; 
+    double eta  = mu.eta() ;
+    double pt   = mu.pt() ; 
     double prob = 0. ; 
 
-    if ( abs(eta) < 2.4 ) { // Values determined from data on 20 June 2012
-      if      ( eta < -2.1 ) prob = 0.25938 ; 
-      else if ( eta < -1.2 ) prob = 0.13414 ; 
-      else if ( eta < -0.9 ) prob = 0.105791 ; 
-      else if ( eta < 0.0 )  prob = 0.0944799 ; 
-      else if ( eta < 0.9 )  prob = 0.095889 ; 
-      else if ( eta < 1.2 )  prob = 0.108 ; 
-      else if ( eta < 2.1 )  prob = 0.135556 ; 
-      else if ( eta < 2.4 )  prob = 0.25242 ; 
+    if ( abs(eta) < 2.4 ) { // Determined April 22, 2013 using 15/fb of 8 TeV data
+      if ( pt >= 100.0 ) {
+        if      ( abs(eta) > 2.1 ) prob = 0.194 ; 
+        else if ( abs(eta) > 1.2 ) prob = 0.156 ; 
+        else                       prob = 0.088 ;
+      } else if ( pt >= 40.0 ) {
+        if      ( abs(eta) > 2.1 ) prob = 0.199 ; 
+        else if ( abs(eta) > 1.2 ) prob = 0.118 ; 
+        else                       prob = 0.078 ;
+      }
     }
 
     return prob ; 
@@ -239,11 +253,13 @@ namespace hnu {
     
     if(pvHandle.isValid())
     {
-        double absdxy = fabs(e.gsfTrack()->dxy(pvHandle->at(0).position()));
-        if(isEB && absdxy > 0.02) return false;
-        if(isEE && absdxy > 0.05) return false;
+      double absdxy = fabs(e.gsfTrack()->dxy(pvHandle->at(0).position()));
+      if(isEB && absdxy > 0.02) return false;
+      if(isEE && absdxy > 0.05) return false;
+    } else {
+      if (abs(heepVersion) == 41) return false ; 
     }
-
+    
     // std::cout << "Congratulations!  The electron passes HEEP selection" << std::endl ; 
 
     // Passes HEEP selection
@@ -817,7 +833,7 @@ namespace hnu {
       
       // For 53 we must recalculate the muon Pt (This needs CMSSW_5_3_6_p1)
       reco::TrackRef cktTrack = (muon::tevOptimized(iM, 200, 40., 17., 0.25)).first;
-      if(cktTrack.isNull()) continue;
+      if (cktTrack.isNull()) continue;
       reco::Particle::PolarLorentzVector p4(cktTrack->pt(),iM.eta(),iM.phi(),0.1057);
       
       if ( !iM.isGlobalMuon() ) continue ; 
@@ -839,8 +855,14 @@ namespace hnu {
       }
 
       if ( iM.pt() < minPt ) continue ; 
-      bool passesID = isTightHighPtMuon(iM, pvHandle, cktTrack) ;
-      if ( !passesID && idEra != 0 ) continue ;
+      bool passesID = false ;
+
+      // ID options
+      if ( idEra == 0 ) passesID = true ;
+      else if ( idEra > 0 ) passesID = isTightHighPtMuon(iM, pvHandle) ; // Default analysis selection
+      else if ( idEra < 0 ) passesID = isLooseMuonNoPF(iM) ; // Global or Tracker muon (QCD or special studies only)
+      
+      if ( !passesID ) continue ;
 
       // Now take a look at TeV (refit) muons, and see if pT needs adjusting
       if ( trackerPt ) {
@@ -911,7 +933,7 @@ namespace hnu {
       if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
       // Apply anti-selection if requested (fake electron sample)
       if ( (heepVersion < 0) && 
-	   (!passesFakeRateMinimum(iE) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;
+	   (!passesFakeRateMinimum(iE,pvHandle) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;
 
       float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
       float elecEt     = getElectronEt(iE,false) * scale ; 
