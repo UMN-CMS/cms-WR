@@ -445,7 +445,7 @@ elif (cmsswRelease == 44):
     removeCleaning( process, outputModules = [] )
 else:
     removeCleaning( process, outputModules = [] )
-    removeSpecificPATObjects(process, names = ['Jets','Taus','METs'], outputModules = [])
+    removeSpecificPATObjects(process, names = ['Jets','Taus'], outputModules = [])
 
 # Special change for saving good products in data
 if isData:

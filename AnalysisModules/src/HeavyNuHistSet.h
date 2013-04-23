@@ -45,7 +45,7 @@ private:
     TH1 *mindRjet_genjet, *maxdRjet_genjet, *nuLMatchedJets;
 
     TH1 *mLL, *mLLOS, *mLLSS, *diLCharge, *mLLZoom;
-    TH1 *mWR, *mNuR1, *mNuR2, *mJJ;
+    TH1 *mWR, *mNuR1, *mNuR2, *mJJ, *ptWR;
     TH2 *mNuR2D, *jetPtvsNum;
     TH1 *L1ptFracWRmass;
 

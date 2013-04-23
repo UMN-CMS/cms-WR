@@ -204,6 +204,8 @@ void HeavyNuEvent::calculate(bool correctEscale)
     // Composite objects
     mJJ = vJJ.M();
     mLL = vLL.M();
+    
+    WR = vJJ + vLL;
 
     mWR   = lv_evt.M();
 

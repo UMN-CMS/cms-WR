@@ -204,7 +204,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
     }
 
     const int MWR_STEP = 100, MNU_STEP = 10;
-    const int TRANSITION_MWR = 2100;
+    const int TRANSITION_MWR = 2500;
     const float xmin = xmini, xmax = xmaxi, ymax = ymaxi;
 
     db = new AcceptanceDB("2012");
@@ -304,7 +304,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
             case 0:
             case 1:
             case 2:
-                jscale = 100.0; //the 1000 is because jeremy gives sigma x A in 10 abarns
+                jscale = 1.0;
                 break;
             case 3:
                 jscale = 1.0;  //the combined limits are given in ratio to expectation
@@ -320,10 +320,10 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
             //printf("%f %f %f %f %f %f %f %f\n", tmp_mwr, tmp_mnu, f3, f4, f5, f6, f7, f8);
             const XYZ p = {tmp_mwr, tmp_mnu, f3 / jscale};  
             const XYZ q = {tmp_mwr, tmp_mnu, f4 / jscale};
-            const XYZ h68 = {tmp_mwr, tmp_mnu, f5 / jscale};
+            const XYZ h68 = {tmp_mwr, tmp_mnu, f7 / jscale};
             const XYZ l68 = {tmp_mwr, tmp_mnu, f6 / jscale};
-            const XYZ h95 = {tmp_mwr, tmp_mnu, f7 / jscale};
-            const XYZ l95 = {tmp_mwr, tmp_mnu, f8 / jscale};
+            const XYZ h95 = {tmp_mwr, tmp_mnu, f8 / jscale};
+            const XYZ l95 = {tmp_mwr, tmp_mnu, f5 / jscale};
             if(find(obsLimit.begin(), obsLimit.end(), p) == obsLimit.end()) obsLimit.push_back(p);
             if(find(expLimit.begin(), expLimit.end(), q) == expLimit.end()) expLimit.push_back(q);
             if(find(exp68hiLimit.begin(), exp68hiLimit.end(), h68) == exp68hiLimit.end()) exp68hiLimit.push_back(h68);

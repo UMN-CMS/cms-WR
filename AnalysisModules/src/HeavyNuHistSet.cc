@@ -164,6 +164,9 @@ void HeavyNuHistSet::book(TFileDirectory *td, const std::string& post)
     mNuR2 = td->make<TH1F > ("mNuR2", t.c_str(), 100, 0, 4000);
     t = "M(N_{R}) #L_{1} vs. #L_{2} " + post;
     mNuR2D = td->make<TH2F > ("mNuR2D", t.c_str(), 100, 0, 4000, 100, 0, 4000);
+    
+    t = "p_{T}(M(W_{R})) " + post;
+    ptWR = td->make<TH1F > ("ptWR", t.c_str(), 100, 0, 1000);
 
     t = "L_{1} p_{T} / M(W_{R}) " + post;
     L1ptFracWRmass = td->make<TH1F > ("L1ptFracWRmass", t.c_str(), 100, 0, 1.);
@@ -416,6 +419,8 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         mLL_2b->Fill(hne.mLL, wgt * btagWgt);
         mLLZoom_2b->Fill(hne.mLL, wgt);
     }
+    
+    ptWR->Fill(hne.WR.pt());
 
     mLLZoom->Fill(hne.mLL, wgt);
     mLLvsmWR->Fill(hne.mLL, hne.mWR, wgt);
