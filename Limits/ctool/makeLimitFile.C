@@ -17,8 +17,8 @@ struct BShape { BShape(double v, double s) : value(v),slope(s) {}
 };
 
 // name of the histogram containing the observations
-const char* data_hist_name_muon = "hNu/cut6_mWRmass/mWR";
-const char* data_hist_name_elec = "hNuE/cut6_mWRmass/mWR";
+std::string data_hist_name_muon = "hNu/cut6_mWRmass/mWR";
+std::string data_hist_name_elec = "hNuE/cut6_mWRmass/mWR";
 
 // names
 const char* jnames[]= {"WR","TT","ZJ","OT"};
@@ -150,11 +150,11 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
 }
 
 std::vector<double> extractBins(TFile* f, const std::string& histname) {
-  std::vector<double> retval(11,0);
+  std::vector<double> retval(17,0);
   TH1* h=(TH1*)(f->Get(histname.c_str()));
   if (h!=0) {
-    for (int jbin=0; jbin<11; jbin++) 
-      retval[jbin]=h->Integral(16+5*jbin,16+4+5*jbin);    
+    for (int jbin=0; jbin<17; jbin++) 
+      retval[jbin]=h->Integral(16+5*jbin,16+4+5*jbin);
   }
   return retval;
 }

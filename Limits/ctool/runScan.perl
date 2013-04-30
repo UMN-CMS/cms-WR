@@ -10,7 +10,7 @@ $special="";
 $systmode=0;
 $xsec=0.01;
 $minmwAllowed=700;
-$maxmwAllowed=3000;
+$maxmwAllowed=4000;
 $max_mllqq=1600;
 $year=2012;
 $channel="mu";
@@ -42,10 +42,10 @@ if ($jobBase ne "default") {
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 $lumi2011=4990;
 
-$datael2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_2/heavyun_2012Data_2012ABC_elec.root";
-$datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_2/heavyun_2012Data_2012ABC_mu.root";
+$datael2012="/local/cms/user/dahmes/forJoe/V03-00-11/run2012ABCD-electron-V03-00-11.root";
+$datamu2012="/local/cms/user/dahmes/forJoe/V03-00-11/run2012ABCD-muon-V03-00-11.root";
 #$datamu2012="/home/jmmans/data/heavyun_2012Data_2012ABC_mu.root";
-$lumi2012=12089;
+$lumi2012=19564;
 
 #$datamu2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun23.root";
 #$datael2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";
