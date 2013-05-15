@@ -1,10 +1,12 @@
-You will need to check out the following to get the correct PF2PAT version
-addpkg DataFormats/PatCandidates V06-05-01
-addpkg PhysicsTools/PatAlgos V08-09-12
-addpkg RecoBTag/SecondaryVertex V01-08-00      
-addpkg RecoVertex/AdaptiveVertexFinder V02-02-00 
-addpkg CommonTools/ParticleFlow V00-03-14
-addpkg JetMETCorrections/Type1MET V04-06-05
-addpkg PhysicsTools/PatUtils V03-09-22
-addpkg CommonTools/RecoUtils V00-00-09
+(*) Working release for 2013 analysis: 
+CMSSW_5_3_6_patch1
 
+(*) Additional tags:
+cvs co -r CMSSW_5_3_7_patch5 EventFilter/HcalRawToDigi
+
+(*) Production tag: 
+V03-00-12
+
+(*) Location of data files:
+hadded versions:     /local/cms/user/dahmes/forJoe/V03-00-12/
+raw histogram files: /data/whybee1a/user/dahmes/wr2012/prod/V03-00-12/
