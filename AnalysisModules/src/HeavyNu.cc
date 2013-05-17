@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.123 2013/04/22 21:42:45 bdahmes Exp $
+// $Id: HeavyNu.cc,v 1.124 2013/04/23 23:07:53 pastika Exp $
 //
 //
 
@@ -528,6 +528,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.mWRmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
         hists.OneJetTrigHighPt = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4clo_TrigHighPt")), "(3objects with trigger and pt cuts:4clo)");
         hists.OneJetdiLmassCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut5clo_diLmass")), "(ee mass cut:5clo)");
+        hists.LQ1Cuts = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts")), "(LQ1 pre cuts:LQ1cuts)");
+        hists.LQ1Cuts2 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts2")), "(LQ1 mll > 110:LQ1cuts2)");
+        hists.LQ1Cuts3 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts3")), "(LQ1 mLQ 650:LQ1cuts3)");
 
         if(studyMuonSelectionEff_)
         {
@@ -554,6 +557,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.mWRmassCut =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(emujj mass cut:6)");
         hists.OneJetTrigHighPt = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut4clo_TrigHighPt")), "(3objects with trigger and pt cuts:4clo)");
         hists.OneJetdiLmassCut = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut5clo_diLmass")), "(emu mass cut:5clo)");
+        hists.LQ1Cuts = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("LQ1Cuts")), "(LQ1 cuts:LQ1cuts)");
+        hists.LQ1Cuts2 = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("LQ1Cuts2")), "(LQ1 mll > 110:LQ1cuts2)");
+        hists.LQ1Cuts3 = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("LQ1Cuts3")), "(LQ1 mLQ 650:LQ1cuts3)");
     }
     else if(analysisMode_ == HeavyNuEvent::TAUX)
     {
@@ -1451,10 +1457,10 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.nJets >= 2) hnuEvent.isBJet2 = hnuEvent.j2.bDiscriminator(btagName) >= minBtagDiscVal;
 
     //conduct gen study on jets
-    if(hnuEvent.isMC)
-    {
-        studyJetMatching(hnuEvent, genjets);
-    }
+    //if(hnuEvent.isMC)
+    //{
+    //    studyJetMatching(hnuEvent, genjets);
+    //}
 
     if(hnuEvent.nJets >= 1) hnuEvent.tjV1 = hnu::caloJetVertex(hnuEvent.j1, *jptJets);
     if(hnuEvent.nJets >= 2) hnuEvent.tjV2 = hnu::caloJetVertex(hnuEvent.j2, *jptJets);
@@ -1589,6 +1595,42 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // std::cout << "DEBUG: Filled JJptCuts" << std::endl ; 
     if(hnuEvent.nLeptons >= 2) fill(*pMuons, *pElecs, *pJets, hnuEvent, false, true, hists.LLptCuts);
     // std::cout << "DEBUG: Filled LLptCuts" << std::endl ; 
+    
+    //LQ1 analysis 
+    if(analysisMode_ == HeavyNuEvent::HNUE || analysisMode_ == HeavyNuEvent::TOP)
+    {
+        std::vector< std::pair<pat::Jet, float> > jetCandsLQ =
+                hnu::getJetList(pJets, jecuObj_, 45, 2.4, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_, &pMuons, &pElecs, &pvHandle, elecRho_);
+        if(jetCandsLQ.size() >= 2 && hnuEvent.nLeptons >= 2 && hnuEvent.l1pt > 50 && hnuEvent.l2pt > 45)
+        {
+            int nE = 0, nM = 0;
+            for(std::vector<pat::Muon>::const_iterator iM = muCands.begin(); iM != muCands.end(); ++iM) if(iM->pt() > 45) nM++;
+            for(std::vector< std::pair<pat::Electron, float> >::const_iterator iE = eCands.begin(); iE != eCands.end(); ++iE) if(hnu::getElectronEt(iE->first, false) > 45) nE++;
+
+            if((analysisMode_ == HeavyNuEvent::HNUE && nE == 2) || (analysisMode_ == HeavyNuEvent::TOP && nE == 1 && nM == 1))
+            {
+                HeavyNuEvent hnuLQ(hnuEvent);
+                if((jetCandsLQ[0].first.pt() > 125) && (jetCandsLQ[1].first.pt() > 45))
+                {
+                    hnuLQ.j1 = jetCandsLQ[0].first;
+                    hnuLQ.j2 = jetCandsLQ[1].first;
+                    hnuLQ.calculate(correctEscale_);
+                    
+                    double st = hnuLQ.l1pt + hnuLQ.l2pt + hnuLQ.j1.pt() + hnuLQ.j2.pt();
+                    if(hnuLQ.mLL > 50 && (st > 300)) 
+                    {
+                        hists.LQ1Cuts->fill(hnuLQ);
+                        if(hnuLQ.mLL > 110)
+                        {
+                            hists.LQ1Cuts2->fill(hnuLQ);
+                            
+                            if(hnuLQ.mLL > 155 && (st > 850) && hnuLQ.mLQmin > 360) hists.LQ1Cuts3->fill(hnuLQ);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if (hnuEvent.nLeptons < 2) return false ;
 

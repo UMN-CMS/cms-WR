@@ -103,12 +103,16 @@ namespace hnu
 			      int correctEra, bool isBjet, bool directionIsUp);
     double muScaleLUT(pat::Muon& iM) ; 
 
-    std::vector< std::pair<pat::Jet,float> >      getJetList (edm::Handle<pat::JetCollection>& pJets,
-							      JetCorrectionUncertainty* jecUnc,
-							      double minPt, double maxAbsEta,
-							      int jecSign=0, int jecEra=3, 
-							      bool isMC=false, int jerSign=0);
-    std::vector<pat::Muon>                        getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
+    std::vector< std::pair<pat::Jet, float> > getJetList(edm::Handle<pat::JetCollection>& pJets,
+                                                         JetCorrectionUncertainty* jecUnc,
+                                                         double minPt, double maxAbsEta,
+                                                         int jecSign = 0, int jecEra = 3,
+                                                         bool isMC = false, int jerSign = 0,
+                                                         edm::Handle<pat::MuonCollection>* muons = NULL,
+                                                         edm::Handle<pat::ElectronCollection>* electrons = NULL,
+                                                         edm::Handle<reco::VertexCollection>* verticies = NULL,
+                                                         double rho = 0);
+    std::vector<pat::Muon> getMuonList(edm::Handle<pat::MuonCollection>& pMuons,
 							      edm::Handle<reco::VertexCollection>& pvHandle,
 							      int idEra, 
 							      double minPt, double maxAbsEta,

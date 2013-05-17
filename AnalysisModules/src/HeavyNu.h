@@ -79,6 +79,9 @@ public:
       HeavyNuHistSet* JJptCuts;
       HeavyNuHistSet* TrigMatches;
       HeavyNuHistSet* LLJJptCuts;
+      HeavyNuHistSet* LQ1Cuts;
+      HeavyNuHistSet* LQ1Cuts2;
+      HeavyNuHistSet* LQ1Cuts3;
       //HeavyNuHistSet* VertexCuts;
       HeavyNuHistSet* ZRegionCut;
       HeavyNuHistSet* Mu1HighPtCut;

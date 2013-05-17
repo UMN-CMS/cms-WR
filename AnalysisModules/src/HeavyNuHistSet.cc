@@ -164,6 +164,10 @@ void HeavyNuHistSet::book(TFileDirectory *td, const std::string& post)
     mNuR2 = td->make<TH1F > ("mNuR2", t.c_str(), 100, 0, 4000);
     t = "M(N_{R}) #L_{1} vs. #L_{2} " + post;
     mNuR2D = td->make<TH2F > ("mNuR2D", t.c_str(), 100, 0, 4000, 100, 0, 4000);
+    t = "S_{T} " + post;
+    st = td->make<TH1F > ("st", t.c_str(), 100, 0, 4000);
+    t = "M(LQ)_{min} " + post;
+    mLQmin = td->make<TH1F > ("mLQmin", t.c_str(), 100, 0, 4000);
     
     t = "p_{T}(M(W_{R})) " + post;
     ptWR = td->make<TH1F > ("ptWR", t.c_str(), 100, 0, 1000);
@@ -420,7 +424,9 @@ void HeavyNuHistSet::fill(HeavyNuEvent& hne)
         mLLZoom_2b->Fill(hne.mLL, wgt);
     }
     
-    ptWR->Fill(hne.WR.pt());
+    ptWR->Fill(hne.WR.pt(), wgt);
+    st->Fill(hne.l1pt + hne.l2pt + hne.j1.pt() + hne.j2.pt(), wgt);
+    mLQmin->Fill(hne.mLQmin, wgt);
 
     mLLZoom->Fill(hne.mLL, wgt);
     mLLvsmWR->Fill(hne.mLL, hne.mWR, wgt);

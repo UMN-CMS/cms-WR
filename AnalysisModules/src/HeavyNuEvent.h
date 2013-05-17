@@ -103,7 +103,7 @@ public:
     double dRminL1jet, dRminL2jet;
     double ptrelL1, ptrelL2;
 
-    double mWR, mJJ, mLL, mNuR1, mNuR2;
+    double mWR, mJJ, mLL, mNuR1, mNuR2, mLQmin;
 
     std::string btagName;
 };

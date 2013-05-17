@@ -735,73 +735,98 @@ namespace hnu {
     // Calculations taken from https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC, version 23
     float totalUnc = offunc;//sqrt((offunc*offunc) + (pileupCorrection*pileupCorrection) + (0.025*0.025));
     return totalUnc;
-  }
-
-  std::vector< std::pair<pat::Jet,float> > getJetList(edm::Handle<pat::JetCollection>& pJets,
-						      JetCorrectionUncertainty* jecUnc,
-						      double minPt, double maxAbsEta, 
-						      int jecSign, int jecEra, 
-						      bool isMC, int jerSign) {
-    
-    std::vector< std::pair<pat::Jet,float> > jetList ; 
-
-    for (unsigned int iJet=0; iJet<pJets->size(); iJet++) {
-      pat::Jet iJ = pJets->at(iJet);
-      float jpt = iJ.pt();
-      float jeta = iJ.eta();
-      if (fabs(jeta) > maxAbsEta) continue ; 
-      // std::cout << "I have a jet with pt " << jpt 
-      //  		<< " and eta " << fabs(iJ.eta()) << std::endl ; 
-      int jpdgId = 0;
-      if (iJ.genParton()) jpdgId = iJ.genParton()->pdgId();
-      bool isBjet = (abs(jpdgId) == 5);
-      float jecuscale = 1.0f;
-      // Corrections for Jet Energy Resolution differences in data vs. MC
-      // Updated for 2012 analysis
-      if ( isMC ) { // Known jet energy resolution difference between data and MC
-	std::vector<double> etaBin = {   0.5,   1.1,   1.7,   2.3,   5.0 } ; 
-	std::vector<double> factor = { 1.052, 1.057, 1.096, 1.134, 1.288 } ; 
-	std::vector<double> uncHi  = { 0.063, 0.057, 0.065, 0.094, 0.200 } ; 
-	std::vector<double> uncLo  = { 0.062, 0.056, 0.064, 0.092, 0.199 } ; 
-
-	unsigned int ibin = 0 ; 
-	for (ibin=0; etaBin.at(ibin) < fabs(iJ.eta()); ibin++) ;
-	double corrFactor = factor.at(ibin) ; 
-	if      ( jerSign > 0 ) corrFactor += uncHi.at(ibin) ; 
-	else if ( jerSign < 0 ) corrFactor -= uncLo.at(ibin) ; 
-	// std::cout << "Correction factor (" << jerSign << "): " << corrFactor << std::endl ; 
-
-	const reco::GenJet* iG = iJ.genJet() ; 
-	if ( iG ) { 
-	  double corr_delta_pt = ( iJ.pt() - iG->pt() ) * corrFactor ; 
-	  // std::cout << "Corrected delta pt is: " << corr_delta_pt << " (" << iJ.pt() << "," << iG->pt() 
-	  // 	    << "," << factor << ")" << std::endl ; 
-	  double jerscale = std::max(0.0,((iG->pt()+corr_delta_pt)/iJ.pt())) ;
-	  // std::cout << "jerscale is " << jerscale << std::endl ; 
-	  jpt *= jerscale ; 
-	  iJ.setP4( iJ.p4()*jerscale ) ; 
-	}
-      }
-      if (jecSign) {
-	float jecu = jecTotalUncertainty(jpt, jeta, jecUnc, jecEra, isBjet, (jecSign > 0));
-	jecuscale = (1.0 + (float(jecSign) * jecu));
-	// std::cout << "jecuscale is " << jecuscale << std::endl ; 
-	jpt *= jecuscale;
-	iJ.setP4(iJ.p4()*jecuscale);
-      }
-      // std::cout << "Jet cand with pt " << jpt << " eta " << jeta << " and electron energy fraction " 
-      //  		<< iJ.electronEnergyFraction() << "%.  " << iJ.photonEnergy() << " + " 
-      //  		<< iJ.electronEnergy() << " attributed to EM photons and electrons (in GeV)" << std::endl ; 
-      // std::cout << "Corrected jet pT: " << jpt << std::endl ; 
-      if (jpt > minPt) { 
-	std::pair<pat::Jet,float> jetCand = std::make_pair(iJ,jecuscale) ;
-	jetList.push_back( jetCand ) ; 
-      }
     }
 
-    std::sort(jetList.begin(),jetList.end(),scaleCompare()) ; 
-    return jetList ; 
-  }
+    std::vector< std::pair<pat::Jet, float> > getJetList(edm::Handle<pat::JetCollection>& pJets,
+                                                         JetCorrectionUncertainty* jecUnc,
+                                                         double minPt, double maxAbsEta,
+                                                         int jecSign, int jecEra,
+                                                         bool isMC, int jerSign,
+                                                         edm::Handle<pat::MuonCollection>* muons,
+                                                         edm::Handle<pat::ElectronCollection>* electrons,
+                                                         edm::Handle<reco::VertexCollection>* verticies,
+                                                         double rho)
+    {
+
+        std::vector< std::pair<pat::Jet, float> > jetList ;
+
+        for (unsigned int iJet = 0; iJet < pJets->size(); iJet++)
+        {
+            pat::Jet iJ = pJets->at(iJet);
+            float jpt = iJ.pt();
+            float jeta = iJ.eta();
+            if (fabs(jeta) > maxAbsEta) continue ;
+            // std::cout << "I have a jet with pt " << jpt 
+            //  		<< " and eta " << fabs(iJ.eta()) << std::endl ; 
+            int jpdgId = 0;
+            if (iJ.genParton()) jpdgId = iJ.genParton()->pdgId();
+            bool isBjet = (abs(jpdgId) == 5);
+            float jecuscale = 1.0f;
+            // Corrections for Jet Energy Resolution differences in data vs. MC
+            // Updated for 2012 analysis
+            if ( isMC )
+            { // Known jet energy resolution difference between data and MC
+                std::vector<double> etaBin = {   0.5,   1.1,   1.7,   2.3,   5.0 } ;
+                std::vector<double> factor = { 1.052, 1.057, 1.096, 1.134, 1.288 } ;
+                std::vector<double> uncHi  = { 0.063, 0.057, 0.065, 0.094, 0.200 } ;
+                std::vector<double> uncLo  = { 0.062, 0.056, 0.064, 0.092, 0.199 } ;
+
+                unsigned int ibin = 0 ;
+                for (ibin = 0; etaBin.at(ibin) < fabs(iJ.eta()); ibin++) ;
+                double corrFactor = factor.at(ibin) ;
+                if      ( jerSign > 0 ) corrFactor += uncHi.at(ibin) ;
+                else if ( jerSign < 0 ) corrFactor -= uncLo.at(ibin) ;
+                // std::cout << "Correction factor (" << jerSign << "): " << corrFactor << std::endl ; 
+
+                const reco::GenJet* iG = iJ.genJet() ;
+                if ( iG )
+                {
+                    double corr_delta_pt = ( iJ.pt() - iG->pt() ) * corrFactor ;
+                    // std::cout << "Corrected delta pt is: " << corr_delta_pt << " (" << iJ.pt() << "," << iG->pt() 
+                    // 	    << "," << factor << ")" << std::endl ; 
+                    double jerscale = std::max(0.0, ((iG->pt() + corr_delta_pt) / iJ.pt())) ;
+                    // std::cout << "jerscale is " << jerscale << std::endl ; 
+                    jpt *= jerscale ;
+                    iJ.setP4( iJ.p4() * jerscale ) ;
+                }
+            }
+            if (jecSign)
+            {
+                float jecu = jecTotalUncertainty(jpt, jeta, jecUnc, jecEra, isBjet, (jecSign > 0));
+                jecuscale = (1.0 + (float(jecSign) * jecu));
+                // std::cout << "jecuscale is " << jecuscale << std::endl ; 
+                jpt *= jecuscale;
+                iJ.setP4(iJ.p4() * jecuscale);
+            }
+
+            double dReMin = 999.9, dRmMin = 999.9;
+            if(muons)
+            {
+                for(pat::MuonCollection::const_iterator iM = (*muons)->begin(); iM != (*muons)->end(); ++iM)
+                {
+                    if(iM->pt() > 10 && isTightHighPtMuon(*iM, *verticies))
+                        dRmMin = std::min(dRmMin, deltaR(iJ.eta(), iJ.phi(), iM->eta(), iM->phi()));
+                }
+            }
+            if(electrons)
+            {
+                for(pat::ElectronCollection::const_iterator iE = (*electrons)->begin(); iE != (*electrons)->end(); ++iE)
+                {
+                    if(getElectronEt(*iE, false) > 10 && passesHEEP(*iE, 41, rho, *verticies))
+                        dReMin = std::min(dReMin, deltaR(iJ.eta(), iJ.phi(), iE->eta(), iE->phi()));
+                }
+            }
+
+            if (jpt > minPt && dReMin > 0.3 && dRmMin > 0.3)
+            {
+                std::pair<pat::Jet, float> jetCand = std::make_pair(iJ, jecuscale) ;
+                jetList.push_back( jetCand ) ;
+            }
+        }
+
+        std::sort(jetList.begin(), jetList.end(), scaleCompare()) ;
+        return jetList ;
+    }
 
   double muScaleLUT(pat::Muon& iM) { 
 

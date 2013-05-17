@@ -58,6 +58,8 @@ HeavyNuEvent::HeavyNuEvent(const HeavyNuEvent& hne)
     tjV1 = hne.tjV1;
     tjV2 = hne.tjV2;
     
+    mLQmin = hne.mLQmin;
+    
     n_primary_vertex = hne.n_primary_vertex;
     n_pue = hne.n_pue;
 
@@ -211,6 +213,12 @@ void HeavyNuEvent::calculate(bool correctEscale)
 
     mNuR1 = (vJJ + lep1p4).M();
     mNuR2 = (vJJ + lep2p4).M();
+    
+    double mLQL1J1 = (lep1p4 + j1p4).M();
+    double mLQL1J2 = (lep1p4 + j2p4).M();
+    double mLQL2J1 = (lep2p4 + j1p4).M();
+    double mLQL2J2 = (lep2p4 + j2p4).M();
+    mLQmin = std::min(std::min(mLQL1J1, mLQL1J2), std::min(mLQL2J1, mLQL2J2));
 }
 
 void HeavyNuEvent::decayID(const reco::GenParticleCollection& gpp)

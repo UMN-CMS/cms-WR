@@ -4,18 +4,18 @@ from operator import isSequenceType
 import os, random
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Specify CMSSW release (53, 52, 44, 42, 37) ---#
 cmsswRelease = 53
 
 #--- Signal MC flags ---#
-isMCsignal=True
+isMCsignal=False
 
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
-runEra = "2012AB"
+runEra = "2012Cp"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -30,8 +30,8 @@ topSkim          = False
 
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
-runElectronAnalysis = True
-systematics    = True
+runElectronAnalysis = False
+systematics    = False
 tagandprobe    = False
 doTriggerStudy = False
 addSlopeTrees  = True
@@ -44,7 +44,7 @@ heepVersion = 41
 topStudy  = True
 
 #--- Flags for QCD studies ---#
-qcdStudy  = True
+qcdStudy  = False
 doDijet   = False
 
 if isData:
@@ -79,7 +79,8 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/local/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
+                            fileNames=cms.untracked.vstring('file:/hdfs/cms/user/dahmes/storage/wrSkim2012/prompt/2012c/jan07run2012CpromptV2_138001.root')
+                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/skim50_35/jul13rereco_run2012AB/muTopMultiSkim_plep50_35_pemu50_35_2012ABjul13_feb11_104.root')
                             #/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
                             #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
@@ -404,15 +405,23 @@ if isData:
     process.load("EventFilter.HcalRawToDigi.hcallasereventfilter2012_cff")
     process.eventFilters += process.hcallLaserEvent2012Filter
 
+#--- Pre-filter ---#
+process.prefilter = cms.EDFilter("HeavyNuPreFilter",
+                                 muonTag      = cms.InputTag( 'selectedPatMuons' ),
+                                 electronTag  = cms.InputTag( 'selectedPatElectrons' ),
+                                 electronRho  = cms.InputTag( 'kt6PFJetsForIsolation','rho' ),
+                                 analysisMode = cms.untracked.string('HNUMU'))
+
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
    process.AnalysisIntroSequence = cms.Sequence(
-       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
+#       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
+       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation * process.prefilter
    )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
-       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
+       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation * process.prefilter
    )
 if isPFJets:
     process.AnalysisIntroSequence *= process.modifiedPF2PATSequence
