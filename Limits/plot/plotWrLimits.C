@@ -427,7 +427,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
 
         sprintf(str1, "csUL%i", iwr);
 
-        TCanvas* csUL = new TCanvas(str1);
+        TCanvas* csUL = new TCanvas(str1, "c1", 600, 600);
         setTDRStyle();
         fixOverlay();
         csUL->SetLeftMargin(0.19);
@@ -499,10 +499,10 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
         switch(mode)
         {
             case 0:
-                mark2 = new TLatex(0.70, 0.95, "12.1 fb^{-1} at 8 TeV");
+                mark2 = new TLatex(0.70, 0.95, "19.6 fb^{-1} at 8 TeV");
                 break;
             case 1:
-                mark2 = new TLatex(0.70, 0.95, "12.3 fb^{-1} at 8 TeV");
+                mark2 = new TLatex(0.70, 0.95, "19.6 fb^{-1} at 8 TeV");
                 break;
         }
             
@@ -779,41 +779,39 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
     {
         case 0:
             grid->GetYaxis()->SetTitle("M_{N_{#mu}} [GeV]");
-            observedPlot->SetLineColor(kBlue);
-            observedPlot->SetFillColor(kBlue - 4);
+            expectedPlot->SetLineColor(kBlue);
             break;
         case 1:
             grid->GetYaxis()->SetTitle("M_{N_{e}} [GeV]");
+            expectedPlot->SetLineColor(kRed);
             observedPlot->SetLineColor(kRed);
-            observedPlot->SetFillColor(kRed - 4);
             break;
         case 2:
             grid->GetYaxis()->SetTitle("M_{N_{e,#mu,#tau}} [GeV]");
-            observedPlot->SetLineColor(kMagenta + 2);
-            observedPlot->SetFillColor(kMagenta - 4 + 2);
+            expectedPlot->SetLineColor(kMagenta + 2);
             break;
         case 3:
             grid->GetYaxis()->SetTitle("M_{N_{#mu}} [GeV]");
-            observedPlot->SetLineColor(kBlue);
-            observedPlot->SetFillColor(kBlue - 4);
+            expectedPlot->SetLineColor(kBlue);
             break;
     }
     grid->Draw();
 
+    
+    observedPlot->SetLineColor(kBlack);
     observedPlot->SetFillStyle(3005);
     observedPlot->SetLineWidth(5);
     observedPlot->Draw("F SAME");
     observedPlot->Draw("L SAME");
 
-    expectedPlot->SetLineColor(kBlack);
     expectedPlot->SetLineStyle(2);
     expectedPlot->SetLineWidth(5);
     expectedPlot->Draw("L SAME");
 
-    TLegend *leg = new TLegend(.82, .87, .97, .95);
+    TLegend *leg = new TLegend(.81, .86, .96, .94);
     leg->SetTextFont(42);
-    leg->SetBorderSize(1);
-    leg->SetFillColor(10);
+    leg->SetBorderSize(0);
+    leg->SetFillColor(kWhite);
     leg->SetLineWidth(1);
     leg->SetNColumns(1);
     leg->AddEntry(observedPlot, "Observed", "L");
@@ -847,7 +845,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
 
     TLatex* mark = new TLatex(1300, 1.015 * ymax, "CMS Preliminary");
     mark->SetNDC();
-    mark->SetTextSize(0.04*0.9);
+    mark->SetTextSize(0.04*1.1);
     mark->SetTextFont(42);
 
 
@@ -862,11 +860,13 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
     {
         case 0:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");
-            mark->DrawLatex(0.71, 0.96, "12.1 fb^{-1} at 8 TeV");
+            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.6 fb^{-1}");
+            //mark->DrawLatex(0.71, 0.96, "12.1 fb^{-1} at 8 TeV");
             break;
         case 1:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{e}} > M_{W_{R}}");
-            mark->DrawLatex(0.71, 0.96, "12.3 fb^{-1} at 8 TeV");
+            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.6 fb^{-1}");
+            //mark->DrawLatex(0.71, 0.96, "12.3 fb^{-1} at 8 TeV");
             break;
         case 2:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{e,#mu,#tau}} > M_{W_{R}}");
@@ -879,7 +879,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
 
     }
     //text2.DrawLatex(880, 20, "Excluded by Tevatron");
-    mark->DrawLatex(0.18, 0.96, "CMS Preliminary");
+    //mark->DrawLatex(0.18, 0.96, "CMS Preliminary");
 
     fixOverlay();
 

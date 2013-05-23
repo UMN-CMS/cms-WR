@@ -1,3 +1,11 @@
+#include "TH1.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TROOT.h"
+#include "TGraph.h"
+#include "TLegend.h"
+#include "TLatex.h"
+
 double accRatio(int mwr) {
   return 1.0;
   // (from the acceptance db) for generated versus MN=MW/2
@@ -113,12 +121,13 @@ void smoothSG(float pts[], int n, int mode=4) {
 
 #include "tdrstyle.C"
 
-void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double lumi=5.0) {
+void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double lumi=12.0) {
   float mw[100], mn[100], mwt[100];
   float obs[100], exp[100], expm2s[100],expm1s[100],expp1s[100],expp2s[100],xsec[100];
   float obs_ns[100],exp_ns[100];
   int n=0,nx=0;
   char buffer[1024];
+  //  double pbr=1e3; // pb ratio
   double pbr=1e3; // pb ratio
   double corr=1.0;
 
@@ -233,18 +242,18 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
 
   //  TH1* dummy=new TH1F("dummy","",30,1000,3000);
   TH1* dummy;
-  if (which!=0) dummy=new TH1F("dummy","",30,1000,3000);
+  if (which!=0) dummy=new TH1F("dummy","",30,1000,3500);
   else dummy=new TH1F("dummy","",30,1000,2600);
 
   //  dummy->SetMinimum(0.5);
-  dummy->SetMinimum(0.5);
+  dummy->SetMinimum(0.2);
   if (which==4) {
    dummy->SetMaximum(10);
    dummy->SetMinimum(0.005);
   } else if (which==3) {
     dummy->SetMaximum(1000);
   } else {
-    dummy->SetMaximum(500);
+    dummy->SetMaximum(50);
   }
   dummy->SetStats(0);
   dummy->GetXaxis()->SetNdivisions(507);
@@ -256,7 +265,7 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
     dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow ee jj) [fb]");
   } else if (which==3) {
     dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow (ee+#mu#mu+#tau#tau) jj) [fb]");
-    dummy->GetYaxis()->SetTitleSize(0.055)
+    dummy->GetYaxis()->SetTitleSize(0.055);
   } else if (which==4) {
     dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow #mu#mu jj)/#sigma_{g_{R}=g_{L}}");
   }
