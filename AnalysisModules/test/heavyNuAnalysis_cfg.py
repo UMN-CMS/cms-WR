@@ -15,7 +15,8 @@ isMCsignal=False
 
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
-runEra = "2012Cp"
+# options 2012ABCre, 2012Dre
+runEra = "2012ABCre"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -29,8 +30,8 @@ llHighMassSkim   = False
 topSkim          = False
 
 #--- Flags for nominal studies ---#
-runMuonAnalysis     = True
-runElectronAnalysis = False
+runMuonAnalysis     = False
+runElectronAnalysis = True
 systematics    = False
 tagandprobe    = False
 doTriggerStudy = False
@@ -49,12 +50,12 @@ doDijet   = False
 
 if isData:
     systematics      = False
-    qcdStudy         = True
-    lljjAnalysisSkim = True
+    qcdStudy         = False
+    lljjAnalysisSkim = False
     if runMuonAnalysis:
         runElectronAnalysis = False
         topStudy = True
-        topSkim  = True
+        topSkim  = False
     if runElectronAnalysis:
         runMuonAnalysis = False
         topSkim  = False
@@ -79,7 +80,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/hdfs/cms/user/dahmes/storage/wrSkim2012/prompt/2012c/jan07run2012CpromptV2_138001.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/2012A_Jan22_2013_sample.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/skim50_35/jul13rereco_run2012AB/muTopMultiSkim_plep50_35_pemu50_35_2012ABjul13_feb11_104.root')
                             #/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
@@ -101,7 +102,7 @@ if isData:
     elif runEra == "2012Cp" or runEra == "2012D":
         from HeavyNu.AnalysisModules.goodLumiList_2012cd_prompt_cfi import lumisToProcess
                             
-    process.source.lumisToProcess = lumisToProcess
+    #process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -136,6 +137,10 @@ else:
             process.GlobalTag.globaltag = cms.string('FT_P_V42C_AN3::All')
         elif runEra == "2012D":
             process.GlobalTag.globaltag = cms.string('GR_P_V42_AN3::All')
+        elif runEra == "2012ABCre":
+            process.GlobalTag.globaltag = cms.string('FT_R_53_V18::All')
+        elif runEra == "2012Dre":
+            process.GlobalTag.globaltag = cms.string('FT_R_53_V21::All')
     else:
         print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 
@@ -410,7 +415,8 @@ process.prefilter = cms.EDFilter("HeavyNuPreFilter",
                                  muonTag      = cms.InputTag( 'selectedPatMuons' ),
                                  electronTag  = cms.InputTag( 'selectedPatElectrons' ),
                                  electronRho  = cms.InputTag( 'kt6PFJetsForIsolation','rho' ),
-                                 analysisMode = cms.untracked.string('HNUMU'))
+                                 ptL1         = cms.untracked.double(40.0),
+                                 ptL2         = cms.untracked.double(40.0))
 
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug

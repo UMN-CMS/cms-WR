@@ -13,7 +13,7 @@
 //
 // Original Author:  Nathaniel Pastika
 //         Created:  Fri May 17 09:43:10 CDT 2013
-// $Id$
+// $Id: HeavyNuPreFilter.cc,v 1.1 2013/05/17 22:20:15 pastika Exp $
 //
 //
 
@@ -55,8 +55,7 @@ private:
     edm::InputTag elecTag_;
     edm::InputTag elecRhoTag_;
 
-    double elecRho_;
-    int analysisMode_;
+    double elecRho_, ptL1_, ptL2_;
 } ;
 
 HeavyNuPreFilter::HeavyNuPreFilter(const edm::ParameterSet& iConfig)
@@ -64,15 +63,8 @@ HeavyNuPreFilter::HeavyNuPreFilter(const edm::ParameterSet& iConfig)
     muonTag_ = iConfig.getParameter< edm::InputTag > ("muonTag");
     elecTag_ = iConfig.getParameter< edm::InputTag > ("electronTag");
     elecRhoTag_ = iConfig.getParameter< edm::InputTag > ("electronRho");
-
-    std::string am = iConfig.getUntrackedParameter<std::string>("analysisMode");
-    if(!am.compare("HNUMU")) analysisMode_ = HeavyNuEvent::HNUMU;
-    else if(!am.compare("HNUE")) analysisMode_ = HeavyNuEvent::HNUE;
-    else if(!am.compare("TOP")) analysisMode_ = HeavyNuEvent::TOP;
-    else if(!am.compare("QCD")) analysisMode_ = HeavyNuEvent::QCD;
-    else if(!am.compare("CLO")) analysisMode_ = HeavyNuEvent::CLO;
-    else if(!am.compare("TAUX")) analysisMode_ = HeavyNuEvent::TAUX;
-    else std::cout << "!!!!!!!!INVALID ANALYSIS MODE : " << am << " !!!!!!!!\noptions are: HNUMU, HNUE, TOP, QCD, CLO" << std::endl;
+    ptL1_ = iConfig.getUntrackedParameter< double > ("ptL1");
+    ptL2_ = iConfig.getUntrackedParameter< double > ("ptL2");
 }
 
 HeavyNuPreFilter::~HeavyNuPreFilter(){
