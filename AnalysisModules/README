@@ -1,12 +1,20 @@
 (*) Working release for 2013 analysis: 
-CMSSW_5_3_6_patch1
+  CMSSW_5_3_6_patch1 (prompt/re-reco mixture)
+  CMSSW_5_3_7_patch6 (22 Jan re-reco)
 
 (*) Additional tags:
-cvs co -r CMSSW_5_3_7_patch5 EventFilter/HcalRawToDigi
+  cvs co -r CMSSW_5_3_7_patch5 EventFilter/HcalRawToDigi (needed for CMSSW_5_3_6_patch1 only)
 
 (*) Production tag: 
-V03-00-12
+  V03-00-14
+  V03-00-12 (last tag used for prompt/re-reco mixture, CMSSW_5_3_6_patch1)
 
 (*) Location of data files:
-hadded versions:     /local/cms/user/dahmes/forJoe/V03-00-12/
-raw histogram files: /data/whybee1a/user/dahmes/wr2012/prod/V03-00-12/
+  Mixture of prompt/re-reco
+    hadded versions:     /local/cms/user/dahmes/forJoe/V03-00-12/
+    raw histogram files: /data/whybee1a/user/dahmes/wr2012/prod/V03-00-12/
+    Monte Carlo files:
+  22 Jan 2013 re-reco
+    hadded versions:     
+    raw histogram files: 
+    Monte Carlo files:

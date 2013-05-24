@@ -101,6 +101,8 @@ if isData:
         from HeavyNu.AnalysisModules.goodLumiList_2012abc_rereco_cfi import lumisToProcess
     elif runEra == "2012Cp" or runEra == "2012D":
         from HeavyNu.AnalysisModules.goodLumiList_2012cd_prompt_cfi import lumisToProcess
+    elif runEra == "2012ABCre" or runEra == "2012Dre":
+        from HeavyNu.AnalysisModules.goodLumiList_2012abcd_rereco_22jan2013_cfi import lumisToProcess
                             
     #process.source.lumisToProcess = lumisToProcess
 
