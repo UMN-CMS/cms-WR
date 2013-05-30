@@ -92,7 +92,11 @@ other,gamerr,1.054676,1.079253,1.126322,1.305066,1.489268,1.263794,1.577350,2.00
 
 # normalization systematics
 ttjets,norm,1.035
+<<<<<<< systematicsdb_elec_2012.csv
+zjets,norm,1.047
+=======
 zjets,norm,1.0469
+>>>>>>> 1.9
 other,norm,1.05
 
 signal_700_350,mcstats,1.008321

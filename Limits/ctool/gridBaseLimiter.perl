@@ -7,7 +7,7 @@ $stub=$dfile;
 $stub=~s/.*\///;
 $parallelism=12;
 $points=24;
-$nominalXsecFB=10;
+$nominalXsecFB=1;
 $username = getpwuid( $< );
 $wd="/export/scratch/users/${username}/${stub}";
 
