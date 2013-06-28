@@ -24,7 +24,7 @@ const double muScaleLUTarray100[5] = { 0.379012,0.162107,0.144514,0.0125131,-0.3
 namespace hnu {
 
   bool etCompare::operator() (const std::pair<pat::Electron,float>& a, const std::pair<pat::Electron,float>& b) {
-    return (getElectronEt(a.first,false)*a.second) > (getElectronEt(b.first,false)*b.second);
+    return (getElectronEt(a.first,true)*a.second) > (getElectronEt(b.first,true)*b.second);
   }
 
   bool isLooseMuonNoPF(const pat::Muon& m)
@@ -131,7 +131,7 @@ namespace hnu {
     double prob = 0. ; 
 
     double eEta = getElectronSCEta(e) ; 
-    double ePt  = getElectronEt(e,false) ; 
+    double ePt  = getElectronEt(e, true) ; 
 
     // Values taken from AN/2012-415 (Z' -> ee), v10
     if ( fabs(eEta) < 1.442 ) { 
@@ -172,7 +172,8 @@ namespace hnu {
 
     if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40  && abs(heepVersion) != 41) return false ; 
 
-    double ePt  = getElectronEt(e,(abs(heepVersion) != 40) && (abs(heepVersion) != 41)) ; 
+    //double ePt  = getElectronEt(e,(abs(heepVersion) != 40) && (abs(heepVersion) != 41)) ; 
+    double ePt  = getElectronEt(e,true) ; 
     // if ( ePt < 35.0 ) std::cout << "Removing low pT electron from consideration" << std::endl ; 
     // if ( ePt < 35.0 ) return false ; 
 
@@ -804,7 +805,7 @@ namespace hnu {
             {
                 for(pat::MuonCollection::const_iterator iM = (*muons)->begin(); iM != (*muons)->end(); ++iM)
                 {
-                    if(iM->pt() > 10 && isTightHighPtMuon(*iM, *verticies))
+                    if(iM->pt() > 45 && isTightHighPtMuon(*iM, *verticies))
                         dRmMin = std::min(dRmMin, deltaR(iJ.eta(), iJ.phi(), iM->eta(), iM->phi()));
                 }
             }
@@ -812,7 +813,7 @@ namespace hnu {
             {
                 for(pat::ElectronCollection::const_iterator iE = (*electrons)->begin(); iE != (*electrons)->end(); ++iE)
                 {
-                    if(getElectronEt(*iE, false) > 10 && passesHEEP(*iE, 41, rho, *verticies))
+                    if(getElectronEt(*iE, true) > 45 && passesHEEP(*iE, 41, rho, *verticies))
                         dReMin = std::min(dReMin, deltaR(iJ.eta(), iJ.phi(), iE->eta(), iE->phi()));
                 }
             }
@@ -961,7 +962,7 @@ namespace hnu {
 	   (!passesFakeRateMinimum(iE,pvHandle) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;
 
       float scale      = ( (iE.isEB()) ? ebScale : eeScale ) ;
-      float elecEt     = getElectronEt(iE,false) * scale ; 
+      float elecEt     = getElectronEt(iE,true) * scale ; 
       bool  passEtCuts = ( (iE.isEB()) ? (elecEt > minEtEB) : (elecEt > minEtEE) ) ;
 
       if (passEtCuts) {
@@ -1006,7 +1007,7 @@ namespace hnu {
             if(hne.nElectrons == 1) hne.e1 = e;
             else if(hne.nElectrons == 2) 
             {
-                if(getElectronEt(hne.e1, false) > getElectronEt(e, false)) hne.e2 = e;
+                if(getElectronEt(hne.e1, true) > getElectronEt(e, true)) hne.e2 = e;
                 else
                 {
                     hne.e2 = hne.e1;

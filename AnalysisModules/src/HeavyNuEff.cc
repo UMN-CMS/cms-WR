@@ -292,7 +292,7 @@ void hnu::studyElectronEff(edm::Event& iEvent,
         for (unsigned int i = 0; i < gsfCands.size(); i++)
         {
             pat::Electron gsfCand = gsfCands.at(i) ;
-            if ( hnu::getElectronEt(gsfCand, false) < cuts.minimum_mu2_pt ) break ; // Sorted collection, quit once below
+            if ( hnu::getElectronEt(gsfCand, true) < cuts.minimum_mu2_pt ) break ; // Sorted collection, quit once below
             bool jetProbeOverlap = false ;
             for (unsigned int j = 0; j < jetCands.size(); j++)
             {
@@ -369,7 +369,7 @@ void hnu::studyElectronSelectionEff(const std::vector< std::pair<pat::Electron, 
       // 		<< std::endl ; 
       
       if ( deltaR(heepElectron.eta(), heepElectron.phi(), theProbe.eta(), theProbe.phi()) < 0.02 &&
-	   fabs(hnu::getElectronEt(theProbe,false)-hnu::getElectronEt(heepElectron,false))/hnu::getElectronEt(theProbe,false) < 0.05 ) {
+	   fabs(hnu::getElectronEt(theProbe,true)-hnu::getElectronEt(heepElectron,true))/hnu::getElectronEt(theProbe,true) < 0.05 ) {
 	eIdx = k ; break ; 
       }
     }

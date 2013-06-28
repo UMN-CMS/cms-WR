@@ -13,7 +13,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNuFilter.cc,v 1.7 2012/12/21 22:21:17 pastika Exp $
+// $Id: HeavyNuFilter.cc,v 1.8 2013/02/06 00:39:26 bdahmes Exp $
 //
 //
 
@@ -312,9 +312,9 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(iM->pt() > cuts.minimum_mu2_pt && std::min(dRlj1, dRlj2) > cuts.minimum_muon_jet_dR) return true;
             }
 
-            if(hnuEvent.nElectrons >= 1 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt)
+            if(hnuEvent.nElectrons >= 1 &&  hnu::getElectronEt(hnuEvent.e1, true) > cuts.minimum_mu2_pt)
             {
-                if(hnuEvent.nElectrons >= 2 && hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
+                if(hnuEvent.nElectrons >= 2 && hnu::getElectronEt(hnuEvent.e2, true) > cuts.minimum_mu2_pt) return true;
 
                 edm::Handle<reco::SuperClusterCollection> ebSCCollection ;
                 iEvent.getByLabel("correctedHybridSuperClusters", ebSCCollection) ;
@@ -360,10 +360,10 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
 
         if(hnuEvent.nMuons >= 2     && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) return true;
-        if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) return true;
+        if(hnuEvent.nElectrons >= 2 &&  hnu::getElectronEt(hnuEvent.e1, true) > cuts.minimum_mu2_pt &&  hnu::getElectronEt(hnuEvent.e2, true) > cuts.minimum_mu2_pt) return true;
         if(hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1)
         {
-            if(hnu::getElectronEt(hnuEvent.e1, false)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
+            if(hnu::getElectronEt(hnuEvent.e1, true)  > cuts.minimum_mu2_pt && hnuEvent.mu1.pt() > cuts.minimum_mu2_pt) return true;
         }
         
         return false;
@@ -371,11 +371,11 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         bool twoMuons     = (hnuEvent.nMuons >= 2 &&
                              hnuEvent.mu1.pt() > cuts.minimum_mu1_pt && hnuEvent.mu2.pt() > cuts.minimum_mu2_pt) ; 
         bool twoElectrons = (hnuEvent.nElectrons >= 2 &&
-                             hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu1_pt && 
-			     hnu::getElectronEt(hnuEvent.e2, false) > cuts.minimum_mu2_pt) ; 
+                             hnu::getElectronEt(hnuEvent.e1, true) > cuts.minimum_mu1_pt && 
+			     hnu::getElectronEt(hnuEvent.e2, true) > cuts.minimum_mu2_pt) ; 
         bool topLike      = ( (hnuEvent.nMuons >= 1 && hnuEvent.nElectrons >= 1) &&
-                              ((hnuEvent.mu1.pt() > cuts.minimum_mu1_pt && hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu2_pt) || 
-                               (hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnu::getElectronEt(hnuEvent.e1, false) > cuts.minimum_mu1_pt)) ) ;  
+                              ((hnuEvent.mu1.pt() > cuts.minimum_mu1_pt && hnu::getElectronEt(hnuEvent.e1, true) > cuts.minimum_mu2_pt) || 
+                               (hnuEvent.mu1.pt() > cuts.minimum_mu2_pt && hnu::getElectronEt(hnuEvent.e1, true) > cuts.minimum_mu1_pt)) ) ;  
         bool twoJets      = (hnuEvent.nJets >= 2 && hnuEvent.j1.pt() > cuts.minimum_jet_pt && hnuEvent.j2.pt() > cuts.minimum_jet_pt) ; 
 
         if ( mode_ == 991 ) {
@@ -396,9 +396,9 @@ bool HeavyNuFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 lep2p4 = reco::Particle::PolarLorentzVector(hnuEvent.l2pt, hnuEvent.l2eta, hnuEvent.l2phi, 0);
             } else if ( minNmu_ == 1 && minNelec_ == 1 && topLike ) {
                 lep1p4 = reco::Particle::PolarLorentzVector(hnuEvent.l1pt, hnuEvent.l1eta, hnuEvent.l1phi,
-                                                            (hnuEvent.nLeptons >= 2 && hnuEvent.mu1.pt() > hnu::getElectronEt(hnuEvent.e1, false))?0.105:0.0);
+                                                            (hnuEvent.nLeptons >= 2 && hnuEvent.mu1.pt() > hnu::getElectronEt(hnuEvent.e1, true))?0.105:0.0);
                 lep2p4 = reco::Particle::PolarLorentzVector(hnuEvent.l2pt, hnuEvent.l2eta, hnuEvent.l2phi,
-                                                            (hnuEvent.nLeptons >= 2 && hnuEvent.mu1.pt() > hnu::getElectronEt(hnuEvent.e1, false))?0.0:0.105);
+                                                            (hnuEvent.nLeptons >= 2 && hnuEvent.mu1.pt() > hnu::getElectronEt(hnuEvent.e1, true))?0.0:0.105);
             }
             reco::Particle::LorentzVector vLL = lep1p4 + lep2p4 ;
             if ( vLL.M() > cuts.minimum_mumu_mass ) return true ; 

@@ -141,7 +141,7 @@ void HeavyNuTopHist::fill(HeavyNuEvent& hne)
     //electron
     if(hne.nLeptons >= 2)
     {
-        double e1pt  = hnu::getElectronEt(hne.e1, false);
+        double e1pt  = hnu::getElectronEt(hne.e1, true);
     
         e1trackIso->Fill(hne.e1.trackIso(), wgt);
         e1hcalIso ->Fill(hne.e1.hcalIso(), wgt);
@@ -154,7 +154,7 @@ void HeavyNuTopHist::fill(HeavyNuEvent& hne)
         e1ecalRelIso ->Fill(hne.e1.ecalIso() / e1pt, wgt);
         e1caloRelIso ->Fill(hne.e1.caloIso() / e1pt, wgt);
     
-        elecpt->Fill(hnu::getElectronEt(hne.e1, false));
+        elecpt->Fill(hnu::getElectronEt(hne.e1, true));
         eleceta->Fill(hnu::getElectronSCEta(hne.e1));
         elecphi->Fill(hnu::getElectronSCPhi(hne.e1));
         

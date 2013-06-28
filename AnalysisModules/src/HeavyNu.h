@@ -82,6 +82,8 @@ public:
       HeavyNuHistSet* LQ1Cuts;
       HeavyNuHistSet* LQ1Cuts2;
       HeavyNuHistSet* LQ1Cuts3;
+      HeavyNuHistSet* LQ1Cuts4;
+      HeavyNuHistSet* LQ1Cuts5;
       //HeavyNuHistSet* VertexCuts;
       HeavyNuHistSet* ZRegionCut;
       HeavyNuHistSet* Mu1HighPtCut;

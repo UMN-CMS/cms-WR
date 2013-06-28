@@ -16,7 +16,7 @@ isMCsignal=False
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
 # options 2012ABCre, 2012Dre
-runEra = "2012ABCre"
+runEra = "2012D"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -30,9 +30,9 @@ llHighMassSkim   = False
 topSkim          = False
 
 #--- Flags for nominal studies ---#
-runMuonAnalysis     = False
-runElectronAnalysis = True
-systematics    = False
+runMuonAnalysis     = True
+runElectronAnalysis = False
+systematics    = True
 tagandprobe    = False
 doTriggerStudy = False
 addSlopeTrees  = True
@@ -80,7 +80,8 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/2012A_Jan22_2013_sample.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
+                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/skim50_35/jul13rereco_run2012AB/muTopMultiSkim_plep50_35_pemu50_35_2012ABjul13_feb11_104.root')
                             #/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
@@ -104,7 +105,7 @@ if isData:
     elif runEra == "2012ABCre" or runEra == "2012Dre":
         from HeavyNu.AnalysisModules.goodLumiList_2012abcd_rereco_22jan2013_cfi import lumisToProcess
                             
-    #process.source.lumisToProcess = lumisToProcess
+    process.source.lumisToProcess = lumisToProcess
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -128,21 +129,26 @@ else:
         process.GlobalTag.globaltag = cms.string('GR_R_52_V9::All')
     elif cmsswRelease == 53:
         if runEra == "2012AB":
-            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
+#            process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
+            process.GlobalTag.globaltag = cms.string('FT_53_V6C_AN3::All')
         elif runEra == "2012Ar":
-            process.GlobalTag.globaltag = cms.string('FT_53_V6C_AN3::All') 
+#            process.GlobalTag.globaltag = cms.string('FT_53_V6C_AN3::All')
+            process.GlobalTag.globaltag = cms.string('FT_53_V6C_AN3::All')  
         elif runEra == "2012Cr":
-            process.GlobalTag.globaltag = cms.string('FT_53_V10_AN3::All')
+#            process.GlobalTag.globaltag = cms.string('FT_53_V10_AN3::All')
+            process.GlobalTag.globaltag = cms.string('FT53_V10A_AN3::All')
         elif runEra == "2012Cp":
-            process.GlobalTag.globaltag = cms.string('GR_P_V41_AN3::All')
+#            process.GlobalTag.globaltag = cms.string('GR_P_V41_AN3::All')
+            process.GlobalTag.globaltag = cms.string('GR_P_V42_AN3::All')
         elif runEra == "2012Ce":
+#            process.GlobalTag.globaltag = cms.string('FT_P_V42C_AN3::All')
             process.GlobalTag.globaltag = cms.string('FT_P_V42C_AN3::All')
         elif runEra == "2012D":
+#            process.GlobalTag.globaltag = cms.string('GR_P_V42_AN3::All')
             process.GlobalTag.globaltag = cms.string('GR_P_V42_AN3::All')
-        elif runEra == "2012ABCre":
-            process.GlobalTag.globaltag = cms.string('FT_R_53_V18::All')
-        elif runEra == "2012Dre":
-            process.GlobalTag.globaltag = cms.string('FT_R_53_V21::All')
+        elif runEra == "2012ABCre" or runEra == "2012Dre":
+#            process.GlobalTag.globaltag = cms.string('FT_R_53_V18::All')
+            process.GlobalTag.globaltag = cms.string('FT_53_V21_AN4::All')
     else:
         print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 
@@ -440,7 +446,7 @@ process.p = cms.Path(
 
 
 if isData:
-    # process.outpath  = cms.EndPath(process.out)
+    #process.outpath  = cms.EndPath(process.out)
     from PhysicsTools.PatAlgos.tools.coreTools import *
     if isPFJets:
         removeMCMatchingPF2PAT( process, '' )
@@ -571,10 +577,10 @@ process.hNuMu40       = process.hNu.clone()
 process.hNuMu40eta2p1 = process.hNu.clone()
 
 process.hNuE               = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'))
-process.hNuE.correctEscale = cms.bool(isMC)
+process.hNuE.correctEscale = cms.bool(False)
 
 process.hNuEMu               = process.hNu.clone(analysisMode = cms.untracked.string('TOP'))
-process.hNuEMu.correctEscale = cms.bool(isMC)
+process.hNuEMu.correctEscale = cms.bool(False)
 
 process.hTauX               = process.hNu.clone(analysisMode = cms.untracked.string('TAUX'))
 
@@ -607,7 +613,7 @@ process.hNuEjesHi  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), app
 process.hNuEjesLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJECUsign = cms.int32(-1) )
 process.hNuEjerHi  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
 process.hNuEjerLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
-process.hNuEescale = process.hNuE.clone( studyMuSelectEff = cms.bool(False), correctEscale = cms.bool(False) )
+process.hNuEescale = process.hNuE.clone( studyMuSelectEff = cms.bool(False), correctEscale = cms.bool(True) )
 process.hNuEidHi   = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
 process.hNuEidLo   = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
 process.hNuEidHi.applyMuIDEffcorr = cms.bool( isMC )
@@ -716,7 +722,7 @@ else:
     # if qcdStudy and not topStudy:
     #     process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pMu1QCD','pMu2QCD') )
     # if topStudy and not qcdStudy:
-    process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('pTop') )
+    process.out.SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') )
 
 if runMuonAnalysis:
     if isMC:

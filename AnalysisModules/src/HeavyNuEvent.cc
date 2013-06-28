@@ -115,8 +115,8 @@ void HeavyNuEvent::calculate(bool correctEscale)
             lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, 0);
             break;
         case TOP:
-            lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, (nLeptons >= 2 && mu1.pt() > hnu::getElectronEt(e1, false))?0.105:0.0);
-            lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, (nLeptons >= 2 && mu1.pt() > hnu::getElectronEt(e1, false))?0.0:0.105);
+            lep1p4 = reco::Particle::PolarLorentzVector(l1pt, l1eta, l1phi, (nLeptons >= 2 && mu1.pt() > hnu::getElectronEt(e1, true))?0.105:0.0);
+            lep2p4 = reco::Particle::PolarLorentzVector(l2pt, l2eta, l2phi, (nLeptons >= 2 && mu1.pt() > hnu::getElectronEt(e1, true))?0.0:0.105);
             break;
         case HNUMU:
             lep1p4 = mu1.p4();
@@ -218,7 +218,10 @@ void HeavyNuEvent::calculate(bool correctEscale)
     double mLQL1J2 = (lep1p4 + j2p4).M();
     double mLQL2J1 = (lep2p4 + j1p4).M();
     double mLQL2J2 = (lep2p4 + j2p4).M();
-    mLQmin = std::min(std::min(mLQL1J1, mLQL1J2), std::min(mLQL2J1, mLQL2J2));
+    if(fabs(mLQL1J1 - mLQL2J2) < fabs(mLQL1J2 - mLQL2J1)) mLQmin = std::min(mLQL1J1, mLQL2J2);
+    else                                                  mLQmin = std::min(mLQL1J2, mLQL2J1);
+    
+    
 }
 
 void HeavyNuEvent::decayID(const reco::GenParticleCollection& gpp)
@@ -256,22 +259,22 @@ void HeavyNuEvent::regularize()
             if(nLeptons >= 1)
             {
                 l1 = new pat::GenericParticle(e1);
-                l1pt = hnu::getElectronEt(e1, false);
-                l1eta = hnu::getElectronSCEta(e1);
-                l1phi = hnu::getElectronSCPhi(e1);
+                l1pt = hnu::getElectronEt(e1, true);
+                l1eta = e1.eta();//hnu::getElectronSCEta(e1);
+                l1phi = e1.phi();//hnu::getElectronSCPhi(e1);
             }
             if(nLeptons >= 2)
             {
                 l2 = new pat::GenericParticle(e2);
-                l2pt = hnu::getElectronEt(e2, false);
-                l2eta = hnu::getElectronSCEta(e2);
-                l2phi = hnu::getElectronSCPhi(e2);
+                l2pt = hnu::getElectronEt(e2, true);
+                l2eta = e2.eta();//hnu::getElectronSCEta(e2);
+                l2phi = e2.phi();//hnu::getElectronSCPhi(e2);
             }
             break;
         case TOP:
             if(nLeptons >= 2)
             {
-                if(mu1.pt() > hnu::getElectronEt(e1, false))
+                if(mu1.pt() > hnu::getElectronEt(e1, true))
                 {
                     l1 = new pat::GenericParticle(mu1);
                     l1pt = mu1.pt();
@@ -279,9 +282,9 @@ void HeavyNuEvent::regularize()
                     l1phi = mu1.phi();
 
                     l2 = new pat::GenericParticle(e1);
-                    l2pt = hnu::getElectronEt(e1, false);
-                    l2eta = hnu::getElectronSCEta(e1);
-                    l2phi = hnu::getElectronSCPhi(e1);
+                    l2pt = hnu::getElectronEt(e1, true);
+                    l2eta = e1.eta();//hnu::getElectronSCEta(e1);
+                    l2phi = e1.phi();//hnu::getElectronSCPhi(e1);
                 }
                 else
                 {
@@ -291,9 +294,9 @@ void HeavyNuEvent::regularize()
                     l2phi = mu1.phi();
 
                     l1 = new pat::GenericParticle(e1);
-                    l1pt = hnu::getElectronEt(e1, false);
-                    l1eta = hnu::getElectronSCEta(e1);
-                    l1phi = hnu::getElectronSCPhi(e1);
+                    l1pt = hnu::getElectronEt(e1, true);
+                    l1eta = e1.eta();//hnu::getElectronSCEta(e1);
+                    l1phi = e1.phi();//hnu::getElectronSCPhi(e1);
                 }
             }
             break;
