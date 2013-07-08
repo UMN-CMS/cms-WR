@@ -254,7 +254,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
             if(!(tmp_mWR % MWR_STEP))
             {
                 ps[std::make_pair(tmp_mWR, tmp_mNu)] = tmp_cs * 1000000000.0;  //think about the units!
-                //std::cout << tmp_mWR << "\t" << tmp_mNu << std::endl;
+                std::cout << tmp_mWR << "\t" << tmp_mNu << "\t" << ps[std::make_pair(tmp_mWR, tmp_mNu)] << std::endl;
             }
         }
     }
@@ -303,6 +303,8 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
         {
             case 0:
             case 1:
+                jscale = 1.0;
+                break;
             case 2:
                 jscale = 1.0;
                 break;
@@ -427,7 +429,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
 
         sprintf(str1, "csUL%i", iwr);
 
-        TCanvas* csUL = new TCanvas(str1, "c1", 600, 600);
+        TCanvas* csUL = new TCanvas(str1, "c1", 750, 750);
         setTDRStyle();
         fixOverlay();
         csUL->SetLeftMargin(0.19);
@@ -499,9 +501,9 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
         switch(mode)
         {
             case 0:
-                mark2 = new TLatex(0.70, 0.95, "19.6 fb^{-1} at 8 TeV");
-                break;
             case 1:
+            case 2:
+            case 3:
                 mark2 = new TLatex(0.70, 0.95, "19.6 fb^{-1} at 8 TeV");
                 break;
         }
@@ -870,7 +872,8 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
             break;
         case 2:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{e,#mu,#tau}} > M_{W_{R}}");
-            mark->DrawLatex(0.71, 0.96, "3.6 fb^{-1} at 8 TeV");
+            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.6 fb^{-1}");
+            //mark->DrawLatex(0.71, 0.96, "3.6 fb^{-1} at 8 TeV");
             break;
         case 3:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");

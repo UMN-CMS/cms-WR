@@ -6,6 +6,8 @@
 #include "TLegend.h"
 #include "TLatex.h"
 
+#include <iostream>
+
 double accRatio(int mwr) {
   return 1.0;
   // (from the acceptance db) for generated versus MN=MW/2
@@ -122,9 +124,9 @@ void smoothSG(float pts[], int n, int mode=4) {
 #include "tdrstyle.C"
 
 void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double lumi=12.0) {
-  float mw[100], mn[100], mwt[100];
-  float obs[100], exp[100], expm2s[100],expm1s[100],expp1s[100],expp2s[100],xsec[100];
-  float obs_ns[100],exp_ns[100];
+  float mw[1000], mn[1000], mwt[1000];
+  float obs[1000], exp[1000], expm2s[1000],expm1s[1000],expp1s[1000],expp2s[1000],xsec[1000];
+  float obs_ns[1000],exp_ns[1000];
   int n=0,nx=0;
   char buffer[1024];
   //  double pbr=1e3; // pb ratio
@@ -151,7 +153,6 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
 
   FILE* f1=fopen(fname,"rt");
   int dummyi;
-
   
   while (!feof(f1)) {
     buffer[0]=0;
@@ -179,8 +180,7 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   }
   fclose(f1);
 
-
-  FILE* fx=fopen("Limits/plot/cs.txt","rt");
+  FILE* fx=fopen("cs.txt","rt");
   float rawx, kf,xmw,xmn;
   int ecmx;
   while (!feof(fx)) {
@@ -205,7 +205,6 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
     }
   }
   fclose(fx);
-
 
   if (which==4) {
 
@@ -260,14 +259,14 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   dummy->GetXaxis()->SetTitle("M_{W_{R}} [GeV]");
   
   if (which==0 || which==1) {
-    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow #mu#mu jj) [fb]");
+    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mujj) [fb]");
   } else if (which==2) {
-    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow ee jj) [fb]");
+    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow eejj) [fb]");
   } else if (which==3) {
-    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow (ee+#mu#mu+#tau#tau) jj) [fb]");
+    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow (ee+#mu#mu+#tau#tau)jj) [fb]");
     dummy->GetYaxis()->SetTitleSize(0.055);
   } else if (which==4) {
-    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R})#times BR(W_{R}#rightarrow #mu#mu jj)/#sigma_{g_{R}=g_{L}}");
+    dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mujj)/#sigma_{g_{R}=g_{L}}");
   }
   dummy->GetYaxis()->SetTitleOffset(1.1);
   dummy->Draw("HIST");
@@ -283,11 +282,12 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   } else if (which==2) {
     tl=new TLegend(0.50,0.93,0.95,0.60,"CL_{S} Method          M_{N_{e}}=M_{W_{R}}/2");
   } else if (which==4) {
-    tl=new TLegend(0.16,0.93,0.90,0.75,"CL_{S} Method          M_{N_{#mu}}=M_{W_{R}}/2");
+    tl=new TLegend(0.16,0.90,0.90,0.72,"CL_{S} Method          M_{N_{#mu}}=M_{W_{R}}/2");
     tl->SetNColumns(2);
   }
   tl->SetTextFont(42);
   tl->SetFillStyle(0);
+  tl->SetBorderSize(0);
 
 
   if ((smooth/100)%10) {
@@ -373,11 +373,11 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
    text->SetTextSize(0.05);
    //   text->Draw();
 
-   text = new TLatex(0.2,0.2,"M_{N_{#mu}}= M_{W_{R}}/2");
-   text->SetNDC();
-   text->SetTextFont(42);
-   text->SetTextSize(0.05);
-   text->Draw();
+   //text = new TLatex(0.2,0.2,"M_{N_{#mu}}= M_{W_{R}}/2");
+   //text->SetNDC();
+   //text->SetTextFont(42);
+   //text->SetTextSize(0.05);
+   //text->Draw();
 
    /*
    TDatime now;
@@ -402,25 +402,25 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
 
    
    if (which==4) {
-     TLatex *   texa = new TLatex(0.152,0.972,"#int");
-     texa->SetTextFont(42);
-     texa->SetNDC();
-     texa->SetTextSize(0.017);
-     texa->SetLineWidth(2);
-     texa->Draw();
-     sprintf(buffer,"L dt = %.1f fb^{-1} at #sqrt{s}=%d TeV +",lumi,ecm);
-     TLatex *   tex = new TLatex(0.162,0.970,buffer);
+     //TLatex *   texa = new TLatex(0.152,0.972,"#int");
+     //texa->SetTextFont(42);
+     //texa->SetNDC();
+     //texa->SetTextSize(0.017);
+     //texa->SetLineWidth(2);
+     //texa->Draw();
+     sprintf(buffer,"CMS Preliminary %.1f fb^{-1} at #sqrt{s}=%d TeV + %.1f fb^{-1} at #sqrt{s}=%d TeV",lumi,ecm,5.0,7);
+     TLatex *   tex = new TLatex(0.150,0.950,buffer);
      tex->SetNDC();
-     tex->SetTextSize(0.026);
+     tex->SetTextSize(0.032);
      tex->SetLineWidth(2);
      tex->Draw();
 
-     sprintf(buffer,"%.1f fb^{-1} at #sqrt{s}=%d TeV",5.0,7);
-     tex = new TLatex(0.47,0.970,buffer);
-     tex->SetNDC();
-     tex->SetTextSize(0.026);
-     tex->SetLineWidth(2);
-     tex->Draw();
+     //sprintf(buffer,"%.1f fb^{-1} at #sqrt{s}=%d TeV",5.0,7);
+     //tex = new TLatex(0.47,0.970,buffer);
+     //tex->SetNDC();
+     //tex->SetTextSize(0.026);
+     //tex->SetLineWidth(2);
+     //tex->Draw();
    } else {
      /*
      TLatex *   texa = new TLatex(0.152,0.972,"#int");
@@ -465,7 +465,7 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   c1->Print(feps);
   c1->Print(fpng);
   char cmd[100];
-  sprintf(cmd,"eps2pdf %s",feps);
+  sprintf(cmd,"epstopdf %s",feps);
   system(cmd);
 
   if (asUsed!=0) {

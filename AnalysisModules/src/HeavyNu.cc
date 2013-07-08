@@ -16,7 +16,7 @@
 //
 // Original Author:  Jeremy M Mans
 //         Created:  Mon May 31 07:00:26 CDT 2010
-// $Id: HeavyNu.cc,v 1.125 2013/05/17 22:17:28 pastika Exp $
+// $Id: HeavyNu.cc,v 1.126 2013/06/28 23:59:50 pastika Exp $
 //
 //
 
@@ -1727,17 +1727,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                     double st = hnuLQ.l1pt + hnuLQ.l2pt + hnuLQ.j1.pt() + hnuLQ.j2.pt();
 
-                    // Skim for electron bump events
-                    //if(analysisMode_ == HeavyNuEvent::HNUE)
-                    //{
-                        //double pL1 = hnuLQ.l1pt * cosh(hnuLQ.l1eta);
-                        //double pL2 = hnuLQ.l2pt * cosh(hnuLQ.l2eta);
-                        //double pLmax = std::max(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
-                        //double pLmin = std::min(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
-                        //int sDID1 = hnuLQ.e1.superCluster()->seed()->seed();
-                        //int sDID2 = hnuLQ.e2.superCluster()->seed()->seed();
-                        //std::cout << "lqskim: " << iEvent.id() << "\t" << hnuLQ.mWR << "\t" << st << "\t" << hnuLQ.mLQmin << "\t" << hnuLQ.mLL << "\t" << hnuLQ.l1pt << "\t" << hnuLQ.l2pt << "\t" << hnuLQ.l1eta << "\t" << hnuLQ.l2eta << "\t" << hnuLQ.l1phi << "\t" << hnuLQ.l2phi << "\t" << hnuLQ.j1.pt() << "\t" << hnuLQ.j2.pt() << "\t" << hnuLQ.j1.eta() << "\t" << hnuLQ.j2.eta() << "\t" << hnuLQ.j1.phi() << "\t" << hnuLQ.j2.phi() << std::endl;
-                    //}
+                    
                     if(hnuLQ.mLL > 50 && (st > 300))
                     {
                         hists.LQ1Cuts->fill(hnuLQ);
@@ -1755,6 +1745,17 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                                 if(hnuLQ.mLQmin > 360)
                                 {
                                     hists.LQ1Cuts5->fill(hnuLQ);
+                                    // Skim for electron bump events
+                                    if(analysisMode_ == HeavyNuEvent::HNUE)
+                                    {
+                                        double pL1 = hnuLQ.l1pt * cosh(hnuLQ.l1eta);
+                                        double pL2 = hnuLQ.l2pt * cosh(hnuLQ.l2eta);
+                                        double pLmax = std::max(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
+                                        double pLmin = std::min(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
+                                        int sDID1 = hnuLQ.e1.superCluster()->seed()->seed();
+                                        int sDID2 = hnuLQ.e2.superCluster()->seed()->seed();
+                                        std::cout << "lqskim: " << iEvent.id() << "\t" << hnuLQ.mWR << "\t" << st << "\t" << hnuLQ.mLQmin << "\t" << hnuLQ.mLL << "\t" << hnuLQ.l1pt << "\t" << hnuLQ.l2pt << "\t" << hnuLQ.l1eta << "\t" << hnuLQ.l2eta << "\t" << hnuLQ.l1phi << "\t" << hnuLQ.l2phi << "\t" << hnuLQ.j1.pt() << "\t" << hnuLQ.j2.pt() << "\t" << hnuLQ.j1.eta() << "\t" << hnuLQ.j2.eta() << "\t" << hnuLQ.j1.phi() << "\t" << hnuLQ.j2.phi() << std::endl;
+                                    }
                                 }
                             }
                         }
@@ -1780,7 +1781,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //    //std::cout << "wrskim: " << iEvent.id() << "\t" << hnuEvent.mWR << "\t" << st << "\t" << hnuEvent.mLQmin << "\t" << hnuEvent.mLL << "\t" << hnuEvent.l1pt << "\t" << hnuEvent.l2pt << "\t" << hnuEvent.l1eta << "\t" << hnuEvent.l2eta  << "\t" << hnuEvent.l1phi << "\t" << hnuEvent.l2phi  << "\t" << hnuEvent.j1.pt() << "\t" << hnuEvent.j2.pt() << "\t" << hnuEvent.j1.eta() << "\t" << hnuEvent.j2.eta() << "\t" << hnuEvent.j1.phi() << "\t" << hnuEvent.j2.phi() << "\t" << nE << "\t" << nM << std::endl;
     //    //    if(pLmin > 700 )             std::cout << "pL2skim:" << iEvent.run() << ":" << iEvent.luminosityBlock() << ":" << iEvent.id() << "\t" << hnuEvent.mWR << "\t" << pL1 << "\t" << pL2 << "\t" << sDID1 << "\t" << sDID2 << std::endl;
     //    //    if(hnuEvent.mWR > 950 && hnuEvent.mWR < 1200 && hnuEvent.mLL > 500) std::cout << "1TeVBump:" << iEvent.run() << ":" << iEvent.luminosityBlock() << ":" << iEvent.id() << "\t" << hnuEvent.mWR << "\t" << pL1 << "\t" << pL2 << "\t" << sDID1 << "\t" << sDID2 << std::endl;
-//
+    //    
     //    std::cout << iEvent.id() << std::endl;
     //    for(unsigned ihit = 0; ihit < ebDigis->size (); ++ihit)
     //    {
@@ -1790,14 +1791,24 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //        {
     //            std::cout << "pt: " << hnuEvent.l1pt << ", eta: " << hnuEvent.l1eta << ", phi: " << hnuEvent.l1phi << std::endl;
     //            std::cout << "electron E: " << hnuEvent.e1.caloEnergy() << ", seed E: " << hnuEvent.e1.superCluster()->seed()->energy() << std::endl;
+    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e1.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e1.superCluster()->seed()->hitsAndFractions().end(); ++i)
+    //            {
+    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = ebRecHits->find(i->first);
+    //                if(rh != ebRecHits->end()) std::cout << *rh << std::endl;
+    //            }
     //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = ebRecHits->find(sDID1);
-    //            if(erh != ebRecHits->end()) std::cout << *erh << std::endl;
+    //            if(erh != ebRecHits->end()) std::cout << "\"SEED\"\n" << *erh << std::endl;
     //            std::cout << frame << std::endl;
     //        }
     //        if(did == sDID2)
     //        {
     //            std::cout << "pt: " << hnuEvent.l2pt << ", eta: " << hnuEvent.l2eta << ", phi: " << hnuEvent.l2phi << std::endl;
     //            std::cout << "electron E: " << hnuEvent.e2.caloEnergy() << ", seed E: " << hnuEvent.e2.superCluster()->seed()->energy() << std::endl;
+    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e2.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e2.superCluster()->seed()->hitsAndFractions().end(); ++i)
+    //            {
+    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = ebRecHits->find(i->first);
+    //                if(rh != ebRecHits->end()) std::cout << *rh << std::endl;
+    //            }
     //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = ebRecHits->find(sDID2);
     //            if(erh != ebRecHits->end()) std::cout << *erh << std::endl;
     //            std::cout << frame << std::endl;
@@ -1811,6 +1822,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //        {
     //            std::cout << "pt: " << hnuEvent.l1pt << ", eta: " << hnuEvent.l1eta << ", phi: " << hnuEvent.l1phi << std::endl;
     //            std::cout << "electron E: " << hnuEvent.e1.caloEnergy() << ", seed E: " << hnuEvent.e1.superCluster()->seed()->energy() << std::endl;
+    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e1.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e1.superCluster()->seed()->hitsAndFractions().end(); ++i)
+    //            {
+    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = eeRecHits->find(i->first);
+    //                if(rh != eeRecHits->end()) std::cout << *rh << std::endl;
+    //            }
     //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = eeRecHits->find(sDID1);
     //            if(erh != eeRecHits->end()) std::cout << *erh << std::endl;
     //            std::cout << frame << std::endl;
@@ -1819,6 +1835,11 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //        {
     //            std::cout << "pt: " << hnuEvent.l2pt << ", eta: " << hnuEvent.l2eta << ", phi: " << hnuEvent.l2phi << std::endl;
     //            std::cout << "electron E: " << hnuEvent.e2.caloEnergy() << ", seed E: " << hnuEvent.e2.superCluster()->seed()->energy() << std::endl;
+    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e2.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e2.superCluster()->seed()->hitsAndFractions().end(); ++i)
+    //            {
+    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = eeRecHits->find(i->first);
+    //                if(rh != eeRecHits->end()) std::cout << *rh << std::endl;
+    //            }
     //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = eeRecHits->find(sDID2);
     //            if(erh != eeRecHits->end()) std::cout << *erh << std::endl;
     //            std::cout << frame << std::endl;
@@ -1911,17 +1932,21 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hnuTree_->event_.n_pileup = hnuEvent.n_pue;
         hnuTree_->event_.n_primaryVertex = hnuEvent.n_primary_vertex;
         hnuTree_->event_.cutlevel = 1;
-        int sDID1 = 0, sDID2 = 0;
-        if(hnuEvent.nElectrons > 0) sDID1 = hnuEvent.e1.superCluster()->seed()->seed();
-        if(hnuEvent.nElectrons > 1) sDID2 = hnuEvent.e2.superCluster()->seed()->seed();
-        edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh1 = ebRecHits->find(sDID1);
-        edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh2 = ebRecHits->find(sDID2);
         if ( analysisMode_ == HeavyNuEvent::HNUE )
         {
+            int sDID1 = 0, sDID2 = 0;
+            if(hnuEvent.nElectrons > 0) sDID1 = hnuEvent.e1.superCluster()->seed()->seed();
+            if(hnuEvent.nElectrons > 1) sDID2 = hnuEvent.e2.superCluster()->seed()->seed();
+            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh1;
+            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh2;
+            if(hnuEvent.e1.isEB()) erh1 = ebRecHits->find(sDID1);
+            else                   erh1 = eeRecHits->find(sDID1);
+            if(hnuEvent.e2.isEB()) erh2 = ebRecHits->find(sDID2);
+            else                   erh2 = eeRecHits->find(sDID2);
             hnuTree_->event_.rhE1 = erh1->energy();
             hnuTree_->event_.rhE2 = erh2->energy();
             hnuTree_->event_.sE1 = hnuEvent.e1.superCluster()->seed()->energy();
-            hnuTree_->event_.sE2 = hnuEvent.e1.superCluster()->seed()->energy();
+            hnuTree_->event_.sE2 = hnuEvent.e2.superCluster()->seed()->energy();
         }
         else
         {
