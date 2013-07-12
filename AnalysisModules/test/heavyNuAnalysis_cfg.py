@@ -4,19 +4,19 @@ from operator import isSequenceType
 import os, random
 
 #--- Data/MC switch ---#
-isMC=True
+isMC=False
 isData=not isMC
 
 #--- Specify CMSSW release (53, 52, 44, 42, 37) ---#
 cmsswRelease = 53
 
 #--- Signal MC flags ---#
-isMCsignal=True
+isMCsignal=False
 
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
 # options 2012ABCre, 2012Dre
-runEra = "2012D"
+runEra = "2012Cr"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -30,7 +30,7 @@ llHighMassSkim   = False
 topSkim          = False
 
 #--- Flags for nominal studies ---#
-runMuonAnalysis     = True
+runMuonAnalysis     = False
 runElectronAnalysis = True
 systematics    = True
 tagandprobe    = False
@@ -80,7 +80,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/hdfs/cms/skim/elec/hNu_2012/skim50_35/prompt_run2012D/electronMultiSkim_plep50_35_2012Dprompt_mar01_006.root')
+                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/LQ650/2012Cr.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/skim50_35/jul13rereco_run2012AB/muTopMultiSkim_plep50_35_pemu50_35_2012ABjul13_feb11_104.root')
@@ -429,10 +429,14 @@ process.prefilter = cms.EDFilter("HeavyNuPreFilter",
 if isMC:
    # Gen Level Energy balance filter to fix Pythia6 lhe interface bug
    process.load("HeavyNu.AnalysisModules.hnuTotalKinematicsFilter_cfi")
-   process.AnalysisIntroSequence = cms.Sequence(
-#       process.hnuTotalKinematicsFilter * process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
-       process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation * process.prefilter
-   )
+   if isMCsignal:
+      process.AnalysisIntroSequence = cms.Sequence(
+         process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation
+         )
+   else:
+      process.AnalysisIntroSequence = cms.Sequence(
+          process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation * process.prefilter
+      )
 else:
    process.AnalysisIntroSequence = cms.Sequence(
        process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation * process.prefilter

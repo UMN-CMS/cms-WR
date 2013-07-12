@@ -10,6 +10,8 @@ class TFile;
 class SystematicsDB;
 class RateDB;
 
+const double BINWIDTH = 100;
+
 #include <vector>
 #include <map>
 #include <string>

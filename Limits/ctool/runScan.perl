@@ -9,7 +9,7 @@ $jobBase="default";
 $special="";
 $systmode=0;
 $xsec=0.01;
-$minmwAllowed=700;
+$minmwAllowed=1000;
 $maxmwAllowed=4000;
 $max_mllqq=1600;
 $year=2012;
@@ -42,8 +42,10 @@ if ($jobBase ne "default") {
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 $lumi2011=4990;
 
-$datael2012="/local/cms/user/dahmes/forJoe/V03-00-11/run2012ABCD-electron-V03-00-11.root";
-$datamu2012="/local/cms/user/dahmes/forJoe/V03-00-11/run2012ABCD-muon-V03-00-11.root";
+#$datael2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_7/run2012ABCD-electron.root";
+#$datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_7/run2012ABCD-muon.root";
+$datael2012="run2012ABCD-electron.root";
+$datamu2012="run2012ABCD-muon.root";
 #$datamu2012="/home/jmmans/data/heavyun_2012Data_2012ABC_mu.root";
 $lumi2012=19564;
 
@@ -63,7 +65,7 @@ if ($channel eq "e-mu") {
     
     $data_both=$data2011.",".$datamu2012;
     $systdb="systematicsdb.csv,systematicsdb_mu_2012.csv";
-    $lumi2012=3600;
+    #$lumi2012=3600;
     $xsec=$xsec;
 } elsif ($channel=~/mu/) {
     $ratesdb="ratesdb.csv";
@@ -227,6 +229,17 @@ sub xsecratio($) {
 	     2.923077,
 	     3.025788,
 	     3.269565,
+	     3.455446,
+	     #After this point I made the numbers up
+	     3.455446,
+	     3.455446,
+	     3.455446,
+	     3.455446,
+	     3.455446,
+	     3.455446,
+	     3.455446,
+	     3.455446,
+	     3.455446,
 	     3.455446);
     
     my($amw)=@_;

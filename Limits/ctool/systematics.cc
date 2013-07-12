@@ -142,6 +142,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     systContents.push_back("EID");
     systContents.push_back("PU");
     systContents.push_back("TRIG");
+    //systContents.push_back("MODEL");
     defineCommonSyst("RECOID",systContents);
     
     systContents.clear();
@@ -156,6 +157,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
   } else { 
 
     systContents.push_back("NORM");
+    systContents.push_back("SHAPE");
     
     defineSingleChannelSyst("TTONLY","TTJETS",systContents);
     defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
@@ -179,6 +181,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     systContents.push_back("REN");
     systContents.push_back("FACT");
     systContents.push_back("ISRFSR");
+    //systContents.push_back("MODEL");
     defineCommonSyst("PDFSCALE",systContents);
 
     setSimpleSystematic(GAMMASTATS);    

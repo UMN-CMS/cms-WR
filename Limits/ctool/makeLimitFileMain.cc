@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "TFile.h"
 #include <unistd.h>
+#include <iostream>
 
 
 int main(int argc, char* argv[]) {
@@ -15,16 +16,26 @@ int main(int argc, char* argv[]) {
   char temp1[1000],temp2[1000];
   std::string istring;
   bool interpolate=false;
-
+  
   for (int i=0; i<20; i++) {
-    pt.bin_upper_edge[i]=(i+1)*200+600;
-    pt1.bin_upper_edge[i]=(i+1)*200+600;
-    pt2.bin_upper_edge[i]=(i+1)*200+600;
+    pt.bin_upper_edge[i]=(i+1)*BINWIDTH+600;
+    pt1.bin_upper_edge[i]=(i+1)*BINWIDTH+600;
+    pt2.bin_upper_edge[i]=(i+1)*BINWIDTH+600;
   }
 
   // final 2012 binning
-  pt.bin_upper_edge[6]=2200;
-  pt.bin_upper_edge[7]=10000;
+  //pt.bin_upper_edge[6]=2200;
+  //pt.bin_upper_edge[7]=10000;
+  //pt1.bin_upper_edge[6]=2200;
+  //pt1.bin_upper_edge[7]=10000;
+  //pt2.bin_upper_edge[6]=2200;
+  //pt2.bin_upper_edge[7]=10000;
+  pt.bin_upper_edge[12]=2200;
+  pt.bin_upper_edge[13]=10000;
+  pt1.bin_upper_edge[12]=2200;
+  pt1.bin_upper_edge[13]=10000;
+  pt2.bin_upper_edge[12]=2200;
+  pt2.bin_upper_edge[13]=10000;
 
   pt.mode=LimitPoint::lp_Muon1ECM; // historical default
 

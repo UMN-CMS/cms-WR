@@ -149,12 +149,21 @@ void formatLimitFile(const std::vector<PerBinInfo>& pbi, const LimitPoint& mp, c
       
 }
 
+//std::vector<double> extractBins(TFile* f, const std::string& histname) {
+//  std::vector<double> retval(17,0);
+//  TH1* h=(TH1*)(f->Get(histname.c_str()));
+//  if (h!=0) {
+//    for (int jbin=0; jbin<17; jbin++) 
+//      retval[jbin]=h->Integral(16+5*jbin,16+4+5*jbin);
+//  }
+//  return retval;
+//}
 std::vector<double> extractBins(TFile* f, const std::string& histname) {
-  std::vector<double> retval(17,0);
+  std::vector<double> retval;
   TH1* h=(TH1*)(f->Get(histname.c_str()));
   if (h!=0) {
-    for (int jbin=0; jbin<17; jbin++) 
-      retval[jbin]=h->Integral(16+5*jbin,16+4+5*jbin);
+    for (double jbin=600.1; jbin<4000; jbin+=BINWIDTH) 
+      retval.push_back(h->Integral(h->FindBin(jbin), h->FindBin(jbin+BINWIDTH-0.2)));
   }
   return retval;
 }
@@ -216,7 +225,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
   int ihigh=16;
 
 
-  if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
+  //if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
 
   char process[200];
   sprintf(process,snames[0],mp.mwr,mp.mnr);
@@ -247,10 +256,11 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
       }
     
     
-    for (int jbin=0; jbin<16; jbin++) {
-      double bcenter=jbin*200+700;
-      if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
-      abin.data+=vdata[jbin];
+    for(int jbin=0; jbin < (int)vdata.size(); jbin++) {
+      double bcenter=(jbin + 0.5) * BINWIDTH + 600;
+      //if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
+      if (bcenter>abin.lowEdge && bcenter<abin.highEdge)
+        abin.data+=(double)vdata[jbin];
     }
       
     // Systematics
