@@ -101,12 +101,17 @@ close(PLIST);
 open(CONDOR,">for_condor.txt");
 print(CONDOR "Executable = ${exe}\n");
 print(CONDOR "Universe = vanilla\n");
-print(CONDOR "Requirements = Memory > 400  && (Arch==\"X86_64\") ");
+#tell condor that this job will use 12 cores and 
+#an approperiately large chunk of memory
+print(CONDOR "request_memory = 12288\n");
+print(CONDOR "request_cpus = 12\n");
 
+
+print(CONDOR "Requirements = (Arch==\"X86_64\") \n");
 #print(CONDOR "&& (SlotId>=5 && SlotId<=10)");
 #print(CONDOR "&& (SlotId==6 || SlotId==11)");
-print(CONDOR "&& (SlotId==6)");
-print(CONDOR "\n");
+#print(CONDOR "&& (SlotId==6)");
+#print(CONDOR "\n");
 print(CONDOR  "+CondorGroup=\"cmsfarm\"\n");
 
 $mwmin=10000;
