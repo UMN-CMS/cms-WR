@@ -1737,7 +1737,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                         }
 
                         if(hnuLQ.mLL > 155)
-                        {
+                        {       
                             hists.LQ1Cuts3->fill(hnuLQ);
                             if(st > 850)
                             {
@@ -1746,16 +1746,16 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                                 {
                                     hists.LQ1Cuts5->fill(hnuLQ);
                                     // Skim for electron bump events
-                                    if(analysisMode_ == HeavyNuEvent::HNUE)
-                                    {
-                                        double pL1 = hnuLQ.l1pt * cosh(hnuLQ.l1eta);
-                                        double pL2 = hnuLQ.l2pt * cosh(hnuLQ.l2eta);
-                                        double pLmax = std::max(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
-                                        double pLmin = std::min(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
-                                        int sDID1 = hnuLQ.e1.superCluster()->seed()->seed();
-                                        int sDID2 = hnuLQ.e2.superCluster()->seed()->seed();
-                                        std::cout << "lqskim: " << iEvent.id() << "\t" << hnuLQ.mWR << "\t" << st << "\t" << hnuLQ.mLQmin << "\t" << hnuLQ.mLL << "\t" << hnuLQ.l1pt << "\t" << hnuLQ.l2pt << "\t" << hnuLQ.l1eta << "\t" << hnuLQ.l2eta << "\t" << hnuLQ.l1phi << "\t" << hnuLQ.l2phi << "\t" << hnuLQ.j1.pt() << "\t" << hnuLQ.j2.pt() << "\t" << hnuLQ.j1.eta() << "\t" << hnuLQ.j2.eta() << "\t" << hnuLQ.j1.phi() << "\t" << hnuLQ.j2.phi() << std::endl;
-                                    }
+                                    //if(analysisMode_ == HeavyNuEvent::HNUE)
+                                    //{
+                                    //    double pL1 = hnuLQ.l1pt * cosh(hnuLQ.l1eta);
+                                    //    double pL2 = hnuLQ.l2pt * cosh(hnuLQ.l2eta);
+                                    //    double pLmax = std::max(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
+                                    //    double pLmin = std::min(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
+                                    //    int sDID1 = hnuLQ.e1.superCluster()->seed()->seed();
+                                    //    int sDID2 = hnuLQ.e2.superCluster()->seed()->seed();
+                                    //    std::cout << "lqskim: " << iEvent.id() << "\t" << hnuLQ.mWR << "\t" << st << "\t" << hnuLQ.mLQmin << "\t" << hnuLQ.mLL << "\t" << hnuLQ.l1pt << "\t" << hnuLQ.l2pt << "\t" << hnuLQ.l1eta << "\t" << hnuLQ.l2eta << "\t" << hnuLQ.l1phi << "\t" << hnuLQ.l2phi << "\t" << hnuLQ.j1.pt() << "\t" << hnuLQ.j2.pt() << "\t" << hnuLQ.j1.eta() << "\t" << hnuLQ.j2.eta() << "\t" << hnuLQ.j1.phi() << "\t" << hnuLQ.j2.phi() << std::endl;
+                                    //}
                                 }
                             }
                         }
@@ -1955,6 +1955,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hnuTree_->event_.sE1 = 0.0;
             hnuTree_->event_.sE2 = 0.0;
         }
+        hnuTree_->event_.met = hnuEvent.met1.energy();
+        hnuTree_->event_.j1B = (int)hnuEvent.isBJet1;
+        hnuTree_->event_.j2B = (int)hnuEvent.isBJet2;
     }
 
     //--- Trigger code needs to be updated...placeholder for now ---//  is this still a palce holder? -Joe 9/24/12

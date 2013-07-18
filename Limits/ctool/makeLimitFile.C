@@ -279,7 +279,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 	
 	for (int j=1; j<=3; j++) {
 	  systLevel=syst.getSystematic(*isyst,snames[j],ibin);
-	  if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
+          if (systLevel<0.001 || fabs(systLevel-1)<0.0015) {
 	    pbs.bkgdN[j-1]+=0;
 	  } else {
 	    pbs.bkgdN[j-1]+=int(abin.bkgd[j-1]/systLevel+0.51);

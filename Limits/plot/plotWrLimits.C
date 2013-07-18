@@ -254,7 +254,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
             if(!(tmp_mWR % MWR_STEP))
             {
                 ps[std::make_pair(tmp_mWR, tmp_mNu)] = tmp_cs * 1000000000.0;  //think about the units!
-                std::cout << tmp_mWR << "\t" << tmp_mNu << "\t" << ps[std::make_pair(tmp_mWR, tmp_mNu)] << std::endl;
+                //std::cout << tmp_mWR << "\t" << tmp_mNu << "\t" << ps[std::make_pair(tmp_mWR, tmp_mNu)] << std::endl;
             }
         }
     }

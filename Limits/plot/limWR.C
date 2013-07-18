@@ -278,11 +278,14 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
     tl->SetHeader("CL_{S} Method    95% CL");
     //    tl->SetHeader("CL_{S} Method    95% CL     M_{N_{#mu}}= M_{W_{R}}/2");
   } else if (which==3) {
-    tl=new TLegend(0.50,0.93,0.95,0.62,"CL_{S} Method          M_{N}=M_{W_{R}}/2");
+    tl=new TLegend(0.55,0.55,0.99,0.90,"CL_{S} Method          M_{N}=M_{W_{R}}/2");
+    tl->SetTextFont(42);
   } else if (which==2) {
-    tl=new TLegend(0.50,0.93,0.95,0.60,"CL_{S} Method          M_{N_{e}}=M_{W_{R}}/2");
+    tl=new TLegend(0.55,0.55,0.99,0.90,"CL_{S} Method          M_{N_{e}}=M_{W_{R}}/2");
+    tl->SetTextFont(42);
   } else if (which==4) {
     tl=new TLegend(0.16,0.90,0.90,0.72,"CL_{S} Method          M_{N_{#mu}}=M_{W_{R}}/2");
+    tl->SetTextFont(42);
     tl->SetNColumns(2);
   }
   tl->SetTextFont(42);

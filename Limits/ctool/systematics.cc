@@ -42,9 +42,11 @@ void SystematicsDB::load(const std::string& systdb) {
     if (strchr(buffer,'#')!=0) *(strchr(buffer,'#'))=0;
     while (strchr(buffer,',')!=0) *(strchr(buffer,','))='\t';
 
-    int matched=sscanf(buffer,"%s %s %f %f %f %f %f %f %f %f %f %f %f",proc,syst,
+    int matched=sscanf(buffer,"%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",proc,syst,
 		       vals,vals+1,vals+2,vals+3,vals+4,
-		       vals+5,vals+6,vals+7,vals+8,vals+9,vals+10);
+		       vals+5,vals+6,vals+7,vals+8,vals+9,vals+10,
+                       vals+11,vals+12,vals+13,vals+14,vals+15,vals+16,
+                       vals+17,vals+18,vals+19);
     if (matched>=3) {
       std::string key=makeKey(proc,syst);
       DBitem item;
