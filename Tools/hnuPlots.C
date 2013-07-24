@@ -634,8 +634,8 @@ TH1* HnuPlots::histFromTuple(std::string label, std::string histpath, double thl
         //if(iT->first.rhE1 / iT->first.sE1 < 0.1) continue;
         //if(fabs(iT->first.l1eta) > 1.5) continue;
         
-        int nb = 0;
-        if(iT->first.j1B + iT->first.j2B < nb) continue;
+        int nbjet = 0;
+        if(iT->first.j1B + iT->first.j2B < nbjet) continue;
 
         if(histpath.compare("mWR") == 0)   hist->Fill(iT->first.mlljj, iT->first.weight);
         if(histpath.compare("mLL") == 0)   hist->Fill(iT->first.mll  , iT->first.weight);
