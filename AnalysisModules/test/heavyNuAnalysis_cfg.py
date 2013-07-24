@@ -4,7 +4,7 @@ from operator import isSequenceType
 import os, random
 
 #--- Data/MC switch ---#
-isMC=False
+isMC=True
 isData=not isMC
 
 #--- Specify CMSSW release (53, 52, 44, 42, 37) ---#
@@ -16,7 +16,7 @@ isMCsignal=False
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
 # options 2012ABCre, 2012Dre
-runEra = "2012Cr"
+runEra = "2012D"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -30,9 +30,9 @@ llHighMassSkim   = False
 topSkim          = False
 
 #--- Flags for nominal studies ---#
-runMuonAnalysis     = False
+runMuonAnalysis     = True
 runElectronAnalysis = True
-systematics    = True
+systematics    = False
 tagandprobe    = False
 doTriggerStudy = False
 addSlopeTrees  = True
@@ -80,7 +80,8 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/LQ650/2012Cr.root')
+                            fileNames=cms.untracked.vstring('file:/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
+                            #file:/data/whybee0a/user/dahmes/multiSkim/V03-00-07/prompt/run2012D/noDupes/mar25/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes_000.root
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
                             #file:/hdfs/cms/skim/mu/hNu_2012/skim50_35/jul13rereco_run2012AB/muTopMultiSkim_plep50_35_pemu50_35_2012ABjul13_feb11_104.root')
@@ -442,7 +443,10 @@ else:
        process.eventFilters * process.patDefaultSequence * process.patTrackSequence * process.kt6PFJetsForIsolation * process.prefilter
    )
 if isPFJets:
+    #--- PF MET ---#
+    process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
     process.AnalysisIntroSequence *= process.modifiedPF2PATSequence
+    process.AnalysisIntroSequence += process.producePFMETCorrections
 
 process.p = cms.Path(
     process.AnalysisIntroSequence
@@ -797,9 +801,9 @@ if qcdStudy:
         process.pE2QCD  = cms.Path( process.AnalysisIntroSequence + process.hNuE2QCD )
 
     if doDijet:
-        process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
+        #process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
 
-        process.pDijet = cms.Path( process.AnalysisIntroSequence + process.producePFMETCorrections + process.hNuQCD )
+        #process.pDijet = cms.Path( process.AnalysisIntroSequence + process.producePFMETCorrections + process.hNuQCD )
         if isData:
             process.pDijetMu40       = cms.Path( process.AnalysisIntroSequence + process.producePFMETCorrections + process.hNuQCDMu40 )
             process.pDijetMu40eta2p1 = cms.Path( process.AnalysisIntroSequence + process.producePFMETCorrections + process.hNuQCDMu40eta2p1 )

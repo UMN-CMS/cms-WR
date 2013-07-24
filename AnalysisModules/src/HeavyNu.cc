@@ -1958,6 +1958,9 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hnuTree_->event_.met = hnuEvent.met1.energy();
         hnuTree_->event_.j1B = (int)hnuEvent.isBJet1;
         hnuTree_->event_.j2B = (int)hnuEvent.isBJet2;
+        hnuTree_->event_.run   = iEvent.run();
+        hnuTree_->event_.ls    = iEvent.luminosityBlock();
+        hnuTree_->event_.event = iEvent.id().event();
     }
 
     //--- Trigger code needs to be updated...placeholder for now ---//  is this still a palce holder? -Joe 9/24/12

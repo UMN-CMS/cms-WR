@@ -21,6 +21,7 @@ public:
       Short_t flavor, l1id, l2id, cutlevel, n_pileup, n_primaryVertex;
       Float_t  rhE1, rhE2, sE1, sE2, met;
       Short_t j1B, j2B;
+      Int_t run, ls, event;
    } event_;
 
    HeavyNuTree(TDirectory& f, bool writable) : m_file(f)
@@ -30,7 +31,7 @@ public:
       {
          m_file.cd();
          m_tree = new TTree("HeavyNuTuple", "HeavyNuTuple");
-         branch_ = m_tree->Branch("slopefit", &event_, "mlljj/F:mll:weight:l1pt:l1eta:l1phi:l1jdR:l2pt:l2eta:l2phi:l2jdR:j1pt:j1eta:j1phi:j2pt:j2eta:j2phi:flavor/S:l1id:l2id:cutlevel:npu:npv:rhE1/F:rhE2:sE1:sE2:met:j1B/S:j2B");
+         branch_ = m_tree->Branch("slopefit", &event_, "mlljj/F:mll:weight:l1pt:l1eta:l1phi:l1jdR:l2pt:l2eta:l2phi:l2jdR:j1pt:j1eta:j1phi:j2pt:j2eta:j2phi:flavor/S:l1id:l2id:cutlevel:npu:npv:rhE1/F:rhE2:sE1:sE2:met:j1B/S:j2B:run/I:ls:event");
       }
       else
       {
