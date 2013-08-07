@@ -51,6 +51,7 @@ public:
       {
          return false;
       }
+      clear();
       m_tree->GetEntry(nevt);
       nevt++;
       return true;
@@ -58,8 +59,11 @@ public:
 
    void clear()
    {
-      event_.mlljj = event_.mll = event_.weight = 0.0;
-      event_.flavor = event_.cutlevel = event_.n_pileup = event_.n_primaryVertex = 0;
+      event_.mlljj = event_.mll = event_.weight = event_.l1pt = event_.l1eta = event_.l1phi = event_.l1jdR = event_.l2pt = event_.l2eta = event_.l2phi = event_.l2jdR = event_.j1pt = event_.j1eta = event_.j1phi = event_.j2pt = event_.j2eta = event_.j2phi = 0.0;
+      event_.flavor = event_.l1id = event_.l2id = event_.cutlevel = event_.n_pileup = event_.n_primaryVertex = 0;
+      event_.rhE1 = event_.rhE2 = event_.sE1 = event_.sE2 = event_.met = 0.0;
+      event_.j1B = event_.j2B = 0;
+      event_.run = event_.ls = event_.event = 0;
    }
 
    void fill()
