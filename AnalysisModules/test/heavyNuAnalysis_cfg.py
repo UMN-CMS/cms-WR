@@ -32,7 +32,7 @@ topSkim          = False
 #--- Flags for nominal studies ---#
 runMuonAnalysis     = True
 runElectronAnalysis = True
-systematics    = False
+systematics    = True
 tagandprobe    = False
 doTriggerStudy = False
 addSlopeTrees  = True
@@ -80,7 +80,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
+                            fileNames=cms.untracked.vstring('file:/data/whybee0a/user/dahmes/multiSkim/V03-00-07/prompt/run2012D/noDupes/mar25/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes_000.root')
                             #file:/data/whybee0a/user/dahmes/multiSkim/V03-00-07/prompt/run2012D/noDupes/mar25/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes_000.root
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
@@ -392,6 +392,9 @@ if llPrescaleSkim:
 if llHighMassSkim:
     process.skimFilterSequence += process.twoLeptonHighMassSkimFilter
 
+# lots of filters discussed here
+# https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters
+
 #--- Beam background removal ---#
 process.scrapingFilter      = cms.EDFilter("FilterOutScraping",
                                            applyfilter = cms.untracked.bool(True),
@@ -399,6 +402,7 @@ process.scrapingFilter      = cms.EDFilter("FilterOutScraping",
                                            numtrack = cms.untracked.uint32(10),
                                            thresh = cms.untracked.double(0.25)
                                            )
+
 #--- Primary vertex requirement ---#
 process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            vertexCollection = cms.InputTag('offlinePrimaryVertices'),
@@ -406,13 +410,47 @@ process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
                                            maxAbsZ = cms.double(24), 
                                            maxd0 = cms.double(2) 
                                            )
+
 #--- HB/HE event-level noise filter ---#
 process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi') 
 
 #--- ECAL laser noise filter ---#
 process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
 
-process.eventFilters = cms.Sequence( process.skimFilterSequence * process.scrapingFilter * process.primaryVertexFilter * process.HBHENoiseFilter * process.ecalLaserCorrFilter) 
+#--- CSC Beam Halo Filter ---#
+process.load('RecoMET.METAnalyzers.CSCHaloFilter_cfi')
+
+#--- ECAL dead cell filter ---#	
+process.load('RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi')
+## For AOD and RECO recommendation to use recovered rechits
+process.EcalDeadCellTriggerPrimitiveFilter.tpDigiCollection = cms.InputTag("ecalTPSkimNA")
+
+process.load('RecoMET.METFilters.EcalDeadCellBoundaryEnergyFilter_cfi')
+process.EcalDeadCellBoundaryEnergyFilter.taggingMode = cms.bool(False)
+process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyDeadCellsEB=cms.untracked.double(10)
+process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyDeadCellsEE=cms.untracked.double(10)
+process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyGapEB=cms.untracked.double(100)
+process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyGapEE=cms.untracked.double(100)
+process.EcalDeadCellBoundaryEnergyFilter.enableGap=cms.untracked.bool(False)
+process.EcalDeadCellBoundaryEnergyFilter.limitDeadCellToChannelStatusEB = cms.vint32(12,14)
+process.EcalDeadCellBoundaryEnergyFilter.limitDeadCellToChannelStatusEE = cms.vint32(12,14)
+
+#--- Tracking failure filter ---#
+process.goodVertices = cms.EDFilter(
+  "VertexSelector",
+  filter = cms.bool(False),
+  src = cms.InputTag("offlinePrimaryVertices"),
+  cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.rho < 2")
+)
+
+process.load('RecoMET.METFilters.trackingFailureFilter_cfi')
+
+#--- Bad EE Supercrystal filter ---#
+process.load('RecoMET.METFilters.eeBadScFilter_cfi')
+
+process.eventFilters = cms.Sequence( process.skimFilterSequence * process.scrapingFilter * process.primaryVertexFilter * process.HBHENoiseFilter * process.ecalLaserCorrFilter 
+                                     * process.CSCTightHaloFilter * process.EcalDeadCellTriggerPrimitiveFilter * process.goodVertices * process.trackingFailureFilter * process.eeBadScFilter)
+#                                     * process.EcalDeadCellTriggerPrimitiveFilter * process.trackingFailureFilter * process.eeBadScFilter)  
 
 #--- HCAL laser events filter ---#
 if isData:
