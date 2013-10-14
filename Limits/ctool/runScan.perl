@@ -42,10 +42,10 @@ if ($jobBase ne "default") {
 $data2011="/local/cms/user/dahmes/wr2011/data_run2011A_run2011B/data-run2011a-run2011b-dec23.root";
 $lumi2011=4990;
 
-#$datael2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_8/run2012ABCD-electron.root";
-#$datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_7/run2012ABCD-muon.root";
-$datael2012="run2012ABCD-electron.root";
-$datamu2012="run2012ABCD-muon.root";
+$datael2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData_2/Elec-Run2012ABCD-22Jan2013-v1.root";
+$datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData_2/Mu-Run2012ABCD-22Jan2013-v1.root";
+#$datael2012="run2012ABCD-electron.root";
+#$datamu2012="run2012ABCD-muon.root";
 #$datamu2012="/home/jmmans/data/heavyun_2012Data_2012ABC_mu.root";
 $lumi2012=19564;
 

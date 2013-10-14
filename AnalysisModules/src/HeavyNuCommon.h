@@ -80,6 +80,7 @@ namespace hnu
     bool passesHEEPv32      (const pat::Electron& e); 
 
     double getElectronEscale( double eta1, double eta2 = 999.0 ) ; 
+    double getElectronResolution(double eta1, double eta2, TRandom * tr);
 
     int  jetID             ( const pat::Jet& j );
 

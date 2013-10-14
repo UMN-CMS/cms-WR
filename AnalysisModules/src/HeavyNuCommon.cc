@@ -932,6 +932,29 @@ namespace hnu {
 
     return scaleCorrection ; 
   }
+  
+  double getElectronResolution(double eta1, double eta2, TRandom * tr) { 
+    
+    double scaleCorrection = 1.0; 
+    int nEB = 0; 
+    int nEE = 0; 
+
+    if ( fabs(eta1) < 1.442 ) nEB++; 
+    if ( fabs(eta2) < 1.442 ) nEB++; 
+    if ( fabs(eta1) < 2.5 && fabs(eta1) > 1.56 ) nEE++; 
+    if ( fabs(eta2) < 2.5 && fabs(eta2) > 1.56 ) nEE++; 
+    
+    // TAKEN FROM AN-2012-415 section 3.4
+    double ebebCorr = 0.0092; 
+    double ebeeCorr = 0.0143; 
+    double eeeeCorr = 0.0199; 
+
+    if      ( nEB == 2 ) scaleCorrection = ebebCorr; 
+    else if ( nEE == 2 ) scaleCorrection = eeeeCorr; 
+    else                 scaleCorrection = ebeeCorr; 
+
+    return (1 + tr->Gaus(0, scaleCorrection));
+  }
 
 
   std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,

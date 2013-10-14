@@ -63,9 +63,15 @@ double HeavyNuID::weightForMCbyEta(double eta,int signOfError2apply)
   // https://twiki.cern.ch/twiki/pub/CMS/TWikiEXO-MUO/muon_eff_NewHighPt_Run_ABCD.pdf
   // systematics here - may change for 100 GeV+ muons
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonTagAndProbe
+  // Jan 22 rereco number reference for ID efficiencies
+  // https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffs
   //const double scalelo2012[]  = {0.970000,0.970000,0.970000,0.970000}; 
-  const double scalenom2012[] = {0.989900,0.988400,0.995800,0.991000}; 
+  // prompt results
+  //const double scalenom2012[] = {0.989900,0.988400,0.995800,0.991000}; 
   //const double scalehi2012[]  = {1.030000,1.030000,1.030000,1.030000}; 
+  
+  // Jan 22 rereco
+  const double scalenom2012[] = {0.9900,0.9923,0.9949,0.9923}; 
 
   const double upedge2012[]   = {     0.9,     1.2,     2.1,     2.4, -1.0};
 
@@ -86,12 +92,16 @@ double HeavyNuID::weightForMCbyEta(double eta,int signOfError2apply)
 double
 HeavyNuID::weightElectronsForMC(double eta, int signOfError2apply) {
 
+  // Jan 22 rereco ref
+  // https://indico.cern.ch/getFile.py/access?contribId=1&resId=0&materialId=slides&confId=263709
+  // prompt 2012 corrections 1.000
+  
   // EB/EE efficiency scale factors
-  const double ebScale    = 1.0000; // Bias of probe  
+  const double ebScale    = 0.998; // Bias of probe  
   const double ebScaleErr = 0.0200; // Deviation from unity
   // const double ebScaleErr = 0.004742 ; // Stat error on scale factor
 
-  const double eeScale    = 1.0000; 
+  const double eeScale    = 0.979; 
   const double eeScaleErr = 0.0400; // Deviation from unity
   // const double eeScaleErr = 0.009480 ; // Stat error on scale factor
 

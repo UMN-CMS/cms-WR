@@ -7,6 +7,7 @@
 #include "TProfile2D.h"
 #include "TVector3.h"
 #include "TRandom.h"
+#include "TRandom3.h"
 
 #include "HeavyNu/AnalysisModules/src/HeavyNuTrigger.h"
 #include "HeavyNu/AnalysisModules/src/HeavyNuID.h"
@@ -214,6 +215,7 @@ private:
     int applyJERsign_; // for Jet Energy Resolution and Resolution Uncertainty studies
     double applyMESfactor_; // for Muon Energy Scale studies
     bool merUncertainty_ ; 
+    bool eerUncertainty_ ; 
     bool correctEscale_ ; 
     int applyTrigEffsign_; // for Trigger Efficiency studies
     bool highestPtTriggerOnly_;
@@ -259,7 +261,7 @@ private:
     int pdfReweightBaseId, pdfReweightTargetId;
 
     HeavyNuTree *hnuTree_;
-
+    TRandom *tr3_;
 
     // ----------member data ---------------------------
     bool init_;

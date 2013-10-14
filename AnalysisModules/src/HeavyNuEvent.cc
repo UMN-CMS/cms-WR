@@ -98,7 +98,7 @@ void HeavyNuEvent::calculateLL(bool correctEscale)
     //mLL = vLL.M();
 }
 
-void HeavyNuEvent::calculate(bool correctEscale)
+void HeavyNuEvent::calculate(bool correctEscale, TRandom * tr)
 {
     regularize();
 
@@ -158,6 +158,7 @@ void HeavyNuEvent::calculate(bool correctEscale)
     {
         case HNUE:
 	    if(isMC && correctEscale) scale = hnu::getElectronEscale(l1eta, l2eta); 
+            if(tr) scale *= hnu::getElectronResolution(l1eta, l2eta, tr);  //This function computes the resolution smearing factor
 	    vLL = scale * ( lep1p4 + lep2p4 ) ;
 	    break;
         case TOP:

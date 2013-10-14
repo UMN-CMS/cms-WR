@@ -19,6 +19,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "TH1F.h"
+#include "TRandom.h"
 #include "TLorentzVector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -50,7 +51,7 @@ public:
 
     void scaleMuE(double mufactor = 1.0, double efactor = 1.0);
     void calculateLL(bool correctEscale = false);
-    void calculate(bool correctEscale = false);
+    void calculate(bool correctEscale = false, TRandom * tr = 0);
     void decayID(const reco::GenParticleCollection& gpc);
 
     // These generic particles are used to pass features common to all leptons.

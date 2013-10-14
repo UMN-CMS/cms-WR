@@ -59,6 +59,7 @@ hNu = cms.EDFilter(
     correctEscale     = cms.bool(False),
     applyMuIDEffcorr  = cms.bool(False),
     applyMuIDEffsign  = cms.int32(0),
+    applyEERUnc       = cms.bool(False),
 
     studyMuSelectEff      = cms.bool(True),
     oneTPcand             = cms.bool(False),

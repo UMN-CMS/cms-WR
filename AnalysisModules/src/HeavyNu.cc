@@ -194,7 +194,7 @@ void HeavyNu::fill(pat::MuonCollection muons,
     //hne.met1 = metc[0];
 
     //hne.calculateLL(correctEscale_);
-    hne.calculate(correctEscale_);
+    hne.calculate(correctEscale_, tr3_);
 
     hnmh->fill(hne);
 }
@@ -258,6 +258,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     if(applyJERsign_) applyJERsign_ /= abs(applyJERsign_); // ensure -1,0,+1
 
     applyMESfactor_ = iConfig.getParameter<double>("applyMESfactor");
+    eerUncertainty_ = iConfig.getParameter<bool>("applyEERUnc");
     merUncertainty_ = iConfig.getParameter<bool>("checkMERUnc");
     correctEscale_  = iConfig.getParameter<bool>("correctEscale");
 
@@ -608,6 +609,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
 
     MCweightByVertex_ = edm::LumiReWeighting(hnu::get_standard_pileup_mc(pileupEra_),
                                              hnu::get_standard_pileup_data(pileupEra_, puShift_));
+    
+    if(eerUncertainty_) tr3_ = new TRandom3();
+    else                tr3_ = 0;
 
     // For the record...
     std::cout << "Configurable cut values applied:" << std::endl;
@@ -641,6 +645,7 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     std::cout << "applyMuIDEffsign  = " << applyMuIDEffsign_ << std::endl;
     std::cout << "applyTrigEffsign  = " << applyTrigEffsign_ << std::endl;
     std::cout << "studyMuSelectEff  = " << studyMuonSelectionEff_ << std::endl;
+    std::cout << "applyElecRes      = " << eerUncertainty_ << std::endl;
     std::cout << "studyScaleFactor  = " << studyScaleFactorEvolution_ << std::endl;
     std::cout << "pileup era        = " << pileupEra_ << std::endl;
     std::cout << "DisableTriggerCorrection = " << disableTriggerCorrection_ << std::endl;
@@ -1692,7 +1697,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     hnuEvent.scaleMuE(applyMESfactor_);
     // std::cout << "DEBUG: Applied scaling" << std::endl ; 
-    hnuEvent.calculate(correctEscale_); // calculate various details
+    hnuEvent.calculate(correctEscale_, tr3_); // calculate various details
     // std::cout << "DEBUG: Calculated...ready for basic plots" << std::endl ; 
 
     // JJ and LL cutlevel must be made here before definite number cuts are applied
@@ -1723,7 +1728,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
                     hnuLQ.e2 = eCands[1].first;
                     hnuLQ.j1 = jetCandsLQ[0].first;
                     hnuLQ.j2 = jetCandsLQ[1].first;
-                    hnuLQ.calculate(correctEscale_);
+                    hnuLQ.calculate(correctEscale_, tr3_);
 
                     double st = hnuLQ.l1pt + hnuLQ.l2pt + hnuLQ.j1.pt() + hnuLQ.j2.pt();
 

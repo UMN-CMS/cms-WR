@@ -144,6 +144,7 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     systContents.push_back("EID");
     systContents.push_back("PU");
     systContents.push_back("TRIG");
+    systContents.push_back("ER");
     //systContents.push_back("MODEL");
     defineCommonSyst("RECOID",systContents);
     

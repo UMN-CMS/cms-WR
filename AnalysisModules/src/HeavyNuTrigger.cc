@@ -286,9 +286,12 @@ HeavyNuTrigger::simulateForMC(double pt,double eta,int signOfError2apply)
   // https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffs#2012_data
   //const double effslo2012ABC[]   = {0.000000,0.000000,0.000000};  //UNCERTAINTIES +/- 0.2%
   // https://twiki.cern.ch/twiki/bin/view/CMS/MuonTagAndProbe
-  const double effsnom2012ABC[]  = {0.940100,0.843685,0.830823};
+  //const double effsnom2012ABC[]  = {0.940100,0.843685,0.830823};
   //const double effshi2012ABC[]   = {0.000000,0.000000,0.000000};
-  const double upedge2012ABC[]   = {     0.9,     1.2,     2.1};
+  // Jan22rereco reference - Mu40 HighPTID
+  // https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=257000
+  const double effsnom2012ABC[]  = {0.928,0.8302,0.8018};
+  const double upedge2012ABC[]   = {  0.9,   1.2,   2.1};
 
   // 2011 A is the default
   const double *effs = effsnom2012ABC; 

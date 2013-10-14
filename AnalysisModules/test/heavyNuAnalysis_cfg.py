@@ -11,12 +11,12 @@ isData=not isMC
 cmsswRelease = 53
 
 #--- Signal MC flags ---#
-isMCsignal=False
+isMCsignal=True
 
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
 # options 2012ABCre, 2012Dre
-runEra = "2012D"
+runEra = "2012Dre"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -80,7 +80,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:/data/whybee0a/user/dahmes/multiSkim/V03-00-07/prompt/run2012D/noDupes/mar25/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes_000.root')
+                            fileNames=cms.untracked.vstring('/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
                             #file:/data/whybee0a/user/dahmes/multiSkim/V03-00-07/prompt/run2012D/noDupes/mar25/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes_000.root
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
                             #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
@@ -121,7 +121,10 @@ if (isMC):
     if cmsswRelease == 52:
         process.GlobalTag.globaltag=cms.string('START52_V11::All')
     elif cmsswRelease == 53:
-        process.GlobalTag.globaltag=cms.string('START53_V15::All')
+    	if runEra == "2012ABCre" or runEra == "2012Dre":
+    		process.GlobalTag.globaltag=cms.string('START53_V26::All')
+    	else:
+        	process.GlobalTag.globaltag=cms.string('START53_V15::All')
     else:
         print "INVALID CMSSW release id %(rid)i"%{"rid":cmsswRelease}
 else:
@@ -660,6 +663,7 @@ process.hNuEjesLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), app
 process.hNuEjerHi  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(1) )
 process.hNuEjerLo  = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyJERsign = cms.int32(-1) )
 process.hNuEescale = process.hNuE.clone( studyMuSelectEff = cms.bool(False), correctEscale = cms.bool(True) )
+process.hNuEer     = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyEERUnc = cms.bool(True) )
 process.hNuEidHi   = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(1) )
 process.hNuEidLo   = process.hNuE.clone( studyMuSelectEff = cms.bool(False), applyMuIDEffsign = cms.int32(-1) )
 process.hNuEidHi.applyMuIDEffcorr = cms.bool( isMC )
@@ -815,6 +819,7 @@ if runElectronAnalysis:
             process.pEidLo   = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEidLo);
             process.pEtrigHi = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEtrigHi);
             process.pEtrigLo = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEtrigLo);
+            process.pEer     = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEer);
             process.pEjerHi  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjerHi);
             process.pEjerLo  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjerLo);
             process.pEescale = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEescale);
