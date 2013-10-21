@@ -37,6 +37,7 @@ public:
       {
          m_tree = (TTree*) m_file.Get("HeavyNuTuple");
          m_tree->SetBranchAddress("slopefit", &event_);
+         GetNextEvent();
       }
    }
 
