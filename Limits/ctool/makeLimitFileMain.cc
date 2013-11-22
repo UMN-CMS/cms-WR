@@ -30,8 +30,7 @@ int main(int argc, char* argv[]) {
   pt1.bin_upper_edge[7]=10000;
   pt2.bin_upper_edge[6]=2200;
   pt2.bin_upper_edge[7]=10000;
-  //pt.bin_upper_edge[12]=2200;
-  //pt.bin_upper_edge[13]=10000;
+  //pt.bin_upper_edge[8]=10000;
   //pt1.bin_upper_edge[12]=2200;
   //pt1.bin_upper_edge[13]=10000;
   //pt2.bin_upper_edge[12]=2200;
@@ -128,11 +127,8 @@ int main(int argc, char* argv[]) {
 		 break;
 	       }
   };
-
-
-
-
-		   /*
+  
+  /*
   if (argc<9) {
     printf("Usage: makeLimitFile [lumi] [mwr] [mn] [xsec] [data file] [signal file] [outfilename] [systematicsdb] [optional special syst mode]\n");
     return 1;
@@ -155,8 +151,8 @@ int main(int argc, char* argv[]) {
     pt1.mode=LimitPoint::lp_Muon1ECM;
     pt2.mode=LimitPoint::lp_Elec1ECM;
    
-    std::vector<PerBinInfo> bins1=makeLimitContent(pt1, &df1, rates1, syst1, 'm');
-    std::vector<PerBinInfo> bins2=makeLimitContent(pt2, &df2, rates2, syst2, 'e');
+    std::vector<PerBinInfo> bins1=makeLimitContent(pt1, &df1, rates1, syst1, 'm', true);
+    std::vector<PerBinInfo> bins2=makeLimitContent(pt2, &df2, rates2, syst2, 'e', true);
 
     std::vector<PerBinInfo> bins;
     for (std::vector<PerBinInfo>::const_iterator i=bins1.begin(); i!=bins1.end(); i++)

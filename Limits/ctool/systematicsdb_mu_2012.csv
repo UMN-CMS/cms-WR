@@ -1,35 +1,35 @@
 # 2012
-signal_1000_500,pdf,1.055
-signal_1100_550,pdf,1.056
-signal_1200_600,pdf,1.060
-signal_1300_650,pdf,1.066
-signal_1400_700,pdf,1.073
-signal_1500_750,pdf,1.078
-signal_1600_800,pdf,1.084
-signal_1700_850,pdf,1.091
-signal_1800_900,pdf,1.098
-signal_1900_950,pdf,1.103
-signal_2000_1000,pdf,1.114
-signal_2100_1050,pdf,1.122
-signal_2200_1100,pdf,1.131
-signal_2300_1150,pdf,1.142
-signal_2400_1200,pdf,1.150
-signal_2500_1250,pdf,1.164
-signal_2600_1300,pdf,1.172
-signal_2700_1350,pdf,1.193
-signal_2800_1400,pdf,1.204
-signal_2900_1450,pdf,1.256
-signal_3000_1500,pdf,1.262
-signal_3100_1550,pdf,1.297
-signal_3200_1600,pdf,1.337
-signal_3300_1650,pdf,1.345
-signal_3400_1700,pdf,1.383
-signal_3500_1750,pdf,1.411
-signal_3600_1800,pdf,1.452
-signal_3700_1850,pdf,1.461
-signal_3800_1900,pdf,1.518
-signal_3900_1950,pdf,1.735
-signal_4000_2000,pdf,1.780
+#signal_1000_500,pdf,1.055
+#signal_1100_550,pdf,1.056
+#signal_1200_600,pdf,1.060
+#signal_1300_650,pdf,1.066
+#signal_1400_700,pdf,1.073
+#signal_1500_750,pdf,1.078
+#signal_1600_800,pdf,1.084
+#signal_1700_850,pdf,1.091
+#signal_1800_900,pdf,1.098
+#signal_1900_950,pdf,1.103
+#signal_2000_1000,pdf,1.114
+#signal_2100_1050,pdf,1.122
+#signal_2200_1100,pdf,1.131
+#signal_2300_1150,pdf,1.142
+#signal_2400_1200,pdf,1.150
+#signal_2500_1250,pdf,1.164
+#signal_2600_1300,pdf,1.172
+#signal_2700_1350,pdf,1.193
+#signal_2800_1400,pdf,1.204
+#signal_2900_1450,pdf,1.256
+#signal_3000_1500,pdf,1.262
+#signal_3100_1550,pdf,1.297
+#signal_3200_1600,pdf,1.337
+#signal_3300_1650,pdf,1.345
+#signal_3400_1700,pdf,1.383
+#signal_3500_1750,pdf,1.411
+#signal_3600_1800,pdf,1.452
+#signal_3700_1850,pdf,1.461
+#signal_3800_1900,pdf,1.518
+#signal_3900_1950,pdf,1.735
+#signal_4000_2000,pdf,1.780
 
 
 # Flattened Systematic at high mass (2011)
@@ -45,8 +45,10 @@ other,pdf,1.0023,1.0033,1.0035,1.0031,1.0029,1.0032,1.0032,1.0032,1.0032,1.0032
 #2011
 #zjets,fact,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01
 #zjets,ren,1.05,1.05,1.05,1.05,1.05,1.05,1.05,1.05,1.05,1.05
+# ttbar uncertainty derived from MC vs data slope differences
+ttjets,ttshape,0.95,1.03,1.13,1.23,1.34,1.47,1.64,2.01
 #derived from DD and MC differences
-zjets,fact,1,1.0431018,1.00995063,1.0630031,1.116056,1.169108,1.248687,1.540475
+#zjets,zjshape,1,1.0431018,1.00995063,1.0630031,1.116056,1.169108,1.248687,1.540475
 # Other: linear combination of ttjets (38/56) and zjets (18/56) from 2011
 other,fact,1.057,1.046,1.044,1.094,1.113,1.133,1.163,1.271
 #other,ren,1.06,1.04,1.04,1.06,1.06,1.06,1.06,1.06,1.06,1.06
@@ -149,28 +151,28 @@ signal_2800_1400,mcstats,1.005460
 signal_2900_1450,mcstats,1.005412
 signal_3000_1500,mcstats,1.004767
 
-other,lumi,1.044
-signal_1000_500,lumi,1.044
-signal_1100_550,lumi,1.044
-signal_1200_600,lumi,1.044
-signal_1300_650,lumi,1.044
-signal_1400_700,lumi,1.044
-signal_1500_750,lumi,1.044
-signal_1600_800,lumi,1.044
-signal_1700_850,lumi,1.044
-signal_1800_900,lumi,1.044
-signal_1900_950,lumi,1.044
-signal_2000_1000,lumi,1.044
-signal_2100_1050,lumi,1.044
-signal_2200_1100,lumi,1.044
-signal_2300_1150,lumi,1.044
-signal_2400_1200,lumi,1.044
-signal_2500_1250,lumi,1.044
-signal_2600_1300,lumi,1.044
-signal_2700_1350,lumi,1.044
-signal_2800_1400,lumi,1.044
-signal_2900_1450,lumi,1.044
-signal_3000_1500,lumi,1.044
+other,lumi,1.026
+signal_1000_500,lumi,1.026
+signal_1100_550,lumi,1.026
+signal_1200_600,lumi,1.026
+signal_1300_650,lumi,1.026
+signal_1400_700,lumi,1.026
+signal_1500_750,lumi,1.026
+signal_1600_800,lumi,1.026
+signal_1700_850,lumi,1.026
+signal_1800_900,lumi,1.026
+signal_1900_950,lumi,1.026
+signal_2000_1000,lumi,1.026
+signal_2100_1050,lumi,1.026
+signal_2200_1100,lumi,1.026
+signal_2300_1150,lumi,1.026
+signal_2400_1200,lumi,1.026
+signal_2500_1250,lumi,1.026
+signal_2600_1300,lumi,1.026
+signal_2700_1350,lumi,1.026
+signal_2800_1400,lumi,1.026
+signal_2900_1450,lumi,1.026
+signal_3000_1500,lumi,1.026
 
 
 # Reco systematics

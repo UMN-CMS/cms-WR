@@ -222,7 +222,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
   std::vector<PerBinInfo> pbi, pbi_alt;
 
   int ilow=0;
-  int ihigh=16;
+  int ihigh=8;
 
 
   //if (!fullRange) binRanger(mp.mwr,ilow,ihigh);
@@ -260,7 +260,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
       double bcenter=(jbin + 0.5) * BINWIDTH + 600;
       //if (bcenter<abin.lowEdge || bcenter>abin.highEdge) continue;
       if (bcenter>abin.lowEdge && bcenter<abin.highEdge)
-        abin.data+=(double)vdata[jbin];
+        abin.data+=vdata[jbin];
     }
       
     // Systematics
@@ -270,7 +270,6 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
       PerBinSystematic pbs;
       if (*isyst==SystematicsDB::GAMMASTATS) {
       
-	  
 	double systLevel=syst.getSystematic(*isyst,process,ibin);
 	  //	if (systLevel<0) {
 	pbs.signal=-1;
@@ -310,6 +309,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
     sprintf(name,"%c%02d",binprefix,ibin);
     abin.binName=name;
     if (sigbineff>0.01 || fullRange)
+	//if(ibin == 4)
       pbi.push_back(abin);
   }
   
@@ -317,7 +317,7 @@ std::vector<PerBinInfo> makeLimitContent(const LimitPoint& mp, TFile* dataf, con
 }
 
 void makeLimitFile(const LimitPoint& mp, TFile* dataf, const RateDB& rates, const char* limitFileName, const SystematicsDB& syst) {
-  std::vector<PerBinInfo> pbi = makeLimitContent(mp,dataf,rates,syst);
+  std::vector<PerBinInfo> pbi = makeLimitContent(mp,dataf,rates,syst, 'b', true);
   formatLimitFile(pbi,mp,limitFileName);
 }
 

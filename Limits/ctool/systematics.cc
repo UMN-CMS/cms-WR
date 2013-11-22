@@ -133,6 +133,9 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
     defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
     
+    //defineSingleChannelSyst("ZJSHAPE","ZJETS",systContents);
+    defineSingleChannelSyst("TTSHAPE","TTJETS",systContents);
+    
     systContents.clear();
     systContents.push_back("MCSTATS");
     defineSignalSyst("SIGONLY",systContents);  
@@ -165,6 +168,9 @@ void SystematicsDB::standardSystematics(const std::string& which) {
     defineSingleChannelSyst("TTONLY","TTJETS",systContents);
     defineSingleChannelSyst("ZJONLY","ZJETS",systContents);
     defineSingleChannelSyst("OTHERONLY","OTHER",systContents);
+    
+    //defineSingleChannelSyst("ZJSHAPE","ZJETS",systContents);
+    defineSingleChannelSyst("TTSHAPE","TTJETS",systContents);
     
     systContents.clear();
     systContents.push_back("MCSTATS");
