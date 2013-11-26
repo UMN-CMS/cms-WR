@@ -87,6 +87,9 @@ std::vector<XYZ> getSortedVector(int iwr, std::vector<XYZ> a, std::vector<XYZ> b
 
 double getWgtAcceptance(int imwr, int imnu, int mode)
 {
+    double correction = 1.0;
+    if(imnu < imwr / 2) correction = 0.5 * (1.0 + 2.0 * double(imnu) / double(imwr));
+
     switch(mode)
     {
         case 0:
@@ -504,7 +507,7 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
             case 1:
             case 2:
             case 3:
-                mark2 = new TLatex(0.70, 0.95, "19.6 fb^{-1} at 8 TeV");
+                mark2 = new TLatex(0.70, 0.95, "19.7 fb^{-1} at 8 TeV");
                 break;
         }
             
@@ -862,17 +865,17 @@ void plotLimits(int mode = 0, int minval = -1, int maxval = -1, float xmini = 10
     {
         case 0:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{#mu}} > M_{W_{R}}");
-            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.6 fb^{-1}");
+            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.7 fb^{-1}");
             //mark->DrawLatex(0.71, 0.96, "12.1 fb^{-1} at 8 TeV");
             break;
         case 1:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{e}} > M_{W_{R}}");
-            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.6 fb^{-1}");
+            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.7 fb^{-1}");
             //mark->DrawLatex(0.71, 0.96, "12.3 fb^{-1} at 8 TeV");
             break;
         case 2:
             text.DrawLatex(xmin + 100, .92 * ymax, "M_{N_{e,#mu,#tau}} > M_{W_{R}}");
-            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.6 fb^{-1}");
+            mark->DrawLatex(0.220,0.9575, "CMS Preliminary    #sqrt{s} = 8 TeV    19.7 fb^{-1}");
             //mark->DrawLatex(0.71, 0.96, "3.6 fb^{-1} at 8 TeV");
             break;
         case 3:

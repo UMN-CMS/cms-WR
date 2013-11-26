@@ -133,7 +133,9 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   double pbr=1e3; // pb ratio
   double corr=1.0;
 
+  gStyle->SetHatchesLineWidth(3);
   setTDRStyle();
+  gStyle->SetHatchesLineWidth(3);
 
   int ecm;
   if (which==0) { // 2011 Muons
@@ -260,8 +262,10 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   
   if (which==0 || which==1) {
     dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mujj) [fb]");
+    dummy->GetYaxis()->SetRangeUser(0.2, 100);
   } else if (which==2) {
     dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow eejj) [fb]");
+    dummy->GetYaxis()->SetRangeUser(0.2, 100);
   } else if (which==3) {
     dummy->GetYaxis()->SetTitle("#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow (ee+#mu#mu+#tau#tau)jj) [fb]");
     dummy->GetYaxis()->SetTitleSize(0.055);
@@ -338,8 +342,25 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   TGraph* tg_theory=new TGraph(nx,mwt,xsec);
   tg_theory->SetLineWidth(3);
   tg_theory->SetLineColor(kRed);
-  tg_theory->SetLineStyle(3);
+  tg_theory->SetLineStyle(0);
   tg_theory->Draw("L SAME");
+  
+  double tesx[] = {1000.0, 1100.0, 1200.0, 1300.0, 1400.0, 1500.0, 1600.0, 1700.0, 1800.0, 1900.0, 2000.0, 2100.0, 2200.0, 2300.0, 2400.0, 2500.0, 2600.0, 2700.0, 2800.0, 2900.0, 3000.0, 3100.0, 3200.0, 3300.0, 3400.0, 3500.0, 3600.0, 3700.0, 3800.0, 3900.0};
+  double tesy[] = {0.072374,0.069254,0.067429,0.066900,0.067665,0.069726,0.073082,0.077733,0.083679,0.090920,0.099457,0.109289,0.120415,0.132838,0.146555,0.161567,0.177875,0.195478,0.214375,0.234569,0.256057,0.278840,0.302919,0.328293,0.354962,0.382926,0.412185,0.442740,0.474589};
+  TGraph* tg_theoryerror=new TGraph();
+  for(int i = 0; i < 29; i++)
+  {
+      tg_theoryerror->SetPoint(i, tesx[i], xsec[i]*(1-tesy[i]));
+  }
+  for(int i = 29; i < 29+29; i++)
+  {
+      tg_theoryerror->SetPoint(i, tesx[2*29-i], xsec[2*29-i]*(1+tesy[2*29-i]));
+  }
+  tg_theoryerror->SetLineWidth(3);
+  tg_theoryerror->SetLineColor(kRed);
+  tg_theoryerror->SetFillColor(kRed);
+  tg_theoryerror->SetFillStyle(3002);
+  tg_theoryerror->Draw("F SAME");
 
   TGraph* tg_obs=new TGraph(n,mw,obs);
   tg_obs->SetLineWidth(2);
@@ -355,7 +376,7 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
     tl->AddEntry(tg_theory,"Theory Expectation","L");
     tl->AddEntry((TObject*)0,"(g_{R}=g_{L}, M_{N}_{e}=M_{N}_{#mu}=M_{N}_{#tau})","");
   } else {
-    tl->AddEntry(tg_theory,"Theory (g_{R}= g_{L})","L");
+    tl->AddEntry(tg_theoryerror,"Theory (g_{R}= g_{L})","L");
   }
 
   TText *text;
