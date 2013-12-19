@@ -25,3 +25,5 @@ makeLimitFileMain.o: makeLimitFile.hh systematics.h
 
 makeLimitFileELEC.o: systematics.h systematics.cc makeLimitFile.hh
 
+clean:
+	rm -rf makeLimitFile.exe makeLimitFileELEC.exe makeLimitFile.o makeLimitFileMain.o systematics.o ratedb.o makeLimitFileELEC.o makeLimitFileMainELEC.o

@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[]) {
 
-  int opt;
+/*  int opt;
   LimitPoint pt,pt1,pt2;
   std::string df_name, systf_name, of_name, sigf_name;
   std::string istring;
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
     return 1;
     }*/
 
-  TFile df(df_name.c_str());
+    /*TFile df(df_name.c_str());
   SystematicsDB syst;
   syst.load(systf_name.c_str());
   syst.standardSystematics(whichSyst()); // define the standard systematics
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
   if (argc==10)
     int special_syst_mode=atoi(argv[9]);
   */
-  
+    /*
   if (!interpolate) {
     TFile sf(sigf_name.c_str());
 
@@ -95,6 +95,6 @@ int main(int argc, char* argv[]) {
 			     
   }
 
-
+*/
   return 0;
 }

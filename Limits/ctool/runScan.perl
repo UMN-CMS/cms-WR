@@ -47,7 +47,7 @@ $datamu2012="/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData_2/Mu
 #$datael2012="run2012ABCD-electron.root";
 #$datamu2012="run2012ABCD-muon.root";
 #$datamu2012="/home/jmmans/data/heavyun_2012Data_2012ABC_mu.root";
-$lumi2012=19564;
+$lumi2012=19700;
 
 #$datamu2012="/local/cms/user/dahmes/wr2012/HPAResults/GoodRuns/run2012AB/data-mu-top-qcd-ichep-jun23.root";
 #$datael2012="/local/cms/user/franzoni/WR2012/JUN22bis.analysis.V02-02-00.june7.455files/JUN22bis.analysis.V02-02-00.june7.all_HADDED.root";

@@ -155,32 +155,36 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
 
   FILE* f1=fopen(fname,"rt");
   int dummyi;
-  
-  while (!feof(f1)) {
-    buffer[0]=0;
-    fgets(buffer,1000,f1);
-    if (sscanf(buffer,"%f %f %f %f %f %f %f %f ",mw+n,mn+n,
-	       obs+n,exp+n,expm2s+n,expm1s+n,expp1s+n,expp2s+n)==8) {
-      if (correctToMWMN2) {
-	corr=1.0/accRatio(mw[n]);
-	mn[n]=mw[n]/2.0;
-      }
 
-      if (which==3) {
-	corr=3.0/2.0; // correct to all leptons
-      }
+    while (!feof(f1))
+    {
+        buffer[0] = 0;
+        fgets(buffer, 1000, f1);
+        if (sscanf(buffer, "%f %f %f %f %f %f %f %f ", mw + n, mn + n,
+                   obs + n, exp + n, expm2s + n, expm1s + n, expp1s + n, expp2s + n) == 8)
+        {
+            if (correctToMWMN2)
+            {
+                corr = 1.0 / accRatio(mw[n]);
+                mn[n] = mw[n] / 2.0;
+            }
+
+            if (which == 3)
+            {
+                corr = 3.0 / 2.0; // correct to all leptons
+            }
 
 
-      obs[n]*=pbr*corr;
-      exp[n]*=pbr*corr;
-      expm2s[n]*=pbr*corr;
-      expm1s[n]*=pbr*corr;
-      expp1s[n]*=pbr*corr;
-      expp2s[n]*=pbr*corr;
-      n++;
+            obs[n] *= pbr*corr;
+            exp[n] *= pbr*corr;
+            expm2s[n] *= pbr*corr;
+            expm1s[n] *= pbr*corr;
+            expp1s[n] *= pbr*corr;
+            expp2s[n] *= pbr*corr;
+            n++;
+        }
     }
-  }
-  fclose(f1);
+    fclose(f1);
 
   FILE* fx=fopen("cs.txt","rt");
   float rawx, kf,xmw,xmn;
@@ -348,13 +352,19 @@ void limWR(const char* fname,int which, int smooth=0,const char* asUsed=0,double
   double tesx[] = {1000.0, 1100.0, 1200.0, 1300.0, 1400.0, 1500.0, 1600.0, 1700.0, 1800.0, 1900.0, 2000.0, 2100.0, 2200.0, 2300.0, 2400.0, 2500.0, 2600.0, 2700.0, 2800.0, 2900.0, 3000.0, 3100.0, 3200.0, 3300.0, 3400.0, 3500.0, 3600.0, 3700.0, 3800.0, 3900.0};
   double tesy[] = {0.072374,0.069254,0.067429,0.066900,0.067665,0.069726,0.073082,0.077733,0.083679,0.090920,0.099457,0.109289,0.120415,0.132838,0.146555,0.161567,0.177875,0.195478,0.214375,0.234569,0.256057,0.278840,0.302919,0.328293,0.354962,0.382926,0.412185,0.442740,0.474589};
   TGraph* tg_theoryerror=new TGraph();
+  int iValidPoint = 0, ivps1m;
   for(int i = 0; i < 29; i++)
   {
-      tg_theoryerror->SetPoint(i, tesx[i], xsec[i]*(1-tesy[i]));
+      if(fabs(tesx[i] - mwt[iValidPoint]) > 1.0) continue;
+      tg_theoryerror->SetPoint(iValidPoint, tesx[i], xsec[iValidPoint]*(1-tesy[i]));
+      iValidPoint++;
   }
-  for(int i = 29; i < 29+29; i++)
+  ivps1m = iValidPoint;
+  for(int i = 28; i >= 0; i--)
   {
-      tg_theoryerror->SetPoint(i, tesx[2*29-i], xsec[2*29-i]*(1+tesy[2*29-i]));
+      if(fabs(tesx[i] - mwt[2*ivps1m-iValidPoint - 1]) > 1.0) continue;
+      tg_theoryerror->SetPoint(iValidPoint, tesx[i], xsec[2*ivps1m-iValidPoint - 1]*(1+tesy[i]));
+      iValidPoint++;
   }
   tg_theoryerror->SetLineWidth(3);
   tg_theoryerror->SetLineColor(kRed);
