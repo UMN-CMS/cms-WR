@@ -1057,8 +1057,8 @@ namespace hnu {
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
 
       // Apply selection if requested
-      if(heepIsoOff) {std::cout << "NO HEEP ISO" << std::endl;if ( (heepVersion > 0) && !passesNoIsoHEEP(iE,heepVersion,rho, pvHandle)) continue ;}
-      else           {std::cout << "HEEP ISO" << std::endl;if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;}
+      if(heepIsoOff) if ( (heepVersion > 0) && !passesNoIsoHEEP(iE,heepVersion,rho, pvHandle)) continue ;
+      else           if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
       // Apply anti-selection if requested (fake electron sample)
       if ( (heepVersion < 0) && 
 	   (!passesFakeRateMinimum(iE,pvHandle) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;
