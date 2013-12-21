@@ -96,7 +96,7 @@ HeavyNuPreFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::vector<pat::Muon> muCands = hnu::getMuonList(pMuons, pvHandle, 20122, 40, 2.4, 1.0, 0, false);
 
     // Look for valid electrons
-    std::vector< std::pair<pat::Electron, float> > eCands = hnu::getElectronList(pElecs, 2.5, 40, 40, 41, pvHandle, elecRho_);
+    std::vector< std::pair<pat::Electron, float> > eCands = hnu::getElectronList(pElecs, 2.5, 40, 40, 41+100, pvHandle, elecRho_);
     
     int nMu = muCands.size();
     int nE  = eCands.size();

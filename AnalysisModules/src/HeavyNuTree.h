@@ -22,6 +22,7 @@ public:
       Float_t  rhE1, rhE2, sE1, sE2, met;
       Short_t j1B, j2B;
       Int_t run, ls, event;
+      Short_t cL1, cL2, emult, mumult, jmult, bmult;
    } event_;
 
    HeavyNuTree(TDirectory& f, bool writable) : m_file(f)
@@ -31,7 +32,7 @@ public:
       {
          m_file.cd();
          m_tree = new TTree("HeavyNuTuple", "HeavyNuTuple");
-         branch_ = m_tree->Branch("slopefit", &event_, "mlljj/F:mll:weight:l1pt:l1eta:l1phi:l1jdR:l2pt:l2eta:l2phi:l2jdR:j1pt:j1eta:j1phi:j2pt:j2eta:j2phi:flavor/S:l1id:l2id:cutlevel:npu:npv:rhE1/F:rhE2:sE1:sE2:met:j1B/S:j2B:run/I:ls:event");
+         branch_ = m_tree->Branch("slopefit", &event_, "mlljj/F:mll:weight:l1pt:l1eta:l1phi:l1jdR:l2pt:l2eta:l2phi:l2jdR:j1pt:j1eta:j1phi:j2pt:j2eta:j2phi:flavor/S:l1id:l2id:cutlevel:npu:npv:rhE1/F:rhE2:sE1:sE2:met:j1B/S:j2B:run/I:ls:event:cL1/S:cL2:emult:mumult:jmult:bmult");
       }
       else
       {
@@ -65,6 +66,7 @@ public:
       event_.rhE1 = event_.rhE2 = event_.sE1 = event_.sE2 = event_.met = 0.0;
       event_.j1B = event_.j2B = 0;
       event_.run = event_.ls = event_.event = 0;
+      event_.cL1 = event_.cL2 = event_.emult = event_.mumult = event_.jmult = event_.bmult = 0.0;
    }
 
    void fill()

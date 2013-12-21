@@ -245,6 +245,7 @@ private:
     int nDirtyCands_ ; 
 
     int heepVersion_;
+    bool noElecIso_;
 
     HeavyNuTrigger *trig_;
     HeavyNuID *muid_;

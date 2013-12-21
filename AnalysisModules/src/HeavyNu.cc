@@ -287,6 +287,9 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
     addSlopeTree_ = iConfig.getUntrackedParameter<bool>("addSlopeTree");
 
     randseed_ =  iConfig.getUntrackedParameter<unsigned int>("randseed");
+    
+    noElecIso_ =  iConfig.getUntrackedParameter<bool>("noElecIso");
+
 
     // Default HEEP version is 4.0 (2012 selection)
     heepVersion_ = iConfig.getUntrackedParameter<int>("heepVersion", 41);
@@ -534,11 +537,6 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.mWRmassCut =   new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(eejj mass cut:6)");
         hists.OneJetTrigHighPt = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut4clo_TrigHighPt")), "(3objects with trigger and pt cuts:4clo)");
         hists.OneJetdiLmassCut = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("cut5clo_diLmass")), "(ee mass cut:5clo)");
-        hists.LQ1Cuts = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts")), "(LQ1 pre cuts:LQ1cuts)");
-        hists.LQ1Cuts2 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts2")), "(LQ1 mll > 110:LQ1cuts2)");
-        hists.LQ1Cuts3 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts3")), "(LQ1 mLL 155:LQ1cuts3)");
-        hists.LQ1Cuts4 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts4")), "(LQ1 St 850:LQ1cuts4)");
-        hists.LQ1Cuts5 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts5")), "(LQ1 mLQ 360:LQ1cuts5)");
 
         if(studyMuonSelectionEff_)
         {
@@ -565,11 +563,6 @@ HeavyNu::HeavyNu(const edm::ParameterSet& iConfig)
         hists.mWRmassCut =   new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut6_mWRmass")), "(emujj mass cut:6)");
         hists.OneJetTrigHighPt = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut4clo_TrigHighPt")), "(3objects with trigger and pt cuts:4clo)");
         hists.OneJetdiLmassCut = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("cut5clo_diLmass")), "(emu mass cut:5clo)");
-        hists.LQ1Cuts = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("LQ1Cuts")), "(LQ1 cuts:LQ1cuts)");
-        hists.LQ1Cuts2 = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("LQ1Cuts2")), "(LQ1 mll > 110:LQ1cuts2)");
-        hists.LQ1Cuts3 = new HeavyNuTopHist(new TFileDirectory(fs->mkdir("LQ1Cuts3")), "(LQ1 mLQ 650:LQ1cuts3)");
-        hists.LQ1Cuts4 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts4")), "(LQ1 St 850:LQ1cuts4)");
-        hists.LQ1Cuts5 = new HeavyNuHistSet(new TFileDirectory(fs->mkdir("LQ1Cuts5")), "(LQ1 mLQ 360:LQ1cuts5)");
     }
     else if(analysisMode_ == HeavyNuEvent::TAUX)
     {
@@ -1294,88 +1287,6 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         return false;
     }
     
-    // More LQ cross-check code here
-    //int jetCount = 0;
-    //std::vector<pat::ElectronCollection::const_iterator> elecs;
-    //std::vector<pat::Muon> muons;
-    //std::list<pat::JetCollection::const_iterator> jets;
-    //
-    //std::cout << iEvent.id() << std::endl;
-    //std::cout << "N(All electrons) = " << pElecs->size() << std::endl;
-    //for(pat::ElectronCollection::const_iterator iE = pElecs->begin(); iE != pElecs->end(); ++iE)
-    //{
-    //    std::cout << "\tElectron: Pt = " << iE->pt() << " , Et = " << hnu::getElectronEt(*iE, true) << " , eta = " << iE->eta() << " , phi = " << iE->phi() << std::endl;
-    //    if(hnu::passesHEEP(*iE, 41, elecRho_, pvHandle) && hnu::getElectronEt(*iE, true) > 45) elecs.push_back(iE);
-    //}
-    //std::cout << "N(Electrons, HEEP ID, Et > 45 GeV) = " << elecs.size() << std::endl;
-    //for(std::vector<pat::ElectronCollection::const_iterator>::const_iterator iE = elecs.begin(); iE != elecs.end(); ++iE)
-    //{
-    //    std::cout << "\tElectron: Pt = " << (*iE)->pt() << " , Et = " << hnu::getElectronEt(**iE, true) << " , eta = " << (*iE)->eta() << " , phi = " << (*iE)->phi() << std::endl;
-    //}
-    //std::cout << "N(All mouns) = " << pElecs->size() << std::endl;
-    //for(pat::MuonCollection::const_iterator iM = pMuons->begin(); iM != pMuons->end(); ++iM)
-    //{
-    //    pat::Muon m = *iM;
-    //    //reco::TrackRef cktTrack = (muon::tevOptimized(m, 200, 40., 17., 0.25)).first;
-    //    //if (cktTrack.isNull()) continue;
-    //    //reco::Particle::PolarLorentzVector p4(cktTrack->pt(), m.eta(), m.phi(), 0.1057);
-    //    //m.setP4(p4);
-    //    
-    //    std::cout << "\tMuon: Pt = " << m.pt() << " , eta = " << m.eta() << " , phi = " << m.phi() << std::endl;
-    //    if(hnu::isTightHighPtMuon(m, pvHandle) && m.pt() > 45) muons.push_back(m);
-    //}
-    //std::cout << "N(Muons, tightHighPT ID, pt > 45 GeV) = " << muons.size() << std::endl;
-    //for(std::vector<pat::Muon>::const_iterator iM = muons.begin(); iM != muons.end(); ++iM)
-    //{
-    //    std::cout << "\tMuon: Pt = " << iM->pt() << " , eta = " << iM->eta() << " , phi = " << iM->phi() << std::endl;
-    //}
-    //std::cout << "N(All PF2PAT jets) = " << pJets->size() << std::endl;
-    //for(pat::JetCollection::const_iterator iJ = pJets->begin(); iJ != pJets->end(); ++iJ)
-    //{
-    //    std::cout << "\tJet: Pt = " << iJ->pt() << " , eta = " << iJ->eta() << " , phi = " << iJ->phi() << std::endl;
-    //    if(fabs(iJ->eta()) < 2.4) jets.push_back(iJ);
-    //    if(jetCount++ > 15) break;
-    //}
-    //std::cout << "N(PFJets, |eta| < 2.4) = " << jets.size() << std::endl;
-    //for(std::list<pat::JetCollection::const_iterator>::iterator iJ = jets.begin(); iJ != jets.end(); ++iJ)
-    //{
-    //    std::cout << "\tJet: Pt = " << (*iJ)->pt() << " , eta = " << (*iJ)->eta() << " , phi = " << (*iJ)->phi() << std::endl;
-    //    if(hnu::jetID(**iJ) <= 0) jets.erase(iJ);
-    //}
-    //std::cout << "N(PFJets, |eta| < 2.4, Pass Loose ID) = " << jets.size() << std::endl;
-    //for(std::list<pat::JetCollection::const_iterator>::iterator iJ = jets.begin(); iJ != jets.end(); ++iJ)
-    //{
-    //    std::cout << "\tJet: Pt = " << (*iJ)->pt() << " , eta = " << (*iJ)->eta() << " , phi = " << (*iJ)->phi() << std::endl;
-    //    double dR = 999.9;
-    //    for(std::vector<pat::Muon>::const_iterator iM = muons.begin(); iM != muons.end(); ++iM)
-    //    {
-    //        dR = std::min(dR, deltaR((*iJ)->eta(), (*iJ)->phi(), iM->eta(), iM->phi()));
-    //    }
-    //    if(dR < 0.3) jets.erase(iJ);
-    //}
-    //std::cout << "N(PFJets, |eta| < 2.4, Pass Loose ID, no muon overlap within DR < 0.3) = " << jets.size() << std::endl;
-    //for(std::list<pat::JetCollection::const_iterator>::iterator iJ = jets.begin(); iJ != jets.end(); ++iJ)
-    //{
-    //    std::cout << "\tJet: Pt = " << (*iJ)->pt() << " , eta = " << (*iJ)->eta() << " , phi = " << (*iJ)->phi() << std::endl;
-    //    double dR = 999.9;
-    //    for(std::vector<pat::ElectronCollection::const_iterator>::const_iterator iE = elecs.begin(); iE != elecs.end(); ++iE)
-    //    {
-    //        dR = std::min(dR, deltaR((*iJ)->eta(), (*iJ)->phi(), (*iE)->eta(), (*iE)->phi()));
-    //    }
-    //    if(dR < 0.3) jets.erase(iJ);
-    //}
-    //std::cout << "N(PFJets, |eta| < 2.4, Pass Loose ID, no muon or electron overlap within DR < 0.3) = " << jets.size() << std::endl;
-    //for(std::list<pat::JetCollection::const_iterator>::iterator iJ = jets.begin(); iJ != jets.end(); ++iJ)
-    //{
-    //    std::cout << "\tJet: Pt = " << (*iJ)->pt() << " , eta = " << (*iJ)->eta() << " , phi = " << (*iJ)->phi() << std::endl;
-    //    if((*iJ)->pt() < 45) jets.erase(iJ);
-    //}
-    //std::cout << "N(PFJets, |eta| < 2.4, Pass Loose ID, no muon or electron overlap within DR < 0.3, pt > 45) = " << jets.size() << std::endl;
-    //for(std::list<pat::JetCollection::const_iterator>::iterator iJ = jets.begin(); iJ != jets.end(); ++iJ)
-    //{
-    //    std::cout << "\tJet: Pt = " << (*iJ)->pt() << " , eta = " << (*iJ)->eta() << " , phi = " << (*iJ)->phi() << std::endl;
-    //}
-    
     if(firstEvent_)
     {
         // handle the jet corrector parameters collection,
@@ -1538,7 +1449,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Look for valid electrons
     std::vector< std::pair<pat::Electron, float> > eCands =
             hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt,
-                                 heepVersion_, pvHandle, elecRho_);
+                                 noElecIso_?(heepVersion_ + 100):heepVersion_, pvHandle, elecRho_);           // + 100 to heepVersion_ forces no Iso (yes, this is terrible)
 
     // std::cout << "DEBUG: Got basic objects" << std::endl ; 
 
@@ -1706,151 +1617,6 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(hnuEvent.nLeptons >= 2) fill(*pMuons, *pElecs, *pJets, hnuEvent, false, true, hists.LLptCuts);
     // std::cout << "DEBUG: Filled LLptCuts" << std::endl ; 
 
-    //LQ1 analysis 
-    int nE = 0, nM = 0;
-    if(analysisMode_ == HeavyNuEvent::HNUE || analysisMode_ == HeavyNuEvent::TOP)
-    {
-        std::vector< std::pair<pat::Jet, float> > jetCandsLQ =
-                hnu::getJetList(pJets, jecuObj_, 45, 2.4, applyJECUsign_, jecVal_, hnuEvent.isMC, applyJERsign_, &pMuons, &pElecs, &pvHandle, elecRho_);
-        //std::cout << "JET LIST SIZE: " << jetCandsLQ.size() << std::endl;
-        if(jetCandsLQ.size() >= 2 && eCands.size() >= 2 && hnu::getElectronEt(eCands[0].first, true) > 50 && hnu::getElectronEt(eCands[1].first, true) > 45)
-        //if(jetCandsLQ.size() >= 2 && eCands.size() >= 2 && hnuEvent.l1pt > 50 && hnuEvent.l1pt > 45)
-        {
-            for(std::vector<pat::Muon>::const_iterator iM = muCands.begin(); iM != muCands.end(); ++iM) if(iM->pt() > 45) nM++;
-            for(std::vector< std::pair<pat::Electron, float> >::const_iterator iE = eCands.begin(); iE != eCands.end(); ++iE) if(hnu::getElectronEt(iE->first, true) > 45) nE++;
-
-            if((analysisMode_ == HeavyNuEvent::HNUE && nE == 2) || (analysisMode_ == HeavyNuEvent::TOP && nE == 1 && nM == 1))
-            {
-                HeavyNuEvent hnuLQ(hnuEvent);
-                if((jetCandsLQ[0].first.pt() > 125) && (jetCandsLQ[1].first.pt() > 45))
-                {
-                    hnuLQ.e1 = eCands[0].first;
-                    hnuLQ.e2 = eCands[1].first;
-                    hnuLQ.j1 = jetCandsLQ[0].first;
-                    hnuLQ.j2 = jetCandsLQ[1].first;
-                    hnuLQ.calculate(correctEscale_, tr3_);
-
-                    double st = hnuLQ.l1pt + hnuLQ.l2pt + hnuLQ.j1.pt() + hnuLQ.j2.pt();
-
-                    
-                    if(hnuLQ.mLL > 50 && (st > 300))
-                    {
-                        hists.LQ1Cuts->fill(hnuLQ);
-                        if(hnuLQ.mLL > 110)
-                        {
-                            hists.LQ1Cuts2->fill(hnuLQ);
-                        }
-
-                        if(hnuLQ.mLL > 155)
-                        {       
-                            hists.LQ1Cuts3->fill(hnuLQ);
-                            if(st > 850)
-                            {
-                                hists.LQ1Cuts4->fill(hnuLQ);
-                                if(hnuLQ.mLQmin > 360)
-                                {
-                                    hists.LQ1Cuts5->fill(hnuLQ);
-                                    // Skim for electron bump events
-                                    //if(analysisMode_ == HeavyNuEvent::HNUE)
-                                    //{
-                                    //    double pL1 = hnuLQ.l1pt * cosh(hnuLQ.l1eta);
-                                    //    double pL2 = hnuLQ.l2pt * cosh(hnuLQ.l2eta);
-                                    //    double pLmax = std::max(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
-                                    //    double pLmin = std::min(hnuLQ.l1pt * cosh(hnuLQ.l1eta), hnuLQ.l2pt * cosh(hnuLQ.l2eta));
-                                    //    int sDID1 = hnuLQ.e1.superCluster()->seed()->seed();
-                                    //    int sDID2 = hnuLQ.e2.superCluster()->seed()->seed();
-                                    //    std::cout << "lqskim: " << iEvent.id() << "\t" << hnuLQ.mWR << "\t" << st << "\t" << hnuLQ.mLQmin << "\t" << hnuLQ.mLL << "\t" << hnuLQ.l1pt << "\t" << hnuLQ.l2pt << "\t" << hnuLQ.l1eta << "\t" << hnuLQ.l2eta << "\t" << hnuLQ.l1phi << "\t" << hnuLQ.l2phi << "\t" << hnuLQ.j1.pt() << "\t" << hnuLQ.j2.pt() << "\t" << hnuLQ.j1.eta() << "\t" << hnuLQ.j2.eta() << "\t" << hnuLQ.j1.phi() << "\t" << hnuLQ.j2.phi() << std::endl;
-                                    //}
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-    }
-    
-    
-    //if(analysisMode_ == HeavyNuEvent::HNUE)
-    //{
-    //    // Skim for electron bump events
-    //    //double pL1 = hnuEvent.l1pt * cosh(hnuEvent.l1eta);
-    //    //double pL2 = hnuEvent.l2pt * cosh(hnuEvent.l2eta);
-    //    //double pLmax = std::max(hnuEvent.l1pt * cosh(hnuEvent.l1eta), hnuEvent.l2pt * cosh(hnuEvent.l2eta));
-    //    //double pLmin = std::min(hnuEvent.l1pt * cosh(hnuEvent.l1eta), hnuEvent.l2pt * cosh(hnuEvent.l2eta));
-    //    int sDID1 = 0, sDID2 = 0;
-    //    if(hnuEvent.nElectrons > 0) sDID1 = hnuEvent.e1.superCluster()->seed()->seed();
-    //    if(hnuEvent.nElectrons > 1) sDID2 = hnuEvent.e2.superCluster()->seed()->seed();
-    //    //double st = hnuEvent.l1pt + hnuEvent.l2pt + hnuEvent.j1.pt() + hnuEvent.j2.pt();
-    //    //std::cout << "wrskim: " << iEvent.id() << "\t" << hnuEvent.mWR << "\t" << st << "\t" << hnuEvent.mLQmin << "\t" << hnuEvent.mLL << "\t" << hnuEvent.l1pt << "\t" << hnuEvent.l2pt << "\t" << hnuEvent.l1eta << "\t" << hnuEvent.l2eta  << "\t" << hnuEvent.l1phi << "\t" << hnuEvent.l2phi  << "\t" << hnuEvent.j1.pt() << "\t" << hnuEvent.j2.pt() << "\t" << hnuEvent.j1.eta() << "\t" << hnuEvent.j2.eta() << "\t" << hnuEvent.j1.phi() << "\t" << hnuEvent.j2.phi() << "\t" << nE << "\t" << nM << std::endl;
-    //    //    if(pLmin > 700 )             std::cout << "pL2skim:" << iEvent.run() << ":" << iEvent.luminosityBlock() << ":" << iEvent.id() << "\t" << hnuEvent.mWR << "\t" << pL1 << "\t" << pL2 << "\t" << sDID1 << "\t" << sDID2 << std::endl;
-    //    //    if(hnuEvent.mWR > 950 && hnuEvent.mWR < 1200 && hnuEvent.mLL > 500) std::cout << "1TeVBump:" << iEvent.run() << ":" << iEvent.luminosityBlock() << ":" << iEvent.id() << "\t" << hnuEvent.mWR << "\t" << pL1 << "\t" << pL2 << "\t" << sDID1 << "\t" << sDID2 << std::endl;
-    //    
-    //    std::cout << iEvent.id() << std::endl;
-    //    for(unsigned ihit = 0; ihit < ebDigis->size (); ++ihit)
-    //    {
-    //        const EBDataFrame& frame = (*ebDigis)[ihit];
-    //        int did = frame.id();
-    //        if(did == sDID1)
-    //        {
-    //            std::cout << "pt: " << hnuEvent.l1pt << ", eta: " << hnuEvent.l1eta << ", phi: " << hnuEvent.l1phi << std::endl;
-    //            std::cout << "electron E: " << hnuEvent.e1.caloEnergy() << ", seed E: " << hnuEvent.e1.superCluster()->seed()->energy() << std::endl;
-    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e1.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e1.superCluster()->seed()->hitsAndFractions().end(); ++i)
-    //            {
-    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = ebRecHits->find(i->first);
-    //                if(rh != ebRecHits->end()) std::cout << *rh << std::endl;
-    //            }
-    //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = ebRecHits->find(sDID1);
-    //            if(erh != ebRecHits->end()) std::cout << "\"SEED\"\n" << *erh << std::endl;
-    //            std::cout << frame << std::endl;
-    //        }
-    //        if(did == sDID2)
-    //        {
-    //            std::cout << "pt: " << hnuEvent.l2pt << ", eta: " << hnuEvent.l2eta << ", phi: " << hnuEvent.l2phi << std::endl;
-    //            std::cout << "electron E: " << hnuEvent.e2.caloEnergy() << ", seed E: " << hnuEvent.e2.superCluster()->seed()->energy() << std::endl;
-    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e2.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e2.superCluster()->seed()->hitsAndFractions().end(); ++i)
-    //            {
-    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = ebRecHits->find(i->first);
-    //                if(rh != ebRecHits->end()) std::cout << *rh << std::endl;
-    //            }
-    //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = ebRecHits->find(sDID2);
-    //            if(erh != ebRecHits->end()) std::cout << *erh << std::endl;
-    //            std::cout << frame << std::endl;
-    //        }
-    //    }
-    //    for(unsigned ihit = 0; ihit < eeDigis->size (); ++ihit)
-    //    {
-    //        const EEDataFrame& frame = (*eeDigis)[ihit];
-    //        int did = frame.id();
-    //        if(did == sDID1)
-    //        {
-    //            std::cout << "pt: " << hnuEvent.l1pt << ", eta: " << hnuEvent.l1eta << ", phi: " << hnuEvent.l1phi << std::endl;
-    //            std::cout << "electron E: " << hnuEvent.e1.caloEnergy() << ", seed E: " << hnuEvent.e1.superCluster()->seed()->energy() << std::endl;
-    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e1.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e1.superCluster()->seed()->hitsAndFractions().end(); ++i)
-    //            {
-    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = eeRecHits->find(i->first);
-    //                if(rh != eeRecHits->end()) std::cout << *rh << std::endl;
-    //            }
-    //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = eeRecHits->find(sDID1);
-    //            if(erh != eeRecHits->end()) std::cout << *erh << std::endl;
-    //            std::cout << frame << std::endl;
-    //        }
-    //        if(did == sDID2)
-    //        {
-    //            std::cout << "pt: " << hnuEvent.l2pt << ", eta: " << hnuEvent.l2eta << ", phi: " << hnuEvent.l2phi << std::endl;
-    //            std::cout << "electron E: " << hnuEvent.e2.caloEnergy() << ", seed E: " << hnuEvent.e2.superCluster()->seed()->energy() << std::endl;
-    //            for(std::vector<std::pair<DetId, float> >::const_iterator i = hnuEvent.e2.superCluster()->seed()->hitsAndFractions().begin(); i != hnuEvent.e2.superCluster()->seed()->hitsAndFractions().end(); ++i)
-    //            {
-    //                edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator rh = eeRecHits->find(i->first);
-    //                if(rh != eeRecHits->end()) std::cout << *rh << std::endl;
-    //            }
-    //            edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh = eeRecHits->find(sDID2);
-    //            if(erh != eeRecHits->end()) std::cout << *erh << std::endl;
-    //            std::cout << frame << std::endl;
-    //        }
-    //    }
-    //}
 
     if (hnuEvent.nLeptons < 2) return false ;
 
@@ -1940,8 +1706,18 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         if ( analysisMode_ == HeavyNuEvent::HNUE )
         {
             int sDID1 = 0, sDID2 = 0;
-            if(hnuEvent.nElectrons > 0) sDID1 = hnuEvent.e1.superCluster()->seed()->seed();
-            if(hnuEvent.nElectrons > 1) sDID2 = hnuEvent.e2.superCluster()->seed()->seed();
+            if(hnuEvent.nElectrons > 0) 
+            {
+                sDID1 = hnuEvent.e1.superCluster()->seed()->seed();
+                
+                hnuTree_->event_.cL1 = hnuEvent.e1.charge();
+            }
+            if(hnuEvent.nElectrons > 1) 
+            {
+                sDID2 = hnuEvent.e2.superCluster()->seed()->seed();
+                
+                hnuTree_->event_.cL2 = hnuEvent.e2.charge();
+            }
             edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh1;
             edm::SortedCollection<EcalRecHit, edm::StrictWeakOrdering<EcalRecHit> >::const_iterator erh2;
             if(hnuEvent.e1.isEB()) erh1 = ebRecHits->find(sDID1);
@@ -1959,6 +1735,8 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hnuTree_->event_.rhE2 = 0.0;
             hnuTree_->event_.sE1 = 0.0;
             hnuTree_->event_.sE2 = 0.0;
+            if(hnuEvent.nMuons > 0) hnuTree_->event_.cL1 = hnuEvent.mu1.charge();
+            if(hnuEvent.nMuons > 1) hnuTree_->event_.cL2 = hnuEvent.mu2.charge();
         }
         hnuTree_->event_.met = hnuEvent.met1.energy();
         hnuTree_->event_.j1B = (int)hnuEvent.isBJet1;
@@ -1966,6 +1744,15 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         hnuTree_->event_.run   = iEvent.run();
         hnuTree_->event_.ls    = iEvent.luminosityBlock();
         hnuTree_->event_.event = iEvent.id().event();
+        hnuTree_->event_.emult = eCands.size();
+        hnuTree_->event_.mumult = muCands.size();
+        hnuTree_->event_.jmult = jetCands.size();
+        int nbjets = 0;
+        for(unsigned int i = 0; i < jetCands.size(); i++)
+        {
+            if(jetCands[i].first.bDiscriminator(btagName) >= minBtagDiscVal) nbjets++;
+        }
+        hnuTree_->event_.bmult = nbjets;
     }
 
     //--- Trigger code needs to be updated...placeholder for now ---//  is this still a palce holder? -Joe 9/24/12

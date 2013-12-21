@@ -11,12 +11,12 @@ isData=not isMC
 cmsswRelease = 53
 
 #--- Signal MC flags ---#
-isMCsignal=True
+isMCsignal=False
 
 #--- Data Run era flags ---#
 # options 2012AB, 2012Ar, 2012Cr, 2012Cp, 2012Ce, 2012D
 # options 2012ABCre, 2012Dre
-runEra = "2012Dre"
+runEra = "2012ABCre"
 
 #--- Flags for data taking era, which are set automatically ---#
 #--- dataEra has been deprecated ---#
@@ -30,9 +30,9 @@ llHighMassSkim   = False
 topSkim          = False
 
 #--- Flags for nominal studies ---#
-runMuonAnalysis     = True
+runMuonAnalysis     = False
 runElectronAnalysis = True
-systematics    = True
+systematics    = False
 tagandprobe    = False
 doTriggerStudy = False
 addSlopeTrees  = True
@@ -628,6 +628,9 @@ process.hNuMu40eta2p1 = process.hNu.clone()
 process.hNuE               = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'))
 process.hNuE.correctEscale = cms.bool(False)
 
+process.hNuEnoIso               = process.hNu.clone(analysisMode = cms.untracked.string('HNUE'), noElecIso = cms.untracked.bool(True))
+process.hNuEnoIso.correctEscale = cms.bool(False)
+
 process.hNuEMu               = process.hNu.clone(analysisMode = cms.untracked.string('TOP'))
 process.hNuEMu.correctEscale = cms.bool(False)
 
@@ -812,6 +815,7 @@ if runElectronAnalysis:
             process.AnalysisIntroSequenceElec = process.AnalysisIntroSequence
 
         process.pE = cms.Path(process.AnalysisIntroSequenceElec + process.hNuE)
+        process.pEnoIso = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEnoIso)
         if systematics:
             process.pEjesHi  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjesHi);
             process.pEjesLo  = cms.Path(process.AnalysisIntroSequenceElec + process.hNuEjesLo);
@@ -828,6 +832,7 @@ if runElectronAnalysis:
 
     if isData:
         process.pE = cms.Path( process.AnalysisIntroSequence + process.hNuE )
+        process.pEnoIso = cms.Path(process.AnalysisIntroSequence + process.hNuEnoIso)
         if doTriggerStudy:
             process.pE = cms.Path( process.AnalysisIntroSequence + process.TriggerStudyElectronSequence + process.hNuETrig  )
           

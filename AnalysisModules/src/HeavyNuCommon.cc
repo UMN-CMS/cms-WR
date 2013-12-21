@@ -266,6 +266,78 @@ namespace hnu {
     // Passes HEEP selection
     return true ; 
   }
+  
+  bool passesNoIsoHEEP(const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle) { 
+
+    if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40  && abs(heepVersion) != 41) return false ; 
+
+    //double ePt  = getElectronEt(e,(abs(heepVersion) != 40) && (abs(heepVersion) != 41)) ; 
+    double ePt  = getElectronEt(e,true) ; 
+    // if ( ePt < 35.0 ) std::cout << "Removing low pT electron from consideration" << std::endl ; 
+    // if ( ePt < 35.0 ) return false ; 
+
+    // std::cout << "heepVersion: " << heepVersion << " and rho " << rho << std::endl ; 
+    
+    // All electrons must be ECAL driven
+    // if ( !e.ecalDriven() ) std::cout << "FAILURE: electron is not ecal driven!!!" << std::endl ; 
+    if ( !e.ecalDriven() ) return false ;
+
+    double eEta = getElectronSCEta(e) ; 
+    bool isEB   = ( fabs(eEta) < 1.442 ) ; 
+    bool isEE   = ( fabs(eEta) < 2.5 && fabs(eEta) > 1.56 ) ; 
+    // std::cout << "Electron pT: " << ePt << std::endl ; 
+    // std::cout << "Electron SC eta: " << eEta << std::endl ; 
+    // if ( !isEB && !isEE) std::cout << "FAILURE: electron is not in EB or EE: " << eEta << std::endl ; 
+    if ( !isEB && !isEE ) return false ; 
+    
+    double HoE = e.hadronicOverEm() ; 
+    // std::cout << "Electron HoE: " << HoE << std::endl ; 
+    // if ( HoE > 0.05 ) std::cout << "FAILURE: HOE = " << HoE << std::endl ; 
+    if ( HoE > 0.05 ) return false ; 
+
+    double dEtaIn = fabs(e.deltaEtaSuperClusterTrackAtVtx()) ; 
+    // std::cout << "Electron dEtaIn: " << dEtaIn << std::endl ; 
+    // if ( ( isEB && dEtaIn > 0.005 ) || ( isEE && dEtaIn > 0.007 ) ) std::cout << "FAILURE: Electron dEtaIn: " << dEtaIn << std::endl ; 
+    if ( isEB && dEtaIn > 0.005 ) return false ; 
+    if ( isEE && dEtaIn > 0.007 ) return false ; 
+
+    double dPhiIn = fabs(e.deltaPhiSuperClusterTrackAtVtx()) ; 
+    // std::cout << "Electron dPhiIn: " << dPhiIn << std::endl ; 
+    // if ( heepVersion == 40 && dPhiIn > 0.06 ) std::cout << "FAILURE: Electron dPhiIn = " << dPhiIn << std::endl ; 
+    if (  heepVersion == 31                                                      && dPhiIn > 0.09 ) return false ; 
+    if ( (heepVersion == 32 || abs(heepVersion) == 40 || abs(heepVersion) == 41) && dPhiIn > 0.06 ) return false ; 
+
+    double sig_iEiE = e.sigmaIetaIeta() ; 
+    // if ( isEE ) std::cout << "Electron sigiEiE: " << sig_iEiE << std::endl ; 
+    // if ( isEE && sig_iEiE > 0.03 ) std::cout << "FAILURE: Electron sigiEiE = " << sig_iEiE << std::endl ; 
+    if ( isEE && sig_iEiE > 0.03 ) return false ; 
+
+    double e1x5_5x5 = e.e1x5() / e.e5x5() ; 
+    double e2x5_5x5 = e.e2x5Max() / e.e5x5() ; 
+    // if ( isEB ) std::cout << "Electron 1x5, 2x5: " << e1x5_5x5 << ", " << e2x5_5x5 << std::endl ; 
+    // if ( isEB && (e2x5_5x5 < 0.94 && e1x5_5x5 < 0.83) ) std::cout << "FAILURE: Electron 1x5, 2x5 = " << e1x5_5x5 << ", " << e2x5_5x5 << std::endl ; 
+    if ( isEB && (e2x5_5x5 < 0.94 && e1x5_5x5 < 0.83) ) return false ; 
+
+    int nLostHits = e.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() ; 
+    // std::cout << "Electron nLostHits: " << nLostHits << std::endl ; 
+    // if ( nLostHits != 0 ) std::cout << "FAILURE: Electron nLostHits = " << nLostHits << std::endl ; 
+    if( heepVersion == 31 || heepVersion == 32 || heepVersion == 40) if ( nLostHits != 0 ) return false ; 
+    if( heepVersion == 41) if ( nLostHits > 1 ) return false ; 
+    
+    if(pvHandle.isValid())
+    {
+      double absdxy = fabs(e.gsfTrack()->dxy(pvHandle->at(0).position()));
+      if(isEB && absdxy > 0.02) return false;
+      if(isEE && absdxy > 0.05) return false;
+    } else {
+      if (abs(heepVersion) == 41) return false ; 
+    }
+    
+    // std::cout << "Congratulations!  The electron passes HEEP selection" << std::endl ; 
+
+    // Passes HEEP selection
+    return true ; 
+  }
 
 
   bool passesHEEPv31(const pat::Electron& e) { 
@@ -954,18 +1026,24 @@ namespace hnu {
     else                 scaleCorrection = ebeeCorr; 
 
     return (1 + tr->Gaus(0, scaleCorrection));
-  }
+    }
 
-
-  std::vector< std::pair<pat::Electron,float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
-								double maxAbsEta, 
-								double minEtEB, double minEtEE, 
-								int heepVersion,
-                                edm::Handle<reco::VertexCollection> pvHandle,
-								double rho,
-								float ebScale, float eeScale) {
+    std::vector< std::pair<pat::Electron, float> > getElectronList(edm::Handle<pat::ElectronCollection>& pElecs,
+                                                                   double maxAbsEta,
+                                                                   double minEtEB, double minEtEE,
+                                                                   int heepVersion,
+                                                                   edm::Handle<reco::VertexCollection> pvHandle,
+                                                                   double rho,
+                                                                   float ebScale, float eeScale)
+    {
     
     std::vector< std::pair<pat::Electron,float> > electronList ; 
+    
+    // hack to turn HEEP iso requirements on and off 
+    bool heepIsoOff = false;
+    if(heepVersion > 100) heepIsoOff = true;
+    heepVersion %= 100;
+    
     // Just in case...
     if(heepVersion > 0)
     { // heepVersion = 0 for no heep selection
@@ -979,7 +1057,8 @@ namespace hnu {
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
 
       // Apply selection if requested
-      if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
+      if(heepIsoOff) {std::cout << "NO HEEP ISO" << std::endl;if ( (heepVersion > 0) && !passesNoIsoHEEP(iE,heepVersion,rho, pvHandle)) continue ;}
+      else           {std::cout << "HEEP ISO" << std::endl;if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;}
       // Apply anti-selection if requested (fake electron sample)
       if ( (heepVersion < 0) && 
 	   (!passesFakeRateMinimum(iE,pvHandle) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;

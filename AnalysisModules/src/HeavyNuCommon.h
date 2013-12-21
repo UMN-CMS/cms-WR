@@ -76,6 +76,7 @@ namespace hnu
     double fakeProbability     ( const pat::Electron& e ) ; 
     double fakeProbability     ( const pat::Muon& mu ) ; 
     bool passesHEEP         (const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle); 
+    bool passesNoIsoHEEP    (const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle);
     bool passesHEEPv31      (const pat::Electron& e); 
     bool passesHEEPv32      (const pat::Electron& e); 
 
