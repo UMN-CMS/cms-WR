@@ -168,7 +168,7 @@ namespace hnu {
     return prob ; 
   }
 
-  bool passesHEEP(const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle) { 
+  bool passesHEEP(const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle) {
 
     if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40  && abs(heepVersion) != 41) return false ; 
 
@@ -267,7 +267,7 @@ namespace hnu {
     return true ; 
   }
   
-  bool passesNoIsoHEEP(const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle) { 
+  bool passesNoIsoHEEP(const pat::Electron& e, int heepVersion, double rho, edm::Handle<reco::VertexCollection> pvHandle) {
 
     if ( heepVersion != 31 && heepVersion != 32 && abs(heepVersion) != 40  && abs(heepVersion) != 41) return false ; 
 
@@ -1057,8 +1057,14 @@ namespace hnu {
       if ( getElectronSCEta(iE) > maxAbsEta ) continue ; 
 
       // Apply selection if requested
-      if(heepIsoOff) if ( (heepVersion > 0) && !passesNoIsoHEEP(iE,heepVersion,rho, pvHandle)) continue ;
-      else           if ( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
+      if(heepIsoOff) 
+      {
+          if( (heepVersion > 0) && !passesNoIsoHEEP(iE,heepVersion,rho, pvHandle)) continue ;
+      }
+      else
+      {
+          if( (heepVersion > 0) && !passesHEEP(iE,heepVersion,rho, pvHandle)) continue ;
+      }
       // Apply anti-selection if requested (fake electron sample)
       if ( (heepVersion < 0) && 
 	   (!passesFakeRateMinimum(iE,pvHandle) || passesHEEP(iE,abs(heepVersion),rho, pvHandle)) ) continue ;

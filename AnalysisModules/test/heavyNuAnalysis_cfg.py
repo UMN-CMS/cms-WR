@@ -30,7 +30,7 @@ llHighMassSkim   = False
 topSkim          = False
 
 #--- Flags for nominal studies ---#
-runMuonAnalysis     = False
+runMuonAnalysis     = True
 runElectronAnalysis = True
 systematics    = False
 tagandprobe    = False

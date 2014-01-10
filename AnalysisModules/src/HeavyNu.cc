@@ -906,9 +906,15 @@ void HeavyNu::selectElectrons(std::vector< std::pair<pat::Electron, float> >& eC
     // std::cout << "DEBUG: selectElectrons with " << eCands.size() << " candidates, need " << nDirtyCands_ << " dirty" << std::endl ; 
     unsigned int dirtyPosition = eCands.size() + 1 ;
     //unsigned int cleanPosition = eCands.size() + 1 ;
-    std::vector< std::pair<pat::Electron, float> > eDirtyCands = ( nDirtyCands_ > 0 ) ?
+    std::vector< std::pair<pat::Electron, float> > eDirtyCands;
+    
+    if(nDirtyCands_ > 0)
+    {
+        eDirtyCands= ( nDirtyCands_ > 0 ) ?
             hnu::getElectronList(pElecs, cuts.maximum_elec_abseta, cuts.minimum_mu2_pt, cuts.minimum_mu2_pt,
                                  (-1 * heepVersion_), pvHandle, elecRho_) : eCands ;
+    }
+    
     if ( nDirtyCands_ == 0 )
     {
         for(unsigned int i = 0; i < eCands.size(); i++)
