@@ -1735,7 +1735,7 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             hnuTree_->event_.sE1 = hnuEvent.e1.superCluster()->seed()->energy();
             hnuTree_->event_.sE2 = hnuEvent.e2.superCluster()->seed()->energy();
         }
-        else
+        else if(analysisMode_ == HeavyNuEvent::HNUMU)
         {
             hnuTree_->event_.rhE1 = 0.0;
             hnuTree_->event_.rhE2 = 0.0;
@@ -1744,6 +1744,15 @@ bool HeavyNu::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             if(hnuEvent.nMuons > 0) hnuTree_->event_.cL1 = hnuEvent.mu1.charge();
             if(hnuEvent.nMuons > 1) hnuTree_->event_.cL2 = hnuEvent.mu2.charge();
         }
+	else
+	{
+            hnuTree_->event_.rhE1 = 0.0;
+            hnuTree_->event_.rhE2 = 0.0;
+            hnuTree_->event_.sE1 = 0.0;
+            hnuTree_->event_.sE2 = 0.0;
+	    if(hnuEvent.nMuons > 0) hnuTree_->event_.cL1 = hnuEvent.mu1.charge();
+	    if(hnuEvent.nElectrons > 0) hnuTree_->event_.cL2 = hnuEvent.e1.charge();
+	}
         hnuTree_->event_.met = hnuEvent.met1.energy();
         hnuTree_->event_.j1B = (int)hnuEvent.isBJet1;
         hnuTree_->event_.j2B = (int)hnuEvent.isBJet2;

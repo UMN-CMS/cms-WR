@@ -80,22 +80,7 @@ process.options = cms.untracked.PSet(
 
 # source
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
-                            #file:/data/whybee0a/user/dahmes/multiSkim/V03-00-07/prompt/run2012D/noDupes/mar25/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes/muTopMultiSkim_plep50_35_pemu50_35_2012Dprompt_mar25_noDupes_000.root
-                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/pL1Skim/2012D.root')
-                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/sherpadyfile.root')
-                            #file:/hdfs/cms/skim/mu/hNu_2012/skim50_35/jul13rereco_run2012AB/muTopMultiSkim_plep50_35_pemu50_35_2012ABjul13_feb11_104.root')
-                            #/hdfs/cms/phedex/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
-                            #/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-2900_MNu-1450_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/30672247-B1EC-E111-A906-00215E222220.root')
-                            #/store/mc/Summer12_DR53X/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7C-v1/00000/56B5A94D-FB27-E211-901F-AC162DA8C2B0.root')
-                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/DY0JetsToLL_M-50_TuneZ2Star_8TeV-madgraph_START53_V7A/FZJ_000.root')
-                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/TTBar_Partial/heavynu_candevents_425_1_uct.root')
-                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/skims/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_START53_V7A_2/heavynu_candevents_136_1_Hd1.root')
-                            #file:/hdfs/cms/skim/elec/hNu_2012/photon/eejj_skim_aug8_rereco_run2012a/eejj_skim_aug8_rereco_run2012a_266.root')
-                            #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root')
-                            #file:/local/cms/user/pastika/heavyNuAnalysis_2012/2C1FBAB2-C1D4-E111-A89A-001E6739815B.root
-                            #file:/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_3_patch1/src/HeavyNu/AnalysisModules/heavynu_candevents.root')
-                            #file:/hdfs/cms/skim/mu/hNu_2012/jul13_2012A_mu35e35/jul13_2012A_mu35e35_015.root
+                            fileNames=cms.untracked.vstring('/store/mc/Summer12_DR53X/WRToNuLeptonToLLJJ_MW-3100_MNu-1550_TuneZ2star_8TeV-pythia6-tauola/AODSIM/PU_S10_START53_V7A-v1/0000/986798F7-CCEC-E111-91A7-0030486792A8.root')
 )
 
 if isData:
