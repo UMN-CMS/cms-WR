@@ -29,6 +29,7 @@ process.TFileService = cms.Service("TFileService",
 )
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("HeavyNu.AnalysisModules.heavynugenlevel_cfi")
+process.hNuGen.channel = cms.int32(2) # 2 for electron channel
 process.load("PhysicsTools.HepMCCandAlgos.genParticles_cfi")
 
 process.load("RecoJets.Configuration.RecoGenJets_cff")

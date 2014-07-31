@@ -17,4 +17,5 @@ hNuGen = cms.EDAnalyzer (
     minMuMuMass  = cms.double(200),
     min4objMass  = cms.double(600),
     minMuonJetdR = cms.double(0.5),
+    channel      = cms.int32(2), #1 = muon, 2 = electron
     )
