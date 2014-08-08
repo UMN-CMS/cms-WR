@@ -18,6 +18,23 @@
 #include "TGraphSmooth.h"
 #include "Math/VectorUtil.h"
 
+#include "RooRealVar.h"
+#include "RooFormulaVar.h"
+#include "RooGenericPdf.h"
+#include "RooDataSet.h"
+#include "RooAbsData.h"
+#include "RooArgSet.h"
+#include "RooRealVar.h"
+#include "RooWorkspace.h"
+#include "RooDataHist.h"
+#include "RooPlot.h"
+#include "RooAddPdf.h"
+#include "RooKeysPdf.h"
+#include "RooHistPdf.h"
+#include "RooGaussian.h"
+#include "RooFitResult.h"
+#include "RooProdPdf.h"
+
 #include "tdrstyle.C"
 //#include "fitHNBackground.cc"
 #include "../AnalysisModules/src/HeavyNuTree.h"
@@ -149,6 +166,7 @@ public:
     void plotNorm(double lower, double upper, bool flip = false);
     void plotRatios();
     void scaleByShape(double llow, double lhigh, int npar = 2);
+    void scaleSigByRoo();
     void cutFlow();
     void sigEff();
     void integrals(double min, double max, double* passnum = NULL, double* err = NULL);
@@ -189,11 +207,16 @@ private:
     TH1* project(TH2* h2d, double cl, double ch, bool porjx = true);
     int projcount;
 
-    TH1* histFromTuple(std::string histpath, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll = NULL, HeavyNuTree::HNuSlopeFitInfo *ul = NULL, bool smooth = false);
+    TH1* histFromTuple(std::string histpath, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll = NULL, HeavyNuTree::HNuSlopeFitInfo *ul = NULL, bool smooth = false, RooDataSet* rds = 0);
     bool runFilter(std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >::const_iterator iE);
     void histFromDataCard(std::map<std::pair<std::string, std::string>, std::vector<float> >& uncerts);
     double getTupleVar(std::string var, const HeavyNuTree::HNuSlopeFitInfo& ll);
     bool dynamicalCut(double var, double cut, char cutType);
+    
+    //Roo objects
+    RooRealVar mWR, mLL, mJJ, ptL1, mNu1, mNu2;
+    RooDataSet *rd_BG, *rd_Data, *rd_sig;
+    RooArgList ral;
 
     class fitfunction
     {
@@ -221,11 +244,21 @@ double HnuPlots::fitfunction::operator()(double * x, double * par)
     return retval;
 }
 
-HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStruct> >& vfbg, std::vector<std::vector<HnuPlots::FileStruct> >& vfsig, double iL)
+HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStruct> >& vfbg, std::vector<std::vector<HnuPlots::FileStruct> >& vfsig, double iL) :
+    mWR("mWR", "mWR", 0, 10000), mLL("mLL", "mLL", 0, 2000), mJJ("mJJ", "mJJ", 0, 2000), ptL1("ptL1", "ptL1", 0, 2000),
+    mNu1("mNu1", "mNu1", 0, 10000), mNu2("mNu2", "mNu2", 0, 10000), ral(mWR, mLL, mJJ, ptL1, mNu1, mNu2)
 {
     using namespace std;
 
     bool first;
+
+    //adding ugly roo hack starts here here    
+    rd_BG   = new RooDataSet("background", "background", ral); //, RooFit::WeightVar(weight));
+    rd_Data = new RooDataSet(      "data",       "data", ral); //, RooFit::WeightVar(weight));
+    rd_sig  = new RooDataSet(    "signal",     "signal", ral);//, RooFit::WeightVar(weight));
+    //rd_BG  ->setWeightVar(weight);
+    //rd_Data->setWeightVar(weight);
+    //rd_sig->setWeightVar(weight);
 
     TH1::AddDirectory(kFALSE);
 
@@ -272,7 +305,7 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
             // gethistogram
             if(ibgf->loadtuple && ibgf->histFromTuple)
             {
-                h = histFromTuple(ibgf->histpath.substr(ibgf->histpath.rfind("/") + 1, ibgf->histpath.size()), ibgf->thb, ibgtvec, ibgf->tpll, ibgf->tpul);
+                h = histFromTuple(ibgf->histpath.substr(ibgf->histpath.rfind("/") + 1, ibgf->histpath.size()), ibgf->thb, ibgtvec, ibgf->tpll, ibgf->tpul, false, rd_BG);
             }
             else if(fabs(ibgf->clow) < 1e-300 && fabs(ibgf->chigh) < 1e-300)
             {
@@ -369,7 +402,7 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
             if(isigf->loadtuple && isigf->histFromTuple)
             {
                 std::cout << isigf->histpath.substr(isigf->histpath.rfind("/") + 1, isigf->histpath.size()) << std::endl;
-                h = histFromTuple(isigf->histpath.substr(isigf->histpath.rfind("/") + 1, isigf->histpath.size()), isigf->thb, sigtvec, isigf->tpll, isigf->tpul, isigf->smooth_hist);
+                h = histFromTuple(isigf->histpath.substr(isigf->histpath.rfind("/") + 1, isigf->histpath.size()), isigf->thb, sigtvec, isigf->tpll, isigf->tpul, isigf->smooth_hist, rd_sig);
             }
             else
             {
@@ -431,7 +464,7 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
         TH1 *h;
         if(fdata.loadtuple && fdata.histFromTuple)
         {
-            h = histFromTuple(fdata.histpath.substr(fdata.histpath.rfind("/") + 1, fdata.histpath.size()), fdata.thb, dtvec, fdata.tpll, fdata.tpul);
+            h = histFromTuple(fdata.histpath.substr(fdata.histpath.rfind("/") + 1, fdata.histpath.size()), fdata.thb, dtvec, fdata.tpll, fdata.tpul, false, rd_Data);
             //TFile * fdfd = new TFile("fdata.root", "RECREATE");
             //TH1 * hcopy = (TH1*)h->Clone("mWR");
             //TDirectory * td1 = fdfd->mkdir("hNuE");
@@ -536,7 +569,7 @@ TH1* HnuPlots::project(TH2* h2d, double cl, double ch, bool projx)
     return h;
 }
 
-TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll, HeavyNuTree::HNuSlopeFitInfo *ul, bool smooth)
+TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll, HeavyNuTree::HNuSlopeFitInfo *ul, bool smooth, RooDataSet *rds)
 {
     std::vector<std::string> histQs;
     bool invertCuts = false;
@@ -691,6 +724,25 @@ TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std:
         //if(iT->first.j1B + iT->first.j2B < nbjet) continue;
         //if(iT->first.j1B + iT->first.j2B >= 1) printf("b run: %d\n", iT->first.run);
 
+        //fill rooDataSet here
+        if(rds) 
+        {
+            mWR = iT->first.mlljj;
+            ral[0] = mWR;
+            mLL = iT->first.mll;
+            ral[1] = mLL;
+            mJJ = getTupleVar("mJJ", iT->first);
+            ral[2] = mJJ;
+            ptL1 = iT->first.l1pt;
+            ral[3] = ptL1;
+            mNu1 = getTupleVar("mNuR1", iT->first);
+            ral[4] = mNu1;
+            mNu2 = getTupleVar("mNuR2", iT->first);
+            ral[5] = mNu2;
+            
+            rds->add(ral, iT->first.weight * iT->second);
+        }
+
         // prepair appropriate variables for fill
         for(std::vector<std::string>::const_iterator ihlabel = histQs.begin(); ihlabel != histQs.end(); ++ihlabel)
         {
@@ -707,7 +759,10 @@ TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std:
                     hist->Fill(i, iT->first.weight);
                 }
             }
-            else hist->Fill(values[0], iT->first.weight);
+            else 
+            {
+                hist->Fill(values[0], iT->first.weight);
+            }
         }
         else if(values.size() == 2) ((TH2*)hist)->Fill(values[0], values[1], iT->first.weight);
 
@@ -2252,6 +2307,63 @@ void HnuPlots::scaleByShape(double llow, double lhigh, int npar)
     plot();
 }
 
+void HnuPlots::scaleSigByRoo()
+{
+    RooKeysPdf kpdf_mWR_bg("kbg_mWR", "kbg_mWR", mWR, *rd_BG);
+    RooKeysPdf kpdf_mWR_sig("ksig_mWR", "ksig_mWR", mWR, *rd_sig);
+
+    RooKeysPdf kpdf_mLL_bg("kbg_mLL", "kbg_mLL", mLL, *rd_BG);
+    RooKeysPdf kpdf_mLL_sig("ksig_mLL", "ksig_mLL", mLL, *rd_sig);
+    
+    RooKeysPdf kpdf_mJJ_bg("kbg_mJJ", "kbg_mJJ", mJJ, *rd_BG);
+    RooKeysPdf kpdf_mJJ_sig("ksig_mJJ", "ksig_mJJ", mJJ, *rd_sig);
+    
+    RooKeysPdf kpdf_ptL1_bg("kbg_ptL1", "kbg_ptL1", ptL1, *rd_BG);
+    RooKeysPdf kpdf_ptL1_sig("ksig_ptL1", "ksig_ptL1", ptL1, *rd_sig);
+    
+    RooKeysPdf kpdf_mNu1_bg("kbg_mNu1", "kbg_mNu1", mNu1, *rd_BG);
+    RooKeysPdf kpdf_mNu1_sig("ksig_mNu1L", "ksig_mNu1", mNu1, *rd_sig);
+    
+    RooKeysPdf kpdf_mNu2_bg("kbg_mNu2", "kbg_mNu2", mNu2, *rd_BG);
+    RooKeysPdf kpdf_mNu2_sig("ksig_mNu2", "ksig_mNu2", mNu2, *rd_sig);
+    
+    RooRealVar sig_scale("sig", "sig", 0.1, 0, 10000);
+    
+    double bgint = 0.0;
+    for(std::vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ihbg++)
+    {
+        bgint += ihbg->hist->Integral(0, ihbg->hist->GetNbinsX() + 1);
+    }
+    RooRealVar bg_scale("bg", "bg", bgint);
+
+    RooAddPdf  mWR_pdf("mWR_fit",  "mWR_fit",  RooArgList(kpdf_mWR_sig,  kpdf_mWR_bg),  RooArgList(sig_scale, bg_scale));
+    RooAddPdf  mLL_pdf("mLL_fit",  "mLL_fit",  RooArgList(kpdf_mLL_sig,  kpdf_mLL_bg),  RooArgList(sig_scale, bg_scale));
+    RooAddPdf  mJJ_pdf("mJJ_fit",  "mJJ_fit",  RooArgList(kpdf_mJJ_sig,  kpdf_mJJ_bg),  RooArgList(sig_scale, bg_scale));
+    RooAddPdf ptL1_pdf("ptL1_fit", "ptL1_fit", RooArgList(kpdf_ptL1_sig, kpdf_ptL1_bg), RooArgList(sig_scale, bg_scale));
+    RooAddPdf mNu1_pdf("mNu1_fit", "mNu1_fit", RooArgList(kpdf_mNu1_sig, kpdf_mNu1_bg), RooArgList(sig_scale, bg_scale));
+    RooAddPdf mNu2_pdf("mNu2_fit", "mNu2_fit", RooArgList(kpdf_mNu2_sig, kpdf_mNu2_bg), RooArgList(sig_scale, bg_scale));
+
+    RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf, mLL_pdf, mJJ_pdf, ptL1_pdf, mNu1_pdf, mNu2_pdf));
+    //RooProdPdf fitpdf("fit", "fit", RooArgList(mNu1_pdf));
+
+    RooFitResult *fr = fitpdf.fitTo(*rd_Data, RooFit::Save());
+
+    fr->Print();
+
+    TCanvas *c = new TCanvas("c", "c", 800, 800);
+    c->cd();
+    RooPlot *frame = mWR.frame();
+    rd_Data->plotOn(frame);
+    fitpdf.plotOn(frame, RooFit::Components("kbg_mWR,ksig_mWR"));
+    fitpdf.plotOn(frame, RooFit::Components("kbg_mWR"), RooFit::LineStyle(kDashed));
+    fitpdf.plotOn(frame, RooFit::Components("ksig_mWR"), RooFit::LineStyle(kDashDotted));
+    frame->Draw();
+    c->SetLogy();
+    c->Print("frame.png");
+
+    sighists.front().hist->Scale(sig_scale.getVal() / sighists.front().hist->Integral(0, sighists.front().hist->GetNbinsX() + 1));
+}
+
 void HnuPlots::cutFlow()
 {
     std::vector<HnuPlots::HistStruct > hists;
@@ -2576,23 +2688,23 @@ void HnuPlots::loadSystFile(std::string systfile, std::string ratefile, bool inc
         pair<string, string> wtag(samples[iSample], "2012");
         for(unsigned int ibin = 0; ibin < uncerts[wtag].size(); ibin++)
         {
-            double weight = uncerts[wtag][ibin];
-            domSystTmp[ibin].second += weight;
+            double wgt = uncerts[wtag][ibin];
+            domSystTmp[ibin].second += wgt;
             for(int isystd = 0; isystd < nSystsd; isystd++)
             {
                 pair<string, string> id(samples[iSample], systsd[isystd]);
                 if(uncerts.find(id) == uncerts.end()) continue;
                 double uncert = uncerts[id][(ibin < uncerts[id].size())?ibin:(uncerts[id].size() - 1)];
-                domSystTmp[ibin].first += pow(weight * uncert, 2);
+                domSystTmp[ibin].first += pow(wgt * uncert, 2);
             }
 
-            sdomSystTmp[ibin].second += weight;
+            sdomSystTmp[ibin].second += wgt;
             for(int isysts = 0; isysts < nSystss; isysts++)
             {
                 pair<string, string> id(samples[iSample], systss[isysts]);
                 if(uncerts.find(id) == uncerts.end()) continue;
                 double uncert = uncerts[id][(ibin < uncerts[id].size())?ibin:(uncerts[id].size() - 1)];
-                sdomSystTmp[ibin].first += pow(weight * uncert, 2);
+                sdomSystTmp[ibin].first += pow(wgt * uncert, 2);
             }
         }
     }
@@ -3456,7 +3568,7 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
         //}
         //else
         //{
-        //    vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+            vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
         //    vsig2.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV unbinned}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul, true));
         //}
         //sig.push_back(vsig);
@@ -3464,7 +3576,7 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
         
         //sample gen signal point -- Sean add individual signal points here
         //Format  (modify stared fields)     label*           filepath*                                                                                          tupple folder / plotname  lumi  xsec*   kfactor/Nevts*  the rest is a magic incantation that should not be changed
-        vsig.push_back( HnuPlots::FileStruct("test signal"  ,  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_25.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+        //vsig.push_back( HnuPlots::FileStruct("test signal"  ,  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
         //vsig2.push_back(HnuPlots::FileStruct("test signal 2",  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
         
         //Then add the individual signal points to the list of signal points
@@ -3557,6 +3669,7 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
     hps.setLog(log);
     hps.setCompPlot(true);
     hps.setXRange(xmin, xmax);
+    hps.scaleSigByRoo();
     hps.plot();
     hps.integrals(600, 60000);
 }
@@ -5158,6 +5271,6 @@ void plotall()
 
 int main()
 {
-    plot2012(0, 5);
+    plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2");
     //plotall();
 }
