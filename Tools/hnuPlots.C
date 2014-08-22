@@ -2326,7 +2326,7 @@ void HnuPlots::scaleSigByRoo()
     
     RooKeysPdf kpdf_mNu2_bg("kbg_mNu2", "kbg_mNu2", mNu2, *rd_BG);
     RooKeysPdf kpdf_mNu2_sig("ksig_mNu2", "ksig_mNu2", mNu2, *rd_sig);
-    
+
     RooRealVar sig_scale("sig", "sig", 0.1, 0, 10000);
     
     double bgint = 0.0;
@@ -2343,8 +2343,12 @@ void HnuPlots::scaleSigByRoo()
     RooAddPdf mNu1_pdf("mNu1_fit", "mNu1_fit", RooArgList(kpdf_mNu1_sig, kpdf_mNu1_bg), RooArgList(sig_scale, bg_scale));
     RooAddPdf mNu2_pdf("mNu2_fit", "mNu2_fit", RooArgList(kpdf_mNu2_sig, kpdf_mNu2_bg), RooArgList(sig_scale, bg_scale));
 
-    RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf, mLL_pdf, mJJ_pdf, ptL1_pdf, mNu1_pdf, mNu2_pdf));
-    //RooProdPdf fitpdf("fit", "fit", RooArgList(mNu1_pdf));
+    //RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf, mLL_pdf, mJJ_pdf, ptL1_pdf, mNu1_pdf, mNu2_pdf));
+
+	//with the M(WR) = 2.5 TeV signal file, as soon as you add a second pdf to the fitpdf constructor that does not correspond to the
+	//distribution that is ultimately plotted by plot2012(), the fit calculation determines that the signal rescaling factor should be very close to 0, like 0.001
+	RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf, mLL_pdf));
+	//RooProdPdf fitpdf("fit", "fit", RooArgList(mNu1_pdf));
 
     RooFitResult *fr = fitpdf.fitTo(*rd_Data, RooFit::Save());
 
@@ -5298,8 +5302,14 @@ void plotall()
     printf("\n");
 }
 
+//the third argument in plot2012() is a string that must be formatted in the following way:
+// "variable to plot; cut1 on any variable; cut2 on any variable; cutN on any variable"
+// for example:
+// "ptL1;mWR>1.1;mWR<1.8" would plot the pT distribution of the leading lepton for events where the reconstructed
+// 4 object mass is between 1.1 and 1.8 TeV
+
 int main()
 {
-    plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2");
+    plot2012(1, 5, "mWR;mWR>0.6;mWR<3.0");
     //plotall();
 }
