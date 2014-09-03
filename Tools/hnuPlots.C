@@ -167,6 +167,7 @@ public:
     void plotRatios();
     void scaleByShape(double llow, double lhigh, int npar = 2);
     void scaleSigByRoo();
+	void scaleSigByFactor(double rescalingFactor);
     void cutFlow();
     void sigEff();
     void integrals(double min, double max, double* passnum = NULL, double* err = NULL);
@@ -2381,6 +2382,12 @@ void HnuPlots::scaleSigByRoo()
     sighists.front().hist->Scale(sig_scale.getVal() / sighists.front().hist->Integral(0, sighists.front().hist->GetNbinsX() + 1));
 }
 
+void HnuPlots::scaleSigByFactor(double rescalingFactor){
+	
+	sighists.front().hist->Scale(rescalingFactor / sighists.front().hist->Integral(0, sighists.front().hist->GetNbinsX() + 1));
+
+}
+
 void HnuPlots::cutFlow()
 {
     std::vector<HnuPlots::HistStruct > hists;
@@ -3716,6 +3723,8 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
     hps.setCompPlot(true);
     hps.setXRange(xmin, xmax);
     //hps.scaleSigByRoo();
+	hps.scaleSigByFactor(10.0);
+	//hps.sighists.front().hist->Scale( 0.5/sighists.front().hist->Integral(0, sighists.front().hist->GetNbinsX()+1 ) );
     hps.plot();
     hps.integrals(0, 4000);
 }
