@@ -1278,7 +1278,19 @@ void HnuPlots::plot1D()
     fixOverlay();
     for(std::vector<HnuPlots::HistStruct >::const_iterator isig = sighists.begin(); isig != sighists.end(); isig++)
     {
-        if(!isig->smooth_hist) isig->hist->Draw("hist same");
+		if(!isig->smooth_hist){
+
+			//this will draw the signal distribution on top of the entire bkgnd distribution as a dashed line
+			TH1 *sig = (TH1*)isig->hist->Clone();
+			for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ++ihbg)
+			{
+				sig->Add(ihbg->hist);
+			}
+			sig->Draw("hist same");
+			isig->hist->SetLineStyle(kDashed);
+			isig->hist->Draw("hist same");
+
+		}
         else
         {
             TGraph *ttg = new TGraph();
@@ -2347,7 +2359,8 @@ void HnuPlots::scaleSigByRoo()
 
 	//with the M(WR) = 2.5 TeV signal file, as soon as you add a second pdf to the fitpdf constructor that does not correspond to the
 	//distribution that is ultimately plotted by plot2012(), the fit calculation determines that the signal rescaling factor should be very close to 0, like 0.001
-	RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf, mLL_pdf));
+	//RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf, mLL_pdf));
+	RooProdPdf fitpdf("fit", "fit", RooArgList(mWR_pdf));
 	//RooProdPdf fitpdf("fit", "fit", RooArgList(mNu1_pdf));
 
     RooFitResult *fr = fitpdf.fitTo(*rd_Data, RooFit::Save());
@@ -3702,7 +3715,7 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
     hps.setLog(log);
     hps.setCompPlot(true);
     hps.setXRange(xmin, xmax);
-    hps.scaleSigByRoo();
+    //hps.scaleSigByRoo();
     hps.plot();
     hps.integrals(0, 4000);
 }
