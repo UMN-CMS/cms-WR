@@ -1,3 +1,4 @@
+#include "TObject.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
@@ -12,6 +13,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TMultiGraph.h"
 #include "TPaveStats.h"
+#include "TPaveText.h"
 #include "TMath.h"
 #include "TExec.h"
 #include "TSpline.h"
@@ -156,7 +158,7 @@ public:
 
     HnuPlots(){ }
     HnuPlots(FileStruct& fdata, std::vector<std::vector<FileStruct> >& vfbg, std::vector<std::vector<FileStruct> >& vfsig, double iL);
-    void plot();
+	void plot();
     void plot1D();
     void plot2D();
     void plotMCComp(bool rescale = false);
@@ -168,6 +170,7 @@ public:
     void scaleByShape(double llow, double lhigh, int npar = 2);
     void scaleSigByRoo();
 	void scaleSigByFactor(double rescalingFactor);
+	void scaleSigsByFactors(std::vector<double> rescalingFactors);
     void cutFlow();
     void sigEff();
     void integrals(double min, double max, double* passnum = NULL, double* err = NULL);
@@ -188,6 +191,9 @@ public:
     void setYRange(double min, double max);
     void setSavePlots(bool sp);
     void autoSetHistogramAxisTitle(int mode = 0);
+	void setCutStringHolder(std::string cl);
+	void fillRescalingFactorVect(std::vector<double> factors);
+	void setIs2p1WR(bool input);
 
 private:
     std::vector<HistStruct> bghists;
@@ -204,6 +210,9 @@ private:
     std::string formlabel;
     bool autosort, islog, saveplots, plotSMoData;
     double sigscale;
+	std::string cutStringHolder;
+	std::vector<double> rescalingFactorVect;
+	bool is2p1WR;
 
     TH1* project(TH2* h2d, double cl, double ch, bool porjx = true);
     int projcount;
@@ -1064,18 +1073,160 @@ void HnuPlots::plot1D()
     //gROOT->SetStyle("Plain");
     setTDRStyle();
 
+	int numDataBins;
+	int halfNumDataBins;
+	float minBinContent = 0.06;	//look for bins in bkgnd histos where the bin content is less than this value
+	std::vector<int> lowBinsTTBkgnd;	//the bins in TT bkgnd histo where TT bkgnd bin content < minBinContent
+	std::vector<int> lowBinsDYBkgnd;
+	std::vector<int> lowBinsOtherBkgnd;
+	int countBkgndSources=0;
+	//countBkgndSources = 0 for TTBar, 1 for DY+Jets, 2 for Other
+	//these next ~20 lines rebin all of the histograms
     if(rebin > 1)
     {
         datahist.hist->Rebin(rebin);
+		
+		//numDataBins is equal to the number of bins in all of the histos being shown on one plot, including the bkgnd and WR signal histos
+		numDataBins = datahist.hist->GetNbinsX();
+		halfNumDataBins = (numDataBins/2);
+		
+		//std::cout<<"halfNumDataBins contains "<< halfNumDataBins <<std::endl;
+		//std::cout<<"there are "<< numDataBins <<" bins in the rebinned 2012 real data histo"<<std::endl;
+
         for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ihbg++)
         {
             ihbg->hist->Rebin(rebin);
+			//std::cout<<"there are "<< ihbg->hist->GetNbinsX() << " bins in this bkgnd histogram"<<std::endl;
+			for(int j=1; j<=numDataBins ; j++){
+				if(j < halfNumDataBins) continue;
+
+				if(ihbg->hist->GetBinContent(j) < minBinContent && countBkgndSources == 0){
+					lowBinsTTBkgnd.push_back(j);
+				}
+	
+				if(ihbg->hist->GetBinContent(j) < minBinContent && countBkgndSources == 1){
+					lowBinsDYBkgnd.push_back(j);
+				}
+	
+				if(ihbg->hist->GetBinContent(j) < minBinContent && countBkgndSources == 2){
+					lowBinsOtherBkgnd.push_back(j);
+				}
+
+			}
+			
+			countBkgndSources++;
+
         }
         for(vector<HnuPlots::HistStruct>::const_iterator ihsig = sighists.begin(); ihsig != sighists.end(); ihsig++)
         {
             if(!ihsig->smooth_hist) ihsig->hist->Rebin(rebin);
+			//if(!ihsig->smooth_hist) std::cout<<"there are "<< ihsig->hist->GetNbinsX() <<" bins in this WR signal histo"<<std::endl;
         }
     }
+	//for now (September 2014) rebin will always be > 1
+	//now that the 2012 real data, 2012 bkgnd, and WR signal data histograms have been rebinned I should look for histogram bins where
+	//there is a data point but no 2012 bkgnd events
+	int numLowBinsTT = lowBinsTTBkgnd.size();
+	int numLowBinsDY = lowBinsDYBkgnd.size();
+	int numLowBinsOther = lowBinsOtherBkgnd.size();
+	int maxBinX=0;  //upper limit for X axis
+
+	/*
+	for(int q=0; q<numLowBinsTT; q++){
+		std::cout<<"element # "<<q<<" of lowBinsTTBkgnd equals "<< lowBinsTTBkgnd[q] <<std::endl;
+	}
+
+	for(int q=0; q<numLowBinsDY; q++){
+		std::cout<<"element # "<<q<<" of lowBinsDYBkgnd equals "<< lowBinsDYBkgnd[q] <<std::endl;
+	}
+
+	for(int q=0; q<numLowBinsOther; q++){
+		std::cout<<"element # "<<q<<" of lowBinsOtherBkgnd equals "<< lowBinsOtherBkgnd[q] <<std::endl;
+	}
+	*/
+
+	//the three lowBins vectors are being filled with the appropriate entries: integers corresponding to bin #s
+	//numLowBinsDY is typically < numLowBinsTT and numLowBinsOther
+
+	if(numLowBinsTT >= 1 && numLowBinsDY >= 1 && numLowBinsOther >= 1){
+		//only restrict the X axis upper limit if there is a bin where all three bkgnd sources have no events
+		int binTT_DY=0;
+		int binTT_Other=0;
+		int binTT_DY_Other=0;
+		//bool TT_lt_DY = true;
+		//bool TT_lt_Other = true;
+		bool leave = false;
+
+		//if(numLowBinsTT > numLowBinsDY) TT_lt_DY = false;
+		//if(numLowBinsTT > numLowBinsOther) TT_lt_Other = false;
+		
+		//first look to see if there is a bin where there are no TT and DY+jets bkgnd events
+
+		for(int m=0; m<numLowBinsTT; m++){
+			for(int n=0;n<numLowBinsDY; n++){
+				if(lowBinsTTBkgnd[m] == lowBinsDYBkgnd[n]){
+					binTT_DY += lowBinsTTBkgnd[m];
+					leave = true;
+					break;
+				}
+			}
+
+			if(leave) break;
+		}
+
+		//std::cout<<"bin # "<< binTT_DY << " has no TT bar or DY+jets events"<<std::endl;
+
+		//now look to see if there is a bin where there are no TT, DY+jets, and Other bkgnd events
+		for(int m=0; m<numLowBinsOther; m++){
+			if(lowBinsOtherBkgnd[m] == binTT_DY){
+				binTT_DY_Other += binTT_DY;
+				//std::cout<<"bin # "<< binTT_DY_Other <<" has no TT bar, DY+jets, and Other bkgnd events"<<std::endl;
+				maxBinX = binTT_DY_Other;
+				break;
+			}
+
+		}
+
+	}
+
+	if(maxBinX != 0){
+		//if there is a bin with some 2012 data events but no 2012 MC bkgnd events, then rebin all of the histograms by 1 
+		//(merge 1 bin into one new bin)
+		if(numDataBins != 15){
+			int rebinFactor = 1;
+
+			datahist.hist->Rebin(rebinFactor);
+
+			for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ihbg++)
+			{
+				ihbg->hist->Rebin(rebinFactor);
+			}
+			for(vector<HnuPlots::HistStruct>::const_iterator ihsig = sighists.begin(); ihsig != sighists.end(); ihsig++)
+			{
+				if(!ihsig->smooth_hist) ihsig->hist->Rebin(rebinFactor);
+			}
+
+		}//end if(numDataBins != 15)
+
+		if(numDataBins==15){
+			//rebin by a factor of 1 if there are 15 bins
+			int rebinFactor = 1;
+
+			datahist.hist->Rebin(rebinFactor);
+
+			for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ihbg++)
+			{
+				ihbg->hist->Rebin(rebinFactor);
+			}
+			for(vector<HnuPlots::HistStruct>::const_iterator ihsig = sighists.begin(); ihsig != sighists.end(); ihsig++)
+			{
+				if(!ihsig->smooth_hist) ihsig->hist->Rebin(rebinFactor);
+			}
+
+		}//end if(numDataBins==15)
+
+	}//end if(maxBinX != 0)
+	
     else if(rebin < 0)
     {
         datahist.hist = datahist.hist->Rebin(sizeof(bins) / sizeof(double) - 1, "mWR_limitbins" , bins);
@@ -1120,8 +1271,17 @@ void HnuPlots::plot1D()
     if(autosort) sort(bghists.begin(), bghists.end(), compHistInt);
 
     bool isGeV = true;
+	//if yaxislabel is identical to "please auto set the axis", then the compare fxn returns 0
     if(!yaxislabel.compare("please auto set the axis"))
     {
+		//std::cout<<"yaxislabel is not equivalent to 'please auto set the axis'"<<std::endl;
+		//std::cout<<"yaxislabel contains "<< yaxislabel <<std::endl;
+		//std::cout<<"xaxislabel contains "<< xaxislabel <<std::endl;
+		
+		if(!xaxislabel.compare("M_{ee} [TeV]") ){
+			xaxislabel = "M_{ee} [GeV]";
+		}
+
         char temp[128];
         if(xaxislabel.find("GeV") < xaxislabel.size())
         {
@@ -1180,23 +1340,85 @@ void HnuPlots::plot1D()
     //c1->SetMargin(0.15, 0.1, 0.1, 0.1);
     
     datahist.hist->SetMarkerColor(kBlack);
-    datahist.hist->SetMarkerStyle(20);
-    datahist.hist->SetLineWidth(2.0);
+	datahist.hist->SetMarkerStyle(20);
+	datahist.hist->SetLineWidth(2.0);
 
-    //TLegend *leg = new TLegend(0.52, 0.67, 0.94, 0.91);
-    TLegend *leg = new TLegend(0.45, 0.61, 0.89, 0.91);
-    leg->SetFillStyle(0); //Color(0);
-    leg->SetBorderSize(0);
-    leg->SetLineWidth(1);
-    leg->SetNColumns(1);
-    leg->SetTextFont(42);
 
+	//make *leg on the left if the cut string contains _cut5_mWR_gt_1.8_mWR_lt_2.2, and sighists.size() > 1
+	//otherwise, make *leg on the right
+	TLegend *leg;
+
+	if(sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0 ){
+		leg = new TLegend(0.19, 0.61, 0.43, 0.91);
+	}
+	else{
+		leg = new TLegend(0.52, 0.61, 0.91, 0.91);
+	}
+
+	leg->SetNColumns(1);
+	leg->SetFillStyle(0); //Color(0);
+	leg->SetBorderSize(0);
+	leg->SetLineWidth(1);
+	//leg->SetTextFont(42);
+	leg->SetTextSize(0.029);
+
+
+	//make secondary legend and text box; decide later if this legend and text box should actually be plotted
+	double lastXBinCenter = datahist.hist->GetBinCenter( datahist.hist->GetNbinsX()-1 );
+	//std::cout<<"lastXBinCenter is "<< lastXBinCenter << "  ymax is "<< ymax <<std::endl;
+	
+	/* 2 column legend that appears to have very long rows of information
+	TLegend *legForSignal = new TLegend(0.44, 0.69, 0.88, 0.84);	//only use this legForSignal if sighists.size() > 1 and 1.8 < mWR < 2.2 (use cutStringHolder)
+	TLatex *WRSignalMass = new TLatex((0.7)*lastXBinCenter,240,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV");	//plot beneath *legForSignal
+
+	legForSignal->SetNColumns(2);		//use right column in legForSignal to show "g_L = # g_R" for each signal
+	legForSignal->SetFillStyle(0); //Color(0);
+	legForSignal->SetBorderSize(0);
+	legForSignal->SetLineWidth(1);
+	//legForSignal->SetTextFont(42);
+	legForSignal->SetTextSize(0.029);
+	*/
+	
+	/*one column legend that shows g_R = # g_L in a separate line from the legend entry for the WR signal distribution*/
+	TLegend *legForSignal = new TLegend(0.48, 0.56, 0.88, 0.81);	//only use this legForSignal if sighists.size() > 1 and 1.8 < mWR < 2.2 (use cutStringHolder)
+	TLatex *WRSignalMass = new TLatex((0.7)*lastXBinCenter,240,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV");	//plot beneath *legForSignal
+	
+	legForSignal->SetNColumns(1);		
+	legForSignal->SetFillStyle(0); //Color(0);
+	legForSignal->SetBorderSize(0);
+	legForSignal->SetLineWidth(1);
+	//legForSignal->SetTextFont(42);
+	legForSignal->SetTextSize(0.029);
+	/**/
+
+	WRSignalMass->SetTextSize(0.031);
+
+	float evtThreshold = 10.0;
+	float evtThresholdTwo = 1.0;
+	float evtThresholdThree = 0.1;
     float dataintegral = 0.0;
     if(rebin >= 0) dataintegral = datahist.hist->Integral(0, datahist.hist->GetNbinsX() + 1);
     else dataintegral = datahist.hist->Integral(1, datahist.hist->GetNbinsX(), "width")/(isGeV?200:0.2);
     char datahllabel[128];
-    sprintf(datahllabel, "%s (%.0f)", datahist.label.c_str(), dataintegral);
-    leg->AddEntry(datahist.hist, datahllabel, "ep");
+
+	if(dataintegral >= evtThreshold){
+		sprintf(datahllabel, "%s (%.0f)", datahist.label.c_str(), dataintegral);
+ 
+	}
+	if(dataintegral < evtThreshold && dataintegral >= evtThresholdTwo){
+		sprintf(datahllabel, "%s (%.1f)", datahist.label.c_str(), dataintegral);
+ 
+	}
+	if(dataintegral < evtThresholdTwo && dataintegral >= evtThresholdThree){
+		sprintf(datahllabel, "%s (%.2f)", datahist.label.c_str(), dataintegral);
+ 
+	}
+	if(dataintegral < evtThresholdThree){
+		sprintf(datahllabel, "%s (%.3f)", datahist.label.c_str(), dataintegral);
+ 
+	}
+
+	leg->AddEntry(datahist.hist, datahllabel, "ep");
 
     THStack *hbg = new THStack("Background", "background");
     //TH1* sig = 0;
@@ -1212,23 +1434,96 @@ void HnuPlots::plot1D()
         if(rebin >= 0) integral = ihbg->hist->Integral(0, ihbg->hist->GetNbinsX() + 1);
         else integral = ihbg->hist->Integral(1, ihbg->hist->GetNbinsX(), "width")/(isGeV?200:0.2);
         char hllabel[128];
-        sprintf(hllabel, "%s (%.0f)", ihbg->label.c_str(), floor(integral + 0.5));
+
+		if(integral >= evtThreshold){
+			sprintf(hllabel, "%s (%.0f)", ihbg->label.c_str(), integral);
+    
+		}
+
+		if(integral < evtThreshold && integral >= evtThresholdTwo){
+			sprintf(hllabel, "%s (%.1f)", ihbg->label.c_str(), integral);
+    
+		}
+
+		if(integral < evtThresholdTwo && integral >= evtThresholdThree){
+			sprintf(hllabel, "%s (%.2f)", ihbg->label.c_str(), integral);
+    
+		}
+
+
+		if(integral < evtThresholdThree){
+			sprintf(hllabel, "%s (%.3f)", ihbg->label.c_str(), integral);
+    
+		}
+
+
         leg->AddEntry(ihbg->hist, hllabel, "F");
     }
-    //double sigMaxMin = datahist.hist->GetMaximum();
+	//the bool variable named "is2p1WR" is a member variable of HnuPlots class objects
+	//BEFORE the WR signal entries are added to the legend, add "M_{WR} = 2.1 TeV" to the next legend row IF appropriate
+	bool test = true;
+	if(is2p1WR && sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
+		//legForSignal->AddEntry((TObject*)0,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV","");
+		//legForSignal->AddEntry((TObject*)0,"","");	//add a blank entry to the right column in the top row
+		test=false;
+	}
+
+	if(is2p1WR && sighists.size() > 1 && test){
+		//leg->AddEntry((TObject*)0,"","");
+		leg->AddEntry((TObject*)0,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV","");
+	}
+
+
+	//double sigMaxMin = datahist.hist->GetMaximum();
+	int i=0;	//use this to access elements of rescalingFactorVect
     for(vector<HnuPlots::HistStruct>::const_iterator ihsig = sighists.begin(); ihsig != sighists.end(); ihsig++)
     {
+		//this code puts the histogram integral and g_{L} = # g_{R} in the plot legend for the WR signal distributions
         if(!ihsig->smooth_hist)
         {
             float integral = 0.0;
             if(rebin >= 0) integral = ihsig->hist->Integral(0, ihsig->hist->GetNbinsX() + 1);
-            else integral = ihsig->hist->Integral(1, ihsig->hist->GetNbinsX(), "width") / (isGeV?200:0.2);
-            char hllabel[128];
-            sprintf(hllabel, "%s (%.0f)", ihsig->label.c_str(), floor(integral + 0.5));
-            leg->AddEntry(ihsig->hist, hllabel, "L");
+			else integral = ihsig->hist->Integral(1, ihsig->hist->GetNbinsX(), "width") / (isGeV?200:0.2);
+			char hllabel[128];
+
+			if(integral >= evtThreshold){
+				sprintf(hllabel, "%s (%.0f)", ihsig->label.c_str(), integral);
+
+			}
+
+			if(integral < evtThreshold && integral >= evtThresholdTwo){
+				sprintf(hllabel, "%s (%.1f)", ihsig->label.c_str(), integral);
+
+			}
+
+			if(integral < evtThresholdTwo && integral >= evtThresholdThree){
+				sprintf(hllabel, "%s (%.2f)", ihsig->label.c_str(), integral);
+
+			}
+
+			if(integral < evtThresholdThree){
+				sprintf(hllabel, "%s (%.3f)", ihsig->label.c_str(), integral);
+
+			}
+
+			char rightCouplingFactor[128];
+			sprintf(rightCouplingFactor,"g_{R} = %0.2f g_{L}", (1/rescalingFactorVect[i]) );	//this writes "g_R = # g_L" into rightCouplingFactor
+
+			
+			if(sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
+			   legForSignal->AddEntry(ihsig->hist, hllabel, "L");
+			   legForSignal->AddEntry((TObject*)0, rightCouplingFactor, "");
+			}
+			else{
+				leg->AddEntry(ihsig->hist, hllabel, "L");
+				leg->AddEntry((TObject*)0, rightCouplingFactor, "");
+			}
+
         }
         //sigMaxMin = std::min(ihsig->hist->GetMaximum(), sigMaxMin);
+		i++;
     }
+
 
     //BLAHBLAHBLAH
     //leg->AddEntry(tf, "Exponential Fit");
@@ -1279,16 +1574,84 @@ void HnuPlots::plot1D()
     fixOverlay();
     for(std::vector<HnuPlots::HistStruct >::const_iterator isig = sighists.begin(); isig != sighists.end(); isig++)
     {
+		//std::cout<<"there are "<< sighists.size() << " elements in sighists"<<std::endl;
 		if(!isig->smooth_hist){
 
-			//this will draw the signal distribution on top of the entire bkgnd distribution as a dashed line
-			TH1 *sig = (TH1*)isig->hist->Clone();
+			//this will draw the signal distribution by itself as a line
+			//TH1 *sig = (TH1*)isig->hist->Clone();
+			
+			//check if any bins in sig histogram have negative bin contents
+			/*
+			for(int j=1; j <= sig->GetNbinsX(); j++){
+				std::cout<<"bin # "<< j <<" of signal histogram has content equal to "<< sig->GetBinContent(j) << std::endl;
+
+			}
+			*/
+
+			//std::cout<<"there are "<< bghists.size() <<" elements in bghists"<<std::endl;
+
+			/*
 			for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ++ihbg)
 			{
-				sig->Add(ihbg->hist);
+				//sig->Add(ihbg->hist);
+				
+				for(int j=1; j< sig->GetNbinsX()+1 ; j++){
+					sig->SetBinContent(j, sig->GetBinContent(j) + ihbg->hist->GetBinContent(j) );
+
+				}
+			
 			}
-			sig->Draw("hist same");
-			isig->hist->SetLineStyle(kDashed);
+			*/
+
+			/*
+			TH1* sumBgHists = (TH1*) sig->Clone();
+			//all of the bghists have the same # of bins
+			for(int j=1; j< (bghists.begin()->hist->GetNbinsX())+1; j++){
+				//loop over all of the bins in a bghists
+				float binEntries=0;
+
+				//loop over all of the hists in bghists
+				for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ++ihbg){
+					binEntries += ihbg->hist->GetBinContent(j);
+
+				}
+
+				std::cout<<"bin # "<<j<<" of the sum of the bghists contains "<< binEntries << std::endl;
+				sumBgHists->SetBinContent(j, binEntries);
+
+			}
+			*/
+
+
+			//check bin content in sig histogram
+			/*
+			for(int j=1; j <= sig->GetNbinsX(); j++){
+				std::cout<<"bin # "<< j <<" of signal histogram has content equal to "<< sig->GetBinContent(j) << std::endl;
+
+			}
+			*/
+			
+			//TH1* cloneOfSig = (TH1*) sig->Clone();
+
+			/*
+			TCanvas * c111 = new TCanvas("c111","c111",800,800);
+			c111->SetLogy(1);
+			c111->cd();
+			cloneOfSig->Draw();
+			sumBgHists->SetLineStyle(kDashed);
+			sumBgHists->Draw("hist same");
+			c111->SaveAs("test.png","recreate");
+
+
+			c1->cd();
+			*/
+
+
+			//cloneOfSig->SetLineColor(kBlack);
+			//cloneOfSig->Draw("hist same");
+			//sig->DrawCopy("hist same");
+			//isig->hist->SetLineStyle(kDashed);
+			//the default histogram line style is a solid line
 			isig->hist->Draw("hist same");
 
 		}
@@ -1350,7 +1713,11 @@ void HnuPlots::plot1D()
     datahist.hist->Draw("same pe");
     fixOverlay();
     leg->Draw();
-    
+	if(sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
+	   legForSignal->Draw();
+	   WRSignalMass->Draw();
+	}
+	
     TLatex mark;
     mark.SetTextSize(0.04 * 1.1 * 8 / 6.5 * fontScale);
     mark.SetTextFont(42);
@@ -1658,6 +2025,11 @@ void HnuPlots::plot1D()
         sprintf(ofn2, "%s_%s%s.png", formlabel.c_str(), tmp2.c_str(), islog?"":"_linear");
         c1->Print(ofn2);
     }
+
+	TCanvas * cTest = new TCanvas("cTest","cTest",800,800);
+	cTest->cd();
+
+
 }
 
 void HnuPlots::plot2D()
@@ -2388,6 +2760,21 @@ void HnuPlots::scaleSigByFactor(double rescalingFactor){
 
 }
 
+void HnuPlots::scaleSigsByFactors(std::vector<double> rescalingFactors){
+	//use this when overlaying multiple WR signals onto a single histogram
+	if(sighists.size() <= 1){
+		std::cout<<"sighists vector has 1 or no elements!"<<std::endl;
+		return;
+	}
+	int i=0;
+	for(std::vector<HnuPlots::HistStruct>::const_iterator ihsigs = sighists.begin(); ihsigs != sighists.end(); ++ihsigs){
+		ihsigs->hist->Scale(rescalingFactors[i]/( ihsigs->hist->Integral(0, ihsigs->hist->GetNbinsX()+1 )  ) );
+		i++;
+
+	}
+
+}
+
 void HnuPlots::cutFlow()
 {
     std::vector<HnuPlots::HistStruct > hists;
@@ -3038,6 +3425,27 @@ void HnuPlots::setSavePlots(bool sp)
     saveplots = sp;
 }
 
+void HnuPlots::setCutStringHolder(std::string cl){
+	
+	cutStringHolder = cl;
+}
+
+void HnuPlots::fillRescalingFactorVect(std::vector<double> factors){
+	for(int i=0; i<factors.size() ; i++){
+		rescalingFactorVect.push_back(factors[i]);
+	}//end for(i)
+}
+
+void HnuPlots::setIs2p1WR(bool input){
+	if(input){
+		is2p1WR = true;
+	}
+
+	if(!input){
+		is2p1WR = false;
+	}
+}
+
 //cutlevel strings
 const std::string cutlevels[] = {
     "cut0_none",
@@ -3564,169 +3972,406 @@ void makeCutString(const int cutlevel, std::string plotname, std::string& retStr
     retStr = std::string(cutString);
 }
 
-void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebin = 5, bool log = true, double xmin = 0.0, double xmax = 3500.0, bool autoY = true)
+void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebin = 5, bool log = true, double xmin = 0.0, double xmax = 3500.0, bool autoY = true, std::string theoryFilePath="/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_signalMC.root", std::string theoryPlotLabel="Theory M(WR)=2100 M(N)=1000", double crossSxn = 0.0001, double signalRescaleFactor = 0.1, std::string outFileNameMiddle = "_mWR_2100_mNu_1000_", bool doMultipleSignals = false, double kFactorDivEvts = .0001199, bool using2p1WR = false)
 {
-    using namespace std;
+	
+	if(!doMultipleSignals){
 
-    double lumi = 0.0;
-    HnuPlots::FileStruct data;
+		using namespace std;
 
-    // if asked get hist from tuple, or if required
-    bool hft = true;
-    if(plot.find(';') != size_t(-1)) hft = true;
-    else if(plot.find(':') != size_t(-1)) hft = true;
+		double lumi = 0.0;
+		HnuPlots::FileStruct data;
 
-    //background legend label, TFile
-    vector<vector<HnuPlots::FileStruct> > bg, sig;
-    vector<HnuPlots::FileStruct> vsig, vsig2, vsig3, vsig4, vsig5, vsig6;
-    setBgandData(mode, data, bg, lumi, cutlevel, plot, true, hft);
+		// if asked get hist from tuple, or if required
+		bool hft = true;
+		if(plot.find(';') != size_t(-1)) hft = true;
+		else if(plot.find(':') != size_t(-1)) hft = true;
 
-    std::cout << "Lumi:" << lumi << std::endl;
+		//background legend label, TFile
+		vector<vector<HnuPlots::FileStruct> > bg, sig;
+		vector<HnuPlots::FileStruct> vsig, vsig2, vsig3, vsig4, vsig5, vsig6;
+		setBgandData(mode, data, bg, lumi, cutlevel, plot, true, hft);
 
-    std::string histograms = "", normhist = "";
-    int signormbin = 0;
+		std::cout << "Lumi:" << lumi << std::endl;
 
-    switch(mode)
-    {
-        case 0:
-            histograms = "hNuMu40/" + cutlevels[cutlevel] + "/" + plot;
-            normhist = "hNuMu40/mc_type";
-            signormbin = 3;
-            break;
-        case 1:
-            histograms = "hNuE/" + cutlevels[cutlevel] + "/" + plot;
-            normhist = "hNuE/mc_type";
-            signormbin = 2;
-            break;
-        case 2:
-            histograms = "hNuEMu/" + cutlevels[cutlevel] + "/" + plot;
-            normhist = "hNuEMu/mc_type";
-            signormbin = 4;
-            break;
-    }
+		std::string histograms = "", normhist = "";
+		int signormbin = 0;
 
-    //signal
-    if(mode <= 1)
-    {
-        //Nominal signal points -- Sean comment these out before you plot more signal
-        //if(rebin > 0)
-        //{
-        //    vsig.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        //}
-        //else
-        //{
+		switch(mode)
+		{
+			case 0:
+				histograms = "hNuMu40/" + cutlevels[cutlevel] + "/" + plot;
+				normhist = "hNuMu40/mc_type";
+				signormbin = 3;
+				break;
+			case 1:
+				histograms = "hNuE/" + cutlevels[cutlevel] + "/" + plot;
+				normhist = "hNuE/mc_type";
+				signormbin = 2;
+				break;
+			case 2:
+				histograms = "hNuEMu/" + cutlevels[cutlevel] + "/" + plot;
+				normhist = "hNuEMu/mc_type";
+				signormbin = 4;
+				break;
+		}
 
-		vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+		//signal
+		if(mode <= 1)
+		{
+			//Nominal signal points -- Sean comment these out before you plot more signal
+			//if(rebin > 0)
+			//{
+			//    vsig.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			//}
+			//else
+			//{
+
+			//THIS vsig.push_back() works!
+			//vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
 
 
-		//ORIGINAL vsig.push_back()
-		//vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-       
-	   	//    vsig2.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV unbinned}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul, true));
-        //}
-        //sig.push_back(vsig);
-        //if(rebin <= 0) sig.push_back(vsig2);
-        
-        //sample gen signal point -- Sean add individual signal points here
-        //Format  (modify stared fields)     label*           filepath*                                                                                          tupple folder / plotname  lumi  xsec*   kfactor/Nevts*  the rest is a magic incantation that should not be changed
-        //vsig.push_back( HnuPlots::FileStruct("test signal"  ,  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        //vsig2.push_back(HnuPlots::FileStruct("test signal 2",  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        
-        //Then add the individual signal points to the list of signal points
-        sig.push_back(vsig);
-        //sig.push_back(vsig2);
-    }
-    else if(!hft && mode == 2)
-    {
-        ////vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 1.1 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1100_MNu-550_TuneZ2star_8TeV-pythia6-tauola.root",  histograms, lumi, 0.013339, 1.214 * 0.5 * 0.75, normhist, 0.0, 0.0, true, signormbin));
-        vsig2.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 1.0 TeV",   "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1000_MNu-500_TuneZ2star_8TeV-pythia6-tauola.root",    "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.667875, 1.340 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        vsig3.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 1.5 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1500_MNu-750_TuneZ2star_8TeV-pythia6-tauola.root",    "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.082688, 1.293 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        vsig4.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 2.0 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2000_MNu-1000_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.013339, 1.214 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        vsig5.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 2.5 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.002286, 1.140 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
-        vsig6.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 3.0 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-3000_MNu-1500_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.000393, 1.151 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			//ORIGINAL vsig.push_back()
+			//vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
 
-        ////sig.push_back(vsig);
-        //sig.push_back(vsig2);
-        //sig.push_back(vsig3);
-        //sig.push_back(vsig4);
-        //sig.push_back(vsig5);
-        //sig.push_back(vsig6);
-    }
+			//    vsig2.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV unbinned}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul, true));
+			//}
+			//sig.push_back(vsig);
+			//if(rebin <= 0) sig.push_back(vsig2);
 
-    HnuPlots hps(data, bg, sig, lumi);
-    std::string clstring;
-    makeCutString(cutlevel, plot, clstring);
-    switch(mode)
-    {
-        case 7:
-            rebin = -1;
-            xmax = 4000;
-        case 0:
-            if(rebin > 0) hps.setFormLabel("hNu_mm_2012" + clstring);
-            else          hps.setFormLabel("hNu_mm_ls_2012" + clstring);
-            hps.setSavePlots(true);
-            if(!plot.compare("mWR") || !plot.compare("mWR;"))
-            {
-                if(cutlevel == 5) hps.setYRange(0.06, 3000);
-                hps.loadSystFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_6_1_1/src/HeavyNu/Limits/ctool/systematicsdb_mu_2012.csv", "/home/ugrad/pastika/cms/HeavyNu/CMSSW_6_1_1/src/HeavyNu/Limits/ctool/ratesdb.csv", (mode == 7));
-                hps.mcBgShape();
-            }
-            break;
-        case 8:
-            rebin = -1;
-            xmax = 4000;
-        case 1:
-            if(rebin > 0) hps.setFormLabel("hNu_ee_2012" + clstring);
-            else          hps.setFormLabel("hNu_ee_ls_2012" + clstring);
-            hps.setSavePlots(true);
-            if(!plot.compare("mWR") || !plot.compare("mWR;"))
-            {
-                if(cutlevel == 5) hps.setYRange(0.06, 3000);
-                hps.loadSystFile("/eos/uscms/store/user/skalafut/WR/8TeV/bkgndMC/systematicsdb_elec_2012.csv", "/eos/uscms/store/user/skalafut/WR/8TeV/bkgndMC/ratesdb_elec.csv", (mode == 8));
-                hps.mcBgShape();
-            }
-            break;
-        case 2:
-            hps.setFormLabel("hNu_em_2012" + clstring);
-            hps.setSavePlots(true);
-            break;
-        case 3:
-            hps.setFormLabel("hNu_em2_2012" + clstring);
-            hps.setSavePlots(true);
-            hps.setCompPlot(false);
-            break;
-        case 4:
-            hps.setFormLabel("ddZ_mm_2012" + clstring);
-            hps.setSavePlots(true);
-            break;
-        case 5:
-            hps.setFormLabel("ddZ_ee_2012" + clstring);
-            hps.setSavePlots(true);
-            break;
-        case 6:
-            hps.setFormLabel("sherpaZvsMadgraph_mm_2012" + clstring);
-            hps.setSavePlots(true);
-            break;
-        case 9:
-            hps.setFormLabel("sherpaZvsMadgraph_ee_2012" + clstring);
-            hps.setSavePlots(true);
-            break;
-        default:
-            hps.setSavePlots(false);
-            break;
-    }
-    if(autoY) hps.setYAxisTitle("please auto set the axis");
-    else hps.setYAxisTitle("Events");
-    hps.autoSetHistogramAxisTitle(mode);
-    hps.setRebin(rebin);
-    hps.setLog(log);
-    hps.setCompPlot(true);
-    hps.setXRange(xmin, xmax);
-    //hps.scaleSigByRoo();
-	hps.scaleSigByFactor(10.0);
-	//hps.sighists.front().hist->Scale( 0.5/sighists.front().hist->Integral(0, sighists.front().hist->GetNbinsX()+1 ) );
-    hps.plot();
-    hps.integrals(0, 4000);
+			//sample gen signal point -- Sean add individual signal points here
+			//Format  (modify stared fields)     label*           filepath*                                                                                          tupple folder / plotname  lumi  xsec*   kfactor/Nevts*  the rest is a magic incantation that should not be changed
+			//vsig.push_back( HnuPlots::FileStruct("test signal"  ,  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			//vsig2.push_back(HnuPlots::FileStruct("test signal 2",  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			
+			//std::cout<<"about to add an element to vsig"<<std::endl;
+			vsig.push_back( HnuPlots::FileStruct(theoryPlotLabel  ,  theoryFilePath, "hNuGen/" + plot, lumi, crossSxn, kFactorDivEvts, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+
+			//Then add the individual signal points to the list of signal points
+			sig.push_back(vsig);
+			//sig.push_back(vsig2);
+		}
+		else if(!hft && mode == 2)
+		{
+			////vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 1.1 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1100_MNu-550_TuneZ2star_8TeV-pythia6-tauola.root",  histograms, lumi, 0.013339, 1.214 * 0.5 * 0.75, normhist, 0.0, 0.0, true, signormbin));
+			vsig2.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 1.0 TeV",   "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1000_MNu-500_TuneZ2star_8TeV-pythia6-tauola.root",    "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.667875, 1.340 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig3.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 1.5 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1500_MNu-750_TuneZ2star_8TeV-pythia6-tauola.root",    "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.082688, 1.293 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig4.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 2.0 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2000_MNu-1000_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.013339, 1.214 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig5.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 2.5 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.002286, 1.140 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig6.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 3.0 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-3000_MNu-1500_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.000393, 1.151 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+			////sig.push_back(vsig);
+			//sig.push_back(vsig2);
+			//sig.push_back(vsig3);
+			//sig.push_back(vsig4);
+			//sig.push_back(vsig5);
+			//sig.push_back(vsig6);
+		}
+
+		std::cout<<"about to create HnuPlots object named hps"<<std::endl;
+		//return;
+		HnuPlots hps(data, bg, sig, lumi);
+		//std::cout<<"made HnuPlots object named hps"<<std::endl;
+		std::string clstring;
+		makeCutString(cutlevel, plot, clstring);
+		switch(mode)
+		{
+			case 7:
+				rebin = -1;
+				xmax = 4000;
+			case 0:
+				if(rebin > 0) hps.setFormLabel("hNu_mm_2012" + clstring);
+				else          hps.setFormLabel("hNu_mm_ls_2012" + clstring);
+				hps.setSavePlots(true);
+				if(!plot.compare("mWR") || !plot.compare("mWR;"))
+				{
+					if(cutlevel == 5) hps.setYRange(0.06, 3000);
+					hps.loadSystFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_6_1_1/src/HeavyNu/Limits/ctool/systematicsdb_mu_2012.csv", "/home/ugrad/pastika/cms/HeavyNu/CMSSW_6_1_1/src/HeavyNu/Limits/ctool/ratesdb.csv", (mode == 7));
+					hps.mcBgShape();
+				}
+				break;
+			case 8:
+				rebin = -1;
+				xmax = 4000;
+			case 1:
+				//hps.setFormLabel(std::string name) sets the name of the output file!
+				std::cout<<"in case 1"<<std::endl;
+				if(rebin > 0) hps.setFormLabel("hNu_ee_2012" + outFileNameMiddle + clstring);
+				else          hps.setFormLabel("hNu_ee_ls_2012" + outFileNameMiddle + clstring);
+				hps.setSavePlots(true);
+				hps.setCutStringHolder(clstring);
+				hps.setIs2p1WR(using2p1WR);
+				if(!plot.compare("mWR") || !plot.compare("mWR;"))
+				{
+					if(cutlevel == 5) hps.setYRange(0.06, 3000);
+					hps.loadSystFile("/eos/uscms/store/user/skalafut/WR/8TeV/bkgndMC/systematicsdb_elec_2012.csv", "/eos/uscms/store/user/skalafut/WR/8TeV/bkgndMC/ratesdb_elec.csv", (mode == 8));
+					hps.mcBgShape();
+				}
+					
+				//std::cout<<"cut string contains "<< clstring <<std::endl;
+				//std::cout<<"comparing cut string to _cut5_mWR_gt_1.8_mWR_lt_2.2 "<<std::endl;
+
+				if(clstring.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
+					//rescale the Y axis to go from 0.06 to 200
+					//std::cout<<"rescaling Y axis to accommodate legend"<<std::endl;
+					hps.setYRange(0.06, 600);
+				}
+
+				break;
+			case 2:
+				hps.setFormLabel("hNu_em_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 3:
+				hps.setFormLabel("hNu_em2_2012" + clstring);
+				hps.setSavePlots(true);
+				hps.setCompPlot(false);
+				break;
+			case 4:
+				hps.setFormLabel("ddZ_mm_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 5:
+				hps.setFormLabel("ddZ_ee_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 6:
+				hps.setFormLabel("sherpaZvsMadgraph_mm_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 9:
+				hps.setFormLabel("sherpaZvsMadgraph_ee_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			default:
+				hps.setSavePlots(false);
+				break;
+		}
+		if(autoY) hps.setYAxisTitle("please auto set the axis");
+		else hps.setYAxisTitle("Events");
+		hps.autoSetHistogramAxisTitle(mode);
+		hps.setRebin(rebin);
+		hps.setLog(log);
+		//setCompPlot makes the smaller plot of (real data/SM bkgnd) 
+		hps.setCompPlot(false);
+		hps.setXRange(xmin, xmax);
+		//hps.scaleSigByRoo();
+		hps.scaleSigByFactor( signalRescaleFactor );
+		
+		std::vector<double> sigScaleFac;
+		sigScaleFac.push_back(signalRescaleFactor);
+		hps.fillRescalingFactorVect(sigScaleFac);
+
+		hps.plot();
+		hps.integrals(0, 4000);
+	}
+
+	if(doMultipleSignals){
+
+		using namespace std;
+
+		std::cout<<"plotting distributions from multiple WR signal samples"<<std::endl;
+
+		double lumi = 0.0;
+		HnuPlots::FileStruct data;
+
+		// if asked get hist from tuple, or if required
+		bool hft = true;
+		if(plot.find(';') != size_t(-1)) hft = true;
+		else if(plot.find(':') != size_t(-1)) hft = true;
+
+		//background legend label, TFile
+		vector<vector<HnuPlots::FileStruct> > bg, sig;
+		vector<HnuPlots::FileStruct> vsig, vsig2, vsig3, vsig4, vsig5, vsig6;
+		setBgandData(mode, data, bg, lumi, cutlevel, plot, true, hft);
+
+		std::cout << "Lumi:" << lumi << std::endl;
+
+		std::string histograms = "", normhist = "";
+		int signormbin = 0;
+
+		switch(mode)
+		{
+			case 0:
+				histograms = "hNuMu40/" + cutlevels[cutlevel] + "/" + plot;
+				normhist = "hNuMu40/mc_type";
+				signormbin = 3;
+				break;
+			case 1:
+				histograms = "hNuE/" + cutlevels[cutlevel] + "/" + plot;
+				normhist = "hNuE/mc_type";
+				signormbin = 2;
+				break;
+			case 2:
+				histograms = "hNuEMu/" + cutlevels[cutlevel] + "/" + plot;
+				normhist = "hNuEMu/mc_type";
+				signormbin = 4;
+				break;
+		}
+
+		//signal
+		if(mode <= 1)
+		{
+			//Nominal signal points -- Sean comment these out before you plot more signal
+			//if(rebin > 0)
+			//{
+			//    vsig.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			//}
+			//else
+			//{
+
+			//THIS vsig.push_back() works!
+			//vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+
+			//ORIGINAL vsig.push_back()
+			//vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+			//    vsig2.push_back(HnuPlots::FileStruct("#lower[0.31]{#splitline{M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2.5 TeV unbinned}{M_{N} = M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}/2}}",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_rerecoData/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root", histograms, lumi, 0.002286, 1.140, normhist, 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul, true));
+			//}
+			//sig.push_back(vsig);
+			//if(rebin <= 0) sig.push_back(vsig2);
+
+			//sample gen signal point -- Sean add individual signal points here
+			//Format  (modify stared fields)     label*           filepath*                                                                                          tupple folder / plotname  lumi  xsec*   kfactor/Nevts*  the rest is a magic incantation that should not be changed
+			//vsig.push_back( HnuPlots::FileStruct("test signal"  ,  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			//vsig2.push_back(HnuPlots::FileStruct("test signal 2",  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+	
+			//for now just continue to hardcode the cross section and kfactor/numEvts by hand
+			vsig.push_back( HnuPlots::FileStruct("M_{#lower[-0.1]{N}} = 100 GeV "  , "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_WR_2100_to_LNu_Nu_100_500kevts.root" , "hNuGen/" + plot, lumi, 0.01693, 1.199/500000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+			//vsig2.push_back( HnuPlots::FileStruct("M_{Ne} = 1.0 TeV x 20 "  , "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_WR_2100_to_LNu_Nu_1000_10kevts.root" , "hNuGen/" + plot, lumi, 0.009804, 1.199/10000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+			vsig3.push_back( HnuPlots::FileStruct("M_{#lower[-0.1]{N}} = 1900 GeV "  , "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_WR_2100_to_LNu_Nu_1900_10kevts.root", "hNuGen/" + plot, lumi, 0.0006905, 1.199/10000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+
+			//Then add the individual signal points to the list of signal points
+			sig.push_back(vsig);
+			//sig.push_back(vsig2);
+			sig.push_back(vsig3);
+
+		}
+		else if(!hft && mode == 2)
+		{
+			////vsig.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 1.1 TeV",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1100_MNu-550_TuneZ2star_8TeV-pythia6-tauola.root",  histograms, lumi, 0.013339, 1.214 * 0.5 * 0.75, normhist, 0.0, 0.0, true, signormbin));
+			vsig2.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 1.0 TeV",   "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1000_MNu-500_TuneZ2star_8TeV-pythia6-tauola.root",    "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.667875, 1.340 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig3.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 1.5 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-1500_MNu-750_TuneZ2star_8TeV-pythia6-tauola.root",    "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.082688, 1.293 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig4.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 2.0 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2000_MNu-1000_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.013339, 1.214 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig5.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 2.5 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-2500_MNu-1250_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.002286, 1.140 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			vsig6.push_back(HnuPlots::FileStruct("M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}}(N_{#tau}) = 3.0 TeV ",  "/local/cms/user/pastika/heavyNuAnalysis_2012/Fall12_4/heavynu_2012Bg_WRToNuLeptonToLLJJ_MW-3000_MNu-1500_TuneZ2star_8TeV-pythia6-tauola.root",   "hTauX/" + cutlevels[cutlevel] + "/" + plot, lumi, 0.000393, 1.151 * 0.062, "hTauX/mc_type", 0.0, 0.0, true, signormbin, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+
+			////sig.push_back(vsig);
+			//sig.push_back(vsig2);
+			//sig.push_back(vsig3);
+			//sig.push_back(vsig4);
+			//sig.push_back(vsig5);
+			//sig.push_back(vsig6);
+		}
+
+		HnuPlots hps(data, bg, sig, lumi);
+		std::string clstring;
+		makeCutString(cutlevel, plot, clstring);
+		switch(mode)
+		{
+			case 7:
+				rebin = -1;
+				xmax = 4000;
+			case 0:
+				if(rebin > 0) hps.setFormLabel("hNu_mm_2012" + clstring);
+				else          hps.setFormLabel("hNu_mm_ls_2012" + clstring);
+				hps.setSavePlots(true);
+				if(!plot.compare("mWR") || !plot.compare("mWR;"))
+				{
+					if(cutlevel == 5) hps.setYRange(0.06, 3000);
+					hps.loadSystFile("/home/ugrad/pastika/cms/HeavyNu/CMSSW_6_1_1/src/HeavyNu/Limits/ctool/systematicsdb_mu_2012.csv", "/home/ugrad/pastika/cms/HeavyNu/CMSSW_6_1_1/src/HeavyNu/Limits/ctool/ratesdb.csv", (mode == 7));
+					hps.mcBgShape();
+				}
+				break;
+			case 8:
+				rebin = -1;
+				xmax = 4000;
+			case 1:
+				//hps.setFormLabel(std::string name) sets the name of the output file!
+				if(rebin > 0) hps.setFormLabel("hNu_ee_2012_multiple_WR_signals" + clstring);
+				else          hps.setFormLabel("hNu_ee_ls_2012_multiple_WR_signals" + clstring);
+				hps.setSavePlots(true);
+				hps.setCutStringHolder(clstring);
+				hps.setIs2p1WR(using2p1WR);
+				if(!plot.compare("mWR") || !plot.compare("mWR;"))
+				{
+					if(cutlevel == 5) hps.setYRange(0.06, 3000);
+					hps.loadSystFile("/eos/uscms/store/user/skalafut/WR/8TeV/bkgndMC/systematicsdb_elec_2012.csv", "/eos/uscms/store/user/skalafut/WR/8TeV/bkgndMC/ratesdb_elec.csv", (mode == 8));
+					hps.mcBgShape();
+				}
+				
+				//std::cout<<"cut string contains "<< clstring <<std::endl;
+				//std::cout<<"comparing cut string to _cut5_mWR_gt_1.8_mWR_lt_2.2 "<<std::endl;
+
+				if(clstring.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
+					//rescale the Y axis to go from 0.06 to 200
+					//std::cout<<"rescaling Y axis to accommodate legend"<<std::endl;
+					hps.setYRange(0.06, 600);
+				}
+
+				break;
+			case 2:
+				hps.setFormLabel("hNu_em_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 3:
+				hps.setFormLabel("hNu_em2_2012" + clstring);
+				hps.setSavePlots(true);
+				hps.setCompPlot(false);
+				break;
+			case 4:
+				hps.setFormLabel("ddZ_mm_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 5:
+				hps.setFormLabel("ddZ_ee_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 6:
+				hps.setFormLabel("sherpaZvsMadgraph_mm_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			case 9:
+				hps.setFormLabel("sherpaZvsMadgraph_ee_2012" + clstring);
+				hps.setSavePlots(true);
+				break;
+			default:
+				hps.setSavePlots(false);
+				break;
+		}
+		if(autoY) hps.setYAxisTitle("please auto set the axis");
+		else hps.setYAxisTitle("Events");
+		hps.autoSetHistogramAxisTitle(mode);
+		hps.setRebin(rebin);
+		hps.setLog(log);
+		//setCompPlot makes the smaller plot of (real data/SM bkgnd) 
+		hps.setCompPlot(false);
+		hps.setXRange(xmin, xmax);
+		//hps.scaleSigByRoo();
+		//rescalingFactors2p1TeV.push_back(3.59); M(Nu)=100
+		//rescalingFactors2p1TeV.push_back(0.0587); M(Nu)=1000
+		//rescalingFactors2p1TeV.push_back(2.21); M(Nu)=1900
+
+		double artificialScaleBoost = 20.0; 	//used so that the mNu=1000 GeV histogram appears on the plot
+		std::vector<double> signalsRescalingFactors;
+		signalsRescalingFactors.push_back(3.59);
+		//signalsRescalingFactors.push_back((0.0587)*artificialScaleBoost);
+		signalsRescalingFactors.push_back(2.21);
+
+		hps.scaleSigsByFactors( signalsRescalingFactors );
+		hps.fillRescalingFactorVect( signalsRescalingFactors);
+
+		hps.plot();
+		hps.integrals(0, 4000);
+	}
+
+
 }
 
 void plotRatios(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebin = 5)
@@ -5332,6 +5977,222 @@ void plotall()
 
 int main()
 {
-    plot2012(1, 5, "mWR;mWR>0.6;mWR<3.0");
+
+	using namespace std;
+	
+	std::string pathBeginning = "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_WR_2100_to_LNu_Nu_";
+	std::string pathEnding = "10kevts.root";
+	std::vector<std::string> mNu;
+	mNu.push_back("100_");
+	mNu.push_back("200_");
+	mNu.push_back("300_");
+	mNu.push_back("400_");
+	mNu.push_back("500_");
+	mNu.push_back("600_");
+	mNu.push_back("700_");
+	mNu.push_back("800_");
+	mNu.push_back("900_");
+	mNu.push_back("1000_");
+	mNu.push_back("1100_");
+	mNu.push_back("1200_");
+	mNu.push_back("1300_");
+	mNu.push_back("1400_");
+	mNu.push_back("1500_");
+	mNu.push_back("1600_");
+	mNu.push_back("1700_");
+	mNu.push_back("1800_");
+	mNu.push_back("1900_");
+	mNu.push_back("1000_");	//for renormalized MWR=2.0 MNu=1.0
+	mNu.push_back("100_");	//for renormalized MWR=1.9 MNu=0.1
+
+
+
+	std::vector<std::string> labels; 
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,100) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,200) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,300) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,400) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,500) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,600) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,700) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,800) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,900) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1000) GeV X 20 ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1100) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1200) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1300) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1400) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1500) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1600) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1700) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1800) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2100,1900) GeV ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (2000,1000) GeV X 20 ");
+	labels.push_back("(M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}},M_{#lower[-0.1]{N}}) = (1900,100) GeV ");
+
+	
+
+	std::vector<double> xSecs;	//unless noted otherwise, all of these Xsxns are for M(WR) = 2.1 TeV
+	xSecs.push_back(0.01693);   //for M(Nu) = 100
+	xSecs.push_back(0.01619);
+	xSecs.push_back(0.01556);
+	xSecs.push_back(0.01476);
+	xSecs.push_back(0.01404);   //for M(Nu) = 500
+	xSecs.push_back(0.01339);
+	xSecs.push_back(0.01260);
+	xSecs.push_back(0.01178);
+	xSecs.push_back(0.01073);   //for M(Nu) = 900
+	xSecs.push_back(0.009804);
+	xSecs.push_back(0.008757);
+	xSecs.push_back(0.007757);   //for M(Nu) = 1200
+	xSecs.push_back(0.006618);
+	xSecs.push_back(0.005491);	//for M(Nu) = 1400
+	xSecs.push_back(0.004321);
+	xSecs.push_back(0.003294);
+	xSecs.push_back(0.002285);  //for M(Nu) = 1700
+	xSecs.push_back(0.001379);
+	xSecs.push_back(0.0006905);  //for M(Nu) = 1900, listed as 6.905E-13 in HeavyNu/Limits/plot/xsecs.txt
+	
+	xSecs.push_back(0.01329);  //for MWR=2.0 TeV M(Nu) = 1000, listed as 1.329E-11 in HeavyNu/Limits/plot/xsecs.txt
+	xSecs.push_back(0.03318);  //for MWR=1.9 TeV M(Nu) = 100
+
+
+	double kFactorOvrEvtOne = (1.199/10000);		//k factor for 2p1 TeV WR = 1.199, most files have 10k events
+	double kFactorOvrEvtTwo = (1.199/500000);		//k factor for 2p1 TeV WR = 1.199, 500k events in WR = 2.1 TeV Nu = 0.1 TeV file
+	double kFactorOvrEvtThree = (1.214/10000);		//k factor for 2p0 TeV WR = 1.214, the file has 10k events
+	double kFactorOvrEvtFour = (1.230/10000);		//k factor for 1p9 TeV WR = 1.230, the file has 10k events
+		
+	std::vector<double> kFactorsOvrEvts;
+	for(int j=0; j<19; j++){
+		//kFactorsOvrEvts for mWR = 2.1 TeV, mNu = 0.1 to 1.9 TeV
+		//the mWR = 2.1, mNu = 0.1 TeV file now has 500k events
+		if(j==0) kFactorsOvrEvts.push_back(kFactorOvrEvtTwo);
+		if(j != 0) kFactorsOvrEvts.push_back(kFactorOvrEvtOne);
+	}
+	kFactorsOvrEvts.push_back(kFactorOvrEvtThree);	//k factor for 2p0 TeV WR = 1.214, the file has 10k events
+	kFactorsOvrEvts.push_back(kFactorOvrEvtFour);	//k factor for 1p9 TeV WR = 1.230, the file has 10k events
+
+
+	std::vector<std::string> outFileNames;
+	outFileNames.push_back("_mWR_2100_mNu_100_");
+	outFileNames.push_back("_mWR_2100_mNu_1000_");
+	outFileNames.push_back("_mWR_2100_mNu_1900_");
+	outFileNames.push_back("_mWR_2100_mNu_1900_rescale_via_mWR_only_");
+	outFileNames.push_back("_mWR_2000_mNu_1000_rescale_via_mWR_only_");
+	outFileNames.push_back("_mWR_1900_mNu_100_rescale_via_mWR_only_");
+
+	
+	std::vector<int> signalsManyMWR;
+	signalsManyMWR.push_back(0);	//mNu = 0.1 TeV
+	signalsManyMWR.push_back(9);	//mNu = 1.0 TeV
+	signalsManyMWR.push_back(18);	//mNu = 1.9 TeV
+	signalsManyMWR.push_back(18);	//mNu = 1.9 TeV
+	signalsManyMWR.push_back(19);	//mWR=2.0 TeV mNu = 1.0 TeV
+	signalsManyMWR.push_back(20);	//mWR=1.9 TeV mNu = 0.1 TeV
+
+
+	double artificialScaleBoost = 20.0;	//used so the mNu = 1.0 TeV histograms actually appear on plots
+	
+	std::vector<double> rescalingFactors;
+	rescalingFactors.push_back(3.59);
+	rescalingFactors.push_back((0.0587)*artificialScaleBoost);
+	rescalingFactors.push_back(2.21);
+	rescalingFactors.push_back(2.08);
+	rescalingFactors.push_back((0.101)*artificialScaleBoost);
+	rescalingFactors.push_back(2.02);
+
+	
+	//this makes plots using 6 (MWR, MNu) points: (2.1, 0.1), (2.1, 1.0), (2.1, 1.9), diff scaling (2.1, 1.9), (2.0, 1.0), (1.9, 0.1)
+	for(int i=0; i<signalsManyMWR.size() ; i++){
+
+		bool using2p1MassWR = true;
+		if(i>3) using2p1MassWR = false;
+
+		if(i==0){
+			//plot multiple WR signals on one histogram, no need to loop over i
+
+			//plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		
+		/*
+			plot2012(1, 5, "mWR;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mLL;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "ptL1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR2;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			*/
+	
+			plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		
+			/*
+			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			*/
+
+		}//end if(i==0) to make plots with multiple WR signal distributions overlaid 
+
+		if(i==0){
+			//change pathEnding to 500kevts.root when making plots with M(WR) = 2.1 TeV, M(Nu) = 100 GeV data
+			pathEnding = "500kevts.root";
+
+		}
+		if(i != 0){
+			pathEnding = "10kevts.root";
+		}
+
+		if(i==4){
+			pathBeginning = "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_WR_2000_to_LNu_Nu_";
+
+		}
+
+		if(i==5){
+			pathBeginning = "/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_WR_1900_to_LNu_Nu_";
+
+		}
+
+
+
+		if(i==2){
+
+			/*
+			plot2012(1, 5, "mWR;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+
+			plot2012(1, 5, "mLL;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+
+			*/
+
+			//plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+
+			/*
+			plot2012(1, 5, "ptL1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR2;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+
+
+			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+
+
+
+			plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			*/
+
+
+			//plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+
+
+			/*
+			plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			*/
+
+		}
+
+		
+
+	}
+
     //plotall();
 }
