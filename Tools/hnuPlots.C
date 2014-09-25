@@ -1123,6 +1123,7 @@ void HnuPlots::plot1D()
 			//if(!ihsig->smooth_hist) std::cout<<"there are "<< ihsig->hist->GetNbinsX() <<" bins in this WR signal histo"<<std::endl;
         }
     }
+
 	//for now (September 2014) rebin will always be > 1
 	//now that the 2012 real data, 2012 bkgnd, and WR signal data histograms have been rebinned I should look for histogram bins where
 	//there is a data point but no 2012 bkgnd events
@@ -1255,6 +1256,58 @@ void HnuPlots::plot1D()
             }
         }
     }
+
+	TH1 *signal;
+
+	if(sighists.size()==1){
+		//make a TH1* object that points to a histo with sighist entries + all bg entries
+		signal = (TH1*)sighists[0].hist->Clone();
+
+		for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ++ihbg)
+		{
+			//signal->Add(ihbg->hist);
+			//std::cout<<"there are "<< bghists.size() << " bg histos"<<std::endl;
+
+			/**/
+			for(int j=1; j< signal->GetNbinsX()+1 ; j++){
+				bool firstIf = true;
+				bool secondIf = true;
+				if(ihbg->hist->GetBinContent(j) < 0 && signal->GetBinContent(j) > 0){
+					//don't need to do anything here, just want to make sure we aren't adding a negative element to a positive one
+					//signal->SetBinContent(j, signal->GetBinContent(j));
+					//std::cout<<"entered first if"<<std::endl;
+					firstIf = false;
+				}
+
+				if(ihbg->hist->GetBinContent(j) >= 0 && signal->GetBinContent(j) < 0 && firstIf){
+					//want to make sure we aren't adding a negative element to a positive one
+					signal->SetBinContent(j, ihbg->hist->GetBinContent(j));
+					secondIf = false;
+					//std::cout<<"entered second if"<<std::endl;
+				}
+
+				if(ihbg->hist->GetBinContent(j) >= 0 && signal->GetBinContent(j) >= 0 && firstIf && secondIf){
+					signal->SetBinContent(j, ihbg->hist->GetBinContent(j) + signal->GetBinContent(j) );
+					//std::cout<<"entered third if"<<std::endl;
+				}
+
+			}
+			/**/
+
+		}
+	
+		/*
+		for(int j=1; j< signal->GetNbinsX()+1 ; j++){
+			std::cout<<"signal bin # "<< j <<" has contents = "<< signal->GetBinContent(j) <<std::endl;
+
+		}
+		*/
+
+
+
+	}
+
+
 
     //BLAHBLAHBLAH
     //TF1 *tf = new TF1("tf","expo", 800, 10000);
@@ -1391,7 +1444,7 @@ void HnuPlots::plot1D()
 	legForSignal->SetTextSize(0.029);
 	/**/
 
-	WRSignalMass->SetTextSize(0.031);
+	WRSignalMass->SetTextSize(0.034);
 
 	float evtThreshold = 10.0;
 	float evtThresholdTwo = 1.0;
@@ -1478,13 +1531,14 @@ void HnuPlots::plot1D()
 	int i=0;	//use this to access elements of rescalingFactorVect
     for(vector<HnuPlots::HistStruct>::const_iterator ihsig = sighists.begin(); ihsig != sighists.end(); ihsig++)
     {
-		//this code puts the histogram integral and g_{L} = # g_{R} in the plot legend for the WR signal distributions
+		//this code puts the histogram integral and g_{R} = # g_{L} in the plot legend for the WR signal distributions
         if(!ihsig->smooth_hist)
         {
             float integral = 0.0;
             if(rebin >= 0) integral = ihsig->hist->Integral(0, ihsig->hist->GetNbinsX() + 1);
 			else integral = ihsig->hist->Integral(1, ihsig->hist->GetNbinsX(), "width") / (isGeV?200:0.2);
 			char hllabel[128];
+			char secondHllabel[128];
 
 			if(integral >= evtThreshold){
 				sprintf(hllabel, "%s (%.0f)", ihsig->label.c_str(), integral);
@@ -1509,14 +1563,41 @@ void HnuPlots::plot1D()
 			char rightCouplingFactor[128];
 			sprintf(rightCouplingFactor,"g_{R} = %0.2f g_{L}", (1/rescalingFactorVect[i]) );	//this writes "g_R = # g_L" into rightCouplingFactor
 
-			
+		
+			bool testing = true;
 			if(sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
 			   legForSignal->AddEntry(ihsig->hist, hllabel, "L");
 			   legForSignal->AddEntry((TObject*)0, rightCouplingFactor, "");
+			   testing = false;
 			}
-			else{
+			if(sighists.size() > 1 && testing){
 				leg->AddEntry(ihsig->hist, hllabel, "L");
 				leg->AddEntry((TObject*)0, rightCouplingFactor, "");
+			}
+			if(sighists.size()==1){ 
+
+				if(rebin >= 0) integral = signal->Integral(0, signal->GetNbinsX() + 1);
+	
+				if(integral >= evtThreshold){
+					sprintf(secondHllabel, "%s (%.0f)", "signal+bkgnd", integral);
+				}
+
+				if(integral < evtThreshold && integral >= evtThresholdTwo){
+					sprintf(secondHllabel, "%s (%.1f)", "signal+bkgnd", integral);
+				}
+
+				if(integral < evtThresholdTwo && integral >= evtThresholdThree){
+					sprintf(secondHllabel, "%s (%.2f)", "signal+bkgnd", integral);
+				}
+
+				if(integral < evtThresholdThree){
+					sprintf(secondHllabel, "%s (%.3f)","signal+bkgnd" , integral);
+				}
+
+				leg->AddEntry(signal, secondHllabel, "L");
+				leg->AddEntry(ihsig->hist, hllabel, "L");
+				leg->AddEntry((TObject*)0, rightCouplingFactor, "");
+
 			}
 
         }
@@ -1591,15 +1672,18 @@ void HnuPlots::plot1D()
 			//std::cout<<"there are "<< bghists.size() <<" elements in bghists"<<std::endl;
 
 			/*
-			for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ++ihbg)
-			{
-				//sig->Add(ihbg->hist);
-				
-				for(int j=1; j< sig->GetNbinsX()+1 ; j++){
-					sig->SetBinContent(j, sig->GetBinContent(j) + ihbg->hist->GetBinContent(j) );
+			if(sighists.size()==1){
+				for(vector<HnuPlots::HistStruct>::const_iterator ihbg = bghists.begin(); ihbg != bghists.end(); ++ihbg)
+				{
+					//sig->Add(ihbg->hist);
+
+					for(int j=1; j< sig->GetNbinsX()+1 ; j++){
+						sig->SetBinContent(j, sig->GetBinContent(j) + ihbg->hist->GetBinContent(j) );
+
+					}
 
 				}
-			
+
 			}
 			*/
 
@@ -1650,9 +1734,19 @@ void HnuPlots::plot1D()
 			//cloneOfSig->SetLineColor(kBlack);
 			//cloneOfSig->Draw("hist same");
 			//sig->DrawCopy("hist same");
-			//isig->hist->SetLineStyle(kDashed);
-			//the default histogram line style is a solid line
-			isig->hist->Draw("hist same");
+			if(sighists.size()==1){
+				//the default histogram line style is a solid line
+				signal->SetLineColor(kRed);
+				signal->DrawCopy("hist same");
+				isig->hist->SetLineStyle(kDashed);
+				isig->hist->DrawCopy("hist same");
+			}
+
+			if(sighists.size()>1){
+				//the default histogram line style is a solid line
+				isig->hist->Draw("hist same");
+			}
+
 
 		}
         else
@@ -6121,7 +6215,7 @@ int main()
 			plot2012(1, 5, "mNuR2;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 			*/
 	
-			plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			//plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		
 			/*
 			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
@@ -6163,7 +6257,7 @@ int main()
 
 			*/
 
-			//plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
 			/*
 			plot2012(1, 5, "ptL1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
