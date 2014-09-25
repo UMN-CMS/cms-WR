@@ -4190,7 +4190,7 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
 				xmax = 4000;
 			case 1:
 				//hps.setFormLabel(std::string name) sets the name of the output file!
-				std::cout<<"in case 1"<<std::endl;
+				//std::cout<<"in case 1"<<std::endl;
 				if(rebin > 0) hps.setFormLabel("hNu_ee_2012" + outFileNameMiddle + clstring);
 				else          hps.setFormLabel("hNu_ee_ls_2012" + outFileNameMiddle + clstring);
 				hps.setSavePlots(true);
