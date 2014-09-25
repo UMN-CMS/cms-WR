@@ -1257,6 +1257,7 @@ void HnuPlots::plot1D()
         }
     }
 
+	//This makes a TH1 object with gen lvl WR signal+2012 MC bkgnd data
 	TH1 *signal;
 
 	if(sighists.size()==1){
@@ -1302,7 +1303,6 @@ void HnuPlots::plot1D()
 
 		}
 		*/
-
 
 
 	}
@@ -1417,12 +1417,11 @@ void HnuPlots::plot1D()
 
 
 	//make secondary legend and text box; decide later if this legend and text box should actually be plotted
-	double lastXBinCenter = datahist.hist->GetBinCenter( datahist.hist->GetNbinsX()-1 );
-	//std::cout<<"lastXBinCenter is "<< lastXBinCenter << "  ymax is "<< ymax <<std::endl;
+	double largeXBinCenter = datahist.hist->GetBinCenter( datahist.hist->GetNbinsX()-2 );
 	
 	/* 2 column legend that appears to have very long rows of information
 	TLegend *legForSignal = new TLegend(0.44, 0.69, 0.88, 0.84);	//only use this legForSignal if sighists.size() > 1 and 1.8 < mWR < 2.2 (use cutStringHolder)
-	TLatex *WRSignalMass = new TLatex((0.7)*lastXBinCenter,240,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV");	//plot beneath *legForSignal
+	TLatex *WRSignalMass = new TLatex((0.7)*largeXBinCenter,240,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV");	//plot beneath *legForSignal
 
 	legForSignal->SetNColumns(2);		//use right column in legForSignal to show "g_L = # g_R" for each signal
 	legForSignal->SetFillStyle(0); //Color(0);
@@ -1431,10 +1430,14 @@ void HnuPlots::plot1D()
 	//legForSignal->SetTextFont(42);
 	legForSignal->SetTextSize(0.029);
 	*/
-	
+
+
+	double xMin = 0.48;
+	double xMax = 0.88;
+	double textBoxX = (xMin + xMax)/2;
 	/*one column legend that shows g_R = # g_L in a separate line from the legend entry for the WR signal distribution*/
-	TLegend *legForSignal = new TLegend(0.48, 0.56, 0.88, 0.81);	//only use this legForSignal if sighists.size() > 1 and 1.8 < mWR < 2.2 (use cutStringHolder)
-	TLatex *WRSignalMass = new TLatex((0.7)*lastXBinCenter,240,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV");	//plot beneath *legForSignal
+	TLegend *legForSignal = new TLegend(xMin, 0.61, xMax, 0.84);	//only use this legForSignal if sighists.size() > 1 and 1.8 < mWR < 2.2 (use cutStringHolder)
+	TLatex *WRSignalMass = new TLatex(textBoxX*largeXBinCenter,240,"M_{#lower[-0.1]{W_{#lower[-0.2]{R}}}} = 2100 GeV");	//plot beneath *legForSignal
 	
 	legForSignal->SetNColumns(1);		
 	legForSignal->SetFillStyle(0); //Color(0);
@@ -1444,7 +1447,7 @@ void HnuPlots::plot1D()
 	legForSignal->SetTextSize(0.029);
 	/**/
 
-	WRSignalMass->SetTextSize(0.034);
+	WRSignalMass->SetTextSize(0.038);
 
 	float evtThreshold = 10.0;
 	float evtThresholdTwo = 1.0;
@@ -6217,13 +6220,13 @@ int main()
 	
 			//plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		
-			/*
+			/**/
 			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			*/
+			//plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			//plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			//plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			//plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			/**/
 
 		}//end if(i==0) to make plots with multiple WR signal distributions overlaid 
 
@@ -6257,7 +6260,7 @@ int main()
 
 			*/
 
-			plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			//plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
 			/*
 			plot2012(1, 5, "ptL1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
