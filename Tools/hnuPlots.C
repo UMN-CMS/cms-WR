@@ -1399,12 +1399,24 @@ void HnuPlots::plot1D()
 
 	//make *leg on the left if the cut string contains _cut5_mWR_gt_1.8_mWR_lt_2.2, and sighists.size() > 1
 	//otherwise, make *leg on the right
+	bool first = true;
+	bool second = true;
 	TLegend *leg;
 
 	if(sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0 ){
 		leg = new TLegend(0.19, 0.61, 0.43, 0.91);
+		first = false;
 	}
-	else{
+
+	if(sighists.size() == 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0 ){
+		//there is ample space in the central region of plots with 1 WR signal histo and 1.8 < mWR < 2.2 TeV
+		//for a larger legend
+		leg = new TLegend(0.25, 0.63, 0.91, 0.93);
+		second = false;
+	}
+
+	if(first && second){
+		//plots that do not have the 1.8 < mWR < 2.2 TeV constraint should have one legend on the far right
 		leg = new TLegend(0.52, 0.61, 0.91, 0.91);
 	}
 
@@ -1441,8 +1453,8 @@ void HnuPlots::plot1D()
 		limitedMWr = new TLatex(xPosition, yPosition,"1.8 < M_{eejj} < 2.2 TeV");
 	}
 	if(sighists.size() == 1){
-		xPosition = largeXBinCenter;  //want label to be on the right side of plot
-		yPosition = 20;   	  //want label to be below *leg object
+		xPosition = (0.8)*largeXBinCenter;  
+		yPosition = 200; 
 		limitedMWr = new TLatex(xPosition, yPosition,"1.8 < M_{eejj} < 2.2 TeV");
 	}
 
@@ -1599,19 +1611,19 @@ void HnuPlots::plot1D()
 				if(rebin >= 0) integral = signal->Integral(0, signal->GetNbinsX() + 1);
 	
 				if(integral >= evtThreshold){
-					sprintf(secondHllabel, "%s (%.0f)", "signal+bkgnd", integral);
+					sprintf(secondHllabel, "%s (%.0f)", "simulated WR + SM backgrounds", integral);
 				}
 
 				if(integral < evtThreshold && integral >= evtThresholdTwo){
-					sprintf(secondHllabel, "%s (%.1f)", "signal+bkgnd", integral);
+					sprintf(secondHllabel, "%s (%.1f)", "simulated WR + SM backgrounds", integral);
 				}
 
 				if(integral < evtThresholdTwo && integral >= evtThresholdThree){
-					sprintf(secondHllabel, "%s (%.2f)", "signal+bkgnd", integral);
+					sprintf(secondHllabel, "%s (%.2f)", "simulated WR + SM backgrounds", integral);
 				}
 
 				if(integral < evtThresholdThree){
-					sprintf(secondHllabel, "%s (%.3f)","signal+bkgnd" , integral);
+					sprintf(secondHllabel, "%s (%.3f)","simulated WR + SM backgrounds" , integral);
 				}
 
 				leg->AddEntry(signal, secondHllabel, "L");
@@ -6271,43 +6283,34 @@ int main()
 
 
 
-		if(i==2){
+		/*
+		   plot2012(1, 5, "mWR;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-			/*
-			plot2012(1, 5, "mWR;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		   plot2012(1, 5, "mLL;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-			plot2012(1, 5, "mLL;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+*/
 
-			*/
+		//plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-			//plot2012(1, 5, "mJJ;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-
-			/*
-			plot2012(1, 5, "ptL1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mNuR1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mNuR2;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-
-
-			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		/*
+		   plot2012(1, 5, "ptL1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		   plot2012(1, 5, "mNuR1;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		   plot2012(1, 5, "mNuR2;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		   */
 
 
+		plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-			plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			*/
+		/**/
+		plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		/**/
 
 
-			//plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-
-			/*
-			plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			*/
-
-		}
-
-		
 
 	}
 
