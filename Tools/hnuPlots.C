@@ -20,6 +20,7 @@
 #include "TGraphSmooth.h"
 #include "Math/VectorUtil.h"
 
+/*
 #include "RooRealVar.h"
 #include "RooFormulaVar.h"
 #include "RooGenericPdf.h"
@@ -36,6 +37,7 @@
 #include "RooGaussian.h"
 #include "RooFitResult.h"
 #include "RooProdPdf.h"
+*/
 
 #include "tdrstyle.C"
 //#include "fitHNBackground.cc"
@@ -168,7 +170,7 @@ public:
     void plotNorm(double lower, double upper, bool flip = false);
     void plotRatios();
     void scaleByShape(double llow, double lhigh, int npar = 2);
-    void scaleSigByRoo();
+    //void scaleSigByRoo();
 	void scaleSigByFactor(double rescalingFactor);
 	void scaleSigsByFactors(std::vector<double> rescalingFactors);
     void cutFlow();
@@ -217,16 +219,18 @@ private:
     TH1* project(TH2* h2d, double cl, double ch, bool porjx = true);
     int projcount;
 
-    TH1* histFromTuple(std::string histpath, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll = NULL, HeavyNuTree::HNuSlopeFitInfo *ul = NULL, bool smooth = false, RooDataSet* rds = 0);
+    //TH1* histFromTuple(std::string histpath, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll = NULL, HeavyNuTree::HNuSlopeFitInfo *ul = NULL, bool smooth = false, RooDataSet* rds = 0);
+    TH1* histFromTuple(std::string histpath, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll = NULL, HeavyNuTree::HNuSlopeFitInfo *ul = NULL, bool smooth = false);
+
     bool runFilter(std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >::const_iterator iE);
     void histFromDataCard(std::map<std::pair<std::string, std::string>, std::vector<float> >& uncerts);
     double getTupleVar(std::string var, const HeavyNuTree::HNuSlopeFitInfo& ll);
     bool dynamicalCut(double var, double cut, char cutType);
     
     //Roo objects
-    RooRealVar mWR, mLL, mJJ, ptL1, mNu1, mNu2;
-    RooDataSet *rd_BG, *rd_Data, *rd_sig;
-    RooArgList ral;
+    //RooRealVar mWR, mLL, mJJ, ptL1, mNu1, mNu2;
+    //RooDataSet *rd_BG, *rd_Data, *rd_sig;
+    //RooArgList ral;
 
     class fitfunction
     {
@@ -254,18 +258,18 @@ double HnuPlots::fitfunction::operator()(double * x, double * par)
     return retval;
 }
 
-HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStruct> >& vfbg, std::vector<std::vector<HnuPlots::FileStruct> >& vfsig, double iL) :
-    mWR("mWR", "mWR", 0, 10000), mLL("mLL", "mLL", 0, 2000), mJJ("mJJ", "mJJ", 0, 2000), ptL1("ptL1", "ptL1", 0, 2000),
-    mNu1("mNu1", "mNu1", 0, 10000), mNu2("mNu2", "mNu2", 0, 10000), ral(mWR, mLL, mJJ, ptL1, mNu1, mNu2)
+HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStruct> >& vfbg, std::vector<std::vector<HnuPlots::FileStruct> >& vfsig, double iL) //:
+    //mWR("mWR", "mWR", 0, 10000), mLL("mLL", "mLL", 0, 2000), mJJ("mJJ", "mJJ", 0, 2000), ptL1("ptL1", "ptL1", 0, 2000),
+    //mNu1("mNu1", "mNu1", 0, 10000), mNu2("mNu2", "mNu2", 0, 10000), ral(mWR, mLL, mJJ, ptL1, mNu1, mNu2)
 {
     using namespace std;
 
     bool first;
 
     //adding ugly roo hack starts here here    
-    rd_BG   = new RooDataSet("background", "background", ral); //, RooFit::WeightVar(weight));
-    rd_Data = new RooDataSet(      "data",       "data", ral); //, RooFit::WeightVar(weight));
-    rd_sig  = new RooDataSet(    "signal",     "signal", ral);//, RooFit::WeightVar(weight));
+    //rd_BG   = new RooDataSet("background", "background", ral); //, RooFit::WeightVar(weight));
+    //rd_Data = new RooDataSet(      "data",       "data", ral); //, RooFit::WeightVar(weight));
+    //rd_sig  = new RooDataSet(    "signal",     "signal", ral);//, RooFit::WeightVar(weight));
     //rd_BG  ->setWeightVar(weight);
     //rd_Data->setWeightVar(weight);
     //rd_sig->setWeightVar(weight);
@@ -315,7 +319,7 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
             // gethistogram
             if(ibgf->loadtuple && ibgf->histFromTuple)
             {
-                h = histFromTuple(ibgf->histpath.substr(ibgf->histpath.rfind("/") + 1, ibgf->histpath.size()), ibgf->thb, ibgtvec, ibgf->tpll, ibgf->tpul, false, rd_BG);
+                h = histFromTuple(ibgf->histpath.substr(ibgf->histpath.rfind("/") + 1, ibgf->histpath.size()), ibgf->thb, ibgtvec, ibgf->tpll, ibgf->tpul, false);
             }
             else if(fabs(ibgf->clow) < 1e-300 && fabs(ibgf->chigh) < 1e-300)
             {
@@ -412,7 +416,7 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
             if(isigf->loadtuple && isigf->histFromTuple)
             {
                 std::cout << isigf->histpath.substr(isigf->histpath.rfind("/") + 1, isigf->histpath.size()) << std::endl;
-                h = histFromTuple(isigf->histpath.substr(isigf->histpath.rfind("/") + 1, isigf->histpath.size()), isigf->thb, sigtvec, isigf->tpll, isigf->tpul, isigf->smooth_hist, rd_sig);
+                h = histFromTuple(isigf->histpath.substr(isigf->histpath.rfind("/") + 1, isigf->histpath.size()), isigf->thb, sigtvec, isigf->tpll, isigf->tpul, isigf->smooth_hist);
             }
             else
             {
@@ -474,7 +478,7 @@ HnuPlots::HnuPlots(FileStruct& fdata, std::vector<std::vector<HnuPlots::FileStru
         TH1 *h;
         if(fdata.loadtuple && fdata.histFromTuple)
         {
-            h = histFromTuple(fdata.histpath.substr(fdata.histpath.rfind("/") + 1, fdata.histpath.size()), fdata.thb, dtvec, fdata.tpll, fdata.tpul, false, rd_Data);
+            h = histFromTuple(fdata.histpath.substr(fdata.histpath.rfind("/") + 1, fdata.histpath.size()), fdata.thb, dtvec, fdata.tpll, fdata.tpul, false);
             //TFile * fdfd = new TFile("fdata.root", "RECREATE");
             //TH1 * hcopy = (TH1*)h->Clone("mWR");
             //TDirectory * td1 = fdfd->mkdir("hNuE");
@@ -579,7 +583,7 @@ TH1* HnuPlots::project(TH2* h2d, double cl, double ch, bool projx)
     return h;
 }
 
-TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll, HeavyNuTree::HNuSlopeFitInfo *ul, bool smooth, RooDataSet *rds)
+TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std::pair<HeavyNuTree::HNuSlopeFitInfo, double> >& bgtvec, HeavyNuTree::HNuSlopeFitInfo *ll, HeavyNuTree::HNuSlopeFitInfo *ul, bool smooth)
 {
     std::vector<std::string> histQs;
     bool invertCuts = false;
@@ -735,7 +739,8 @@ TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std:
         //if(iT->first.j1B + iT->first.j2B >= 1) printf("b run: %d\n", iT->first.run);
 
         //fill rooDataSet here
-        if(rds) 
+        /*
+		if(rds) 
         {
             mWR = iT->first.mlljj;
             ral[0] = mWR;
@@ -752,6 +757,7 @@ TH1* HnuPlots::histFromTuple(std::string histValues, double nb, std::vector<std:
             
             rds->add(ral, iT->first.weight * iT->second);
         }
+		*/
 
         // prepair appropriate variables for fill
         for(std::vector<std::string>::const_iterator ihlabel = histQs.begin(); ihlabel != histQs.end(); ++ihlabel)
@@ -2821,6 +2827,7 @@ void HnuPlots::scaleByShape(double llow, double lhigh, int npar)
     plot();
 }
 
+/*
 void HnuPlots::scaleSigByRoo()
 {
     RooKeysPdf kpdf_mWR_bg("kbg_mWR", "kbg_mWR", mWR, *rd_BG);
@@ -2882,6 +2889,7 @@ void HnuPlots::scaleSigByRoo()
 
     sighists.front().hist->Scale(sig_scale.getVal() / sighists.front().hist->Integral(0, sighists.front().hist->GetNbinsX() + 1));
 }
+*/
 
 void HnuPlots::scaleSigByFactor(double rescalingFactor){
 	
@@ -6104,7 +6112,7 @@ void plotall()
 // "ptL1;mWR>1.1;mWR<1.8" would plot the pT distribution of the leading lepton for events where the reconstructed
 // 4 object mass is between 1.1 and 1.8 TeV
 
-int main()
+void executePlot2012()
 {
 
 	using namespace std;
@@ -6252,13 +6260,13 @@ int main()
 	
 			plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		
-			/*
+			/**/
 			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 			plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 			plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 			plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 			plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-			*/
+			/**/
 
 		}//end if(i==0) to make plots with multiple WR signal distributions overlaid 
 
@@ -6299,15 +6307,15 @@ int main()
 		   */
 
 
-		//plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-		/*
+		/**/
 		plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-		*/
+		/**/
 
 
 
