@@ -1404,7 +1404,7 @@ void HnuPlots::plot1D()
 	TLegend *leg;
 
 	if(sighists.size() > 1 && cutStringHolder.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0 ){
-		leg = new TLegend(0.19, 0.61, 0.43, 0.91);
+		leg = new TLegend(0.19, 0.61, 0.43, 0.89);
 		first = false;
 	}
 
@@ -6250,7 +6250,7 @@ int main()
 			//plot2012(1, 5, "mNuR2;mWR>0.6",5,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 			/**/
 	
-			//plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+			plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		
 			/*
 			plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], true, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
@@ -6299,15 +6299,15 @@ int main()
 		   */
 
 
-		plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
+		//plot2012(1, 5, "mWR;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 
-		/**/
+		/*
 		plot2012(1, 5, "mLL;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mJJ;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "ptL1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
-		/**/
+		*/
 
 
 
