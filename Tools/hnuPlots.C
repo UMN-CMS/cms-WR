@@ -4181,12 +4181,16 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
 			//vsig.push_back( HnuPlots::FileStruct("test signal"  ,  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
 			//vsig2.push_back(HnuPlots::FileStruct("test signal 2",  "/home/ugrad/pastika/cms/HeavyNu/CMSSW_5_3_8/src/HeavyNu/AnalysisModules/HeavyNu_accept_1000_250.root", "hNuGen2012/" + plot, lumi, 0.002286, 1.140/1000, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
 			
-			//std::cout<<"about to add an element to vsig"<<std::endl;
 			vsig.push_back( HnuPlots::FileStruct(theoryPlotLabel  ,  theoryFilePath, "hNuGen/" + plot, lumi, crossSxn, kFactorDivEvts, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
+			sig.push_back(vsig);
+
+
+			//std::cout<<"about to add an element to vsig"<<std::endl;
+			//vsig.push_back( HnuPlots::FileStruct(theoryPlotLabel  ,  theoryFilePath, "hNuGen/" + plot, lumi, crossSxn, kFactorDivEvts, "", 0.0, 0.0, true, 1, true, 0.0, 0.0, true, hft, 0, 0, -1, &ll, &ul));
 
 
 			//Then add the individual signal points to the list of signal points
-			sig.push_back(vsig);
+			//sig.push_back(vsig);
 			//sig.push_back(vsig2);
 		}
 		else if(!hft && mode == 2)
@@ -4209,7 +4213,7 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
 		std::cout<<"about to create HnuPlots object named hps"<<std::endl;
 		//return;
 		HnuPlots hps(data, bg, sig, lumi);
-		//std::cout<<"made HnuPlots object named hps"<<std::endl;
+		std::cout<<"made HnuPlots object named hps"<<std::endl;
 		std::string clstring;
 		makeCutString(cutlevel, plot, clstring);
 		switch(mode)
@@ -4249,10 +4253,13 @@ void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebi
 				//std::cout<<"cut string contains "<< clstring <<std::endl;
 				//std::cout<<"comparing cut string to _cut5_mWR_gt_1.8_mWR_lt_2.2 "<<std::endl;
 
-				if(clstring.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0){
+				if(clstring.compare("_cut5_mWR_gt_1.8_mWR_lt_2.2") == 0 && rebin != 1){
 					//rescale the Y axis to go from 0.06 to 200
 					//std::cout<<"rescaling Y axis to accommodate legend"<<std::endl;
 					hps.setYRange(0.06, 600);
+				}
+				if(rebin == 1){
+					hps.setYRange(0., 15.);
 				}
 
 				break;
@@ -6238,7 +6245,12 @@ void executePlot2012()
 	rescalingFactors.push_back((0.101)*artificialScaleBoost);
 	rescalingFactors.push_back(2.02);
 
-	
+	//void plot2012(int mode = 0, int cutlevel = 5, std::string plot = "mWR", int rebin = 5, bool log = true, double xmin = 0.0, double xmax = 3500.0, bool autoY = true, std::string theoryFilePath="/eos/uscms/store/user/skalafut/WR/8TeV/signalMC/analyzed_signalMC.root", std::string theoryPlotLabel="Theory M(WR)=2100 M(N)=1000", double crossSxn = 0.0001, double signalRescaleFactor = 0.1, std::string outFileNameMiddle = "_mWR_2100_mNu_1000_", bool doMultipleSignals = false, double kFactorDivEvts = .0001199, bool using2p1WR = false)
+
+	//plot2012(1,5, "jmult;mWR>1.8;mWR<2.2",1,false,-0.5,6.5);
+	//plot2012(1,5, "bmult;mWR>1.8;mWR<2.2",1,false,-0.5,5.5);
+
+
 	//this makes plots using 6 (MWR, MNu) points: (2.1, 0.1), (2.1, 1.0), (2.1, 1.9), diff scaling (2.1, 1.9), (2.0, 1.0), (1.9, 0.1)
 	for(int i=0; i<signalsManyMWR.size() ; i++){
 
@@ -6316,8 +6328,6 @@ void executePlot2012()
 		plot2012(1, 5, "mNuR1;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		plot2012(1, 5, "mNuR2;mWR>1.8;mWR<2.2",10,true,0.0,4000.0,true, pathBeginning + mNu[ signalsManyMWR[i] ] + pathEnding ,labels[ signalsManyMWR[i] ],xSecs[ signalsManyMWR[i] ], rescalingFactors[i], outFileNames[i], false, kFactorsOvrEvts[ signalsManyMWR[i] ], using2p1MassWR);
 		/**/
-
-
 
 
 	}
