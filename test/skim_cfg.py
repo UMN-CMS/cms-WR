@@ -19,7 +19,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
@@ -63,14 +63,13 @@ process.MINIAODSIMoutput = cms.OutputModule("PoolOutputModule",
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
-process.load('ExoAnalysis.cmsWR.skims_cff')
+process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 
 # Path and EndPath definitions
 
-process.signalSkim = cms.Path(process.wRleadingElectron + process.wRsubleadingElectron
-                              * process.wRdiElectronCandidate * process.wRdiElectronCandidateFilter)
-process.diElectronSidebandSkim = cms.Path(process.wRleadingElectron + process.wRsubleadingElectron
-                              * process.wRdiElectronSidebandCandidate * process.wRdiElectronSidebandCandidateFilter)
+process.signalSkim = cms.Path(process.wRdiElectronSignalSeq)
+process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
+
 process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIMoutput)
 
 #do not add changes to your config after this point (unless you know what you are doing)
