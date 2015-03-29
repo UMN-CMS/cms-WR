@@ -1,35 +1,39 @@
 #!/bin/bash
 DOCCONF=fulldoc
-
-if [ ! -d "doc/doxygen/${DOCCONF}/" ];then
-    mkdir -p doc/doxygen/${DOCCONF}/
+mainDir=$PWD
+docDir=doc/doxygen/${DOCCONF}/
+if [ ! -d "${docDir}" ];then
+    mkdir -p ${docDir}
 fi
 
-if [ ! -d "doc/doxygen/${DOCCONF}/html" ];then
-    cd doc/doxygen/${DOCCONF}/
+if [ ! -d "${docDir}/html" ];then
+    cd ${docDir}
     git clone -b gh-pages  git@github.com:UMN-CMS/cms-WR.git html
-    cd -
+    cd ${mainDir}
 else
-    cd doc/doxygen/${DOCCONF}/html/
+    cd ${docDir}/html
     if [ "`git branch | grep -c gh-pages`" == "0" ];then
-	cd -
-	rm doc/doxygen/${DOCCONF}/html/ -Rf
-	cd doc/doxygen/${DOCCONF}/
+	cd ${mainDir}
+	rm ${docDir}/html/ -Rf
+	cd ${docDir}/
 	git clone -b gh-pages  git@github.com:UMN-CMS/cms-WR.git html
-	cd -
+	cd ${mainDir}
     fi
 fi
 
+
+cd ${mainDir}
 doxygen ${DOCCONF}
 
-cd doc/doxygen/${DOCCONF}/html
+cd ${docDir}/html/
 ls
 git remote -v 
 git branch 
 git pull
 git add *.html
-git add *.css
-git add *.gif
+git add *.css *.js
+git add *.gif *.png
+git add searchb
 git commit -m "updated documentation" -a
 git commit -m "updated documentation" -a
 git push origin gh-pages:gh-pages

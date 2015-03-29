@@ -1,5 +1,5 @@
 /**
-\page _instructions 
+\page instructions_ Instructions
 Download the code:
 \verbatim
 scram project CMSSW_7_4_0_pre
@@ -14,4 +14,22 @@ cd cms-WR/
 
 
 \endverbatim
+
+\section digiReco_ DIGI-RECO from GEN-SIM
+\verbatim
+cmsDriver.py rec --pileup AVE_20_BX_25ns   --mc --eventcontent AODSIM --datatier GEN-SIM   --beamspot Realistic8TeVCollision --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO  --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://5E57FB53-7987-E411-8A59-90B11C06E1A0.root  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input "dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM" --conditions auto:run2_mc
+\endverbatim
+
+\section miniAOD_ miniAOD from RECO
+\verbatim
+cmsDriver.py miniAOD --filein file:rec_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_RECO_PU.root --fileout file:EXO-Phys14DR-00009.root --mc --eventcontent MINIAODSIM --runUnscheduled --datatier MINIAODSIM --conditions auto:run2_mc --step PA
+\endverbatim
+
+
+\section testSkims_ Testing skims
+\verbatim
+cmsRun test/skim_cfg.py
+\endverbatim
+
+Go back to \ref index
 */
