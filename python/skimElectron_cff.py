@@ -1,18 +1,23 @@
 import FWCore.ParameterSet.Config as cms
 
+# Selection of electrons from the slimmedElectrons collection (PAT)
+""" \addtogroup electronSkim_Group electronSkim sequences
+@{
+"""
 
-############################################################
-###### di electron selection
+
+### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("CandViewSelector",
                                  src = cms.InputTag("slimmedElectrons"),
                                  cut = cms.string("pt>60"),
                                  )
 
+### select subleading electron
 wRsubleadingElectron = cms.EDFilter("CandViewSelector",
                                  src = cms.InputTag("slimmedElectrons"),
                                  cut = cms.string("pt>40"),
                                  )
-####### di electron signal
+### create di-electron pair in signal region
 wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("wRleadingElectron wRsubleadingElectron"),
                                        role = cms.string("leading subleading"),
@@ -22,26 +27,32 @@ wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
                                        )
 
-
+### filter: at least one di-electron candidate in signal region
 wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            src = cms.InputTag("wRdiElectronCandidate"),
                                            minNumber = cms.uint32(1)
                                            )
 
-####### di electron sideband
+### create di-electron pair in sideband region
 wRdiElectronSidebandCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("wRleadingElectron wRsubleadingElectron"),
                                        checkCharge = cms.bool(False),
                                        cut = cms.string("0< mass < 200 && daughter(0).pt>daughter(1).pt")
                                        )
 
+### filter: at least one di-electron candidate in sideband region
 wRdiElectronSidebandCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                                    src = cms.InputTag("wRdiElectronSidebandCandidate"),
                                                    minNumber = cms.uint32(1)
                                                    )
 
 
-######## Sequences
+### di-electron selection sequence
 wRelectronSelectionSeq = cms.Sequence(wRleadingElectron + wRsubleadingElectron)
+### di-electron selection in signal region sequence
 wRdiElectronSignalSeq = cms.Sequence(wRelectronSelectionSeq * wRdiElectronCandidate * wRdiElectronCandidateFilter)
+### di-electron selection in sideband region sequence
 wRdiElectronSidebandSeq = cms.Sequence(wRelectronSelectionSeq * wRdiElectronSidebandCandidate * wRdiElectronSidebandCandidateFilter)
+
+
+### @}
