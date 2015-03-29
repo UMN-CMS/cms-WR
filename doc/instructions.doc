@@ -1,0 +1,17 @@
+/**
+\page _instructions 
+Download the code:
+\verbatim
+scram project CMSSW_7_4_0_pre
+cd CMSSW_7_4_0_pre9/src/
+cmsenv 
+git cms-init
+mkdir ExoAnalysis/
+cd ExoAnalysis/
+git clone git@github.com:UMN-CMS/cms-WR.git
+scram b
+cd cms-WR/
+
+
+\endverbatim
+*/
