@@ -5,16 +5,21 @@ import FWCore.ParameterSet.Config as cms
 @{
 """
 
+## create new muons with the tuneP track \ingroup muonSkim_Group
+wRtunePMuons = cms.EDProducer("TunePMuonProducer",
+                             src = cms.InputTag("slimmedMuons")
+                             )
 
-### select leading muon \ingroup muonSkim_Group
+
+### select leading muon
 wRleadingMuon = cms.EDFilter("CandViewSelector",
-                                 src = cms.InputTag("slimmedMuons"),
+                                 src = cms.InputTag("wRtunePMuons"),
                                  cut = cms.string("pt>60"),
                                  )
 
 ### select subleading muon
 wRsubleadingMuon = cms.EDFilter("CandViewSelector",
-                                 src = cms.InputTag("slimmedMuons"),
+                                 src = cms.InputTag("wRtunePMuons"),
                                  cut = cms.string("pt>40"),
                                  )
 ### create di-muon pair in signal region
