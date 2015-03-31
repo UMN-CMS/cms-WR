@@ -70,7 +70,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_sideband.root'),
     outputCommands = process.MINIAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diElectronSidebandSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diLeptonSidebandSkim'))
 )
 
 # Additional output definition
@@ -84,7 +84,7 @@ process.load('ExoAnalysis.cmsWR.skimMuon_cff')
 # Path and EndPath definitions
 
 process.signalSkim = cms.Path(process.wRdiMuonSignalSeq)
-process.diElectronSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
+process.diLeptonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 
 process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output)
 
