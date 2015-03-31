@@ -24,12 +24,13 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
-    secondaryFileNames = cms.untracked.vstring()
+                            #fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
+                            fileNames = cms.untracked.vstring('file:EXO-Phys14DR-00009.root'),
+                            secondaryFileNames = cms.untracked.vstring()
 )
 
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True)
 )
 
@@ -56,8 +57,9 @@ process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_signal.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalMuonSkim','signalElectronSkim'))
 )
+
 process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
     compressionLevel = cms.untracked.int32(4),
@@ -71,7 +73,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_sideband.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diElectronSidebandSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diMuonSidebandSkim','diElectronSidebandSkim'))
 )
 
 # Additional output definition
@@ -84,10 +86,12 @@ process.load('ExoAnalysis.cmsWR.microAOD_cff')
 
 # Path and EndPath definitions
 
-process.signalSkim = cms.Path(process.wRdiMuonSignalSeq)
-process.diElectronSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
+process.signalMuonSkim = cms.Path(process.wRdiMuonSignalSeq)
+process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
+process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
+process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output)
+process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
 #do not add changes to your config after this point (unless you know what you are doing)
 

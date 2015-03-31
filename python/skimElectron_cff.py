@@ -17,6 +17,8 @@ wRsubleadingElectron = cms.EDFilter("CandViewSelector",
                                  src = cms.InputTag("slimmedElectrons"),
                                  cut = cms.string("pt>40"),
                                  )
+#wRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
+                                        
 ### create di-electron pair in signal region
 wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("wRleadingElectron wRsubleadingElectron"),
