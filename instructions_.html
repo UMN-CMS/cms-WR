@@ -112,13 +112,9 @@ EOF
 else 
 echo "[ERROR] You are not in the main directory of this repository" &gt;&gt; /dev/stderr
 fi
-\verbatim
-
-
-
-\section digiReco_ DIGI-RECO from GEN-SIM
-\verbatim
-cmsDriver.py rec --pileup AVE_20_BX_25ns   --mc --eventcontent AODSIM --datatier GEN-SIM   --beamspot Realistic8TeVCollision --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO  --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://5E57FB53-7987-E411-8A59-90B11C06E1A0.root  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input "dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM" --conditions auto:run2_mc
+</pre><h1><a class="anchor" id="digiReco_"></a>
+DIGI-RECO from GEN-SIM</h1>
+<pre class="fragment">cmsDriver.py rec --pileup AVE_20_BX_25ns   --mc --eventcontent AODSIM --datatier GEN-SIM   --beamspot Realistic8TeVCollision --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO  --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://5E57FB53-7987-E411-8A59-90B11C06E1A0.root  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input "dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM" --conditions auto:run2_mc
 </pre><h1><a class="anchor" id="miniAOD_"></a>
 miniAOD from RECO</h1>
 <pre class="fragment">cmsDriver.py miniAOD --filein file:rec_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_RECO_PU.root --fileout file:EXO-Phys14DR-00009.root --mc --eventcontent MINIAODSIM --runUnscheduled --datatier MINIAODSIM --conditions auto:run2_mc --step PA
@@ -129,7 +125,7 @@ Testing skims</h1>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 31 2015 20:16:58 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 31 2015 20:19:07 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
