@@ -18,8 +18,6 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
@@ -75,11 +73,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_sideband.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diLeptonSidebandSkim'))
-
-
-
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diMuonSidebandSkim','diElectronSidebandSkim'))
 )
 
 # Additional output definition
@@ -92,15 +86,10 @@ process.load('ExoAnalysis.cmsWR.microAOD_cff')
 
 # Path and EndPath definitions
 
-
-
-
-
 process.signalMuonSkim = cms.Path(process.wRdiMuonSignalSeq)
 process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
 process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
-
 
 process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
