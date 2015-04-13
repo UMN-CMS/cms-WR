@@ -26,12 +26,13 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
-    secondaryFileNames = cms.untracked.vstring()
+                            #fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
+                            fileNames = cms.untracked.vstring('file:EXO-Phys14DR-00009.root'),
+                            secondaryFileNames = cms.untracked.vstring()
 )
 
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True)
 )
 
@@ -43,6 +44,7 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
+process.load('ExoAnalysis.cmsWR.microAOD_Output_cff')
 
 process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -55,10 +57,11 @@ process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
     eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
     fastCloning = cms.untracked.bool(False),
     fileName = cms.untracked.string('file:skim_signal.root'),
-    outputCommands = process.MINIAODSIMEventContent.outputCommands,
+    outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalMuonSkim','signalElectronSkim'))
 )
+
 process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
     compressionLevel = cms.untracked.int32(4),
@@ -70,9 +73,13 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
     fastCloning = cms.untracked.bool(False),
     fileName = cms.untracked.string('file:skim_sideband.root'),
-    outputCommands = process.MINIAODSIMEventContent.outputCommands,
+    outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
+
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diLeptonSidebandSkim'))
+
+
+
 )
 
 # Additional output definition
@@ -81,14 +88,21 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
-process.load('ExoAnalysis.cmsWR.skimMuon_cff')
+process.load('ExoAnalysis.cmsWR.microAOD_cff')
 
 # Path and EndPath definitions
 
-process.signalSkim = cms.Path(process.wRdiMuonSignalSeq)
-process.diLeptonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output)
+
+
+
+process.signalMuonSkim = cms.Path(process.wRdiMuonSignalSeq)
+process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
+process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
+process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
+
+
+process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
 #do not add changes to your config after this point (unless you know what you are doing)
 

@@ -2,22 +2,56 @@
 \page instructions_ Instructions
 Download the code:
 \verbatim
-scram project CMSSW_7_4_0_pre
+scram project CMSSW_7_4_0_pre9
 cd CMSSW_7_4_0_pre9/src/
 cmsenv 
 git cms-init
 mkdir ExoAnalysis/
 cd ExoAnalysis/
-git clone git@github.com:UMN-CMS/cms-WR.git
+git clone git@github.com:UMN-CMS/cms-WR.git cmsWR
 scram b
-cd cms-WR/
-
-
+cd cmsWR/
 \endverbatim
+
+Check if you have astyle command installed:
+\verbatim
+which astyle
+\endverbatim
+
+If you don't, please install it from 
+<a href="http://sourceforge.net/projects/astyle/"> http://sourceforge.net/projects/astyle/</a>
+and put it into your $HOME/bin directory
+
+Then add the following pre-commit hook into your GIT_DIR:
+\verbatim
+if [ -d ".git/hooks" ];then
+cat > .git/hooks/pre-commit <<EOF
+#!/bin/sh
+fileList=\`git diff --cached --name-only\`
+
+command="astyle -A3 -t -p  -n" 
+for file in \$fileList
+do
+    case \$file in
+	*.c | *.cc) \$command \$file; git add \$file;;
+	*.h | *.hh) \$command \$file; git add \$file;;
+	*.cpp)      \$command \$file; git add \$file;;
+    esac
+done
+exit 0
+EOF
+else 
+echo "[ERROR] You are not in the main directory of this repository" >> /dev/stderr
+fi
+\endverbatim
+
+
 
 \section digiReco_ DIGI-RECO from GEN-SIM
 \verbatim
-cmsDriver.py rec --pileup AVE_20_BX_25ns   --mc --eventcontent AODSIM --datatier GEN-SIM   --beamspot Realistic8TeVCollision --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO  --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://5E57FB53-7987-E411-8A59-90B11C06E1A0.root  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input "dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM" --conditions auto:run2_mc
+# copy file in local to be faster
+xrdcp -v xrdcp root://xrootd.unl.edu//store/mc/RunIIFall14GS/WRToNuEToEEJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/GEN-SIM/MCRUN2_71_V1-v1/10000/5E57FB53-7987-E411-8A59-90B11C06E1A0.root myFile.root
+cmsDriver.py rec --pileup AVE_40_BX_25ns   --mc --eventcontent AODSIM --datatier GEN-SIM   --beamspot Realistic8TeVCollision --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO  --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://myFile.root  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input "dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM" --conditions auto:run2_mc
 \endverbatim
 
 \section miniAOD_ miniAOD from RECO
