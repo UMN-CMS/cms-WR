@@ -24,7 +24,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
+		fileNames = cms.untracked.vstring('file:/uscms/home/skalafut/nobackup/EXO-Phys14DR-00009.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
