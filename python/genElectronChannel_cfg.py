@@ -2,123 +2,85 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("GENEEJJ")
 
-### define the filters and producers to be used at gen level
+## load the filters, producers, and sequences defined in the config file fragment
+process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
+process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
-##filters to select gen jets and leptons without any selection requirements
-process.bareGenJet = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("slimmedGenJets"),
-		src = cms.InputTag("ak4GenJets"),
-		cut = cms.string("")
-		)
-
-process.bareGenJetFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("bareGenJet"),
-		minNumber = cms.uint32(2)
-		)
-
-process.bareGenEle = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("prunedGenParticles"),
-		src = cms.InputTag("genParticles"),
-		cut = cms.string("pdgId == 11 || pdgId == -11")
-		)
-
-process.bareGenEleFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("bareGenEle"),
-		minNumber = cms.uint32(2)
-		)
-
+## run these analyzers after selecting gen electrons, jets, and quarks without any cuts applied
 process.genAnalyzerOne = cms.EDAnalyzer('genAnalyzer',
 		treeName = cms.string("genObjectsNoCuts"),
 		genLeptonCollection = cms.InputTag("bareGenEle","","GENEEJJ"),
 		genJetCollection = cms.InputTag("bareGenJet","","GENEEJJ")
 		)
 
-
-##filters on pt and eta of gen leptons and jets
-process.ptEtaRestrictedGenJet = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("slimmedGenJets"),
-		src = cms.InputTag("bareGenJet","","GENEEJJ"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5")
+process.matchedGenAnalyzerOne = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedGenObjectsNoCuts"),
+		genLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle","","GENEEJJ"),
+		genSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle","","GENEEJJ"),
+		genQuarkCollection = cms.InputTag("bareMatchedGenQuark","","GENEEJJ")
 		)
 
-process.ptEtaRestrictedGenJetFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("ptEtaRestrictedGenJet"),
-		minNumber = cms.uint32(2)
-		)
 
-process.ptEtaRestrictedSubleadingGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("bareGenEle"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5")
-		)
-
-process.ptEtaRestrictedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("ptEtaRestrictedSubleadingGenEle"),
-		minNumber = cms.uint32(2)
-		)
-
-process.ptEtaRestrictedLeadingGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("ptEtaRestrictedSubleadingGenEle","","GENEEJJ"),
-		cut = cms.string("pt>60")
-		)
-
-process.ptEtaRestrictedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("ptEtaRestrictedLeadingGenEle"),
-		minNumber = cms.uint32(1)
-		)
-
+## run these analyzers after applying pt and eta cuts on the leptons and jets
 process.genAnalyzerTwo = cms.EDAnalyzer('genAnalyzer',
 		treeName = cms.string("genObjectsWithPtEtaCuts"),
 		genLeptonCollection = cms.InputTag("ptEtaRestrictedSubleadingGenEle","","GENEEJJ"),
 		genJetCollection = cms.InputTag("ptEtaRestrictedGenJet","","GENEEJJ")
 		)
 
-##filters on dilepton mass, and the producer necessary to facilitate this filter
-process.genDiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-		decay = cms.string("ptEtaRestrictedLeadingGenEle ptEtaRestrictedSubleadingGenEle"),
-		role = cms.string("leading subleading"),
-		checkCharge = cms.bool(False),
-		cut = cms.string("mass > 200 && daughter(0).pt > daughter(1).pt")
+process.matchedGenAnalyzerTwo = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedGenObjectsWithPtEtaCuts"),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingGenEle","","GENEEJJ"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingGenEle","","GENEEJJ"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedGenQuark","","GENEEJJ")
 		)
 
-process.genDiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("genDiElectronCandidate"),
-		minNumber = cms.uint32(1)
-		)
 
+## run these analyzers after applying pt, eta, and dilepton mass cuts
 process.genAnalyzerThree = cms.EDAnalyzer('genAnalyzer',
 		treeName = cms.string("genObjectsWithPtEtaAndDileptonMassCuts"),
 		genLeptonCollection = cms.InputTag("ptEtaRestrictedSubleadingGenEle","","GENEEJJ"),
 		genJetCollection = cms.InputTag("ptEtaRestrictedGenJet","","GENEEJJ")
 		)
 
-process.runGenAnalysis = cms.Path(
-		process.bareGenEle
-		*process.bareGenEleFilter
-		*process.bareGenJet
-		*process.bareGenJetFilter
+process.matchedGenAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingGenEle","","GENEEJJ"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingGenEle","","GENEEJJ"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedGenQuark","","GENEEJJ")
+		)
+
+
+process.runUnmatchedGenAnalysis = cms.Path(
+		process.bareGenParticleSeq
 		*process.genAnalyzerOne
-		
-		*process.ptEtaRestrictedGenJet
-		*process.ptEtaRestrictedGenJetFilter
-		*process.ptEtaRestrictedSubleadingGenEle
-		*process.ptEtaRestrictedSubleadingGenEleFilter
-		*process.ptEtaRestrictedLeadingGenEle
-		*process.ptEtaRestrictedLeadingGenEleFilter
+		*process.ptEtaConstrainedSeq
 		*process.genAnalyzerTwo
-
-		*process.genDiElectronCandidate
-		*process.genDiElectronCandidateFilter
+		*process.genDiElectronCandidateSeq
 		*process.genAnalyzerThree
+		)
 
+process.runMatchedGenAnalysis = cms.Path(
+		process.bareMatchedGenParticleSeq
+		*process.matchedGenAnalyzerOne
+		*process.matchedPtEtaConstrainedSeq
+		*process.matchedGenAnalyzerTwo
+		*process.genMatchedDiElectronCandidateSeq
+		*process.matchedGenAnalyzerThree
 		)
 
 process.TFileService = cms.Service("TFileService",
 		fileName = cms.string('analysis_genElectronChannel.root')
 )
 
+process.options = cms.untracked.PSet(
+		wantSummary = cms.untracked.bool(True)
+		)
+
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
 		'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/7A8730D6-9E86-E411-A442-002590747DF0.root',
+		'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/00774ADC-8F87-E411-B6EF-00266CF32E78.root'
 
     ),
     inputCommands = cms.untracked.vstring(
@@ -130,8 +92,6 @@ process.source = cms.Source( "PoolSource",
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
-
-
 
 
 

@@ -61,6 +61,7 @@ void SaveTreePlots(TChain * chain, string outputFileName){
 }///end SaveTreePlots()
 
 void dumpTreePlots(){
+	///chains made without pdgId matching
 	TChain * noCuts = new TChain("genAnalyzerOne/genObjectsNoCuts","");
 	noCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel.root");
 	TChain * ptEtaCuts = new TChain("genAnalyzerTwo/genObjectsWithPtEtaCuts","");
@@ -68,13 +69,33 @@ void dumpTreePlots(){
 	TChain * ptEtaDileptonMassCuts = new TChain("genAnalyzerThree/genObjectsWithPtEtaAndDileptonMassCuts","");
 	ptEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel.root");
 
+	///chains made with pdgId matching
+	TChain * matchedNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	matchedNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel.root");
+	TChain * matchedPtEtaCuts = new TChain("matchedGenAnalyzerTwo/matchedGenObjectsWithPtEtaCuts","");
+	matchedPtEtaCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel.root");
+	TChain * matchedPtEtaDileptonMassCuts = new TChain("matchedGenAnalyzerThree/matchedGenObjectsWithPtEtaAndDileptonMassCuts","");
+	matchedPtEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel.root");
+
+
 	string plotDir_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/noCuts";
 	string plotDir_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/withPtEtaCuts";
 	string plotDir_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/withPtEtaDileptonMassCuts";
 
+	string plotDir_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_noCuts/noCuts";
+	string plotDir_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_ptEtaCuts/withPtEtaCuts";
+	string plotDir_matched_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_ptEtaDileptonMassCuts/withPtEtaDileptonMassCuts";
+
+
 	//SaveTreePlots(noCuts, plotDir_noCuts);
 	//SaveTreePlots(ptEtaCuts, plotDir_withPtEtaCuts);
-	SaveTreePlots(ptEtaDileptonMassCuts, plotDir_withPtEtaDileptonMassCuts);
+	//SaveTreePlots(ptEtaDileptonMassCuts, plotDir_withPtEtaDileptonMassCuts);
+	SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
+	//SaveTreePlots(matchedPtEtaCuts, plotDir_matched_withPtEtaCuts);
+	//SaveTreePlots(matchedPtEtaDileptonMassCuts, plotDir_matched_withPtEtaDileptonMassCuts);
+
+
 
 
 }///end dumpTreePlots()
+
