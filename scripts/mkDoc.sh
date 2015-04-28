@@ -33,7 +33,8 @@ git pull
 git add *.html
 git add *.css *.js
 git add *.gif *.png
-git add searchb
+git add search
+git add search/*.html search/*.js
 git commit -m "updated documentation" -a
 git commit -m "updated documentation" -a
 git push origin gh-pages:gh-pages
