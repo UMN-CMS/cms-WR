@@ -17,6 +17,7 @@
 
 using namespace std;
 
+
 ///use this macro to take a file with multiple directories, one tree per directory, and dump
 ///all of the plots in all trees into pdf files with unique names
 void SaveTreePlots(TChain * chain, string outputFileName){
@@ -26,6 +27,9 @@ void SaveTreePlots(TChain * chain, string outputFileName){
 		string brName = aBranch->GetName();
 		if(brName.compare("ptGenEle")==0 || brName.compare("etaGenEle")==0 || brName.compare("phiGenEle")==0 || 
 				brName.compare("ptGenJet")==0 || brName.compare("etaGenJet")==0 || brName.compare("phiGenJet")==0 ){
+			///NOTE the max value of 2 is set knowing that the max number of array elements per entry is 2
+			///if the tree structure changes to allow arrays with more than 2 entries, this loop upper limit value
+			///will have to change!
 			for(unsigned int i=0; i<2; i++){
 				string updatedBrName = "";
 				updatedBrName += brName;
@@ -46,6 +50,7 @@ void SaveTreePlots(TChain * chain, string outputFileName){
 			}///end for loop
 
 		}///end filter to do something different if the branch name corresponds to an array branch
+		
 		else{
 			TCanvas * c1 = new TCanvas(brName.c_str(),brName.c_str(),800,800);
 			c1->cd();

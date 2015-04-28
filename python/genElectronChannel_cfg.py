@@ -15,6 +15,10 @@ process.genAnalyzerOne = cms.EDAnalyzer('genAnalyzer',
 
 process.matchedGenAnalyzerOne = cms.EDAnalyzer('genMatchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsNoCuts"),
+		doDeltaRcut = cms.bool(False),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(-1),
 		genLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle","","GENEEJJ"),
 		genSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle","","GENEEJJ"),
 		genQuarkCollection = cms.InputTag("bareMatchedGenQuark","","GENEEJJ")
@@ -30,6 +34,10 @@ process.genAnalyzerTwo = cms.EDAnalyzer('genAnalyzer',
 
 process.matchedGenAnalyzerTwo = cms.EDAnalyzer('genMatchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaCuts"),
+		doDeltaRcut = cms.bool(False),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(-1),
 		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingGenEle","","GENEEJJ"),
 		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingGenEle","","GENEEJJ"),
 		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedGenQuark","","GENEEJJ")
@@ -45,20 +53,49 @@ process.genAnalyzerThree = cms.EDAnalyzer('genAnalyzer',
 
 process.matchedGenAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
+		doDeltaRcut = cms.bool(False),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(-1),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingGenEle","","GENEEJJ"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingGenEle","","GENEEJJ"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedGenQuark","","GENEEJJ")
+		)
+
+## analyzers to run with dR(lepton,hadron) > someValue cut applied
+process.matchedGenAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
+		doDeltaRcut = cms.bool(True),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(0.4),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingGenEle","","GENEEJJ"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingGenEle","","GENEEJJ"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedGenQuark","","GENEEJJ")
+		)
+
+## analyzers to run with dR(lepton,hadron) > someValue cut and four obj inv mass cut applied
+process.matchedGenAnalyzerFive = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
+		doDeltaRcut = cms.bool(True),
+		doFourObjMassCut = cms.bool(True),
+		minFourObjMass = cms.double(600),
+		minDeltaRforLeptonJetExclusion = cms.double(0.4),
 		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingGenEle","","GENEEJJ"),
 		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingGenEle","","GENEEJJ"),
 		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedGenQuark","","GENEEJJ")
 		)
 
 
-process.runUnmatchedGenAnalysis = cms.Path(
-		process.bareGenParticleSeq
-		*process.genAnalyzerOne
-		*process.ptEtaConstrainedSeq
-		*process.genAnalyzerTwo
-		*process.genDiElectronCandidateSeq
-		*process.genAnalyzerThree
-		)
+
+#process.runUnmatchedGenAnalysis = cms.Path(
+#		process.bareGenParticleSeq
+#		*process.genAnalyzerOne
+#		*process.ptEtaConstrainedSeq
+#		*process.genAnalyzerTwo
+#		*process.genDiElectronCandidateSeq
+#		*process.genAnalyzerThree
+#		)
 
 process.runMatchedGenAnalysis = cms.Path(
 		process.bareMatchedGenParticleSeq
@@ -67,10 +104,12 @@ process.runMatchedGenAnalysis = cms.Path(
 		*process.matchedGenAnalyzerTwo
 		*process.genMatchedDiElectronCandidateSeq
 		*process.matchedGenAnalyzerThree
+		*process.matchedGenAnalyzerFour
+		*process.matchedGenAnalyzerFive
 		)
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analysis_genElectronChannel.root')
+		fileName = cms.string('analysis_genElectronChannel_using_prunedGenParticles.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -79,8 +118,10 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-		'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/7A8730D6-9E86-E411-A442-002590747DF0.root',
-		'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/00774ADC-8F87-E411-B6EF-00266CF32E78.root'
+		#'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/7A8730D6-9E86-E411-A442-002590747DF0.root',
+		#'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/00774ADC-8F87-E411-B6EF-00266CF32E78.root'
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2.root',
 
     ),
     inputCommands = cms.untracked.vstring(

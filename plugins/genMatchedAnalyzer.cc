@@ -96,6 +96,34 @@ class genMatchedAnalyzer : public edm::EDAnalyzer {
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
+	  ///use this fxn to find the two highest pT jets in the evt which are both at least dR >= 0.4 away from the two leading leptons in the evt
+	  ///input params: collection of hadrons (jets, quarks, GEN or RECO lvl), const_iterators to the two leading leptons, and const_iterators
+	  ///to two objects in the collection of hadrons
+	  ///the two hadron iterators will be updated by this fxn
+	  void findFarHadrons(edm::Handle<edm::OwnVector<reco::Candidate> > hadronColl, edm::OwnVector<reco::Candidate>::const_iterator& leadingLept, edm::OwnVector<reco::Candidate>::const_iterator& subleadingLept, edm::OwnVector<reco::Candidate>::const_iterator& hadronOne, edm::OwnVector<reco::Candidate>::const_iterator& hadronTwo){
+#ifdef DEBUG
+		  std::cout<<"entered findFarHadrons function"<<std::endl;
+#endif
+		  for(edm::OwnVector<reco::Candidate>::const_iterator hadIt = hadronColl->begin(); hadIt!=hadronColl->end(); hadIt++){
+			  double drOne = deltaR(leadingLept->eta(),leadingLept->phi(),hadIt->eta(),hadIt->phi());
+			  double drTwo = deltaR(subleadingLept->eta(),subleadingLept->phi(),hadIt->eta(),hadIt->phi());
+			  if(drOne >= minDr && drTwo >= minDr){
+				  if(hadronOne==hadronColl->end()) hadronOne=hadIt;
+				  else{
+					  if(hadIt->pt() > hadronOne->pt()){
+						  hadronTwo = hadronOne;
+						  hadronOne = hadIt;
+					  }
+					  else if(hadronTwo==hadronColl->end() || hadIt->pt() > hadronTwo->pt()) hadronTwo = hadIt;
+				  }///end else
+			  }///end if(current iterator hadIt points to a hadron which is well separated from the two leading leptons
+		  }///end loop over objects in hadron collection
+#ifdef DEBUG
+		  std::cout<<"leaving findFarHadrons fxn"<<std::endl;
+#endif
+
+	  }
+
 	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection){
 
 #ifdef DEBUG
@@ -151,6 +179,10 @@ virtual void endJob() override;
 // ----------member data ---------------------------
 
 std::string tName;
+bool applyDrCut;
+bool applyFourObjMassCut;
+double fourObjMassCutVal;
+double minDr;
 
 edm::InputTag genLeadingLeptonCollTag;
 edm::InputTag genSubleadingLeptonCollTag;
@@ -205,6 +237,10 @@ Float_t dR_subleadingLeptonSubleadingJetGen;
 
 genMatchedAnalyzer::genMatchedAnalyzer(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
+	applyDrCut(iConfig.getParameter<bool>("doDeltaRcut")),
+	applyFourObjMassCut(iConfig.getParameter<bool>("doFourObjMassCut")),
+	fourObjMassCutVal(iConfig.getParameter<double>("minFourObjMass")),
+	minDr(iConfig.getParameter<double>("minDeltaRforLeptonJetExclusion")),
 	genLeadingLeptonCollTag(iConfig.getParameter<edm::InputTag>("genLeadingLeptonCollection")),
 	genSubleadingLeptonCollTag(iConfig.getParameter<edm::InputTag>("genSubleadingLeptonCollection")),
 	genQuarkCollTag(iConfig.getParameter<edm::InputTag>("genQuarkCollection"))
@@ -272,10 +308,18 @@ genMatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton = leadingLeptons->end(), subleadingLepton = subleadingLeptons->end();
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = quarks->end(), subleadingJet = quarks->end();
+	   
 
 	findHighestPt(leadingLepton, leadingLeptons);
 	findHighestPt(subleadingLepton, subleadingLeptons);
-	findLeadingAndSubleading(leadingJet, subleadingJet, quarks);
+	if(!applyDrCut) findLeadingAndSubleading(leadingJet, subleadingJet, quarks);
+
+	if(applyDrCut){
+		findFarHadrons(quarks,leadingLepton,subleadingLepton,leadingJet,subleadingJet);
+		///skip this evt if the dR cut is applied and no two jet candidates
+		///are found outside dR=minDr away from the two leading leptons
+		if(leadingJet == quarks->end() || subleadingJet == quarks->end()) return;
+	}///end if(apply dR cut)
 
 	///now that the leading and subleading leptons and quarks have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
@@ -310,9 +354,11 @@ genMatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	TLorentzVector j1(ptGenJet[0]*TMath::Cos(phiGenJet[0]),ptGenJet[0]*TMath::Sin(phiGenJet[0]),ptGenJet[0]*TMath::SinH(etaGenJet[0]),ptGenJet[0]*TMath::CosH(etaGenJet[0]));	///leading jet lorentz vector (px, py, pz, E)
 	TLorentzVector j2(ptGenJet[1]*TMath::Cos(phiGenJet[1]),ptGenJet[1]*TMath::Sin(phiGenJet[1]),ptGenJet[1]*TMath::SinH(etaGenJet[1]),ptGenJet[1]*TMath::CosH(etaGenJet[1]));
 
+	fourObjectMassGen = (l1+l2+j1+j2).M();
+	if(applyFourObjMassCut && (fourObjectMassGen < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
+	
 	dileptonMassGen = (l1+l2).M();
 	dijetMassGen = (j1+j2).M();
-	fourObjectMassGen = (l1+l2+j1+j2).M();
 	leadLeptonThreeObjMassGen = (l1+j1+j2).M();
 	subleadingLeptonThreeObjMassGen = (l2+j1+j2).M();
 
