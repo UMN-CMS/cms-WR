@@ -9,13 +9,13 @@ import FWCore.ParameterSet.Config as cms
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>60"),
+                                 cut = cms.string("pt>40"),
                                  )
 
 ### select subleading electron
 wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>40"),
+                                 cut = cms.string("pt>20"),
                                  )
 #wRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
                                         
