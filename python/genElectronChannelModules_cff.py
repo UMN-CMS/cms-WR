@@ -4,12 +4,14 @@ printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
 		maxEventsToPrint = cms.untracked.int32(1),
 		printVertex = cms.untracked.bool(False),
 		printOnlyHardInteraction = cms.untracked.bool(False),
-		src = cms.InputTag("genParticles")
+		#src = cms.InputTag("genParticles")
+		src = cms.InputTag("prunedGenParticles")
+		
 		)
 
 bareGenJet = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("slimmedGenJets"),
-		src = cms.InputTag("ak4GenJets"),
+		src = cms.InputTag("slimmedGenJets"),
+		#src = cms.InputTag("ak4GenJets"),
 		cut = cms.string("")
 		)
 
@@ -19,8 +21,8 @@ bareGenJetFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareGenEle = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("prunedGenParticles"),
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
+		#src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 11")
 		)
 
@@ -30,6 +32,22 @@ bareGenEleFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareGenParticleSeq = cms.Sequence(bareGenJet*bareGenJetFilter*bareGenEle*bareGenEleFilter)
+
+## producers to find GenJets matched to Gen quarks
+
+matchGenJetsToGenQuarksNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedGenJetsNoCuts"),
+		dRforMatching = cms.double(0.1),
+		lowLevelCollTag = cms.InputTag("bareMatchedGenQuark"),
+		higherLevelCollTag = cms.InputTag("bareGenJet")
+		)
+
+matchGenJetsToGenQuarksNoCutsFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
+		minNumber = cms.uint32(2)
+		)
+
+
 
 ##filters to select gen particles matched to WR decay products via pdgId
 ##heavyNu pdgId = 9900012, WR pdgId = 9900024

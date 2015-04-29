@@ -41,6 +41,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/Common/interface/getRef.h"
+#include "DataFormats/Common/interface/OwnVector.h"
+
 
 
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
@@ -76,6 +78,7 @@
 #include <TROOT.h>
 #include "TTree.h"
 
+//#define DEBUG
 
 //
 // class declaration
@@ -87,6 +90,25 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
       ~FindHigherLevelMatchedObject();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+
+	  /**this fxn checks that the object pointed to by objIt does not already exist
+	   * in the collection pointed at by ptrToObjColl
+	   * returns false if objIt already exists in the collection pointed to by ptrToObjColl
+	   */
+	  bool isNotDuplicate(edm::OwnVector<reco::Candidate>::const_iterator & objIt,
+			  std::auto_ptr<edm::OwnVector<reco::Candidate> >& ptrToObjColl){
+		  if(ptrToObjColl->size()==0) return true;
+		  for(unsigned int i=0; i<ptrToObjColl->size(); i++){
+#ifdef DEBUG
+			  std::cout<<"about to check if reco::Candidate object has already been added to another collection"<<std::endl;
+			  std::cout<<"size of other collection = \t"<< ptrToObjColl->size() <<std::endl;
+#endif
+			  if(objIt->pt()==(*ptrToObjColl)[i].pt() && objIt->eta()==(*ptrToObjColl)[i].eta() 
+					  && objIt->phi()==(*ptrToObjColl)[i].phi()) return false;
+
+		  }///end loop over objects in collection pointed to by ptrToObjColl
+		  return true;
+	  }///end isNotDuplicate()
 
    private:
       virtual void beginJob() override;
@@ -113,11 +135,13 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 	  ///(from "genParticles" with |pdgId| < 7), as lowLevel objects, and genJets as higherLevel
 	  ///objects.  The matching is done purely by deltaR.  The closest dR match wins!
 	  ///
-	  ///This producer adds a collection of reco::Candidate object pointers to each event.
+	  ///This producer adds a collection of reco::Candidate objects to each event.
+	  ///there could be more than one object in either of these collections per event
 	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > lowLevelToken;
 	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > higherLevelToken;
 
-	  std::string matchedHigherLevelCollection;
+	  std::string outputCollName;
+	  double maxDeltaR;
 	
 };
 
@@ -134,12 +158,15 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 // constructors and destructor
 //
 FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterSet& iConfig):
-	matchedHigherLevelCollection(iConfig.getParameter<std::string>("matchedHigherLevelCollectionName"))
+	outputCollName(iConfig.getParameter<std::string>("matchedOutputCollectionName")),
+	maxDeltaR(iConfig.getParameter<double>("dRforMatching"))
 {
-   //register your products
- 
-   lowLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("lowLevelCollName"));
-   higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("higherLevelCollName"));
+   ///register the input collections	
+   lowLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("lowLevelCollTag"));
+   higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("higherLevelCollTag"));
+
+   ///register the collections which are added to the event
+   produces<edm::OwnVector<reco::Candidate> >(outputCollName);
 
    /*	
    momToken = consumes<std::vector<reco::CompositeCandidate>>(iConfig.getParameter<edm::InputTag>("zedLabel"));
@@ -175,9 +202,46 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 {
    using namespace edm;
 
+#ifdef DEBUG
+   std::cout<<"entered FindHigherLevelMatch produce method"<<std::endl;
+#endif
+
    Handle<edm::OwnVector<reco::Candidate> > lowLevelObjectColl;
    iEvent.getByToken(lowLevelToken, lowLevelObjectColl);
 
+   Handle<edm::OwnVector<reco::Candidate> > higherLevelObjectColl;
+   iEvent.getByToken(higherLevelToken, higherLevelObjectColl);
+
+#ifdef DEBUG
+   std::cout<<"made handles to input collections"<<std::endl;
+#endif
+
+   ///make empty an output collection, and a pointer to this collection
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjColl(new edm::OwnVector<reco::Candidate>());
+
+   /**now look for objects in higherLevelObjectColl which are within a distance maxDeltaR
+	 *away from any object in lowerLevelObjectColl
+	 */
+   for(edm::OwnVector<reco::Candidate>::const_iterator lowIt=lowLevelObjectColl->begin(); lowIt!=lowLevelObjectColl->end();
+		   lowIt++){
+	   for(edm::OwnVector<reco::Candidate>::const_iterator higherIt=higherLevelObjectColl->begin(); higherIt!=higherLevelObjectColl->end();
+			   higherIt++){
+		   double dR = deltaR(higherIt->eta(),higherIt->phi(),lowIt->eta(),lowIt->phi());
+		   if(dR <= maxDeltaR && isNotDuplicate(higherIt,outputObjColl)){
+			   outputObjColl->push_back(*higherIt);
+		   }///end if(dR cut is passed && not duplicate entry)
+
+	   }///end loop over reco::Candidate objects in lowLevelObjectColl
+
+   }///end loop over reco::Candidate objects in higherLevelObjectColl
+
+#ifdef DEBUG
+   std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;
+#endif
+   
+   //now put the collection of matched higher level reco::Candidate objects into the event
+   iEvent.put(outputObjColl, outputCollName);
+ 
    /*
    //std::cout<<"entered daughter producer code"<<std::endl;
 

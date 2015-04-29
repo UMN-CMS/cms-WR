@@ -64,7 +64,7 @@ process.matchedGenAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
 
 ## analyzers to run with dR(lepton,hadron) > someValue cut applied
 process.matchedGenAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
-		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
+		treeName = cms.string("matchedGenObjectsWithPtEtaDileptonMassAndDrCuts"),
 		doDeltaRcut = cms.bool(True),
 		doFourObjMassCut = cms.bool(False),
 		minFourObjMass = cms.double(-1),
@@ -76,7 +76,7 @@ process.matchedGenAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
 
 ## analyzers to run with dR(lepton,hadron) > someValue cut and four obj inv mass cut applied
 process.matchedGenAnalyzerFive = cms.EDAnalyzer('genMatchedAnalyzer',
-		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
+		treeName = cms.string("matchedGenObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts"),
 		doDeltaRcut = cms.bool(True),
 		doFourObjMassCut = cms.bool(True),
 		minFourObjMass = cms.double(600),
