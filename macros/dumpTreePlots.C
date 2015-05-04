@@ -108,26 +108,26 @@ void dumpTreePlots(){
 
 	///chains made with pdgId matching
 	TChain * matchedNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
-	matchedNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_prunedGenParticles.root");
+	matchedNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_miniAOD.root");
 	TChain * matchedPtEtaCuts = new TChain("matchedGenAnalyzerTwo/matchedGenObjectsWithPtEtaCuts","");
-	matchedPtEtaCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_prunedGenParticles.root");
+	matchedPtEtaCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_miniAOD.root");
 	TChain * matchedPtEtaDileptonMassCuts = new TChain("matchedGenAnalyzerThree/matchedGenObjectsWithPtEtaAndDileptonMassCuts","");
-	matchedPtEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_prunedGenParticles.root");
+	matchedPtEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_miniAOD.root");
 	TChain * matchedPtEtaDileptonMassDrCuts = new TChain("matchedGenAnalyzerFour/matchedGenObjectsWithPtEtaDileptonMassAndDrCuts","");
-	matchedPtEtaDileptonMassDrCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_prunedGenParticles.root");
+	matchedPtEtaDileptonMassDrCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_miniAOD.root");
 	TChain * matchedPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedGenAnalyzerFive/matchedGenObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
-	matchedPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_prunedGenParticles.root");
+	matchedPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_miniAOD.root");
 
 
-	TString plotDir_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/noCuts";
-	TString plotDir_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/withPtEtaCuts";
-	TString plotDir_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/withPtEtaDileptonMassCuts";
+	TString plotDir_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/noCuts";
+	TString plotDir_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/withPtEtaCuts";
+	TString plotDir_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/withPtEtaDileptonMassCuts";
 
-	TString plotDir_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_noCuts/noCuts";
-	TString plotDir_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_ptEtaCuts/withPtEtaCuts";
-	TString plotDir_matched_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_ptEtaDileptonMassCuts/withPtEtaDileptonMassCuts";
-	TString plotDir_matched_withPtEtaDileptonMassDrCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_ptEtaDileptonMassDrCuts/withPtEtaDileptonMassDrCuts";
-	TString plotDir_matched_withPtEtaDileptonMassDrFourObjMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/matched_ptEtaDileptonMassDrFourObjMassCuts/withPtEtaDileptonMassDrFourObjMassCuts";
+	TString plotDir_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/matched_noCuts/noCuts";
+	TString plotDir_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/matched_ptEtaCuts/withPtEtaCuts";
+	TString plotDir_matched_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/matched_ptEtaDileptonMassCuts/withPtEtaDileptonMassCuts";
+	TString plotDir_matched_withPtEtaDileptonMassDrCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/matched_ptEtaDileptonMassDrCuts/withPtEtaDileptonMassDrCuts";
+	TString plotDir_matched_withPtEtaDileptonMassDrFourObjMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/GEN/matched_ptEtaDileptonMassDrFourObjMassCuts/withPtEtaDileptonMassDrFourObjMassCuts";
 
 
 
@@ -136,14 +136,61 @@ void dumpTreePlots(){
 	//SaveTreePlots(ptEtaCuts, plotDir_withPtEtaCuts);
 	//SaveTreePlots(ptEtaDileptonMassCuts, plotDir_withPtEtaDileptonMassCuts);
 	
-	//SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
+	SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
 	SaveTreePlots(matchedPtEtaCuts, plotDir_matched_withPtEtaCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassCuts, plotDir_matched_withPtEtaDileptonMassCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrCuts, plotDir_matched_withPtEtaDileptonMassDrCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrFourObjMassCuts, plotDir_matched_withPtEtaDileptonMassDrFourObjMassCuts);
 
 
+	///chains made with deltaR matching btwn reco and gen
+	TChain * matchedGenJetsToGenQuarksNoCuts = new TChain("matchGenJetsToGenQuarksNoCuts/matchedGenJetsNoCutsTree","");
+	matchedGenJetsToGenQuarksNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	
+	TChain * matchedRecoJetsToGenJetsNoCuts = new TChain("matchRecoJetsToGenJetsNoCuts/matchedRecoJetsNoCutsTree","");
+	matchedRecoJetsToGenJetsNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	
+	TChain * matchedRecoEleToLeadingGenEleNoCuts = new TChain("matchRecoEleToLeadingGenEleNoCuts/matchedLeadingRecoEleNoCutsTree","");
+	matchedRecoEleToLeadingGenEleNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	TChain * matchedRecoEleToSubleadingGenEleNoCuts = new TChain("matchRecoEleToSubleadingGenEleNoCuts/matchedSubleadingRecoEleNoCutsTree","");
+	matchedRecoEleToSubleadingGenEleNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	
+	TChain * matchedRecoNoCuts = new TChain("matchedRecoAnalyzerOne/matchedRecoObjectsNoCuts","");
+	matchedRecoNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	TChain * matchedRecoPtEtaCuts = new TChain("matchedRecoAnalyzerTwo/matchedRecoObjectsWithPtEtaCuts","");
+	matchedRecoPtEtaCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	TChain * matchedRecoPtEtaDileptonMassCuts = new TChain("matchedRecoAnalyzerThree/matchedRecoObjectsWithPtEtaAndDileptonMassCuts","");
+	matchedRecoPtEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	TChain * matchedRecoPtEtaDileptonMassDrCuts = new TChain("matchedRecoAnalyzerFour/matchedRecoObjectsWithPtEtaDileptonMassAndDrCuts","");
+	matchedRecoPtEtaDileptonMassDrCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
+	TChain * matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
+	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
 
+
+	TString plotDir_reco_matched_noCuts_dR_genJetsToGenQuarks = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	TString plotDir_reco_matched_noCuts_dR_recoElesToGenLeadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	TString plotDir_reco_matched_noCuts_dR_recoElesToGenSubleadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	TString plotDir_reco_matched_noCuts_dR_recoJetsToGenJets = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	
+	TString plotDir_reco_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	TString plotDir_reco_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaCuts/withPtEtaCuts";
+	TString plotDir_reco_matched_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassCuts/withPtEtaDileptonMassCuts";
+	TString plotDir_reco_matched_withPtEtaDileptonMassDrCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassDrCuts/withPtEtaDileptonMassDrCuts";
+	TString plotDir_reco_matched_withPtEtaDileptonMassDrFourObjMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassDrFourObjMassCuts/withPtEtaDileptonMassDrFourObjMassCuts";
+
+	///make plots of dR btwn gen jets and gen quarks, reco jets and gen jets, and reco eles and gen eles
+	SaveTreePlots(matchedGenJetsToGenQuarksNoCuts,plotDir_reco_matched_noCuts_dR_genJetsToGenQuarks);
+	SaveTreePlots(matchedRecoJetsToGenJetsNoCuts,plotDir_reco_matched_noCuts_dR_recoJetsToGenJets);
+	SaveTreePlots(matchedRecoEleToLeadingGenEleNoCuts,plotDir_reco_matched_noCuts_dR_recoElesToGenLeadingEles);
+	SaveTreePlots(matchedRecoEleToSubleadingGenEleNoCuts,plotDir_reco_matched_noCuts_dR_recoElesToGenSubleadingEles);
+
+	///make plots of reco jets and eles matched to GEN objects after different levels of cuts
+	///the matching is done before any cuts are applied at GEN or reco lvl
+	SaveTreePlots(matchedRecoNoCuts, plotDir_reco_matched_noCuts);
+	SaveTreePlots(matchedRecoPtEtaCuts, plotDir_reco_matched_withPtEtaCuts);
+	SaveTreePlots(matchedRecoPtEtaDileptonMassCuts, plotDir_reco_matched_withPtEtaDileptonMassCuts);
+	SaveTreePlots(matchedRecoPtEtaDileptonMassDrCuts, plotDir_reco_matched_withPtEtaDileptonMassDrCuts);
+	SaveTreePlots(matchedRecoPtEtaDileptonMassDrFourObjMassCuts, plotDir_reco_matched_withPtEtaDileptonMassDrFourObjMassCuts);
 
 
 

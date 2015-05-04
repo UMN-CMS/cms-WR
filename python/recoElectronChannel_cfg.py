@@ -30,6 +30,42 @@ process.matchedRecoAnalyzerTwo = cms.EDAnalyzer('genMatchedAnalyzer',
 		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
 		)
 
+process.matchedRecoAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedRecoObjectsWithPtEtaAndDileptonMassCuts"),
+		doDeltaRcut = cms.bool(False),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(-1),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		)
+
+
+process.matchedRecoAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedRecoObjectsWithPtEtaDileptonMassAndDrCuts"),
+		doDeltaRcut = cms.bool(True),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(0.4),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		)
+
+
+process.matchedRecoAnalyzerFive = cms.EDAnalyzer('genMatchedAnalyzer',
+		treeName = cms.string("matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts"),
+		doDeltaRcut = cms.bool(True),
+		doFourObjMassCut = cms.bool(True),
+		minFourObjMass = cms.double(600),
+		minDeltaRforLeptonJetExclusion = cms.double(0.4),
+		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		)
+
+
 
 process.matchedRecoPath = cms.Path(
 		process.bareGenJet
@@ -42,6 +78,10 @@ process.matchedRecoPath = cms.Path(
 		* process.matchedRecoAnalyzerOne
 		* process.ptEtaRestrictedMatchedRecoSeq
 		* process.matchedRecoAnalyzerTwo
+		* process.recoMatchedDiElectronCandidateSeq
+		* process.matchedRecoAnalyzerThree
+		* process.matchedRecoAnalyzerFour
+		* process.matchedRecoAnalyzerFive
 
 		)
 
@@ -57,6 +97,8 @@ process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
 		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
 		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_3.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_4.root',
 
     ),
     inputCommands = cms.untracked.vstring(

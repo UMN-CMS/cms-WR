@@ -109,7 +109,7 @@ process.runMatchedGenAnalysis = cms.Path(
 		)
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analysis_genElectronChannel_using_prunedGenParticles.root')
+		fileName = cms.string('analysis_genElectronChannel_using_miniAOD.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -122,6 +122,9 @@ process.source = cms.Source( "PoolSource",
 		#'file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/00774ADC-8F87-E411-B6EF-00266CF32E78.root'
 		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
 		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_3.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_4.root',
+
 
     ),
     inputCommands = cms.untracked.vstring(

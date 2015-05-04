@@ -5,10 +5,6 @@
 /**\class FindHigherLevelMatchedObject FindHigherLevelMatchedObject.cc doubleElectronTracklessTrigger/FindHigherLevelMatchedObject/plugins/FindHigherLevelMatchedObject.cc
  Description: [one line class summary]
 
- this module takes a collection of reco::CompositeCandidate objects and parses each object into its
- two daughters.  Two vectors of edm::Ref objects pointing to reco::RecoEcalCandidate objects are produced
- and saved to the input .root file.  These two collections can then be used to access kinematic and isolation
- information from the daughters.
 
  Implementation:
      [Notes on implementation]
@@ -78,6 +74,7 @@
 #include <TROOT.h>
 #include "TTree.h"
 
+#define NOBJ 200
 //#define DEBUG
 
 //
@@ -142,6 +139,18 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 
 	  std::string outputCollName;
 	  double maxDeltaR;
+	  std::string tName;
+
+	  TTree * tree;
+
+	  Int_t runNumber;
+	  ULong64_t evtNumber;
+
+	  ///the number of higher lvl objects which could be matched
+	  Int_t nHigherLevel;
+
+	  ///deltaR between the lower level object and all higher lvl objects which could be matched 
+	  Float_t dR_lowerToHigherLvlObj[NOBJ];
 	
 };
 
@@ -159,8 +168,22 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 //
 FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterSet& iConfig):
 	outputCollName(iConfig.getParameter<std::string>("matchedOutputCollectionName")),
-	maxDeltaR(iConfig.getParameter<double>("dRforMatching"))
+	maxDeltaR(iConfig.getParameter<double>("dRforMatching")),
+	tName(iConfig.getParameter<std::string>("treeName"))
 {
+   
+   edm::Service<TFileService> fs;
+   
+   tree=fs->make<TTree>(tName.c_str(),"matching higher level objects to lower level objects");
+
+   tree->Branch("nHigherLevel",&nHigherLevel,"nHigherLevel/I");
+   tree->Branch("dR_lowerToHigherLvlObj",dR_lowerToHigherLvlObj,"dR_lowerToHigherLvlObj[nHigherLevel]/F");
+ 
+   tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
+   tree->Branch("runNumber",&runNumber,"runNumber/I");
+
+
+	
    ///register the input collections	
    lowLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("lowLevelCollTag"));
    higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("higherLevelCollTag"));
@@ -206,6 +229,14 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
    std::cout<<"entered FindHigherLevelMatch produce method"<<std::endl;
 #endif
 
+   ///get the evt and run number, and initialize the other vars saved in the tree
+   evtNumber = iEvent.id().event();
+   runNumber = iEvent.id().run();
+   nHigherLevel = 0;
+   for(Int_t i=0; i<NOBJ; i++){
+	   dR_lowerToHigherLvlObj[i] = -1;
+   }
+
    Handle<edm::OwnVector<reco::Candidate> > lowLevelObjectColl;
    iEvent.getByToken(lowLevelToken, lowLevelObjectColl);
 
@@ -227,6 +258,10 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 	   for(edm::OwnVector<reco::Candidate>::const_iterator higherIt=higherLevelObjectColl->begin(); higherIt!=higherLevelObjectColl->end();
 			   higherIt++){
 		   double dR = deltaR(higherIt->eta(),higherIt->phi(),lowIt->eta(),lowIt->phi());
+		   if(isNotDuplicate(higherIt,outputObjColl)){
+			   dR_lowerToHigherLvlObj[nHigherLevel] = dR;
+			   nHigherLevel++;
+		   }///end filter to check if the higher level object already exists in the output object collection 
 		   if(dR <= maxDeltaR && isNotDuplicate(higherIt,outputObjColl)){
 			   outputObjColl->push_back(*higherIt);
 		   }///end if(dR cut is passed && not duplicate entry)
@@ -238,8 +273,11 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 #ifdef DEBUG
    std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;
 #endif
+  
+   ///fill the tree's branches
+   tree->Fill();
    
-   //now put the collection of matched higher level reco::Candidate objects into the event
+   ///now put the collection of matched higher level reco::Candidate objects into the event
    iEvent.put(outputObjColl, outputCollName);
  
    /*

@@ -220,6 +220,9 @@ Float_t dR_leadingLeptonLeadingJetGen;
 Float_t dR_leadingLeptonSubleadingJetGen;
 Float_t dR_subleadingLeptonLeadingJetGen;
 Float_t dR_subleadingLeptonSubleadingJetGen;
+Float_t dR_leadingLeptonSubleadingLeptonGen;
+Float_t dR_leadingJetSubleadingJetGen;
+
 
 };
 
@@ -249,7 +252,7 @@ genMatchedAnalyzer::genMatchedAnalyzer(const edm::ParameterSet& iConfig):
    //now do what ever initialization is needed
    edm::Service<TFileService> fs;
    
-   tree=fs->make<TTree>(tName.c_str(),"GEN electron kinematic info");
+   tree=fs->make<TTree>(tName.c_str(),"event kinematic info");
 
    tree->Branch("etaGenEle",etaGenEle,"etaGenEle[2]/F");
    tree->Branch("ptGenEle",ptGenEle,"ptGenEle[2]/F");
@@ -272,7 +275,9 @@ genMatchedAnalyzer::genMatchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("dR_leadingLeptonSubleadingJetGen",&dR_leadingLeptonSubleadingJetGen,"dR_leadingLeptonSubleadingJetGen/F");
    tree->Branch("dR_subleadingLeptonLeadingJetGen",&dR_subleadingLeptonLeadingJetGen,"dR_subleadingLeptonLeadingJetGen/F");
    tree->Branch("dR_subleadingLeptonSubleadingJetGen",&dR_subleadingLeptonSubleadingJetGen,"dR_subleadingLeptonSubleadingJetGen/F");
-
+   tree->Branch("dR_leadingLeptonSubleadingLeptonGen",&dR_leadingLeptonSubleadingLeptonGen,"dR_leadingLeptonSubleadingLeptonGen/F");
+   tree->Branch("dR_leadingJetSubleadingJetGen",&dR_leadingJetSubleadingJetGen,"dR_leadingJetSubleadingJetGen/F");
+ 
 }
 
 
@@ -373,6 +378,8 @@ genMatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	dR_leadingLeptonSubleadingJetGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenJet[1],phiGenJet[1]);
 	dR_subleadingLeptonLeadingJetGen = deltaR(etaGenEle[1],phiGenEle[1],etaGenJet[0],phiGenJet[0]);
 	dR_subleadingLeptonSubleadingJetGen = deltaR(etaGenEle[1],phiGenEle[1],etaGenJet[1],phiGenJet[1]);
+	dR_leadingLeptonSubleadingLeptonGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenEle[1],phiGenEle[1]);
+	dR_leadingJetSubleadingJetGen = deltaR(etaGenJet[0],phiGenJet[0],etaGenJet[1],phiGenJet[1]);
 	
 	tree->Fill();
 

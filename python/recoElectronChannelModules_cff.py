@@ -26,7 +26,8 @@ bareRecoParticleSeq = cms.Sequence(bareRecoJet*bareRecoJetFilter*bareRecoEle*bar
 ## producers to match reco jets and electrons to gen counterparts (gen jets and gen electrons)
 matchRecoJetsToGenJetsNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedRecoJetsNoCuts"),
-		dRforMatching = cms.double(0.3),
+		dRforMatching = cms.double(0.1),
+		treeName = cms.string("matchedRecoJetsNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
 		higherLevelCollTag = cms.InputTag("bareRecoJet")
 		)
@@ -43,6 +44,7 @@ matchRecoJetsToGenJetsNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 matchRecoEleToLeadingGenEleNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedLeadingRecoEleNoCuts"),
 		dRforMatching = cms.double(0.1),
+		treeName = cms.string("matchedLeadingRecoEleNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("bareMatchedLeadingGenEle"),
 		higherLevelCollTag = cms.InputTag("bareRecoEle")
 		)
@@ -55,6 +57,7 @@ matchRecoEleToLeadingGenEleNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 matchRecoEleToSubleadingGenEleNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedSubleadingRecoEleNoCuts"),
 		dRforMatching = cms.double(0.1),
+		treeName = cms.string("matchedSubleadingRecoEleNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("bareMatchedSubleadingGenEle"),
 		higherLevelCollTag = cms.InputTag("bareRecoEle")
 		)
@@ -119,6 +122,21 @@ ptEtaRestrictedMatchedRecoSeq = cms.Sequence(
 
 
 ## these modules apply the dilepton mass cut to matched reco electrons
+recoMatchedDiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+		decay = cms.string("ptEtaRestrictedMatchedLeadingRecoEle ptEtaRestrictedMatchedSubleadingRecoEle"),
+		role = cms.string("matchedLeadingEle matchedSubleadingEle"),
+		checkCharge = cms.bool(False),
+		cut = cms.string("mass > 200 && daughter(0).pt > daughter(1).pt")
+		)
+
+recoMatchedDiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("recoMatchedDiElectronCandidate"),
+		minNumber = cms.uint32(1)
+		)
+
+recoMatchedDiElectronCandidateSeq = cms.Sequence(recoMatchedDiElectronCandidate*recoMatchedDiElectronCandidateFilter)
+
+## end modules which apply dilepton mass cut to reco electrons matched to gen electrons
 
 
 
