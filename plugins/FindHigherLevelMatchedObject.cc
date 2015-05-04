@@ -74,7 +74,7 @@
 #include <TROOT.h>
 #include "TTree.h"
 
-#define NOBJ 200
+#define NOBJ 500
 //#define DEBUG
 
 //

@@ -136,23 +136,24 @@ void dumpTreePlots(){
 	//SaveTreePlots(ptEtaCuts, plotDir_withPtEtaCuts);
 	//SaveTreePlots(ptEtaDileptonMassCuts, plotDir_withPtEtaDileptonMassCuts);
 	
-	SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
+	/*SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
 	SaveTreePlots(matchedPtEtaCuts, plotDir_matched_withPtEtaCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassCuts, plotDir_matched_withPtEtaDileptonMassCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrCuts, plotDir_matched_withPtEtaDileptonMassDrCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrFourObjMassCuts, plotDir_matched_withPtEtaDileptonMassDrFourObjMassCuts);
+	*/
 
 
 	///chains made with deltaR matching btwn reco and gen
-	TChain * matchedGenJetsToGenQuarksNoCuts = new TChain("matchGenJetsToGenQuarksNoCuts/matchedGenJetsNoCutsTree","");
+	TChain * matchedGenJetsToGenQuarksNoCuts = new TChain("matchGenJetsToGenQuarksNoCutsNewPath/matchedGenJetsNoCutsTree","");
 	matchedGenJetsToGenQuarksNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
 	
-	TChain * matchedRecoJetsToGenJetsNoCuts = new TChain("matchRecoJetsToGenJetsNoCuts/matchedRecoJetsNoCutsTree","");
+	TChain * matchedRecoJetsToGenJetsNoCuts = new TChain("matchRecoJetsToGenJetsNoCutsNewPath/matchedRecoJetsNoCutsTree","");
 	matchedRecoJetsToGenJetsNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
 	
-	TChain * matchedRecoEleToLeadingGenEleNoCuts = new TChain("matchRecoEleToLeadingGenEleNoCuts/matchedLeadingRecoEleNoCutsTree","");
+	TChain * matchedRecoEleToLeadingGenEleNoCuts = new TChain("matchRecoEleToLeadingGenEleNoCutsNewPath/matchedLeadingRecoEleNoCutsTree","");
 	matchedRecoEleToLeadingGenEleNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
-	TChain * matchedRecoEleToSubleadingGenEleNoCuts = new TChain("matchRecoEleToSubleadingGenEleNoCuts/matchedSubleadingRecoEleNoCutsTree","");
+	TChain * matchedRecoEleToSubleadingGenEleNoCuts = new TChain("matchRecoEleToSubleadingGenEleNoCutsNewPath/matchedSubleadingRecoEleNoCutsTree","");
 	matchedRecoEleToSubleadingGenEleNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
 	
 	TChain * matchedRecoNoCuts = new TChain("matchedRecoAnalyzerOne/matchedRecoObjectsNoCuts","");
@@ -167,10 +168,10 @@ void dumpTreePlots(){
 	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
 
 
-	TString plotDir_reco_matched_noCuts_dR_genJetsToGenQuarks = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
-	TString plotDir_reco_matched_noCuts_dR_recoElesToGenLeadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
-	TString plotDir_reco_matched_noCuts_dR_recoElesToGenSubleadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
-	TString plotDir_reco_matched_noCuts_dR_recoJetsToGenJets = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	TString plotDir_reco_matched_noCuts_dR_genJetsToGenQuarks = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_genJetsToGenQuarks/noCuts_genJetsToGenQuarks";
+	TString plotDir_reco_matched_noCuts_dR_recoElesToGenLeadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_recoElesToGenLeadingEles/noCuts_recoElesToGenLeadingEles";
+	TString plotDir_reco_matched_noCuts_dR_recoElesToGenSubleadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_recoElesToGenSubleadingEles/noCuts_recoElesToGenSubleadingEles";
+	TString plotDir_reco_matched_noCuts_dR_recoJetsToGenJets = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_recoJetsToGenJets/noCuts_recoJetsToGenJets";
 	
 	TString plotDir_reco_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
 	TString plotDir_reco_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaCuts/withPtEtaCuts";

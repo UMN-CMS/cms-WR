@@ -37,7 +37,7 @@ bareGenParticleSeq = cms.Sequence(bareGenJet*bareGenJetFilter*bareGenEle*bareGen
 
 matchGenJetsToGenQuarksNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedGenJetsNoCuts"),
-		dRforMatching = cms.double(0.1),
+		dRforMatching = cms.double(0.6),
 		treeName = cms.string("matchedGenJetsNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("bareMatchedGenQuark"),
 		higherLevelCollTag = cms.InputTag("bareGenJet")
@@ -47,6 +47,20 @@ matchGenJetsToGenQuarksNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
 		minNumber = cms.uint32(2)
 		)
+
+matchGenJetsToGenQuarksNoCutsNewPath = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedGenJetsNoCuts"),
+		dRforMatching = cms.double(0.6),
+		treeName = cms.string("matchedGenJetsNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("bareMatchedGenQuark"),
+		higherLevelCollTag = cms.InputTag("bareGenJet")
+		)
+
+matchGenJetsToGenQuarksNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchGenJetsToGenQuarksNoCutsNewPath","matchedGenJetsNoCuts"),
+		minNumber = cms.uint32(2)
+		)
+
 
 
 

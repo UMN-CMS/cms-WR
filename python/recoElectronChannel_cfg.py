@@ -85,6 +85,38 @@ process.matchedRecoPath = cms.Path(
 
 		)
 
+process.onlyMatchJetsPath = cms.Path(
+		process.bareGenJet
+		* process.bareGenJetFilter
+		* process.bareMatchedGenParticleSeq
+		* process.matchGenJetsToGenQuarksNoCutsNewPath
+		* process.matchGenJetsToGenQuarksNoCutsNewPathFilter
+		* process.bareRecoJet
+		* process.bareRecoJetFilter
+		* process.matchRecoJetsToGenJetsNoCutsNewPath
+		* process.matchRecoJetsToGenJetsNoCutsNewPathFilter
+	
+		)
+
+process.onlyMatchLeadingElePath = cms.Path(
+		process.bareMatchedGenParticleSeq
+		* process.bareRecoEle
+		* process.bareRecoEleFilter
+		* process.matchRecoEleToLeadingGenEleNoCutsNewPath
+		* process.matchRecoEleToLeadingGenEleNoCutsNewPathFilter
+
+		)
+
+process.onlyMatchSubleadingElePath = cms.Path(
+		process.bareMatchedGenParticleSeq
+		* process.bareRecoEle
+		* process.bareRecoEleFilter
+		* process.matchRecoEleToSubleadingGenEleNoCutsNewPath
+		* process.matchRecoEleToSubleadingGenEleNoCutsNewPathFilter
+		
+		)
+
+
 process.TFileService = cms.Service("TFileService",
 		fileName = cms.string('analysis_recoElectronChannel.root')
 )

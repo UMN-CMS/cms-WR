@@ -26,7 +26,7 @@ bareRecoParticleSeq = cms.Sequence(bareRecoJet*bareRecoJetFilter*bareRecoEle*bar
 ## producers to match reco jets and electrons to gen counterparts (gen jets and gen electrons)
 matchRecoJetsToGenJetsNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedRecoJetsNoCuts"),
-		dRforMatching = cms.double(0.1),
+		dRforMatching = cms.double(0.3),
 		treeName = cms.string("matchedRecoJetsNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
 		higherLevelCollTag = cms.InputTag("bareRecoJet")
@@ -38,12 +38,28 @@ matchRecoJetsToGenJetsNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 
+matchRecoJetsToGenJetsNoCutsNewPath = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedRecoJetsNoCuts"),
+		dRforMatching = cms.double(0.3),
+		treeName = cms.string("matchedRecoJetsNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCutsNewPath","matchedGenJetsNoCuts"),
+		higherLevelCollTag = cms.InputTag("bareRecoJet")
+		)
+
+matchRecoJetsToGenJetsNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchRecoJetsToGenJetsNoCutsNewPath","matchedRecoJetsNoCuts"),
+		minNumber = cms.uint32(2)
+		)
+
+
+
+
 ## match reco electrons to leading and subleading gen electrons from the WR decay chain
 ## using the next four modules
 ## no kinematic cuts applied
 matchRecoEleToLeadingGenEleNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedLeadingRecoEleNoCuts"),
-		dRforMatching = cms.double(0.1),
+		dRforMatching = cms.double(0.2),
 		treeName = cms.string("matchedLeadingRecoEleNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("bareMatchedLeadingGenEle"),
 		higherLevelCollTag = cms.InputTag("bareRecoEle")
@@ -54,9 +70,24 @@ matchRecoEleToLeadingGenEleNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(1)
 		)
 
+
+matchRecoEleToLeadingGenEleNoCutsNewPath = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedLeadingRecoEleNoCuts"),
+		dRforMatching = cms.double(0.2),
+		treeName = cms.string("matchedLeadingRecoEleNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("bareMatchedLeadingGenEle"),
+		higherLevelCollTag = cms.InputTag("bareRecoEle")
+		)
+
+matchRecoEleToLeadingGenEleNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchRecoEleToLeadingGenEleNoCutsNewPath","matchedLeadingRecoEleNoCuts"),
+		minNumber = cms.uint32(1)
+		)
+
+
 matchRecoEleToSubleadingGenEleNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedSubleadingRecoEleNoCuts"),
-		dRforMatching = cms.double(0.1),
+		dRforMatching = cms.double(0.2),
 		treeName = cms.string("matchedSubleadingRecoEleNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("bareMatchedSubleadingGenEle"),
 		higherLevelCollTag = cms.InputTag("bareRecoEle")
@@ -66,6 +97,20 @@ matchRecoEleToSubleadingGenEleNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("matchRecoEleToSubleadingGenEleNoCuts","matchedSubleadingRecoEleNoCuts"),
 		minNumber = cms.uint32(1)
 		)
+
+matchRecoEleToSubleadingGenEleNoCutsNewPath = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedSubleadingRecoEleNoCuts"),
+		dRforMatching = cms.double(0.2),
+		treeName = cms.string("matchedSubleadingRecoEleNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("bareMatchedSubleadingGenEle"),
+		higherLevelCollTag = cms.InputTag("bareRecoEle")
+		)
+
+matchRecoEleToSubleadingGenEleNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchRecoEleToSubleadingGenEleNoCutsNewPath","matchedSubleadingRecoEleNoCuts"),
+		minNumber = cms.uint32(1)
+		)
+
 
 ## end reco to gen electron matching without kinematic cuts applied 
 
