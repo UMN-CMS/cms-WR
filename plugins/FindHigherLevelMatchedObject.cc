@@ -107,6 +107,25 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 		  return true;
 	  }///end isNotDuplicate()
 
+	  void resetCounters(){
+		  ///initialize all variables stored in the output tree
+		  nHigherLevel = 0;
+		  nLowerLevel = 0;
+		  nMatchedHigherLevel=0;
+		  nWithMatch=0;
+	
+		  for(Int_t i=0; i<NOBJ; i++){
+			  dR_lowerToHigherLvlObj[i] = -1;
+			  ptLowerLevel[i] = -1;
+			  etaLowerLevel[i] = -20;
+			  phiLowerLevel[i] = -20;
+			  ptHigherLevel[i] = -1;
+			  etaHigherLevel[i] = -20;
+			  phiHigherLevel[i] = -20;
+		  }
+	
+	  }///end resetCounters()
+
    private:
       virtual void beginJob() override;
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
@@ -118,15 +137,6 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
       //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
  
       // ----------member data ---------------------------
-	  /*
-	  edm::EDGetTokenT<std::vector<reco::CompositeCandidate>> momToken;
-	  edm::EDGetTokenT<std::vector<reco::RecoEcalCandidate>> momParentOneToken;
-      edm::EDGetTokenT<std::vector<reco::RecoEcalCandidate>> momParentTwoToken;
-	
-   	  std::string daughterOneCollection;
-	  std::string daughterTwoCollection;
-	  */
- 	  
 	  ///the point of this producer is to match an object from the lowLevel collection with
 	  ///an object in the higherLevel collection.  An example of this could be gen quarks
 	  ///(from "genParticles" with |pdgId| < 7), as lowLevel objects, and genJets as higherLevel
@@ -151,6 +161,27 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 
 	  ///deltaR between the lower level object and all higher lvl objects which could be matched 
 	  Float_t dR_lowerToHigherLvlObj[NOBJ];
+
+	  ///pT, eta, and phi of all higher level objects
+	  Float_t ptHigherLevel[NOBJ];
+	  Float_t etaHigherLevel[NOBJ];
+	  Float_t phiHigherLevel[NOBJ];
+
+	  ///pT, eta, and phi of the lower level objects, and the number of lower lvl objects in the evt
+	  ///this info will be useful to study the matching efficiency as a fxn of pT, eta, and phi
+	  Int_t nLowerLevel;
+	  Float_t ptLowerLevel[NOBJ];
+	  Float_t etaLowerLevel[NOBJ];
+	  Float_t phiLowerLevel[NOBJ];
+
+	  /**
+	   * nMatchedHigherLevel counts the number of higher level objects which are matched to lower level objects
+	   * nWithMatch counts the number of lower lvl objects for which a match is found
+	   * if there are N lower level objects, then the max value of nWithMatch is N, and the max value of
+	   * nMatchedHigherLevel can be greater than N
+	   */
+	  Int_t nMatchedHigherLevel;
+	  Int_t nWithMatch;
 	
 };
 
@@ -178,10 +209,20 @@ FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterS
 
    tree->Branch("nHigherLevel",&nHigherLevel,"nHigherLevel/I");
    tree->Branch("dR_lowerToHigherLvlObj",dR_lowerToHigherLvlObj,"dR_lowerToHigherLvlObj[nHigherLevel]/F");
+   tree->Branch("ptHigherLevel",ptHigherLevel,"ptHigherLevel[nHigherLevel]/F");
+   tree->Branch("etaHigherLevel",etaHigherLevel,"etaHigherLevel[nHigherLevel]/F");
+   tree->Branch("phiHigherLevel",phiHigherLevel,"phiHigherLevel[nHigherLevel]/F");
+
+   tree->Branch("nLowerLevel",&nLowerLevel,"nLowerLevel/I");
+   tree->Branch("ptLowerLevel",ptLowerLevel,"ptLowerLevel[nLowerLevel]/F");
+   tree->Branch("etaLowerLevel",etaLowerLevel,"etaLowerLevel[nLowerLevel]/F");
+   tree->Branch("phiLowerLevel",phiLowerLevel,"phiLowerLevel[nLowerLevel]/F");
+
+   tree->Branch("nMatchedHigherLevel",&nMatchedHigherLevel,"nMatchedHigherLevel/I");
+   tree->Branch("nWithMatch",&nWithMatch,"nWithMatch/I");
  
    tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
-
 
 	
    ///register the input collections	
@@ -190,18 +231,6 @@ FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterS
 
    ///register the collections which are added to the event
    produces<edm::OwnVector<reco::Candidate> >(outputCollName);
-
-   /*	
-   momToken = consumes<std::vector<reco::CompositeCandidate>>(iConfig.getParameter<edm::InputTag>("zedLabel"));
-   momParentOneToken = consumes<std::vector<reco::RecoEcalCandidate>>(iConfig.getParameter<edm::InputTag>("tracklessHltEle"));
-   momParentTwoToken = consumes<std::vector<reco::RecoEcalCandidate>>(iConfig.getParameter<edm::InputTag>("trackedHltEle"));
-   //daughterOneCollection = iConfig.getParameter<std::string>("tracklessEleCollectionName");
-   //daughterTwoCollection = iConfig.getParameter<std::string>("trackedEleCollectionName");
-   
-   //register the two collections of products - std::vector<edm::Refs to RecoEcalCandidate objects> (daughters of Z)
-   produces<reco::RecoEcalCandidateRefVector>(daughterOneCollection);
-   produces<reco::RecoEcalCandidateRefVector>(daughterTwoCollection);
-   */
 
 }
 
@@ -232,10 +261,7 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
    ///get the evt and run number, and initialize the other vars saved in the tree
    evtNumber = iEvent.id().event();
    runNumber = iEvent.id().run();
-   nHigherLevel = 0;
-   for(Int_t i=0; i<NOBJ; i++){
-	   dR_lowerToHigherLvlObj[i] = -1;
-   }
+   resetCounters();
 
    Handle<edm::OwnVector<reco::Candidate> > lowLevelObjectColl;
    iEvent.getByToken(lowLevelToken, lowLevelObjectColl);
@@ -255,106 +281,45 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 	 */
    for(edm::OwnVector<reco::Candidate>::const_iterator lowIt=lowLevelObjectColl->begin(); lowIt!=lowLevelObjectColl->end();
 		   lowIt++){
+	   bool incrementedWithMatch = false;
 	   for(edm::OwnVector<reco::Candidate>::const_iterator higherIt=higherLevelObjectColl->begin(); higherIt!=higherLevelObjectColl->end();
 			   higherIt++){
 		   double dR = deltaR(higherIt->eta(),higherIt->phi(),lowIt->eta(),lowIt->phi());
 		   if(isNotDuplicate(higherIt,outputObjColl)){
 			   dR_lowerToHigherLvlObj[nHigherLevel] = dR;
+			   ptHigherLevel[nHigherLevel] = higherIt->pt();
+			   etaHigherLevel[nHigherLevel] = higherIt->eta();
+			   phiHigherLevel[nHigherLevel] = higherIt->phi();
 			   nHigherLevel++;
 		   }///end filter to check if the higher level object already exists in the output object collection 
 		   if(dR <= maxDeltaR && isNotDuplicate(higherIt,outputObjColl)){
 			   outputObjColl->push_back(*higherIt);
+			   nMatchedHigherLevel++;
+			   if(!incrementedWithMatch){
+				   nWithMatch++;
+				   incrementedWithMatch = true;
+			   }
 		   }///end if(dR cut is passed && not duplicate entry)
 
-	   }///end loop over reco::Candidate objects in lowLevelObjectColl
+	   }///end loop over reco::Candidate objects in higherLevelObjectColl
+	  
+	   ptLowerLevel[nLowerLevel] = lowIt->pt();
+	   etaLowerLevel[nLowerLevel] = lowIt->eta();
+	   phiLowerLevel[nLowerLevel] = lowIt->phi();
+	   nLowerLevel++;
 
-   }///end loop over reco::Candidate objects in higherLevelObjectColl
+   }///end loop over reco::Candidate objects in lowLevelObjectColl
+ 
+   ///fill the tree branches
+   tree->Fill();
 
 #ifdef DEBUG
    std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;
 #endif
   
-   ///fill the tree's branches
-   tree->Fill();
-   
    ///now put the collection of matched higher level reco::Candidate objects into the event
    iEvent.put(outputObjColl, outputCollName);
  
-   /*
-   //std::cout<<"entered daughter producer code"<<std::endl;
-
-   //read collection of reco::CompositeCandidate objects from iEvent
-   Handle<std::vector<reco::CompositeCandidate> > momIn;
-   iEvent.getByToken(momToken, momIn);
-
-   Handle<std::vector<reco::RecoEcalCandidate> > momParentOneIn;	//for trackless leg RECs
-   iEvent.getByToken(momParentOneToken, momParentOneIn);
-
-   Handle<std::vector<reco::RecoEcalCandidate> > momParentTwoIn;	//for tracked leg RECs
-   iEvent.getByToken(momParentTwoToken, momParentTwoIn);
-
-   //std::cout<<"made handles to input collections"<<std::endl;
-
-   //create empty output collections, one for each daughter, and pointers to each collection
-   std::auto_ptr<reco::RecoEcalCandidateRefVector> daughterOneRefColl(new reco::RecoEcalCandidateRefVector );	//trackless collection
-   std::auto_ptr<reco::RecoEcalCandidateRefVector> daughterTwoRefColl(new reco::RecoEcalCandidateRefVector );	//tracked collection
-
-
-   
-   for(std::vector<reco::CompositeCandidate>::const_iterator momIt = momIn->begin(); momIt != momIn->end(); momIt++){
-	   //get a Ref to a daughter via momIt->daughter()->masterClone()
-	   //then find the matching (pt, eta, phi) object in momParent(One or Two)In handles, and
-	   //save a reference to the object into the appropriate output collection via
-	   //getRef(momParent(One or Two)In, index number) 
-	   //std::cout<<"looping over CompositeCandidate objects"<<std::endl;
-	   if((momIt->daughter("tracklessRecoEle"))->hasMasterClone() ){
-		   //std::cout<<"found tracklessRecoEle daughter with a master clone"<<std::endl;
-		   reco::CandidateBaseRef dauOneRef = (momIt->daughter("tracklessRecoEle"))->masterClone();
-		   //std::cout<<"made a reference obj to a trackless daughter"<<std::endl;
-		   for(unsigned int h=0; h<momParentOneIn->size(); h++){
-			   if(dauOneRef->pt() == (getRef(momParentOneIn, h))->pt() ){
-				   if(dauOneRef->eta() == (getRef(momParentOneIn, h))->eta() ){
-					   if(dauOneRef->phi() == (getRef(momParentOneIn, h))->phi() ){
-						   daughterOneRefColl->push_back( getRef(momParentOneIn, h) );
-					   }//end filter on phi
-
-				   }//end filter on eta
-
-			   }//end filter on pt
-
-		   }//end loop over objects in momParentOneIn
-
-	   }//end requirement that a master clone exists
-
-	   if((momIt->daughter("trackedRecoEle"))->hasMasterClone() ){
-		   //std::cout<<"found trackedRecoEle daughter with a master clone"<<std::endl;
-		   reco::CandidateBaseRef dauTwoRef = (momIt->daughter("trackedRecoEle"))->masterClone();
-		   for(unsigned int m=0; m<momParentTwoIn->size(); m++){
-			   if(dauTwoRef->pt() == (getRef(momParentTwoIn, m))->pt() ){
-				   if(dauTwoRef->eta() == (getRef(momParentTwoIn, m))->eta() ){
-					   if(dauTwoRef->phi() == (getRef(momParentTwoIn, m))->phi() ){
-						   daughterTwoRefColl->push_back( getRef(momParentTwoIn, m) );
-					   }//end filter on phi
-
-				   }//end filter on eta
-
-			   }//end filter on pt
-
-		   }//end loop over objects in momParentTwoIn
-
-	   }//end requirement that a master clone exists
-	
-   }//end loop over all CompositeCandidate objects in the event
-
-
-   //std::cout<<"about to put daughter collections into root file"<<std::endl;
-   //now put the two collections of Refs to daughter particles into the event
-   iEvent.put(daughterOneRefColl, daughterOneCollection);
-   iEvent.put(daughterTwoRefColl, daughterTwoCollection);
-
-   */
-
-
 }
 
 // ------------ method called once each job just before starting event loop  ------------
