@@ -38,6 +38,7 @@ matchRecoJetsToGenJetsNoCutsFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 
+
 matchRecoJetsToGenJetsNoCutsNewPath = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedRecoJetsNoCuts"),
 		dRforMatching = cms.double(0.3),
@@ -183,6 +184,20 @@ recoMatchedDiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
 recoMatchedDiElectronCandidateSeq = cms.Sequence(recoMatchedDiElectronCandidate*recoMatchedDiElectronCandidateFilter)
 
 ## end modules which apply dilepton mass cut to reco electrons matched to gen electrons
+
+## modules to test new cutAndProduceOutputCollection EDProducer, and SlimCutVar class
+testCutProducer = cms.EDProducer('cutAndProduceOutputCollection',
+		outputCollectionName = cms.string("testRecoJetOutputColl"),
+		treeName = cms.string("testRecoJetOutputTree"),
+		initializeCut = cms.string("88,>,SOMENAME"),
+		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
+		higherLevelCollTag = cms.InputTag("bareRecoJet")
+		)
+
+testCutProducerFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("testCutProducer","testRecoJetOutputColl"),
+		minNumber = cms.uint32(15)
+		)
 
 
 

@@ -74,6 +74,8 @@ process.matchedRecoPath = cms.Path(
 		* process.matchGenJetsToGenQuarksNoCuts
 		* process.matchGenJetsToGenQuarksNoCutsFilter
 		* process.bareRecoParticleSeq
+		* process.testCutProducer
+		* process.testCutProducerFilter
 		* process.matchRecoNoCutsSeq
 		* process.matchedRecoAnalyzerOne
 		* process.ptEtaRestrictedMatchedRecoSeq
@@ -129,9 +131,9 @@ process.options = cms.untracked.PSet(
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
 		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2.root',
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_3.root',
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_4.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2_missingEvts.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_3_missingEvts.root',
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_4_missingEvts.root',
 
     ),
     inputCommands = cms.untracked.vstring(
@@ -140,7 +142,7 @@ process.source = cms.Source( "PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 
