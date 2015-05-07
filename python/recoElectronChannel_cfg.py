@@ -8,7 +8,7 @@ process.load('ExoAnalysis.cmsWR.recoElectronChannelModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 ## analyze the kinematic distributions of the reco jets and leptons before any kinematic or dR cuts are applied
-process.matchedRecoAnalyzerOne = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedRecoAnalyzerOne = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedRecoObjectsNoCuts"),
 		doDeltaRcut = cms.bool(False),
 		doFourObjMassCut = cms.bool(False),
@@ -19,7 +19,7 @@ process.matchedRecoAnalyzerOne = cms.EDAnalyzer('genMatchedAnalyzer',
 		genQuarkCollection = cms.InputTag("matchRecoJetsToGenJetsNoCuts","matchedRecoJetsNoCuts")
 		)
 
-process.matchedRecoAnalyzerTwo = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedRecoAnalyzerTwo = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedRecoObjectsWithPtEtaCuts"),
 		doDeltaRcut = cms.bool(False),
 		doFourObjMassCut = cms.bool(False),
@@ -30,7 +30,7 @@ process.matchedRecoAnalyzerTwo = cms.EDAnalyzer('genMatchedAnalyzer',
 		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
 		)
 
-process.matchedRecoAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedRecoAnalyzerThree = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedRecoObjectsWithPtEtaAndDileptonMassCuts"),
 		doDeltaRcut = cms.bool(False),
 		doFourObjMassCut = cms.bool(False),
@@ -42,7 +42,7 @@ process.matchedRecoAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
 		)
 
 
-process.matchedRecoAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedRecoAnalyzerFour = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedRecoObjectsWithPtEtaDileptonMassAndDrCuts"),
 		doDeltaRcut = cms.bool(True),
 		doFourObjMassCut = cms.bool(False),
@@ -54,7 +54,7 @@ process.matchedRecoAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
 		)
 
 
-process.matchedRecoAnalyzerFive = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedRecoAnalyzerFive = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts"),
 		doDeltaRcut = cms.bool(True),
 		doFourObjMassCut = cms.bool(True),
@@ -115,6 +115,7 @@ process.onlyMatchSubleadingElePath = cms.Path(
 		* process.matchRecoEleToSubleadingGenEleNoCutsNewPathFilter
 		
 		)
+
 
 
 process.TFileService = cms.Service("TFileService",

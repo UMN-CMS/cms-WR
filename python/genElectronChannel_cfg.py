@@ -13,7 +13,7 @@ process.genAnalyzerOne = cms.EDAnalyzer('genAnalyzer',
 		genJetCollection = cms.InputTag("bareGenJet","","GENEEJJ")
 		)
 
-process.matchedGenAnalyzerOne = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedGenAnalyzerOne = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsNoCuts"),
 		doDeltaRcut = cms.bool(False),
 		doFourObjMassCut = cms.bool(False),
@@ -32,7 +32,7 @@ process.genAnalyzerTwo = cms.EDAnalyzer('genAnalyzer',
 		genJetCollection = cms.InputTag("ptEtaRestrictedGenJet","","GENEEJJ")
 		)
 
-process.matchedGenAnalyzerTwo = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedGenAnalyzerTwo = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaCuts"),
 		doDeltaRcut = cms.bool(False),
 		doFourObjMassCut = cms.bool(False),
@@ -51,7 +51,7 @@ process.genAnalyzerThree = cms.EDAnalyzer('genAnalyzer',
 		genJetCollection = cms.InputTag("ptEtaRestrictedGenJet","","GENEEJJ")
 		)
 
-process.matchedGenAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedGenAnalyzerThree = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaAndDileptonMassCuts"),
 		doDeltaRcut = cms.bool(False),
 		doFourObjMassCut = cms.bool(False),
@@ -63,7 +63,7 @@ process.matchedGenAnalyzerThree = cms.EDAnalyzer('genMatchedAnalyzer',
 		)
 
 ## analyzers to run with dR(lepton,hadron) > someValue cut applied
-process.matchedGenAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedGenAnalyzerFour = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaDileptonMassAndDrCuts"),
 		doDeltaRcut = cms.bool(True),
 		doFourObjMassCut = cms.bool(False),
@@ -75,7 +75,7 @@ process.matchedGenAnalyzerFour = cms.EDAnalyzer('genMatchedAnalyzer',
 		)
 
 ## analyzers to run with dR(lepton,hadron) > someValue cut and four obj inv mass cut applied
-process.matchedGenAnalyzerFive = cms.EDAnalyzer('genMatchedAnalyzer',
+process.matchedGenAnalyzerFive = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts"),
 		doDeltaRcut = cms.bool(True),
 		doFourObjMassCut = cms.bool(True),

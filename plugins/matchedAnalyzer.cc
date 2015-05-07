@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    doubleElectronTracklessTrigger/genMatchedAnalyzer
-// Class:      genMatchedAnalyzer
+// Package:    doubleElectronTracklessTrigger/matchedAnalyzer
+// Class:      matchedAnalyzer
 // 
-/**\class genMatchedAnalyzer genMatchedAnalyzer.cc doubleElectronTracklessTrigger/genMatchedAnalyzer/plugins/genMatchedAnalyzer.cc
+/**\class matchedAnalyzer matchedAnalyzer.cc doubleElectronTracklessTrigger/matchedAnalyzer/plugins/matchedAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -89,10 +89,10 @@
 // class declaration
 //
 
-class genMatchedAnalyzer : public edm::EDAnalyzer {
+class matchedAnalyzer : public edm::EDAnalyzer {
    public:
-      explicit genMatchedAnalyzer(const edm::ParameterSet&);
-      ~genMatchedAnalyzer();
+      explicit matchedAnalyzer(const edm::ParameterSet&);
+      ~matchedAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -223,6 +223,9 @@ Float_t dR_subleadingLeptonSubleadingJetGen;
 Float_t dR_leadingLeptonSubleadingLeptonGen;
 Float_t dR_leadingJetSubleadingJetGen;
 
+///leadingIsHardest = 1 when leading ele pT > subleading ele pT
+///leadingIsHardest = 0 when leading ele pT < subleading ele pT
+Int_t leadingIsHardest;
 
 };
 
@@ -238,7 +241,7 @@ Float_t dR_leadingJetSubleadingJetGen;
 // constructors and destructor
 //
 
-genMatchedAnalyzer::genMatchedAnalyzer(const edm::ParameterSet& iConfig):
+matchedAnalyzer::matchedAnalyzer(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDrCut(iConfig.getParameter<bool>("doDeltaRcut")),
 	applyFourObjMassCut(iConfig.getParameter<bool>("doFourObjMassCut")),
@@ -258,6 +261,8 @@ genMatchedAnalyzer::genMatchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("ptGenEle",ptGenEle,"ptGenEle[2]/F");
    tree->Branch("phiGenEle",phiGenEle,"phiGenEle[2]/F");
    tree->Branch("dileptonMassGen",&dileptonMassGen,"dileptonMassGen/F");
+   
+   tree->Branch("leadingIsHardest",&leadingIsHardest,"leadingIsHardest/I");
 
    tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
@@ -281,7 +286,7 @@ genMatchedAnalyzer::genMatchedAnalyzer(const edm::ParameterSet& iConfig):
 }
 
 
-genMatchedAnalyzer::~genMatchedAnalyzer()
+matchedAnalyzer::~matchedAnalyzer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -296,12 +301,12 @@ genMatchedAnalyzer::~genMatchedAnalyzer()
 
 // ------------ method called for each event  ------------
 void
-genMatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 	using namespace edm;
 
 #ifdef DEBUG
-	std::cout<<"in analyze method of genMatchedAnalyzer class"<<std::endl;
+	std::cout<<"in analyze method of matchedAnalyzer class"<<std::endl;
 #endif
 
 	evtNumber = iEvent.id().event();
@@ -339,6 +344,11 @@ genMatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	etaGenEle[1] = subleadingLepton->eta();
 	ptGenEle[1] = subleadingLepton->pt();
 	phiGenEle[1] = subleadingLepton->phi();
+	if(ptGenEle[0] > ptGenEle[1]){
+		leadingIsHardest = 1;
+	}
+	else leadingIsHardest = 0;
+
 
 #ifdef DEBUG
 	std::cout<<"leading jet pt: \t"<<leadingJet->pt()<<std::endl;
@@ -398,14 +408,14 @@ genMatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-genMatchedAnalyzer::beginJob()
+matchedAnalyzer::beginJob()
 {
 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-genMatchedAnalyzer::endJob() 
+matchedAnalyzer::endJob() 
 {
 
 }
@@ -413,7 +423,7 @@ genMatchedAnalyzer::endJob()
 // ------------ method called when starting to processes a run  ------------
 /*
 void 
-genMatchedAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
+matchedAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -421,7 +431,7 @@ genMatchedAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void 
-genMatchedAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
+matchedAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -429,7 +439,7 @@ genMatchedAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void 
-genMatchedAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+matchedAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -437,14 +447,14 @@ genMatchedAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::Event
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void 
-genMatchedAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+matchedAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-genMatchedAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+matchedAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -454,4 +464,4 @@ genMatchedAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& description
 
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(genMatchedAnalyzer);
+DEFINE_FWK_MODULE(matchedAnalyzer);

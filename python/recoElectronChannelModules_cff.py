@@ -167,6 +167,7 @@ ptEtaRestrictedMatchedRecoSeq = cms.Sequence(
 
 
 ## these modules apply the dilepton mass cut to matched reco electrons
+
 recoMatchedDiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
 		decay = cms.string("ptEtaRestrictedMatchedLeadingRecoEle ptEtaRestrictedMatchedSubleadingRecoEle"),
 		role = cms.string("matchedLeadingEle matchedSubleadingEle"),
