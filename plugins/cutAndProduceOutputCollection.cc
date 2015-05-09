@@ -33,6 +33,8 @@
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -73,7 +75,6 @@
 #include "TTree.h"
 
 /// include files made by me
-#include "../interface/SlimCutVar.h"
 #include "../interface/CutApplicationInfrastructure.h"
 
 //#define DEBUG
@@ -141,6 +142,9 @@ class cutAndProduceOutputCollection : public edm::EDProducer {
 	  ///initCutString must be of the form "float,< or > character,char array"
 	  std::string initCutString;	///< use this to initialize the name, threshold val, and upper bound status of SlimCutVar object
 
+	  const std::string inputTagStrings;
+	  unsigned int numCollections;	///< the number of input object collections
+
 	  SlimCutVar theCut;
 	
 	  TTree * tree;
@@ -173,7 +177,9 @@ class cutAndProduceOutputCollection : public edm::EDProducer {
 cutAndProduceOutputCollection::cutAndProduceOutputCollection(const edm::ParameterSet& iConfig):
 	outputCollName(iConfig.getParameter<std::string>("outputCollectionName")),
 	tName(iConfig.getParameter<std::string>("treeName")),
-	initCutString(iConfig.getParameter<std::string>("initializeCut"))
+	initCutString(iConfig.getParameter<std::string>("initializeCut")),
+	inputTagStrings(iConfig.getParameter<std::string>("listOfInputCollTagStrings")),
+	numCollections(iConfig.getParameter<unsigned int>("nCollections"))
 {
 
    theCut.setAttributesFromString(initCutString);
@@ -191,7 +197,12 @@ cutAndProduceOutputCollection::cutAndProduceOutputCollection(const edm::Paramete
 	
    ///register the input collections	
    lowLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("lowLevelCollTag"));
-   higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("higherLevelCollTag"));
+   //higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("higherLevelCollTag"));
+   //higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("listOfInputCollTags[0]"));
+   higherLevelToken = consumes<edm::OwnVector<reco::Candidate> >( *(new edm::InputTag(inputTagStrings)) );
+
+
+
 
    ///register the collections which are added to the event
    produces<edm::OwnVector<reco::Candidate> >(outputCollName);

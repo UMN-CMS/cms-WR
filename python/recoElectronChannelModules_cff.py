@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+import array
 
 
 bareRecoJet = cms.EDFilter("CandViewSelector",
@@ -186,12 +187,19 @@ recoMatchedDiElectronCandidateSeq = cms.Sequence(recoMatchedDiElectronCandidate*
 ## end modules which apply dilepton mass cut to reco electrons matched to gen electrons
 
 ## modules to test new cutAndProduceOutputCollection EDProducer, and SlimCutVar class
+#listOfInputCollTagStrings need to be in one of the following forms:
+#"moduleName"
+#"moduleName","instanceName"
+#"moduleName","instanceName","processName"
+
 testCutProducer = cms.EDProducer('cutAndProduceOutputCollection',
 		outputCollectionName = cms.string("testRecoJetOutputColl"),
+		nCollections = cms.uint32(4),
 		treeName = cms.string("testRecoJetOutputTree"),
 		initializeCut = cms.string("88,>,SOMENAME"),
+		listOfInputCollTagStrings = cms.string("bareRecoJet"),
 		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
-		higherLevelCollTag = cms.InputTag("bareRecoJet")
+		higherLevelCollTag = cms.InputTag("bareRecoJet"),
 		)
 
 testCutProducerFilter = cms.EDFilter("CandViewCountFilter",
