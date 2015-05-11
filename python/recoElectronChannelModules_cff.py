@@ -194,10 +194,12 @@ recoMatchedDiElectronCandidateSeq = cms.Sequence(recoMatchedDiElectronCandidate*
 
 testCutProducer = cms.EDProducer('cutAndProduceOutputCollection',
 		outputCollectionName = cms.string("testRecoJetOutputColl"),
-		nCollections = cms.uint32(4),
+		nCollections = cms.uint32(3),
 		treeName = cms.string("testRecoJetOutputTree"),
 		initializeCut = cms.string("88,>,SOMENAME"),
-		listOfInputCollTagStrings = cms.string("bareRecoJet"),
+		#use the strings in stringKeysForMaps to fill maps in CutApplicationInfrastructure objects
+		stringKeysForMaps = cms.string("leadingLepton,subleadingLepton,jets"),
+		listOfInputCollTagStrings = cms.string("bareRecoJet",),
 		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
 		higherLevelCollTag = cms.InputTag("bareRecoJet"),
 		)
