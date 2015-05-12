@@ -1,0 +1,11 @@
+universe = vanilla 
+Executable = /uscms/home/skalafut/nobackup/WR_starting2015/miniAODJobs/runMiniAODMaker_NUM.csh
+Requirements = OpSys == "LINUX"&& (Arch != "DUMMY" )
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Input_Files = /eos/uscms/store/user/skalafut/WR/13TeV/Signal_GEN-SIM/genSimFile_NUM.root, reco_and_miniAOD_NUM.py, /eos/uscms/store/user/skalafut/WR/13TeV/minBias/PU.tar
+Arguments = $(Process)
+Output = miniAODMaker_NUM_$(Cluster)_$(Process).stdout
+Error = miniAODMaker_NUM_$(Cluster)_$(Process).stderr
+Log = miniAODMaker_NUM_$(Cluster)_$(Process).log
+Queue 1 

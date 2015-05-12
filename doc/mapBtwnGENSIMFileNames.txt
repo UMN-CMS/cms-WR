@@ -1,0 +1,35 @@
+the WR signal GEN-SIM files in my /eos space at FNAL are copies of files stored at UMN in /hdfs/cms/phedex.
+I have changed the GEN-SIM file names to facilitate miniAOD job submission (which need GEN-SIM files as input).
+This txt file links the new WR signal GEN-SIM file names (of files at FNAL) to the original file names at UMN.
+The file size can be used as a double check.
+
+FNAL file              UMN file
+genSimFile_1.root = 00774ADC-8F87-E411-B6EF-00266CF32E78.root  
+genSimFile_2.root = 7A8730D6-9E86-E411-A442-002590747DF0.root 
+genSimFile_3.root = FAFE9A13-4587-E411-B144-0025905A60BC.root 
+genSimFile_4.root = 5E57FB53-7987-E411-8A59-90B11C06E1A0.root
+genSimFile_5.root = A851FD3C-9686-E411-9BA6-0025904B0FC0.root
+genSimFile_6.root = AE11633F-4487-E411-9C81-002590494D20.root
+genSimFile_7.root = FE504361-0387-E411-8A6C-0025905A608A.root
+genSimFile_8.root = 9EA9DD5F-9086-E411-AA6E-02163E0103BB.root
+genSimFile_9.root = 088639F5-D586-E411-B4E8-02163E00E5C3.root 
+genSimFile_10.root = 0CAA5A84-8E87-E411-A305-008CFA104E64.root 
+genSimFile_11.root = 3C5BDE78-8087-E411-8F53-7845C4FC3B0F.root 
+genSimFile_12.root = 40F83892-8E87-E411-A681-002590494CC2.root 
+genSimFile_13.root = 54421D2B-7787-E411-8CF3-001517FB21BC.root 
+genSimFile_14.root = 60135F2F-6387-E411-9C85-A0000420FE80.root 
+genSimFile_15.root = 825FF491-7F87-E411-AC41-0025907254C8.root 
+genSimFile_16.root = 88469B1E-A087-E411-83CA-0025904C66A6.root 
+genSimFile_17.root = 8EACF677-7F87-E411-9B46-001E675A6AB3.root 
+genSimFile_18.root = 9A6A9299-9387-E411-A948-008CFA1CB740.root 
+genSimFile_19.root = AC7E88F0-6187-E411-AB52-002481E0D1C8.root 
+genSimFile_20.root = AE2E10BB-8A87-E411-AFBD-B499BAAC03BA.root 
+genSimFile_21.root = B42045C9-9087-E411-A3D7-002590D8C7BE.root 
+genSimFile_22.root = B6B6300A-6387-E411-AE6A-0025905A6092.root 
+genSimFile_23.root = BA051012-8387-E411-B673-002590A36F46.root 
+genSimFile_24.root = D4604FCC-7D87-E411-8C37-B083FED42FB0.root 
+genSimFile_25.root = DA4DE76B-8F87-E411-B25C-00266CFEFC38.root 
+genSimFile_26.root = FAE12220-A087-E411-A555-0025904C66F6.root 
+
+
+ 

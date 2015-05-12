@@ -1,0 +1,11 @@
+universe = vanilla 
+Executable = /uscms/home/skalafut/nobackup/WR_starting2015/genSimJobs/runGenSimMaker_NUM.csh
+Requirements = OpSys == "LINUX"&& (Arch != "DUMMY" )
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Input_Files = WR_M-MMAASS_ToLNu_M-MASSNU_GEN_SIM_NUM.py
+Arguments = $(Process)
+Output = genSimMaker_NUM_$(Cluster)_$(Process).stdout
+Error = genSimMaker_NUM_$(Cluster)_$(Process).stderr
+Log = genSimMaker_NUM_$(Cluster)_$(Process).log
+Queue 1 
