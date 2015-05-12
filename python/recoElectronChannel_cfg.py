@@ -74,8 +74,8 @@ process.matchedRecoPath = cms.Path(
 		* process.matchGenJetsToGenQuarksNoCuts
 		* process.matchGenJetsToGenQuarksNoCutsFilter
 		* process.bareRecoParticleSeq
-		* process.testCutProducer
-		* process.testCutProducerFilter
+		#* process.testCutProducer
+		#* process.testCutProducerFilter
 		* process.matchRecoNoCutsSeq
 		* process.matchedRecoAnalyzerOne
 		* process.ptEtaRestrictedMatchedRecoSeq
