@@ -27,7 +27,18 @@ process.ft_nocuts = cms.EDAnalyzer('FlatTTree',
                             Mlljj_cut = cms.double(0.0),
                             Mll_cut = cms.double(0.0),
                             matching_dR = cms.double(0.4),
-                            matching = cms.bool(True),
+                            matching = cms.bool(False),
                             )
+process.ft_matching = process.ft_nocuts.clone(matching = cms.bool(True))
+
+process.ft_Mllcut = process.ft_nocuts.clone(matching = cms.bool(True),
+                                              Mll_cut = cms.double(200.0))
+
+process.ft_Mlljjcut = process.ft_nocuts.clone(matching = cms.bool(True),
+                                              Mll_cut = cms.double(200.0),
+                                              Mlljj_cut = cms.double(600.0))
 
 process.p = cms.Path(process.wRtunePMuons + process.ft_nocuts)
+process.p2 = cms.Path(process.wRtunePMuons + process.ft_matching)
+process.p3 = cms.Path(process.wRtunePMuons + process.ft_Mllcut)
+process.p4 = cms.Path(process.wRtunePMuons + process.ft_Mlljjcut)

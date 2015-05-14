@@ -9,8 +9,8 @@ def print_histos_from_tree(root_file,dir,tree,formats):
     in each of the formats."""
     
     f = ROOT.TFile(root_file)
-    os.system('mkdir -p plots/print_histos/'+root_file.split('/')[-1][:-5])
     for x in f.GetListOfKeys():
+        os.system('mkdir -p plots/print_histos/'+x.GetName()+'/'+root_file.split('/')[-1][:-5])
         d = f.GetDirectory(x.GetName())
         t = d.Get(tree)
         print t
@@ -19,7 +19,7 @@ def print_histos_from_tree(root_file,dir,tree,formats):
             a = ''+y.GetName()
             t.Draw(a)
             for i in formats:
-                c1.Print('plots/print_histos/'+dir+'/'+root_file.split('/')[-1][:-5]+'/'+ a +'.'+i)
+                c1.Print('plots/print_histos/'+x.GetName()+'/'+root_file.split('/')[-1][:-5]+'/'+ a +'.'+i)
             c1 = 0
 
 
