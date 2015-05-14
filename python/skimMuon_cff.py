@@ -12,13 +12,13 @@ wRtunePMuons = cms.EDProducer("TunePMuonProducer",
 
 
 ### select leading muon
-wRleadingMuon = cms.EDFilter("CandViewSelector",
+wRleadingMuon = cms.EDFilter("PATMuonSelector",
                                  src = cms.InputTag("wRtunePMuons"),
                                  cut = cms.string("pt>60"),
                                  )
 
 ### select subleading muon
-wRsubleadingMuon = cms.EDFilter("CandViewSelector",
+wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
                                  src = cms.InputTag("wRtunePMuons"),
                                  cut = cms.string("pt>40"),
                                  )
@@ -53,7 +53,7 @@ wRdiMuonSidebandCandidateFilter = cms.EDFilter("CandViewCountFilter",
 
 
 ### di-muon selection sequence
-wRmuonSelectionSeq = cms.Sequence(wRleadingMuon + wRsubleadingMuon)
+wRmuonSelectionSeq = cms.Sequence(wRtunePMuons + wRleadingMuon + wRsubleadingMuon)
 ### di-muon selection in signal region sequence
 wRdiMuonSignalSeq = cms.Sequence(wRmuonSelectionSeq * wRdiMuonCandidate * wRdiMuonCandidateFilter)
 ### di-muon selection in sideband region sequence

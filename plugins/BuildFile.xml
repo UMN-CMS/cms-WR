@@ -5,8 +5,9 @@
   <use name="CommonTools/UtilAlgos"/>
   <use name="DataFormats/BeamSpot"/>
   <use name="DataFormats/PatCandidates"/>
-  <use name="DataFormats/TrackReco"/>
   <use name="DataFormats/VertexReco"/>
+  <use name="DataFormats/TrackReco"/>
+  <use name="DataFormats/JetReco"/>
   <use name="HLTrigger/HLTcore"/>
   <use name="PhysicsTools/CandUtils"/>
   <use name="PhysicsTools/SelectorUtils"/>

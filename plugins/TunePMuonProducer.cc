@@ -40,7 +40,6 @@ void TunePMuonProducer::produce(edm::Event& event, const edm::EventSetup&)
 		mu.setP4(tmp_muon);
 		mus->push_back(mu);
 	}
-
 	event.put(mus);
 }
 
