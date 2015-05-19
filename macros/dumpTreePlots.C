@@ -16,10 +16,186 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <TEventList.h>
+#include <TEntryList.h>
+#include <TEntryListArray.h>
 
 //using namespace std;
 
 //#define DEBUG
+
+
+//use this fxn to compare distributions from two TChains 
+//this function is essentially two copies of makeAndSaveHistoUsingEntryList()
+//two TChains, two listFillArgs, two list names, two histPlotArgs, two histNames, one histTitle,
+//one xAxisTitle, one canvName, on TCut object, one outputFile, and two Bool_t args are given
+//to this fxn as inputs
+void makeAndSaveOverlayHistoUsingEntryLists(TChain * sigChain,TChain * bkgndChain,TString sigListFillArgs,TString sigListName,TString bkgndListFillArgs,TString bkgndListName,TString sigHistPlotArg,TString bkgndHistPlotArg,TString sigHistName,TString bkgndHistName,TString histTitle,TString xAxisTitle,TString canvName,TCut sigFilt,TCut bkgndFilt,TString outputFile,Bool_t isPlottingEnergy,Bool_t isPlottingInverseEnergy,Bool_t normalizeHistos){
+	sigChain->Draw(sigListFillArgs,sigFilt,"entrylistarray");
+	sigChain->SetEntryList((TEntryListArray*) gROOT->FindObject(sigListName) );
+	bkgndChain->Draw(bkgndListFillArgs,bkgndFilt,"entrylistarray");
+	bkgndChain->SetEntryList((TEntryListArray*) gROOT->FindObject(bkgndListName) );
+
+	TCanvas * canv = new TCanvas(canvName,canvName,700,700);
+	canv->cd();
+	sigChain->Draw(sigHistPlotArg);
+	TH1F * sigHist = (TH1F*) gROOT->FindObject(sigHistName);
+	bkgndChain->Draw(bkgndHistPlotArg);
+	TH1F * bkgndHist = (TH1F*) gROOT->FindObject(bkgndHistName);
+
+	if(normalizeHistos){
+		Double_t sigIntegral = sigHist->Integral();
+		sigHist->Scale(1/sigIntegral);
+		Double_t bkgndIntegral = bkgndHist->Integral();
+		bkgndHist->Scale(1/bkgndIntegral);
+	}
+	
+	sigHist->SetLineColor(1);	//black
+	bkgndHist->SetLineColor(2);	//red
+
+	//sigHist will be drawn first, bkgndHist overlaid on top.  If the largest bin in bkgndHist > the largest bin in sigHist,
+	//then increase the y axis max on sigHist to accommodate the peak in bkgndHist
+	if(sigHist->GetBinContent(sigHist->GetMaximumBin()) < bkgndHist->GetBinContent(bkgndHist->GetMaximumBin()) ){
+		sigHist->SetMaximum((1.1)*( bkgndHist->GetBinContent(bkgndHist->GetMaximumBin()) ) );
+	}
+	TString titleAddendum = "  black=matched signal  red=bkgnd  areas normalized to 1";
+	TString completeTitle = histTitle + titleAddendum;
+	sigHist->SetTitle(completeTitle);
+	//if isPlottingEnergy or isPlottingInverseEnergy is true, then append units to the x axis label
+	TString enrg = " (GeV)";
+	TString invEnrg = " (1/GeV)";
+	TString completeXaxisTitle;
+	if(isPlottingEnergy) completeXaxisTitle = xAxisTitle+enrg;
+	if(isPlottingInverseEnergy) completeXaxisTitle = xAxisTitle+invEnrg;
+	if(!isPlottingEnergy && !isPlottingInverseEnergy) completeXaxisTitle = xAxisTitle;
+	sigHist->GetXaxis()->SetTitle(completeXaxisTitle);
+	if(histTitle.Contains("Iso") ){
+		canv->SetLogy(1);
+		sigHist->SetMinimum(1);
+	}
+	char temp[130];
+	if(isPlottingInverseEnergy && sigHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f / GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if(isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f / GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.001){
+		sprintf(temp,"Events / %.4f / GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f ", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f ", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	sigHist->GetYaxis()->SetTitle(temp);
+	sigHist->Draw();
+	bkgndHist->Draw("same");
+	canv->SaveAs(outputFile,"recreate");
+	
+}//end makeAndSaveOverlayHistoUsingEntryLists()
+
+
+void makeAndSaveHistoUsingEntryList(TChain * chain,TString listFillArgs,TString listName,TString histPlotArgs,TString histName,TString histTitle,TString xAxisTitle,TString canvName,TCut filters,TString outputFile, Bool_t isPlottingEnergy, Bool_t isPlottingInverseEnergy){
+	//fill the TEntryList named listName, and apply the filters when the list is made
+	chain->Draw(listFillArgs,filters,"entrylistarray");
+	//tell the chain to only use entries in the object named listName when calling TTree::Draw() in the future
+	chain->SetEntryList((TEntryListArray*) gROOT->FindObject(listName) );
+	
+	//run the code in makeAndSaveSingleTreeHisto() to make comprehendible plots with useful labels and title 
+	TCanvas * canv = new TCanvas(canvName,canvName,500,500);
+	canv->cd();
+	chain->Draw(histPlotArgs);
+	TH1F * pHist = (TH1F*) gROOT->FindObject(histName);
+	pHist->SetTitle(histTitle);
+	pHist->GetXaxis()->SetTitle(xAxisTitle);
+	if(histTitle.Contains("Iso") ){
+		canv->SetLogy(1);
+		pHist->SetMinimum(1);
+	}
+	//every histo should have at least three bins.
+	//if a histo is created with numBins = 1, then bin #1 is the bin which is plotted 
+	char temp[130];
+	if(isPlottingInverseEnergy && pHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f / GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if(isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f / GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.001){
+		sprintf(temp,"Events / %.4f / GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f ", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f ", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	pHist->GetYaxis()->SetTitle(temp);
+	pHist->Draw();
+	canv->SaveAs(outputFile,"recreate");
+
+}//end makeAndSaveHistoUsingEntryList()
+
+
+//use this to make and save a histogram from a single TTree branch
+//plotArgs is used in TTree::Draw, and could be something like "etaGenEle[0]>>leadingEta(100,-3.0,3.0)"
+//histName is the name of the histogram object, and is contained in plotArgs
+//histTitle and xAxisTitle will be used with pHist
+void makeAndSaveSingleTreeHisto(TTree * tree,TString plotArgs,TString histName,TString histTitle,TString xAxisTitle,TString canvName,TCut filters,TString outputFile, Bool_t isPlottingEnergy, Bool_t isPlottingInverseEnergy){
+	TCanvas * canv = new TCanvas(canvName,canvName,500,500);
+	canv->cd();
+	tree->Draw(plotArgs,filters);
+	TH1F * pHist = (TH1F*) gROOT->FindObject(histName);
+	pHist->SetTitle(histTitle);
+	pHist->GetXaxis()->SetTitle(xAxisTitle);
+	if(histTitle.Contains("Iso") ){
+		canv->SetLogy(1);
+		pHist->SetMinimum(1);
+	}
+	//every histo should have at least three bins.
+	//if a histo is created with numBins = 1, then bin #1 is the bin which is plotted 
+	char temp[130];
+	if(isPlottingInverseEnergy && pHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f / GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if(isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f / GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.001){
+		sprintf(temp,"Events / %.4f / GeV", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f ", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && pHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f ", pHist->GetXaxis()->GetBinWidth(1));
+	}
+	pHist->GetYaxis()->SetTitle(temp);
+	pHist->Draw();
+	canv->SaveAs(outputFile,"recreate");
+
+}//end makeAndSaveSingleTreeHisto()
+
 
 ///use this fxn to grab a histogram made in a TTree->Draw() call, draw this histo
 ///with a thicker line, and save it to a .png file 
@@ -44,6 +220,7 @@ void saveSingleHisto(TString canvName,TString histName,TString histTitle,TString
 	hist->Draw();
 	canv->SaveAs(outFile,"recreate");
 }///end saveSingleHisto()
+
 
 ///use this fxn to take one tuple and dump all branches into plots with unique names
 void SaveTreePlots(TChain * chain, TString outputFileName){
@@ -136,12 +313,12 @@ void dumpTreePlots(){
 	//SaveTreePlots(ptEtaCuts, plotDir_withPtEtaCuts);
 	//SaveTreePlots(ptEtaDileptonMassCuts, plotDir_withPtEtaDileptonMassCuts);
 	
-	/*SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
+	SaveTreePlots(matchedNoCuts, plotDir_matched_noCuts);
 	SaveTreePlots(matchedPtEtaCuts, plotDir_matched_withPtEtaCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassCuts, plotDir_matched_withPtEtaDileptonMassCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrCuts, plotDir_matched_withPtEtaDileptonMassDrCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrFourObjMassCuts, plotDir_matched_withPtEtaDileptonMassDrFourObjMassCuts);
-	*/
+	
 
 
 	///chains made with deltaR matching btwn reco and gen

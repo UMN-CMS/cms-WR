@@ -1,12 +1,21 @@
 import FWCore.ParameterSet.Config as cms
 
 printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
-		maxEventsToPrint = cms.untracked.int32(1),
+		maxEventsToPrint = cms.untracked.int32(-1),
 		printVertex = cms.untracked.bool(False),
 		printOnlyHardInteraction = cms.untracked.bool(False),
-		#src = cms.InputTag("genParticles")
-		src = cms.InputTag("prunedGenParticles")
-		
+		src = cms.InputTag("genParticles")
+		#src = cms.InputTag("prunedGenParticles")
+		)
+
+hasGenNuMuOrTau = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("genParticles"),
+		cut = cms.string("abs(pdgId) > 9900012 && abs(pdgId) < 9900024")
+		)
+
+hasGenNuMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("hasGenNuMuOrTau"),
+		minNumber = cms.uint32(1)
 		)
 
 bareGenJet = cms.EDFilter("CandViewSelector",

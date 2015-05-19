@@ -11,10 +11,9 @@ void CutApplicationInfrastructure::applyCutFillOutputColls(SlimCutVar & aCutObje
 }///end applyCutFillOutputColls()
 
 void CutApplicationInfrastructure::putObjectsIntoEvent(edm::Event & anEvent){
-	/*
-	for(collectionMap::iterator collMapIt = outputCollections->begin(); collMapIt!=outputCollections->end(); collMapIt++){
-		anEvent.put(collMapIt->second,collMapIt->first);
+	for(collectionMap::iterator collMapIt = outputCollections.begin(); collMapIt!=outputCollections.end(); collMapIt++){
+		auto_ptr<edm::OwnVector<reco::Candidate> > objsPassingCut(&(collMapIt->second));
+		anEvent.put(objsPassingCut,collMapIt->first);
 	}///end loop over entries in outputCollections map
-	*/
 }///end putObjectsIntoEvent()
 

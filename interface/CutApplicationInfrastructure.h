@@ -27,8 +27,6 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 
-
-
 /**
  * the cutAndProduceOutputCollection producer needs a flexible interface to accommodate
  * a variable number of input object collections (# of output collections = # of input

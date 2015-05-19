@@ -24,7 +24,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(5)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
@@ -78,7 +78,7 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
             '9900014:m0 = 1000',
             '9900016:m0 = 1000',
             '9900024:onMode = off',
-            '9900024:onIfAny = 11,9900012,13,9900014,15,9900016'
+            '9900024:onIfAny = 11 9900012 13 9900014 15 9900016'
 			),
         pythia8CUEP8M1Settings = cms.vstring('Tune:pp 14', 
             'Tune:ee 7', 

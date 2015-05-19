@@ -199,14 +199,14 @@ testCutProducer = cms.EDProducer('cutAndProduceOutputCollection',
 		initializeCut = cms.string("88,>,SOMENAME"),
 		#use the strings in stringKeysForMaps to fill maps in CutApplicationInfrastructure objects
 		stringKeysForMaps = cms.string("leadingLepton,subleadingLepton,jets"),
-		listOfInputCollTagStrings = cms.string("bareRecoJet",),
+		listOfInputCollTagStrings = cms.string("bareRecoJet:",),
 		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
 		higherLevelCollTag = cms.InputTag("bareRecoJet"),
 		)
 
 testCutProducerFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("testCutProducer","testRecoJetOutputColl"),
-		minNumber = cms.uint32(15)
+		minNumber = cms.uint32(0)
 		)
 
 

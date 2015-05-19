@@ -183,15 +183,28 @@ bool applyDrCut;
 bool applyFourObjMassCut;
 double fourObjMassCutVal;
 double minDr;
+bool saveGenMatchedInfo;
 
-edm::InputTag genLeadingLeptonCollTag;
-edm::InputTag genSubleadingLeptonCollTag;
-edm::InputTag genQuarkCollTag;
 
+///Matching = GEN objects
 //Handles to GEN object collections
+edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > matchingLeadingLeptons;
+edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > matchingSubleadingLeptons;
+edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > matchingQuarks;
+
+///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leadingLeptons;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > subleadingLeptons;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > quarks;
+
+///tokens to input collections
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > matchingLeadingLeptonsToken;
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > matchingSubleadingLeptonsToken;
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > matchingQuarksToken;
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leadingLeptonsToken;
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > subleadingLeptonsToken;
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > quarksToken;
+
 
 TTree * tree;
 
@@ -200,32 +213,72 @@ ULong64_t evtNumber;
 
 //first element is leading (highest pT) electron
 //second element is subleading electron
-Float_t etaGenEle[2];
-Float_t ptGenEle[2];
-Float_t phiGenEle[2];
-Float_t dileptonMassGen;
+Float_t etaMatchingEle[2];
+Float_t ptMatchingEle[2];
+Float_t phiMatchingEle[2];
+Float_t dileptonMassMatching;
 
-Float_t etaGenJet[2];
-Float_t ptGenJet[2];
-Float_t phiGenJet[2];
-Float_t dijetMassGen;
+Float_t etaEle[2];
+Float_t ptEle[2];
+Float_t phiEle[2];
+Float_t dileptonMass;
+
+Float_t etaMatchingJet[2];
+Float_t ptMatchingJet[2];
+Float_t phiMatchingJet[2];
+Float_t dijetMassMatching;
+
+Float_t etaJet[2];
+Float_t ptJet[2];
+Float_t phiJet[2];
+Float_t dijetMass;
 
 ///three and four object masses
-Float_t fourObjectMassGen;
-Float_t leadLeptonThreeObjMassGen;
-Float_t subleadingLeptonThreeObjMassGen;
+Float_t fourObjectMassMatching;
+Float_t leadLeptonThreeObjMassMatching;
+Float_t subleadingLeptonThreeObjMassMatching;
+
+Float_t fourObjectMass;
+Float_t leadLeptonThreeObjMass;
+Float_t subleadingLeptonThreeObjMass;
 
 ///deltaR between each lepton and both jets
-Float_t dR_leadingLeptonLeadingJetGen;
-Float_t dR_leadingLeptonSubleadingJetGen;
-Float_t dR_subleadingLeptonLeadingJetGen;
-Float_t dR_subleadingLeptonSubleadingJetGen;
-Float_t dR_leadingLeptonSubleadingLeptonGen;
-Float_t dR_leadingJetSubleadingJetGen;
+Float_t dR_leadingLeptonLeadingJetMatching;
+Float_t dR_leadingLeptonSubleadingJetMatching;
+Float_t dR_subleadingLeptonLeadingJetMatching;
+Float_t dR_subleadingLeptonSubleadingJetMatching;
+Float_t dR_leadingLeptonSubleadingLeptonMatching;
+Float_t dR_leadingJetSubleadingJetMatching;
+
+Float_t dR_leadingLeptonLeadingJet;
+Float_t dR_leadingLeptonSubleadingJet;
+Float_t dR_subleadingLeptonLeadingJet;
+Float_t dR_subleadingLeptonSubleadingJet;
+Float_t dR_leadingLeptonSubleadingLepton;
+Float_t dR_leadingJetSubleadingJet;
+
 
 ///leadingIsHardest = 1 when leading ele pT > subleading ele pT
 ///leadingIsHardest = 0 when leading ele pT < subleading ele pT
+///leadingIsHardestMatching is for GEN electrons
+Int_t leadingIsHardestMatching;
 Int_t leadingIsHardest;
+
+///pT, eta, and phi of the heavy Nu and WR
+Float_t etaHvyNu;
+Float_t ptHvyNu;
+Float_t phiHvyNu;
+Float_t etaWr;
+Float_t ptWr;
+Float_t phiWr;
+
+Float_t etaHvyNuMatching;
+Float_t ptHvyNuMatching;
+Float_t phiHvyNuMatching;
+Float_t etaWrMatching;
+Float_t ptWrMatching;
+Float_t phiWrMatching;
+
 
 };
 
@@ -247,9 +300,7 @@ matchedAnalyzer::matchedAnalyzer(const edm::ParameterSet& iConfig):
 	applyFourObjMassCut(iConfig.getParameter<bool>("doFourObjMassCut")),
 	fourObjMassCutVal(iConfig.getParameter<double>("minFourObjMass")),
 	minDr(iConfig.getParameter<double>("minDeltaRforLeptonJetExclusion")),
-	genLeadingLeptonCollTag(iConfig.getParameter<edm::InputTag>("genLeadingLeptonCollection")),
-	genSubleadingLeptonCollTag(iConfig.getParameter<edm::InputTag>("genSubleadingLeptonCollection")),
-	genQuarkCollTag(iConfig.getParameter<edm::InputTag>("genQuarkCollection"))
+	saveGenMatchedInfo(iConfig.getParameter<bool>("saveGenMatched"))
 
 {
    //now do what ever initialization is needed
@@ -257,31 +308,81 @@ matchedAnalyzer::matchedAnalyzer(const edm::ParameterSet& iConfig):
    
    tree=fs->make<TTree>(tName.c_str(),"event kinematic info");
 
-   tree->Branch("etaGenEle",etaGenEle,"etaGenEle[2]/F");
-   tree->Branch("ptGenEle",ptGenEle,"ptGenEle[2]/F");
-   tree->Branch("phiGenEle",phiGenEle,"phiGenEle[2]/F");
-   tree->Branch("dileptonMassGen",&dileptonMassGen,"dileptonMassGen/F");
+   tree->Branch("etaMatchingEle",etaMatchingEle,"etaMatchingEle[2]/F");
+   tree->Branch("ptMatchingEle",ptMatchingEle,"ptMatchingEle[2]/F");
+   tree->Branch("phiMatchingEle",phiMatchingEle,"phiMatchingEle[2]/F");
+   tree->Branch("dileptonMassMatching",&dileptonMassMatching,"dileptonMassMatching/F");
+   
+   tree->Branch("leadingIsHardestMatching",&leadingIsHardestMatching,"leadingIsHardestMatching/I");
+
+   tree->Branch("etaEle",etaEle,"etaEle[2]/F");
+   tree->Branch("ptEle",ptEle,"ptEle[2]/F");
+   tree->Branch("phiEle",phiEle,"phiEle[2]/F");
+   tree->Branch("dileptonMass",&dileptonMass,"dileptonMass/F");
    
    tree->Branch("leadingIsHardest",&leadingIsHardest,"leadingIsHardest/I");
 
    tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
 
-   tree->Branch("etaGenJet",etaGenJet,"etaGenJet[2]/F");
-   tree->Branch("ptGenJet",ptGenJet,"ptGenJet[2]/F");
-   tree->Branch("phiGenJet",phiGenJet,"phiGenJet[2]/F");
-   tree->Branch("dijetMassGen",&dijetMassGen,"dijetMassGen/F");
+   tree->Branch("etaMatchingJet",etaMatchingJet,"etaMatchingJet[2]/F");
+   tree->Branch("ptMatchingJet",ptMatchingJet,"ptMatchingJet[2]/F");
+   tree->Branch("phiMatchingJet",phiMatchingJet,"phiMatchingJet[2]/F");
+   tree->Branch("dijetMassMatching",&dijetMassMatching,"dijetMassMatching/F");
 
-   tree->Branch("fourObjectMassGen",&fourObjectMassGen,"fourObjectMassGen/F");
-   tree->Branch("leadLeptonThreeObjMassGen",&leadLeptonThreeObjMassGen,"leadLeptonThreeObjMassGen/F");
-   tree->Branch("subleadingLeptonThreeObjMassGen",&subleadingLeptonThreeObjMassGen,"subleadingLeptonThreeObjMassGen/F");
+   tree->Branch("fourObjectMassMatching",&fourObjectMassMatching,"fourObjectMassMatching/F");
+   tree->Branch("leadLeptonThreeObjMassMatching",&leadLeptonThreeObjMassMatching,"leadLeptonThreeObjMassMatching/F");
+   tree->Branch("subleadingLeptonThreeObjMassMatching",&subleadingLeptonThreeObjMassMatching,"subleadingLeptonThreeObjMassMatching/F");
+ 
+   tree->Branch("etaJet",etaJet,"etaJet[2]/F");
+   tree->Branch("ptJet",ptJet,"ptJet[2]/F");
+   tree->Branch("phiJet",phiJet,"phiJet[2]/F");
+   tree->Branch("dijetMass",&dijetMass,"dijetMass/F");
 
-   tree->Branch("dR_leadingLeptonLeadingJetGen",&dR_leadingLeptonLeadingJetGen,"dR_leadingLeptonLeadingJetGen/F");
-   tree->Branch("dR_leadingLeptonSubleadingJetGen",&dR_leadingLeptonSubleadingJetGen,"dR_leadingLeptonSubleadingJetGen/F");
-   tree->Branch("dR_subleadingLeptonLeadingJetGen",&dR_subleadingLeptonLeadingJetGen,"dR_subleadingLeptonLeadingJetGen/F");
-   tree->Branch("dR_subleadingLeptonSubleadingJetGen",&dR_subleadingLeptonSubleadingJetGen,"dR_subleadingLeptonSubleadingJetGen/F");
-   tree->Branch("dR_leadingLeptonSubleadingLeptonGen",&dR_leadingLeptonSubleadingLeptonGen,"dR_leadingLeptonSubleadingLeptonGen/F");
-   tree->Branch("dR_leadingJetSubleadingJetGen",&dR_leadingJetSubleadingJetGen,"dR_leadingJetSubleadingJetGen/F");
+   tree->Branch("fourObjectMass",&fourObjectMass,"fourObjectMass/F");
+   tree->Branch("leadLeptonThreeObjMass",&leadLeptonThreeObjMass,"leadLeptonThreeObjMass/F");
+   tree->Branch("subleadingLeptonThreeObjMass",&subleadingLeptonThreeObjMass,"subleadingLeptonThreeObjMass/F");
+   
+   tree->Branch("etaHvyNu",&etaHvyNu,"etaHvyNu/F");
+   tree->Branch("ptHvyNu",&ptHvyNu,"ptHvyNu/F");
+   tree->Branch("phiHvyNu",&phiHvyNu,"phiHvyNu/F");
+
+   tree->Branch("etaWr",&etaWr,"etaWr/F");
+   tree->Branch("ptWr",&ptWr,"ptWr/F");
+   tree->Branch("phiWr",&phiWr,"phiWr/F");
+   
+   tree->Branch("etaHvyNuMatching",&etaHvyNuMatching,"etaHvyNuMatching/F");
+   tree->Branch("ptHvyNuMatching",&ptHvyNuMatching,"ptHvyNuMatching/F");
+   tree->Branch("phiHvyNuMatching",&phiHvyNuMatching,"phiHvyNuMatching/F");
+
+   tree->Branch("etaWrMatching",&etaWrMatching,"etaWrMatching/F");
+   tree->Branch("ptWrMatching",&ptWrMatching,"ptWrMatching/F");
+   tree->Branch("phiWrMatching",&phiWrMatching,"phiWrMatching/F");
+
+   tree->Branch("dR_leadingLeptonLeadingJetMatching",&dR_leadingLeptonLeadingJetMatching,"dR_leadingLeptonLeadingJetMatching/F");
+   tree->Branch("dR_leadingLeptonSubleadingJetMatching",&dR_leadingLeptonSubleadingJetMatching,"dR_leadingLeptonSubleadingJetMatching/F");
+   tree->Branch("dR_subleadingLeptonLeadingJetMatching",&dR_subleadingLeptonLeadingJetMatching,"dR_subleadingLeptonLeadingJetMatching/F");
+   tree->Branch("dR_subleadingLeptonSubleadingJetMatching",&dR_subleadingLeptonSubleadingJetMatching,"dR_subleadingLeptonSubleadingJetMatching/F");
+   tree->Branch("dR_leadingLeptonSubleadingLeptonMatching",&dR_leadingLeptonSubleadingLeptonMatching,"dR_leadingLeptonSubleadingLeptonMatching/F");
+   tree->Branch("dR_leadingJetSubleadingJetMatching",&dR_leadingJetSubleadingJetMatching,"dR_leadingJetSubleadingJetMatching/F");
+ 
+   tree->Branch("dR_leadingLeptonLeadingJet",&dR_leadingLeptonLeadingJet,"dR_leadingLeptonLeadingJet/F");
+   tree->Branch("dR_leadingLeptonSubleadingJet",&dR_leadingLeptonSubleadingJet,"dR_leadingLeptonSubleadingJet/F");
+   tree->Branch("dR_subleadingLeptonLeadingJet",&dR_subleadingLeptonLeadingJet,"dR_subleadingLeptonLeadingJet/F");
+   tree->Branch("dR_subleadingLeptonSubleadingJet",&dR_subleadingLeptonSubleadingJet,"dR_subleadingLeptonSubleadingJet/F");
+   tree->Branch("dR_leadingLeptonSubleadingLepton",&dR_leadingLeptonSubleadingLepton,"dR_leadingLeptonSubleadingLepton/F");
+   tree->Branch("dR_leadingJetSubleadingJet",&dR_leadingJetSubleadingJet,"dR_leadingJetSubleadingJet/F");
+
+   if(saveGenMatchedInfo){
+	   ///setup the tokens to the matching (GEN) collections IF matching object info (pT, eta, etc) should be saved
+	   matchingLeadingLeptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("matchingLeadingLeptonCollection")); 
+	   matchingSubleadingLeptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("matchingSubleadingLeptonCollection"));
+	   matchingQuarksToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("matchingQuarkCollection")); 
+   }///end if(saveGenMatchedInfo)
+   
+   leadingLeptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leadingLeptonCollection")); 
+   subleadingLeptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("subleadingLeptonCollection"));
+   quarksToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("quarkCollection")); 
  
 }
 
@@ -312,13 +413,86 @@ matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	evtNumber = iEvent.id().event();
 	runNumber = iEvent.id().run();
 
-	iEvent.getByLabel(genLeadingLeptonCollTag, leadingLeptons);
-	iEvent.getByLabel(genSubleadingLeptonCollTag, subleadingLeptons);
-	iEvent.getByLabel(genQuarkCollTag, quarks);
+	iEvent.getByToken(leadingLeptonsToken, leadingLeptons);
+	iEvent.getByToken(subleadingLeptonsToken, subleadingLeptons);
+	iEvent.getByToken(quarksToken, quarks);
+
+	if(saveGenMatchedInfo){
+		iEvent.getByToken(matchingLeadingLeptonsToken, matchingLeadingLeptons);
+		iEvent.getByToken(matchingSubleadingLeptonsToken, matchingSubleadingLeptons);
+		iEvent.getByToken(matchingQuarksToken, matchingQuarks);
+
+		edm::OwnVector<reco::Candidate>::const_iterator matchingLeadingLepton = matchingLeadingLeptons->end(), matchingSubleadingLepton = matchingSubleadingLeptons->end();
+		edm::OwnVector<reco::Candidate>::const_iterator matchingLeadingJet = matchingQuarks->end(), matchingSubleadingJet = matchingQuarks->end();
+
+		findHighestPt(matchingLeadingLepton, matchingLeadingLeptons);
+		findHighestPt(matchingSubleadingLepton, matchingSubleadingLeptons);
+		findLeadingAndSubleading(matchingLeadingJet, matchingSubleadingJet, matchingQuarks);
+
+		etaMatchingEle[0] = matchingLeadingLepton->eta();
+		ptMatchingEle[0] = matchingLeadingLepton->pt();
+		phiMatchingEle[0] = matchingLeadingLepton->phi();
+		etaMatchingEle[1] = matchingSubleadingLepton->eta();
+		ptMatchingEle[1] = matchingSubleadingLepton->pt();
+		phiMatchingEle[1] = matchingSubleadingLepton->phi();
+		if(ptMatchingEle[0] > ptMatchingEle[1]){
+			leadingIsHardestMatching = 1;
+		}
+		else leadingIsHardestMatching = 0;
+
+
+#ifdef DEBUG
+		std::cout<<"matching leading jet pt: \t"<< matchingLeadingJet->pt()<<std::endl;
+		std::cout<<"matchingSubleading jet pt: \t"<<matchingSubleadingJet->pt()<<std::endl;
+#endif
+
+		etaMatchingJet[0] = matchingLeadingJet->eta();
+		ptMatchingJet[0] = matchingLeadingJet->pt();
+		phiMatchingJet[0] = matchingLeadingJet->phi();
+		etaMatchingJet[1] = matchingSubleadingJet->eta();
+		ptMatchingJet[1] = matchingSubleadingJet->pt();
+		phiMatchingJet[1] = matchingSubleadingJet->phi();
+
+		///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
+		///invariant mass values.
+		TLorentzVector l1(ptMatchingEle[0]*TMath::Cos(phiMatchingEle[0]),ptMatchingEle[0]*TMath::Sin(phiMatchingEle[0]),ptMatchingEle[0]*TMath::SinH(etaMatchingEle[0]),ptMatchingEle[0]*TMath::CosH(etaMatchingEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
+		TLorentzVector l2(ptMatchingEle[1]*TMath::Cos(phiMatchingEle[1]),ptMatchingEle[1]*TMath::Sin(phiMatchingEle[1]),ptMatchingEle[1]*TMath::SinH(etaMatchingEle[1]),ptMatchingEle[1]*TMath::CosH(etaMatchingEle[1]));
+		TLorentzVector j1(ptMatchingJet[0]*TMath::Cos(phiMatchingJet[0]),ptMatchingJet[0]*TMath::Sin(phiMatchingJet[0]),ptMatchingJet[0]*TMath::SinH(etaMatchingJet[0]),ptMatchingJet[0]*TMath::CosH(etaMatchingJet[0]));	///leading jet lorentz vector (px, py, pz, E)
+		TLorentzVector j2(ptMatchingJet[1]*TMath::Cos(phiMatchingJet[1]),ptMatchingJet[1]*TMath::Sin(phiMatchingJet[1]),ptMatchingJet[1]*TMath::SinH(etaMatchingJet[1]),ptMatchingJet[1]*TMath::CosH(etaMatchingJet[1]));
+
+		fourObjectMassMatching = (l1+l2+j1+j2).M();
+		if(applyFourObjMassCut && (fourObjectMassMatching < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
+
+		dileptonMassMatching = (l1+l2).M();
+		dijetMassMatching = (j1+j2).M();
+		leadLeptonThreeObjMassMatching = (l1+j1+j2).M();
+		subleadingLeptonThreeObjMassMatching = (l2+j1+j2).M();
+
+		etaHvyNuMatching = (l2+j1+j2).Eta();
+		ptHvyNuMatching = (l2+j1+j2).Pt();
+		phiHvyNuMatching = (l2+j1+j2).Phi();
+		etaWrMatching = (l1+l2+j1+j2).Eta();
+		ptWrMatching = (l1+l2+j1+j2).Pt();
+		phiWrMatching = (l1+l2+j1+j2).Phi();
+
+#ifdef DEBUG
+		std::cout<<"matching dilepton mass = \t"<< dileptonMassMatching << std::endl;
+		std::cout<<"matching dijet mass = \t"<< dijetMassMatching << std::endl;
+		std::cout<<"\t"<<std::endl;
+#endif
+
+		///now use the individual GEN object eta and phi values to calculate dR between different (lepton, jet) pairs
+		dR_leadingLeptonLeadingJetMatching = deltaR(etaMatchingEle[0],phiMatchingEle[0],etaMatchingJet[0],phiMatchingJet[0]);
+		dR_leadingLeptonSubleadingJetMatching = deltaR(etaMatchingEle[0],phiMatchingEle[0],etaMatchingJet[1],phiMatchingJet[1]);
+		dR_subleadingLeptonLeadingJetMatching = deltaR(etaMatchingEle[1],phiMatchingEle[1],etaMatchingJet[0],phiMatchingJet[0]);
+		dR_subleadingLeptonSubleadingJetMatching = deltaR(etaMatchingEle[1],phiMatchingEle[1],etaMatchingJet[1],phiMatchingJet[1]);
+		dR_leadingLeptonSubleadingLeptonMatching = deltaR(etaMatchingEle[0],phiMatchingEle[0],etaMatchingEle[1],phiMatchingEle[1]);
+		dR_leadingJetSubleadingJetMatching = deltaR(etaMatchingJet[0],phiMatchingJet[0],etaMatchingJet[1],phiMatchingJet[1]);
+
+	}///end if(saveGenMatchedInfo)
 
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton = leadingLeptons->end(), subleadingLepton = subleadingLeptons->end();
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = quarks->end(), subleadingJet = quarks->end();
-	   
 
 	findHighestPt(leadingLepton, leadingLeptons);
 	findHighestPt(subleadingLepton, subleadingLeptons);
@@ -338,13 +512,13 @@ matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	std::cout<<"subleading lepton pt: \t"<<subleadingLepton->pt()<<std::endl;
 #endif
 
-	etaGenEle[0] = leadingLepton->eta();
-	ptGenEle[0] = leadingLepton->pt();
-	phiGenEle[0] = leadingLepton->phi();
-	etaGenEle[1] = subleadingLepton->eta();
-	ptGenEle[1] = subleadingLepton->pt();
-	phiGenEle[1] = subleadingLepton->phi();
-	if(ptGenEle[0] > ptGenEle[1]){
+	etaEle[0] = leadingLepton->eta();
+	ptEle[0] = leadingLepton->pt();
+	phiEle[0] = leadingLepton->phi();
+	etaEle[1] = subleadingLepton->eta();
+	ptEle[1] = subleadingLepton->pt();
+	phiEle[1] = subleadingLepton->phi();
+	if(ptEle[0] > ptEle[1]){
 		leadingIsHardest = 1;
 	}
 	else leadingIsHardest = 0;
@@ -355,41 +529,48 @@ matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	std::cout<<"subleading jet pt: \t"<<subleadingJet->pt()<<std::endl;
 #endif
 
-	etaGenJet[0] = leadingJet->eta();
-	ptGenJet[0] = leadingJet->pt();
-	phiGenJet[0] = leadingJet->phi();
-	etaGenJet[1] = subleadingJet->eta();
-	ptGenJet[1] = subleadingJet->pt();
-	phiGenJet[1] = subleadingJet->phi();
+	etaJet[0] = leadingJet->eta();
+	ptJet[0] = leadingJet->pt();
+	phiJet[0] = leadingJet->phi();
+	etaJet[1] = subleadingJet->eta();
+	ptJet[1] = subleadingJet->pt();
+	phiJet[1] = subleadingJet->phi();
 
 	///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
 	///invariant mass values.
-	TLorentzVector l1(ptGenEle[0]*TMath::Cos(phiGenEle[0]),ptGenEle[0]*TMath::Sin(phiGenEle[0]),ptGenEle[0]*TMath::SinH(etaGenEle[0]),ptGenEle[0]*TMath::CosH(etaGenEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
-	TLorentzVector l2(ptGenEle[1]*TMath::Cos(phiGenEle[1]),ptGenEle[1]*TMath::Sin(phiGenEle[1]),ptGenEle[1]*TMath::SinH(etaGenEle[1]),ptGenEle[1]*TMath::CosH(etaGenEle[1]));
-	TLorentzVector j1(ptGenJet[0]*TMath::Cos(phiGenJet[0]),ptGenJet[0]*TMath::Sin(phiGenJet[0]),ptGenJet[0]*TMath::SinH(etaGenJet[0]),ptGenJet[0]*TMath::CosH(etaGenJet[0]));	///leading jet lorentz vector (px, py, pz, E)
-	TLorentzVector j2(ptGenJet[1]*TMath::Cos(phiGenJet[1]),ptGenJet[1]*TMath::Sin(phiGenJet[1]),ptGenJet[1]*TMath::SinH(etaGenJet[1]),ptGenJet[1]*TMath::CosH(etaGenJet[1]));
+	TLorentzVector l1(ptEle[0]*TMath::Cos(phiEle[0]),ptEle[0]*TMath::Sin(phiEle[0]),ptEle[0]*TMath::SinH(etaEle[0]),ptEle[0]*TMath::CosH(etaEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
+	TLorentzVector l2(ptEle[1]*TMath::Cos(phiEle[1]),ptEle[1]*TMath::Sin(phiEle[1]),ptEle[1]*TMath::SinH(etaEle[1]),ptEle[1]*TMath::CosH(etaEle[1]));
+	TLorentzVector j1(ptJet[0]*TMath::Cos(phiJet[0]),ptJet[0]*TMath::Sin(phiJet[0]),ptJet[0]*TMath::SinH(etaJet[0]),ptJet[0]*TMath::CosH(etaJet[0]));	///leading jet lorentz vector (px, py, pz, E)
+	TLorentzVector j2(ptJet[1]*TMath::Cos(phiJet[1]),ptJet[1]*TMath::Sin(phiJet[1]),ptJet[1]*TMath::SinH(etaJet[1]),ptJet[1]*TMath::CosH(etaJet[1]));
 
-	fourObjectMassGen = (l1+l2+j1+j2).M();
-	if(applyFourObjMassCut && (fourObjectMassGen < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
+	fourObjectMass = (l1+l2+j1+j2).M();
+	if(applyFourObjMassCut && (fourObjectMass < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
 	
-	dileptonMassGen = (l1+l2).M();
-	dijetMassGen = (j1+j2).M();
-	leadLeptonThreeObjMassGen = (l1+j1+j2).M();
-	subleadingLeptonThreeObjMassGen = (l2+j1+j2).M();
+	dileptonMass = (l1+l2).M();
+	dijetMass = (j1+j2).M();
+	leadLeptonThreeObjMass = (l1+j1+j2).M();
+	subleadingLeptonThreeObjMass = (l2+j1+j2).M();
+
+	etaHvyNu = (l2+j1+j2).Eta();
+	ptHvyNu = (l2+j1+j2).Pt();
+	phiHvyNu = (l2+j1+j2).Phi();
+	etaWr = (l1+l2+j1+j2).Eta();
+	ptWr = (l1+l2+j1+j2).Pt();
+	phiWr = (l1+l2+j1+j2).Phi();
 
 #ifdef DEBUG
-	std::cout<<"dilepton mass = \t"<< dileptonMassGen << std::endl;
-	std::cout<<"dijet mass = \t"<< dijetMassGen << std::endl;
+	std::cout<<"dilepton mass = \t"<< dileptonMass << std::endl;
+	std::cout<<"dijet mass = \t"<< dijetMass << std::endl;
 	std::cout<<"\t"<<std::endl;
 #endif
 
 	///now use the individual GEN object eta and phi values to calculate dR between different (lepton, jet) pairs
-	dR_leadingLeptonLeadingJetGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenJet[0],phiGenJet[0]);
-	dR_leadingLeptonSubleadingJetGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenJet[1],phiGenJet[1]);
-	dR_subleadingLeptonLeadingJetGen = deltaR(etaGenEle[1],phiGenEle[1],etaGenJet[0],phiGenJet[0]);
-	dR_subleadingLeptonSubleadingJetGen = deltaR(etaGenEle[1],phiGenEle[1],etaGenJet[1],phiGenJet[1]);
-	dR_leadingLeptonSubleadingLeptonGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenEle[1],phiGenEle[1]);
-	dR_leadingJetSubleadingJetGen = deltaR(etaGenJet[0],phiGenJet[0],etaGenJet[1],phiGenJet[1]);
+	dR_leadingLeptonLeadingJet = deltaR(etaEle[0],phiEle[0],etaJet[0],phiJet[0]);
+	dR_leadingLeptonSubleadingJet = deltaR(etaEle[0],phiEle[0],etaJet[1],phiJet[1]);
+	dR_subleadingLeptonLeadingJet = deltaR(etaEle[1],phiEle[1],etaJet[0],phiJet[0]);
+	dR_subleadingLeptonSubleadingJet = deltaR(etaEle[1],phiEle[1],etaJet[1],phiJet[1]);
+	dR_leadingLeptonSubleadingLepton = deltaR(etaEle[0],phiEle[0],etaEle[1],phiEle[1]);
+	dR_leadingJetSubleadingJet = deltaR(etaJet[0],phiJet[0],etaJet[1],phiJet[1]);
 	
 	tree->Fill();
 

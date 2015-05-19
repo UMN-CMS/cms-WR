@@ -14,9 +14,13 @@ process.matchedRecoAnalyzerOne = cms.EDAnalyzer('matchedAnalyzer',
 		doFourObjMassCut = cms.bool(False),
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(-1),
-		genLeadingLeptonCollection = cms.InputTag("matchRecoEleToLeadingGenEleNoCuts","matchedLeadingRecoEleNoCuts"),
-		genSubleadingLeptonCollection = cms.InputTag("matchRecoEleToSubleadingGenEleNoCuts","matchedSubleadingRecoEleNoCuts"),
-		genQuarkCollection = cms.InputTag("matchRecoJetsToGenJetsNoCuts","matchedRecoJetsNoCuts")
+		saveGenMatched = cms.bool(True),
+		leadingLeptonCollection = cms.InputTag("matchRecoEleToLeadingGenEleNoCuts","matchedLeadingRecoEleNoCuts"),
+		subleadingLeptonCollection = cms.InputTag("matchRecoEleToSubleadingGenEleNoCuts","matchedSubleadingRecoEleNoCuts"),
+		quarkCollection = cms.InputTag("matchRecoJetsToGenJetsNoCuts","matchedRecoJetsNoCuts"),
+		matchingLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle"),
+		matchingSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle"),
+		matchingQuarkCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
 		)
 
 process.matchedRecoAnalyzerTwo = cms.EDAnalyzer('matchedAnalyzer',
@@ -25,9 +29,13 @@ process.matchedRecoAnalyzerTwo = cms.EDAnalyzer('matchedAnalyzer',
 		doFourObjMassCut = cms.bool(False),
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(-1),
-		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
-		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
-		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		saveGenMatched = cms.bool(True),
+		leadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		subleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		quarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets"),
+		matchingLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle"),
+		matchingSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle"),
+		matchingQuarkCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
 		)
 
 process.matchedRecoAnalyzerThree = cms.EDAnalyzer('matchedAnalyzer',
@@ -36,11 +44,14 @@ process.matchedRecoAnalyzerThree = cms.EDAnalyzer('matchedAnalyzer',
 		doFourObjMassCut = cms.bool(False),
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(-1),
-		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
-		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
-		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		saveGenMatched = cms.bool(True),
+		leadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		subleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		quarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets"),
+		matchingLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle"),
+		matchingSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle"),
+		matchingQuarkCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
 		)
-
 
 process.matchedRecoAnalyzerFour = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedRecoObjectsWithPtEtaDileptonMassAndDrCuts"),
@@ -48,9 +59,13 @@ process.matchedRecoAnalyzerFour = cms.EDAnalyzer('matchedAnalyzer',
 		doFourObjMassCut = cms.bool(False),
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(0.4),
-		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
-		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
-		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		saveGenMatched = cms.bool(True),
+		leadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		subleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		quarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets"),
+		matchingLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle"),
+		matchingSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle"),
+		matchingQuarkCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
 		)
 
 
@@ -60,11 +75,14 @@ process.matchedRecoAnalyzerFive = cms.EDAnalyzer('matchedAnalyzer',
 		doFourObjMassCut = cms.bool(True),
 		minFourObjMass = cms.double(600),
 		minDeltaRforLeptonJetExclusion = cms.double(0.4),
-		genLeadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
-		genSubleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
-		genQuarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets")
+		saveGenMatched = cms.bool(True),
+		leadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedLeadingRecoEle"),
+		subleadingLeptonCollection = cms.InputTag("ptEtaRestrictedMatchedSubleadingRecoEle"),
+		quarkCollection = cms.InputTag("ptEtaRestrictedMatchedRecoJets"),
+		matchingLeadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle"),
+		matchingSubleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle"),
+		matchingQuarkCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
 		)
-
 
 
 process.matchedRecoPath = cms.Path(
@@ -118,6 +136,7 @@ process.onlyMatchSubleadingElePath = cms.Path(
 		
 		)
 
+process.schedule = cms.Schedule(process.matchedRecoPath)
 
 
 process.TFileService = cms.Service("TFileService",
