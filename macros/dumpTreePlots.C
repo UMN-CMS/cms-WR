@@ -58,9 +58,7 @@ void makeAndSaveOverlayHistoUsingEntryLists(TChain * sigChain,TChain * bkgndChai
 	if(sigHist->GetBinContent(sigHist->GetMaximumBin()) < bkgndHist->GetBinContent(bkgndHist->GetMaximumBin()) ){
 		sigHist->SetMaximum((1.1)*( bkgndHist->GetBinContent(bkgndHist->GetMaximumBin()) ) );
 	}
-	TString titleAddendum = "  black=matched signal  red=bkgnd  areas normalized to 1";
-	TString completeTitle = histTitle + titleAddendum;
-	sigHist->SetTitle(completeTitle);
+	sigHist->SetTitle(histTitle);
 	//if isPlottingEnergy or isPlottingInverseEnergy is true, then append units to the x axis label
 	TString enrg = " (GeV)";
 	TString invEnrg = " (1/GeV)";
@@ -101,6 +99,70 @@ void makeAndSaveOverlayHistoUsingEntryLists(TChain * sigChain,TChain * bkgndChai
 	canv->SaveAs(outputFile,"recreate");
 	
 }//end makeAndSaveOverlayHistoUsingEntryLists()
+
+
+///make an overlay plot without using entrylistarray cuts
+void makeAndSaveOverlayHisto(TChain * sigChain,TChain * bkgndChain,TString sigHistPlotArg,TString bkgndHistPlotArg,TString sigHistName,TString bkgndHistName,TString histTitle,TString xAxisTitle,TString canvName,TCut sigFilt,TCut bkgndFilt,TString outputFile,Bool_t isPlottingEnergy,Bool_t isPlottingInverseEnergy,Bool_t normalizeHistos){
+	TCanvas * canv = new TCanvas(canvName,canvName,700,700);
+	canv->cd();
+	sigChain->Draw(sigHistPlotArg);
+	TH1F * sigHist = (TH1F*) gROOT->FindObject(sigHistName);
+	bkgndChain->Draw(bkgndHistPlotArg);
+	TH1F * bkgndHist = (TH1F*) gROOT->FindObject(bkgndHistName);
+
+	if(normalizeHistos){
+		Double_t sigIntegral = sigHist->Integral();
+		sigHist->Scale(1/sigIntegral);
+		Double_t bkgndIntegral = bkgndHist->Integral();
+		bkgndHist->Scale(1/bkgndIntegral);
+	}
+	
+	sigHist->SetLineColor(1);	//black
+	bkgndHist->SetLineColor(2);	//red
+
+	//sigHist will be drawn first, bkgndHist overlaid on top.  If the largest bin in bkgndHist > the largest bin in sigHist,
+	//then increase the y axis max on sigHist to accommodate the peak in bkgndHist
+	if(sigHist->GetBinContent(sigHist->GetMaximumBin()) < bkgndHist->GetBinContent(bkgndHist->GetMaximumBin()) ){
+		sigHist->SetMaximum((1.1)*( bkgndHist->GetBinContent(bkgndHist->GetMaximumBin()) ) );
+	}
+	sigHist->SetTitle(histTitle);
+	//if isPlottingEnergy or isPlottingInverseEnergy is true, then append units to the x axis label
+	TString enrg = " (GeV)";
+	TString invEnrg = " (1/GeV)";
+	TString completeXaxisTitle;
+	if(isPlottingEnergy) completeXaxisTitle = xAxisTitle+enrg;
+	if(isPlottingInverseEnergy) completeXaxisTitle = xAxisTitle+invEnrg;
+	if(!isPlottingEnergy && !isPlottingInverseEnergy) completeXaxisTitle = xAxisTitle;
+	sigHist->GetXaxis()->SetTitle(completeXaxisTitle);
+	char temp[130];
+	if(isPlottingInverseEnergy && sigHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f / GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if(isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f / GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( isPlottingInverseEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.001){
+		sprintf(temp,"Events / %.4f / GeV", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) <= 0.01){
+		sprintf(temp,"Events / %.3f ", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	if( !isPlottingInverseEnergy && !isPlottingEnergy && sigHist->GetXaxis()->GetBinWidth(1) > 0.01){
+		sprintf(temp,"Events / %.2f ", sigHist->GetXaxis()->GetBinWidth(1));
+	}
+	sigHist->GetYaxis()->SetTitle(temp);
+	sigHist->Draw();
+	bkgndHist->Draw("same");
+	canv->SaveAs(outputFile,"recreate");
+	
+}//end makeAndSaveOverlayHisto()
+
 
 
 void makeAndSaveHistoUsingEntryList(TChain * chain,TString listFillArgs,TString listName,TString histPlotArgs,TString histName,TString histTitle,TString xAxisTitle,TString canvName,TCut filters,TString outputFile, Bool_t isPlottingEnergy, Bool_t isPlottingInverseEnergy){

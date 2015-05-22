@@ -28,7 +28,7 @@ using namespace std;
  * histo title, and one TString efficiency histo name
  *
  */
-void calcAndPlotEff(Double_t nBins,Int_t nBinsInt, Int_t minNumCands, TString uncutHistPlotArgs, TString cutHistPlotArgs, TString uncutHistName, TString cutHistName, TString canvName, TString outputFile, TChain * chain, TString effHistName, TString effHistTitle){
+void calcAndPlotEff(Double_t nBins,Int_t nBinsInt, TString cutString, TString uncutHistPlotArgs, TString cutHistPlotArgs, TString uncutHistName, TString cutHistName, TString canvName, TString outputFile, TChain * chain, TString effHistName, TString effHistTitle){
 	Float_t binLowEdges[nBinsInt+1];
 	Double_t binContents[nBinsInt];
 	for(Long64_t i=0; i<(nBinsInt+1); i++){
@@ -38,24 +38,22 @@ void calcAndPlotEff(Double_t nBins,Int_t nBinsInt, Int_t minNumCands, TString un
 	TCanvas * c999 = new TCanvas("t1","t1",500,500);
 	c999->cd();
 	///find the number of lower level objects which could be matched to a higher level object
-	Double_t numPossibleMatches = (Double_t) (chain->Draw(uncutHistPlotArgs,"ptLowerLevel>-1"));
+	Double_t numPossibleMatches = (Double_t) (chain->Draw(uncutHistPlotArgs,""));
 #ifdef DEBUG
 	cout<<"numPossibleMatches = \t"<< numPossibleMatches << endl;
 #endif
 	c999->Update();
 
 	TH1F * hist = (TH1F*) gROOT->FindObject(uncutHistName);
-	TString nMatchCut = "nWithMatch>";
-	nMatchCut += minNumCands;
 #ifdef DEBUG
-	cout<<"nMatchCut = \t"<< nMatchCut << endl;
+	cout<<"cutString = \t"<< cutString << endl;
 #endif
 
 	TCanvas * c9999 = new TCanvas("t2","t2",500,500);
 	c9999->cd();
-	Double_t check = (Double_t) (chain->Draw(cutHistPlotArgs,nMatchCut));
+	Double_t check = (Double_t) (chain->Draw(cutHistPlotArgs,cutString));
 #ifdef DEBUG
-	cout<<"this many evts passed nMatchCut: \t" << check <<endl;
+	cout<<"this many evts passed the cut: \t" << check <<endl;
 #endif
 	c9999->Update();
 
@@ -154,27 +152,27 @@ void genMatchingEfficiency(){
 	TChain * matchedRecoEleToSubleadingGenEleNoCuts = new TChain("matchRecoEleToSubleadingGenEleNoCutsNewPath/matchedSubleadingRecoEleNoCutsTree","");
 	matchedRecoEleToSubleadingGenEleNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel.root");
 
-	//calcAndPlotEff(Double_t nBins, Int_t nBinsInt, Int_t minNumCands, TString uncutHistPlotArgs, TString cutHistPlotArgs, TString uncutHistName, TString cutHistName, TString canvName, TString outputFile, TChain * chain, TString effHistName, TString effHistTitle)
+	//calcAndPlotEff(Double_t nBins, Int_t nBinsInt, TString cutString, TString uncutHistPlotArgs, TString cutHistPlotArgs, TString uncutHistName, TString cutHistName, TString canvName, TString outputFile, TChain * chain, TString effHistName, TString effHistTitle)
 	
 	///matching efficiency vs gen pT
 	/*
-	calcAndPlotEff(9,9,0,"ptLowerLevel>>ptHistoOne(400,0.,1300.)","ptLowerLevel>>selectedPtHistoOne(400,0.,1300.)","ptHistoOne","selectedPtHistoOne","a1","subleadingRecoToGenEleMatchingEff_vs_pt.png",matchedRecoEleToSubleadingGenEleNoCuts,"matchEffSubleadingEleVsPt","reco to gen subleading electron matching efficiency vs gen pT");
-	calcAndPlotEff(9,9,0,"ptLowerLevel>>ptHistoTwo(400,0.,1300.)","ptLowerLevel>>selectedPtHistoTwo(400,0.,1300.)","ptHistoTwo","selectedPtHistoTwo","a2","leadingRecoToGenEleMatchingEff_vs_pt.png",matchedRecoEleToLeadingGenEleNoCuts,"matchEffLeadingEleVsPt","reco to gen leading electron matching efficiency vs gen pT");
-	calcAndPlotEff(9,9,1,"ptLowerLevel>>ptHistoThree(400,0.,1300.)","ptLowerLevel>>selectedPtHistoThree(400,0.,1300.)","ptHistoThree","selectedPtHistoThree","a3","recoJetsToGenJetsMatchingEff_vs_pt.png",matchedRecoJetsToGenJetsNoCuts,"matchEffRecoJetsVsPt","reco to gen jet matching efficiency vs gen pT");
-	calcAndPlotEff(9,9,1,"ptLowerLevel>>ptHistoFour(400,0.,1300.)","ptLowerLevel>>selectedPtHistoFour(400,0.,1300.)","ptHistoFour","selectedPtHistoFour","a4","genJetsToGenQuarksMatchingEff_vs_pt.png",matchedGenJetsToGenQuarksNoCuts,"matchEffGenJetsVsPt","gen jet to quark matching efficiency vs gen quark pT");
+	calcAndPlotEff(9,9,"nWithMatch>0","ptLowerLevel>>ptHistoOne(400,0.,1300.)","ptLowerLevel>>selectedPtHistoOne(400,0.,1300.)","ptHistoOne","selectedPtHistoOne","a1","subleadingRecoToGenEleMatchingEff_vs_pt.png",matchedRecoEleToSubleadingGenEleNoCuts,"matchEffSubleadingEleVsPt","reco to gen subleading electron matching efficiency vs gen pT");
+	calcAndPlotEff(9,9,"nWithMatch>0","ptLowerLevel>>ptHistoTwo(400,0.,1300.)","ptLowerLevel>>selectedPtHistoTwo(400,0.,1300.)","ptHistoTwo","selectedPtHistoTwo","a2","leadingRecoToGenEleMatchingEff_vs_pt.png",matchedRecoEleToLeadingGenEleNoCuts,"matchEffLeadingEleVsPt","reco to gen leading electron matching efficiency vs gen pT");
+	calcAndPlotEff(9,9,"nWithMatch>1","ptLowerLevel>>ptHistoThree(400,0.,1300.)","ptLowerLevel>>selectedPtHistoThree(400,0.,1300.)","ptHistoThree","selectedPtHistoThree","a3","recoJetsToGenJetsMatchingEff_vs_pt.png",matchedRecoJetsToGenJetsNoCuts,"matchEffRecoJetsVsPt","reco to gen jet matching efficiency vs gen pT");
+	calcAndPlotEff(9,9,"nWithMatch>1","ptLowerLevel>>ptHistoFour(400,0.,1300.)","ptLowerLevel>>selectedPtHistoFour(400,0.,1300.)","ptHistoFour","selectedPtHistoFour","a4","genJetsToGenQuarksMatchingEff_vs_pt.png",matchedGenJetsToGenQuarksNoCuts,"matchEffGenJetsVsPt","gen jet to quark matching efficiency vs gen quark pT");
 
 	///matching efficiency vs gen eta
-	calcAndPlotEff(8,8,0,"etaLowerLevel>>etaHistoOne(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoOne(375,-3.,3.05)","etaHistoOne","selectedEtaHistoOne","b1","subleadingRecoToGenEleMatchingEff_vs_eta.png",matchedRecoEleToSubleadingGenEleNoCuts,"matchEffSubleadingEleVsEta","reco to gen subleading electron matching efficiency vs gen #eta");
-	calcAndPlotEff(8,8,0,"etaLowerLevel>>etaHistoTwo(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoTwo(375,-3.,3.05)","etaHistoTwo","selectedEtaHistoTwo","b2","leadingRecoToGenEleMatchingEff_vs_eta.png",matchedRecoEleToLeadingGenEleNoCuts,"matchEffLeadingEleVsEta","reco to gen leading electron matching efficiency vs gen #eta");
-	calcAndPlotEff(8,8,1,"etaLowerLevel>>etaHistoThree(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoThree(375,-3.,3.05)","etaHistoThree","selectedEtaHistoThree","b3","recoJetsToGenJetsMatchingEff_vs_eta.png",matchedRecoJetsToGenJetsNoCuts,"matchEffRecoJetsVsEta","reco to gen jet matching efficiency vs gen #eta");
-	calcAndPlotEff(8,8,1,"etaLowerLevel>>etaHistoFour(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoFour(375,-3.,3.05)","etaHistoFour","selectedEtaHistoFour","b4","genJetsToGenQuarksMatchingEff_vs_eta.png",matchedGenJetsToGenQuarksNoCuts,"matchEffGenJetsVsEta","gen jet to quark matching efficiency vs gen quark #eta");
+	calcAndPlotEff(8,8,"nWithMatch>0","etaLowerLevel>>etaHistoOne(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoOne(375,-3.,3.05)","etaHistoOne","selectedEtaHistoOne","b1","subleadingRecoToGenEleMatchingEff_vs_eta.png",matchedRecoEleToSubleadingGenEleNoCuts,"matchEffSubleadingEleVsEta","reco to gen subleading electron matching efficiency vs gen #eta");
+	calcAndPlotEff(8,8,"nWithMatch>0","etaLowerLevel>>etaHistoTwo(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoTwo(375,-3.,3.05)","etaHistoTwo","selectedEtaHistoTwo","b2","leadingRecoToGenEleMatchingEff_vs_eta.png",matchedRecoEleToLeadingGenEleNoCuts,"matchEffLeadingEleVsEta","reco to gen leading electron matching efficiency vs gen #eta");
+	calcAndPlotEff(8,8,"nWithMatch>1","etaLowerLevel>>etaHistoThree(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoThree(375,-3.,3.05)","etaHistoThree","selectedEtaHistoThree","b3","recoJetsToGenJetsMatchingEff_vs_eta.png",matchedRecoJetsToGenJetsNoCuts,"matchEffRecoJetsVsEta","reco to gen jet matching efficiency vs gen #eta");
+	calcAndPlotEff(8,8,"nWithMatch>1","etaLowerLevel>>etaHistoFour(375,-3.,3.05)","etaLowerLevel>>selectedEtaHistoFour(375,-3.,3.05)","etaHistoFour","selectedEtaHistoFour","b4","genJetsToGenQuarksMatchingEff_vs_eta.png",matchedGenJetsToGenQuarksNoCuts,"matchEffGenJetsVsEta","gen jet to quark matching efficiency vs gen quark #eta");
 	*/
 
 	///matching efficiency vs gen phi 
-	calcAndPlotEff(8,8,0,"phiLowerLevel>>phiHistoOne(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoOne(375,-3.3,3.35)","phiHistoOne","selectedPhiHistoOne","d1","subleadingRecoToGenEleMatchingEff_vs_phi.png",matchedRecoEleToSubleadingGenEleNoCuts,"matchEffSubleadingEleVsPhi","reco to gen subleading electron matching efficiency vs gen #phi");
-	calcAndPlotEff(8,8,0,"phiLowerLevel>>phiHistoTwo(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoTwo(375,-3.3,3.35)","phiHistoTwo","selectedPhiHistoTwo","d2","leadingRecoToGenEleMatchingEff_vs_phi.png",matchedRecoEleToLeadingGenEleNoCuts,"matchEffLeadingEleVsPhi","reco to gen leading electron matching efficiency vs gen #phi");
-	calcAndPlotEff(8,8,1,"phiLowerLevel>>phiHistoThree(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoThree(375,-3.3,3.35)","phiHistoThree","selectedPhiHistoThree","d3","recoJetsToGenJetsMatchingEff_vs_phi.png",matchedRecoJetsToGenJetsNoCuts,"matchEffRecoJetsVsPhi","reco to gen jet matching efficiency vs gen #phi");
-	calcAndPlotEff(8,8,1,"phiLowerLevel>>phiHistoFour(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoFour(375,-3.3,3.35)","phiHistoFour","selectedPhiHistoFour","d4","genJetsToGenQuarksMatchingEff_vs_phi.png",matchedGenJetsToGenQuarksNoCuts,"matchEffGenJetsVsPhi","gen jet to quark matching efficiency vs gen quark #phi");
+	calcAndPlotEff(8,8,"nWithMatch>0","phiLowerLevel>>phiHistoOne(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoOne(375,-3.3,3.35)","phiHistoOne","selectedPhiHistoOne","d1","subleadingRecoToGenEleMatchingEff_vs_phi.png",matchedRecoEleToSubleadingGenEleNoCuts,"matchEffSubleadingEleVsPhi","reco to gen subleading electron matching efficiency vs gen #phi");
+	calcAndPlotEff(8,8,"nWithMatch>0","phiLowerLevel>>phiHistoTwo(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoTwo(375,-3.3,3.35)","phiHistoTwo","selectedPhiHistoTwo","d2","leadingRecoToGenEleMatchingEff_vs_phi.png",matchedRecoEleToLeadingGenEleNoCuts,"matchEffLeadingEleVsPhi","reco to gen leading electron matching efficiency vs gen #phi");
+	calcAndPlotEff(8,8,"nWithMatch>1","phiLowerLevel>>phiHistoThree(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoThree(375,-3.3,3.35)","phiHistoThree","selectedPhiHistoThree","d3","recoJetsToGenJetsMatchingEff_vs_phi.png",matchedRecoJetsToGenJetsNoCuts,"matchEffRecoJetsVsPhi","reco to gen jet matching efficiency vs gen #phi");
+	calcAndPlotEff(8,8,"nWithMatch>1","phiLowerLevel>>phiHistoFour(375,-3.3,3.35)","phiLowerLevel>>selectedPhiHistoFour(375,-3.3,3.35)","phiHistoFour","selectedPhiHistoFour","d4","genJetsToGenQuarksMatchingEff_vs_phi.png",matchedGenJetsToGenQuarksNoCuts,"matchEffGenJetsVsPhi","gen jet to quark matching efficiency vs gen quark #phi");
 	
 
 }///end genMatchingEfficiency()
