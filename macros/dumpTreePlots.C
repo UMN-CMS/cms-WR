@@ -1,4 +1,5 @@
 #include <TFile.h>
+#include <TLegend.h>
 #include <TStyle.h>
 #include <TString.h>
 #include <TH1F.h>
@@ -35,7 +36,8 @@ void makeAndSaveOverlayHistoUsingEntryLists(TChain * sigChain,TChain * bkgndChai
 	sigChain->SetEntryList((TEntryListArray*) gROOT->FindObject(sigListName) );
 	bkgndChain->Draw(bkgndListFillArgs,bkgndFilt,"entrylistarray");
 	bkgndChain->SetEntryList((TEntryListArray*) gROOT->FindObject(bkgndListName) );
-
+	gStyle->SetOptStat("emriou");
+	
 	TCanvas * canv = new TCanvas(canvName,canvName,700,700);
 	canv->cd();
 	sigChain->Draw(sigHistPlotArg);
@@ -102,14 +104,15 @@ void makeAndSaveOverlayHistoUsingEntryLists(TChain * sigChain,TChain * bkgndChai
 
 
 ///make an overlay plot without using entrylistarray cuts
-void makeAndSaveOverlayHisto(TChain * sigChain,TChain * bkgndChain,TString sigHistPlotArg,TString bkgndHistPlotArg,TString sigHistName,TString bkgndHistName,TString histTitle,TString xAxisTitle,TString canvName,TCut sigFilt,TCut bkgndFilt,TString outputFile,Bool_t isPlottingEnergy,Bool_t isPlottingInverseEnergy,Bool_t normalizeHistos){
-	TCanvas * canv = new TCanvas(canvName,canvName,700,700);
+void makeAndSaveOverlayHisto(TChain * sigChain,TChain * bkgndChain,TString sigHistPlotArg,TString bkgndHistPlotArg,TString sigHistName,TString bkgndHistName,TString histTitle,TString xAxisTitle,TString canvName,TCut sigFilt,TCut bkgndFilt,TString outputFile,Bool_t isPlottingEnergy,Bool_t isPlottingInverseEnergy,Bool_t normalizeHistos,TString sigLegendLabel,TString bkgndLegendLabel,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax){
+	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
 	sigChain->Draw(sigHistPlotArg);
 	TH1F * sigHist = (TH1F*) gROOT->FindObject(sigHistName);
 	bkgndChain->Draw(bkgndHistPlotArg);
 	TH1F * bkgndHist = (TH1F*) gROOT->FindObject(bkgndHistName);
-
+	gStyle->SetOptStat("emriou");
+	
 	if(normalizeHistos){
 		Double_t sigIntegral = sigHist->Integral();
 		sigHist->Scale(1/sigIntegral);
@@ -119,6 +122,10 @@ void makeAndSaveOverlayHisto(TChain * sigChain,TChain * bkgndChain,TString sigHi
 	
 	sigHist->SetLineColor(1);	//black
 	bkgndHist->SetLineColor(2);	//red
+	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
+	leg->AddEntry(sigHist,sigLegendLabel);
+	leg->AddEntry(bkgndHist,bkgndLegendLabel);
+
 
 	//sigHist will be drawn first, bkgndHist overlaid on top.  If the largest bin in bkgndHist > the largest bin in sigHist,
 	//then increase the y axis max on sigHist to accommodate the peak in bkgndHist
@@ -157,8 +164,10 @@ void makeAndSaveOverlayHisto(TChain * sigChain,TChain * bkgndChain,TString sigHi
 		sprintf(temp,"Events / %.2f ", sigHist->GetXaxis()->GetBinWidth(1));
 	}
 	sigHist->GetYaxis()->SetTitle(temp);
+	sigHist->GetYaxis()->SetTitleOffset(1.5);
 	sigHist->Draw();
 	bkgndHist->Draw("same");
+	leg->Draw();
 	canv->SaveAs(outputFile,"recreate");
 	
 }//end makeAndSaveOverlayHisto()
@@ -170,6 +179,7 @@ void makeAndSaveHistoUsingEntryList(TChain * chain,TString listFillArgs,TString 
 	chain->Draw(listFillArgs,filters,"entrylistarray");
 	//tell the chain to only use entries in the object named listName when calling TTree::Draw() in the future
 	chain->SetEntryList((TEntryListArray*) gROOT->FindObject(listName) );
+	gStyle->SetOptStat("emriou");
 	
 	//run the code in makeAndSaveSingleTreeHisto() to make comprehendible plots with useful labels and title 
 	TCanvas * canv = new TCanvas(canvName,canvName,500,500);
@@ -228,6 +238,8 @@ void makeAndSaveSingleTreeHisto(TTree * tree,TString plotArgs,TString histName,T
 		canv->SetLogy(1);
 		pHist->SetMinimum(1);
 	}
+	gStyle->SetOptStat("emriou");
+	
 	//every histo should have at least three bins.
 	//if a histo is created with numBins = 1, then bin #1 is the bin which is plotted 
 	char temp[130];
