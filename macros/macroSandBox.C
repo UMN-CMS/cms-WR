@@ -17,6 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 #include <TEventList.h>
 #include <TEntryList.h>
 #include <TEntryListArray.h>
@@ -24,9 +25,78 @@
 
 using namespace std;
 
-#define PtRatioProfiles
-//#define DEBUG
+//#define PtRatioProfiles
+#define DEBUG
 //#define RecoGenOverlays
+#define StudyEffectOfMassPairs
+
+
+/** the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
+ * the histogram name does not need to be passed into the fxn as an argument, it will be pulled from the map key
+ * aa
+ *
+ *
+ */
+void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax){
+	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
+	canv->cd();
+	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
+	map<string,TH1F*> overlayHistoMap;	///< links TString keys to TH1F histos which will ultimately be overlaid
+	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
+		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
+		string uncutHistoName(chMapIt->first);
+		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
+		///and store the substring in the new string object
+		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
+		(chMapIt->second)->Draw((chMapIt->first).c_str());
+		overlayHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+	}///end loop over elements in inputChainMap
+	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
+	int colors[] = {1,2,4,9,12,30,40,45};
+	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
+	Int_t i=0;
+	if(overlayHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
+	for(map<string,TH1F*>::const_iterator histIt=overlayHistoMap.begin(); histIt!=overlayHistoMap.end(); histIt++){
+		(histIt->second)->SetLineColor(colorVect[i]);
+		(histIt->second)->SetLineWidth(3);
+		if(histIt==overlayHistoMap.begin()){
+			string xLabel="";
+			if((histIt->first).find("Mass") !=string::npos || (histIt->first).find("ptEle") !=string::npos || (histIt->first).find("ptJet") !=string::npos){
+				xLabel += "GeV";
+			}///end if(histo is plotting a variable with dimension of energy)
+			(histIt->second)->GetXaxis()->SetTitle(xLabel.c_str());
+			Double_t oldMax = (histIt->second)->GetBinContent((histIt->second)->GetMaximumBin());
+			(histIt->second)->SetMaximum(2*oldMax);
+		}///end filter to set histogram X axis label
+		size_t mNuPosition = (histIt->first).find_first_of("mNu"), lastChevron = (histIt->first).find_last_of('>');
+		string legEntryName;
+		if(mNuPosition!=string::npos) legEntryName = (histIt->first).substr(lastChevron+1,mNuPosition+14-lastChevron);
+#ifdef DEBUG
+		cout<<"histo name = \t"<< histIt->first <<endl;
+		cout<<"legEntry has name = \t"<< legEntryName << endl;
+#endif
+		leg->AddEntry(histIt->second,legEntryName.c_str());
+		i++;
+	}///end loop to set line colors of histos, and add entries to TLegend
+
+	string outputFile;
+	for(map<string,TH1F*>::const_iterator hIt=overlayHistoMap.begin(); hIt!=overlayHistoMap.end(); hIt++){
+		if(hIt==overlayHistoMap.begin()){
+			(hIt->second)->Draw();
+			size_t firstChevron = (hIt->first).find_first_of('>');
+			outputFile = (hIt->first).substr(0,firstChevron);
+			outputFile += ".png";
+#ifdef DEBUG
+			cout<<"outputFile = \t"<< outputFile <<endl;
+#endif
+		}
+		else (hIt->second)->Draw("same");
+	}///end loop which draws histograms
+	leg->Draw();
+	canv->SaveAs(outputFile.c_str(),"recreate");
+
+}///end makeAndSaveMultipleCurveOverlayHisto()
+
 
 /*use this fxn to calculate (reco pT)/(matched gen pT) as a function of gen pT, eta, or phi
  * and plot this curve on a histogram with a red dot at the center of each bin
@@ -146,9 +216,44 @@ void macroSandBox(){
 	makeAndSaveOverlayHisto(matchedRecoPtEtaDileptonMassDrFourObjMassCuts, copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts,"fourObjectMass>>fourObjectMassHist(50,0.,3100.)","fourObjectMassMatching>>fourObjectMassMatchingHist(50,0.,3100.)","fourObjectMassHist","fourObjectMassMatchingHist","M_{LLJJ} for RECO and GEN","M_{LLJJ}","fourObjectMass","","","fourObjectMass_matched_reco_and_gen_all_reco_cuts_applied.png",true,false,false,"RECO","GEN",0.15,0.53,0.3,0.68);
 
 
-
 #endif
 
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///plot leading and subleading electron and jet pT and eta, dilepton mass, mWR, and all dR_ distributions (lead lepton to sublead lepton,
+	///lead lepton to lead jet, lead lepton to sublead jet, sublead lepton to lead jet, sublead lepton to sublead jet, lead jet to sublead jet)
+	///for different (MWR, MNu) pairs.  All (MWR, MNu) pairs should be shown on the same plot.
+
+#ifdef StudyEffectOfMassPairs
+	TChain * MWR2600MNu1300_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu1300_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_1300_using_GEN_SIM.root");
+	TChain * MWR2600MNu520_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu520_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_520_using_GEN_SIM.root");
+	TChain * MWR2600MNu2080_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu2080_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_2080_using_GEN_SIM.root");
+	TChain * MWR1400MNu700_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR1400MNu700_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_1400_MNu_700_using_GEN_SIM.root");
+	
+	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax)
+	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet"};
+	string link=">>";
+	string histoEndings[] = {"_leadLeptonPt(50,0.,1600.)","_subleadLeptonPt(50,0.,1200.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,1000.)","_subleadJetPt(50,0.,1000.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2600.)","_fourObjectMass(50,0.,3000.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)"};
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	string histoBeginnings[] = {"mWR2600_mNu2080","mWR2600_mNu1300","mWR2600_mNu520","mWR1400_mNu700"};
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = histoEndingVect.size();
+	for(unsigned int i=(maxI-1); i<maxI; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu2080_matchedGenNoCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenNoCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR2600MNu520_matchedGenNoCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = MWR1400MNu700_matchedGenNoCuts;
+		string cName = "o"+to_string(i);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+
+#endif
 
 }///end macroSandBox()
 
