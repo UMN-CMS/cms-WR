@@ -54,6 +54,33 @@ matchRecoJetsToGenJetsNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 
+## producer to match reco jets to gen quarks from the WR decay chain
+matchRecoJetsToGenQuarksNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedRecoJetsNoCuts"),
+		dRforMatching = cms.double(0.35),
+		treeName = cms.string("matchedRecoJetsNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("bareMatchedGenQuark"),
+		higherLevelCollTag = cms.InputTag("bareRecoJet")
+		)
+
+matchRecoJetsToGenQuarksNoCutsFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchRecoJetsToGenQuarksNoCuts","matchedRecoJetsNoCuts"),
+		minNumber = cms.uint32(2)
+		)
+
+matchRecoJetsToGenQuarksNoCutsNewPath = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedRecoJetsNoCuts"),
+		dRforMatching = cms.double(0.6),
+		treeName = cms.string("matchedRecoJetsNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("bareMatchedGenQuark"),
+		higherLevelCollTag = cms.InputTag("bareRecoJet")
+		)
+
+matchRecoJetsToGenQuarksNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchRecoJetsToGenQuarksNoCutsNewPath","matchedRecoJetsNoCuts"),
+		minNumber = cms.uint32(2)
+		)
+
 
 
 ## match reco electrons to leading and subleading gen electrons from the WR decay chain
@@ -125,6 +152,16 @@ matchRecoNoCutsSeq = cms.Sequence(
 		*matchRecoEleToSubleadingGenEleNoCutsFilter
 		)
 
+matchRecoSingleStageJetsNoCutsSeq = cms.Sequence(
+		matchRecoJetsToGenQuarksNoCuts
+		*matchRecoJetsToGenQuarksNoCutsFilter
+		*matchRecoEleToLeadingGenEleNoCuts
+		*matchRecoEleToLeadingGenEleNoCutsFilter
+		*matchRecoEleToSubleadingGenEleNoCuts
+		*matchRecoEleToSubleadingGenEleNoCutsFilter
+	
+		)
+
 ## these next several modules apply pt and eta cuts to the reco objects
 ## which have been matched to gen objects in the WR decay chain
 ptEtaRestrictedMatchedLeadingRecoEle = cms.EDFilter("CandViewSelector",
@@ -147,8 +184,9 @@ ptEtaRestrictedMatchedSubleadingRecoEleFilter = cms.EDFilter("CandViewCountFilte
 		minNumber = cms.uint32(1)
 		)
 
+#swap "matchRecoJetsToGenQuarksNoCuts" with "matchedRecoJetsToGenJetsNoCuts" to swap btwn single stage and two stage jet matching
 ptEtaRestrictedMatchedRecoJets = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("matchRecoJetsToGenJetsNoCuts","matchedRecoJetsNoCuts"),
+		src = cms.InputTag("matchRecoJetsToGenQuarksNoCuts","matchedRecoJetsNoCuts"),
 		cut = cms.string("abs(eta) < 2.5 && pt>40")
 		)
 

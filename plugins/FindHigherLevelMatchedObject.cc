@@ -116,6 +116,7 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 	
 		  for(Int_t i=0; i<NOBJ; i++){
 			  dR_lowerToHigherLvlObj[i] = -1;
+			  tightest_dR_lowerToMatchedHigherLvlObj[i] = 10;
 			  ptLowerLevel[i] = -1;
 			  etaLowerLevel[i] = -20;
 			  phiLowerLevel[i] = -20;
@@ -174,6 +175,9 @@ class FindHigherLevelMatchedObject : public edm::EDProducer {
 	  Float_t etaLowerLevel[NOBJ];
 	  Float_t phiLowerLevel[NOBJ];
 
+	  ///smallest dR btwn each lower lvl object and all higher lvl objects which are successfully matched to lower lvl objects
+	  Float_t tightest_dR_lowerToMatchedHigherLvlObj[NOBJ];
+
 	  /**
 	   * nMatchedHigherLevel counts the number of higher level objects which are matched to lower level objects
 	   * nWithMatch counts the number of lower lvl objects for which a match is found
@@ -217,7 +221,8 @@ FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterS
    tree->Branch("ptLowerLevel",ptLowerLevel,"ptLowerLevel[nLowerLevel]/F");
    tree->Branch("etaLowerLevel",etaLowerLevel,"etaLowerLevel[nLowerLevel]/F");
    tree->Branch("phiLowerLevel",phiLowerLevel,"phiLowerLevel[nLowerLevel]/F");
-
+   tree->Branch("tightest_dR_lowerToMatchedHigherLvlObj",tightest_dR_lowerToMatchedHigherLvlObj,"tightest_dR_lowerToMatchedHigherLvlObj[nLowerLevel]/F");
+ 
    tree->Branch("nMatchedHigherLevel",&nMatchedHigherLevel,"nMatchedHigherLevel/I");
    tree->Branch("nWithMatch",&nWithMatch,"nWithMatch/I");
  
@@ -295,6 +300,8 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 		   if(dR <= maxDeltaR && isNotDuplicate(higherIt,outputObjColl)){
 			   outputObjColl->push_back(*higherIt);
 			   nMatchedHigherLevel++;
+			   ///if dR is less than the current value in tightest_dR...[nLowerLevel], then put dR into the array and overwrite the old element
+			   if(dR < tightest_dR_lowerToMatchedHigherLvlObj[nLowerLevel]) tightest_dR_lowerToMatchedHigherLvlObj[nLowerLevel] = dR;
 			   if(!incrementedWithMatch){
 				   nWithMatch++;
 				   incrementedWithMatch = true;
