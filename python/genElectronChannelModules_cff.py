@@ -78,8 +78,8 @@ matchGenJetsToGenQuarksNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for electrons whose mother is a WR
 bareMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("genParticles"),
-		src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900024")
 		)
 
@@ -90,8 +90,8 @@ bareMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for electrons whose mother is a heavy Nu
 bareMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("genParticles"),
-		src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900012")
 		)
 
@@ -102,8 +102,8 @@ bareMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for quarks whose real mother is a heavy Nu (virtuals are not tracked in Pythia) 
 bareMatchedGenQuark = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("genParticles"),
-		src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900012")
 		)
 
