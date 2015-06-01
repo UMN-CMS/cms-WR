@@ -26,18 +26,19 @@
 using namespace std;
 
 //#define PtRatioProfiles
-#define DEBUG
+//#define DEBUG
 //#define RecoGenOverlays
-#define StudyEffectOfMassPairs
+//#define StudyEffectOfMassPairs
+#define bkgndOverlaidOnMatchedSignal
 
 
 /** the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
  * the histogram name does not need to be passed into the fxn as an argument, it will be pulled from the map key
- * aa
+ * if doNormalizationByArea is true, then normalize the plotted histos so that the area under each curve = 1
  *
  *
  */
-void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax){
+void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea){
 	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
 	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
@@ -59,6 +60,10 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 	for(map<string,TH1F*>::const_iterator histIt=overlayHistoMap.begin(); histIt!=overlayHistoMap.end(); histIt++){
 		(histIt->second)->SetLineColor(colorVect[i]);
 		(histIt->second)->SetLineWidth(3);
+		if(doNormalizationByArea){
+			Double_t oldIntegral = (histIt->second)->Integral();
+			(histIt->second)->Scale(1.0/oldIntegral);
+		}///end filter to normalize histo area to 1
 		if(histIt==overlayHistoMap.begin()){
 			string xLabel="";
 			if((histIt->first).find("Mass") !=string::npos || (histIt->first).find("ptEle") !=string::npos || (histIt->first).find("ptJet") !=string::npos){
@@ -68,9 +73,9 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			Double_t oldMax = (histIt->second)->GetBinContent((histIt->second)->GetMaximumBin());
 			(histIt->second)->SetMaximum(2*oldMax);
 		}///end filter to set histogram X axis label
-		size_t mNuPosition = (histIt->first).find_first_of("mNu"), lastChevron = (histIt->first).find_last_of('>');
-		string legEntryName;
-		if(mNuPosition!=string::npos) legEntryName = (histIt->first).substr(lastChevron+1,mNuPosition+14-lastChevron);
+		size_t lastChevron = (histIt->first).find_last_of('>');
+		size_t underscorePos = (histIt->first).find_first_of("_",lastChevron);
+		string legEntryName = (histIt->first).substr(lastChevron+1,underscorePos-lastChevron);
 #ifdef DEBUG
 		cout<<"histo name = \t"<< histIt->first <<endl;
 		cout<<"legEntry has name = \t"<< legEntryName << endl;
@@ -235,23 +240,60 @@ void macroSandBox(){
 	TChain * MWR1400MNu700_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
 	MWR1400MNu700_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_1400_MNu_700_using_GEN_SIM.root");
 	
+	///low mass mNu = 300,200,100,and 50 GeV
+	TChain * MWR2600MNu300_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu300_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_300_using_GEN_SIM.root");
+	TChain * MWR2600MNu200_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu200_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_200_using_GEN_SIM.root");
+	TChain * MWR2600MNu100_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu100_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_100_using_GEN_SIM.root");
+	TChain * MWR2600MNu50_matchedGenNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
+	MWR2600MNu50_matchedGenNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_MWR_2600_MNu_50_using_GEN_SIM.root");
+	
 	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax)
 	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet"};
 	string link=">>";
 	string histoEndings[] = {"_leadLeptonPt(50,0.,1600.)","_subleadLeptonPt(50,0.,1200.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,1000.)","_subleadJetPt(50,0.,1000.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2600.)","_fourObjectMass(50,0.,3000.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"mWR2600_mNu2080","mWR2600_mNu1300","mWR2600_mNu520","mWR1400_mNu700"};
+	string histoBeginnings[] = {"mWR2600mNu100","mWR2600mNu300","mWR2600mNu200","mWR2600mNu50"};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
-	for(unsigned int i=(maxI-1); i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu2080_matchedGenNoCuts;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenNoCuts;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR2600MNu520_matchedGenNoCuts;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = MWR1400MNu700_matchedGenNoCuts;
+	for(unsigned int i=0; i<maxI; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu100_matchedGenNoCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu300_matchedGenNoCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR2600MNu200_matchedGenNoCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = MWR2600MNu50_matchedGenNoCuts;
 		string cName = "o"+to_string(i);
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,false);
 		placeHolderMap.clear();
 	}///end loop over branchNames
+
+#endif
+
+#ifdef bkgndOverlaidOnMatchedSignal
+	///declare and initialize TChains to analyzed bkgnd and matched signal files
+	TChain * dyPlusJetsAllCuts = new TChain("bkgndRecoAnalyzerFive/bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
+	dyPlusJetsAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/dyPlusJets/*.root");
+	TChain * ttBarAllCuts = new TChain("bkgndRecoAnalyzerFive/bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
+	ttBarAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/ttBar/*.root");
+
+	///setup inputs needed for makeAndSaveMultipleCurveOverlayHist() fxn, and call this fxn
+	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","subleadingLeptonThreeObjMass","leadLeptonThreeObjMass"};
+	string link=">>";
+	string histoEndings[] = {"_leadLeptonPt(50,0.,1600.)","_subleadLeptonPt(50,0.,1200.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(70,0.,900.)","_subleadJetPt(50,0.,600.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,300.)","_fourObjectMass(50,0.,3000.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_subleadingLeptonThreeObjMass(50,0.,1600.)","_leadLeptonThreeObjMass(50,0.,2800.)",};
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	string histoBeginnings[] = {"mWR2600mNu1300","TTBar","DYPlusJets"};
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = histoEndingVect.size();
+	for(unsigned int i=8; i<9; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = matchedRecoPtEtaDileptonMassDrFourObjMassCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarAllCuts;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsAllCuts;
+		string cName = "o"+to_string(i);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+
 
 #endif
 

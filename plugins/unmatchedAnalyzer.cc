@@ -124,25 +124,54 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 
 	  }
 
-	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection){
+	  ///calculate the dilepton mass using two const_iterators to reco::Candidate objects
+	  double getDileptonMass(edm::OwnVector<reco::Candidate>::const_iterator& one, edm::OwnVector<reco::Candidate>::const_iterator& two){
+		  double mass = TMath::Sqrt( 2*(one->pt())*(two->pt())*( TMath::CosH( (one->eta())-(two->eta()) ) - TMath::Cos( (one->phi())-(two->phi()) ) ) );
+		  return mass;
+	  }///end getDileptonMass()
+
+	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection,bool doDileptonMassCut){
 
 #ifdef DEBUG
-		  std::cout<<"checking pt of all gen particles in findLeadingAndSubleading fxn"<<std::endl;
+		  std::cout<<"checking pt of particles in findLeadingAndSubleading fxn"<<std::endl;
 #endif
 
-		  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+		  //minDileptonMass
+		  if(!doDileptonMassCut){
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
 #ifdef DEBUG
-			  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
 #endif
-			  if(first==collection->end()) first=genIt;
-			  else{
-				  if(genIt->pt() > first->pt()){
-					  second = first;
-					  first = genIt;
+				  if(first==collection->end()) first=genIt;
+				  else{
+					  if(genIt->pt() > first->pt()){
+						  second = first;
+						  first = genIt;
+					  }
+					  else if(second==collection->end() || genIt->pt() > second->pt()) second = genIt;
 				  }
-				  else if(second==collection->end() || genIt->pt() > second->pt()) second = genIt;
-			  }
-		  }//end loop over reco::Candidate collection
+			  }//end loop over reco::Candidate collection
+
+		  }///end if(!doDileptonMassCut)
+
+		  if(doDileptonMassCut){
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+#ifdef DEBUG
+				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+#endif
+				  if(first==collection->end()) first=genIt;
+				  else{
+					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass ){
+						  second = first;
+						  first = genIt;
+					  }
+					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass ) second = genIt;
+				  }
+			  }//end loop over reco::Candidate collection
+
+		  }///end if(doDileptonMassCut)
 
 #ifdef DEBUG
 		  std::cout<<"leaving findLeadingAndSubleading fxn"<<std::endl;
@@ -183,6 +212,8 @@ bool applyDrCut;
 bool applyFourObjMassCut;
 double fourObjMassCutVal;
 double minDr;
+bool applyDileptonMassCut;
+double minDileptonMass;
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptons;
@@ -255,7 +286,9 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
 	applyDrCut(iConfig.getParameter<bool>("doDeltaRcut")),
 	applyFourObjMassCut(iConfig.getParameter<bool>("doFourObjMassCut")),
 	fourObjMassCutVal(iConfig.getParameter<double>("minFourObjMass")),
-	minDr(iConfig.getParameter<double>("minDeltaRforLeptonJetExclusion"))
+	minDr(iConfig.getParameter<double>("minDeltaRforLeptonJetExclusion")),
+	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
 
 {
    //now do what ever initialization is needed
@@ -335,8 +368,10 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton = leptons->end(), subleadingLepton = leptons->end();
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = jets->end(), subleadingJet = jets->end();
 
-	findLeadingAndSubleading(leadingLepton, subleadingLepton, leptons);
-	if(!applyDrCut) findLeadingAndSubleading(leadingJet, subleadingJet, jets);
+	findLeadingAndSubleading(leadingLepton, subleadingLepton, leptons, applyDileptonMassCut);
+	if(!applyDrCut) findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
+	
+	if(leadingLepton==leptons->end() || subleadingLepton==leptons->end()) return;	///< skip this evt if two leptons are not found
 
 	if(applyDrCut){
 		findFarHadrons(jets,leadingLepton,subleadingLepton,leadingJet,subleadingJet);

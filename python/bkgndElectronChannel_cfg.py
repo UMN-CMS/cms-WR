@@ -17,7 +17,9 @@ process.bkgndRecoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(-1),
 		leptonsCollection = cms.InputTag("bareRecoLepton"),
-		jetsCollection = cms.InputTag("bareRecoJet")
+		jetsCollection = cms.InputTag("bareRecoJet"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1)
 		)
 
 process.bkgndRecoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
@@ -27,7 +29,9 @@ process.bkgndRecoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(-1),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets")
+		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1)
 		)
 
 process.bkgndRecoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
@@ -37,7 +41,9 @@ process.bkgndRecoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(-1),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets")
+		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200.0)
 		)
 
 process.bkgndRecoAnalyzerFour = cms.EDAnalyzer('unmatchedAnalyzer',
@@ -47,7 +53,9 @@ process.bkgndRecoAnalyzerFour = cms.EDAnalyzer('unmatchedAnalyzer',
 		minFourObjMass = cms.double(-1),
 		minDeltaRforLeptonJetExclusion = cms.double(0.4),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets")
+		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200.0)
 		)
 
 process.bkgndRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
@@ -57,7 +65,9 @@ process.bkgndRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
 		minFourObjMass = cms.double(600),
 		minDeltaRforLeptonJetExclusion = cms.double(0.4),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets")
+		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200.0)
 		)
 
 
@@ -352,7 +362,7 @@ process.source = cms.Source( "PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(80000)
 )
 
 
