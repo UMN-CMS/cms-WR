@@ -2,10 +2,10 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: rec_and_miniAOD --pileup AVE_40_BX_25ns --mc --eventcontent MINIAODSIM --beamspot Realistic8TeVCollision --runUnscheduled --datatier MINIAODSIM --conditions auto:run2_mc --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO,PAT --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://myFile.root --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM --fileout file:TEST_OUTPUT.root --no_exec
+# with command line options: digiRawReco -n 10 --pileup AVE_40_BX_25ns --mc --eventcontent FEVTSIM --beamspot Realistic8TeVCollision --datatier RAW-RECO --conditions auto:run2_mc --step DIGI,L1,DIGI2RAW,RAW2DIGI,L1Reco,RECO --customise Configuration/DataProcessing/Utils.addMonitoring --filein file:/eos/uscms/store/user/skalafut/WR/13TeV/Signal_GEN-SIM/genSimFile_10.root --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM --fileout file:TEST_digiRawRecoOutput.root --no_exec
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process('HLT')
+process = cms.Process('RECO')
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -18,7 +18,6 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
 process.load('Configuration.StandardSequences.SimL1Emulator_cff')
 process.load('Configuration.StandardSequences.DigiToRaw_cff')
-process.load('HLTrigger.Configuration.HLT_GRun_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
@@ -32,14 +31,14 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-    fileNames = cms.untracked.vstring('file:/uscms/home/skalafut/nobackup/WR_starting2015/GEN-SIM_13TeV/00774ADC-8F87-E411-B6EF-00266CF32E78.root'),
+    fileNames = cms.untracked.vstring('file:inputGenSimFile.root'),
     inputCommands = cms.untracked.vstring('keep *', 
-        'drop *_genParticles_*_*', 
+        #'drop *_genParticles_*_*', 
         'drop *_genParticlesForJets_*_*', 
         'drop *_kt4GenJets_*_*', 
         'drop *_kt6GenJets_*_*', 
         'drop *_iterativeCone5GenJets_*_*', 
-        'drop *_ak4GenJets_*_*', 
+        #'drop *_ak4GenJets_*_*', 
         'drop *_ak7GenJets_*_*', 
         'drop *_ak8GenJets_*_*', 
         'drop *_ak4GenJetsNoNu_*_*', 
@@ -49,42 +48,39 @@ process.source = cms.Source("PoolSource",
         'drop *_genMetCalo_*_*', 
         'drop *_genMetCaloAndNonPrompt_*_*', 
         'drop *_genMetTrue_*_*', 
-        'drop *_genMetIC5GenJs_*_*'),
+        'drop *_genMetIC5GenJs_*_*'
+		),
     secondaryFileNames = cms.untracked.vstring()
 )
 
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True)
+
 )
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('rec_and_miniAOD nevts:1'),
+    annotation = cms.untracked.string('digiRawReco nevts:10'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
 
 # Output definition
 
-process.MINIAODSIMoutput = cms.OutputModule("PoolOutputModule",
-    compressionAlgorithm = cms.untracked.string('LZMA'),
-    compressionLevel = cms.untracked.int32(4),
+process.FEVTSIMoutput = cms.OutputModule("PoolOutputModule",
     dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('MINIAODSIM'),
+        dataTier = cms.untracked.string('RAW-RECO'),
         filterName = cms.untracked.string('')
     ),
-    dropMetaData = cms.untracked.string('ALL'),
-    eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
-    fastCloning = cms.untracked.bool(False),
-    fileName = cms.untracked.string('file:/uscms/home/skalafut/nobackup/WR_starting2015/test_one_WR_signal_MC_file_miniAOD.root'),
-    outputCommands = process.MINIAODSIMEventContent.outputCommands,
-    overrideInputFileSplitLevels = cms.untracked.bool(True)
+    eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
+    fileName = cms.untracked.string('file:WR_ToLNu_ToLLJJ_MNuUndef_MWrUndef_13TeV_NNUUMMPU_RAW_RECO.root'),
+    outputCommands = process.FEVTSIMEventContent.outputCommands,
+    splitLevel = cms.untracked.int32(0)
 )
 
 # Additional output definition
 
 # Other statements
-process.mix.input.nbPileupEvents.averageNumber = cms.double(40.000000)
+process.mix.input.nbPileupEvents.averageNumber = cms.double(NNUUMM.0000)
 process.mix.bunchspace = cms.int32(25)
 process.mix.minBunch = cms.int32(-12)
 process.mix.maxBunch = cms.int32(3)
@@ -100,7 +96,10 @@ process.raw2digi_step = cms.Path(process.RawToDigi)
 process.L1Reco_step = cms.Path(process.L1Reco)
 process.reconstruction_step = cms.Path(process.reconstruction)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIMoutput)
+process.FEVTSIMoutput_step = cms.EndPath(process.FEVTSIMoutput)
+
+# Schedule definition
+process.schedule = cms.Schedule(process.digitisation_step,process.L1simulation_step,process.digi2raw_step,process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.endjob_step,process.FEVTSIMoutput_step)
 
 # customisation of the process.
 
@@ -116,24 +115,5 @@ from SLHCUpgradeSimulations.Configuration.postLS1Customs import customisePostLS1
 #call to customisation function customisePostLS1 imported from SLHCUpgradeSimulations.Configuration.postLS1Customs
 process = customisePostLS1(process)
 
-# Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforMC
-from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforMC 
-
-#call to customisation function customizeHLTforMC imported from HLTrigger.Configuration.customizeHLTforMC
-process = customizeHLTforMC(process)
-
 # End of customisation functions
-#do not add changes to your config after this point (unless you know what you are doing)
-from FWCore.ParameterSet.Utilities import convertToUnscheduled
-process=convertToUnscheduled(process)
-process.load('Configuration.StandardSequences.PATMC_cff')
 
-# customisation of the process.
-
-# Automatic addition of the customisation function from PhysicsTools.PatAlgos.slimming.miniAOD_tools
-from PhysicsTools.PatAlgos.slimming.miniAOD_tools import miniAOD_customizeAllMC 
-
-#call to customisation function miniAOD_customizeAllMC imported from PhysicsTools.PatAlgos.slimming.miniAOD_tools
-process = miniAOD_customizeAllMC(process)
-
-# End of customisation functions

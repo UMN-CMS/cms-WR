@@ -1,0 +1,8 @@
+Instructions to run GEN-SIM simulation on condor
+
+1. change to the branch named seanDev by executing
+git checkout seanDev 
+
+2. copy 
+
+

@@ -53,7 +53,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		overlayHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 	}///end loop over elements in inputChainMap
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
-	int colors[] = {1,2,4,9,12,30,40,45};
+	int colors[] = {1,2,4,8,12,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
 	Int_t i=0;
 	if(overlayHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
@@ -71,7 +71,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			}///end if(histo is plotting a variable with dimension of energy)
 			(histIt->second)->GetXaxis()->SetTitle(xLabel.c_str());
 			Double_t oldMax = (histIt->second)->GetBinContent((histIt->second)->GetMaximumBin());
-			(histIt->second)->SetMaximum(2*oldMax);
+			(histIt->second)->SetMaximum(3*oldMax);
 		}///end filter to set histogram X axis label
 		size_t lastChevron = (histIt->first).find_last_of('>');
 		size_t underscorePos = (histIt->first).find_first_of("_",lastChevron);
@@ -253,7 +253,7 @@ void macroSandBox(){
 	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax)
 	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet"};
 	string link=">>";
-	string histoEndings[] = {"_leadLeptonPt(50,0.,1600.)","_subleadLeptonPt(50,0.,1200.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,1000.)","_subleadJetPt(50,0.,1000.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2600.)","_fourObjectMass(50,0.,3000.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)"};
+	string histoEndings[] = {"_leadLeptonPt(50,0.,1600.)","_subleadLeptonPt(50,0.,1000.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,1000.)","_subleadJetPt(50,0.,600.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2600.)","_fourObjectMass(50,0.,3000.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,2.)","_dR_subleadingLeptonSubleadingJet(50,0.,2.5)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,2.5)"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
 	string histoBeginnings[] = {"mWR2600mNu100","mWR2600mNu300","mWR2600mNu200","mWR2600mNu50"};
 	map<string,TChain*> placeHolderMap;
@@ -272,20 +272,39 @@ void macroSandBox(){
 
 #ifdef bkgndOverlaidOnMatchedSignal
 	///declare and initialize TChains to analyzed bkgnd and matched signal files
+	TChain * dyPlusJetsNoCuts = new TChain("bkgndRecoAnalyzerOne/bkgndRecoObjectsNoCuts");
+	dyPlusJetsNoCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/dyPlusJets/*.root");
+	TChain * ttBarNoCuts = new TChain("bkgndRecoAnalyzerOne/bkgndRecoObjectsNoCuts");
+	ttBarNoCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/ttBar/*.root");
+	
 	TChain * dyPlusJetsAllCuts = new TChain("bkgndRecoAnalyzerFive/bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
 	dyPlusJetsAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/dyPlusJets/*.root");
 	TChain * ttBarAllCuts = new TChain("bkgndRecoAnalyzerFive/bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
 	ttBarAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/ttBar/*.root");
+	TChain * matchedRecoNoCuts = new TChain("matchedRecoAnalyzerOne/matchedRecoObjectsNoCuts");
+	matchedRecoNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
+	
+	///get # of evts before all cuts, and after all cuts are applied
+	//cout<<"ttBar evts before cuts = \t"<< ttBarNoCuts->GetEntriesFast() <<"\t after cuts = \t"<< ttBarAllCuts->GetEntriesFast() << endl;
+	//cout<<"dyPlusJets evts before cuts = \t"<< dyPlusJetsNoCuts->GetEntriesFast() <<"\t after cuts = \t"<< dyPlusJetsAllCuts->GetEntriesFast() << endl;
+	//cout<<"signal evts before cuts = \t"<< matchedRecoNoCuts->GetEntriesFast() <<"\t after cuts = \t"<< matchedRecoPtEtaDileptonMassDrFourObjMassCuts->GetEntriesFast() << endl;
+	//ttBarNoCuts->Draw("evtNumber","");
+	//ttBarAllCuts->Draw("evtNumber","");
+	//dyPlusJetsNoCuts->Draw("evtNumber","");
+	//dyPlusJetsAllCuts->Draw("evtNumber","");
+	matchedRecoNoCuts->Draw("evtNumber","");
+
 
 	///setup inputs needed for makeAndSaveMultipleCurveOverlayHist() fxn, and call this fxn
 	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","subleadingLeptonThreeObjMass","leadLeptonThreeObjMass"};
 	string link=">>";
-	string histoEndings[] = {"_leadLeptonPt(50,0.,1600.)","_subleadLeptonPt(50,0.,1200.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(70,0.,900.)","_subleadJetPt(50,0.,600.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,300.)","_fourObjectMass(50,0.,3000.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_subleadingLeptonThreeObjMass(50,0.,1600.)","_leadLeptonThreeObjMass(50,0.,2800.)",};
+	string histoEndings[] = {"_leadLeptonPt(50,0.,1200.)","_subleadLeptonPt(50,0.,700.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(70,0.,900.)","_subleadJetPt(50,0.,500.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2500.)","_fourObjectMass(50,400.,3300.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_subleadingLeptonThreeObjMass(50,0.,1600.)","_leadLeptonThreeObjMass(50,0.,2800.)",};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
 	string histoBeginnings[] = {"mWR2600mNu1300","TTBar","DYPlusJets"};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
-	for(unsigned int i=8; i<9; i++){
+	/*
+	for(unsigned int i=0; i<1; i++){
 		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = matchedRecoPtEtaDileptonMassDrFourObjMassCuts;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarAllCuts;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsAllCuts;
@@ -293,7 +312,7 @@ void macroSandBox(){
 		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true);
 		placeHolderMap.clear();
 	}///end loop over branchNames
-
+	*/
 
 #endif
 
