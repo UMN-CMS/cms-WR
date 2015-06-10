@@ -61,6 +61,7 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -75,7 +76,7 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include "TTree.h"
-#include "TLorentzVector.h"
+//#include "TLorentzVector.h"
 #include <TFile.h>
 #include <TBranch.h>
 #include <TChain.h>
@@ -455,13 +456,16 @@ matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
 		///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
 		///invariant mass values.
-		TLorentzVector l1(ptMatchingEle[0]*TMath::Cos(phiMatchingEle[0]),ptMatchingEle[0]*TMath::Sin(phiMatchingEle[0]),ptMatchingEle[0]*TMath::SinH(etaMatchingEle[0]),ptMatchingEle[0]*TMath::CosH(etaMatchingEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
-		TLorentzVector l2(ptMatchingEle[1]*TMath::Cos(phiMatchingEle[1]),ptMatchingEle[1]*TMath::Sin(phiMatchingEle[1]),ptMatchingEle[1]*TMath::SinH(etaMatchingEle[1]),ptMatchingEle[1]*TMath::CosH(etaMatchingEle[1]));
-		TLorentzVector j1(ptMatchingJet[0]*TMath::Cos(phiMatchingJet[0]),ptMatchingJet[0]*TMath::Sin(phiMatchingJet[0]),ptMatchingJet[0]*TMath::SinH(etaMatchingJet[0]),ptMatchingJet[0]*TMath::CosH(etaMatchingJet[0]));	///leading jet lorentz vector (px, py, pz, E)
-		TLorentzVector j2(ptMatchingJet[1]*TMath::Cos(phiMatchingJet[1]),ptMatchingJet[1]*TMath::Sin(phiMatchingJet[1]),ptMatchingJet[1]*TMath::SinH(etaMatchingJet[1]),ptMatchingJet[1]*TMath::CosH(etaMatchingJet[1]));
+		ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > l1 = matchingLeadingLepton->p4(), l2 = matchingSubleadingLepton->p4();
+		ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > j1 = matchingLeadingJet->p4(), j2 = matchingSubleadingJet->p4();
+
+		//TLorentzVector l1(ptMatchingEle[0]*TMath::Cos(phiMatchingEle[0]),ptMatchingEle[0]*TMath::Sin(phiMatchingEle[0]),ptMatchingEle[0]*TMath::SinH(etaMatchingEle[0]),ptMatchingEle[0]*TMath::CosH(etaMatchingEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
+		//TLorentzVector l2(ptMatchingEle[1]*TMath::Cos(phiMatchingEle[1]),ptMatchingEle[1]*TMath::Sin(phiMatchingEle[1]),ptMatchingEle[1]*TMath::SinH(etaMatchingEle[1]),ptMatchingEle[1]*TMath::CosH(etaMatchingEle[1]));
+		//TLorentzVector j1(ptMatchingJet[0]*TMath::Cos(phiMatchingJet[0]),ptMatchingJet[0]*TMath::Sin(phiMatchingJet[0]),ptMatchingJet[0]*TMath::SinH(etaMatchingJet[0]),ptMatchingJet[0]*TMath::CosH(etaMatchingJet[0]));	///leading jet lorentz vector (px, py, pz, E)
+		//TLorentzVector j2(ptMatchingJet[1]*TMath::Cos(phiMatchingJet[1]),ptMatchingJet[1]*TMath::Sin(phiMatchingJet[1]),ptMatchingJet[1]*TMath::SinH(etaMatchingJet[1]),ptMatchingJet[1]*TMath::CosH(etaMatchingJet[1]));
 
 		fourObjectMassMatching = (l1+l2+j1+j2).M();
-		if(applyFourObjMassCut && (fourObjectMassMatching < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
+		//if(applyFourObjMassCut && (fourObjectMassMatching < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
 
 		dileptonMassMatching = (l1+l2).M();
 		dijetMassMatching = (j1+j2).M();
@@ -538,10 +542,13 @@ matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
 	///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
 	///invariant mass values.
-	TLorentzVector l1(ptEle[0]*TMath::Cos(phiEle[0]),ptEle[0]*TMath::Sin(phiEle[0]),ptEle[0]*TMath::SinH(etaEle[0]),ptEle[0]*TMath::CosH(etaEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
-	TLorentzVector l2(ptEle[1]*TMath::Cos(phiEle[1]),ptEle[1]*TMath::Sin(phiEle[1]),ptEle[1]*TMath::SinH(etaEle[1]),ptEle[1]*TMath::CosH(etaEle[1]));
-	TLorentzVector j1(ptJet[0]*TMath::Cos(phiJet[0]),ptJet[0]*TMath::Sin(phiJet[0]),ptJet[0]*TMath::SinH(etaJet[0]),ptJet[0]*TMath::CosH(etaJet[0]));	///leading jet lorentz vector (px, py, pz, E)
-	TLorentzVector j2(ptJet[1]*TMath::Cos(phiJet[1]),ptJet[1]*TMath::Sin(phiJet[1]),ptJet[1]*TMath::SinH(etaJet[1]),ptJet[1]*TMath::CosH(etaJet[1]));
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > l1 = leadingLepton->p4(), l2 = subleadingLepton->p4();
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > j1 = leadingJet->p4(), j2 = subleadingJet->p4();
+	
+	//TLorentzVector l1(ptEle[0]*TMath::Cos(phiEle[0]),ptEle[0]*TMath::Sin(phiEle[0]),ptEle[0]*TMath::SinH(etaEle[0]),ptEle[0]*TMath::CosH(etaEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
+	//TLorentzVector l2(ptEle[1]*TMath::Cos(phiEle[1]),ptEle[1]*TMath::Sin(phiEle[1]),ptEle[1]*TMath::SinH(etaEle[1]),ptEle[1]*TMath::CosH(etaEle[1]));
+	//TLorentzVector j1(ptJet[0]*TMath::Cos(phiJet[0]),ptJet[0]*TMath::Sin(phiJet[0]),ptJet[0]*TMath::SinH(etaJet[0]),ptJet[0]*TMath::CosH(etaJet[0]));	///leading jet lorentz vector (px, py, pz, E)
+	//TLorentzVector j2(ptJet[1]*TMath::Cos(phiJet[1]),ptJet[1]*TMath::Sin(phiJet[1]),ptJet[1]*TMath::SinH(etaJet[1]),ptJet[1]*TMath::CosH(etaJet[1]));
 
 	fourObjectMass = (l1+l2+j1+j2).M();
 	if(applyFourObjMassCut && (fourObjectMass < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 import array
 
+##############################################################
+## modules to use on signal samples without GEN matching
 
 bareRecoJet = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedJets"),
@@ -23,6 +25,18 @@ bareRecoEleFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareRecoParticleSeq = cms.Sequence(bareRecoJet*bareRecoJetFilter*bareRecoEle*bareRecoEleFilter)
+
+
+## end list of modules to use on signal samples without GEN matching
+##############################################################
+
+
+
+
+
+
+##############################################################
+## modules to use on signal samples with GEN matching
 
 ## producers to match reco jets and electrons to gen counterparts (gen jets and gen electrons)
 matchRecoJetsToGenJetsNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
@@ -224,28 +238,8 @@ recoMatchedDiElectronCandidateSeq = cms.Sequence(recoMatchedDiElectronCandidate*
 
 ## end modules which apply dilepton mass cut to reco electrons matched to gen electrons
 
-## modules to test new cutAndProduceOutputCollection EDProducer, and SlimCutVar class
-#listOfInputCollTagStrings need to be in one of the following forms:
-#"moduleName"
-#"moduleName","instanceName"
-#"moduleName","instanceName","processName"
 
-testCutProducer = cms.EDProducer('cutAndProduceOutputCollection',
-		outputCollectionName = cms.string("testRecoJetOutputColl"),
-		nCollections = cms.uint32(3),
-		treeName = cms.string("testRecoJetOutputTree"),
-		initializeCut = cms.string("88,>,SOMENAME"),
-		#use the strings in stringKeysForMaps to fill maps in CutApplicationInfrastructure objects
-		stringKeysForMaps = cms.string("leadingLepton,subleadingLepton,jets"),
-		listOfInputCollTagStrings = cms.string("bareRecoJet:",),
-		lowLevelCollTag = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
-		higherLevelCollTag = cms.InputTag("bareRecoJet"),
-		)
-
-testCutProducerFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("testCutProducer","testRecoJetOutputColl"),
-		minNumber = cms.uint32(0)
-		)
-
+## end list of modules to use on signal samples with GEN matching
+##############################################################
 
 

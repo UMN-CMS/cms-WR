@@ -61,6 +61,8 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -75,7 +77,7 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include "TTree.h"
-#include "TLorentzVector.h"
+//#include "TLorentzVector.h"
 #include <TFile.h>
 #include <TBranch.h>
 #include <TChain.h>
@@ -413,6 +415,15 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
 	///invariant mass values.
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > l1 = leadingLepton->p4(), l2 = subleadingLepton->p4();
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > j1 = leadingJet->p4(), j2 = subleadingJet->p4();
+	dileptonMass = (l1+l2).M(), dijetMass = (j1+j2).M();
+	leadLeptonThreeObjMass = (l1+j1+j2).M(), subleadingLeptonThreeObjMass = (l2+j1+j2).M();
+	fourObjectMass = (l1+l2+j1+j2).M();
+	etaHvyNu = (l2+j1+j2).Eta(), ptHvyNu = (l2+j1+j2).Pt(), phiHvyNu = (l2+j1+j2).Phi();
+	etaWr = (l1+l2+j1+j2).Eta(), ptWr = (l1+l2+j1+j2).Pt(), phiWr = (l1+l2+j1+j2).Phi();
+
+	/*
 	TLorentzVector l1(ptEle[0]*TMath::Cos(phiEle[0]),ptEle[0]*TMath::Sin(phiEle[0]),ptEle[0]*TMath::SinH(etaEle[0]),ptEle[0]*TMath::CosH(etaEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
 	TLorentzVector l2(ptEle[1]*TMath::Cos(phiEle[1]),ptEle[1]*TMath::Sin(phiEle[1]),ptEle[1]*TMath::SinH(etaEle[1]),ptEle[1]*TMath::CosH(etaEle[1]));
 	TLorentzVector j1(ptJet[0]*TMath::Cos(phiJet[0]),ptJet[0]*TMath::Sin(phiJet[0]),ptJet[0]*TMath::SinH(etaJet[0]),ptJet[0]*TMath::CosH(etaJet[0]));	///leading jet lorentz vector (px, py, pz, E)
@@ -432,6 +443,7 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	etaWr = (l1+l2+j1+j2).Eta();
 	ptWr = (l1+l2+j1+j2).Pt();
 	phiWr = (l1+l2+j1+j2).Phi();
+	*/
 
 #ifdef DEBUG
 	std::cout<<"dilepton mass = \t"<< dileptonMass << std::endl;
