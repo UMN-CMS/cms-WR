@@ -12,10 +12,10 @@ process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 ## analyze the kinematic distributions of lepton and jet candidates in bkgnd evts with these analyzers
 process.bkgndRecoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("bkgndRecoObjectsNoCuts"),
-		doDeltaRcut = cms.bool(False),
-		doFourObjMassCut = cms.bool(False),
-		minFourObjMass = cms.double(-1),
-		minDeltaRforLeptonJetExclusion = cms.double(-1),
+		#doDeltaRcut = cms.bool(False),
+		#doFourObjMassCut = cms.bool(False),
+		#minFourObjMass = cms.double(-1),
+		#minDeltaRforLeptonJetExclusion = cms.double(-1),
 		leptonsCollection = cms.InputTag("bareRecoLepton"),
 		jetsCollection = cms.InputTag("bareRecoJet"),
 		doDileptonMassCut = cms.bool(False),
@@ -24,10 +24,10 @@ process.bkgndRecoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 
 process.bkgndRecoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("bkgndRecoObjectsWithPtEtaCuts"),
-		doDeltaRcut = cms.bool(False),
-		doFourObjMassCut = cms.bool(False),
-		minFourObjMass = cms.double(-1),
-		minDeltaRforLeptonJetExclusion = cms.double(-1),
+		#doDeltaRcut = cms.bool(False),
+		#doFourObjMassCut = cms.bool(False),
+		#minFourObjMass = cms.double(-1),
+		#minDeltaRforLeptonJetExclusion = cms.double(-1),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
 		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
 		doDileptonMassCut = cms.bool(False),
@@ -36,10 +36,10 @@ process.bkgndRecoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 
 process.bkgndRecoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("bkgndRecoObjectsWithPtEtaAndDileptonMassCuts"),
-		doDeltaRcut = cms.bool(False),
-		doFourObjMassCut = cms.bool(False),
-		minFourObjMass = cms.double(-1),
-		minDeltaRforLeptonJetExclusion = cms.double(-1),
+		#doDeltaRcut = cms.bool(False),
+		#doFourObjMassCut = cms.bool(False),
+		#minFourObjMass = cms.double(-1),
+		#minDeltaRforLeptonJetExclusion = cms.double(-1),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
 		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
 		doDileptonMassCut = cms.bool(True),
@@ -48,24 +48,24 @@ process.bkgndRecoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
 
 process.bkgndRecoAnalyzerFour = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("bkgndRecoObjectsWithPtEtaDileptonMassAndDrCuts"),
-		doDeltaRcut = cms.bool(True),
-		doFourObjMassCut = cms.bool(False),
-		minFourObjMass = cms.double(-1),
-		minDeltaRforLeptonJetExclusion = cms.double(0.4),
+		#doDeltaRcut = cms.bool(True),
+		#doFourObjMassCut = cms.bool(False),
+		#minFourObjMass = cms.double(-1),
+		#minDeltaRforLeptonJetExclusion = cms.double(0.4),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		jetsCollection = cms.InputTag("recoDrSeparation","jetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(True),
 		minDileptonMass = cms.double(200.0)
 		)
 
 process.bkgndRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts"),
-		doDeltaRcut = cms.bool(True),
-		doFourObjMassCut = cms.bool(True),
-		minFourObjMass = cms.double(600),
-		minDeltaRforLeptonJetExclusion = cms.double(0.4),
-		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		#doDeltaRcut = cms.bool(True),
+		#doFourObjMassCut = cms.bool(True),
+		#minFourObjMass = cms.double(600),
+		#minDeltaRforLeptonJetExclusion = cms.double(0.4),
+		leptonsCollection = cms.InputTag("recoFourObjMass","leadingLeptonsPassingFourObjMassCut"),
+		jetsCollection = cms.InputTag("recoFourObjMass","leadingJetsPassingFourObjMassCut"),
 		doDileptonMassCut = cms.bool(True),
 		minDileptonMass = cms.double(200.0)
 		)
@@ -80,7 +80,9 @@ process.unmatchedBkgndRecoPath = cms.Path(
 		*process.bkgndRecoAnalyzerTwo
 		*process.recoDileptonCandidateSeq
 		*process.bkgndRecoAnalyzerThree
+		*process.recoDrSeparationSeq
 		*process.bkgndRecoAnalyzerFour
+		*process.recoFourObjMassSeq
 		*process.bkgndRecoAnalyzerFive
 		)
 process.schedule = cms.Schedule(process.unmatchedBkgndRecoPath)

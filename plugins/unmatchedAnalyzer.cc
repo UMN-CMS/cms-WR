@@ -102,6 +102,7 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 	  ///input params: collection of hadrons (jets, quarks, GEN or RECO lvl), const_iterators to the two leading leptons, and const_iterators
 	  ///to two objects in the collection of hadrons
 	  ///the two hadron iterators will be updated by this fxn
+	  /*
 	  void findFarHadrons(edm::Handle<edm::OwnVector<reco::Candidate> > hadronColl, edm::OwnVector<reco::Candidate>::const_iterator& leadingLept, edm::OwnVector<reco::Candidate>::const_iterator& subleadingLept, edm::OwnVector<reco::Candidate>::const_iterator& hadronOne, edm::OwnVector<reco::Candidate>::const_iterator& hadronTwo){
 #ifdef DEBUG
 		  std::cout<<"entered findFarHadrons function"<<std::endl;
@@ -125,6 +126,7 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 #endif
 
 	  }
+	  */
 
 	  ///calculate the dilepton mass using two const_iterators to reco::Candidate objects
 	  double getDileptonMass(edm::OwnVector<reco::Candidate>::const_iterator& one, edm::OwnVector<reco::Candidate>::const_iterator& two){
@@ -210,10 +212,6 @@ virtual void endJob() override;
 // ----------member data ---------------------------
 
 std::string tName;
-bool applyDrCut;
-bool applyFourObjMassCut;
-double fourObjMassCutVal;
-double minDr;
 bool applyDileptonMassCut;
 double minDileptonMass;
 
@@ -285,10 +283,6 @@ Float_t phiWr;
 
 unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
-	applyDrCut(iConfig.getParameter<bool>("doDeltaRcut")),
-	applyFourObjMassCut(iConfig.getParameter<bool>("doFourObjMassCut")),
-	fourObjMassCutVal(iConfig.getParameter<double>("minFourObjMass")),
-	minDr(iConfig.getParameter<double>("minDeltaRforLeptonJetExclusion")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
 	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
 
@@ -371,16 +365,10 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = jets->end(), subleadingJet = jets->end();
 
 	findLeadingAndSubleading(leadingLepton, subleadingLepton, leptons, applyDileptonMassCut);
-	if(!applyDrCut) findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
+	findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
 	
 	if(leadingLepton==leptons->end() || subleadingLepton==leptons->end()) return;	///< skip this evt if two leptons are not found
 
-	if(applyDrCut){
-		findFarHadrons(jets,leadingLepton,subleadingLepton,leadingJet,subleadingJet);
-		///skip this evt if the dR cut is applied and no two jet candidates
-		///are found outside dR=minDr away from the two leading leptons
-		if(leadingJet == jets->end() || subleadingJet == jets->end()) return;
-	}///end if(apply dR cut)
 
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
@@ -422,28 +410,6 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	fourObjectMass = (l1+l2+j1+j2).M();
 	etaHvyNu = (l2+j1+j2).Eta(), ptHvyNu = (l2+j1+j2).Pt(), phiHvyNu = (l2+j1+j2).Phi();
 	etaWr = (l1+l2+j1+j2).Eta(), ptWr = (l1+l2+j1+j2).Pt(), phiWr = (l1+l2+j1+j2).Phi();
-
-	/*
-	TLorentzVector l1(ptEle[0]*TMath::Cos(phiEle[0]),ptEle[0]*TMath::Sin(phiEle[0]),ptEle[0]*TMath::SinH(etaEle[0]),ptEle[0]*TMath::CosH(etaEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
-	TLorentzVector l2(ptEle[1]*TMath::Cos(phiEle[1]),ptEle[1]*TMath::Sin(phiEle[1]),ptEle[1]*TMath::SinH(etaEle[1]),ptEle[1]*TMath::CosH(etaEle[1]));
-	TLorentzVector j1(ptJet[0]*TMath::Cos(phiJet[0]),ptJet[0]*TMath::Sin(phiJet[0]),ptJet[0]*TMath::SinH(etaJet[0]),ptJet[0]*TMath::CosH(etaJet[0]));	///leading jet lorentz vector (px, py, pz, E)
-	TLorentzVector j2(ptJet[1]*TMath::Cos(phiJet[1]),ptJet[1]*TMath::Sin(phiJet[1]),ptJet[1]*TMath::SinH(etaJet[1]),ptJet[1]*TMath::CosH(etaJet[1]));
-
-	fourObjectMass = (l1+l2+j1+j2).M();
-	if(applyFourObjMassCut && (fourObjectMass < fourObjMassCutVal) ) return;	///don't add an entry to the tree if this evt fails the cut
-	
-	dileptonMass = (l1+l2).M();
-	dijetMass = (j1+j2).M();
-	leadLeptonThreeObjMass = (l1+j1+j2).M();
-	subleadingLeptonThreeObjMass = (l2+j1+j2).M();
-
-	etaHvyNu = (l2+j1+j2).Eta();
-	ptHvyNu = (l2+j1+j2).Pt();
-	phiHvyNu = (l2+j1+j2).Phi();
-	etaWr = (l1+l2+j1+j2).Eta();
-	ptWr = (l1+l2+j1+j2).Pt();
-	phiWr = (l1+l2+j1+j2).Phi();
-	*/
 
 #ifdef DEBUG
 	std::cout<<"dilepton mass = \t"<< dileptonMass << std::endl;
