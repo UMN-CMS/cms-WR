@@ -83,6 +83,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
+process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 
 # Path and EndPath definitions
 
@@ -91,8 +92,10 @@ process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
 process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
+process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output + process.MakeTTree)
+    
 #do not add changes to your config after this point (unless you know what you are doing)
 
 # End of customisation functions
