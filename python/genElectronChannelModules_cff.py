@@ -78,8 +78,8 @@ matchGenJetsToGenQuarksNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for electrons whose mother is a WR
 bareMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
-		#src = cms.InputTag("prunedGenParticles"),
+		#src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900024")
 		)
 
@@ -90,8 +90,8 @@ bareMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for electrons whose mother is a heavy Nu
 bareMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
-		#src = cms.InputTag("prunedGenParticles"),
+		#src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900012")
 		)
 
@@ -102,8 +102,8 @@ bareMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for quarks whose real mother is a heavy Nu (virtuals are not tracked in Pythia) 
 bareMatchedGenQuark = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
-		#src = cms.InputTag("prunedGenParticles"),
+		#src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900012")
 		)
 
@@ -114,6 +114,46 @@ bareMatchedGenQuarkFilter = cms.EDFilter("CandViewCountFilter",
 
 bareMatchedGenParticleSeq = cms.Sequence(bareMatchedLeadingGenEle*bareMatchedLeadingGenEleFilter*bareMatchedSubleadingGenEle*
 		bareMatchedSubleadingGenEleFilter*bareMatchedGenQuark*bareMatchedGenQuarkFilter)
+
+
+##filters to cut out gen particles which could never hit the tracker based on eta trajectory
+##use these modules to determine efficiency of signal skim (skim applies pT cuts to leptons and possibly jets)
+##skim efficiency on signal = # evts passing reco cuts / # evts before reco cuts with gen objects falling within tracker coverage
+etaRestrictedMatchedGenQuark = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("bareMatchedGenQuark"),
+		cut = cms.string("abs(eta) < 2.5")
+		)
+etaRestrictedMatchedGenQuarkFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("etaRestrictedMatchedGenQuark"),
+		minNumber = cms.uint32(2)
+		)
+
+etaRestrictedMatchedGenLeadingLepton = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("bareMatchedLeadingGenEle"),
+		cut = cms.string("abs(eta) < 2.5")
+		)
+etaRestrictedMatchedGenLeadingLeptonFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("etaRestrictedMatchedGenLeadingLepton"),
+		minNumber = cms.uint32(1)
+		)
+
+etaRestrictedMatchedGenSubleadingLepton = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("bareMatchedSubleadingGenEle"),
+		cut = cms.string("abs(eta) < 2.5")
+		)
+etaRestrictedMatchedGenSubleadingLeptonFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("etaRestrictedMatchedGenSubleadingLepton"),
+		minNumber = cms.uint32(1)
+		)
+
+etaRestrictedMatchedGenParticleSeq = cms.Sequence(
+		etaRestrictedMatchedGenQuark
+		*etaRestrictedMatchedGenQuarkFilter
+		*etaRestrictedMatchedGenLeadingLepton
+		*etaRestrictedMatchedGenLeadingLeptonFilter
+		*etaRestrictedMatchedGenSubleadingLepton
+		*etaRestrictedMatchedGenSubleadingLeptonFilter
+		)
 
 
 ##filters on pt and eta of gen leptons and jets
