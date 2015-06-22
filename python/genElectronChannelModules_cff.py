@@ -194,8 +194,10 @@ ptEtaConstrainedSeq = cms.Sequence(ptEtaRestrictedGenJet*ptEtaRestrictedGenJetFi
 
 #these filters and sequence look for gen quarks and leptons which are matched (by pdgId) to particles in the WR
 #decay chain
+
 ptEtaRestrictedMatchedGenQuark = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("bareMatchedGenQuark"),
+		src = cms.InputTag("etaRestrictedMatchedGenQuark"),
+		#src = cms.InputTag("bareMatchedGenQuark"),
 		cut = cms.string("pt>40 && abs(eta) < 2.5")
 		)
 
@@ -205,7 +207,8 @@ ptEtaRestrictedMatchedGenQuarkFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 ptEtaRestrictedMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("bareMatchedSubleadingGenEle"),
+		#src = cms.InputTag("bareMatchedSubleadingGenEle"),
+		src = cms.InputTag("etaRestrictedMatchedGenSubleadingLepton"),
 		cut = cms.string("pt>40 && abs(eta) < 2.5")
 		)
 
@@ -215,7 +218,8 @@ ptEtaRestrictedMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter
 		)
 
 ptEtaRestrictedMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("bareMatchedLeadingGenEle"),
+		#src = cms.InputTag("bareMatchedLeadingGenEle"),
+		src = cms.InputTag("etaRestrictedMatchedGenLeadingLepton"),
 		cut = cms.string("pt>60 && abs(eta) < 2.5")
 		)
 

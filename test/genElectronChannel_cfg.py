@@ -36,6 +36,23 @@ process.genAnalyzerTwo = cms.EDAnalyzer('genAnalyzer',
 		genJetCollection = cms.InputTag("ptEtaRestrictedGenJet","","GENEEJJ")
 		)
 
+process.matchedGenAnalyzerOnePfive = cms.EDAnalyzer('matchedAnalyzer',
+		treeName = cms.string("matchedGenObjectsWithEtaCuts"),
+		doDeltaRcut = cms.bool(False),
+		doFourObjMassCut = cms.bool(False),
+		minFourObjMass = cms.double(-1),
+		minDeltaRforLeptonJetExclusion = cms.double(-1),
+		saveGenMatched = cms.bool(False),
+		leadingLeptonCollection = cms.InputTag("etaRestrictedMatchedGenLeadingLepton","","GENEEJJ"),
+		subleadingLeptonCollection = cms.InputTag("etaRestrictedMatchedGenSubleadingLepton","","GENEEJJ"),
+		quarkCollection = cms.InputTag("etaRestrictedMatchedGenQuark","","GENEEJJ"),
+		matchingLeadingLeptonCollection = cms.InputTag("","",""),
+		matchingSubleadingLeptonCollection = cms.InputTag("","",""),
+		matchingQuarkCollection = cms.InputTag("","","")
+		)
+
+
+
 process.matchedGenAnalyzerTwo = cms.EDAnalyzer('matchedAnalyzer',
 		treeName = cms.string("matchedGenObjectsWithPtEtaCuts"),
 		doDeltaRcut = cms.bool(False),
@@ -126,8 +143,10 @@ process.printMuOrTauDecayChain = cms.Path(
 process.runMatchedGenAnalysis = cms.Path(
 		process.bareMatchedGenParticleSeq
 		*process.matchedGenAnalyzerOne
-		#*process.matchedPtEtaConstrainedSeq
-		#*process.matchedGenAnalyzerTwo
+		*process.etaRestrictedMatchedGenParticleSeq
+		*process.matchedGenAnalyzerOnePfive
+		*process.matchedPtEtaConstrainedSeq
+		*process.matchedGenAnalyzerTwo
 		#*process.genMatchedDiElectronCandidateSeq
 		#*process.matchedGenAnalyzerThree
 		#*process.matchedGenAnalyzerFour

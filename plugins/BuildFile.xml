@@ -4,6 +4,7 @@
 <use name="FWCore/MessageLogger"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="FWCore/Utilities"/>
+<use name="FWCore/Common"/>
 <use name="CommonTools/UtilAlgos"/>
 <use name="DataFormats/HepMCCandidate"/>
 <use name="SimDataFormats/GeneratorProducts"/>

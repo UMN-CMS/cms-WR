@@ -1,0 +1,33 @@
+used WR->MuNu->MuMuJJ MWR800, MNu400 GeV miniAOD dataset
+total num evts analyzed =  27722.0
+
+these paths could be used for the muon channel (L1 seed used)
+HLT path named:  HLT_Mu17_TkMu8_DZ_v1  has trigger efficiency =  79.4134622322 % +/-  0.242843476986 % (L1_DoubleMu_10_3p5 OR L1_DoubleMu_12_5)
+HLT path named:  HLT_Mu45_eta2p1_v1  has trigger efficiency =  94.8163913138 % +/-  0.133151338326 % (L1_SingleMu16 OR L1_SingleMu25)
+HLT path named:  HLT_Mu34_TrkIsoVVL_v1  has trigger efficiency =  96.901377967 % +/-  0.104072742509 % (L1_SingleMu20)
+HLT path named:  HLT_TkMu24_eta2p1_v1  has trigger efficiency =  95.9923526441 % +/-  0.117801491237 % (L1_SingleMu20er)
+HLT path named:  HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1  has trigger efficiency =  76.4843806363 % +/-  0.254713702293 % (L1_DoubleMu_10_3p5 OR L1_DoubleMu_12_5)
+HLT path named:  HLT_IsoTkMu27_v1  has trigger efficiency =  94.7947478537 % +/-  0.133413796912 % (L1_SingleMu25)
+HLT path named:  HLT_Mu34_v1  has trigger efficiency =  97.1033835943 % +/-  0.100728042715 % (L1_SingleMu20)
+HLT path named:  HLT_IsoMu27_v1  has trigger efficiency =  95.112185268 % +/-  0.129498031996 % (L1_SingleMu25)
+HLT path named:  HLT_Mu24_v1  has trigger efficiency =  97.7851525864 % +/-  0.0883885654365 % (L1_SingleMu16)
+HLT path named:  HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v1  has trigger efficiency =  77.4222639059 % +/-  0.25110817389 % (L1_DoubleMu_10_3p5 OR L1_DoubleMu_12_5)
+HLT path named:  HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1  has trigger efficiency =  78.3998268523 % +/-  0.247157553919 % (L1_DoubleMu_10_3p5 OR L1_DoubleMu_12_5)
+HLT path named:  HLT_Mu17_Mu8_DZ_v1  has trigger efficiency =  75.3733496862 % +/-  0.258761285726 % (L1_DoubleMu_10_3p5 OR L1_DoubleMu_12_5)
+HLT path named:  HLT_Mu24_eta2p1_v1  has trigger efficiency =  96.262895895 % +/-  0.113916013862 % (L1_SingleMu20er)
+HLT path named:  HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v1  has trigger efficiency =  73.1981819494 % +/-  0.266023495016 % (L1_DoubleMu_10_3p5 OR L1_DoubleMu_12_5)
+HLT path named:  HLT_Mu27_TkMu8_v1  has trigger efficiency =  83.6591876488 % +/-  0.22206563878 % (L1_SingleMu16 OR L1_SingleMu25)
+HLT path named:  HLT_IsoMu20_eta2p1_v1  has trigger efficiency =  93.9686891278 % +/-  0.142983249098 % (L1_SingleMu16er)
+HLT path named:  HLT_IsoMu17_eta2p1_v1  has trigger efficiency =  94.0805136715 % +/-  0.141735803907 % (L1_SingleMu16er)
+HLT path named:  HLT_Mu27_v1  has trigger efficiency =  97.3378544117 % +/-  0.0966817507597 % (L1_SingleMu25)
+HLT path named:  HLT_IsoTkMu20_v1  has trigger efficiency =  95.2817257052 % +/-  0.127345651606 % (L1_SingleMu16)
+HLT path named:  HLT_Mu50_v1  has trigger efficiency =  95.8011687468 % +/-  0.120458467772 % (L1_SingleMu16 OR L1_SingleMu25)
+HLT path named:  HLT_TkMu27_v1  has trigger efficiency =  96.9771300772 % +/-  0.102832907185 % (L1_SingleMu25)
+HLT path named:  HLT_Mu40_TkMu11_v1  has trigger efficiency =  82.9305244932 % +/-  0.225972200538 % (L1_SingleMu16 OR L1_SingleMu25)
+HLT path named:  HLT_IsoTkMu20_eta2p1_v1  has trigger efficiency =  93.7702907438 % +/-  0.145162433765 % (L1_SingleMu16er)
+HLT path named:  HLT_Mu20_v1  has trigger efficiency =  97.8104032898 % +/-  0.0878946236982 % (L1_SingleMu16)
+HLT path named:  HLT_Mu24_TrkIsoVVL_v1  has trigger efficiency =  97.5651107424 % +/-  0.0925709238869 % (L1_SingleMu16)
+HLT path named:  HLT_Mu30_TkMu11_v1  has trigger efficiency =  82.9774186567 % +/-  0.225725378332 % (L1_SingleMu16 OR L1_SingleMu25)
+HLT path named:  HLT_IsoMu24_eta2p1_v1  has trigger efficiency =  93.6765024169 % +/-  0.146177904699 % (L1_SingleMu20er)
+
+

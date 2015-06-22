@@ -51,6 +51,12 @@ process.unmatchedSignalRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
 		minDileptonMass = cms.double(200.0)
 		)
 
+process.investigateTrigger = cms.EDAnalyzer('triggerAnalyzer',
+		treeName = cms.string("electronChannelSignalHLT"),
+		commaSeparatedHltPaths = cms.string(),
+		trigResultsColl = cms.InputTag("TriggerResults","","HLT"),
+		trigObjectStandAloneColl = cms.InputTag("selectedPatTrigger")
+		)
 
 
 #################################
@@ -68,13 +74,16 @@ process.unmatchedRecoSignalPath = cms.Path(
 		*process.unmatchedSignalRecoAnalyzerFive
 		)
 
+process.unmatchedSignalTriggerStudyPath = cms.Path(
+		process.investigateTrigger
+		)
 
 
-#process.schedule = cms.Schedule(process.unmatchedRecoSignalPath)
+process.schedule = cms.Schedule(process.unmatchedSignalTriggerStudyPath)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analysis_recoElectronChannel_no_matching.root')
+		fileName = cms.string('analysis_recoElectronChannel_no_matching_trigger_study.root')
 
 )
 
@@ -116,7 +125,7 @@ process.source = cms.Source( "PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(2)
 )
 
 
