@@ -46,7 +46,7 @@ def calcEffUnc(effNumerator, effDenominator):
 def foundCorrectWrDecayProducts(genHandle, doMuon):
 	#print 'in foundCorrectWrDecayProducts fxn'
 	foundAllDecayProducts = False
-	maxEtaQrk, maxEtaLept = 99, 99 
+	maxEtaQrk, maxEtaLept = 2.5, 2.5 
 	leptPdg, hvyNuPdgId, wRpdgId = 99, 100, 9900024
 	if(doMuon == True): leptPdg, hvyNuPdgId, maxEtaLept = 13, 9900014, 2.4
 	else: leptPdg, hvyNuPdgId = 11, 9900012
@@ -68,22 +68,122 @@ def foundCorrectWrDecayProducts(genHandle, doMuon):
 	return foundAllDecayProducts
 #end foundCorrectWrDecayProducts()
 
+#use this fxn to compute deltaR with +/-pi safe deltaPhi fxn from ROOT.TMath
+#etaOne, phiOne, etaTwo, and phiTwo are all floats
+def deltR(etaOne, phiOne, etaTwo, phiTwo):
+	dRval = -1
+	dEta = etaOne - etaTwo
+	#print 'dEta = ', dEta
+	dPhi = ROOT.TVector2.Phi_mpi_pi(phiOne - phiTwo)
+	#print 'dPhi = ', dPhi
+	dRval = math.sqrt(math.pow(dEta,2) + math.pow(dPhi,2))
+	return dRval
+#end deltR()
+
+
+#use this fxn to determine if the evt contains reco objects which are matched to their gen counterparts, within
+#a distance dRlept (for leptons) or dRjets (for jets/quarks)
+#doMuon and doRecoCuts are either True or False
+def foundMatchingRecoObjects(genHndl, recoLeptHndl, recoJetsHndl, doMuon, dRlept, dRjets, doRecoCuts):
+	foundRecoMatchesForAllObjects = False
+	genList, recoLepts, recoJets = genHndl.product(), recoLeptHndl.product(), recoJetsHndl.product()
+	if(recoLepts.size() == 0 or recoJets.size() == 0 or genList.size() == 0): return foundRecoMatchesForAllObjects
+	recoLeptonMatchedToWrDau, recoLeptonMatchedToNuDau = recoLepts[recoLepts.size()-1], recoLepts[recoLepts.size()-1]
+	recoJetMatchedToLeadNuDauQrk, recoJetMatchedToSubleadNuDauQrk = recoJets[recoJets.size()-1], recoJets[recoJets.size()-1]
+
+	leptPdg, hvyNuPdgId, wRpdgId = 99, 100, 9900024
+	if(doMuon == True): leptPdg, hvyNuPdgId = 13, 9900014
+	else: leptPdg, hvyNuPdgId = 11, 9900012
+
+	nWrLeptonMatchedRecos, nNuLeptonMatchedRecos, nNuQuarkMatchedRecos = 0,0,0
+	#print 'there are ', genList.size(), ' gen particles in the evt'
+	for i in xrange(int(genList.size())):
+		#loop over all gen particles and find if there are any matching reco objects
+		#if doRecoCuts == True, then add the reco objects to appropriate lists
+		if( abs(genList[i].pdgId()) == leptPdg and abs(genList[i].mother(0).pdgId()) == wRpdgId):
+			for l in xrange(int(recoLepts.size())):
+				llDr = deltR(genList[i].eta(),genList[i].phi(),recoLepts[l].eta(),recoLepts[l].phi())
+				#print 'dR btwn reco lepton and gen WR dau lepton = ', llDr
+				if(llDr <= dRlept ):
+					#need >= in case the initialization of recoLeptonMatchedToWrDau happens to be the best match
+					if(recoLepts[l].pt() >= recoLeptonMatchedToWrDau.pt()):
+						recoLeptonMatchedToWrDau = recoLepts[l]
+						nWrLeptonMatchedRecos+=1
+						#print 'incremented nWrLeptonMatchedRecos by 1'
+		if( abs(genList[i].pdgId()) == leptPdg and abs(genList[i].mother(0).pdgId()) == hvyNuPdgId):
+			for n in xrange(int(recoLepts.size())):
+				slDr = deltR(genList[i].eta(),genList[i].phi(),recoLepts[n].eta(),recoLepts[n].phi())
+				#print 'dR btwn reco lepton and gen Nu dau lepton = ', slDr
+				if(slDr <= dRlept ):
+					if(recoLepts[n].pt() >= recoLeptonMatchedToNuDau.pt() and recoLepts[n].pt() != recoLeptonMatchedToWrDau.pt() and (doRecoCuts==False or recoLepts[n].pt() >= 25) ):
+						recoLeptonMatchedToNuDa = recoLepts[n]
+						nNuLeptonMatchedRecos+=1
+						#print 'incremented nNuLeptonMatchedRecos by 1'
+		if( abs(genList[i].pdgId()) <= 6 and abs(genList[i].mother(0).pdgId()) == hvyNuPdgId):
+			#loop over the jets and see if there are any which are geometrically close (eta, phi) to the gen quarks
+			for j in xrange(int(recoJets.size())):
+				jetDr = deltR(genList[i].eta(),genList[i].phi(),recoJets[j].eta(),recoJets[j].phi())
+				#print 'dR btwn reco jet and gen Nu dau quark = ', jetDr
+				if(jetDr <= dRjets):
+					ptLeadJet, ptSubleadJet = recoJetMatchedToLeadNuDauQrk.pt(), recoJetMatchedToSubleadNuDauQrk.pt()
+					#need >= for the same reason as is listed above for the lepton dau coming directly from the WR decay
+					if(recoJets[j].pt() >= ptLeadJet):
+						#update the reco jets matched to the leading and subleading gen quarks
+						recoJetMatchedToSubleadNuDauQrk = recoJetMatchedToLeadNuDauQrk
+						recoJetMatchedToLeadNuDauQrk = recoJets[j]
+						nNuQuarkMatchedRecos+=1
+						#print 'incremented nNuQuarkMatchedRecos by 1'
+					if(recoJets[j].pt() < ptLeadJet and nNuQuarkMatchedRecos == 0):
+						#update the subleading jet object
+						recoJetMatchedToLeadNuDauQrk = recoJets[j]
+						nNuQuarkMatchedRecos+=1
+						#print 'incremented nNuQuarkMatchedRecos by 1'
+					if(recoJets[j].pt() < ptLeadJet and recoJets[j].pt() >= ptSubleadJet):
+						#update the subleading jet object
+						recoJetMatchedToLeadNuDauQrk = recoJets[j]
+						nNuQuarkMatchedRecos+=1
+						#print 'incremented nNuQuarkMatchedRecos by 1'
+	#end loop over gen particles in event
+	#print 'after looping over all gen particles'
+	#print 'there were ', nWrLeptonMatchedRecos,' reco leptons matched to the WR gen lepton daughter'
+	#print 'there were ', nNuLeptonMatchedRecos,' reco leptons matched to the Nu gen lepton daughter'
+	#print 'there were ', nNuQuarkMatchedRecos,' reco jets matched to the two Nu gen quark daughters'
+
+
+	#if the number of matched reco objects is sufficient, then update foundRecoMatchesForAllObjects to True
+	if(nWrLeptonMatchedRecos > 0 and nNuLeptonMatchedRecos > 0 and nNuQuarkMatchedRecos > 1): foundRecoMatchesForAllObjects = True
+
+	return foundRecoMatchesForAllObjects
+#end foundMatchingRecoObjects()
+
 
 # define handles and labels for TriggerResults, TriggerObjectStandAlone, and GenParticle collections
 trigResultsHandl, trigResultsLabel = Handle("edm::TriggerResults"), ("TriggerResults","","HLT")
 trigObjsHandl, trigObjsLabel = Handle("std::vector<pat::TriggerObjectStandAlone>"), "selectedPatTrigger"
 genParticleHandl, genParticleLabel = Handle("std::vector<reco::GenParticle>"), "prunedGenParticles"
+recoJetsHandl, recoJetsLabel = Handle("std::vector<pat::Jet>"), "slimmedJets"
+recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
 
 # open one or more miniAOD .root files, and create an iterator to loop over the Event objects in the file(s)
-allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
-#allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuMuToMuMuJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
-doMuonChannel = False
+doMuonChannel = False 
+doRECOCuts = True	#apply cuts on reco objects which are matched to gen particles from WR decay chain
+allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuMuToMuMuJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
+
+#dR matching thresholds for leptons and jets
+dRforJets = 0.4
+dRforLeptons = 0.2
+
+if(doMuonChannel == False):
+	allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
+	recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Electron>"), "slimmedElectrons"
+
 
 
 #vars and containers which will be filled in loop over events
 trigNamesAndNumPassing = dict()
 totalNumEvts = 0
 totalNumEvtsAfterGenCuts = 0
+totalNumEvtsAfterGenRecoMatchingAndRecoCuts = 0
 
 # loop over Event objects in input file(s)
 # enumerate returns two-tuple objects (an immutable list where each element in the list is a pair), and thus two different
@@ -92,14 +192,19 @@ totalNumEvtsAfterGenCuts = 0
 # in the two tuple is the object of interest
 for evNum, oneEvent in enumerate(allEvents):
 	#evNum points to a simple number, while oneEvent points to an edm::Event object
-	#if(evNum > 5): break
+	#if(evNum > 2): break
 	totalNumEvts+=1.0
 	
-	#link the reco::GenParticle collection with an edm::Handle 
+	#link reco::GenParticle, and pat::Electron or pat::Muon collections with a edm::Handle objs
 	oneEvent.getByLabel(genParticleLabel, genParticleHandl)
+	oneEvent.getByLabel(recoLeptonLabel, recoLeptonHandl)
+	oneEvent.getByLabel(recoJetsLabel, recoJetsHandl)
 	#check that the correct WR decay products are found at GEN level
 	if(foundCorrectWrDecayProducts(genParticleHandl, doMuonChannel) == False): continue
 	totalNumEvtsAfterGenCuts+=1.0
+	#check that the event has reco objs which are closely matched to the GEN lvl WR decay products
+	if(foundMatchingRecoObjects(genParticleHandl, recoLeptonHandl, recoJetsHandl, doMuonChannel,dRforLeptons,dRforJets,doRECOCuts) == False): continue
+	totalNumEvtsAfterGenRecoMatchingAndRecoCuts+=1.0
 	oneEvent.getByLabel(trigObjsLabel, trigObjsHandl)
 	oneEvent.getByLabel(trigResultsLabel, trigResultsHandl)
 
@@ -109,7 +214,6 @@ for evNum, oneEvent in enumerate(allEvents):
 	for i in xrange(trigResultsHandl.product().size()):
 		#loop over all HLT path names and keep track of the paths which are fired, how many times they fire, and the total number of evts
 		#which have been run over
-		#print "Trigger ", allPathNames.triggerName(i), (" PASS" if trigResultsHandl.product().accept(i) else " fail (or not run)")
 		if(trigResultsHandl.product().accept(i) and skipThisPath(allPathNames.triggerName(i)) == False ):
 			if(allPathNames.triggerName(i) in trigNamesAndNumPassing):
 				#the trigger path name already exists in the map trigNamesAndNumPassing
@@ -127,15 +231,15 @@ for evNum, oneEvent in enumerate(allEvents):
 # end loop over evts in input file(s)
 
 print "total num evts before any cuts = ", totalNumEvts
-print 'total num evts passing gen cuts = ', totalNumEvtsAfterGenCuts
+print "total num evts passing GEN cuts = ", totalNumEvtsAfterGenCuts
+print 'total num evts passing gen and reco cuts = ', totalNumEvtsAfterGenRecoMatchingAndRecoCuts
 for keyIter in iter(trigNamesAndNumPassing):
-	if( (trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenCuts) > 0.60):
-		print "HLT path named: ", keyIter," has trigger efficiency = ", 100*(trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenCuts) ,"% +/- ", 100*(calcEffUnc(trigNamesAndNumPassing[keyIter],totalNumEvtsAfterGenCuts)), "% in evts where gen requirements are passed"
+	if( (trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenRecoMatchingAndRecoCuts) > 0.70):
+		print "HLT path named: ", keyIter," has trigger efficiency = ", 100*(trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenRecoMatchingAndRecoCuts) ,"% +/- ", 100*(calcEffUnc(trigNamesAndNumPassing[keyIter],totalNumEvtsAfterGenRecoMatchingAndRecoCuts)), "% in evts where gen and reco requirements are met"
 	
 #end loop over keys in trigNamesAndNumPassing map
 
-print 'gen requirements are that the four final state particles at GEN lvl from the WR decay are found, and fall within detector eta acceptance'
-
+print 'gen and reco requirements are that the four final state particles at GEN lvl from the WR decay are found, and fall within detector eta acceptance, four reco objects are matched to these four GEN particles, and that the reco lepton matched to the Nu daughter lepton has pT > 25 GeV (not applied in muon channel evts)'
 
 
 
