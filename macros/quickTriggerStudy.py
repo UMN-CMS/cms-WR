@@ -21,6 +21,18 @@ from DataFormats.FWLite import Handle, Events
 
 # define additional fxns
 
+#save a TTree filled with the kinematic attributes (pt, eta, etc) of the four final state leptons and quarks/jets
+#to a file 
+#inputs are the path to the output file, and the TTree object 
+def saveTreeToFile(pathToOutputFile, treeObj):
+	outFile = ROOT.TFile(pathToOutputFile,"recreate")
+	outFile.cd()
+	treeObj.Scan("","","",5)
+	treeObj.Write()
+	outFile.Close()
+	#end saveOutputTree
+
+
 #hltPathName is a string
 def skipThisPath(hltPathName):
 	doSkip = False
@@ -85,6 +97,7 @@ def deltR(etaOne, phiOne, etaTwo, phiTwo):
 #a distance dRlept (for leptons) or dRjets (for jets/quarks)
 #doMuon and doRecoCuts are either True or False
 def foundMatchingRecoObjects(genHndl, recoLeptHndl, recoJetsHndl, doMuon, dRlept, dRjets, doRecoCuts):
+	objsAndFoundMatchesList = []
 	foundRecoMatchesForAllObjects = False
 	genList, recoLepts, recoJets = genHndl.product(), recoLeptHndl.product(), recoJetsHndl.product()
 	if(recoLepts.size() == 0 or recoJets.size() == 0 or genList.size() == 0): return foundRecoMatchesForAllObjects
@@ -151,9 +164,16 @@ def foundMatchingRecoObjects(genHndl, recoLeptHndl, recoJetsHndl, doMuon, dRlept
 
 
 	#if the number of matched reco objects is sufficient, then update foundRecoMatchesForAllObjects to True
-	if(nWrLeptonMatchedRecos > 0 and nNuLeptonMatchedRecos > 0 and nNuQuarkMatchedRecos > 1): foundRecoMatchesForAllObjects = True
-
-	return foundRecoMatchesForAllObjects
+	#and add the four reco objects to the array which is returned
+	if(nWrLeptonMatchedRecos > 0 and nNuLeptonMatchedRecos > 0 and nNuQuarkMatchedRecos > 1):
+		#set foundMatches to True, and call fill on the output TT 
+		foundRecoMatchesForAllObjects = True
+		objsAndFoundMatchesList.append([foundRecoMatchesForAllObjects, recoLeptonMatchedToWrDau, recoLeptonMatchedToNuDau, recoJetMatchedToLeadNuDauQrk, recoJetMatchedToSubleadNuDauQrk])
+	
+	if(foundRecoMatchesForAllObjects == False):
+		objsAndFoundMatchesList.append([foundRecoMatchesForAllObjects])
+	
+	return objsAndFoundMatchesList
 #end foundMatchingRecoObjects()
 
 
@@ -203,7 +223,10 @@ for evNum, oneEvent in enumerate(allEvents):
 	if(foundCorrectWrDecayProducts(genParticleHandl, doMuonChannel) == False): continue
 	totalNumEvtsAfterGenCuts+=1.0
 	#check that the event has reco objs which are closely matched to the GEN lvl WR decay products
-	if(foundMatchingRecoObjects(genParticleHandl, recoLeptonHandl, recoJetsHandl, doMuonChannel,dRforLeptons,dRforJets,doRECOCuts) == False): continue
+	objsAndFoundMatchesArr = []
+	objsAndFoundMatchesArr = foundMatchingRecoObjects(genParticleHandl, recoLeptonHandl, recoJetsHandl, doMuonChannel,dRforLeptons,dRforJets,doRECOCuts)
+	if(objsAndFoundMatchesArr[0] == False): continue
+	#if the execution reaches this point then there are four reco objects in the array named objsAndFoundMatchesArr
 	totalNumEvtsAfterGenRecoMatchingAndRecoCuts+=1.0
 	oneEvent.getByLabel(trigObjsLabel, trigObjsHandl)
 	oneEvent.getByLabel(trigResultsLabel, trigResultsHandl)
