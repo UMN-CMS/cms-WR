@@ -100,7 +100,8 @@ def foundMatchingRecoObjects(genHndl, recoLeptHndl, recoJetsHndl, doMuon, dRlept
 	objsAndFoundMatchesList = []
 	foundRecoMatchesForAllObjects = False
 	genList, recoLepts, recoJets = genHndl.product(), recoLeptHndl.product(), recoJetsHndl.product()
-	if(recoLepts.size() == 0 or recoJets.size() == 0 or genList.size() == 0): return foundRecoMatchesForAllObjects
+	#if(recoLepts.size() == 0 or recoJets.size() == 0 or genList.size() == 0): return foundRecoMatchesForAllObjects
+	if(recoLepts.size() == 0 or recoJets.size() == 0 or genList.size() == 0): return objsAndFoundMatchesList 
 	recoLeptonMatchedToWrDau, recoLeptonMatchedToNuDau = recoLepts[recoLepts.size()-1], recoLepts[recoLepts.size()-1]
 	recoJetMatchedToLeadNuDauQrk, recoJetMatchedToSubleadNuDauQrk = recoJets[recoJets.size()-1], recoJets[recoJets.size()-1]
 
@@ -122,14 +123,18 @@ def foundMatchingRecoObjects(genHndl, recoLeptHndl, recoJetsHndl, doMuon, dRlept
 					if(recoLepts[l].pt() >= recoLeptonMatchedToWrDau.pt()):
 						recoLeptonMatchedToWrDau = recoLepts[l]
 						nWrLeptonMatchedRecos+=1
+						#print 'pt of reco lepton matched to Wr dau = ', recoLeptonMatchedToWrDau.pt()
 						#print 'incremented nWrLeptonMatchedRecos by 1'
+						#print ' '
 		if( abs(genList[i].pdgId()) == leptPdg and abs(genList[i].mother(0).pdgId()) == hvyNuPdgId):
 			for n in xrange(int(recoLepts.size())):
 				slDr = deltR(genList[i].eta(),genList[i].phi(),recoLepts[n].eta(),recoLepts[n].phi())
 				#print 'dR btwn reco lepton and gen Nu dau lepton = ', slDr
 				if(slDr <= dRlept ):
 					if(recoLepts[n].pt() >= recoLeptonMatchedToNuDau.pt() and recoLepts[n].pt() != recoLeptonMatchedToWrDau.pt() and (doRecoCuts==False or recoLepts[n].pt() >= 25) ):
-						recoLeptonMatchedToNuDa = recoLepts[n]
+						#print 'reco cuts are applied: ', doRecoCuts
+						recoLeptonMatchedToNuDau = recoLepts[n]
+						#print 'pt of reco lepton matched to Nu dau = ', recoLeptonMatchedToNuDau.pt()
 						nNuLeptonMatchedRecos+=1
 						#print 'incremented nNuLeptonMatchedRecos by 1'
 		if( abs(genList[i].pdgId()) <= 6 and abs(genList[i].mother(0).pdgId()) == hvyNuPdgId):
@@ -166,12 +171,15 @@ def foundMatchingRecoObjects(genHndl, recoLeptHndl, recoJetsHndl, doMuon, dRlept
 	#if the number of matched reco objects is sufficient, then update foundRecoMatchesForAllObjects to True
 	#and add the four reco objects to the array which is returned
 	if(nWrLeptonMatchedRecos > 0 and nNuLeptonMatchedRecos > 0 and nNuQuarkMatchedRecos > 1):
-		#set foundMatches to True, and call fill on the output TT 
 		foundRecoMatchesForAllObjects = True
-		objsAndFoundMatchesList.append([foundRecoMatchesForAllObjects, recoLeptonMatchedToWrDau, recoLeptonMatchedToNuDau, recoJetMatchedToLeadNuDauQrk, recoJetMatchedToSubleadNuDauQrk])
+		objsAndFoundMatchesList.append(1)
+		objsAndFoundMatchesList.append(recoLeptonMatchedToWrDau)
+		objsAndFoundMatchesList.append(recoLeptonMatchedToNuDau)
+		objsAndFoundMatchesList.append(recoJetMatchedToLeadNuDauQrk)
+		objsAndFoundMatchesList.append(recoJetMatchedToSubleadNuDauQrk)
 	
 	if(foundRecoMatchesForAllObjects == False):
-		objsAndFoundMatchesList.append([foundRecoMatchesForAllObjects])
+		objsAndFoundMatchesList.append(0)
 	
 	return objsAndFoundMatchesList
 #end foundMatchingRecoObjects()
@@ -205,6 +213,21 @@ totalNumEvts = 0
 totalNumEvtsAfterGenCuts = 0
 totalNumEvtsAfterGenRecoMatchingAndRecoCuts = 0
 
+#tree with kinematics of final state reco objects, and variables tied to branches
+foutName = ""
+if(doMuonChannel == False): foutName = "recoElectronKinematicsTree.root"
+if(doMuonChannel == True): foutName = "recoMuonKinematicsTree.root"
+fout = ROOT.TFile(foutName,"RECREATE")
+fout.cd()
+
+#names of the variables in output tuple
+varNames = ["WrDauLeptPt","WrDauLeptEta","WrDauLeptPhi","NuDauLeptPt","NuDauLeptEta","NuDauLeptPhi","leadJetPt","leadJetEta","leadJetPhi","subleadJetPt","subleadJetEta","subleadJetPhi","evNum"]
+
+#create the ntuple
+outputTuple = ROOT.TNtuple("recoKinematics","tuple",":".join(varNames))
+
+
+
 # loop over Event objects in input file(s)
 # enumerate returns two-tuple objects (an immutable list where each element in the list is a pair), and thus two different
 # iterator variables are needed in the for loop declaration
@@ -223,14 +246,30 @@ for evNum, oneEvent in enumerate(allEvents):
 	if(foundCorrectWrDecayProducts(genParticleHandl, doMuonChannel) == False): continue
 	totalNumEvtsAfterGenCuts+=1.0
 	#check that the event has reco objs which are closely matched to the GEN lvl WR decay products
-	objsAndFoundMatchesArr = []
+	#objsAndFoundMatchesArr = []
 	objsAndFoundMatchesArr = foundMatchingRecoObjects(genParticleHandl, recoLeptonHandl, recoJetsHandl, doMuonChannel,dRforLeptons,dRforJets,doRECOCuts)
-	if(objsAndFoundMatchesArr[0] == False): continue
-	#if the execution reaches this point then there are four reco objects in the array named objsAndFoundMatchesArr
+	if(int(len(objsAndFoundMatchesArr)) < 2): continue
+	#if the execution reaches this point then there are many entries in objsAndFoundMatchesArr, corresponding to
+	#the pt, eta, and phi of each final state particle (lepton, jet)
 	totalNumEvtsAfterGenRecoMatchingAndRecoCuts+=1.0
+	outputVals = []
 	oneEvent.getByLabel(trigObjsLabel, trigObjsHandl)
 	oneEvent.getByLabel(trigResultsLabel, trigResultsHandl)
+	
+	#calculate the output values and put them into a list
+	#there are only four objects of interest, and we need the pt, eta, and phi for each one
+	for i in xrange(4):
+		outputVals.append(objsAndFoundMatchesArr[i+1].pt())
+		outputVals.append(objsAndFoundMatchesArr[i+1].eta())
+		outputVals.append(objsAndFoundMatchesArr[i+1].phi())
+	#end loop over reco objects
 
+	#add an event number to the tuple
+	outputVals.append(evNum)
+
+	#add the values in the list to the TNtuple object named outputTuple
+	outputTuple.Fill(array.array("f",outputVals))
+	
 	if((evNum%1000)==0): print "evt number: ", evNum
 	
 	allPathNames = oneEvent.object().triggerNames(trigResultsHandl.product())
@@ -252,6 +291,11 @@ for evNum, oneEvent in enumerate(allEvents):
 
 	#end loop over HLT path names
 # end loop over evts in input file(s)
+
+#save the tree with kinematics info to a file
+fout.cd()
+outputTuple.Write()
+fout.Close()
 
 print "total num evts before any cuts = ", totalNumEvts
 print "total num evts passing GEN cuts = ", totalNumEvtsAfterGenCuts
