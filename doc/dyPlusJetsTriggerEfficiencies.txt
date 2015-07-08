@@ -1,0 +1,59 @@
+
+Processing runBkgndTriggerStudy.C...
+[?1034hevt number:  0
+evt number:  1000
+evt number:  2000
+evt number:  3000
+evt number:  4000
+evt number:  5000
+evt number:  6000
+evt number:  7000
+evt number:  8000
+evt number:  9000
+evt number:  10000
+evt number:  11000
+evt number:  12000
+evt number:  13000
+evt number:  14000
+evt number:  15000
+evt number:  16000
+evt number:  17000
+evt number:  18000
+evt number:  19000
+evt number:  20000
+evt number:  21000
+evt number:  22000
+evt number:  23000
+evt number:  24000
+evt number:  25000
+evt number:  26000
+evt number:  27000
+evt number:  28000
+evt number:  29000
+evt number:  30000
+evt number:  31000
+evt number:  32000
+evt number:  33000
+evt number:  34000
+evt number:  35000
+evt number:  36000
+evt number:  37000
+evt number:  38000
+evt number:  39000
+evt number:  40000
+evt number:  41000
+evt number:  42000
+evt number:  43000
+evt number:  44000
+evt number:  45000
+evt number:  46000
+evt number:  47000
+evt number:  48000
+evt number:  49000
+total num evts before any cuts =  50000.0
+HLT path named:  HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1  has trigger efficiency =  0.288 % +/-  0.0239654150809 % on  dyPlusJets  events
+HLT path named:  HLT_Mu40_TkMu11_v1  has trigger efficiency =  10.876 % +/-  0.139234523305 % on  dyPlusJets  events
+HLT path named:  HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v1  has trigger efficiency =  0.3 % +/-  0.0244581274835 % on  dyPlusJets  events
+HLT path named:  HLT_Ele105_CaloIdVT_GsfTrkIdT_v1  has trigger efficiency =  0.552 % +/-  0.0331346634207 % on  dyPlusJets  events
+HLT path named:  HLT_Mu50_v1  has trigger efficiency =  6.9 % +/-  0.113348136288 % on  dyPlusJets  events
+HLT path named:  HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1  has trigger efficiency =  6.126 % +/-  0.107244778334 % on  dyPlusJets  events
