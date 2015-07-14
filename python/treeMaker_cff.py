@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
 
-# Sequences to produce microAOD
-""" \addtogroup microAODSeq_Group Sequences to produce microAOD
+# TTree producer
+""" \addtogroup TTree producer
 @{
 """
 
@@ -11,10 +11,11 @@ from ExoAnalysis.cmsWR.skimElectron_cff import *
 
 TFileService = cms.Service('TFileService', fileName = cms.string('made_ttree.root'))
 
-MakeTTree = cms.EDAnalyzer('TTreeMaker',
-                            muons_src = cms.InputTag('wRsubleadingMuons'),
+
+MakeTTree_Muons = cms.EDAnalyzer('TTreeMaker',
+                            muons_src = cms.InputTag('wRsubleadingMuon'),
                             electrons_src = cms.InputTag('wRsubleadingElectron'),
-                            jets_src = cms.InputTag('slimmedJets'),
+                            jets_src = cms.InputTag('wRlooseJet'),
                             genparticles_src = cms.InputTag('prunedGenParticles'),
                             genjets_src = cms.InputTag('slimmedGenJets'),
                             primary_vertex_src = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -30,6 +31,7 @@ MakeTTree = cms.EDAnalyzer('TTreeMaker',
                             muon_mode = cms.bool(True)
                             )
 
+MakeTTree_Electrons = MakeTTree_Muons.clone(muon_mode = cms.bool(False))
 """
 @}
 """

@@ -217,7 +217,12 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	mus.push_back(mu);	     
       }    
     }
-    for(auto j : *jets){  
+    vector<pat::Jet> selected_jets;
+    for(auto j: *jets)
+      //if((j.neutralHadronEnergyFraction()<0.99 && j.neutralEmEnergyFraction()<0.99 && (j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.muonEnergyFraction()<0.8) && ((abs(j.eta())<=2.4 && j.chargedHadronEnergyFraction()>0 && j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.99) || abs(j.eta())>2.4))
+      selected_jets.push_back(j);
+    
+    for(auto j : selected_jets){  
       if(j.pt() > leading_jet_pt_cut && fabs(j.eta()) < jet_eta_cut){
 	bool isolated = true;
 	for(auto m : mus){
