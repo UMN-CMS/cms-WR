@@ -1,7 +1,10 @@
 #include <TFile.h>
+#include <TLegend.h>
 #include <TStyle.h>
 #include <TString.h>
 #include <TH1F.h>
+#include <TF1.h>
+#include <TGraphErrors.h>
 #include <TProfile.h>
 #include <TROOT.h>
 #include <TBranch.h>
@@ -25,11 +28,12 @@
 
 using namespace std;
 
+#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
 //#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
-#define bkgndOverlaidOnMatchedSignal
+//#define bkgndOverlaidOnMatchedSignal
 
 
 /** the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
@@ -110,91 +114,254 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
  * arrIndex is the specific index of the array which should be plotted in the TProfile
  * 
  * the TProfile shows (entries in recoBranchName/entries in matchedGenBranchName) as a fxn of entries in otherMatchedGenBranchName
+ * if doTGraph is true, then turn the TProfile into a TGraphErrors and save it
+ * 
+ * if checkSeparatedBins = true, then this fxn should make and save an image of two histos overlaid onto each other
+ * each histo shows all values of reco pT/gen pT for one particular gen pT bin 
  */
-void calcAndPlotPtRatioProfile(TChain * chain, Int_t arrSize, Int_t arrIndex, TString profileName, TString profileTitle, Int_t nProfileBins, Float_t minX, Float_t maxX, Float_t minY, Float_t maxY, TString matchedGenBranchName, TString recoBranchName, TString otherMatchedGenBranchName,TString canvName, TString drawOptions, TString xAxisLabel, TString outputFile){
+void calcAndPlotPtRatioProfile(TChain * chain, Int_t arrSize, Int_t arrIndex, TString profileName, TString profileTitle, Int_t nProfileBins, Float_t minX, Float_t maxX, Float_t minY, Float_t maxY, TString matchedGenBranchName, TString recoBranchName, TString otherMatchedGenBranchName,TString canvName, TString drawOptions, TString xAxisLabel, TString outputFile,bool doTGraph,bool checkSeparatedBins){
+	if(checkSeparatedBins && doTGraph){
+		cout<<"check input bools to calcAndPlotPtRatioProfile fxn"<<endl;
+		return;
+	}
 	TCanvas * g0 = new TCanvas(canvName,canvName,600,600);
 	g0->cd();
 	gStyle->SetOptStat("emriou");
+
+	///declare two histos in case checkSeparatedBins is true
+	TString lowPtHistName = "";
+	lowPtHistName += "lowPt";
+	string temp(profileTitle);
+	string lowPtHistTitle = temp.substr(0,temp.find("vs")-1);
+	//TString lowPtHistTitle = "";
+	//lowPtHistTitle += profileTitle;
+	TString highPtHistName = "";
+	highPtHistName += "highPt";
+	Int_t nHistoBins = 15;
+
+	TH1F * lowPtRatioHist = new TH1F(lowPtHistName,lowPtHistTitle.c_str(),nHistoBins,0.4,1.3);
+	TH1F * highPtRatioHist = new TH1F(highPtHistName,"",nHistoBins,0.4,1.3);
+
 	///declare two arrays which will store info from the TChain
 	Float_t recoArr[arrSize], matchedGenArr[arrSize], otherMatchedGenArr[arrSize];
-	///initialize the TProfile object
-	TProfile * profilePtr = new TProfile(profileName, profileTitle, nProfileBins, minX, maxX, minY, maxY);
+	
+	///initialize the TProfile object, and use the "s" option to set the error bar size equal to the RMS of each bin
+	TProfile * profilePtr = new TProfile(profileName, profileTitle, nProfileBins, minX, maxX, minY, maxY,"s");
+	
 	///link the two arrays to the TChain branches which should be read out
 	chain->SetBranchAddress(recoBranchName, &recoArr);
 	chain->SetBranchAddress(matchedGenBranchName, &matchedGenArr);
 	///do not use otherMatchedGenArr if otherMatchedGenBranchName is identical to matchedGenBranchName 
 	if(otherMatchedGenBranchName.CompareTo(matchedGenBranchName)!=0) chain->SetBranchAddress(otherMatchedGenBranchName, &otherMatchedGenArr);
-	Long64_t nEntries = chain->GetEntriesFast();
+	Long64_t nEntries = chain->GetEntries();
 	for(Long64_t i=0;i<nEntries; i++){
 		chain->GetEntry(i);
 		if(otherMatchedGenBranchName.CompareTo(matchedGenBranchName)!=0){
 			profilePtr->Fill(otherMatchedGenArr[arrIndex],recoArr[arrIndex]/matchedGenArr[arrIndex]);
 		}
-		else profilePtr->Fill(matchedGenArr[arrIndex],recoArr[arrIndex]/matchedGenArr[arrIndex]);
+		else{
+			///this if statement decides what is executed when the x axis is gen pT
+			profilePtr->Fill(matchedGenArr[arrIndex],recoArr[arrIndex]/matchedGenArr[arrIndex]);
+			if(matchedGenArr[arrIndex] > 200 && matchedGenArr[arrIndex] < 250) lowPtRatioHist->Fill(recoArr[arrIndex]/matchedGenArr[arrIndex]);
+			if(matchedGenArr[arrIndex] > 500 && matchedGenArr[arrIndex] < 550) highPtRatioHist->Fill(recoArr[arrIndex]/matchedGenArr[arrIndex]);
+		}
 	}///end loop over entries in TChain
+
+	///if doTGraph is true, then read the TProfile points and error bars and plot these points on a TGraphErrors plot
+	if(doTGraph){
+		Double_t xAxisVals[nProfileBins], xAxisErrorVals[nProfileBins], yAxisVals[nProfileBins], yAxisErrorVals[nProfileBins];
+		///loop over all of the bins in profilePtr and save the x coordinate, y coordinate, and y axis error bar size
+		///from each bin to the appropriate array
+		for(Int_t i=1; i<=nProfileBins; i++){
+			xAxisVals[i-1]=profilePtr->GetXaxis()->GetBinCenter(i);
+			xAxisErrorVals[i-1]=0;
+			yAxisVals[i-1]=profilePtr->GetBinContent(i);
+			yAxisErrorVals[i-1]=profilePtr->GetBinError(i);
+		}//end loop over bins in TProfile which was filled earlier
+
+		///now that the arrays are filled the TGraphErrors object can be made and drawn
+		TGraphErrors * ptRatioGrph = new TGraphErrors(nProfileBins, xAxisVals, yAxisVals, xAxisErrorVals, yAxisErrorVals);
+		ptRatioGrph->SetMinimum(0);
+		ptRatioGrph->SetMaximum(1.1);
+		ptRatioGrph->SetMarkerColor(kRed);
+		ptRatioGrph->SetMarkerStyle(21);
+		ptRatioGrph->GetXaxis()->SetTitle(xAxisLabel);
+		ptRatioGrph->SetTitle(profileTitle);
+		ptRatioGrph->Draw("AP");
+	}//end doTGraph == true
+
+	///if checkSeparatedBins is true, then update the fill and line properties of the two TH1F histos made earlier
+	///and overlay the histos 
+	if(checkSeparatedBins){
+		gStyle->SetOptStat("");
+
+		//rescale the histos so they have the same integral
+		lowPtRatioHist->Scale(1/( lowPtRatioHist->Integral() ));
+		highPtRatioHist->Scale(1/( highPtRatioHist->Integral() ));
+		
+		//rescale the y axis so that the max bin doesn't go above the top boundary of the plot 
+		Double_t yMax;
+		if(lowPtRatioHist->GetBinContent(lowPtRatioHist->GetMaximumBin()) < highPtRatioHist->GetBinContent(highPtRatioHist->GetMaximumBin()) ) yMax = (1.1)*(highPtRatioHist->GetBinContent(highPtRatioHist->GetMaximumBin()));
+		else yMax = (1.1)*(lowPtRatioHist->GetBinContent(lowPtRatioHist->GetMaximumBin()));
+		lowPtRatioHist->SetMaximum(yMax);
+		lowPtRatioHist->GetXaxis()->SetTitle("reco P_{T}/gen P_{T}");
+
+		//rescale the x axis to cluster the bins around the maximum bin
+		Double_t centroid = lowPtRatioHist->GetXaxis()->GetBinCenter(lowPtRatioHist->GetMaximumBin() );
+		Double_t rms = lowPtRatioHist->GetRMS(1);
+		lowPtRatioHist->GetXaxis()->Set(nHistoBins, centroid - 3*rms, centroid + 1.5*rms);
+		highPtRatioHist->GetXaxis()->Set(nHistoBins, centroid - 3*rms, centroid + 1.5*rms);
+		
+		TLegend * leg = new TLegend(0.15,0.7,0.5,0.9);
+		lowPtRatioHist->SetFillColor(kRed);
+		lowPtRatioHist->SetLineColor(kRed);
+		highPtRatioHist->SetLineColor(kBlack);
+		highPtRatioHist->SetLineWidth(3);
+		leg->AddEntry(lowPtRatioHist,"200 < gen pT < 250");
+		leg->AddEntry(highPtRatioHist,"500 < gen pT < 550");
+		lowPtRatioHist->Draw();
+		highPtRatioHist->Draw("same");
+		leg->Draw();
+	}//end checkSeparatedBins == true
 	
-	///now draw the TProfile and save an image of the plot
-	profilePtr->SetMarkerColor(kRed);
-	profilePtr->GetXaxis()->SetTitle(xAxisLabel);
-	profilePtr->Draw(drawOptions);
+	else{
+		///now draw the TProfile and save an image of the plot
+		profilePtr->SetMinimum(0);
+		profilePtr->SetMarkerColor(kRed);
+		profilePtr->GetXaxis()->SetTitle(xAxisLabel);
+		profilePtr->Draw(drawOptions);
+	}//end doTGraph == false and checkSeparatedBins == false
+
 	g0->SaveAs(outputFile,"recreate");
 
 }///end calcAndPlotPtRatioProfile()
 
+/**use this fxn to plot (reco pT/gen pT) as a fxn of gen pT, eta, or phi
+ * in a variable number of bins (specified by an input integer)
+ */ 
+/*
+void fitAndPlotPtRatioStats(map<string,TChain *> inputChainMap, TString fitFunc, T){
+
+}///end fitAndPlotPtRatioStats()
+*/
 
 ///use this macro to develop and run new macros which don't have a central theme, other than being useful to the WR analysis
 ///the first use of this macro was to plot reco pT/gen pT for reco jets and leptons matched to GEN counterparts
 
 void macroSandBox(){
 	TChain * matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
-	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
+	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_RECO_WR_signal_and_bkgnd_files/analysis_recoElectronChannel_single_stage_matching_for_jets_centrally_produced_signal_MWr_2600_MNu_1300.root");
 	TChain * copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
-	copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-	
+	copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_RECO_WR_signal_and_bkgnd_files/analysis_recoElectronChannel_single_stage_matching_for_jets_centrally_produced_signal_MWr_2600_MNu_1300.root");
 
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///take all values of reco pT/matched gen pT from two well separated gen pT bins, and plot all of these
+	///values on two histograms, and overlay the two histos
+	///draw the first histo with a fill color, and the second with no fill color and different color, thicker line 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef checkWellSeparatedGenPtBins
+	///leading lepton
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenPt","leading electron P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1100.,0.,1.1,"ptMatchingEle","ptEle","ptMatchingEle","leadingLeptonGenPt","*H","P_{T,GEN} (GeV)","leadingLeptonPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",false,true);
+
+	///subsubleading lepton
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenPt","subleading electron P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1000.,0.,1.1,"ptMatchingEle","ptEle","ptMatchingEle","subleadingLeptonGenPt","*H","P_{T,GEN} (GeV)","subleadingLeptonPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",false,true);
+
+	///leading jet
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenPt","leading jet P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1000.,0.,1.1,"ptMatchingJet","ptJet","ptMatchingJet","leadingJetGenPt","*H","P_{T,GEN} (GeV)","leadingJetPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",false,true);
+
+	///subleading jet
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenPt","subleading jet P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,600.,0.,1.1,"ptMatchingJet","ptJet","ptMatchingJet","subleadingJetGenPt","*H","P_{T,GEN} (GeV)","subleadingJetPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",false,true);
+
+#endif
+	
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///plot reco pT/matched gen pT for both leptons and jets as a function of gen pT, eta, and phi
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef PtRatioProfiles	
+#ifdef PtRatioProfiles
+
+	/*
+	for(Int_t i=0; i<2; i++){
+
+	}///end loop over bins of gen eta
+	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Draw("etaMatchingEle[0]>>wrDauGenEleEta","abs(etaMatchingEle[0])<0.5");
+	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Fit("gaus","ptEle[0]/ptMatchingEle[0]>>wrDauElePtRatioVsGenEta(20,0.5,1.4)","abs(etaMatchingEle[0])<0.5");
+	TH1F * hist = (TH1F*) gROOT->FindObject("wrDauElePtRatioVsGenEta");
+	TH1F * genHist = (TH1F*) gROOT->FindObject("wrDauGenEleEta");
+	TF1 * fit = hist->GetFunction("gaus");
+	Double_t mean[10], rms[10], peak[10], xAxis[10];
+	Int_t n=1;
+	mean[0] = fit->GetParameter(1);
+	rms[0] = fit->GetParameter(2);
+	peak[0] = hist->GetXaxis()->GetBinCenter( hist->GetMaximumBin() );
+	xAxis[0] = genHist->GetMean(1);	//gets the mean value of the x axis
+	TCanvas * c0 = new TCanvas("c0","c0",600,600);
+	TCanvas * c1 = new TCanvas("c1","c1",600,600);
+	TCanvas * c2 = new TCanvas("c2","c2",600,600);
+	c0->cd();
+	TGraph * meanGr = new TGraph(n,xAxis,mean);
+	meanGr->SetTitle("mean reco P_{T}/gen P_{T} vs gen #eta for WR daugther electron");
+	meanGr->GetXaxis()->SetTitle("gen #eta");
+	meanGr->GetYaxis()->SetTitle("mean reco P_{T}/gen P_{T}");
+	meanGr->Draw("AC*");
+
+	c1->cd();
+	TGraph * rmsGr = new TGraph(n,xAxis,rms);
+	rmsGr->GetXaxis()->SetTitle("gen #eta");
+	rmsGr->GetYaxis()->SetTitle("rms reco P_{T}/gen P_{T}");
+	
+	rmsGr->Draw("AC*");
+
+	c2->cd();
+	TGraph * peakGr = new TGraph(n,xAxis,peak);
+	peakGr->GetXaxis()->SetTitle("gen #eta");
+	peakGr->GetYaxis()->SetTitle("peak reco P_{T}/gen P_{T}");
+	peakGr->Draw("AC*");
+	*/
+	
 	///leading lepton
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenPt","leading electron P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1100.,0.,1.1,"ptMatchingEle","ptEle","ptMatchingEle","leadingLeptonGenPt","*H","P_{T,GEN} (GeV)","leadingLeptonPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenPt","leading electron P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1100.,0.,1.1,"ptMatchingEle","ptEle","ptMatchingEle","leadingLeptonGenPt","*H","P_{T,GEN} (GeV)","leadingLeptonPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenEta","leading electron P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.0,3.0,0.,1.1,"ptMatchingEle","ptEle","etaMatchingEle","leadingLeptonGenEta","*H","#eta_{GEN}","leadingLeptonPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenEta","leading electron P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.0,3.0,0.,1.1,"ptMatchingEle","ptEle","etaMatchingEle","leadingLeptonGenEta","*H","#eta_{GEN}","leadingLeptonPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenPhi","leading electron P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingEle","ptEle","phiMatchingEle","leadingLeptonGenPhi","*H","#phi_{GEN}","leadingLeptonPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingLeptonPtRatioVsGenPhi","leading electron P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingEle","ptEle","phiMatchingEle","leadingLeptonGenPhi","*H","#phi_{GEN}","leadingLeptonPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
 	///subsubleading lepton
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenPt","subleading electron P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1000.,0.,1.1,"ptMatchingEle","ptEle","ptMatchingEle","subleadingLeptonGenPt","*H","P_{T,GEN} (GeV)","subleadingLeptonPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenPt","subleading electron P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1000.,0.,1.1,"ptMatchingEle","ptEle","ptMatchingEle","subleadingLeptonGenPt","*H","P_{T,GEN} (GeV)","subleadingLeptonPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenEta","subleading electron P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.2,3.2,0.,1.1,"ptMatchingEle","ptEle","etaMatchingEle","subleadingLeptonGenEta","*H","#eta_{GEN}","subleadingLeptonPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenEta","subleading electron P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.2,3.2,0.,1.1,"ptMatchingEle","ptEle","etaMatchingEle","subleadingLeptonGenEta","*H","#eta_{GEN}","subleadingLeptonPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenPhi","subleading electron P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingEle","ptEle","phiMatchingEle","subleadingLeptonGenPhi","*H","#phi_{GEN}","subleadingLeptonPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingLeptonPtRatioVsGenPhi","subleading electron P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingEle","ptEle","phiMatchingEle","subleadingLeptonGenPhi","*H","#phi_{GEN}","subleadingLeptonPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
 
 	///leading jet
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenPt","leading jet P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1000.,0.,1.1,"ptMatchingJet","ptJet","ptMatchingJet","leadingJetGenPt","*H","P_{T,GEN} (GeV)","leadingJetPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenPt","leading jet P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,1000.,0.,1.1,"ptMatchingJet","ptJet","ptMatchingJet","leadingJetGenPt","*H","P_{T,GEN} (GeV)","leadingJetPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenEta","leading jet P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.0,3.0,0.,1.1,"ptMatchingJet","ptJet","etaMatchingJet","leadingJetGenEta","*H","#eta_{GEN}","leadingJetPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenEta","leading jet P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.0,3.0,0.,1.1,"ptMatchingJet","ptJet","etaMatchingJet","leadingJetGenEta","*H","#eta_{GEN}","leadingJetPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenPhi","leading jet P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingJet","ptJet","phiMatchingJet","leadingJetGenPhi","*H","#phi_{GEN}","leadingJetPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,0,"leadingJetPtRatioVsGenPhi","leading jet P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingJet","ptJet","phiMatchingJet","leadingJetGenPhi","*H","#phi_{GEN}","leadingJetPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
 
 	///subleading jet
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenPt","subleading jet P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,600.,0.,1.1,"ptMatchingJet","ptJet","ptMatchingJet","subleadingJetGenPt","*H","P_{T,GEN} (GeV)","subleadingJetPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenPt","subleading jet P_{T,RECO}/P_{T,GEN} vs P_{T,GEN}",20,0.,600.,0.,1.1,"ptMatchingJet","ptJet","ptMatchingJet","subleadingJetGenPt","*H","P_{T,GEN} (GeV)","subleadingJetPtRatio_vs_GenPt_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenEta","subleading jet P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.2,3.2,0.,1.1,"ptMatchingJet","ptJet","etaMatchingJet","subleadingJetGenEta","*H","#eta_{GEN}","subleadingJetPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenEta","subleading jet P_{T,RECO}/P_{T,GEN} vs #eta_{GEN}",20,-3.2,3.2,0.,1.1,"ptMatchingJet","ptJet","etaMatchingJet","subleadingJetGenEta","*H","#eta_{GEN}","subleadingJetPtRatio_vs_GenEta_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
-	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenPhi","subleading jet P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingJet","ptJet","phiMatchingJet","subleadingJetGenPhi","*H","#phi_{GEN}","subleadingJetPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png");
+	calcAndPlotPtRatioProfile(matchedRecoPtEtaDileptonMassDrFourObjMassCuts,2,1,"subleadingJetPtRatioVsGenPhi","subleading jet P_{T,RECO}/P_{T,GEN} vs #phi_{GEN}",20,-3.5,3.5,0.,1.1,"ptMatchingJet","ptJet","phiMatchingJet","subleadingJetGenPhi","*H","#phi_{GEN}","subleadingJetPtRatio_vs_GenPhi_matched_signal_eejj_after_all_reco_cuts.png",true,false);
 
 #endif
+
 
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///plot pT, eta, and phi for matched reco objects (leptons and jets) on top of the gen objects which they are matched to
-	///these plots show the distributions BEFORE any cuts are applied at reco level
 	///the gen matching is done using GEN objects (leptons, jets) before any GEN cuts
 
 #ifdef RecoGenOverlays
