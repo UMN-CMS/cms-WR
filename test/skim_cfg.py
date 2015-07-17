@@ -27,7 +27,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
 )
 
 process.load('ExoAnalysis.cmsWR.skim_cff')
@@ -177,11 +177,13 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
 process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 process.load('ExoAnalysis.cmsWR.skimMuon_cff')
+process.load('ExoAnalysis.cmsWR.skimEMu_cff')
 process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
 process.load('ExoAnalysis.cmsWR.genMuonChannelModules_cff')
 
 
 # Path and EndPath definitions
+process.eleMuSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
 
 if(doMuonChannel == False and ( doTTBar == True or doDyPlusJets == True) ):
 	process.bkgndElectronSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
