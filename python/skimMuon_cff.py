@@ -22,7 +22,7 @@ wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
                                  src = cms.InputTag("wRtunePMuons"),
                                  cut = cms.string("pt>40 && abs(eta)<2.4"),
                                  )
-### select leading muon
+### select loose-ID jets
 wRlooseJet = cms.EDFilter("PATJetSelector",
                             src = cms.InputTag("slimmedJets"),
                             cut = cms.string("(neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"),
