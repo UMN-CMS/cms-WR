@@ -256,6 +256,19 @@ applyLeptonJetDrCut::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::OwnVector<reco::Candidate>::const_iterator leadLepton=inputLeptonsColl->end(), subleadLepton=inputLeptonsColl->end();
    findLeadingAndSubleading(leadLepton, subleadLepton, inputLeptonsColl, true);
 
+   ///if leadLepton or subleadLepton is still equal to end(), then add the empty collection outputObjColl to the
+   ///event record, and leave the produce method 
+   if(leadLepton==inputLeptonsColl->end() || subleadLepton==inputLeptonsColl->end() ){
+	   iEvent.put(outputObjColl, outputCollName);
+	   return;
+   }
+
+#ifdef DEBUG
+   if(leadLepton==inputLeptonsColl->end()) std::cout<<"lead lepton iterator points to end() element of inputLeptonsColl"<<std::endl;
+   if(subleadLepton==inputLeptonsColl->end()) std::cout<<"sublead lepton iterator points to end() element of inputLeptonsColl"<<std::endl;
+
+#endif
+
    ///for each possible jet object, check that the jet is at least dRSeparation away from the two hardest leptons which have dilepton mass > 200
    for(edm::OwnVector<reco::Candidate>::const_iterator jetIt=inputJetsColl->begin();jetIt!=inputJetsColl->end(); jetIt++){
 	   double dRleadLepton=deltaR(jetIt->eta(),jetIt->phi(),leadLepton->eta(),leadLepton->phi());
@@ -271,7 +284,7 @@ applyLeptonJetDrCut::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 #ifdef DEBUG
-   std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;
+   std::cout<<"about to put collection of reco::Candidate objects into root file"<<std::endl;
 #endif
   
    ///now put the collection of matched higher level reco::Candidate objects into the event
