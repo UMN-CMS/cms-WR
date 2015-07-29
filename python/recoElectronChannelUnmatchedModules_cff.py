@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 ## transform the objects in slimmedJets and slimmedElectrons into reco::Candidate objects
 bareRecoJet = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("")
+		cut = cms.string("abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
 		)
 
 bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
@@ -13,7 +13,7 @@ bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 
 bareRecoLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedElectrons"),
-		cut = cms.string("")
+		cut = cms.string("abs(eta) < 2.5")
 		)
 
 bareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
@@ -22,6 +22,27 @@ bareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareRecoParticleSeq = cms.Sequence(bareRecoJet*bareRecoJetFilter*bareRecoLepton*bareRecoLeptonFilter)
+
+##########################
+##these modules apply the dR separation cut btwn leptons and jets just after they
+##are selected by the bareReco modules
+
+bareRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCut",
+		outputJetsCollectionName = cms.string("bareJetsPassingDrSeparationCut"),
+		minDrSeparation = cms.double(0.4),
+		inputJetsCollTag = cms.InputTag("bareRecoJet"),
+		inputLeptonsCollTag = cms.InputTag("bareRecoLepton"),
+		minDileptonMassCut = cms.double(-1),
+		)
+
+bareRecoJetLeptonDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("bareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
+		minNumber = cms.uint32(2)
+		)
+
+bareRecoDrSeparationSeq = cms.Sequence(bareRecoJetLeptonDrSeparation*bareRecoJetLeptonDrSeparationFilter)
+##########################
+
 
 ## apply pT and eta cuts to the bare reco::Candidate leptons and jets
 ptEtaRestrictedRecoLeptons = cms.EDFilter("CandViewSelector",

@@ -107,5 +107,14 @@ emuwRdiLeptonAndFourObjSignalSeq = cms.Sequence(
 ### di-lepton selection in sideband region sequence
 emuwRdiElectronSidebandSeq = cms.Sequence(emuwRleptonSelectionSeq * emuwRdiElectronSidebandCandidate * emuwRdiElectronSidebandCandidateFilter)
 
+### low mass emujj selection sequence
+emuwRdiLeptonAndLowMassSeq = cms.Sequence(
+		emuwRjetSelectionSeq
+		*emuwRdiLeptonSignalSeq
+		*emuwRdiJetCandidate
+		*emuwRdiJetCandidateFilter
+		*emuwRdiLeptonDijetCandidate
+		*~emuwRdiLeptonDijetCandidateFilter
+		)
 
 ### @}

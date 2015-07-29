@@ -212,6 +212,11 @@ TTree * tree;
 Int_t runNumber;
 ULong64_t evtNumber;
 
+///the number of reco leptons and jets in each evt
+Int_t nLeadingLeptons;
+Int_t nSubleadingLeptons;
+Int_t nJets;
+
 //first element is leading (highest pT) electron
 //second element is subleading electron
 Float_t etaMatchingEle[2];
@@ -326,6 +331,10 @@ matchedAnalyzer::matchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
 
+   tree->Branch("nJets",&nJets,"nJets/I");
+   tree->Branch("nLeadingLeptons",&nLeadingLeptons,"nLeadingLeptons/I");
+   tree->Branch("nSubleadingLeptons",&nSubleadingLeptons,"nSubleadingLeptons/I");
+
    tree->Branch("etaMatchingJet",etaMatchingJet,"etaMatchingJet[2]/F");
    tree->Branch("ptMatchingJet",ptMatchingJet,"ptMatchingJet[2]/F");
    tree->Branch("phiMatchingJet",phiMatchingJet,"phiMatchingJet[2]/F");
@@ -417,6 +426,10 @@ matchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	iEvent.getByToken(leadingLeptonsToken, leadingLeptons);
 	iEvent.getByToken(subleadingLeptonsToken, subleadingLeptons);
 	iEvent.getByToken(quarksToken, quarks);
+
+	nJets = quarks->size();
+	nLeadingLeptons = leadingLeptons->size();
+	nSubleadingLeptons = subleadingLeptons->size();
 
 	if(saveGenMatchedInfo){
 		iEvent.getByToken(matchingLeadingLeptonsToken, matchingLeadingLeptons);

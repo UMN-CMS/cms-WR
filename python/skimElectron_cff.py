@@ -104,5 +104,14 @@ wRdiElectronAndFourObjSignalSeq = cms.Sequence(
 ### di-electron selection in sideband region sequence
 wRdiElectronSidebandSeq = cms.Sequence(wRelectronSelectionSeq * wRdiElectronSidebandCandidate * wRdiElectronSidebandCandidateFilter)
 
+### di-electron and low mass four object selection
+wRdiElectronAndLowMassSeq = cms.Sequence(
+		wRjetSelectionSeq
+		*wRdiElectronSignalSeq
+		*wRdiJetCandidate
+		*wRdiJetCandidateFilter
+		*wRdiLeptonDijetCandidate
+		*~wRdiLeptonDijetCandidateFilter
+		)
 
 ### @}

@@ -107,5 +107,14 @@ wRdiMuonAndFourObjSignalSeq = cms.Sequence(
 ### di-muon selection in sideband region sequence
 wRdiMuonSidebandSeq = cms.Sequence(wRmuonSelectionSeq * wRdiMuonSidebandCandidate * wRdiMuonSidebandCandidateFilter)
 
+### di-muon and low four object mass selection sequence
+wRdiMuonAndLowMassSignalSeq = cms.Sequence(
+		muwRjetSelectionSeq
+		*wRdiMuonSignalSeq
+		*muwRdiJetCandidate
+		*muwRdiJetCandidateFilter
+		*wRdiMuonDijetCandidate
+		*~wRdiMuonDijetCandidateFilter
+		)
 
 ### @}

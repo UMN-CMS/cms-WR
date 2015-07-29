@@ -140,7 +140,6 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 		  std::cout<<"checking pt of particles in findLeadingAndSubleading fxn"<<std::endl;
 #endif
 
-		  //minDileptonMass
 		  if(!doDileptonMassCut){
 
 			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
@@ -149,11 +148,11 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 #endif
 				  if(first==collection->end()) first=genIt;
 				  else{
-					  if(genIt->pt() > first->pt()){
+					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
 						  second = first;
 						  first = genIt;
 					  }
-					  else if(second==collection->end() || genIt->pt() > second->pt()) second = genIt;
+					  else if( (second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4  ) second = genIt;
 				  }
 			  }//end loop over reco::Candidate collection
 
@@ -167,11 +166,11 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 #endif
 				  if(first==collection->end()) first=genIt;
 				  else{
-					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass ){
+					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
 						  second = first;
 						  first = genIt;
 					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass ) second = genIt;
+					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
 				  }
 			  }//end loop over reco::Candidate collection
 
@@ -228,6 +227,9 @@ TTree * tree;
 
 Int_t runNumber;
 ULong64_t evtNumber;
+
+Int_t nJets;
+Int_t nLeptons;
 
 //first element is leading (highest pT) electron
 //second element is subleading electron
@@ -302,6 +304,9 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
 
+   tree->Branch("nJets",&nJets,"nJets/I");
+   tree->Branch("nLeptons",&nLeptons,"nLeptons/I");
+
    tree->Branch("etaJet",etaJet,"etaJet[2]/F");
    tree->Branch("ptJet",ptJet,"ptJet[2]/F");
    tree->Branch("phiJet",phiJet,"phiJet[2]/F");
@@ -360,6 +365,9 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	iEvent.getByToken(leptonsToken, leptons);
 	iEvent.getByToken(jetsToken, jets);
+	
+	nJets = jets->size();
+	nLeptons = leptons->size();
 
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton = leptons->end(), subleadingLepton = leptons->end();
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = jets->end(), subleadingJet = jets->end();
@@ -368,6 +376,8 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
 	
 	if(leadingLepton==leptons->end() || subleadingLepton==leptons->end()) return;	///< skip this evt if two leptons are not found
+	if(leadingJet==jets->end() || subleadingJet==jets->end()) return;	///< skip this evt if two jets are not found
+
 
 
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values

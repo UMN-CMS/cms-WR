@@ -109,11 +109,11 @@ class applyLeptonJetDrCut : public edm::EDProducer {
 #endif
 				  if(first==collection->end()) first=genIt;
 				  else{
-					  if(genIt->pt() > first->pt()){
+					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
 						  second = first;
 						  first = genIt;
 					  }
-					  else if(second==collection->end() || genIt->pt() > second->pt()) second = genIt;
+					  else if( ( second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
 				  }
 			  }//end loop over reco::Candidate collection
 
@@ -127,11 +127,11 @@ class applyLeptonJetDrCut : public edm::EDProducer {
 #endif
 				  if(first==collection->end()) first=genIt;
 				  else{
-					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass ){
+					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
 						  second = first;
 						  first = genIt;
 					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass ) second = genIt;
+					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
 				  }
 			  }//end loop over reco::Candidate collection
 
