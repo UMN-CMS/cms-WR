@@ -3,3 +3,5 @@ processDump.py
 crab.history
 .*~
 *.root
+*.pyc
+__init__.py
