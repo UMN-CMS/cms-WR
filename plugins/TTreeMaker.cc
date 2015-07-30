@@ -12,8 +12,7 @@
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Math/interface/deltaR.h"
-
-using namespace std;
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 class TTreeMaker : public edm::EDAnalyzer {
 public:
@@ -66,7 +65,28 @@ private:
     float dR_leadLepton_subleadJet;
     float dR_subleadLepton_leadJet;
     float dR_subleadLepton_subleadJet;
+    
+    float dR_leadLepton_subleadLepton;
+    float dR_leadJet_subleadJet;
+    
+    int nleptons;
+    int njets;
+    int nvertices;
 
+    float lepton_pt;
+    float jet_pt;
+
+    float weight;
+
+    // Muon ID
+    std::vector<bool> isGlobal;
+    std::vector<int> numberOfValidMuonHits;
+    std::vector<int> numberOfMatchedStations;
+    std::vector<float> sigmapt;
+    std::vector<float> dxy;
+    std::vector<float> dz;
+    std::vector<int> numberOfValidPixelHits;
+    std::vector<int> trackerLayersWithMeasurement;
 
     // Generator level quantities
     // Leading lepton corresponds to the WR daughter
@@ -107,6 +127,20 @@ private:
       dilepton_mass = gen_dilepton_mass = Mlljj = gen_Mlljj = -999;
       dR_leadLepton_leadJet = dR_leadLepton_subleadJet = dR_subleadLepton_leadJet = dR_subleadLepton_subleadJet = 9;
       gen_dR_leadLepton_leadJet = gen_dR_leadLepton_subleadJet = gen_dR_subleadLepton_leadJet = gen_dR_subleadLepton_subleadJet = 9;
+
+      dR_leadLepton_subleadLepton = dR_leadJet_subleadJet = 9;
+      isGlobal.clear();
+      numberOfValidMuonHits.clear();
+      numberOfMatchedStations.clear();
+      sigmapt.clear();
+      dxy.clear();
+      dz.clear();
+      numberOfValidPixelHits.clear();
+      trackerLayersWithMeasurement.clear();
+    
+      nleptons = njets = nvertices = -1;
+      lepton_pt = jet_pt = -999;
+
       //pv_x.clear();
       
     }
@@ -174,10 +208,30 @@ TTreeMaker::TTreeMaker(const edm::ParameterSet& cfg)
   tree->Branch("dR_leadLepton_subleadJet", &nt.dR_leadLepton_subleadJet, "dR_leadLepton_subleadJet/F");
   tree->Branch("dR_subleadLepton_leadJet", &nt.dR_subleadLepton_leadJet, "dR_subleadLepton_leadJet/F");
   tree->Branch("dR_subleadLepton_subleadJet", &nt.dR_subleadLepton_subleadJet, "dR_subleadLepton_subleadJet/F");
+  tree->Branch("dR_leadLepton_subleadLepton", &nt.dR_leadLepton_subleadLepton, "dR_leadLepton_subleadLepton/F");
+  tree->Branch("dR_leadJet_subleadJet", &nt.dR_leadJet_subleadJet, "dR_leadJet_subleadJet/F");
+
   tree->Branch("gen_dR_leadLepton_leadJet", &nt.gen_dR_leadLepton_leadJet, "gen_dR_leadLepton_leadJet/F");
   tree->Branch("gen_dR_leadLepton_subleadJet", &nt.gen_dR_leadLepton_subleadJet, "gen_dR_leadLepton_subleadJet/F");
   tree->Branch("gen_dR_subleadLepton_leadJet", &nt.gen_dR_subleadLepton_leadJet, "gen_dR_subleadLepton_leadJet/F");
   tree->Branch("gen_dR_subleadLepton_subleadJet", &nt.gen_dR_subleadLepton_subleadJet, "gen_dR_subleadLepton_subleadJet/F");
+
+  tree->Branch("isGlobal",&nt.isGlobal);
+  tree->Branch("numberOfValidMuonHits",&nt.numberOfValidMuonHits);
+  tree->Branch("numberOfMatchedStations",&nt.numberOfMatchedStations);
+  tree->Branch("sigmapt",&nt.sigmapt);
+  tree->Branch("dxy",&nt.dxy);
+  tree->Branch("dz",&nt.dz);
+  tree->Branch("numberOfValidPixelHits",&nt.numberOfValidPixelHits);
+  tree->Branch("trackerLayersWithMeasurement",&nt.trackerLayersWithMeasurement);
+
+  tree->Branch("nleptons",&nt.nleptons,"nleptons/i");
+  tree->Branch("njets",&nt.njets,"njets/i");
+  tree->Branch("nvertices",&nt.nvertices,"nvertices/i");
+  tree->Branch("lepton_pt",&nt.lepton_pt,"lepton_pt/F");
+  tree->Branch("jet_pt",&nt.jet_pt,"jet_pt/F");
+
+  tree->Branch("weight",&nt.weight,"weight/F");
 
 }
 
@@ -197,6 +251,8 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
   event.getByLabel(genparticles_src, gen_particles);
   edm::Handle<reco::GenJetCollection> gen_jets;
   event.getByLabel(genjets_src, gen_jets);
+  edm::Handle<GenEventInfoProduct> evinfo;
+  event.getByLabel("generator", evinfo);
   
   std::vector<reco::GenParticle> gmuons(2);
   std::vector<reco::GenParticle> geles(2);
@@ -211,18 +267,36 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 
   bool electron_mode = !muon_mode;
 
+  nt.weight = evinfo->weight();
+
+  nt.nvertices = primary_vertex->size();
   if(muon_mode){
-    for(auto mu : *muons){         
+    nt.nleptons = muons->size();
+    for(auto mu : *muons){
+      nt.lepton_pt = mu.pt();
+      nt.isGlobal.push_back(mu.isGlobalMuon());
+      nt.numberOfValidMuonHits.push_back(mu.numberOfValidHits());
+      nt.numberOfMatchedStations.push_back(mu.numberOfMatchedStations());
+      nt.sigmapt.push_back(mu.tunePMuonBestTrack()->ptError()/mu.pt());
+      nt.dxy.push_back(mu.dB());
+      nt.dz.push_back(mu.tunePMuonBestTrack()->dz(primary_vertex->at(0).position()));
+      if(mu.innerTrack().isAvailable()){
+	//std::cout<<"Inner"<<std::endl;
+	nt.numberOfValidPixelHits.push_back(mu.innerTrack()->hitPattern().numberOfValidPixelHits());
+	nt.trackerLayersWithMeasurement.push_back(mu.innerTrack()->hitPattern().trackerLayersWithMeasurement());
+      }
       if(mu.pt() > leading_lepton_pt_cut && fabs(mu.eta()) < lepton_eta_cut && mu.isHighPtMuon(primary_vertex->at(0))){
 	mus.push_back(mu);	     
       }    
     }
-    vector<pat::Jet> selected_jets;
+    std::vector<pat::Jet> selected_jets;
     for(auto j: *jets)
       //if((j.neutralHadronEnergyFraction()<0.99 && j.neutralEmEnergyFraction()<0.99 && (j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.muonEnergyFraction()<0.8) && ((abs(j.eta())<=2.4 && j.chargedHadronEnergyFraction()>0 && j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.99) || abs(j.eta())>2.4))
       selected_jets.push_back(j);
     
+    nt.njets = selected_jets.size();
     for(auto j : selected_jets){  
+      nt.jet_pt = j.pt();
       if(j.pt() > leading_jet_pt_cut && fabs(j.eta()) < jet_eta_cut){
 	bool isolated = true;
 	for(auto m : mus){
@@ -243,6 +317,7 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	nt.subleading_lepton_eta = mus[1].eta();
 	nt.subleading_lepton_phi = mus[1].phi();
 	nt.dilepton_mass = (mus[0].p4() + mus[1].p4()).M();
+	nt.dR_leadLepton_subleadLepton = deltaR(mus[0],mus[1]);
 	if(js.size() > 0) nt.dR_subleadLepton_leadJet = deltaR(mus[1],js[0]);
 	if(js.size() > 1){
 	  nt.dR_subleadLepton_subleadJet = deltaR(mus[1],js[1]);
@@ -258,6 +333,7 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	nt.subleading_jet_pt = js[1].pt();
 	nt.subleading_jet_eta = js[1].eta();
 	nt.subleading_jet_phi = js[1].phi();
+	nt.dR_leadJet_subleadJet = deltaR(js[0],js[1]);
       }
     }
   }
