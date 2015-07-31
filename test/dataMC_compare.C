@@ -62,16 +62,18 @@ void dataMC_compare(){
   vector<TH1F*> h_numberofstations_1 = MakeNHistos("h_numberofstations_1", 7,6,0,6);
   vector<TH1F*> h_sigmapt_0 = MakeNHistos("h_sigmapt_0", 7,50,0,0.5);
   vector<TH1F*> h_sigmapt_1 = MakeNHistos("h_sigmapt_1", 7,50,0,0.5);
-  vector<TH1F*> h_dxy_0 = MakeNHistos("h_dxy_0", 7,50,0,0.2);
-  vector<TH1F*> h_dxy_1 = MakeNHistos("h_dxy_1", 7,50,0,0.2);
-  vector<TH1F*> h_dz_0 = MakeNHistos("h_dz_0", 7,50,0,0.2);
-  vector<TH1F*> h_dz_1 = MakeNHistos("h_dz_1", 7,50,0,0.2);
+  vector<TH1F*> h_dxy_0 = MakeNHistos("h_dxy_0", 7,50,0,0.1);
+  vector<TH1F*> h_dxy_1 = MakeNHistos("h_dxy_1", 7,50,0,0.1);
+  vector<TH1F*> h_dz_0 = MakeNHistos("h_dz_0", 7,50,0,0.1);
+  vector<TH1F*> h_dz_1 = MakeNHistos("h_dz_1", 7,50,0,0.1);
   vector<TH1F*> h_numberofpixels_0 = MakeNHistos("h_numberofpixels_0", 7,10,0,10);
   vector<TH1F*> h_numberofpixels_1 = MakeNHistos("h_numberofpixels_1", 7,10,0,10);
   vector<TH1F*> h_numberoflayers_0 = MakeNHistos("h_numberoflayers_0", 7,20,0,20);
   vector<TH1F*> h_numberoflayers_1 = MakeNHistos("h_numberoflayers_1", 7,20,0,20);
 
-  int nhistos = 39;
+  vector<TH1F*> h_angle3D = MakeNHistos("h_angle3D", 7,50,-6,6);
+
+  int nhistos = 40;
 
   std::vector<THStack*> ths; // Stacks;
   
@@ -140,6 +142,7 @@ void dataMC_compare(){
     histos[j][36] = h_numberofpixels_1[j];
     histos[j][37] = h_numberoflayers_0[j];
     histos[j][38] = h_numberoflayers_1[j];
+    histos[j][39] = h_angle3D[j];
     }
   
   
@@ -193,8 +196,9 @@ void dataMC_compare(){
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->SetFillColor( kWhite ) ; 
 
-  TString xtitles[] = {"Mlljj","dilepton mass","leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","number of leptons","number of jets","number of vertices","dR lepton 1 lepton 2","dR jet 1 jet 2","dR lepton 1 jet 1","dR lepton 1 jet 2","dR lepton 2 jet 1","dR lepton 2 jet 2","isGlobal Muon 1","isGlobal Muon 2","Number of hits Muon 1","Number of hits Muon 2","Number of stations Muon 1","Number of stations Muon 2","#sigma_{pT} Muon 1","#sigma_{pT} Muon 2","dxy Muon 1","dxy Muon 2","dz Muon 1","dz Muon 2","Number of pixels Muon 1","Number of pixels Muon 2","Number of layers Muon 1","Number of layers Muon 2"};
-  TString fnames[] = {"Mlljj","Mll","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","isGlobal0","isGlobal1","nhits0","nhits1","nstations0","nstations1","sigmapt0","sigmapt1","dxy0","dxy1","dz0","dz1","npixels0","npixels1","nlayers0","nlayers1"};
+  TString xtitles[] = {"Mlljj","dilepton mass","leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","number of leptons","number of jets","number of vertices","dR lepton 1 lepton 2","dR jet 1 jet 2","dR lepton 1 jet 1","dR lepton 1 jet 2","dR lepton 2 jet 1","dR lepton 2 jet 2","isGlobal Muon 1","isGlobal Muon 2","Number of hits Muon 1","Number of hits Muon 2","Number of stations Muon 1","Number of stations Muon 2","#sigma_{pT} Muon 1","#sigma_{pT} Muon 2","dxy Muon 1","dxy Muon 2","dz Muon 1","dz Muon 2","Number of pixels Muon 1","Number of pixels Muon 2","Number of layers Muon 1","Number of layers Muon 2","3D angle"};
+
+  TString fnames[] = {"Mlljj","Mll","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","isGlobal0","isGlobal1","nhits0","nhits1","nstations0","nstations1","sigmapt0","sigmapt1","dxy0","dxy1","dz0","dz1","npixels0","npixels1","nlayers0","nlayers1","angle3D"};
 
   for(int icanvas=0; icanvas<nhistos; icanvas++){
     TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 400 ) ;
@@ -202,6 +206,7 @@ void dataMC_compare(){
     histos[6][icanvas]->Draw("ep");
     ths[icanvas]->Draw("same");
     ths[icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
+    histos[6][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
     //histos[2][0]->Draw("same");
     leg->Draw(); 
     TString fn = "~/www/plots/WR/skimmed/data/";
@@ -268,6 +273,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
   std::vector<int> * numberOfValidPixelHits;
   std::vector<int> * trackerLayersWithMeasurement;
   Float_t weight;
+  Float_t angle3D;
 
   tree->SetBranchAddress("Mlljj",&Mlljj);
   tree->SetBranchAddress("leading_lepton_pt",&l1_pt);
@@ -305,14 +311,16 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
   tree->SetBranchAddress("numberOfValidPixelHits",&numberOfValidPixelHits);
   tree->SetBranchAddress("trackerLayersWithMeasurement",&trackerLayersWithMeasurement);
 
+  tree->SetBranchAddress("angle3D",&angle3D);
+
   if(!is_data)
     tree->SetBranchAddress("weight",&weight);
 
   for (Int_t ev = 0; ev < nentries; ev++) {
     float reweight = 1;
-    tree->GetEntry(ev);
+    tree->GetEntry(ev); 
 
-    if(Mlljj<600 && l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && Mll<200 && dR_l1l2 > 0.2)// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
+    if(Mlljj<600 && l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && Mll<200)// && (dR_l1l2 < 2.5 || dR_l1l2 > 3.5))// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
       {
 	if(!is_data){
 	  if(pileup_reweight)
@@ -369,6 +377,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 	    h1[36]->Fill((*numberOfValidPixelHits)[1],reweight);
 	    h1[38]->Fill((*trackerLayersWithMeasurement)[1],reweight);
 	  }
+	  h1[39]->Fill(log10(TMath::Pi() - angle3D),reweight);
 	}
 	else {
 	  h1[0]->Fill(Mlljj);
@@ -420,6 +429,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 	    h1[36]->Fill((*numberOfValidPixelHits)[1]);
 	    h1[38]->Fill((*trackerLayersWithMeasurement)[1]);
 	  }
+	  h1[39]->Fill(log10(TMath::Pi() - angle3D));
 	}
       }
   }
