@@ -109,8 +109,9 @@ process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
 #process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output + process.MakeTTree_Muons)
-    
+process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output)# + process.MakeTTree_Muons)
+#process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_sideband_output)
+
 #do not add changes to your config after this point (unless you know what you are doing)
 
 # End of customisation functions

@@ -17,17 +17,6 @@ process.source = cms.Source("PoolSource",
 os.system('das_client.py --query="file dataset=/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/jchavesb-crab_WR_DY_Jets_Skim_50ns_Sideband-8a626735db4a89bf68c59f2da6d5e98a/USER instance=prod/phys03" --limit=0 > pappy.txt')
 
 fn = 'pappy.txt'
-#fn = 'dyskim.txt'
-#fn = 'dyskim_sideband.txt'
-#fn = 'ttskim.txt'
-#fn = 'ttskim_sideband.txt'
-#fn = 'wzskim.txt'
-#fn = 'wzskim_sideband.txt'
-#fn = 'zzskim.txt'
-#fn = 'zzskim_sideband.txt'
-#fn = 'wjskim.txt'
-#fn = 'wjskim_sideband.txt'
-#fn = 'tmp_sideband.txt'
 
 sec_file = open(fn, 'r')
 
@@ -39,8 +28,6 @@ for line in sec_file:
         mysecfilelist.append(line.strip())
 process.source.fileNames = mysecfilelist
 outfn = 'skim_ttree.root'
-if 'sideband' in fn:
-    outfn = 'skim_ttree_sideband.root'
 process.TFileService = cms.Service('TFileService', fileName = cms.string(outfn))
 
 process.options = cms.untracked.PSet(
@@ -50,7 +37,7 @@ process.options = cms.untracked.PSet(
 
 from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
 process.triggerFilter = hltHighLevel.clone()
-process.triggerFilter.HLTPaths = ['HLT_Mu45_eta2p1_v*','HLT_Mu50_v*']
+process.triggerFilter.HLTPaths = ['HLT_Mu45_eta2p1_v*','HLT_Mu50_v*','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*']
 process.triggerFilter.andOr = True # = OR
 #for name, path in process.paths.items():
  #   if not name.startswith('eventCleaning'):
@@ -59,4 +46,5 @@ process.ptrig = cms.Path(process.triggerFilter)
 
 process.SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('ptrig'))
 
-process.p = cms.Path(process.wRtunePMuons + process.wRsubleadingMuon + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Muons)
+#process.p = cms.Path(process.wRtunePMuons + process.wRsubleadingMuon + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Muons)
+process.p = cms.Path(process.wRsubleadingElectron + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Electrons)

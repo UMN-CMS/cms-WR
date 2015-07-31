@@ -14,7 +14,7 @@ TFileService = cms.Service('TFileService', fileName = cms.string('made_ttree.roo
 
 MakeTTree_Muons = cms.EDAnalyzer('TTreeMaker',
                             muons_src = cms.InputTag('wRsubleadingMuon'),
-                            electrons_src = cms.InputTag('wRsubleadingElectron'),
+                            electrons_src = cms.InputTag('slimmedElectrons'),
                             jets_src = cms.InputTag('wRlooseJet'),
                             genparticles_src = cms.InputTag('prunedGenParticles'),
                             genjets_src = cms.InputTag('slimmedGenJets'),
