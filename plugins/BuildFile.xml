@@ -17,5 +17,6 @@
   <use name="TrackingTools/Records"/>
   <use name="TrackingTools/TransientTrack"/>
   <use name="CondFormats/JetMETObjects"/>
+  <use name="SimDataFormats/GeneratorProducts"/>
 </library>
 

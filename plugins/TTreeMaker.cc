@@ -13,6 +13,7 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "DataFormats/Math/interface/angle.h"
 
 class TTreeMaker : public edm::EDAnalyzer {
 public:
@@ -77,6 +78,7 @@ private:
     float jet_pt;
 
     float weight;
+    float angle3D;
 
     // Muon ID
     std::vector<bool> isGlobal;
@@ -140,6 +142,8 @@ private:
     
       nleptons = njets = nvertices = -1;
       lepton_pt = jet_pt = -999;
+
+      angle3D = -999;
 
       //pv_x.clear();
       
@@ -232,6 +236,7 @@ TTreeMaker::TTreeMaker(const edm::ParameterSet& cfg)
   tree->Branch("jet_pt",&nt.jet_pt,"jet_pt/F");
 
   tree->Branch("weight",&nt.weight,"weight/F");
+  tree->Branch("angle3D",&nt.angle3D,"angle3D/F");
 
 }
 
@@ -313,6 +318,7 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
       if(js.size() > 0) nt.dR_leadLepton_leadJet = deltaR(mus[0],js[0]);
       if(js.size() > 1) nt.dR_leadLepton_subleadJet = deltaR(mus[0],js[1]);
       if(mus.size() > 1){
+	nt.angle3D = angle(mus[0].momentum().x(),mus[0].momentum().y(),mus[0].momentum().z(),mus[1].momentum().x(),mus[1].momentum().y(),mus[1].momentum().z());
 	nt.subleading_lepton_pt = mus[1].pt();
 	nt.subleading_lepton_eta = mus[1].eta();
 	nt.subleading_lepton_phi = mus[1].phi();
