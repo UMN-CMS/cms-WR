@@ -13,19 +13,19 @@ emuBareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(2)
 		)
 
-emuBareRecoLepton = cms.EDFilter("CandViewSelector",
+emuBareRecoLeptonOne = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedElectrons"),
-		cut = cms.string("")
+		cut = cms.string("abs(eta) < 2.5")
 		)
 
-emuBareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("emuBareRecoLepton"),
+emuBareRecoLeptonOneFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("emuBareRecoLeptonOne"),
 		minNumber = cms.uint32(1)
 		)
 
 emuBareRecoLeptonTwo = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedMuons"),
-		cut = cms.string("")
+		cut = cms.string("abs(eta) < 2.4")
 		)
 
 emuBareRecoLeptonTwoFilter = cms.EDFilter("CandViewCountFilter",
@@ -33,19 +33,38 @@ emuBareRecoLeptonTwoFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(1)
 		)
 
-emuCombineBareRecoLeptonsIntoOneCollection = cms.EDProducer('combineLeptonsProducer',
-		inputLeptonOneTag = cms.InputTag("emuBareRecoLepton"),
-		inputLeptonTwoTag = cms.InputTag("emuBareRecoLeptonTwo"),
-		outputLeptonCollName = cms.string("bareRecoElectronsAndMuons")
-		)
-
 emuBareRecoParticleSeq = cms.Sequence(
 		emuBareRecoJet
 		*emuBareRecoJetFilter
-		*emuBareRecoLepton
-		*emuBareRecoLeptonFilter
+		*emuBareRecoLeptonOne
+		*emuBareRecoLeptonOneFilter
 		*emuBareRecoLeptonTwo
 		*emuBareRecoLeptonTwoFilter
-		#*emuCombineBareRecoLeptonsIntoOneCollection
 		)
+
+##########################
+##these modules apply the dR separation cut btwn leptons and jets after they
+##are selected by the bareReco modules
+
+emuBareRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLeptonFlavor",
+		outputJetsCollectionName = cms.string("bareJetsPassingDrSeparationCut"),
+		minDrSeparation = cms.double(0.4),
+		inputJetsCollTag = cms.InputTag("emuBareRecoJet"),
+		inputLeptonsOneCollTag = cms.InputTag("emuBareRecoLeptonOne"),
+		inputLeptonsTwoCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
+		minDileptonMassCut = cms.double(-1),
+		)
+
+emuBareRecoJetLeptonDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("emuBareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
+		minNumber = cms.uint32(2)
+		)
+
+emuBareRecoDrSeparationSeq = cms.Sequence(
+		emuBareRecoJetLeptonDrSeparation
+		*emuBareRecoJetLeptonDrSeparationFilter
+		)
+##########################
+
+
 

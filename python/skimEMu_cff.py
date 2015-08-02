@@ -31,13 +31,13 @@ emuwRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 ### select electron \ingroup electronSkim_Group
 emuwRelectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>30"),
+                                 cut = cms.string("pt>20"),
                                  )
 
 ### select muon
-emuwRmuon = cms.EDFilter("PATElectronRefSelector",
+emuwRmuon = cms.EDFilter("PATMuonRefSelector",
                                  src = cms.InputTag("slimmedMuons"),
-                                 cut = cms.string("pt>30"),
+                                 cut = cms.string("pt>20"),
                                  )
 #emuwRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
 

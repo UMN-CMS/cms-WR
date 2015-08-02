@@ -26,7 +26,7 @@ mumuBareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
 mumuBareRecoParticleSeq = cms.Sequence(mumuBareRecoJet*mumuBareRecoJetFilter*mumuBareRecoLepton*mumuBareRecoLeptonFilter)
 
 ##########################
-##these modules apply the dR separation cut btwn leptons and jets just after they
+##these modules apply the dR separation cut btwn leptons and jets after they
 ##are selected by the bareReco modules
 
 mumuBareRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCut",

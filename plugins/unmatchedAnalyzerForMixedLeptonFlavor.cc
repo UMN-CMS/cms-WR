@@ -110,56 +110,47 @@ class unmatchedAnalyzerForMixedLeptonFlavor : public edm::EDAnalyzer {
 		  std::cout<<"checking pt of particles in two handled findLeadingAndSubleading fxn"<<std::endl;
 #endif
 
+		  ///find the highest pT object in collectionOne by looping over all contents in collectionOne
+		  for(edm::OwnVector<reco::Candidate>::const_iterator genItOne = collectionOne->begin(); genItOne != collectionOne->end(); genItOne++){
+#ifdef DEBUG
+			  std::cout<<"a particle from collectionOne has pT = \t"<< genItOne->pt() << std::endl;
+#endif
+
+			  if(first==collectionOne->end()) first=genItOne;
+			  else if(genItOne->pt() > first->pt() ) first = genItOne;
+		  }//end loop over reco::Candidate objects in collectionOne
+
+
 		  if(!doDileptonMassCut){
-
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genItOne = collectionOne->begin(); genItOne != collectionOne->end(); genItOne++){
+			  ///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++){
 #ifdef DEBUG
-				  std::cout<<"pT = \t"<< genItOne->pt() << std::endl;
+				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
 #endif
-				  if(first==collectionOne->end()) first=genItOne;
-				  ///first, find the highest pT object in collectionOne by looping over all contents in collectionOne
-				  else if(genItOne->pt() > first->pt() ) first = genItOne;
-			  }//end loop over reco::Candidate collectionOne
 
-			  ///now find the highest pT object in collectionTwo which is separated from the object chosen from collectionOne
-			  ;
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 ) second = genItTwo;
 
-
-
-
-
-
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
-#ifdef DEBUG
-				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
-#endif
-				  if(first==collection->end()) first=genIt;
-				  else{
-					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
-						  second = first;
-						  first = genIt;
-					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4  ) second = genIt;
-				  }
-			  }//end loop over reco::Candidate collection
+				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4) second = genItTwo;
+			  }///end loop over objects in collectionTwo
 
 		  }///end if(!doDileptonMassCut)
 
 		  if(doDileptonMassCut){
-
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+			  ///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
+			  ///and whose dilepton mass, when combined with the object chosen from collectionOne, is above the dileptonMass threshold value
 #ifdef DEBUG
-				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+			  std::cout<<"inside if(doDileptonMassCut) of two handled findLeadingAndSubleading() fxn"<<std::endl;
 #endif
-				  if(first==collection->end()) first=genIt;
-				  else{
-					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
-						  second = first;
-						  first = genIt;
-					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
-				  }
-			  }//end loop over reco::Candidate collection
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++){
+#ifdef DEBUG
+				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
+#endif
+			  
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+
+				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+			  }///end loop over objects in collectionTwo with dilepton mass cut applied
 
 		  }///end if(doDileptonMassCut)
 
@@ -167,7 +158,7 @@ class unmatchedAnalyzerForMixedLeptonFlavor : public edm::EDAnalyzer {
 		  std::cout<<"leaving two handled findLeadingAndSubleading fxn"<<std::endl;
 #endif
 
-	  }///end findLeadingAndSubleading()
+	  }///end two handled findLeadingAndSubleading()
 
 
 	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection,bool doDileptonMassCut){
@@ -216,21 +207,7 @@ class unmatchedAnalyzerForMixedLeptonFlavor : public edm::EDAnalyzer {
 		  std::cout<<"leaving one handled findLeadingAndSubleading fxn"<<std::endl;
 #endif
 
-	  }///end findLeadingAndSubleading()
-
-	  /** this fxn sifts through a collection of reco::Candidate objects, finds the highest pT object in the collection, and assigns
-	   * a pointer to this object to the iterator named iter
-	   * a reference to iter is input to this fxn
-	   */
-	  void findHighestPt(edm::OwnVector<reco::Candidate>::const_iterator& iter, edm::Handle<edm::OwnVector<reco::Candidate> > coll){
-		  for(edm::OwnVector<reco::Candidate>::const_iterator it = coll->begin(); it!=coll->end(); it++){
-			  if(iter==coll->end()) iter=it;
-			  else{
-				  if(it->pt() > iter->pt()) iter=it;
-			  }
-		  }///end loop over reco::Candidate objects in the collection named coll
-
-	  }///end findHighestPt()
+	  }///end one handled findLeadingAndSubleading()
 	 
 
 private:
@@ -271,8 +248,8 @@ Int_t nLeptons;
 Int_t nLeptonsOne;
 Int_t nLeptonsTwo;
 
-//first element is leading (highest pT) electron
-//second element is subleading electron
+//first element is leading (highest pT) lepton 
+//second element is subleading lepton 
 Float_t etaEle[2];
 Float_t ptEle[2];
 Float_t phiEle[2];
@@ -297,8 +274,8 @@ Float_t dR_leadingLeptonSubleadingLepton;
 Float_t dR_leadingJetSubleadingJet;
 
 
-///leadingIsHardest = 1 when leading ele pT > subleading ele pT
-///leadingIsHardest = 0 when leading ele pT < subleading ele pT
+///leadingIsHardest = 1 when leading lepton pT > subleading lepton pT
+///leadingIsHardest = 0 when leading lepton pT < subleading lepton pT
 Int_t leadingIsHardest;
 
 ///pT, eta, and phi of the heavy Nu and WR
@@ -422,14 +399,24 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = jets->end(), subleadingJet = jets->end();
 	
 	///now use the iterators to find the hardest and second hardest leptons and jets
+	///thanks to modules run before this, all leptons and jets will be separated from each other by more than dR = 0.4
 	findLeadingAndSubleading(leadingLeptonOne, leptonsOne, leadingLeptonTwo, leptonsTwo, applyDileptonMassCut);
-	
 	findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
 	
-	if(leadingLeptonOne==leptonsOne->end() || subleadingLeptonOne==leptonsOne->end()) return;	///< skip this evt if two leptons are not found
+	if(leadingLeptonOne==leptonsOne->end() || leadingLeptonTwo==leptonsTwo->end()) return;	///< skip this evt if two leptons are not found
 	if(leadingJet==jets->end() || subleadingJet==jets->end()) return;	///< skip this evt if two jets are not found
 
-
+	///now declare the leadingLepton and subleadingLepton iterators which will be used below, and
+	///assign them to the appropriate leadingLeptonOne and leadingLeptonTwo iterators
+	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton, subleadingLepton;
+	if(leadingLeptonOne->pt() > leadingLeptonTwo->pt()){
+		leadingLepton = leadingLeptonOne;
+		subleadingLepton = leadingLeptonTwo;
+	}///end if(leadingLeptonOne from leptonsOne collection is harder than leadingLeptonTwo from leptonsTwo collection)
+	else{
+		leadingLepton = leadingLeptonTwo;
+		subleadingLepton = leadingLeptonOne;
+	}
 
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
