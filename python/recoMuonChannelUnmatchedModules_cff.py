@@ -15,7 +15,7 @@ mumuBareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 
 mumuBareRecoLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedMuons"),
-		cut = cms.string("abs(eta) < 2.4")
+		cut = cms.string("abs(eta) < 2.4 && pt>20")
 		)
 
 mumuBareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",

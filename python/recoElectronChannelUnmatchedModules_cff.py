@@ -13,7 +13,7 @@ bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 
 bareRecoLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedElectrons"),
-		cut = cms.string("abs(eta) < 2.5")
+		cut = cms.string("abs(eta) < 2.5 && pt>20")
 		)
 
 bareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",

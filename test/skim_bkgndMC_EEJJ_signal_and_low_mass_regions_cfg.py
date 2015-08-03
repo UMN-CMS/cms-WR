@@ -54,10 +54,10 @@ process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
 		dropMetaData = cms.untracked.string('ALL'),
 		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
 		fastCloning = cms.untracked.bool(False),
-		fileName = cms.untracked.string('file:miniAODEMuSkimSignalRegion.root'),
+		fileName = cms.untracked.string('file:miniAODEleEleSkimSignalRegion.root'),
 		outputCommands = process.MICROAODSIMEventContent.outputCommands,
 		overrideInputFileSplitLevels = cms.untracked.bool(True),
-		SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleMuSignalSkim'))
+		SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleEleSignalSkim'))
 
 		)
 
@@ -71,10 +71,10 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     dropMetaData = cms.untracked.string('ALL'),
     eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
     fastCloning = cms.untracked.bool(False),
-    fileName = cms.untracked.string('file:miniAODEMuSkimLowMassRegion.root'),
+    fileName = cms.untracked.string('file:miniAODEleEleSkimLowMassRegion.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleMuLowMassSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleEleLowMassSkim'))
 )
 
 # Additional output definition
@@ -84,12 +84,12 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
-process.load('ExoAnalysis.cmsWR.skimEMu_cff')
+process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 
 
 # Path and EndPath definitions
-process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
-process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonAndLowMassSeq)
+process.eleEleSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
+process.eleEleLowMassSkim = cms.Path(process.wRdiElectronAndLowMassSeq)
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 #process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)

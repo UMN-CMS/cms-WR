@@ -50,6 +50,8 @@
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
+#include "FWCore/Common/interface/TriggerResultsByName.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -226,6 +228,7 @@ virtual void endJob() override;
 std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
+std::string targetHltPathName;	///< check that this HLT path fired in the evt
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsOne;
@@ -303,7 +306,8 @@ Float_t phiWr;
 unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
+	targetHltPathName(iConfig.getParameter<std::string>("checkThisHltPath"))
 
 {
    //now do what ever initialization is needed
@@ -354,7 +358,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(con
    leptonsOneToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsOneCollection"));
    leptonsTwoToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsTwoCollection"));
    jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
- 
+
 }
 
 
@@ -387,6 +391,11 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	iEvent.getByToken(leptonsOneToken, leptonsOne);
 	iEvent.getByToken(leptonsTwoToken, leptonsTwo);
 	iEvent.getByToken(jetsToken, jets);
+	
+	///check that the relevant trigger was fired
+	edm::TriggerResultsByName resultsByName = iEvent.triggerResultsByName("HLT");
+	
+	if(!resultsByName.accept(targetHltPathName) ) return;
 	
 	nJets = jets->size();
 	nLeptonsOne = leptonsOne->size();

@@ -15,7 +15,7 @@ emuBareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 
 emuBareRecoLeptonOne = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedElectrons"),
-		cut = cms.string("abs(eta) < 2.5")
+		cut = cms.string("abs(eta) < 2.5 && pt>20")
 		)
 
 emuBareRecoLeptonOneFilter = cms.EDFilter("CandViewCountFilter",
@@ -25,7 +25,7 @@ emuBareRecoLeptonOneFilter = cms.EDFilter("CandViewCountFilter",
 
 emuBareRecoLeptonTwo = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedMuons"),
-		cut = cms.string("abs(eta) < 2.4")
+		cut = cms.string("abs(eta) < 2.4 && pt>20")
 		)
 
 emuBareRecoLeptonTwoFilter = cms.EDFilter("CandViewCountFilter",

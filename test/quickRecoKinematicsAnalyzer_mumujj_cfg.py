@@ -17,7 +17,9 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		leptonsCollection = cms.InputTag("mumuBareRecoLepton"),
 		jetsCollection = cms.InputTag("mumuBareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(False),
-		minDileptonMass = cms.double(-1)
+		minDileptonMass = cms.double(-1),
+		checkThisHltPath = cms.string("HLT_Mu50_v1"),
+	
 		)
 #
 #process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',

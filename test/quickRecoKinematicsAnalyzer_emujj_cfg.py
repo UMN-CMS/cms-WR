@@ -19,6 +19,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),
 		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),
 		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
+		checkThisHltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1")
 	
 		)
 #

@@ -41,6 +41,8 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "FWCore/Common/interface/TriggerResultsByName.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaReco/interface/ClusterShape.h"
@@ -106,6 +108,7 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 	  void findFarHadrons(edm::Handle<edm::OwnVector<reco::Candidate> > hadronColl, edm::OwnVector<reco::Candidate>::const_iterator& leadingLept, edm::OwnVector<reco::Candidate>::const_iterator& subleadingLept, edm::OwnVector<reco::Candidate>::const_iterator& hadronOne, edm::OwnVector<reco::Candidate>::const_iterator& hadronTwo){
 #ifdef DEBUG
 		  std::cout<<"entered findFarHadrons function"<<std::endl;
+#endif
 #endif
 		  for(edm::OwnVector<reco::Candidate>::const_iterator hadIt = hadronColl->begin(); hadIt!=hadronColl->end(); hadIt++){
 			  double drOne = deltaR(leadingLept->eta(),leadingLept->phi(),hadIt->eta(),hadIt->phi());
@@ -213,6 +216,7 @@ virtual void endJob() override;
 std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
+std::string targetHltPathName;	///< check that this HLT path fired in the evt
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptons;
@@ -221,7 +225,6 @@ edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > >
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > jetsToken;
-
 
 TTree * tree;
 
@@ -286,7 +289,8 @@ Float_t phiWr;
 unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
+	targetHltPathName(iConfig.getParameter<std::string>("checkThisHltPath"))
 
 {
    //now do what ever initialization is needed
@@ -301,7 +305,6 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    
    tree->Branch("leadingIsHardest",&leadingIsHardest,"leadingIsHardest/I");
 
-   tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
 
    tree->Branch("nJets",&nJets,"nJets/I");
@@ -333,7 +336,8 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
 
    leptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsCollection"));
    jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
- 
+
+
 }
 
 
@@ -365,7 +369,13 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	iEvent.getByToken(leptonsToken, leptons);
 	iEvent.getByToken(jetsToken, jets);
+
+	///check that the relevant trigger was fired
+	edm::TriggerResultsByName resultsByName = iEvent.triggerResultsByName("HLT");
 	
+	if(!resultsByName.accept(targetHltPathName) ) return;
+	
+
 	nJets = jets->size();
 	nLeptons = leptons->size();
 
@@ -383,6 +393,7 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
 #ifdef DEBUG
+	std::cout<<"leading lepton pt: \t"<<leadingLepton->pt()<<std::endl;
 	std::cout<<"leading lepton pt: \t"<<leadingLepton->pt()<<std::endl;
 	std::cout<<"subleading lepton pt: \t"<<subleadingLepton->pt()<<std::endl;
 #endif
@@ -497,8 +508,7 @@ unmatchedAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSet
 */
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void
-unmatchedAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void unmatchedAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;

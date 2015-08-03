@@ -3,6 +3,7 @@
 #include <TStyle.h>
 #include <TString.h>
 #include <TH1F.h>
+#include <THStack.h>
 #include <TF1.h>
 #include <TGraphErrors.h>
 #include <TProfile.h>
@@ -28,12 +29,157 @@
 
 using namespace std;
 
-#define checkWellSeparatedGenPtBins
+#define lowMassSkimmedBkgndOnRealData
+//#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
 //#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
+
+
+/**
+ * use this fxn to overlay kinematic distributions from real data (points) onto MC (filled histos) using a THStack object and an overlaid TH1F object
+ * the keys of crossSxnsMap and nEvtsMap are names of physics processes, like ttBar and dyPlusJets
+ * the keys of inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
+ * the areas of the MC histograms are normalized to the integrated luminosity of real data
+ * this is done by calling Scale(crossSxn * integratedLumi / numEvts) on each of the histos from MC data
+ * if there are N unique keys in inputChainMap, then there are N-1 unique keys in the maps called crossSxnsMap and nEvtsMap
+ *
+ * the TChain to real data should contain the phrase "ealData" in the inputChainMap key
+ * the TChain to each MC sample should contain a key which is used in crossSxnsMap and nEvtsMap
+ *
+ */
+void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap){
+	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
+	canv->cd();
+	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
+	map<string,TH1F*> stackedHistoMap;	///< links TString keys to TH1F histos which will ultimately be stacked
+	map<string,TH1F*> overlaidHistoMap; ///< links one TString key to the TH1F histo coming from real data
+	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
+		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
+		string uncutHistoName(chMapIt->first);
+		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
+		///and store the substring in the new string object
+		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
+		(chMapIt->second)->Draw((chMapIt->first).c_str());
+#ifdef DEBUG
+		std::cout<<"input chain map key = \t"<< chMapIt->first <<std::endl;
+#endif
+		if((chMapIt->first).find("ealData") == string::npos ) stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+		else if((chMapIt->first).find("ealData") != string::npos) overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+	}///end loop over elements in inputChainMap
+
+#ifdef DEBUG
+	std::cout<<"there are \t"<< stackedHistoMap.size() <<"\t elements in stackedHistoMap"<<std::endl;
+	std::cout<<"there are \t"<< overlaidHistoMap.size() <<"\t elements in overlaidHistoMap"<<std::endl;
+#endif
+
+	///now add all TH1F objects in stackedHistoMap into one THStack object, and overlay the
+	///histo in overlaidHistoMap onto the THStack object
+	///draw the THStack object first!
+	///1 = black for colors
+	int colors[] = {2,4,8,12,30,40,45};
+	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
+	Int_t i=0;
+	THStack * histoStack = new THStack("","");
+	if(stackedHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
+#ifdef DEBUG
+	std::cout<<"made a THStack object with null name and title"<<std::endl;
+#endif
+
+	for(map<string,TH1F*>::const_iterator histIt=stackedHistoMap.begin(); histIt!=stackedHistoMap.end(); histIt++){
+		
+		///set the line and fill color, and normalize the MC histos
+		(histIt->second)->SetLineColor(colorVect[i]);
+		(histIt->second)->SetFillColor(colorVect[i]);
+#ifdef DEBUG
+		std::cout<<"set line and fill color for the histo \t"<< histIt->first <<std::endl;
+		std::cout<<"before rescaling there are "<< (histIt->second)->Integral() <<" entries in the histo mentioned immediately above"<<std::endl;
+#endif
+
+		for(map<string,Float_t>::const_iterator mcIt=nEvtsMap.begin(); mcIt!=nEvtsMap.end(); mcIt++){
+			if((histIt->first).find(mcIt->first) != string::npos) (histIt->second)->Scale(crossSxnsMap[mcIt->first]*intLumi/nEvtsMap[mcIt->first]);
+		}///end loop which normalizes the MC histos to integrated lumi of real data
+
+#ifdef DEBUG
+		std::cout<<"rescaled the histo \t"<< histIt->first <<std::endl;
+		std::cout<<"after rescaling there are "<< (histIt->second)->Integral() <<" entries in the histo mentioned immediately above"<<std::endl;
+#endif
+	
+		histoStack->Add((histIt->second));	///< add each histo in stackedHistoMap to the THStack object
+
+#ifdef DEBUG
+		std::cout<<"added \t"<< histIt->first <<"\t to the stacked histo object"<<std::endl;
+#endif
+		
+		if(histIt==stackedHistoMap.begin()){
+			histoStack->SetTitle( (histIt->second)->GetTitle() );
+			string xLabel="";
+			if((histIt->first).find("Mass") !=string::npos || (histIt->first).find("ptEle") !=string::npos || (histIt->first).find("ptJet") !=string::npos){
+				xLabel += "GeV";
+			}///end if(histo is plotting a variable with dimension of energy)
+#ifdef DEBUG
+			std::cout<<"xLabel = \t"<< xLabel <<std::endl;
+#endif
+			(histIt->second)->GetXaxis()->SetTitle(xLabel.c_str());
+		}///end filter to set histogram X axis label
+		
+		size_t lastChevron = (histIt->first).find_last_of('>');
+		size_t underscorePos = (histIt->first).find_first_of("_",lastChevron);
+#ifdef DEBUG
+		std::cout<<"lastChevron located at \t"<< lastChevron<<std::endl;
+		std::cout<<"underscorePos located at \t"<< underscorePos<<std::endl;
+#endif
+		string legEntryName = (histIt->first).substr(lastChevron+1,underscorePos-lastChevron-1);
+#ifdef DEBUG
+		cout<<"histo name = \t"<< histIt->first <<endl;
+		cout<<"legEntry has name = \t"<< legEntryName << endl;
+#endif
+		leg->AddEntry(histIt->second,legEntryName.c_str());
+		i++;
+	}///end loop to set line colors of histos, and add entries to TLegend
+
+	histoStack->Draw();
+
+#ifdef DEBUG
+		std::cout<<"stacked histo has been drawn"<<std::endl;
+#endif
+
+	string outputFile;
+	for(map<string,TH1F*>::const_iterator hIt=overlaidHistoMap.begin(); hIt!=overlaidHistoMap.end(); hIt++){
+		size_t lastChevron = (hIt->first).find_last_of('>');
+		size_t underscorePos = (hIt->first).find_first_of("_",lastChevron);
+		string legEntryName = (hIt->first).substr(lastChevron+1,underscorePos-lastChevron-1);
+		leg->AddEntry(hIt->second,legEntryName.c_str(),"lep");
+		(hIt->second)->SetMarkerColor(1);
+		(hIt->second)->SetMarkerStyle(21);
+		(hIt->second)->SetMarkerSize(1.1);
+		(hIt->second)->Draw("same,ep");	///< draw the real data histogram as points
+		size_t firstChevron = (hIt->first).find_first_of('>');
+		outputFile = (hIt->first).substr(0,firstChevron);
+		outputFile += ".png";
+#ifdef DEBUG
+		cout<<"outputFile = \t"<< outputFile <<endl;
+#endif
+
+		/*
+		if(hIt==overlaidHistoMap.begin()){
+			(hIt->second)->Draw();
+			size_t firstChevron = (hIt->first).find_first_of('>');
+			outputFile = (hIt->first).substr(0,firstChevron);
+			outputFile += ".png";
+#ifdef DEBUG
+			cout<<"outputFile = \t"<< outputFile <<endl;
+#endif
+		}
+		else (hIt->second)->Draw("same");
+		*/
+	}///end loop which draws histograms
+	leg->Draw();
+	canv->SaveAs(outputFile.c_str(),"recreate");
+
+}///end overlayPointsOnStackedHistos
 
 
 /** the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
@@ -254,7 +400,50 @@ void macroSandBox(){
 	TChain * copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
 	copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_RECO_WR_signal_and_bkgnd_files/analysis_recoElectronChannel_single_stage_matching_for_jets_centrally_produced_signal_MWr_2600_MNu_1300.root");
 
+	///cross sxn values (picobarns) and dataset sizes (=total number of evts) for bkgnd processes
+	map<string,Float_t> xSxnsFiftyNs;
+	xSxnsFiftyNs["ttBar"]=815.9;
+	xSxnsFiftyNs["dyPlusJets"]=6025.0;
+	map<string,Float_t> numEvtsFiftyNs;
+	numEvtsFiftyNs["ttBar"]=4994250;
+	numEvtsFiftyNs["dyPlusJets"]=19925500;
 
+
+
+#ifdef lowMassSkimmedBkgndOnRealData
+	//overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap)
+	TChain * dyPlusJetsEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	dyPlusJetsEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_DYJets_50ns_skim_low_mass_region_eejj.root");
+	TChain * ttBarEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	ttBarEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");
+	TChain * singleEleEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	singleEleEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/SingleElectron/analyzed_lowMassRegionSkim/analyzed_SingleElectron_skim_low_mass_region_eejj.root");
+	TChain * doubleEGEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	doubleEGEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DoubleEG/analyzed_lowMassRegionSkim/analyzed_DoubleEG_skim_low_mass_region_eejj.root");
+
+	//string histoBeginningForRealData = "SingleEleRealData";	///< the legend entry for real data
+	Float_t integratedLumi = 40.001;	///< in picobarns
+
+	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","nJets","nLeptons"};
+	string link=">>";
+	string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,200.)","_subleadJetPt(50,0.,100.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,400.)","_fourObjectMass(50,0.,600.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_leadLeptonThreeObjMass(50,0.,500.)","_subleadingLeptonThreeObjMass(50,0.,500.)","_nJets(15,0.,15.)","_nLeptons(10,0.,10.)"};
+	
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	string histoBeginnings[] = {"dyPlusJets","ttBar","singleEleRealData"};
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = histoEndingVect.size();
+	for(unsigned int i=0; i<maxI; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = singleEleEEJJLowMassSkim;
+		string cName = "o"+to_string(i);
+		overlayPointsOnStackedHistos(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,xSxnsFiftyNs,integratedLumi,numEvtsFiftyNs);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+
+
+	
+#endif
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///take all values of reco pT/matched gen pT from two well separated gen pT bins, and plot all of these
@@ -467,7 +656,7 @@ void macroSandBox(){
 	string link=">>";
 	string histoEndings[] = {"_leadLeptonPt(50,0.,1200.)","_subleadLeptonPt(50,0.,700.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(70,0.,900.)","_subleadJetPt(50,0.,500.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2500.)","_fourObjectMass(50,400.,3300.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_subleadingLeptonThreeObjMass(50,0.,1600.)","_leadLeptonThreeObjMass(50,0.,2800.)",};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"mWR2600mNu1300","TTBar","DYPlusJets"};
+	string histoBeginnings[] = {"mWR2600mNu1300","ttBar","dyPlusJets"};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	/*
