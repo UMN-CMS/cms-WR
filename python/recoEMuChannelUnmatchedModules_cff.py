@@ -33,6 +33,20 @@ emuBareRecoLeptonTwoFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(1)
 		)
 
+emuMergeLeptons = cms.EDProducer("CandViewMerger",
+		src = cms.VInputTag("emuBareRecoLeptonOne","emuBareRecoLeptonTwo")
+		)
+
+emuRequireHighPtLepton = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("emuMergeLeptons"),
+		cut = cms.string("pt>40")
+		)
+
+emuRequireHighPtLeptonFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("emuRequireHighPtLepton"),
+		minNumber = cms.uint32(1)
+		)
+
 emuBareRecoParticleSeq = cms.Sequence(
 		emuBareRecoJet
 		*emuBareRecoJetFilter
@@ -40,6 +54,9 @@ emuBareRecoParticleSeq = cms.Sequence(
 		*emuBareRecoLeptonOneFilter
 		*emuBareRecoLeptonTwo
 		*emuBareRecoLeptonTwoFilter
+		*emuMergeLeptons
+		*emuRequireHighPtLepton
+		*emuRequireHighPtLeptonFilter
 		)
 
 ##########################

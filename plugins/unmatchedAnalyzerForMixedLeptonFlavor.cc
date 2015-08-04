@@ -50,9 +50,6 @@
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
-#include "FWCore/Common/interface/TriggerResultsByName.h"
-#include "FWCore/Common/interface/TriggerNames.h"
-
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
@@ -132,7 +129,12 @@ class unmatchedAnalyzerForMixedLeptonFlavor : public edm::EDAnalyzer {
 
 				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 ) second = genItTwo;
 
-				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4) second = genItTwo;
+				  if(second!=collectionTwo->end()){
+
+					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4) second = genItTwo;
+	
+				  }///check that second points to a real reco::Candidate
+			  
 			  }///end loop over objects in collectionTwo
 
 		  }///end if(!doDileptonMassCut)
@@ -151,7 +153,12 @@ class unmatchedAnalyzerForMixedLeptonFlavor : public edm::EDAnalyzer {
 			  
 				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
 
-				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+				  if(second!=collectionTwo->end() ){
+
+					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+	
+				  }///check that second points to a real reco::Candidate
+			  
 			  }///end loop over objects in collectionTwo with dilepton mass cut applied
 
 		  }///end if(doDileptonMassCut)
@@ -228,7 +235,6 @@ virtual void endJob() override;
 std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
-std::string targetHltPathName;	///< check that this HLT path fired in the evt
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsOne;
@@ -306,8 +312,7 @@ Float_t phiWr;
 unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
-	targetHltPathName(iConfig.getParameter<std::string>("checkThisHltPath"))
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
 
 {
    //now do what ever initialization is needed
@@ -391,11 +396,6 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	iEvent.getByToken(leptonsOneToken, leptonsOne);
 	iEvent.getByToken(leptonsTwoToken, leptonsTwo);
 	iEvent.getByToken(jetsToken, jets);
-	
-	///check that the relevant trigger was fired
-	edm::TriggerResultsByName resultsByName = iEvent.triggerResultsByName("HLT");
-	
-	if(!resultsByName.accept(targetHltPathName) ) return;
 	
 	nJets = jets->size();
 	nLeptonsOne = leptonsOne->size();

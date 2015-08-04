@@ -41,9 +41,6 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "FWCore/Common/interface/TriggerResultsByName.h"
-#include "FWCore/Common/interface/TriggerNames.h"
-
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaReco/interface/ClusterShape.h"
 #include "DataFormats/EgammaReco/interface/ClusterShapeFwd.h"
@@ -216,15 +213,16 @@ virtual void endJob() override;
 std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
-std::string targetHltPathName;	///< check that this HLT path fired in the evt
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptons;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > jets;
+edm::Handle<GenEventInfoProduct> genEvtInfo;
 
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > jetsToken;
+edm::EDGetTokenT<GenEventInfoProduct> genEventInfoToken;
 
 TTree * tree;
 
@@ -272,6 +270,9 @@ Float_t etaWr;
 Float_t ptWr;
 Float_t phiWr;
 
+Float_t evWeight;	///< weight of the event.  defaults to 1, only changes for bkgnd MC
+Float_t evWeightSign;	///< if the sign of evWeight is negative, then the evt should not be plotted in a histo
+
 };
 
 //
@@ -289,8 +290,7 @@ Float_t phiWr;
 unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
-	targetHltPathName(iConfig.getParameter<std::string>("checkThisHltPath"))
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
 
 {
    //now do what ever initialization is needed
@@ -334,8 +334,12 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("dR_leadingLeptonSubleadingLepton",&dR_leadingLeptonSubleadingLepton,"dR_leadingLeptonSubleadingLepton/F");
    tree->Branch("dR_leadingJetSubleadingJet",&dR_leadingJetSubleadingJet,"dR_leadingJetSubleadingJet/F");
 
+   tree->Branch("evWeight",&evWeight,"evWeight/F");
+   tree->Branch("evWeightSign",&evWeightSign,"evWeightSign/F");
+ 
    leptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsCollection"));
    jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
+   genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
 
 
 }
@@ -366,15 +370,19 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	evtNumber = iEvent.id().event();
 	runNumber = iEvent.id().run();
+	evWeight = 1.0;
+	evWeightSign = 1.0;
 
 	iEvent.getByToken(leptonsToken, leptons);
 	iEvent.getByToken(jetsToken, jets);
 
-	///check that the relevant trigger was fired
-	edm::TriggerResultsByName resultsByName = iEvent.triggerResultsByName("HLT");
-	
-	if(!resultsByName.accept(targetHltPathName) ) return;
-	
+	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing DY+Jets MC
+
+	if(genEvtInfo.isValid() ){
+		///real data does not have gen lvl event weights
+		evWeight = genEvtInfo->weight();
+		if(evWeight < 0) evWeightSign = -1.0;
+	}
 
 	nJets = jets->size();
 	nLeptons = leptons->size();

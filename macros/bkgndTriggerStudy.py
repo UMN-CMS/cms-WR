@@ -21,7 +21,9 @@ from DataFormats.FWLite import Handle, Events
 #hltPathName is a string
 def useThisPath(hltPathName):
 	dontSkip = False
-	stringsToUse = ["Mu23_TrkIsoVVL_Ele12","Mu8_TrkIsoVVL_Ele23","HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1","HLT_Ele105_CaloIdVT","HLT_Mu40_TkMu11_v1","HLT_Mu50_v1"]
+	#stringsToUse = ["Mu23_TrkIsoVVL_Ele12","Mu8_TrkIsoVVL_Ele23","HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1","HLT_Ele105_CaloIdVT","HLT_Mu40_TkMu11_v1","HLT_Mu50_v1"]
+	stringsToUse = ["Mu23_TrkIsoVVL_Ele12","Mu8_TrkIsoVVL_Ele23","HLT_DoubleEle33","HLT_Ele105_CaloIdVT","HLT_Mu40_TkMu11_v1","HLT_Mu50_v1"]
+	
 	for i in xrange(int(len(stringsToUse))):
 		if(hltPathName.find(stringsToUse[i]) != -1):
 			#if one of the strings which should be used is found in the hlt path name, then break out of this
@@ -170,7 +172,7 @@ recoElectronHandl, recoElectronLabel = Handle("std::vector<pat::Electron>"), "sl
 
 #use this for same flavor lepton final states
 #otherwise the default will be mixed flavor lepton (e+mu) final states
-doMixedFlavor = True
+doMixedFlavor = False
 doMuonChannel = False
 recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
 if(doMuonChannel == False): recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Electron>"), "slimmedElectrons"
@@ -179,7 +181,8 @@ if(doMuonChannel == False): recoLeptonHandl, recoLeptonLabel = Handle("std::vect
 doTtBar = False 
 allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root")
 if(doTtBar == False):
-	allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M-50_TuneCUETP8M1_FlatPU_10_to_50_13TeV_pythia8_1.root")
+	allEvents = Events("/eos/uscms/store/user/skalafut/DoubleEG/realData_DoubleEG_13TeV_50ns_eejj_signalAndLowMassRegionSkim_atFNALLPC/150727_142936/0000/realData_electronLowMassRegionSkim_1.root")
+	#allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M-50_TuneCUETP8M1_FlatPU_10_to_50_13TeV_pythia8_1.root")
 
 
 

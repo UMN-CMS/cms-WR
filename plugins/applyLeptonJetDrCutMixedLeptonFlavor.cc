@@ -110,6 +110,9 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 			  else if(genItOne->pt() > first->pt() ) first = genItOne;
 		  }//end loop over reco::Candidate objects in collectionOne
 
+#ifdef DEBUG
+		  std::cout<<"first has pT = \t"<< first->pt() <<std::endl;
+#endif
 
 		  if(!doDileptonMassCut){
 			  ///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
@@ -137,9 +140,27 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
 #endif
 			  
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ){
+#ifdef DEBUG
+					  std::cout<<"found a candidate for the iterator named second"<<std::endl;
+#endif
+					  second = genItTwo;
+				  }
 
-				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+#ifdef DEBUG
+				  std::cout<<"didn't meet the criteria for second==end of collection and dR separation"<<std::endl;
+#endif
+
+				  if(second!=collectionTwo->end()){
+					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ){
+#ifdef DEBUG
+						  std::cout<<"found a better candidate for the iterator named second"<<std::endl;
+#endif
+						  second = genItTwo;
+					  }
+
+				  }///end if(second has been reassigned)
+
 			  }///end loop over objects in collectionTwo with dilepton mass cut applied
 
 		  }///end if(doDileptonMassCut)
@@ -283,6 +304,10 @@ applyLeptonJetDrCutMixedLeptonFlavor::produce(edm::Event& iEvent, const edm::Eve
 	   leadLepton = leadLeptonTwo;
 	   subleadLepton = leadLeptonOne;
    }
+
+#ifdef DEBUG
+   std::cout<<"declared and initialized leadLepton and subleadLepton iterators"<<std::endl;
+#endif
    
 
    ///for each possible jet object, check that the jet is at least dRSeparation away from the two hardest leptons which

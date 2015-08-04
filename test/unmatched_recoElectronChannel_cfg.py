@@ -16,7 +16,7 @@ process.unmatchedSignalRecoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		leptonsCollection = cms.InputTag("bareRecoLepton"),
 		jetsCollection = cms.InputTag("bareRecoJet"),
 		doDileptonMassCut = cms.bool(False),
-		minDileptonMass = cms.double(-1)
+		minDileptonMass = cms.double(-1),
 		)
 
 process.unmatchedSignalRecoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
@@ -91,8 +91,9 @@ process.options = cms.untracked.PSet(
 		wantSummary = cms.untracked.bool(True)
 		)
 
-process.source = cms.Source( "PoolSource",
-    fileNames = cms.untracked.vstring(
+
+inputFiles = cms.untracked.vstring()
+inputFiles.extend([
 		##skims of real data! 13 TeV, 50ns  doubleEG July 2015
         'file:/eos/uscms/store/user/skalafut/DoubleEG/realData_13TeV_50ns_eejj_signalRegionSkim/150716_211704/0000/realData_electronSignalRegionSkim_1.root',
         'file:/eos/uscms/store/user/skalafut/DoubleEG/realData_13TeV_50ns_eejj_signalRegionSkim/150716_211704/0000/realData_electronSignalRegionSkim_10.root',
@@ -243,10 +244,19 @@ process.source = cms.Source( "PoolSource",
 		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_3.root',
 		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2.root',
 
-    ),
-    inputCommands = cms.untracked.vstring(
-        'keep *'
-    )
+  
+	])
+	#end inputFiles
+
+
+
+process.source = cms.Source( "PoolSource",
+    #fileNames = cms.untracked.vstring(
+    #),
+	fileNames = inputFiles,
+    #inputCommands = cms.untracked.vstring(
+    #    'keep *'
+    #)
 )
 
 process.maxEvents = cms.untracked.PSet(
