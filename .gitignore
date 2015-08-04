@@ -1,5 +1,8 @@
 filelist
 processDump.py
 crab.history
-.*~
+*.*~
 *.root
+*.pyc
+*.txt
+test/psets

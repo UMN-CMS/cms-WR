@@ -3,6 +3,7 @@
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
 # with command line options: miniAOD --filein file:rec_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_RECO_PU.root --fileout file:EXO-Phys14DR-00009.root --mc --eventcontent MINIAODSIM --runUnscheduled --datatier MINIAODSIM --conditions auto:run2_mc --step PAT
+import os
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SKIM')
@@ -18,6 +19,9 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
@@ -25,9 +29,20 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
                             #fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
-                            fileNames = cms.untracked.vstring('file:EXO-Phys14DR-00009.root'),
+                            fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/60000/102CF7B3-1F08-E511-93BB-00074305CF52.root'),
                             secondaryFileNames = cms.untracked.vstring()
 )
+#process.source = cms.Source("PoolSource",
+#                            fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'),
+#                            )
+os.system('das_client.py --query="file dataset=/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM instance=prod/phys03" --limit=0 > pappy.txt')
+
+sec_file = open('pappy.txt', 'r')
+mysecfilelist = []
+for line in sec_file:
+    # add as many files as you wish this way
+    mysecfilelist.append(line.strip())
+process.source.fileNames = mysecfilelist
 
 process.options = cms.untracked.PSet(
     allowUnscheduled = cms.untracked.bool(False),
@@ -83,6 +98,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
+process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 
 # Path and EndPath definitions
 
@@ -91,7 +107,10 @@ process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
 process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+
+process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output)# + process.MakeTTree_Muons)
+#process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_sideband_output)
 
 #do not add changes to your config after this point (unless you know what you are doing)
 

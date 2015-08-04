@@ -1,9 +1,22 @@
-<use name="FWCore/Framework"/>
-<use name="FWCore/PluginManager"/>
-<use name="FWCore/ParameterSet"/>
-<use name="FWCore/MessageLogger"/>
-<use name="FWCore/ServiceRegistry"/>
-<use name="CommonTools/UtilAlgos"/>
-<use name="PhysicsTools/SelectorUtils"/>
+<library file="*.cc" name="WRPlugins">
+  <use name="CommonTools/UtilAlgos"/>
+  <use name="DataFormats/BeamSpot"/>
+  <use name="DataFormats/PatCandidates"/>
+  <use name="DataFormats/VertexReco"/>
+  <use name="DataFormats/TrackReco"/>
+  <use name="DataFormats/JetReco"/>
+  <use name="HLTrigger/HLTcore"/>
+  <use name="PhysicsTools/CandUtils"/>
+  <use name="PhysicsTools/SelectorUtils"/>
+  <use name="RecoBTag/SecondaryVertex"/>
+  <use name="RecoVertex/ConfigurableVertexReco"/>
+  <use name="RecoVertex/GhostTrackFitter"/>
+  <use name="SimGeneral/HepPDTRecord"/>
+  <use name="SimTracker/Records"/>
+  <use name="SimTracker/TrackAssociation"/>
+  <use name="TrackingTools/Records"/>
+  <use name="TrackingTools/TransientTrack"/>
+  <use name="CondFormats/JetMETObjects"/>
+  <use name="SimDataFormats/GeneratorProducts"/>
+</library>
 
-<flags EDM_PLUGIN="1"/>
