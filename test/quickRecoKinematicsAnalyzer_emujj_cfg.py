@@ -9,6 +9,12 @@ process.load('ExoAnalysis.cmsWR.recoEMuChannelUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 #################################
+#Filters
+process.trigSelector = cms.EDFilter("triggerFilter",
+		checkThisHltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1")
+		)
+
+#################################
 #Analyzers
 
 ## analyze the kinematic distributions of lepton and jet candidates using these modules
@@ -19,7 +25,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),
 		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),
 		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
-		checkThisHltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1")
+		#checkThisHltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1")
 	
 		)
 #
@@ -61,6 +67,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 process.unmatchedBkgndRecoPath = cms.Path(
 		process.emuBareRecoParticleSeq
 		*process.emuBareRecoDrSeparationSeq
+		*process.trigSelector
 		*process.recoAnalyzerOne
 		#*process.ptEtaRestrictedSeq
 		#*process.recoAnalyzerTwo

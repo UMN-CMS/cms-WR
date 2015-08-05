@@ -9,6 +9,12 @@ process.load('ExoAnalysis.cmsWR.recoMuonChannelUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 #################################
+#Filters
+process.trigSelector = cms.EDFilter("triggerFilter",
+		checkThisHltPath = cms.string("HLT_Mu50_v1")
+		)
+
+#################################
 #Analyzers
 
 ## analyze the kinematic distributions of lepton and jet candidates in bkgnd evts with these analyzers
@@ -18,7 +24,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		jetsCollection = cms.InputTag("mumuBareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
-		checkThisHltPath = cms.string("HLT_Mu50_v1"),
+		#checkThisHltPath = cms.string("HLT_Mu50_v1"),
 	
 		)
 #
@@ -60,6 +66,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 process.unmatchedBkgndRecoPath = cms.Path(
 		process.mumuBareRecoParticleSeq
 		*process.mumuBareRecoDrSeparationSeq
+		*process.trigSelector
 		*process.recoAnalyzerOne
 		#*process.ptEtaRestrictedSeq
 		#*process.recoAnalyzerTwo
