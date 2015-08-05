@@ -11,7 +11,7 @@ process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring('file:crab/crab_WR_DYJets_Skim_Sideband/results/skim_signal_1.root'),
+                            fileNames=cms.untracked.vstring('file:/afs/cern.ch/user/j/jchavesb/work/WR_skims/skim_signal_2600.root'),
                             )
 
 os.system('das_client.py --query="file dataset=/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/jchavesb-crab_WR_DY_Jets_Skim_50ns_Sideband-8a626735db4a89bf68c59f2da6d5e98a/USER instance=prod/phys03" --limit=0 > pappy.txt')
@@ -26,7 +26,7 @@ for line in sec_file:
     if 'skim' in line:
         #mysecfilelist.append('file:'+line.strip())
         mysecfilelist.append(line.strip())
-process.source.fileNames = mysecfilelist
+#process.source.fileNames = mysecfilelist
 outfn = 'skim_ttree.root'
 process.TFileService = cms.Service('TFileService', fileName = cms.string(outfn))
 
@@ -46,5 +46,5 @@ process.ptrig = cms.Path(process.triggerFilter)
 
 process.SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('ptrig'))
 
-#process.p = cms.Path(process.wRtunePMuons + process.wRsubleadingMuon + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Muons)
-process.p = cms.Path(process.wRsubleadingElectron + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Electrons)
+process.p = cms.Path(process.wRtunePMuons + process.wRsubleadingMuon + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Muons)
+#process.p = cms.Path(process.wRsubleadingElectron + process.wRlooseJet + process.triggerFilter  + process.MakeTTree_Electrons)

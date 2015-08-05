@@ -6,3 +6,4 @@ crab.history
 *.pyc
 *.txt
 test/psets
+Auto*
