@@ -14,13 +14,13 @@ wRtunePMuons = cms.EDProducer("TunePMuonProducer",
 ### select leading muon
 wRleadingMuon = cms.EDFilter("PATMuonSelector",
                                  src = cms.InputTag("wRtunePMuons"),
-                                 cut = cms.string("pt>60"),
+                                 cut = cms.string("pt>40"),
                                  )
 
 ### select subleading muon
 wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
                                  src = cms.InputTag("wRtunePMuons"),
-                                 cut = cms.string("pt>40 && abs(eta)<2.4"),
+                                 cut = cms.string("pt>20 && abs(eta)<2.4"),
                                  )
 ### select loose-ID jets
 wRlooseJet = cms.EDFilter("PATJetSelector",
