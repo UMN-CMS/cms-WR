@@ -28,13 +28,10 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            #fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
                             fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/60000/102CF7B3-1F08-E511-93BB-00074305CF52.root'),
                             secondaryFileNames = cms.untracked.vstring()
-)
-#process.source = cms.Source("PoolSource",
-#                            fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'),
-#                            )
+                            )
+
 os.system('das_client.py --query="file dataset=/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM instance=prod/phys03" --limit=0 > pappy.txt')
 
 sec_file = open('pappy.txt', 'r')
@@ -72,7 +69,7 @@ process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_signal.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalMuonSkim','signalElectronSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalMuonSkim','signalElectronSkim','signalEMuSkim'))
 )
 
 process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
@@ -88,7 +85,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_sideband.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diMuonSidebandSkim','diElectronSidebandSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diMuonSidebandSkim','diElectronSidebandSkim','EMuSidebandSkim'))
 )
 
 # Additional output definition
@@ -106,10 +103,12 @@ process.signalMuonSkim = cms.Path(process.wRdiMuonSignalSeq)
 process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
 process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
+process.signalEMuSkim = cms.Path(process.wREleMuonSignalSeq)
+process.EMuSidebandSkim = cms.Path(process.wREleMuonSidebandSeq)
 
 #process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output)# + process.MakeTTree_Muons)
+process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output)
 #process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_sideband_output)
 
 #do not add changes to your config after this point (unless you know what you are doing)

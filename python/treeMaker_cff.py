@@ -8,6 +8,7 @@ import FWCore.ParameterSet.Config as cms
 
 from ExoAnalysis.cmsWR.skimMuon_cff import *
 from ExoAnalysis.cmsWR.skimElectron_cff import *
+from ExoAnalysis.cmsWR.skimEMu_cff import *
 
 TFileService = cms.Service('TFileService', fileName = cms.string('made_ttree.root'))
 
