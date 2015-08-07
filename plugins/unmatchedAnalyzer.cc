@@ -96,38 +96,7 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
       ~unmatchedAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
-	  ///use this fxn to find the two highest pT jets in the evt which are both at least dR >= 0.4 away from the two leading leptons in the evt
-	  ///input params: collection of hadrons (jets, quarks, GEN or RECO lvl), const_iterators to the two leading leptons, and const_iterators
-	  ///to two objects in the collection of hadrons
-	  ///the two hadron iterators will be updated by this fxn
-	  /*
-	  void findFarHadrons(edm::Handle<edm::OwnVector<reco::Candidate> > hadronColl, edm::OwnVector<reco::Candidate>::const_iterator& leadingLept, edm::OwnVector<reco::Candidate>::const_iterator& subleadingLept, edm::OwnVector<reco::Candidate>::const_iterator& hadronOne, edm::OwnVector<reco::Candidate>::const_iterator& hadronTwo){
-#ifdef DEBUG
-		  std::cout<<"entered findFarHadrons function"<<std::endl;
-#endif
-#endif
-		  for(edm::OwnVector<reco::Candidate>::const_iterator hadIt = hadronColl->begin(); hadIt!=hadronColl->end(); hadIt++){
-			  double drOne = deltaR(leadingLept->eta(),leadingLept->phi(),hadIt->eta(),hadIt->phi());
-			  double drTwo = deltaR(subleadingLept->eta(),subleadingLept->phi(),hadIt->eta(),hadIt->phi());
-			  if(drOne >= minDr && drTwo >= minDr){
-				  if(hadronOne==hadronColl->end()) hadronOne=hadIt;
-				  else{
-					  if(hadIt->pt() > hadronOne->pt()){
-						  hadronTwo = hadronOne;
-						  hadronOne = hadIt;
-					  }
-					  else if(hadronTwo==hadronColl->end() || hadIt->pt() > hadronTwo->pt()) hadronTwo = hadIt;
-				  }///end else
-			  }///end if(current iterator hadIt points to a hadron which is well separated from the two leading leptons
-		  }///end loop over objects in hadron collection
-#ifdef DEBUG
-		  std::cout<<"leaving findFarHadrons fxn"<<std::endl;
-#endif
-
-	  }
-	  */
-
+	  
 	  ///calculate the dilepton mass using two const_iterators to reco::Candidate objects
 	  double getDileptonMass(edm::OwnVector<reco::Candidate>::const_iterator& one, edm::OwnVector<reco::Candidate>::const_iterator& two){
 		  double mass = TMath::Sqrt( 2*(one->pt())*(two->pt())*( TMath::CosH( (one->eta())-(two->eta()) ) - TMath::Cos( (one->phi())-(two->phi()) ) ) );
@@ -203,10 +172,6 @@ virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 virtual void endJob() override;
 
 
-//virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
 // ----------member data ---------------------------
 
@@ -218,11 +183,14 @@ double minDileptonMass;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptons;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > jets;
 edm::Handle<GenEventInfoProduct> genEvtInfo;
+edm::Handle<std::vector<reco::Vertex> > vertices;
 
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > jetsToken;
 edm::EDGetTokenT<GenEventInfoProduct> genEventInfoToken;
+edm::EDGetTokenT<std::vector<reco::Vertex> > verticesToken;
+
 
 TTree * tree;
 
@@ -231,6 +199,7 @@ ULong64_t evtNumber;
 
 Int_t nJets;
 Int_t nLeptons;
+Int_t nVertices;
 
 //first element is leading (highest pT) electron
 //second element is subleading electron
@@ -309,6 +278,7 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
 
    tree->Branch("nJets",&nJets,"nJets/I");
    tree->Branch("nLeptons",&nLeptons,"nLeptons/I");
+   tree->Branch("nVertices",&nVertices,"nVertices/I");
 
    tree->Branch("etaJet",etaJet,"etaJet[2]/F");
    tree->Branch("ptJet",ptJet,"ptJet[2]/F");
@@ -340,7 +310,7 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    leptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsCollection"));
    jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
    genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
-
+   verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
 
 }
 
@@ -375,8 +345,9 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	iEvent.getByToken(leptonsToken, leptons);
 	iEvent.getByToken(jetsToken, jets);
+	iEvent.getByToken(verticesToken, vertices);
 
-	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing DY+Jets MC
+	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing MC
 
 	if(genEvtInfo.isValid() ){
 		///real data does not have gen lvl event weights
@@ -384,6 +355,8 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		if(evWeight < 0) evWeightSign = -1.0;
 	}
 
+	///get the number of vertices, jets, and leptons in the event
+	nVertices = vertices->size();
 	nJets = jets->size();
 	nLeptons = leptons->size();
 
@@ -482,38 +455,6 @@ unmatchedAnalyzer::endJob()
 {
 
 }
-
-// ------------ method called when starting to processes a run  ------------
-/*
-void 
-unmatchedAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when ending the processing of a run  ------------
-/*
-void 
-unmatchedAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when starting to processes a luminosity block  ------------
-/*
-void 
-unmatchedAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when ending the processing of a luminosity block  ------------
-/*
-void 
-unmatchedAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void unmatchedAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

@@ -225,10 +225,6 @@ virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 virtual void endJob() override;
 
 
-//virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
 // ----------member data ---------------------------
 
@@ -240,11 +236,15 @@ double minDileptonMass;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsOne;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsTwo;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > jets;
+edm::Handle<GenEventInfoProduct> genEvtInfo;
+edm::Handle<std::vector<reco::Vertex> > vertices;
 
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsOneToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsTwoToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > jetsToken;
+edm::EDGetTokenT<GenEventInfoProduct> genEventInfoToken;
+edm::EDGetTokenT<std::vector<reco::Vertex> > verticesToken;
 
 
 TTree * tree;
@@ -256,6 +256,7 @@ Int_t nJets;
 Int_t nLeptons;
 Int_t nLeptonsOne;
 Int_t nLeptonsTwo;
+Int_t nVertices;
 
 //first element is leading (highest pT) lepton 
 //second element is subleading lepton 
@@ -294,6 +295,9 @@ Float_t phiHvyNu;
 Float_t etaWr;
 Float_t ptWr;
 Float_t phiWr;
+
+Float_t evWeight;	///< weight of the event.  defaults to 1, only changes for bkgnd MC
+Float_t evWeightSign;	///< if the sign of evWeight is negative, then the evt should not be plotted in a histo
 
 };
 
@@ -334,7 +338,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(con
    tree->Branch("nLeptons",&nLeptons,"nLeptons/I");
    tree->Branch("nLeptonsOne",&nLeptonsOne,"nLeptonsOne/I");
    tree->Branch("nLeptonsTwo",&nLeptonsTwo,"nLeptonsTwo/I");
-
+   tree->Branch("nVertices",&nVertices,"nVertices/I");
 
    tree->Branch("etaJet",etaJet,"etaJet[2]/F");
    tree->Branch("ptJet",ptJet,"ptJet[2]/F");
@@ -360,9 +364,14 @@ unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(con
    tree->Branch("dR_leadingLeptonSubleadingLepton",&dR_leadingLeptonSubleadingLepton,"dR_leadingLeptonSubleadingLepton/F");
    tree->Branch("dR_leadingJetSubleadingJet",&dR_leadingJetSubleadingJet,"dR_leadingJetSubleadingJet/F");
 
+   tree->Branch("evWeight",&evWeight,"evWeight/F");
+   tree->Branch("evWeightSign",&evWeightSign,"evWeightSign/F");
+ 
    leptonsOneToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsOneCollection"));
    leptonsTwoToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsTwoCollection"));
    jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
+   genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
+   verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
 
 }
 
@@ -392,16 +401,28 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 
 	evtNumber = iEvent.id().event();
 	runNumber = iEvent.id().run();
+	evWeight = 1.0;
+	evWeightSign = 1.0;
 
 	iEvent.getByToken(leptonsOneToken, leptonsOne);
 	iEvent.getByToken(leptonsTwoToken, leptonsTwo);
 	iEvent.getByToken(jetsToken, jets);
-	
+	iEvent.getByToken(verticesToken, vertices);
+
+	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing MC
+
+	if(genEvtInfo.isValid() ){
+		///real data does not have gen lvl event weights
+		evWeight = genEvtInfo->weight();
+		if(evWeight < 0) evWeightSign = -1.0;
+	}
+
 	nJets = jets->size();
 	nLeptonsOne = leptonsOne->size();
 	nLeptonsTwo = leptonsTwo->size();
 	nLeptons = nLeptonsOne+nLeptonsTwo;
-
+	nVertices = vertices->size();
+	
 	///assign iterators to both input leptons collections, and use these iterators to find the hardest and second hardest leptons in the evt
 	///if one lepton is not found in both collections, then skip this evt 
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLeptonOne = leptonsOne->end(), leadingLeptonTwo = leptonsTwo->end();
@@ -510,38 +531,6 @@ unmatchedAnalyzerForMixedLeptonFlavor::endJob()
 {
 
 }
-
-// ------------ method called when starting to processes a run  ------------
-/*
-void 
-unmatchedAnalyzerForMixedLeptonFlavor::beginRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when ending the processing of a run  ------------
-/*
-void 
-unmatchedAnalyzerForMixedLeptonFlavor::endRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when starting to processes a luminosity block  ------------
-/*
-void 
-unmatchedAnalyzerForMixedLeptonFlavor::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when ending the processing of a luminosity block  ------------
-/*
-void 
-unmatchedAnalyzerForMixedLeptonFlavor::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
