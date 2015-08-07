@@ -19,4 +19,7 @@
 <use name="DataFormats/EgammaReco"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/EgammaCandidates"/>
+<use name="PhysicsTools/SelectorUtils"/>
+<use name="DataFormats/VertexReco" />
+<use name="RecoEgamma/EgammaTools" />
 <flags EDM_PLUGIN="1"/>
