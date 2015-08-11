@@ -37,7 +37,7 @@ using namespace std;
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
-
+//#define DEBUGGETEVTWGT
 
 /**
  * use this fxn to compute the evt weight for one evt in a TChain
@@ -46,11 +46,12 @@ using namespace std;
 Float_t getEvtWeight(Float_t mcEvWgtSign, Int_t numVertices, map<string,vector<Float_t> > mcPuWeights, string mcName){
 	Float_t weight = 0;
 	for(map<string,vector<Float_t> >::const_iterator puWgtIt=mcPuWeights.begin(); puWgtIt!=mcPuWeights.end(); puWgtIt++){
-#ifdef DEBUG
+#ifdef DEBUGGETEVTWGT
 		cout<<"pu weights map has string \t"<< puWgtIt->first <<endl;
 		cout<<"mc process name is \t"<< mcName <<endl;
 #endif
 		///loop over the unique keys in mcPuWeights and find the one which matches the MC process name (ttBar, WZ, etc)
+		if( (puWgtIt->second).size() < numVertices ) return 0;
 		if( (puWgtIt->first).find(mcName)!= string::npos ) weight = mcEvWgtSign*( (puWgtIt->second).at(numVertices) );
 	}
 
@@ -71,7 +72,7 @@ map<string,vector<Float_t> > computePileupWeights(map<string,TChain*> bkgndChain
 
 	map<string,vector<Float_t> > wgtsMap;
 	Long64_t dataEvts = dataChain->GetEntries();
-	string val="60";
+	string val="45";
 
 	///loop over chains in bkgndChainMap
 	for(map<string,TChain*>::const_iterator bkgIt=bkgndChainMap.begin(); bkgIt!=bkgndChainMap.end(); bkgIt++){
@@ -105,7 +106,7 @@ map<string,vector<Float_t> > computePileupWeights(map<string,TChain*> bkgndChain
 
 #ifdef DEBUG
 		cout<<"filled a vector named PUW with weights for \t"<<bkgIt->first<<"\t bkgnd MC evts"<<endl;
-		for(Int_t i=0; i<20; i+=2){
+		for(Int_t i=0; i<20; i+=5){
 			cout<<"MC events with "<< i <<" vertices are weighted with this value: \t"<< PUW[i] <<endl;
 		}///end loop over a subset of elements in weights vector
 #endif
@@ -115,18 +116,6 @@ map<string,vector<Float_t> > computePileupWeights(map<string,TChain*> bkgndChain
 		hBkgnd->Delete();
 		h_data->Delete();
 	}///end loop over chains in bkgndChainMap
-
-#ifdef DEBUG
-	for(map<string,vector<Float_t> >::const_iterator wgtsIt=wgtsMap.begin(); wgtsIt!=wgtsMap.end(); wgtsIt++){
-		cout<<"looking at weights for bkgnd MC process named \t"<< wgtsIt->first <<endl;
-		for(Int_t i=0; i<20; i++){
-			cout<<"MC events with "<< i <<" vertices are weighted with this value: \t"<< (wgtsIt->second).at(i) <<endl;
-		}///end loop over a subset of elements in weights vector
-		cout<<" "<<endl;
-		cout<<"switching bkgnd MC processes"<<endl;
-		cout<<" "<<endl;
-	}///end loop over unique keys in wgtsMap
-#endif
 
 	return wgtsMap;
 }///end computePileupWeights()
@@ -196,14 +185,15 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 				if(targetBrName.find("nVert") != string::npos || targetBrName.find("nJet") != string::npos || targetBrName.find("nLept") != string::npos || targetBrName.find("runNum") != string::npos || targetBrName.find("evtNum") != string::npos || targetBrName.find("leadingIs") != string::npos ){
 					///use an Int_t variable for plotting nVertices, nJets, nLeptons, runNumber, evtNumber, and leadingIsHardest
 					Int_t desiredInt;
-					(chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredInt);
+					if(targetBrName.find("nVert") == string::npos ) (chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredInt);
 
 					///now loop over all entries in the TChain, and fill the histogram with appropriate weights
 					for(Long64_t ev=0; ev<totalEntries; ev++){
 						(chMapIt->second)->GetEntry(ev);
 						///now nVertices and evWeightSign in this particular event ev can be accessed
 						wgt = getEvtWeight(evWgtSign, vertices, puWeights, bkgndString);
-						hTemp->Fill(desiredInt, wgt);
+						if(targetBrName.find("nVert") == string::npos ) hTemp->Fill(desiredInt, wgt);
+						if(targetBrName.find("nVert") != string::npos ) hTemp->Fill(vertices, wgt);
 					}///end loop over entries in TChain
 
 				}///end single Int_t branch filter
@@ -237,7 +227,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 					}
 
 				}///end Float_t[] array branch filter
-				//break;
+			
 			}
 			else (chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
 		}
@@ -245,7 +235,6 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 			(chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
 		}
 
-		//break;
 #ifdef DEBUG
 		std::cout<<"input chain map key = \t"<< chMapIt->first <<std::endl;
 #endif
@@ -261,7 +250,6 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 
 		}
 	}///end loop over elements in inputChainMap
-	//return;
 
 #ifdef DEBUG
 	std::cout<<"there are \t"<< stackedHistoMap.size() <<"\t elements in stackedHistoMap"<<std::endl;
@@ -614,7 +602,7 @@ void macroSandBox(){
 	ttBarEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");
 	TChain * doubleEGEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	doubleEGEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DoubleEG/analyzed_DoubleEG_skim_low_mass_region_eejj.root");
-	
+
 	//TChain * ttBarEMuJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	//ttBarEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_emujj.root");
 	//TChain * singleEleEMuJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
@@ -632,7 +620,7 @@ void macroSandBox(){
 	bkgndMap[ttBarKey]=ttBarEEJJLowMassSkim;
 	bkgndMap[dyPlusJetsKey]=dyPlusJetsEEJJLowMassSkim;
 	map<string,vector<Float_t> > pileupWeights = computePileupWeights(bkgndMap, doubleEGEEJJLowMassSkim);
-	
+
 
 	Float_t integratedLumi = 40.001;	///< in picobarns
 
@@ -640,8 +628,8 @@ void macroSandBox(){
 	string link=">>";
 	//string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,200.)","_subleadJetPt(50,0.,100.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,400.)","_fourObjectMass(50,0.,600.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_leadLeptonThreeObjMass(50,0.,500.)","_subleadingLeptonThreeObjMass(50,0.,500.)","_nJets(12,0.,12.)","_nLeptons(6,0.,6.)"};
 
-	string branchNames[] = {"ptEle[0]"};
-	string histoEndings[] = {"_leadLeptonPt(40,0.,200.)"};
+	string branchNames[] = {"nVertices"};
+	string histoEndings[] = {"_nVertices(50,0.,50.)"};
 
 	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
 
