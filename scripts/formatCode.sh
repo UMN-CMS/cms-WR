@@ -1,6 +1,6 @@
 #!/bin/sh
 command="astyle -A3 -t -p  -n" 
-for file in $@fileList
+for file in $@
 do
     case $file in
 	*.c | *.cc) $command $file;;

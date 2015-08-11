@@ -8,22 +8,28 @@ To use this module:
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
 process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
+then run the module named egmGsfElectronIDSequence before running HEEPIDSequence in the path
 """
 
 def loadHEEPIDSelector(process):
 	dataFormat = DataFormat.MiniAOD
 	switchOnVIDElectronIdProducer(process, dataFormat)
-	setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff',setupVIDElectronSelection)
+	setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff',setupVIDElectronSelection)
 
 
 HEEPIDSelector = cms.EDProducer('HEEPIDSelector',
       electrons= cms.InputTag("slimmedElectrons"),
-      eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV51")
+      eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60")
       )
 
 HEEPIDFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("HEEPIDSelector"),
-		minNumber = cms.uint32(1)
+		minNumber = cms.uint32(2)
 		)
 
 HEEPIDSequence = cms.Sequence(HEEPIDSelector * HEEPIDFilter)
+
+#only require that one electron in the low mass sideband pass HEEP ID
+HEEPIDSidebandFilter = HEEPIDFilter.clone(minNumber = cms.uint32(1) )
+HEEPIDSidebandSequence = cms.Sequence(HEEPIDSelector * HEEPIDSidebandFilter)

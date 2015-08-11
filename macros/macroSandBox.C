@@ -1,4 +1,5 @@
 #include <TFile.h>
+#include <TList.h>
 #include <TLegend.h>
 #include <TStyle.h>
 #include <TString.h>
@@ -32,10 +33,103 @@ using namespace std;
 #define lowMassSkimmedBkgndOnRealData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
-//#define DEBUG
+#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
+
+
+/**
+ * use this fxn to compute the evt weight for one evt in a TChain
+ * return the weight as a Float_t value
+ */
+Float_t getEvtWeight(Float_t mcEvWgtSign, Int_t numVertices, map<string,vector<Float_t> > mcPuWeights, string mcName){
+	Float_t weight = 0;
+	for(map<string,vector<Float_t> >::const_iterator puWgtIt=mcPuWeights.begin(); puWgtIt!=mcPuWeights.end(); puWgtIt++){
+#ifdef DEBUG
+		cout<<"pu weights map has string \t"<< puWgtIt->first <<endl;
+		cout<<"mc process name is \t"<< mcName <<endl;
+#endif
+		///loop over the unique keys in mcPuWeights and find the one which matches the MC process name (ttBar, WZ, etc)
+		if( (puWgtIt->first).find(mcName)!= string::npos ) weight = mcEvWgtSign*( (puWgtIt->second).at(numVertices) );
+	}
+
+	return weight;
+}///end getEvtWeight()
+
+
+/**
+ * use this fxn to compute the PU weight based on the number of vertices in real data compared to MC
+ * this fxn returns a map<string, vector<Float_t> > object.  The vector stores the weights (the index of
+ * the vector corresponds to the number of vertices in the event), and the string key indicates the
+ * bkgnd source.  Examples of the string key are ttBar and dyPlusJets. 
+ */
+map<string,vector<Float_t> > computePileupWeights(map<string,TChain*> bkgndChainMap, TChain * dataChain){
+#ifdef DEBUG
+	cout<<"in computePileupWeights fxn"<<endl;
+#endif
+
+	map<string,vector<Float_t> > wgtsMap;
+	Long64_t dataEvts = dataChain->GetEntries();
+	string val="60";
+
+	///loop over chains in bkgndChainMap
+	for(map<string,TChain*>::const_iterator bkgIt=bkgndChainMap.begin(); bkgIt!=bkgndChainMap.end(); bkgIt++){
+		TH1F *h_data = new TH1F("h_data","",stoi(val),0,stof(val) );
+		TH1F *hBkgnd = new TH1F("hBkgnd","",stoi(val),0,stof(val) );
+
+		Int_t nvertices;
+		Int_t nvertices_data;
+		(bkgIt->second)->SetBranchAddress("nVertices",&nvertices);
+		dataChain->SetBranchAddress("nVertices",&nvertices_data);
+
+		Long64_t bkgndEvts = (bkgIt->second)->GetEntries();
+		for (Long64_t ev = 0; ev < bkgndEvts; ev++) {
+			(bkgIt->second)->GetEntry(ev);
+			hBkgnd->Fill(nvertices);
+		}
+		for (Long64_t ev = 0; ev < dataEvts; ev++) {
+			dataChain->GetEntry(ev);
+			h_data->Fill(nvertices_data);
+		}
+
+		h_data->Scale(1/h_data->Integral());
+		hBkgnd->Scale(1/hBkgnd->Integral());
+
+		vector<Float_t> PUW(stoi(val)+1);
+
+		for(unsigned int i = 0;i<PUW.size() ;i++){
+			if(hBkgnd->GetBinContent(i) != 0) PUW[i] = h_data->GetBinContent(i)/hBkgnd->GetBinContent(i);
+			else PUW[i] = 1.0;
+		}
+
+#ifdef DEBUG
+		cout<<"filled a vector named PUW with weights for \t"<<bkgIt->first<<"\t bkgnd MC evts"<<endl;
+		for(Int_t i=0; i<20; i+=2){
+			cout<<"MC events with "<< i <<" vertices are weighted with this value: \t"<< PUW[i] <<endl;
+		}///end loop over a subset of elements in weights vector
+#endif
+		///add the PU weights to the map
+		wgtsMap[bkgIt->first] = PUW;
+
+		hBkgnd->Delete();
+		h_data->Delete();
+	}///end loop over chains in bkgndChainMap
+
+#ifdef DEBUG
+	for(map<string,vector<Float_t> >::const_iterator wgtsIt=wgtsMap.begin(); wgtsIt!=wgtsMap.end(); wgtsIt++){
+		cout<<"looking at weights for bkgnd MC process named \t"<< wgtsIt->first <<endl;
+		for(Int_t i=0; i<20; i++){
+			cout<<"MC events with "<< i <<" vertices are weighted with this value: \t"<< (wgtsIt->second).at(i) <<endl;
+		}///end loop over a subset of elements in weights vector
+		cout<<" "<<endl;
+		cout<<"switching bkgnd MC processes"<<endl;
+		cout<<" "<<endl;
+	}///end loop over unique keys in wgtsMap
+#endif
+
+	return wgtsMap;
+}///end computePileupWeights()
 
 
 /**
@@ -50,25 +144,124 @@ using namespace std;
  * the TChain to each MC sample should contain a key which is used in crossSxnsMap and nEvtsMap
  *
  */
-void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap){
+void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap,TString treeCuts,Bool_t doPuReweighting,map<string,vector<Float_t> > puWeights){
 	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
 	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
 	map<string,TH1F*> stackedHistoMap;	///< links TString keys to TH1F histos which will ultimately be stacked
 	map<string,TH1F*> overlaidHistoMap; ///< links one TString key to the TH1F histo coming from real data
 	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
+		//if( (chMapIt->first).find("ealData") != string::npos) continue;
 		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
 		string uncutHistoName(chMapIt->first);
 		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
 		///and store the substring in the new string object
 		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
-		(chMapIt->second)->Draw((chMapIt->first).c_str(),"evWeightSign > 0");
+		if((chMapIt->first).find("ealData") == string::npos ){
+			if(doPuReweighting){
+				///to apply the GEN evt and PU weights:
+				//1. identify the quantity which should be plotted
+				//2. make a histogram with the appropriate limits and bins
+				//3. link a local variable to the appropriate branch in the TChain
+				//4. link two more local variables to the evWeightSign (Float_t) and nVertices (Int_t) branches
+				//5. loop over all evts in the TChain, and fill the histogram with the appropriate weights (PU and gen evt weights)
+				//string branchNames[] = {"ptEle[0]","ptEle[1]","dileptonMass","nVertices"};
+				//string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_dileptonMass(50,0.,250.)","_nVertices(45,0.,45.)"};
+				size_t firstChevron = (chMapIt->first).find_first_of('>'), closeParenthesis = (chMapIt->first).find_first_of(')');
+				size_t firstComma = (chMapIt->first).find_first_of(','), secondComma = (chMapIt->first).find_last_of(',');
+				size_t underscore = (chMapIt->first).find_first_of('_');
+				string targetBrName( (chMapIt->first).substr(0,firstChevron) );
+				string nBinsString( (chMapIt->first).substr(openParenth+1,firstComma - openParenth-1) );
+				string minString( (chMapIt->first).substr(firstComma+1,secondComma - firstComma-1) );
+				string maxString( (chMapIt->first).substr(secondComma+1,closeParenthesis - secondComma-1) );
+				string bkgndString( (chMapIt->first).substr(lastChevron+1,underscore - lastChevron-1) );
+				Int_t vertices;
+				Float_t evWgtSign;
+				(chMapIt->second)->SetBranchAddress("nVertices",&vertices);
+				(chMapIt->second)->SetBranchAddress("evWeightSign",&evWgtSign);
+				TH1F * hTemp = new TH1F(oneHistoName.c_str(),"", stoi(nBinsString), stof(minString), stof(maxString) );
+				
+#ifdef DEBUG
+				cout<<"two local vars have been linked to nVertices and evWeightSign branches"<<endl;
+				cout<<"targetBrName = \t"<< targetBrName <<endl;
+				cout<<"nBinsString = \t"<< nBinsString <<endl;
+				cout<<"minString = \t"<< minString <<endl;
+				cout<<"maxString = \t"<< maxString <<endl;
+				cout<<"bkgndString = \t"<< bkgndString <<endl;
+				cout<<"declared a histogram with correct name, number of bins, and min and max x axis values"<<endl;
+#endif
+
+				Long64_t totalEntries = (chMapIt->second)->GetEntries();
+				Float_t wgt;
+				if(targetBrName.find("nVert") != string::npos || targetBrName.find("nJet") != string::npos || targetBrName.find("nLept") != string::npos || targetBrName.find("runNum") != string::npos || targetBrName.find("evtNum") != string::npos || targetBrName.find("leadingIs") != string::npos ){
+					///use an Int_t variable for plotting nVertices, nJets, nLeptons, runNumber, evtNumber, and leadingIsHardest
+					Int_t desiredInt;
+					(chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredInt);
+
+					///now loop over all entries in the TChain, and fill the histogram with appropriate weights
+					for(Long64_t ev=0; ev<totalEntries; ev++){
+						(chMapIt->second)->GetEntry(ev);
+						///now nVertices and evWeightSign in this particular event ev can be accessed
+						wgt = getEvtWeight(evWgtSign, vertices, puWeights, bkgndString);
+						hTemp->Fill(desiredInt, wgt);
+					}///end loop over entries in TChain
+
+				}///end single Int_t branch filter
+				else if(targetBrName.find('[') == string::npos){
+					///the branch of interest stores a single Float_t value
+					Float_t desiredFloat;
+					(chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredFloat);
+					for(Long64_t ev=0; ev<totalEntries; ev++){
+						(chMapIt->second)->GetEntry(ev);
+						wgt = getEvtWeight(evWgtSign, vertices, puWeights, bkgndString);
+						hTemp->Fill(desiredFloat, wgt);
+					}
+	
+				}///end single Float_t branch filter
+				else{
+					///the branch of interest stores a 2 element array of Float_t values
+					///get the true branch name, and the element of the array which should be plotted (first or second)
+					Float_t desiredArray[2];
+					size_t openBracket = targetBrName.find_first_of('['), closeBracket = targetBrName.find_first_of(']');
+					string trueBrName( targetBrName.substr(0,openBracket) );
+					string arrElementString( targetBrName.substr(openBracket+1,closeBracket - openBracket-1) );
+#ifdef DEBUG
+					cout<<"trueBrName = \t"<< trueBrName <<endl;
+					cout<<"arrElementString = \t"<< arrElementString <<endl;
+#endif
+					(chMapIt->second)->SetBranchAddress(trueBrName.c_str(), desiredArray);
+					for(Long64_t ev=0; ev<totalEntries; ev++){
+						(chMapIt->second)->GetEntry(ev);
+						wgt = getEvtWeight(evWgtSign, vertices, puWeights, bkgndString);
+						hTemp->Fill(desiredArray[stoi(arrElementString)], wgt);
+					}
+
+				}///end Float_t[] array branch filter
+				//break;
+			}
+			else (chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
+		}
+		else if((chMapIt->first).find("ealData") != string::npos ){
+			(chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
+		}
+
+		//break;
 #ifdef DEBUG
 		std::cout<<"input chain map key = \t"<< chMapIt->first <<std::endl;
 #endif
-		if((chMapIt->first).find("ealData") == string::npos ) stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
-		else if((chMapIt->first).find("ealData") != string::npos) overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+		if((chMapIt->first).find("ealData") == string::npos ){
+			stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+		}///end search for histos made from MC datasets
+		else if((chMapIt->first).find("ealData") != string::npos){
+			overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+#ifdef DEBUG
+			std::cout<<"there are \t"<< (overlaidHistoMap[chMapIt->first])->Integral() <<"\t entries in the real data histo"<<std::endl;
+#endif
+
+
+		}
 	}///end loop over elements in inputChainMap
+	//return;
 
 #ifdef DEBUG
 	std::cout<<"there are \t"<< stackedHistoMap.size() <<"\t elements in stackedHistoMap"<<std::endl;
@@ -140,7 +333,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 		i++;
 	}///end loop to set line colors of histos, and add entries to TLegend
 
-	histoStack->Draw();
+	histoStack->Draw("hist");
 
 #ifdef DEBUG
 		std::cout<<"stacked histo has been drawn"<<std::endl;
@@ -151,11 +344,11 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 		size_t lastChevron = (hIt->first).find_last_of('>');
 		size_t underscorePos = (hIt->first).find_first_of("_",lastChevron);
 		string legEntryName = (hIt->first).substr(lastChevron+1,underscorePos-lastChevron-1);
-		leg->AddEntry(hIt->second,legEntryName.c_str(),"lep");
+		leg->AddEntry(hIt->second,legEntryName.c_str(),"ep");
 		(hIt->second)->SetMarkerColor(1);
 		(hIt->second)->SetMarkerStyle(21);
 		(hIt->second)->SetMarkerSize(1.1);
-		(hIt->second)->Draw("same,ep");	///< draw the real data histogram as points
+		(hIt->second)->Draw("same ep");	///< draw the real data histogram as points
 		size_t firstChevron = (hIt->first).find_first_of('>');
 		outputFile = (hIt->first).substr(0,firstChevron);
 		outputFile += ".png";
@@ -400,42 +593,60 @@ void macroSandBox(){
 	TChain * copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
 	copy_matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_RECO_WR_signal_and_bkgnd_files/analysis_recoElectronChannel_single_stage_matching_for_jets_centrally_produced_signal_MWr_2600_MNu_1300.root");
 
+	string dyPlusJetsKey = "dyPlusJets";
+	string ttBarKey = "ttBar";
 	///cross sxn values (picobarns) and dataset sizes (=total number of evts) for bkgnd processes
 	map<string,Float_t> xSxnsFiftyNs;
-	xSxnsFiftyNs["ttBar"]=815.9;
-	xSxnsFiftyNs["dyPlusJets"]=6025.0;
+	xSxnsFiftyNs[ttBarKey]=(815.9/1);
+	xSxnsFiftyNs[dyPlusJetsKey]=(6025.2/1);
 	map<string,Float_t> numEvtsFiftyNs;
-	numEvtsFiftyNs["ttBar"]=4994250;
-	numEvtsFiftyNs["dyPlusJets"]=19925500;
+	numEvtsFiftyNs[ttBarKey]=4994250;
+	numEvtsFiftyNs[dyPlusJetsKey]=19925500;
 
 
 
 #ifdef lowMassSkimmedBkgndOnRealData
-	//overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap)
-	TChain * dyPlusJetsEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	//overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap, TString treeCuts, Bool_t doPuReweighting, map<string,vector<Float_t> > puWeights)
+	string moduleAndTreeName = "recoAnalyzerOne/recoObjectsNoCuts";
+	TChain * dyPlusJetsEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	dyPlusJetsEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_DYJets_50ns_skim_low_mass_region_eejj.root");
-	TChain * ttBarEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	TChain * ttBarEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	ttBarEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");
-	TChain * doubleEGEEJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
-	doubleEGEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DoubleEG/analyzed_lowMassRegionSkim/analyzed_DoubleEG_skim_low_mass_region_eejj.root");
+	TChain * doubleEGEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
+	doubleEGEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DoubleEG/analyzed_DoubleEG_skim_low_mass_region_eejj.root");
 	
-	//TChain * ttBarEMuJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	//TChain * ttBarEMuJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	//ttBarEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_emujj.root");
-	//TChain * singleEleEMuJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
+	//TChain * singleEleEMuJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	//singleEleEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/SingleElectron/analyzed_lowMassRegionSkim/analyzed_SingleElectron_skim_low_mass_region_emujj.root");
-	//TChain * MuonEGEMuJJLowMassSkim = new TChain("recoAnalyzerOne/recoObjectsNoCuts");
-	//MuonEGEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/MuonEG/analyzed_lowMassRegionSkim/analyzed_MuonEG_skim_low_mass_region_emujj.root");
+	//TChain * MuonEGEMuJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
+	//MuonEGEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/MuonEG/analyzed_MuonEG_skim_low_mass_region_emujj.root");
+
+#ifdef DEBUG
+	cout<<"declared TChain to bkgnd and data"<<endl;
+#endif
+
+	///compute the PU weights for different bkgnd processes
+	//computePileupWeights(map<string,TChain*> bkgndChainMap, TChain * dataChain)
+	map<string,TChain*> bkgndMap;
+	bkgndMap[ttBarKey]=ttBarEEJJLowMassSkim;
+	bkgndMap[dyPlusJetsKey]=dyPlusJetsEEJJLowMassSkim;
+	map<string,vector<Float_t> > pileupWeights = computePileupWeights(bkgndMap, doubleEGEEJJLowMassSkim);
 	
 
 	Float_t integratedLumi = 40.001;	///< in picobarns
 
-	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","nJets","nLeptons"};
+	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","nJets","nLeptons"};
 	string link=">>";
-	string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,200.)","_subleadJetPt(50,0.,100.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,400.)","_fourObjectMass(50,0.,600.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_leadLeptonThreeObjMass(50,0.,500.)","_subleadingLeptonThreeObjMass(50,0.,500.)","_nJets(15,0.,15.)","_nLeptons(10,0.,10.)"};
+	//string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,200.)","_subleadJetPt(50,0.,100.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,400.)","_fourObjectMass(50,0.,600.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_leadLeptonThreeObjMass(50,0.,500.)","_subleadingLeptonThreeObjMass(50,0.,500.)","_nJets(12,0.,12.)","_nLeptons(6,0.,6.)"};
 
+	string branchNames[] = {"ptEle[0]"};
+	string histoEndings[] = {"_leadLeptonPt(40,0.,200.)"};
+
+	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
 
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"ttBar","doubleEGRealData","dyPlusJets"};
+	string histoBeginnings[] = {ttBarKey,"doubleEGRealData",dyPlusJetsKey};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
@@ -443,7 +654,7 @@ void macroSandBox(){
 		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
 		string cName = "o"+to_string(i);
-		overlayPointsOnStackedHistos(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,xSxnsFiftyNs,integratedLumi,numEvtsFiftyNs);
+		overlayPointsOnStackedHistos(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,xSxnsFiftyNs,integratedLumi,numEvtsFiftyNs,evWeightCut,true,pileupWeights);
 		placeHolderMap.clear();
 	}///end loop over branchNames
 

@@ -8,10 +8,18 @@ process = cms.Process("RECOEEJJ")
 process.load('ExoAnalysis.cmsWR.recoElectronChannelUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
+
 #################################
 #Filters
+#as long as one of these two triggers is fired, the event is selected
 process.trigSelector = cms.EDFilter("triggerFilter",
-		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1")
+		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
+		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v1"),
+
 		)
 
 
@@ -25,17 +33,16 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		jetsCollection = cms.InputTag("bareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
-		#checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1")
 		)
 
-#process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
-#		treeName = cms.string("recoObjectsWithPtEtaCuts"),
-#		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-#		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
-#		doDileptonMassCut = cms.bool(False),
-#		minDileptonMass = cms.double(-1)
-#		)
-#
+process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
+		treeName = cms.string("recoObjectsWithPtEtaCuts"),
+		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
+		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1)
+		)
+
 #process.recoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
 #		treeName = cms.string("recoObjectsWithPtEtaAndDileptonMassCuts"),
 #		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
@@ -64,12 +71,14 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.bareRecoParticleSeq
+		#process.trigSelector
+		process.egmGsfElectronIDSequence
+		*process.HEEPIDSequence
+		*process.bareRecoParticleSeq
 		*process.bareRecoDrSeparationSeq
-		*process.trigSelector
 		*process.recoAnalyzerOne
-		#*process.ptEtaRestrictedSeq
-		#*process.recoAnalyzerTwo
+		*process.ptEtaRestrictedSeq
+		*process.recoAnalyzerTwo
 		#*process.recoDileptonCandidateSeq
 		#*process.recoAnalyzerThree
 		#*process.recoDrSeparationSeq

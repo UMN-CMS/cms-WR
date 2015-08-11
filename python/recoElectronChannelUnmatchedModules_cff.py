@@ -1,5 +1,17 @@
 import FWCore.ParameterSet.Config as cms
 
+## checking Zee events
+zeeCheckLepton = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("slimmedElectrons"),
+		cut = cms.string("")
+		)
+
+zeeCheckLeptonFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("zeeCheckLepton"),
+		minNumber = cms.uint32(2)
+		)
+
+
 ## transform the objects in slimmedJets and slimmedElectrons into reco::Candidate objects
 bareRecoJet = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedJets"),
@@ -12,8 +24,8 @@ bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareRecoLepton = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("slimmedElectrons"),
-		cut = cms.string("abs(eta) < 2.5 && pt>20")
+		src = cms.InputTag("HEEPIDSelector"),
+		cut = cms.string("pt > 40")
 		)
 
 bareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
@@ -22,6 +34,8 @@ bareRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareRecoParticleSeq = cms.Sequence(bareRecoJet*bareRecoJetFilter*bareRecoLepton*bareRecoLeptonFilter)
+
+
 
 ##########################
 ##these modules apply the dR separation cut btwn leptons and jets just after they

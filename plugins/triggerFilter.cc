@@ -64,6 +64,8 @@ class triggerFilter : public edm::EDFilter {
 
       // ----------member data ---------------------------
 std::string targetHltPathName;	///< check that this HLT path fired in the evt
+std::string targetHltPathNameTwo;	///< check that this HLT path fired in the evt
+
 
 };
 
@@ -79,7 +81,8 @@ std::string targetHltPathName;	///< check that this HLT path fired in the evt
 // constructors and destructor
 //
 triggerFilter::triggerFilter(const edm::ParameterSet& iConfig):
-	targetHltPathName(iConfig.getParameter<std::string>("checkThisHltPath"))
+	targetHltPathName(iConfig.getParameter<std::string>("checkThisHltPath")),
+	targetHltPathNameTwo(iConfig.getParameter<std::string>("alsoCheckThisHltPath"))
 
 {
    //now do what ever initialization is needed
@@ -113,7 +116,7 @@ triggerFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	edm::TriggerResultsByName resultsByName = iEvent.triggerResultsByName("HLT");
 
 	///check that the relevant trigger was fired
-	if(!resultsByName.accept(targetHltPathName) ) return false;
+	if(!resultsByName.accept(targetHltPathName) && !resultsByName.accept(targetHltPathNameTwo) ) return false;
 
 	return true;
 }

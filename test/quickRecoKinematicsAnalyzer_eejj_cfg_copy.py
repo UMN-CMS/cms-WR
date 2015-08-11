@@ -8,10 +8,16 @@ process = cms.Process("RECOEEJJ")
 process.load('ExoAnalysis.cmsWR.recoElectronChannelUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
 #################################
 #Filters
 process.trigSelector = cms.EDFilter("triggerFilter",
-		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v2")
+		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v2"),
+		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2"),
+
 		)
 
 
@@ -25,17 +31,16 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		jetsCollection = cms.InputTag("bareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
-		#checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v2")
 		)
 
-#process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
-#		treeName = cms.string("recoObjectsWithPtEtaCuts"),
-#		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-#		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
-#		doDileptonMassCut = cms.bool(False),
-#		minDileptonMass = cms.double(-1)
-#		)
-#
+process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
+		treeName = cms.string("recoObjectsWithPtEtaCuts"),
+		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
+		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1)
+		)
+
 #process.recoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
 #		treeName = cms.string("recoObjectsWithPtEtaAndDileptonMassCuts"),
 #		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
@@ -64,12 +69,14 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.bareRecoParticleSeq
+		#process.trigSelector
+		process.egmGsfElectronIDSequence
+		*process.HEEPIDSequence
+		*process.bareRecoParticleSeq
 		*process.bareRecoDrSeparationSeq
-		*process.trigSelector
 		*process.recoAnalyzerOne
-		#*process.ptEtaRestrictedSeq
-		#*process.recoAnalyzerTwo
+		*process.ptEtaRestrictedSeq
+		*process.recoAnalyzerTwo
 		#*process.recoDileptonCandidateSeq
 		#*process.recoAnalyzerThree
 		#*process.recoDrSeparationSeq
@@ -81,9 +88,9 @@ process.schedule = cms.Schedule(process.unmatchedBkgndRecoPath)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('/eos/uscms/store/user/skalafut/DoubleEG/analyzed_lowMassRegionSkim/analyzed_DoubleEG_skim_low_mass_region_eejj.root')
-		#fileName = cms.string('/eos/uscms/store/user/skalafut/SingleElectron/analyzed_lowMassRegionSkim/analyzed_SingleElectron_skim_low_mass_region_eejj.root')
+		#fileName = cms.string('/eos/uscms/store/user/skalafut/DoubleEG/analyzed_DoubleEG_skim_low_mass_region_eejj.root')
 		#fileName = cms.string('/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_eejj.root')
+		fileName = cms.string('/eos/uscms/store/user/skalafut/SingleElectron/analyzed_SingleElectron_skim_low_mass_region_eejj.root')
 
 )
 
@@ -159,11 +166,10 @@ inputFiles.extend([
        #'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EEJJ_atFNALLPC/150803_125706/0000/miniAODEleEleSkimLowMassRegion_9.root',
 
 	   ##DoubleEG 50ns low mass skim evts
-	   'file:/eos/uscms/store/user/skalafut/DoubleEG/realData_DoubleEG_13TeV_50ns_eejj_signalAndLowMassRegionSkim_atFNALLPC/150727_142936/0000/realData_electronLowMassRegionSkim_1.root'
+	   #'file:/eos/uscms/store/user/skalafut/DoubleEG/realData_DoubleEG_13TeV_50ns_eejj_signalAndLowMassRegionSkim_atFNALLPC/150727_142936/0000/realData_electronLowMassRegionSkim_1.root'
 
 	   ##SingleElectron 50ns low mass skim evts
-	   #'file:/eos/uscms/store/user/skalafut/SingleElectron/realData_SingleElectron_13TeV_50ns_eejj_signalAndLowMassRegionSkim_atFNALLPC/150727_143037/0000/realData_electronLowMassRegionSkim_1.root'
-
+	   'file:/eos/uscms/store/user/skalafut/SingleElectron/realData_SingleElectron_13TeV_50ns_eejj_signalAndLowMassRegionSkim_atFNALLPC/150727_143037/0000/realData_electronLowMassRegionSkim_1.root'
 
 	])
 	#end inputFiles
