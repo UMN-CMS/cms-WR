@@ -146,6 +146,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
 		///and store the substring in the new string object
 		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
+		string afterLastChevron( uncutHistoName.substr(lastChevron+1) );
 		if((chMapIt->first).find("ealData") == string::npos ){
 			if(doPuReweighting){
 				///to apply the GEN evt and PU weights:
@@ -156,19 +157,20 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 				//5. loop over all evts in the TChain, and fill the histogram with the appropriate weights (PU and gen evt weights)
 				//string branchNames[] = {"ptEle[0]","ptEle[1]","dileptonMass","nVertices"};
 				//string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_dileptonMass(50,0.,250.)","_nVertices(45,0.,45.)"};
-				size_t firstChevron = (chMapIt->first).find_first_of('>'), closeParenthesis = (chMapIt->first).find_first_of(')');
-				size_t firstComma = (chMapIt->first).find_first_of(','), secondComma = (chMapIt->first).find_last_of(',');
-				size_t underscore = (chMapIt->first).find_first_of('_');
+				size_t firstChevron = (chMapIt->first).find_first_of('>'), closeParenthesis = afterLastChevron.find_first_of(')');
+				size_t firstComma = afterLastChevron.find_first_of(','), secondComma = afterLastChevron.find_last_of(',');
+				size_t firstUnderscore = afterLastChevron.find_first_of('_');
+				size_t updatedOpenParenthesis = afterLastChevron.find_first_of('(');
 				string targetBrName( (chMapIt->first).substr(0,firstChevron) );
-				string nBinsString( (chMapIt->first).substr(openParenth+1,firstComma - openParenth-1) );
-				string minString( (chMapIt->first).substr(firstComma+1,secondComma - firstComma-1) );
-				string maxString( (chMapIt->first).substr(secondComma+1,closeParenthesis - secondComma-1) );
-				string bkgndString( (chMapIt->first).substr(lastChevron+1,underscore - lastChevron-1) );
+				string nBinsString( (afterLastChevron).substr(updatedOpenParenthesis+1,firstComma - updatedOpenParenthesis-1) );
+				string minString( (afterLastChevron).substr(firstComma+1,secondComma - firstComma-1) );
+				string maxString( (afterLastChevron).substr(secondComma+1,closeParenthesis - secondComma-1) );
+				string bkgndString( (afterLastChevron).substr(0,firstUnderscore) );
 				Int_t vertices;
 				Float_t evWgtSign;
 				(chMapIt->second)->SetBranchAddress("nVertices",&vertices);
 				(chMapIt->second)->SetBranchAddress("evWeightSign",&evWgtSign);
-				TH1F * hTemp = new TH1F(oneHistoName.c_str(),"", stoi(nBinsString), stof(minString), stof(maxString) );
+				TH1F * hTemp = new TH1F(oneHistoName.c_str(),targetBrName.c_str(), stoi(nBinsString), stof(minString), stof(maxString) );
 				
 #ifdef DEBUG
 				cout<<"two local vars have been linked to nVertices and evWeightSign branches"<<endl;
@@ -182,22 +184,31 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 
 				Long64_t totalEntries = (chMapIt->second)->GetEntries();
 				Float_t wgt;
-				if(targetBrName.find("nVert") != string::npos || targetBrName.find("nJet") != string::npos || targetBrName.find("nLept") != string::npos || targetBrName.find("runNum") != string::npos || targetBrName.find("evtNum") != string::npos || targetBrName.find("leadingIs") != string::npos ){
+				Bool_t filledHisto = false;
+				if(targetBrName.find("nVert") != string::npos || targetBrName.find("nJets") != string::npos || targetBrName.find("nLeptons") != string::npos || targetBrName.find("runNum") != string::npos || targetBrName.find("evtNum") != string::npos || targetBrName.find("leadingIs") != string::npos ){
 					///use an Int_t variable for plotting nVertices, nJets, nLeptons, runNumber, evtNumber, and leadingIsHardest
 					Int_t desiredInt;
-					if(targetBrName.find("nVert") == string::npos ) (chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredInt);
+					Bool_t useDesiredInt = false;
+#ifdef DEBUG
+					cout<<"in the Int_t filter"<<endl;
+#endif
+					if(targetBrName.find("nVertices") == string::npos){
+						(chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredInt);
+						useDesiredInt = true;
+					}
 
 					///now loop over all entries in the TChain, and fill the histogram with appropriate weights
 					for(Long64_t ev=0; ev<totalEntries; ev++){
 						(chMapIt->second)->GetEntry(ev);
 						///now nVertices and evWeightSign in this particular event ev can be accessed
 						wgt = getEvtWeight(evWgtSign, vertices, puWeights, bkgndString);
-						if(targetBrName.find("nVert") == string::npos ) hTemp->Fill(desiredInt, wgt);
-						if(targetBrName.find("nVert") != string::npos ) hTemp->Fill(vertices, wgt);
+						if(useDesiredInt) hTemp->Fill(desiredInt, wgt);
+						else hTemp->Fill(vertices, wgt);
 					}///end loop over entries in TChain
+					filledHisto = true;
 
 				}///end single Int_t branch filter
-				else if(targetBrName.find('[') == string::npos){
+				if(targetBrName.find('[') == string::npos && filledHisto == false){
 					///the branch of interest stores a single Float_t value
 					Float_t desiredFloat;
 					(chMapIt->second)->SetBranchAddress(targetBrName.c_str(), &desiredFloat);
@@ -206,9 +217,10 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 						wgt = getEvtWeight(evWgtSign, vertices, puWeights, bkgndString);
 						hTemp->Fill(desiredFloat, wgt);
 					}
+					filledHisto = true;
 	
 				}///end single Float_t branch filter
-				else{
+				if(filledHisto == false){
 					///the branch of interest stores a 2 element array of Float_t values
 					///get the true branch name, and the element of the array which should be plotted (first or second)
 					Float_t desiredArray[2];
@@ -228,19 +240,31 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 
 				}///end Float_t[] array branch filter
 			
-			}
-			else (chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
+			}///end if(doPuReweighting == true)
+			else if(doPuReweighting == false) (chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
+
+
+			stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 		}
 		else if((chMapIt->first).find("ealData") != string::npos ){
 			(chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
+			overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+#ifdef DEBUG
+			std::cout<<"there are \t"<< (overlaidHistoMap[chMapIt->first])->Integral() <<"\t entries in the real data histo"<<std::endl;
+#endif
+
+
 		}
 
 #ifdef DEBUG
 		std::cout<<"input chain map key = \t"<< chMapIt->first <<std::endl;
 #endif
+	
+		/*
 		if((chMapIt->first).find("ealData") == string::npos ){
 			stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 		}///end search for histos made from MC datasets
+		
 		else if((chMapIt->first).find("ealData") != string::npos){
 			overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 #ifdef DEBUG
@@ -249,6 +273,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 
 
 		}
+		*/
 	}///end loop over elements in inputChainMap
 
 #ifdef DEBUG
@@ -624,12 +649,12 @@ void macroSandBox(){
 
 	Float_t integratedLumi = 40.001;	///< in picobarns
 
-	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","nJets","nLeptons"};
+	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","nJets","nLeptons","nVertices"};
 	string link=">>";
-	//string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,200.)","_subleadJetPt(50,0.,100.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,400.)","_fourObjectMass(50,0.,600.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_leadLeptonThreeObjMass(50,0.,500.)","_subleadingLeptonThreeObjMass(50,0.,500.)","_nJets(12,0.,12.)","_nLeptons(6,0.,6.)"};
+	//string histoEndings[] = {"_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(50,0.,200.)","_subleadJetPt(50,0.,100.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,400.)","_fourObjectMass(50,0.,600.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_leadLeptonThreeObjMass(50,0.,500.)","_subleadingLeptonThreeObjMass(50,0.,500.)","_nJets(12,0.,12.)","_nLeptons(6,0.,6.)","_nVertices(50,0.,50.)"};
 
-	string branchNames[] = {"nVertices"};
-	string histoEndings[] = {"_nVertices(50,0.,50.)"};
+	string branchNames[] = {"nJets","nLeptons"};
+	string histoEndings[] = {"_nJets(12,0.,12.)","_nLeptons(6,0.,6.)"};
 
 	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
 
