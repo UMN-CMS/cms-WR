@@ -7,6 +7,14 @@ process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
 process.load('ExoAnalysis.cmsWR.recoElectronChannelModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
+
+import FWCore.ParameterSet.VarParsing as VarParsing
+options = VarParsing.VarParsing('standard') 
+options.maxEvents = -1
+options.parseArguments()
+
 #################################
 #Analyzers
 
@@ -164,60 +172,32 @@ process.onlyMatchSubleadingElePath = cms.Path(
 		* process.matchRecoEleToSubleadingGenEleNoCutsNewPathFilter
 		)
 
-process.schedule = cms.Schedule(process.matchedRecoSingleStageJetsPath,process.onlyMatchSingleStageJetsPath)
+process.schedule = cms.Schedule(process.matchedRecoSingleStageJetsPath)
 
 
 process.TFileService = cms.Service("TFileService",
 		#fileName = cms.string('analysis_recoElectronChannel_two_stage_matching_for_jets.root')
-		fileName = cms.string('analysis_recoElectronChannel_single_stage_matching_for_jets_centrally_produced_signal_MWr_2600_MNu_1300.root')
+		#fileName = cms.string('analysis_recoElectronChannel_single_stage_matching_for_jets_centrally_produced_signal_MWr_2600_MNu_1300.root')
 		#fileName = cms.string('analysis_ttbar_bkgndElectronChannel.root')
-
+		fileName = cms.string(options.output)
+	
 )
 
 process.options = cms.untracked.PSet(
 		wantSummary = cms.untracked.bool(True)
 		)
 
-process.source = cms.Source( "PoolSource",
-    fileNames = cms.untracked.vstring(
-		##privately produced WR->ENu->EEJJ 13TeV, 40 PU, MWR=2.6 TeV, MNu=1.3 TeV miniAOD files
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_23.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_17.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_24.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_16.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_13.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_22.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_12.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_20.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_26.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_10.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_11.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_18.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_25.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_14.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_21.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_4.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_19.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_15.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_9.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_6.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_3.root',
-		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_2.root',
+inputFiles = cms.untracked.vstring(options.files)
 
-		##centrally produced WR->ENu->EEJJ 13TeV, 40 PU, MWR=2.6 TeV, MNu=1.3 TeV miniAOD files
-		##other final states are possible, but have very low probabilities
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2600_MNu-1300_TuneCUETP8M1_pythia8_13TeV_1.root',
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2600_MNu-1300_TuneCUETP8M1_pythia8_13TeV_2.root',
-	
-    ),
-    inputCommands = cms.untracked.vstring(
-        'keep *'
-    )
+process.source = cms.Source( "PoolSource",
+    fileNames = inputFiles,
+    #inputCommands = cms.untracked.vstring(
+    #    'keep *'
+    #)
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(options.maxEvents)
 )
 
 

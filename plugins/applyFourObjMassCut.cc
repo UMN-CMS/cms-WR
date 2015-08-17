@@ -267,6 +267,12 @@ applyFourObjMassCut::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::OwnVector<reco::Candidate>::const_iterator leadJet=inputJetsColl->end(), subleadJet=inputJetsColl->end();
    findLeadingAndSubleading(leadJet, subleadJet, inputJetsColl, false);
 
+   if(leadJet==inputJetsColl->end() || subleadJet==inputJetsColl->end() || leadLepton==inputLeptonsColl->end() || subleadLepton==inputLeptonsColl->end() ){
+	   iEvent.put(outputJetObjsColl, outputJetsCollName_);
+	   iEvent.put(outputLeptonObjsColl, outputLeptonsCollName_);
+	   return;
+   }
+
    ///check if the four object mass (using the selected leptons and jets) is greater than the threshold value
    ///if the four obj mass exceeds the threshold, add the two highest pT leptons and jets to the output collections
    double fourObjMass = (leadJet->p4() + subleadJet->p4() + leadLepton->p4() + subleadLepton->p4()).M();
