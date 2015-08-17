@@ -127,7 +127,7 @@ wRdiElectronAndLowMassSeq = cms.Sequence(
 		*wRdiElectronSidebandCandidate
 		*wRdiElectronSidebandCandidateFilter
 		*wRsidebandDileptonDijetObject
-		~*wRsidebandDileptonDijetObjectFilter
+		*~wRsidebandDileptonDijetObjectFilter
 		)
 
 ### @}
