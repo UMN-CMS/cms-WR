@@ -15,7 +15,7 @@ zeeCheckLeptonFilter = cms.EDFilter("CandViewCountFilter",
 ## transform the objects in slimmedJets and slimmedElectrons into reco::Candidate objects
 bareRecoJet = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
+		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
 		)
 
 bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
@@ -78,7 +78,7 @@ ptEtaRestrictedLeadRecoLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 ptEtaRestrictedRecoJets = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("bareRecoJet"),
+		src = cms.InputTag("bareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
 		cut = cms.string("abs(eta) < 2.5 && pt>40")
 		)
 ptEtaRestrictedRecoJetsFilter = cms.EDFilter("CandViewCountFilter",
@@ -94,8 +94,35 @@ ptEtaRestrictedSeq = cms.Sequence(
 		*ptEtaRestrictedRecoJets
 		*ptEtaRestrictedRecoJetsFilter
 		)
-
 ## end modules which apply pT and eta cuts to lepton and jets
+
+## require that no LLJJ object appear with mass > 600 GeV in the evt
+recoDiLeptonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+		decay = cms.string("ptEtaRestrictedLeadRecoLepton ptEtaRestrictedRecoLeptons"),
+		role = cms.string("leadingLepton subleadingLepton"),
+		checkCharge = cms.bool(False),
+		cut = cms.string("0 < mass < 200 && daughter(0).pt > daughter(1).pt")
+		)
+
+recoDiLeptonCandidateFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("recoDiLeptonCandidate"),
+		minNumber = cms.uint32(1)
+		)
+
+recoLowWrMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
+		maxWrMass = cms.double(600.0),
+		inputLeadLeptonsCollTag = cms.InputTag("ptEtaRestrictedLeadRecoLepton"),
+		inputSubleadLeptonsCollTag = cms.InputTag("ptEtaRestrictedRecoLeptons"),
+		inputJetsCollTag = cms.InputTag("ptEtaRestrictedRecoJets")
+		)
+
+lowMassLLJJObjectSeq = cms.Sequence(
+		recoDiLeptonCandidate
+		*recoDiLeptonCandidateFilter
+		*recoLowWrMassFilter
+		)
+## end low mass LLJJ filter sequence
+
 
 ## these modules apply the dilepton mass cut to matched reco leptons
 recoDileptonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",

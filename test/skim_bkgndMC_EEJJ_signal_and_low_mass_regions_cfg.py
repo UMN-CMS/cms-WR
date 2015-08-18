@@ -88,13 +88,18 @@ process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 
 
 # Path and EndPath definitions
-process.eleEleSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
-process.eleEleLowMassSkim = cms.Path(process.wRdiElectronAndLowMassSeq)
+#process.eleEleSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
+process.eleEleLowMassSkim = cms.Path(process.wRjetAndDielectronSidebandSeq)
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 #process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+#output signal and sideband region files
+#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+
+#output sideband region files
+process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_sideband_output)
+
 
 #process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_signal_output )
 

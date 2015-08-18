@@ -24,7 +24,61 @@
 //using namespace std;
 
 //#define DEBUG
+#define GENLVL
+#define GENMATCHEDRECO
 
+///adjust the lower and upper limit values for the horizontal axis of the histo
+void resetXaxisLimits(TH1F * histo){
+	bool done = false;
+
+	string hName(histo->GetName());
+	Double_t mean = histo->GetMean(1);
+	Double_t rms = histo->GetRMS(1);
+	Double_t peakVal = histo->GetXaxis()->GetBinCenter(histo->GetMaximumBin());
+	Double_t min = 0, max = 0;
+
+	///easy to compute limits based on histo name
+	if(hName.find("phi") != string::npos || hName.find("eta") != string::npos){
+		histo->SetAxisRange(-3.3,3.3,"X");
+		done = true;
+	}///end eta and phi
+	if(!done && (hName.find("runNumber") != string::npos || hName.find("evtNumber") != string::npos) ) done = true;
+	if(!done && hName.find("dR_") != string::npos ){
+		histo->SetAxisRange(0.,4.5,"X");
+		done = true;
+	}///end dR_
+	if(!done && hName.find("Mass") != string::npos ){
+		if( (mean - 2.8*rms) > 0) min = (mean - 2.8*rms);
+		max = (mean + 2.8*rms);
+		histo->SetAxisRange(min,max,"X");
+		done=true;
+	}///end Mass
+	if(!done){
+		///the only remaining quantities are the lepton and jet pT distributions
+		if(hName.find("ptGenEle[0]") != string::npos){
+			///leading pT tends to have a long low pT tail, and a sharp drop after the peak bin
+			min = (peakVal - 3*rms);
+			max = (peakVal + 1.2*rms);
+			if(min < 0) min = 0;
+			histo->SetAxisRange(min,max,"X");
+		}///end leading lepton pT
+		else{
+			///the other three object pT distributions have a long high pT tail, and a low pT plateau
+			max = (mean + 2.5*rms);
+			histo->SetAxisRange(min,max,"X");
+		}///end subleading lepton pT, or jet pT
+
+	}///end lepton and jet pT
+
+}///end resetXaxisLimits()
+
+void resetNumXaxisBins(TH1F * histo){
+	Int_t oldNbins = histo->GetNbinsX();
+	Double_t min = histo->GetXaxis()->GetBinCenter(1);
+	Double_t max = histo->GetXaxis()->GetBinCenter(oldNbins);
+	histo->SetBins(30,min,max);
+
+}///end resetNumXaxisBins()
 
 //use this fxn to compare distributions from two TChains 
 //this function is essentially two copies of makeAndSaveHistoUsingEntryList()
@@ -278,18 +332,20 @@ void saveSingleHisto(TString canvName,TString histName,TString histTitle,TString
 	
 	if(histTitle.Contains("pt") || histTitle.Contains("Mass")) isPlottingGeV = true;
 
-	gStyle->SetOptStat("emriou");
+	gStyle->SetOptStat("emrou");
 	TCanvas * canv = new TCanvas(canvName,canvName,600,600);
 	canv->cd();
 	TH1F * hist = (TH1F*) gROOT->FindObject(histName);
 	hist->SetTitle(histTitle);
 	hist->SetLineColor(1);
 	hist->SetLineWidth(3);
+	resetXaxisLimits(hist);
+	resetNumXaxisBins(hist);
 	
-	char temp[130];
-	if(isPlottingGeV) sprintf(temp,"Events / %.2f GeV",hist->GetXaxis()->GetBinWidth(1));
-	else sprintf(temp,"Events / %.2f ",hist->GetXaxis()->GetBinWidth(1));
-	hist->GetYaxis()->SetTitle(temp);
+	//char temp[130];
+	//if(isPlottingGeV) sprintf(temp,"Events / %.2f GeV",hist->GetXaxis()->GetBinWidth(1));
+	//else sprintf(temp,"Events / %.2f ",hist->GetXaxis()->GetBinWidth(1));
+	//hist->GetYaxis()->SetTitle(temp);
 
 	hist->Draw();
 	canv->SaveAs(outFile,"recreate");
@@ -305,8 +361,10 @@ void SaveTreePlots(TChain * chain, TString outputFileName){
 #ifdef DEBUG
 		std::cout<<"brName = \t"<< brName <<std::endl;
 #endif
-		if(brName.CompareTo("ptGenEle")==0 || brName.CompareTo("etaGenEle")==0 || brName.CompareTo("phiGenEle")==0 || 
-				brName.CompareTo("ptGenJet")==0 || brName.CompareTo("etaGenJet")==0 || brName.CompareTo("phiGenJet")==0 ){
+		string tempBrName(brName);
+		if(tempBrName.find("Matching") != string::npos) continue;	///<ignore branches with gen information
+		if(brName.CompareTo("etaEle")==0 || brName.CompareTo("phiEle")==0 || brName.CompareTo("ptEle")==0 || 
+				brName.CompareTo("ptJet")==0 || brName.CompareTo("etaJet")==0 || brName.CompareTo("phiJet")==0 ){
 			///NOTE the max value of 2 is set knowing that the max number of array elements per entry is 2
 			///if the tree structure changes to allow arrays with more than 2 entries, this loop upper limit value
 			///will have to change!
@@ -357,6 +415,7 @@ void dumpTreePlots(){
 	ptEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel.root");
 	*/
 
+#ifdef GENLVL
 	///chains made with pdgId matching
 	TChain * matchedNoCuts = new TChain("matchedGenAnalyzerOne/matchedGenObjectsNoCuts","");
 	matchedNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_genElectronChannel_using_miniAOD.root");
@@ -392,10 +451,15 @@ void dumpTreePlots(){
 	SaveTreePlots(matchedPtEtaDileptonMassCuts, plotDir_matched_withPtEtaDileptonMassCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrCuts, plotDir_matched_withPtEtaDileptonMassDrCuts);
 	SaveTreePlots(matchedPtEtaDileptonMassDrFourObjMassCuts, plotDir_matched_withPtEtaDileptonMassDrFourObjMassCuts);
-	
 
+#endif	
+
+
+
+#ifdef GENMATCHEDRECO
 
 	///chains made with deltaR matching btwn reco and gen
+	/*
 	TChain * matchedGenJetsToGenQuarksNoCuts = new TChain("matchGenJetsToGenQuarksNoCutsNewPath/matchedGenJetsNoCutsTree","");
 	matchedGenJetsToGenQuarksNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
 	
@@ -407,43 +471,50 @@ void dumpTreePlots(){
 	TChain * matchedRecoEleToSubleadingGenEleNoCuts = new TChain("matchRecoEleToSubleadingGenEleNoCutsNewPath/matchedSubleadingRecoEleNoCutsTree","");
 	matchedRecoEleToSubleadingGenEleNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
 	
-	TChain * matchedRecoNoCuts = new TChain("matchedRecoAnalyzerOne/matchedRecoObjectsNoCuts","");
-	matchedRecoNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-	TChain * matchedRecoPtEtaCuts = new TChain("matchedRecoAnalyzerTwo/matchedRecoObjectsWithPtEtaCuts","");
-	matchedRecoPtEtaCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-	TChain * matchedRecoPtEtaDileptonMassCuts = new TChain("matchedRecoAnalyzerThree/matchedRecoObjectsWithPtEtaAndDileptonMassCuts","");
-	matchedRecoPtEtaDileptonMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-	TChain * matchedRecoPtEtaDileptonMassDrCuts = new TChain("matchedRecoAnalyzerFour/matchedRecoObjectsWithPtEtaDileptonMassAndDrCuts","");
-	matchedRecoPtEtaDileptonMassDrCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-	TChain * matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
-	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-
-
 	TString plotDir_reco_matched_noCuts_dR_genJetsToGenQuarks = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_genJetsToGenQuarks/noCuts_genJetsToGenQuarks";
 	TString plotDir_reco_matched_noCuts_dR_recoElesToGenLeadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_recoElesToGenLeadingEles/noCuts_recoElesToGenLeadingEles";
 	TString plotDir_reco_matched_noCuts_dR_recoElesToGenSubleadingEles = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_recoElesToGenSubleadingEles/noCuts_recoElesToGenSubleadingEles";
 	TString plotDir_reco_matched_noCuts_dR_recoJetsToGenJets = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts_dR_recoJetsToGenJets/noCuts_recoJetsToGenJets";
 	
-	TString plotDir_reco_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
-	TString plotDir_reco_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaCuts/withPtEtaCuts";
-	TString plotDir_reco_matched_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassCuts/withPtEtaDileptonMassCuts";
-	TString plotDir_reco_matched_withPtEtaDileptonMassDrCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassDrCuts/withPtEtaDileptonMassDrCuts";
-	TString plotDir_reco_matched_withPtEtaDileptonMassDrFourObjMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassDrFourObjMassCuts/withPtEtaDileptonMassDrFourObjMassCuts";
-
 	///make plots of dR btwn gen jets and gen quarks, reco jets and gen jets, and reco eles and gen eles
 	SaveTreePlots(matchedGenJetsToGenQuarksNoCuts,plotDir_reco_matched_noCuts_dR_genJetsToGenQuarks);
 	SaveTreePlots(matchedRecoJetsToGenJetsNoCuts,plotDir_reco_matched_noCuts_dR_recoJetsToGenJets);
 	SaveTreePlots(matchedRecoEleToLeadingGenEleNoCuts,plotDir_reco_matched_noCuts_dR_recoElesToGenLeadingEles);
 	SaveTreePlots(matchedRecoEleToSubleadingGenEleNoCuts,plotDir_reco_matched_noCuts_dR_recoElesToGenSubleadingEles);
+	
+	*/
+
+	TString inputFile = "/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/analyzed_gen_matched_WRtoEEJJ_MWr800_MNu400.root";
+	TChain * matchedRecoNoCuts = new TChain("matchedRecoAnalyzerOne/matchedRecoObjectsNoCuts","");
+	matchedRecoNoCuts->Add(inputFile);
+	
+	TChain * matchedRecoPtEtaCuts = new TChain("matchedRecoAnalyzerTwo/matchedRecoObjectsWithPtEtaCuts","");
+	matchedRecoPtEtaCuts->Add(inputFile);
+	TChain * matchedRecoPtEtaDileptonMassCuts = new TChain("matchedRecoAnalyzerThree/matchedRecoObjectsWithPtEtaAndDileptonMassCuts","");
+	matchedRecoPtEtaDileptonMassCuts->Add(inputFile);
+	TChain * matchedRecoPtEtaDileptonMassDrCuts = new TChain("matchedRecoAnalyzerFour/matchedRecoObjectsWithPtEtaDileptonMassAndDrCuts","");
+	matchedRecoPtEtaDileptonMassDrCuts->Add(inputFile);
+	TChain * matchedRecoPtEtaDileptonMassDrFourObjMassCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts","");
+	matchedRecoPtEtaDileptonMassDrFourObjMassCuts->Add(inputFile);
+
+
+	/*
+	TString plotDir_reco_matched_noCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_noCuts/noCuts";
+	TString plotDir_reco_matched_withPtEtaCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaCuts/withPtEtaCuts";
+	TString plotDir_reco_matched_withPtEtaDileptonMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassCuts/withPtEtaDileptonMassCuts";
+	TString plotDir_reco_matched_withPtEtaDileptonMassDrCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassDrCuts/withPtEtaDileptonMassDrCuts";
+	TString plotDir_reco_matched_withPtEtaDileptonMassDrFourObjMassCuts = "/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/plots/RECO/matched_ptEtaDileptonMassDrFourObjMassCuts/withPtEtaDileptonMassDrFourObjMassCuts";
+	*/
 
 	///make plots of reco jets and eles matched to GEN objects after different levels of cuts
 	///the matching is done before any cuts are applied at GEN or reco lvl
-	SaveTreePlots(matchedRecoNoCuts, plotDir_reco_matched_noCuts);
-	SaveTreePlots(matchedRecoPtEtaCuts, plotDir_reco_matched_withPtEtaCuts);
-	SaveTreePlots(matchedRecoPtEtaDileptonMassCuts, plotDir_reco_matched_withPtEtaDileptonMassCuts);
-	SaveTreePlots(matchedRecoPtEtaDileptonMassDrCuts, plotDir_reco_matched_withPtEtaDileptonMassDrCuts);
-	SaveTreePlots(matchedRecoPtEtaDileptonMassDrFourObjMassCuts, plotDir_reco_matched_withPtEtaDileptonMassDrFourObjMassCuts);
+	SaveTreePlots(matchedRecoNoCuts, "noCuts");
+	//SaveTreePlots(matchedRecoPtEtaCuts, plotDir_reco_matched_withPtEtaCuts);
+	//SaveTreePlots(matchedRecoPtEtaDileptonMassCuts, plotDir_reco_matched_withPtEtaDileptonMassCuts);
+	//SaveTreePlots(matchedRecoPtEtaDileptonMassDrCuts, plotDir_reco_matched_withPtEtaDileptonMassDrCuts);
+	//SaveTreePlots(matchedRecoPtEtaDileptonMassDrFourObjMassCuts, plotDir_reco_matched_withPtEtaDileptonMassDrFourObjMassCuts);
 
+#endif
 
 
 }///end dumpTreePlots()

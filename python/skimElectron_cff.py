@@ -8,12 +8,18 @@ import FWCore.ParameterSet.Config as cms
 ### make sure the evt has at least two jets, and one has a nontrivial pT
 wRhardJet = cms.EDFilter("PATJetRefSelector",
 		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("pt>20 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
+		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
+		)
+
+##for use in the sideband skim
+wRhardJetFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("wRhardJet"),
+		minNumber = cms.uint32(2)
 		)
 
 wRsoftJet = cms.EDFilter("PATJetRefSelector",
 		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("pt>8 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
+		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
 		)
 
 wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
@@ -31,13 +37,13 @@ wRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>40"),
+                                 cut = cms.string("pt>60"),
                                  )
 
 ### select subleading electron
 wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>20"),
+                                 cut = cms.string("pt>40"),
                                  )
 #wRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
 
@@ -48,8 +54,7 @@ wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        checkCharge = cms.bool(False),
                                        # the cut on the pt of the daughter is to respect the order of leading and subleading:
                                            # if both electrons have pt>60 GeV there will be two di-electron candidates with inversed order
-                                       #cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
-                                       cut = cms.string("mass > 200"),
+                                       cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
 									   )
 
 ### filter: at least one di-electron candidate in signal region
@@ -77,7 +82,7 @@ wRdiLeptonDijetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 wRdiElectronSidebandCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("wRleadingElectron wRsubleadingElectron"),
                                        checkCharge = cms.bool(False),
-                                       cut = cms.string("0< mass < 200")
+                                       cut = cms.string("0< mass < 200 && daughter(0).pt>daughter(1).pt")
                                        )
 
 ### filter: at least one di-electron candidate in sideband region
@@ -128,6 +133,15 @@ wRdiElectronAndLowMassSeq = cms.Sequence(
 		*wRdiElectronSidebandCandidateFilter
 		*wRsidebandDileptonDijetObject
 		*~wRsidebandDileptonDijetObjectFilter
+		)
+
+## require that at least two loose ID jets with pt>40 be found, and
+## at least two electrons (pt>60 and pt>40) be found with dilepton mass btwn 0 and 200 GeV 
+## don't include the requirement that no four object with mass > 600 GeV be found
+wRjetAndDielectronSidebandSeq = cms.Sequence(
+		wRhardJet
+		*wRhardJetFilter
+		*wRdiElectronSidebandSeq
 		)
 
 ### @}
