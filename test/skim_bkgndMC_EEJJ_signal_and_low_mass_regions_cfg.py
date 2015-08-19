@@ -89,7 +89,9 @@ process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 
 # Path and EndPath definitions
 #process.eleEleSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
-process.eleEleLowMassSkim = cms.Path(process.wRjetAndDielectronSidebandSeq)
+#process.eleEleLowMassSkim = cms.Path(process.wRjetAndDielectronSidebandSeq)
+process.eleEleLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
+
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 #process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)

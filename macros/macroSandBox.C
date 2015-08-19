@@ -349,6 +349,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 
 	Double_t originalMax = histoStack->GetMaximum();
 	histoStack->SetMaximum(20*originalMax);
+	histoStack->SetMinimum(0.1);
 	histoStack->Draw("hist");
 
 #ifdef DEBUG
@@ -639,14 +640,14 @@ void macroSandBox(){
 	TChain * ttBarEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
 	ttBarEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");
 	TChain * wJetsEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
-	wJetsEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_WJets_skim_low_mass_region_eejj.root");
+	wJetsEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_WJets_50ns_skim_low_mass_region_eejj.root");
 	TChain * wzEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
-	wzEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WZ_TuneCUETP8M1_13TeV-pythia8/analyzed_WZ_skim_low_mass_region_eejj.root");
+	wzEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WZ_TuneCUETP8M1_13TeV-pythia8/analyzed_WZ_50ns_skim_low_mass_region_eejj.root");
 	TChain * zzEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
-	zzEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/ZZ_TuneCUETP8M1_13TeV-pythia8/analyzed_ZZ_skim_low_mass_region_eejj.root");
+	zzEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/ZZ_TuneCUETP8M1_13TeV-pythia8/analyzed_ZZ_50ns_skim_low_mass_region_eejj.root");
 	
 	TChain * doubleEGEEJJLowMassSkim = new TChain(moduleAndTreeName.c_str());
-	doubleEGEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DoubleEG/analyzed_DoubleEG_skim_low_mass_region_eejj.root");
+	doubleEGEEJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DoubleEG/analyzed_DoubleEG_50ns_skim_low_mass_region_eejj.root");
 
 #ifdef DEBUG
 	cout<<"declared TChain to bkgnd and data"<<endl;
@@ -681,16 +682,16 @@ void macroSandBox(){
 	
 	//string branchNames[] = {"nJets","nLeptons","nVertices"};
 	//string histoEndings[] = {"_nJets(12,0.,12.)","_nLeptons(6,0.,6.)","_nVertices(25,0.,50.)"};
-
+	
 	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
 
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {ttBarKey,"doubleEGRealData",dyPlusJetsKey,wJetsKey,wzKey,zzKey};
+	string histoBeginnings[] = {"doubleEGRealData",ttBarKey,dyPlusJetsKey,wJetsKey,wzKey,zzKey};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = ttBarEEJJLowMassSkim;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = wJetsEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = wzEEJJLowMassSkim;

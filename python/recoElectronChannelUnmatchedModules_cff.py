@@ -1,8 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 ## checking Zee events
+## run this after triggerFilter and HEEPID selector
 zeeCheckLepton = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("slimmedElectrons"),
+		src = cms.InputTag("HEEPIDSelector"),
 		cut = cms.string("")
 		)
 
@@ -11,6 +12,10 @@ zeeCheckLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(2)
 		)
 
+checkZeeSeq = cms.Sequence(
+		zeeCheckLepton
+		*zeeCheckLeptonFilter
+		)
 
 ## transform the objects in slimmedJets and slimmedElectrons into reco::Candidate objects
 bareRecoJet = cms.EDFilter("CandViewSelector",
