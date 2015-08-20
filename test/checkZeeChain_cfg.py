@@ -78,8 +78,8 @@ process.recoAnalyzerOne = cms.EDAnalyzer('zeeAnalyzer',
 #################################
 #Paths
 process.checkZeePath = cms.Path(
-		#process.trigSelector
-		process.egmGsfElectronIDSequence
+		process.trigSelector
+		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.checkZeeSeq
 		*process.recoAnalyzerOne

@@ -81,6 +81,7 @@ class hasNoHighMassWrObjects : public edm::EDFilter {
 	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputSubleadLeptonsToken;
 	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputJetsToken;
 	  double maxWrMass;
+	  double maxDileptonMass;
 
 };
 
@@ -96,7 +97,8 @@ class hasNoHighMassWrObjects : public edm::EDFilter {
 // constructors and destructor
 //
 hasNoHighMassWrObjects::hasNoHighMassWrObjects(const edm::ParameterSet& iConfig):
-	maxWrMass(iConfig.getParameter<double>("maxWrMass"))
+	maxWrMass(iConfig.getParameter<double>("maxWrMass")),
+	maxDileptonMass(iConfig.getParameter<double>("maxDileptonMass"))
 {
    //now do what ever initialization is needed
    inputLeadLeptonsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeadLeptonsCollTag"));
@@ -157,6 +159,7 @@ hasNoHighMassWrObjects::filter(edm::Event& iEvent, const edm::EventSetup& iSetup
 					ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > l1 = leptIt->p4(), l2 = leptTwoIt->p4();
 					ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > j1 = jetIt->p4(), j2 = jetTwoIt->p4();
 					if( (l1+l2+j1+j2).M() > maxWrMass ) return false;
+					if( (l1+l2).M() > maxDileptonMass ) return false;
 
 				}///end loop over second jet
 			}///end loop over first jet

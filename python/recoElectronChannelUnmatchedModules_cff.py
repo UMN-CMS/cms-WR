@@ -116,6 +116,7 @@ recoDiLeptonCandidateFilter = cms.EDFilter("CandViewCountFilter",
 
 recoLowWrMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
 		maxWrMass = cms.double(600.0),
+		maxDileptonMass = cms.double(200.0),
 		inputLeadLeptonsCollTag = cms.InputTag("ptEtaRestrictedLeadRecoLepton"),
 		inputSubleadLeptonsCollTag = cms.InputTag("ptEtaRestrictedRecoLeptons"),
 		inputJetsCollTag = cms.InputTag("ptEtaRestrictedRecoJets")
