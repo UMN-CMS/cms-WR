@@ -7,6 +7,11 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SKIM')
 
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
+
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -19,11 +24,12 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 process.source = cms.Source("PoolSource",
-		fileNames = cms.untracked.vstring('file:noFile.root'),
+		#fileNames = cms.untracked.vstring('file:noFile.root'),
+		fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/40000/00D4DF0D-7735-E511-BD81-00259073E4F0.root'),
 		secondaryFileNames = cms.untracked.vstring()
 		)
 
@@ -54,7 +60,7 @@ process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
 		dropMetaData = cms.untracked.string('ALL'),
 		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
 		fastCloning = cms.untracked.bool(False),
-		fileName = cms.untracked.string('file:miniAODEleEleSkimSignalRegion.root'),
+		fileName = cms.untracked.string('file:eleEleSkimSignalRegion.root'),
 		outputCommands = process.MICROAODSIMEventContent.outputCommands,
 		overrideInputFileSplitLevels = cms.untracked.bool(True),
 		SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleEleSignalSkim'))
@@ -71,7 +77,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     dropMetaData = cms.untracked.string('ALL'),
     eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
     fastCloning = cms.untracked.bool(False),
-    fileName = cms.untracked.string('file:miniAODEleEleSkimLowMassRegion.root'),
+    fileName = cms.untracked.string('file:eleEleSkimLowMassRegion.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleEleLowMassSkim'))
@@ -90,7 +96,8 @@ process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 # Path and EndPath definitions
 #process.eleEleSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
 #process.eleEleLowMassSkim = cms.Path(process.wRjetAndDielectronSidebandSeq)
-process.eleEleLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
+#process.eleEleLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
+process.eleEleLowMassSkim = cms.Path(process.egmGsfElectronIDSequence*process.HEEPIDSequence)
 
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)

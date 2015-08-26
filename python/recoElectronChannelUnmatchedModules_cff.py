@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 ## run this after triggerFilter and HEEPID selector
 zeeCheckLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("HEEPIDSelector"),
+		#src = cms.InputTag("slimmedElectrons"),
 		cut = cms.string("")
 		)
 

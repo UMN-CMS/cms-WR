@@ -31,13 +31,13 @@ emuwRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 ### select electron \ingroup electronSkim_Group
 emuwRelectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>20"),
+                                 cut = cms.string("pt>25"),
                                  )
 
 ### select muon
 emuwRmuon = cms.EDFilter("PATMuonRefSelector",
                                  src = cms.InputTag("slimmedMuons"),
-                                 cut = cms.string("pt>20"),
+                                 cut = cms.string("pt>25"),
                                  )
 #emuwRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
 
@@ -74,15 +74,15 @@ emuwRdiLeptonDijetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 
 
 ### create di-lepton pair in sideband region
-emuwRdiElectronSidebandCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+emuwRdiLeptonSidebandCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("emuwRelectron emuwRmuon"),
                                        checkCharge = cms.bool(False),
-                                       cut = cms.string("0< mass < 200 && daughter(0).pt>daughter(1).pt")
+                                       cut = cms.string("0< mass < 200")
                                        )
 
 ### filter: at least one di-lepton candidate in sideband region
-emuwRdiElectronSidebandCandidateFilter = cms.EDFilter("CandViewCountFilter",
-                                                   src = cms.InputTag("emuwRdiElectronSidebandCandidate"),
+emuwRdiLeptonSidebandCandidateFilter = cms.EDFilter("CandViewCountFilter",
+                                                   src = cms.InputTag("emuwRdiLeptonSidebandCandidate"),
                                                    minNumber = cms.uint32(1)
                                                    )
 
@@ -105,7 +105,7 @@ emuwRdiLeptonAndFourObjSignalSeq = cms.Sequence(
 
 
 ### di-lepton selection in sideband region sequence
-emuwRdiElectronSidebandSeq = cms.Sequence(emuwRleptonSelectionSeq * emuwRdiElectronSidebandCandidate * emuwRdiElectronSidebandCandidateFilter)
+emuwRdiLeptonSidebandSeq = cms.Sequence(emuwRleptonSelectionSeq * emuwRdiLeptonSidebandCandidate * emuwRdiLeptonSidebandCandidateFilter)
 
 ### low mass emujj selection sequence
 emuwRdiLeptonAndLowMassSeq = cms.Sequence(

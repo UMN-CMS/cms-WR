@@ -7,6 +7,11 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SKIM')
 
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
+
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -90,7 +95,8 @@ process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 # Path and EndPath definitions
 #process.electronSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
 #process.electronLowMassSkim = cms.Path(process.wRjetAndDielectronSidebandSeq)
-process.electronLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
+#process.electronLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
+process.electronLowMassSkim = cms.Path(process.egmGsfElectronIDSequence*process.HEEPIDSequence)
 
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)

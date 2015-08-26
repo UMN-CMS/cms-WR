@@ -54,7 +54,7 @@ process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
 		dropMetaData = cms.untracked.string('ALL'),
 		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
 		fastCloning = cms.untracked.bool(False),
-		fileName = cms.untracked.string('file:miniAODEMuSkimSignalRegion.root'),
+		fileName = cms.untracked.string('file:eMuSkimSignalRegion.root'),
 		outputCommands = process.MICROAODSIMEventContent.outputCommands,
 		overrideInputFileSplitLevels = cms.untracked.bool(True),
 		SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleMuSignalSkim'))
@@ -71,7 +71,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     dropMetaData = cms.untracked.string('ALL'),
     eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
     fastCloning = cms.untracked.bool(False),
-    fileName = cms.untracked.string('file:miniAODEMuSkimLowMassRegion.root'),
+    fileName = cms.untracked.string('file:eMuSkimLowMassRegion.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eleMuLowMassSkim'))
@@ -88,13 +88,16 @@ process.load('ExoAnalysis.cmsWR.skimEMu_cff')
 
 
 # Path and EndPath definitions
-process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
-process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonAndLowMassSeq)
+#process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
+process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonSidebandSeq)
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 #process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+
+process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_sideband_output)
+
 
 #process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_signal_output )
 

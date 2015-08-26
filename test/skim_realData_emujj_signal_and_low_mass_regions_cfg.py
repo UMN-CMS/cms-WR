@@ -81,21 +81,23 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v1', '')
 
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
 process.load('ExoAnalysis.cmsWR.skimEMu_cff')
 
 
 # Path and EndPath definitions
-process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
-process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonAndLowMassSeq)
+#process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
+process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonSidebandSeq)
 
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 #process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
+process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_sideband_output)
+
 
 #process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_signal_output )
 

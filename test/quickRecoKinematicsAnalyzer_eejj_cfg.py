@@ -25,8 +25,8 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 #Filters
 #as long as one of these two triggers is fired, the event is selected
 process.trigSelector = cms.EDFilter("triggerFilter",
-		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v2"),
-		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v2"),
+		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
+		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
 
 		)
 
