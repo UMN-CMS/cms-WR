@@ -23,6 +23,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <utility>
 #include <TEventList.h>
 #include <TEntryList.h>
 #include <TEntryListArray.h>
@@ -30,7 +31,8 @@
 
 using namespace std;
 
-#define lowMassSkimmedBkgndOnRealData
+//#define lowMassSkimmedBkgndOnRealData
+#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
 //#define DEBUG
@@ -38,6 +40,41 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define DEBUGEVTWEIGHTMTHD
+//#define DEBUGVECTOR
+
+/**
+ *
+ * use this fxn to add std::pair<Double_t, string> containers to a vector such that the 0th element of the vector
+ * has the lowest Double_t value, and the last element of the vector has the highest Double_t value
+ *
+ */
+void addPairToOrderedVector(vector<pair<Double_t,string> > & orderedVector, pair<Double_t,string> & elementToAdd){
+#ifdef DEBUGVECTOR
+	cout<<"in addPairToOrderedVector"<<endl;
+#endif
+
+	if(orderedVector.size() == 0) orderedVector.push_back(elementToAdd);
+	else{
+		for(vector<pair<Double_t,string> >::iterator it=orderedVector.begin(); it!=orderedVector.end() ; it++){
+#ifdef DEBUGVECTOR
+			cout<<"elementToAdd.first =\t"<< elementToAdd.first << endl;
+			cout<<"elementToAdd.second =\t"<< elementToAdd.second << endl;
+			cout<<"(*it).first =\t"<< (*it).first << endl;
+			cout<<"(*it).second =\t"<< (*it).second << endl;
+#endif
+			if(elementToAdd.first > (*it).first) continue;
+			///if the continue does not kick in, then elementToAdd.first is <= the Double_t value stored in the element currently pointed to by it
+			///add elementToAdd to orderedVector using insert
+			orderedVector.insert(it,elementToAdd);
+			break;
+		}///end for loop over vector elements
+	}///end else
+#ifdef DEBUGVECTOR
+	cout<<"added element to orderedVector"<<endl;
+#endif
+
+}///end addPairToOrderedVector()
+
 
 /**
  * use this fxn to compute the evt weight for one evt in a TChain
@@ -311,6 +348,8 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
 	Int_t i=0;
 	THStack * histoStack = new THStack("","");
+	vector<pair<Double_t,string> > vectOfBkgnds;	///< use this to link the # of rescaled bkgnd evts to each bkgnd source
+	pair<Double_t,string> newPair;
 	if(stackedHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
 #ifdef DEBUG
 	std::cout<<"made a THStack object with null name and title"<<std::endl;
@@ -331,13 +370,15 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 			if((histIt->first).find(mcIt->first) != string::npos) (histIt->second)->Scale(crossSxnsMap[mcIt->first]*intLumi/nEvtsMap[mcIt->first]);
 		}///end loop which normalizes the MC histos to integrated lumi of real data
 
+		newPair = make_pair((histIt->second)->Integral(), histIt->first);
+		addPairToOrderedVector(vectOfBkgnds, newPair);
 		bkgndIntegral += (histIt->second)->Integral();
 #ifdef DEBUG
 		std::cout<<"rescaled the histo \t"<< histIt->first <<std::endl;
 		std::cout<<"after rescaling there are "<< (histIt->second)->Integral() <<" entries in the histo mentioned immediately above"<<std::endl;
 #endif
 	
-		histoStack->Add((histIt->second));	///< add each histo in stackedHistoMap to the THStack object
+		//histoStack->Add((histIt->second));	///< add each histo in stackedHistoMap to the THStack object
 
 #ifdef DEBUG
 		std::cout<<"added \t"<< histIt->first <<"\t to the stacked histo object"<<std::endl;
@@ -370,9 +411,14 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 		i++;
 	}///end loop to set line colors of histos, and add entries to TLegend
 
+	for(unsigned int i=0; i<vectOfBkgnds.size(); i++){
+		///calling second on the ith element of vectOfBkgnds returns a string which should be a key in stackedHistoMap
+		histoStack->Add( stackedHistoMap[vectOfBkgnds[i].second] );
+	}///end loop over pairs in vectOfBkgnds
+
 	if(doLogYaxis){
 		Double_t originalMax = histoStack->GetMaximum();
-		histoStack->SetMaximum(20*originalMax);
+		histoStack->SetMaximum(40*originalMax);
 		histoStack->SetMinimum(0.1);
 	}
 	histoStack->Draw("hist");
@@ -662,6 +708,97 @@ void macroSandBox(){
 	numEvtsFiftyNs[zzKey]=998848;
 
 
+
+#ifdef lowMassFlavorSidebandBkgndOnData
+	string modAndTreeName = "recoAnalyzerTwo/recoObjectsWithPtEtaCuts";
+
+	TChain * dyPlusJetsEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
+	dyPlusJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/analyzed_DYJets_madgraph_50ns_skim_low_dilepton_mass_region_emujj.root");
+	//dyPlusJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_DYJets_50ns_skim_low_dilepton_mass_region_emujj.root");
+	
+	TChain * ttBarEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
+	ttBarEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_dilepton_mass_region_emujj.root");
+	TChain * wJetsEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
+	wJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_WJets_50ns_skim_low_dilepton_mass_region_emujj.root");
+	TChain * wzEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
+	wzEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WZ_TuneCUETP8M1_13TeV-pythia8/analyzed_WZ_50ns_skim_low_dilepton_mass_region_emujj.root");
+	TChain * zzEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
+	zzEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/ZZ_TuneCUETP8M1_13TeV-pythia8/analyzed_ZZ_50ns_skim_low_dilepton_mass_region_emujj.root");
+	
+	TChain * muonEGEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
+	muonEGEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/MuonEG/analyzed_MuonEG_50ns_skim_low_dilepton_mass_region_emujj.root");
+
+#ifdef DEBUG
+	cout<<"declared TChain to bkgnd and data"<<endl;
+#endif
+
+	///compute the PU weights for different bkgnd processes
+	//computePileupWeights(map<string,TChain*> bkgndChainMap, TChain * dataChain)
+	map<string,TChain*> bkgndMap;
+	bkgndMap[ttBarKey]=ttBarEMuJJLowMassSkim;
+	bkgndMap[dyPlusJetsKey]=dyPlusJetsEMuJJLowMassSkim;
+	bkgndMap[wJetsKey]=wJetsEMuJJLowMassSkim;
+	bkgndMap[wzKey]=wzEMuJJLowMassSkim;
+	bkgndMap[zzKey]=zzEMuJJLowMassSkim;
+	
+	map<string,vector<Float_t> > pileupWeights = computePileupWeights(bkgndMap, muonEGEMuJJLowMassSkim);
+
+
+	Float_t integratedLumi = 40.001/0.962;	///< in picobarns
+
+
+	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","dijetMass","nLeptons","nJets","nVertices"};
+	string link=">>";
+	//string histoEndings[] = {"_leadLeptonPt(25,0.,250.)","_subleadLeptonPt(14,0.,140.)","_leadLeptonEta(30,-3.0,3.0)","_subleadLeptonEta(30,-3.0,3.0)","_leadJetPt(25,0.,250.)","_subleadJetPt(14,0.,140.)","_leadJetEta(30,-3.0,3.0)","_subleadJetEta(30,-3.0,3.0)","_dileptonMass(20,0.,200.)","_fourObjectMass(30,0.,600.)","_dR_leadingLeptonLeadingJet(25,0.,5.)","_dR_leadingLeptonSubleadingJet(25,0.,5.)","_dR_subleadingLeptonLeadingJet(25,0.,5.)","_dR_subleadingLeptonSubleadingJet(25,0.,5.)","_dR_leadingLeptonSubleadingLepton(25,0.,5.)","_dR_leadingJetSubleadingJet(25,0.,5.)","_leadLeptonThreeObjMass(25,0.,500.)","_subleadingLeptonThreeObjMass(25,0.,500.)","_dijetMass(40,0.,400)","_nLeptons(4,0.,4.)","_nJets(6,0.,6.)","_nVertices(35,0.,35.)"};
+	
+	//string branchNames[] = {"ptEle[0]","ptEle[1]","ptJet[0]","ptJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet"};
+	//string histoEndings[] = {"_leadLeptonPt(20,30.,200.)","_subleadLeptonPt(20,30.,110.)","_leadJetPt(25,30.,200.)","_subleadJetPt(20,30.,110.)","_dileptonMass(25,0.,200.)","_fourObjectMass(20,0.,600.)","_dR_leadingLeptonLeadingJet(30,0.,5.)","_dR_leadingLeptonSubleadingJet(30,0.,5.)","_dR_subleadingLeptonLeadingJet(30,0.,5.)","_dR_subleadingLeptonSubleadingJet(30,0.,5.)","_dR_leadingLeptonSubleadingLepton(30,0.,5.)","_dR_leadingJetSubleadingJet(30,0.,5.)"};
+	
+	//string branchNames[] = {"leadLeptonThreeObjMass","subleadingLeptonThreeObjMass"};
+	//string histoEndings[] = {"_leadLeptonThreeObjMass(25,50.,600.)","_subleadingLeptonThreeObjMass(25,50.,600.)"};
+	
+	//string branchNames[] = {"etaEle[0]","etaEle[1]","etaJet[0]","etaJet[1]"};
+	//string histoEndings[] = {"_leadLeptonEta(15,-3.0,3.0)","_subleadLeptonEta(15,-3.0,3.0)","_leadJetEta(15,-3.0,3.0)","_subleadJetEta(15,-3.0,3.0)"};
+	
+	//string branchNames[] = {"nJets","nLeptons","nVertices"};
+	//string histoEndings[] = {"_nJets(12,0.,12.)","_nLeptons(6,0.,6.)","_nVertices(25,0.,50.)"};
+	
+	//string branchNames[] = {"nLeptons","etaEle[0]","etaEle[1]"};
+	//string histoEndings[] = {"_nLeptons(6,0.,6.)","_leadLeptonEta(30,-2.6,2.6)","_subleadLeptonEta(30,-2.6,2.6)"};
+	
+
+	//string branchNames[] = {"etaEle[0]","etaEle[1]","ptEle[0]","ptEle[1]","dileptonMass","phiEle[0]","phiEle[1]"};
+	//string histoEndings[] = {"_leadLeptonEta(50,-2.5,2.5)","_subleadLeptonEta(50,-2.5,2.5)","_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_dileptonMass(200,50.,250.)","_leadLeptonPhi(64,-3.2,3.2)","_subleadLeptonPhi(64,-3.2,3.2)"};
+	
+	string branchNames[] = {"dileptonMass"};
+	string histoEndings[] = {"_dileptonMass(20,20.,200.)"};
+	
+
+	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
+
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	string histoBeginnings[] = {zzKey,wzKey,wJetsKey,ttBarKey,dyPlusJetsKey,"Data"};
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = histoEndingVect.size();
+	for(unsigned int i=0; i<maxI; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = muonEGEMuJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = dyPlusJetsEMuJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = ttBarEMuJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = wJetsEMuJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = wzEMuJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = zzEMuJJLowMassSkim;
+		string cName = "o"+to_string(i);
+		overlayPointsOnStackedHistos(placeHolderMap,cName.c_str(),0.5,0.75,0.9,0.89,xSxnsFiftyNs,integratedLumi,numEvtsFiftyNs,evWeightCut,false,pileupWeights,true);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+
+
+
+#endif
+///end lowMassFlavorSidebandBkgndOnData
+
+
+
 #ifdef lowMassSkimmedBkgndOnRealData
 	//overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap, TString treeCuts, Bool_t doPuReweighting, map<string,vector<Float_t> > puWeights,Bool_t doLogYaxis)
 	//recoAnalyzerOne/zEleEleNoCuts or recoAnalyzerTwo/recoObjectsWithPtEtaCuts
@@ -739,12 +876,6 @@ void macroSandBox(){
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarEEJJLowMassSkim;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = wJetsEEJJLowMassSkim;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = wzEEJJLowMassSkim;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = zzEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = ttBarEEJJLowMassSkim;
