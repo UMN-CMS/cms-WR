@@ -8,11 +8,34 @@ process = cms.Process("RECOEMuJJ")
 process.load('ExoAnalysis.cmsWR.recoEMuChannelUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
+
+# import VarParsing to allow inputs from the command line
+import FWCore.ParameterSet.VarParsing as VarParsing
+options = VarParsing.VarParsing('standard') 
+options.maxEvents = -1
+options.parseArguments()
+
+# import the HEEP selection modules and sequences
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
+
 #################################
 #Filters
-process.trigSelector = cms.EDFilter("triggerFilter",
-		checkThisHltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1")
-		)
+from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
+process.trigFilt = hltHighLevel.clone()
+#process.trigFilt.HLTPaths = ['HLT_Mu45_eta2p1_v*','HLT_Mu50_v*','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*']
+process.trigFilt.HLTPaths = ['HLT_Mu30_Ele30_CaloIdL_GsfTrkIdVL_v*']
+process.trigFilt.andOr = True  #if True, then multiple HLT paths will be combined with OR logic
+
+#no need for trigSelector, or triggerFilter.cc
+#process.trigSelector = cms.EDFilter("triggerFilter",
+#		checkThisHltPath = cms.string("HLT_Mu30_Ele30_CaloIdL_GsfTrkIdVL_v1"),
+#		alsoCheckThisHltPath = cms.string("HLT_Mu30_Ele30_CaloIdL_GsfTrkIdVL_v1")
+#		)
 
 #################################
 #Analyzers
@@ -24,19 +47,19 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 		minDileptonMass = cms.double(-1),
 		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),
 		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),
-		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
-		#checkThisHltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1")
+		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
 	
 		)
-#
-#process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
-#		treeName = cms.string("recoObjectsWithPtEtaCuts"),
-#		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-#		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
-#		doDileptonMassCut = cms.bool(False),
-#		minDileptonMass = cms.double(-1)
-#		)
-#
+
+process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("recoObjectsWithPtEtaCuts"),
+		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),
+		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),
+		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1)
+		)
+
 #process.recoAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzer',
 #		treeName = cms.string("recoObjectsWithPtEtaAndDileptonMassCuts"),
 #		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
@@ -65,12 +88,15 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.emuBareRecoParticleSeq
+		process.trigFilt
+		*process.egmGsfElectronIDSequence
+		*process.HEEPIDSidebandSequence  #only look for 1 HEEP electron
+		*process.wrTunePMuProdSeq
+		*process.emuBareRecoParticleSeq
 		*process.emuBareRecoDrSeparationSeq
-		*process.trigSelector
 		*process.recoAnalyzerOne
-		#*process.ptEtaRestrictedSeq
-		#*process.recoAnalyzerTwo
+		*process.emuLeadLeptonAndLowMassSeq
+		*process.recoAnalyzerTwo
 		#*process.recoDileptonCandidateSeq
 		#*process.recoAnalyzerThree
 		#*process.recoDrSeparationSeq
@@ -82,10 +108,7 @@ process.schedule = cms.Schedule(process.unmatchedBkgndRecoPath)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_mass_region_emujj.root')
-		#fileName = cms.string('/eos/uscms/store/user/skalafut/MuonEG/analyzed_lowMassRegionSkim/analyzed_MuonEG_skim_low_mass_region_emujj.root')
-		#fileName = cms.string('/eos/uscms/store/user/skalafut/SingleMuon/analyzed_lowMassRegionSkim/analyzed_SingleMuon_skim_low_mass_region_emujj.root')
-		#fileName = cms.string('/eos/uscms/store/user/skalafut/SingleElectron/analyzed_lowMassRegionSkim/analyzed_SingleElectron_skim_low_mass_region_emujj.root')
+		fileName = cms.string(options.output)
 
 )
 
@@ -93,74 +116,7 @@ process.options = cms.untracked.PSet(
 		wantSummary = cms.untracked.bool(True)
 		)
 
-inputFiles = cms.untracked.vstring()
-inputFiles.extend([
-	##TTJets to EMuJJ 50ns low mass skim evts
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_1.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_10.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_11.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_12.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_13.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_14.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_15.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_16.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_17.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_18.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_19.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_2.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_20.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_21.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_22.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_23.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_24.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_25.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_26.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_27.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_28.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_29.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_3.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_30.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_31.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_32.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_33.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_34.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_35.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_36.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_37.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_38.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_39.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_4.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_40.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_41.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_42.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_43.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_44.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_45.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_46.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_47.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_48.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_49.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_5.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_50.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_51.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_52.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_54.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_55.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_56.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_57.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_58.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_59.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_6.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_60.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_61.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_62.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_63.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_64.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_7.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_8.root',
-       'file:/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_13TeV_50ns_skim_low_mass_and_signal_regions_EMuJJ_atFNALLPC/150803_125729/0000/miniAODEMuSkimLowMassRegion_9.root',
-	   ])
-#end inputFiles
+inputFiles = cms.untracked.vstring(options.files)
  
 process.source = cms.Source( "PoolSource",
     fileNames = inputFiles, 
@@ -170,7 +126,7 @@ process.source = cms.Source( "PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(options.maxEvents)
 )
 
 

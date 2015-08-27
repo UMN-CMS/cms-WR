@@ -23,12 +23,17 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 #################################
 #Filters
-#as long as one of these two triggers is fired, the event is selected
-process.trigSelector = cms.EDFilter("triggerFilter",
-		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
-		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
+from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
+process.trigFilt = hltHighLevel.clone()
+process.trigFilt.HLTPaths = ['HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*']
+process.trigFilt.andOr = True  #if True, then multiple HLT paths will be combined with OR logic
 
-		)
+#no need for trigSelector, or triggerFilter.cc
+#process.trigSelector = cms.EDFilter("triggerFilter",
+#		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
+#		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
+#
+#		)
 
 
 #################################
@@ -79,7 +84,7 @@ process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.trigSelector
+		process.trigFilt
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq

@@ -129,7 +129,7 @@ map<string,vector<Float_t> > computePileupWeights(map<string,TChain*> bkgndChain
  * this is done by calling Scale(crossSxn * integratedLumi / numEvts) on each of the histos from MC data
  * if there are N unique keys in inputChainMap, then there are N-1 unique keys in the maps called crossSxnsMap and nEvtsMap
  *
- * the TChain to real data should contain the phrase "ealData" in the inputChainMap key
+ * the TChain to real data should contain the phrase "Data" in the inputChainMap key
  * the TChain to each MC sample should contain a key which is used in crossSxnsMap and nEvtsMap
  *
  */
@@ -141,14 +141,13 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 	map<string,TH1F*> stackedHistoMap;	///< links TString keys to TH1F histos which will ultimately be stacked
 	map<string,TH1F*> overlaidHistoMap; ///< links one TString key to the TH1F histo coming from real data
 	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
-		//if( (chMapIt->first).find("ealData") != string::npos) continue;
 		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
 		string uncutHistoName(chMapIt->first);
 		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
 		///and store the substring in the new string object
 		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
 		string afterLastChevron( uncutHistoName.substr(lastChevron+1) );
-		if((chMapIt->first).find("ealData") == string::npos ){
+		if((chMapIt->first).find("Data") == string::npos ){
 			if(doPuReweighting){
 				///to apply the GEN evt and PU weights:
 				//1. identify the quantity which should be plotted
@@ -269,7 +268,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 
 			stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 		}
-		else if((chMapIt->first).find("ealData") != string::npos ){
+		else if((chMapIt->first).find("Data") != string::npos ){
 			(chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
 			overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 #ifdef DEBUG
@@ -284,11 +283,11 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 #endif
 	
 		/*
-		if((chMapIt->first).find("ealData") == string::npos ){
+		if((chMapIt->first).find("Data") == string::npos ){
 			stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 		}///end search for histos made from MC datasets
 		
-		else if((chMapIt->first).find("ealData") != string::npos){
+		else if((chMapIt->first).find("Data") != string::npos){
 			overlaidHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 #ifdef DEBUG
 			std::cout<<"there are \t"<< (overlaidHistoMap[chMapIt->first])->Integral() <<"\t entries in the real data histo"<<std::endl;
@@ -705,9 +704,9 @@ void macroSandBox(){
 	Float_t integratedLumi = 40.001/0.962;	///< in picobarns
 
 
-	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","dijetMass","nLeptons","nJets","nVertices"};
+	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","dijetMass","nLeptons","nJets","nVertices"};
 	string link=">>";
-	string histoEndings[] = {"_leadLeptonPt(25,0.,250.)","_subleadLeptonPt(14,0.,140.)","_leadLeptonEta(30,-3.0,3.0)","_subleadLeptonEta(30,-3.0,3.0)","_leadJetPt(25,0.,250.)","_subleadJetPt(14,0.,140.)","_leadJetEta(30,-3.0,3.0)","_subleadJetEta(30,-3.0,3.0)","_dileptonMass(20,0.,200.)","_fourObjectMass(30,0.,600.)","_dR_leadingLeptonLeadingJet(25,0.,5.)","_dR_leadingLeptonSubleadingJet(25,0.,5.)","_dR_subleadingLeptonLeadingJet(25,0.,5.)","_dR_subleadingLeptonSubleadingJet(25,0.,5.)","_dR_leadingLeptonSubleadingLepton(25,0.,5.)","_dR_leadingJetSubleadingJet(25,0.,5.)","_leadLeptonThreeObjMass(25,0.,500.)","_subleadingLeptonThreeObjMass(25,0.,500.)","_dijetMass(40,0.,400)","_nLeptons(4,0.,4.)","_nJets(6,0.,6.)","_nVertices(35,0.,35.)"};
+	//string histoEndings[] = {"_leadLeptonPt(25,0.,250.)","_subleadLeptonPt(14,0.,140.)","_leadLeptonEta(30,-3.0,3.0)","_subleadLeptonEta(30,-3.0,3.0)","_leadJetPt(25,0.,250.)","_subleadJetPt(14,0.,140.)","_leadJetEta(30,-3.0,3.0)","_subleadJetEta(30,-3.0,3.0)","_dileptonMass(20,0.,200.)","_fourObjectMass(30,0.,600.)","_dR_leadingLeptonLeadingJet(25,0.,5.)","_dR_leadingLeptonSubleadingJet(25,0.,5.)","_dR_subleadingLeptonLeadingJet(25,0.,5.)","_dR_subleadingLeptonSubleadingJet(25,0.,5.)","_dR_leadingLeptonSubleadingLepton(25,0.,5.)","_dR_leadingJetSubleadingJet(25,0.,5.)","_leadLeptonThreeObjMass(25,0.,500.)","_subleadingLeptonThreeObjMass(25,0.,500.)","_dijetMass(40,0.,400)","_nLeptons(4,0.,4.)","_nJets(6,0.,6.)","_nVertices(35,0.,35.)"};
 	
 	//string branchNames[] = {"ptEle[0]","ptEle[1]","ptJet[0]","ptJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet"};
 	//string histoEndings[] = {"_leadLeptonPt(20,30.,200.)","_subleadLeptonPt(20,30.,110.)","_leadJetPt(25,30.,200.)","_subleadJetPt(20,30.,110.)","_dileptonMass(25,0.,200.)","_fourObjectMass(20,0.,600.)","_dR_leadingLeptonLeadingJet(30,0.,5.)","_dR_leadingLeptonSubleadingJet(30,0.,5.)","_dR_subleadingLeptonLeadingJet(30,0.,5.)","_dR_subleadingLeptonSubleadingJet(30,0.,5.)","_dR_leadingLeptonSubleadingLepton(30,0.,5.)","_dR_leadingJetSubleadingJet(30,0.,5.)"};
@@ -728,23 +727,30 @@ void macroSandBox(){
 	//string branchNames[] = {"etaEle[0]","etaEle[1]","ptEle[0]","ptEle[1]","dileptonMass","phiEle[0]","phiEle[1]"};
 	//string histoEndings[] = {"_leadLeptonEta(50,-2.5,2.5)","_subleadLeptonEta(50,-2.5,2.5)","_leadLeptonPt(40,0.,200.)","_subleadLeptonPt(20,0.,100.)","_dileptonMass(200,50.,250.)","_leadLeptonPhi(64,-3.2,3.2)","_subleadLeptonPhi(64,-3.2,3.2)"};
 	
-	//string branchNames[] = {"dileptonMass"};
-	//string histoEndings[] = {"_dileptonMass(200,50.,250.)"};
+	string branchNames[] = {"dileptonMass"};
+	string histoEndings[] = {"_dileptonMass(200,50.,250.)"};
 	
 
 	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
 
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"doubleEGRealData",ttBarKey,dyPlusJetsKey,wJetsKey,wzKey,zzKey};
+	//string histoBeginnings[] = {"Data",ttBarKey,dyPlusJetsKey,wJetsKey,wzKey,zzKey};
+	string histoBeginnings[] = {zzKey,wzKey,wJetsKey,ttBarKey,dyPlusJetsKey,"Data"};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarEEJJLowMassSkim;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = wJetsEEJJLowMassSkim;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = wzEEJJLowMassSkim;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = zzEEJJLowMassSkim;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarEEJJLowMassSkim;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = wJetsEEJJLowMassSkim;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = wzEEJJLowMassSkim;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = zzEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = doubleEGEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = dyPlusJetsEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = ttBarEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = wJetsEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = wzEEJJLowMassSkim;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = zzEEJJLowMassSkim;
 		string cName = "o"+to_string(i);
 		overlayPointsOnStackedHistos(placeHolderMap,cName.c_str(),0.5,0.75,0.9,0.89,xSxnsFiftyNs,integratedLumi,numEvtsFiftyNs,evWeightCut,false,pileupWeights,true);
 		placeHolderMap.clear();
