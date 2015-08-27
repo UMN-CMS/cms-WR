@@ -41,6 +41,13 @@ wRsubleadingMuon = cms.EDFilter("CandViewSelector",
                                  src = cms.InputTag("slimmedMuons"),
                                  cut = cms.string("pt>20"),
                                  )
+### select loose-ID jets
+wRlooseJet = cms.EDFilter("PATJetSelector",
+                            src = cms.InputTag("slimmedJets"),
+                            cut = cms.string("(neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"),
+                            #cut = cms.string("pt>60"),
+                            )
+
 ### create di-muon pair in signal region
 wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("wRleadingMuon wRsubleadingMuon"),
@@ -92,7 +99,7 @@ wRdiMuonSidebandCandidateFilter = cms.EDFilter("CandViewCountFilter",
 ### di-jet selection sequence
 muwRjetSelectionSeq = cms.Sequence(muwRhardJet + muwRsoftJet)
 ### di-muon selection sequence
-wRmuonSelectionSeq = cms.Sequence(wRleadingMuon + wRsubleadingMuon)
+wRmuonSelectionSeq = cms.Sequence(wRtunePMuons + wRleadingMuon + wRsubleadingMuon + wRlooseJet)
 ### di-muon selection in signal region sequence
 wRdiMuonSignalSeq = cms.Sequence(wRmuonSelectionSeq * wRdiMuonCandidate * wRdiMuonCandidateFilter)
 ### di-muon and four object selection in signal region sequence

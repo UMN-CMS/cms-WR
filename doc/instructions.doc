@@ -50,7 +50,7 @@ fi
 \section digiReco_ DIGI-RECO from GEN-SIM
 \verbatim
 # copy file in local to be faster
-xrdcp -v xrdcp root://xrootd.unl.edu//store/mc/RunIIFall14GS/WRToNuEToEEJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/GEN-SIM/MCRUN2_71_V1-v1/10000/5E57FB53-7987-E411-8A59-90B11C06E1A0.root myFile.root
+xrdcp -v root://xrootd.unl.edu//store/mc/RunIIFall14GS/WRToNuEToEEJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/GEN-SIM/MCRUN2_71_V1-v1/10000/5E57FB53-7987-E411-8A59-90B11C06E1A0.root myFile.root
 cmsDriver.py rec --pileup AVE_40_BX_25ns   --mc --eventcontent AODSIM --datatier GEN-SIM   --beamspot Realistic8TeVCollision --step DIGI,L1,DIGI2RAW,HLT:GRun,RAW2DIGI,L1Reco,RECO  --customise Configuration/DataProcessing/Utils.addMonitoring --filein=file://myFile.root  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1 --pileup_input "dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM" --conditions auto:run2_mc
 \endverbatim
 
@@ -63,6 +63,25 @@ cmsDriver.py miniAOD --filein file:rec_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_RECO
 \section testSkims_ Testing skims
 \verbatim
 cmsRun test/skim_cfg.py
+\endverbatim
+
+\section makeTTree_ Make TTrees
+To make TTrees from the published skimmed samples, the dataset in the makerTTree.py file must be provided
+
+os.system('das_client.py --query="file dataset=USER_DATASET instance=prod/phys03" --limit=0 > pappy.txt')
+
+Then it can be run with
+\verbatim
+cmsRun test/makeTTree.py
+\endverbatim
+
+A file called 'skim_ttree.root' will be generated. This file can now be used as an input for the dataMC_compare.C script.
+The process must be repeated for all of the bkg samples (DYJets, TTbar, WJets, WZ, ZZ) since the comparator expects the ttrees
+for all these samples.
+
+Run the comparison script
+\verbatim
+root -b dataMC_compare.C
 \endverbatim
 
 Go back to \ref index
