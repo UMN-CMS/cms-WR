@@ -2,470 +2,483 @@
 #include "TH2F.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TString.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "THStack.h"
+#include "TColor.h"
+#include "TLatex.h"
+#include "TPaveText.h"
 #include <vector>
 #include <iostream>
 #include <string>
 
+//#define DEBUG
+
+TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
-std::vector<TH1F*> MakeNHistos(TString hname, int n, float x_min, float x_max);
+std::vector<TH1F*> MakeNHistos(TString hname, int n, int bins, float x_min, float x_max);
 std::vector<float> PileUpWeights(TTree* tree,TTree* tree_data);
 
 void ele_dataMC_compare(){
 
-  TFile * hfile0 = new TFile("~/work/WR_skims/Electrons/skim_ttree_50ns_sideband_dyjets.root");
-  TFile * hfile1 = new TFile("~/work/WR_skims/Electrons/skim_ttree_50ns_sideband_ttbar.root");
-  TFile * hfile2 = new TFile("~/work/WR_skims/skim_ttree_2600.root");
-  TFile * hfile3 = new TFile("~/work/WR_skims/Electrons/skim_ttree_50ns_sideband_wz.root");
-  TFile * hfile4 = new TFile("~/work/WR_skims/Electrons/skim_ttree_50ns_sideband_zz.root");
-  TFile * hfile5 = new TFile("~/work/WR_skims/Electrons/skim_ttree_50ns_sideband_wjets.root");
+#ifdef DEBUG
+	std::cout<<"in ele_dataMC_compare()"<<std::endl;
+#endif
 
-  TFile * hfile_data = new TFile("~/work/WR_skims/Electrons/skim_ttree_sideband_data.root");
+	TString directory = "/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_and_fourObj_mass_eejj/";
+	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_low_mass_region_eejj.root");//dyjets
+	TFile * hfile1 = new TFile(directory+"analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");//ttbar
+	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEEJJ_MWR_2600_MNu_1300_low_mass.root");//wr signal MC, by default will not be plotted
+	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_low_mass_region_eejj.root");//wz
+	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_low_mass_region_eejj.root");//zz
+	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_low_mass_region_eejj.root");//wjets
 
-  TTree *tree0 = (TTree*)hfile0->Get("MakeTTree_Electrons/t");  
-  TTree *tree1 = (TTree*)hfile1->Get("MakeTTree_Electrons/t");  
-  TTree *tree2 = (TTree*)hfile2->Get("MakeTTree_Muons/t");  
-  TTree *tree3 = (TTree*)hfile3->Get("MakeTTree_Electrons/t");  
-  TTree *tree4 = (TTree*)hfile4->Get("MakeTTree_Electrons/t");  
-  TTree *tree5 = (TTree*)hfile5->Get("MakeTTree_Electrons/t");  
+	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_low_mass_region_eejj.root");//data
 
-  TTree *tree_data = (TTree*)hfile_data->Get("MakeTTree_Electrons/t");  
+#ifdef DEBUG
+	std::cout<<"declared pointers to input files"<<std::endl;
+#endif
 
-  vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,20,0,1000);
-  vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,20,0,300);
-  vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,20,0,400);
-  vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,20,0,200);
-  vector<TH1F*> h_j1pt = MakeNHistos("h_j1pt",7,20,0,500);
-  vector<TH1F*> h_j2pt = MakeNHistos("h_j2pt",7,20,0,500);
-  vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
-  vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,20,-3.,3.);
-  vector<TH1F*> h_j1eta = MakeNHistos("h_j1eta", 7,20,-3.,3.);
-  vector<TH1F*> h_j2eta = MakeNHistos("h_j2eta", 7,20,-3.,3.);
-  vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_j1phi = MakeNHistos("h_j1phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_j2phi = MakeNHistos("h_j2phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 7,10,0,10);
-  vector<TH1F*> h_njets = MakeNHistos("h_njets", 7,25,0,25);
-  vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", 7,50,0,50);
-  vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", 7,20,0,5);
-  vector<TH1F*> h_dR_j1j2 = MakeNHistos("h_dR_j1j2", 7,20,0,5);
-  vector<TH1F*> h_dR_l1j1 = MakeNHistos("h_dR_l1j1", 7,20,0,5);
-  vector<TH1F*> h_dR_l1j2 = MakeNHistos("h_dR_l1j2", 7,20,0,5);
-  vector<TH1F*> h_dR_l2j1 = MakeNHistos("h_dR_l2j1", 7,20,0,5);
-  vector<TH1F*> h_dR_l2j2 = MakeNHistos("h_dR_l2j2", 7,20,0,5);
-  // Muon ID
-  vector<TH1F*> h_isGlobal_0 = MakeNHistos("h_isGlobal_0", 7,2,0,2);
-  vector<TH1F*> h_isGlobal_1 = MakeNHistos("h_isGlobal_1", 7,2,0,2);
-  vector<TH1F*> h_numberofhits_0 = MakeNHistos("h_numberofhits_0", 7,30,0,30);
-  vector<TH1F*> h_numberofhits_1 = MakeNHistos("h_numberofhits_1", 7,30,0,30);
-  vector<TH1F*> h_numberofstations_0 = MakeNHistos("h_numberofstations_0", 7,6,0,6);
-  vector<TH1F*> h_numberofstations_1 = MakeNHistos("h_numberofstations_1", 7,6,0,6);
-  vector<TH1F*> h_sigmapt_0 = MakeNHistos("h_sigmapt_0", 7,50,0,0.5);
-  vector<TH1F*> h_sigmapt_1 = MakeNHistos("h_sigmapt_1", 7,50,0,0.5);
-  vector<TH1F*> h_dxy_0 = MakeNHistos("h_dxy_0", 7,50,0,0.1);
-  vector<TH1F*> h_dxy_1 = MakeNHistos("h_dxy_1", 7,50,0,0.1);
-  vector<TH1F*> h_dz_0 = MakeNHistos("h_dz_0", 7,50,0,0.1);
-  vector<TH1F*> h_dz_1 = MakeNHistos("h_dz_1", 7,50,0,0.1);
-  vector<TH1F*> h_numberofpixels_0 = MakeNHistos("h_numberofpixels_0", 7,10,0,10);
-  vector<TH1F*> h_numberofpixels_1 = MakeNHistos("h_numberofpixels_1", 7,10,0,10);
-  vector<TH1F*> h_numberoflayers_0 = MakeNHistos("h_numberoflayers_0", 7,20,0,20);
-  vector<TH1F*> h_numberoflayers_1 = MakeNHistos("h_numberoflayers_1", 7,20,0,20);
+	TString treeName = "recoAnalyzerTwo/recoObjectsWithPtEtaCuts";
+	TTree *tree0 = (TTree*)hfile0->Get(treeName);  
+	TTree *tree1 = (TTree*)hfile1->Get(treeName);  
+	TTree *tree2 = (TTree*)hfile2->Get(treeName);  
+	TTree *tree3 = (TTree*)hfile3->Get(treeName);  
+	TTree *tree4 = (TTree*)hfile4->Get(treeName);  
+	TTree *tree5 = (TTree*)hfile5->Get(treeName);  
 
-  vector<TH1F*> h_angle3D = MakeNHistos("h_angle3D", 7,50,-6,6);
+	TTree *tree_data = (TTree*)hfile_data->Get(treeName);  
 
-  int nhistos = 40;
+#ifdef DEBUG
+	std::cout<<"declared pointers to trees in input files"<<std::endl;
+#endif
 
-  std::vector<THStack*> ths; // Stacks;
-  
-  for(int istacks=0; istacks<nhistos; istacks++)
-    {
-      TString full_name = Form("th%d",istacks);      
-      THStack *th = new THStack(full_name.Data(),"");
-      ths.push_back(th);
-    }
+	///set histo names, number of bins, and axis limits here
+	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,20,0,650);
+	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,22,0,220);
+	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,22,0,220);
+	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,14,0,140);
+	vector<TH1F*> h_j1pt = MakeNHistos("h_j1pt",7,22,0,220);
+	vector<TH1F*> h_j2pt = MakeNHistos("h_j2pt",7,14,0,140);
+	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
+	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,20,-3.,3.);
+	vector<TH1F*> h_j1eta = MakeNHistos("h_j1eta", 7,20,-3.,3.);
+	vector<TH1F*> h_j2eta = MakeNHistos("h_j2eta", 7,20,-3.,3.);
+	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,20,-3.15,3.15);
+	vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 7,20,-3.15,3.15);
+	vector<TH1F*> h_j1phi = MakeNHistos("h_j1phi", 7,20,-3.15,3.15);
+	vector<TH1F*> h_j2phi = MakeNHistos("h_j2phi", 7,20,-3.15,3.15);
+	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 7,4,0,4);
+	vector<TH1F*> h_njets = MakeNHistos("h_njets", 7,6,0,6);
+	vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", 7,33,0,33);
+	vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", 7,20,0,5);
+	vector<TH1F*> h_dR_j1j2 = MakeNHistos("h_dR_j1j2", 7,20,0,5);
+	vector<TH1F*> h_dR_l1j1 = MakeNHistos("h_dR_l1j1", 7,20,0,5);
+	vector<TH1F*> h_dR_l1j2 = MakeNHistos("h_dR_l1j2", 7,20,0,5);
+	vector<TH1F*> h_dR_l2j1 = MakeNHistos("h_dR_l2j1", 7,20,0,5);
+	vector<TH1F*> h_dR_l2j2 = MakeNHistos("h_dR_l2j2", 7,20,0,5);
+	vector<TH1F*> h_Mjj = MakeNHistos("h_Mjj",7,40,0,400);
+	
+#ifdef DEBUG
+	std::cout<<"made vectors of TH1F pointers to histos"<<std::endl;
+#endif
 
-  std::vector<TH1F*> histos0(nhistos); // DY
-  std::vector<TH1F*> histos1(nhistos); // TTbar
-  std::vector<TH1F*> histos2(nhistos); // WR signal
-  std::vector<TH1F*> histos3(nhistos); // WZ
-  std::vector<TH1F*> histos4(nhistos); // ZZ
-  std::vector<TH1F*> histos5(nhistos); // WJets
-  std::vector<TH1F*> histos_data(nhistos); // data
+	int nhistos = 24;	//24
+	std::vector<THStack*> ths; // Stacks;
+	for(int istacks=0; istacks<nhistos; istacks++)
+	{
+		TString full_name = Form("th%d",istacks);      
+		THStack *th = new THStack(full_name.Data(),"");
+		ths.push_back(th);
+	}
+	
+#ifdef DEBUG
+	std::cout<<"made vector of THStack pointers"<<std::endl;
+#endif
 
-  
-  vector<vector<TH1F*>> histos(7);
-  histos[0] = histos0;
-  histos[1] = histos1;
-  histos[2] = histos2;
-  histos[3] = histos3;
-  histos[4] = histos4;
-  histos[5] = histos5;
-  histos[6] = histos_data;
+	///declare one vector of TH1F pointers for each MC process and real data sample
+	///the number of elements in each vector should be equal to the number of unique vector<TH1F*> containers which were declared above 
+	std::vector<TH1F*> histos0(nhistos); // DY
+	std::vector<TH1F*> histos1(nhistos); // TTbar
+	std::vector<TH1F*> histos2(nhistos); // WR signal
+	std::vector<TH1F*> histos3(nhistos); // WZ
+	std::vector<TH1F*> histos4(nhistos); // ZZ
+	std::vector<TH1F*> histos5(nhistos); // WJets
+	std::vector<TH1F*> histos_data(nhistos); // data
 
-  for(int j=0; j<7; j++){
-    histos[j][0] = h_Mlljj[j];
-    histos[j][1] = h_Mll[j];
-    histos[j][2] = h_l1pt[j];
-    histos[j][3] = h_l2pt[j];
-    histos[j][4] = h_j1pt[j];
-    histos[j][5] = h_j2pt[j];
-    histos[j][6] = h_l1eta[j];
-    histos[j][7] = h_l2eta[j];
-    histos[j][8] = h_j1eta[j];
-    histos[j][9] = h_j2eta[j];
-    histos[j][10] = h_l1phi[j];
-    histos[j][11] = h_l2phi[j];
-    histos[j][12] = h_j1phi[j];
-    histos[j][13] = h_j2phi[j];
-    histos[j][14] = h_nleptons[j];
-    histos[j][15] = h_njets[j];
-    histos[j][16] = h_nvertices[j];
-    histos[j][17] = h_dR_l1l2[j];
-    histos[j][18] = h_dR_j1j2[j];
-    histos[j][19] = h_dR_l1j1[j];
-    histos[j][20] = h_dR_l1j2[j];
-    histos[j][21] = h_dR_l2j1[j];
-    histos[j][22] = h_dR_l2j2[j];
-    histos[j][23] = h_isGlobal_0[j];
-    histos[j][24] = h_isGlobal_1[j];
-    histos[j][25] = h_numberofhits_0[j];
-    histos[j][26] = h_numberofhits_1[j];
-    histos[j][27] = h_numberofstations_0[j];
-    histos[j][28] = h_numberofstations_1[j];
-    histos[j][29] = h_sigmapt_0[j];
-    histos[j][30] = h_sigmapt_1[j];
-    histos[j][31] = h_dxy_0[j];
-    histos[j][32] = h_dxy_1[j];
-    histos[j][33] = h_dz_0[j];
-    histos[j][34] = h_dz_1[j];
-    histos[j][35] = h_numberofpixels_0[j];
-    histos[j][36] = h_numberofpixels_1[j];
-    histos[j][37] = h_numberoflayers_0[j];
-    histos[j][38] = h_numberoflayers_1[j];
-    histos[j][39] = h_angle3D[j];
-    }
-  
-  
+	///load the vectors tied to all MC and real data samples into one vector<vector<TH1F*> > object
+	vector<vector<TH1F*> > histos(7);
+	histos[0] = histos0;
+	histos[1] = histos1;
+	histos[2] = histos2;
+	histos[3] = histos3;
+	histos[4] = histos4;
+	histos[5] = histos5;
+	histos[6] = histos_data;
 
-  std::vector<float> PUW0 = PileUpWeights(tree0,tree_data);
-  std::vector<float> PUW1 = PileUpWeights(tree1,tree_data);
-  std::vector<float> PUW3 = PileUpWeights(tree3,tree_data);
-  std::vector<float> PUW4 = PileUpWeights(tree4,tree_data);
-  std::vector<float> PUW5 = PileUpWeights(tree5,tree_data);
-  std::vector<float> PUW_data = PileUpWeights(tree_data,tree_data);
+	///link the histos made by calls to MakeNHistos() above to specific elements of vector<vector<TH1F*> > container 
+	for(int j=0; j<7; j++){
+		histos[j][0] = h_Mlljj[j];
+		histos[j][1] = h_Mll[j];
+		histos[j][2] = h_l1pt[j];
+		histos[j][3] = h_l2pt[j];
+		histos[j][4] = h_j1pt[j];
+		histos[j][5] = h_j2pt[j];
+		histos[j][6] = h_l1eta[j];
+		histos[j][7] = h_l2eta[j];
+		histos[j][8] = h_j1eta[j];
+		histos[j][9] = h_j2eta[j];
+		histos[j][10] = h_l1phi[j];
+		histos[j][11] = h_l2phi[j];
+		histos[j][12] = h_j1phi[j];
+		histos[j][13] = h_j2phi[j];
+		histos[j][14] = h_nleptons[j];
+		histos[j][15] = h_njets[j];
+		histos[j][16] = h_nvertices[j];
+		histos[j][17] = h_dR_l1l2[j];
+		histos[j][18] = h_dR_j1j2[j];
+		histos[j][19] = h_dR_l1j1[j];
+		histos[j][20] = h_dR_l1j2[j];
+		histos[j][21] = h_dR_l2j1[j];
+		histos[j][22] = h_dR_l2j2[j];
+		histos[j][23] = h_Mjj[j];
+	}
+	
+#ifdef DEBUG
+	std::cout<<"linked MC processes and real data to histos of specific quantities"<<std::endl;
+#endif
 
-  Fill_Histo(histos[0],tree0,PUW0,false,false); // DY
-  Fill_Histo(histos[1],tree1,PUW1,false,false); // TTbar
-  Fill_Histo(histos[3],tree3,PUW3,false,false); // WZ
-  Fill_Histo(histos[4],tree4,PUW4,false,false); // ZZ
-  Fill_Histo(histos[5],tree5,PUW5,false,false); // WJets
-  
-  Fill_Histo(histos[6],tree_data,PUW_data,false,true);
+	///calculate PU weights and store them in persistent vectors of floats
+	std::vector<float> PUW0 = PileUpWeights(tree0,tree_data);
+	std::vector<float> PUW1 = PileUpWeights(tree1,tree_data);
+	std::vector<float> PUW3 = PileUpWeights(tree3,tree_data);
+	std::vector<float> PUW4 = PileUpWeights(tree4,tree_data);
+	std::vector<float> PUW5 = PileUpWeights(tree5,tree_data);
+	std::vector<float> PUW_data = PileUpWeights(tree_data,tree_data);
 
-  // Scale = xsection*luminosity/events
-  for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
-    histos[0][i]->Scale(6025.2*40.003/19925500);
-    histos[0][i]->SetFillColor(kYellow);
-    histos[1][i]->Scale(815.96*40.003/4994250);
-    histos[1][i]->SetFillColor(kGreen);
-    histos[3][i]->Scale(66.1*40.003/996920);
-    histos[3][i]->SetFillColor(kBlue);
-    histos[4][i]->Scale(15.4*40.003/998848);
-    histos[4][i]->SetFillColor(7);
-    histos[5][i]->Scale(6.15e4*40.003/24089991);
-    histos[5][i]->SetFillColor(6);
+	///fill the histos with content from TTrees
+	Fill_Histo(histos[0],tree0,PUW0,false,false); // DY
+	Fill_Histo(histos[1],tree1,PUW1,false,false); // TTbar
+	Fill_Histo(histos[3],tree3,PUW3,false,false); // WZ
+	Fill_Histo(histos[4],tree4,PUW4,false,false); // ZZ
+	Fill_Histo(histos[5],tree5,PUW5,false,false); // WJets
 
-    histos[2][i]->Scale(10*0.0142*18.825/50000);
-    histos[2][i]->SetLineColor(kRed);
+	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
-    histos[6][i]->SetMarkerStyle(20);
+	Float_t intLumi = (40.003/0.962);
+	// Scale = xsection*luminosity/events
+	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
+#ifdef DEBUG
+		std::cout<<"setting line and fill colors, and adding histos to THStack objects"<<std::endl;
+#endif
+		//histos[0][i]->Scale(6025.2*(intLumi)/19925500);	///aMC@NLO DYJets
+		histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets
+		
+		histos[0][i]->SetFillColor(5);
+		histos[1][i]->Scale(815.96*(intLumi)/4994250);
+		histos[1][i]->SetFillColor(3);
+		histos[3][i]->Scale(66.1*(intLumi)/996920);
+		histos[3][i]->SetFillColor(4);
+		histos[4][i]->Scale(15.4*(intLumi)/998848);
+		histos[4][i]->SetFillColor(7);
+		histos[5][i]->Scale(6.15e4*(intLumi)/24089991);
+		histos[5][i]->SetFillColor(6);
 
-    ths[i]->Add(histos[4][i]);
-    ths[i]->Add(histos[3][i]);
-    ths[i]->Add(histos[5][i]);
-    ths[i]->Add(histos[1][i]);
-    ths[i]->Add(histos[0][i]);
-  }
-  
-  TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ; 
-  leg->AddEntry( histos[0][0], "DY" ) ; 
-  leg->AddEntry( histos[1][0], "ttbar" ) ;
-  leg->AddEntry( histos[5][0], "WJets" ) ;  
-  leg->AddEntry( histos[3][0], "WZ" ) ; 
-  leg->AddEntry( histos[4][0], "ZZ" ) ; 
-  //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
-  leg->SetFillColor( kWhite ) ; 
+		histos[2][i]->Scale(10*0.0142*18.825/50000);
+		histos[2][i]->SetLineColor(2);
 
-  TString xtitles[] = {"Mlljj","dilepton mass","leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","number of leptons","number of jets","number of vertices","dR lepton 1 lepton 2","dR jet 1 jet 2","dR lepton 1 jet 1","dR lepton 1 jet 2","dR lepton 2 jet 1","dR lepton 2 jet 2","isGlobal Muon 1","isGlobal Muon 2","Number of hits Muon 1","Number of hits Muon 2","Number of stations Muon 1","Number of stations Muon 2","#sigma_{pT} Muon 1","#sigma_{pT} Muon 2","dxy Muon 1","dxy Muon 2","dz Muon 1","dz Muon 2","Number of pixels Muon 1","Number of pixels Muon 2","Number of layers Muon 1","Number of layers Muon 2","3D angle"};
+		histos[6][i]->SetMarkerStyle(20);
 
-  TString fnames[] = {"Mlljj","Mll","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","isGlobal0","isGlobal1","nhits0","nhits1","nstations0","nstations1","sigmapt0","sigmapt1","dxy0","dxy1","dz0","dz1","npixels0","npixels1","nlayers0","nlayers1","angle3D"};
+		ths[i]->Add(histos[4][i]);
+		ths[i]->Add(histos[3][i]);
+		ths[i]->Add(histos[5][i]);
+		ths[i]->Add(histos[1][i]);
+		ths[i]->Add(histos[0][i]);
+		
+		///rescale the max y value to make room for the legend
+		Double_t oldMax = ( (ths[i]->GetMaximum() > histos[6][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[6][i]->GetMaximum() );
+		ths[i]->SetMaximum(20*oldMax);
+		histos[6][i]->SetMaximum(20*oldMax);
+	}
 
-  for(int icanvas=0; icanvas<nhistos; icanvas++){
-    TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 400 ) ;
-    ths[icanvas]->Draw();
-    histos[6][icanvas]->Draw("epsame");
-    //ths[icanvas]->Draw("same");
-    ths[icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
-    histos[6][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
-    //histos[2][0]->Draw("same");
-    leg->Draw(); 
-    TString fn = "~/www/plots/WR/skimmed/electrons/";
-    TString fn_pdf = fn + fnames[icanvas].Data() + ".pdf";
-    TString fn_png = fn + fnames[icanvas].Data() + ".png";
-    mycanvas->Print(fn_pdf.Data());
-    mycanvas->Print(fn_png.Data());
-    mycanvas->SetLogy();
-    TString fn_log_pdf = fn + fnames[icanvas].Data() + "_log.pdf";
-    TString fn_log_png = fn + fnames[icanvas].Data() + "_log.png";
-    mycanvas->Print(fn_log_pdf.Data());
-    mycanvas->Print(fn_log_png.Data());
-    mycanvas->Close();
 
-  }
+	///make a legend with appropriate labels for MC processes
+	TLegend *leg = new TLegend( 0.62, 0.60, 0.89, 0.83 ) ;
+	leg->SetNColumns(2);
+	leg->AddEntry( histos[6][0], "Data" ,"ep") ;
+	leg->AddEntry( histos[0][0], "DY" ) ; 
+	leg->AddEntry( histos[1][0], "ttbar" ) ;
+	leg->AddEntry( histos[5][0], "WJets" ) ;  
+	leg->AddEntry( histos[3][0], "WZ" ) ; 
+	leg->AddEntry( histos[4][0], "ZZ" ) ;
+	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
+	leg->SetFillColor( kWhite ) ;
+
+	TString xtitles[] = {"M_{EEJJ} [GeV]","M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading jet #eta","subleading jet #eta","leading electron #phi","subleading electron #phi","leading jet #phi","subleading jet #phi","number of electrons","number of jets","number of vertices","#DeltaR lead ele sublead ele","#DeltaR lead jet sublead jet","#DeltaR lead ele lead jet","#DeltaR lead ele sublead jet","#DeltaR sublead ele lead jet","#DeltaR sublead ele sublead jet","M_{JJ} [GeV]"};
+	
+	TString titles[] = {"M_{EEJJ}  #surds = 13 TeV  #intlumi = 41.6/pb","DiElectron Mass  #surds = 13 TeV  #intlumi = 41.6/pb","Lead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","Sublead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","leading electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","subleading electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","leading jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","subleading jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","leading electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","subleading electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","leading jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","subleading jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","number of electrons  #surds = 13 TeV  #intlumi = 41.6/pb","number of jets  #surds = 13 TeV  #intlumi = 41.6/pb","number of vertices  #surds = 13 TeV  #intlumi = 41.6/pb","#DeltaR lead ele sublead ele  #surds = 13 TeV  #intlumi = 41.6/pb","#DeltaR lead jet sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","#DeltaR lead ele lead jet  #surds = 13 TeV  #intlumi = 41.6/pb","#DeltaR lead ele sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","#DeltaR sublead ele lead jet  #surds = 13 TeV  #intlumi = 41.6/pb","#DeltaR sublead ele sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","Dijet Mass  #surds = 13 TeV  #intlumi = 41.6/pb"};
+
+	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ"};
+
+
+	for(int icanvas=0; icanvas<nhistos; icanvas++){
+#ifdef DEBUG
+		std::cout<<"drawing histos on canvas"<<std::endl;
+#endif
+		TString name = "";
+		name += icanvas;
+		TCanvas* mycanvas = new TCanvas( name, name, 800, 800 ) ;
+#ifdef DEBUG
+		std::cout<<"made TCanvas and initialized a pointer to it"<<std::endl;
+#endif
+		mycanvas->cd();
+		ths[icanvas]->Draw("hist");
+		//mycanvas->Update();
+		histos[6][icanvas]->Draw("epsame");
+		mycanvas->Update();
+	
+		///set the x axis title
+		ths[icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
+		histos[6][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
+	
+		///set the y axis title using the bin size from the data histo, and the x axis title
+		TString yLabel = DetermineYaxisName(histos[6][icanvas], xtitles[icanvas]);
+		ths[icanvas]->GetYaxis()->SetTitle(yLabel );
+		histos[6][icanvas]->GetYaxis()->SetTitle(yLabel );
+
+		///set the histogram title to show a name
+		ths[icanvas]->SetTitle(titles[icanvas]);
+		histos[6][icanvas]->SetTitle(titles[icanvas]);
+
+		///draw the legend, and a text box above the legend with the COM energy and integrated lumi
+		leg->Draw();
+		
+		/*
+		this is not working!!  show the integrated lumi and sqrt(s) = 13 TeV in the title as a backup
+		Double_t lastBinCenter = ths[icanvas]->GetXaxis()->GetBinCenter(ths[icanvas]->GetXaxis()->GetNbins() );
+		Double_t maxY = histos[6][icanvas]->GetMaximum();
+		std::cout<<"maxY = "<< maxY <<"  lastBinCenter = "<< lastBinCenter << std::endl;
+		TPaveText * beamDataBox = new TPaveText( 1.05*lastBinCenter*(leg->GetX1()) , 0.98*maxY, 1.05*lastBinCenter*(leg->GetX2()), 1.05*maxY);
+		beamDataBox->AddText("#intlumi = 41.6/pb     #surds = 13 TeV");
+		beamDataBox->Draw();
+		*/
+		mycanvas->Update();
+		TString fn = "tempPlots/electrons/";
+		TString fn_pdf = fn + fnames[icanvas].Data() + ".pdf";
+		TString fn_png = fn + fnames[icanvas].Data() + ".png";
+		mycanvas->Print(fn_pdf.Data());
+		mycanvas->Print(fn_png.Data());
+		mycanvas->SetLogy();
+		mycanvas->Update();
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + "_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + "_log.png";
+		mycanvas->Print(fn_log_pdf.Data());
+		mycanvas->Print(fn_log_png.Data());
+		mycanvas->Close();
+
+	}
 }
 
 
 vector<TH1F*> MakeNHistos(TString hname, int n, int bins, float x_min, float x_max){
-  vector<TH1F*> NHistos;
-  for(int i=0; i<n; i++)
-    {
-      TString full_name = Form("%s_%d",hname.Data(),i);      
-      TH1F *h = new TH1F(full_name.Data(),"",bins,x_min,x_max);
-      NHistos.push_back(h);
-    }
+#ifdef DEBUG
+	std::cout<<"in MakeNHistos"<<std::endl;
+#endif
 
-  return NHistos;
+	vector<TH1F*> NHistos;
+	for(int i=0; i<n; i++)
+	{
+		TString full_name = Form("%s_%d",hname.Data(),i);      
+		TH1F *h = new TH1F(full_name.Data(),"",bins,x_min,x_max);
+		NHistos.push_back(h);
+	}
 
+#ifdef DEBUG
+	std::cout<<"leaving MakeNHistos"<<std::endl;
+#endif
+
+	return NHistos;
 }
+
+/**
+ *
+ * determine the name for the y axis using a pointer to a TH1F histogram made with real data
+ * and the label applied to the x axis 
+ */
+TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel){
+	char tempTitle[120];
+	Float_t binWidth = ptrDataHist->GetXaxis()->GetBinWidth(1);
+	if(xLabel.Contains("GeV")){
+		if(binWidth >= 0.1) sprintf(tempTitle,"Events / %.1f / GeV", binWidth);
+		else sprintf(tempTitle,"Events / %.3f / GeV", binWidth);
+	}///end if xLabel contains GeV
+	else{
+		///xLabel does not contain GeV
+		if(binWidth >= 0.1) sprintf(tempTitle,"Events / %.1f", binWidth);
+		else sprintf(tempTitle,"Events / %.3f", binWidth);
+	}///end else
+	TString yTitle(tempTitle);
+	return yTitle;
+
+}///end DetermineYaxisName()
 
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data){  
-  
-  int nentries = tree->GetEntries();
-  Float_t Mlljj;
-  Float_t l1_pt;
-  Float_t l2_pt;
-  Float_t j1_pt;
-  Float_t j2_pt;
-  Float_t l1_eta;
-  Float_t l2_eta;
-  Float_t j1_eta;
-  Float_t j2_eta;
-  Float_t l1_phi;
-  Float_t l2_phi;
-  Float_t j1_phi;
-  Float_t j2_phi;
-  Float_t Mll;
-  Float_t dR_l1l2;
-  Float_t dR_j1j2;
-  Float_t dR_l1j1;
-  Float_t dR_l1j2;
-  Float_t dR_l2j1;
-  Float_t dR_l2j2;
-  UInt_t nleptons;
-  UInt_t njets;
-  UInt_t nvertices;
-  std::vector<bool> * isGlobal;
-  std::vector<int> * numberOfValidMuonHits;
-  std::vector<int> * numberOfMatchedStations;
-  std::vector<float> * sigmapt;
-  std::vector<float> * dxy;
-  std::vector<float> * dz;
-  std::vector<int> * numberOfValidPixelHits;
-  std::vector<int> * trackerLayersWithMeasurement;
-  Float_t weight;
-  Float_t angle3D;
+#ifdef DEBUG
+	std::cout<<"in Fill_Histo"<<std::endl;
+#endif
 
-  tree->SetBranchAddress("Mlljj",&Mlljj);
-  tree->SetBranchAddress("leading_lepton_pt",&l1_pt);
-  tree->SetBranchAddress("subleading_lepton_pt",&l2_pt);
-  tree->SetBranchAddress("leading_lepton_eta",&l1_eta);
-  tree->SetBranchAddress("subleading_lepton_eta",&l2_eta);
-  tree->SetBranchAddress("leading_lepton_phi",&l1_phi);
-  tree->SetBranchAddress("subleading_lepton_phi",&l2_phi);
+	int nentries = tree->GetEntries();
+	Float_t fourObjectMass;
+	Float_t ptEle[2];
+	Float_t etaEle[2];
+	Float_t phiEle[2];
+	Float_t ptJet[2];
+	Float_t etaJet[2];
+	Float_t phiJet[2];
+	Float_t dileptonMass;
+	Float_t dijetMass;
+	
+	Float_t dR_l1l2;
+	Float_t dR_j1j2;
+	Float_t dR_l1j1;
+	Float_t dR_l1j2;
+	Float_t dR_l2j1;
+	Float_t dR_l2j2;
+	Int_t nLeptons;
+	Int_t nJets;
+	Int_t nVertices;
+	Float_t evWeightSign;
 
-  tree->SetBranchAddress("leading_jet_pt",&j1_pt);
-  tree->SetBranchAddress("subleading_jet_pt",&j2_pt);
-  tree->SetBranchAddress("leading_jet_eta",&j1_eta);
-  tree->SetBranchAddress("subleading_jet_eta",&j2_eta);
-  tree->SetBranchAddress("leading_jet_phi",&j1_phi);
-  tree->SetBranchAddress("subleading_jet_phi",&j2_phi);
+	tree->SetBranchAddress("fourObjectMass",&fourObjectMass);
+	tree->SetBranchAddress("ptEle",ptEle);
+	tree->SetBranchAddress("etaEle",etaEle);
+	tree->SetBranchAddress("phiEle",phiEle);
 
-  tree->SetBranchAddress("dilepton_mass",&Mll);
-  tree->SetBranchAddress("dR_leadLepton_subleadLepton",&dR_l1l2);
-  tree->SetBranchAddress("dR_leadJet_subleadJet",&dR_j1j2);
-  tree->SetBranchAddress("dR_leadLepton_leadJet",&dR_l1j1);
-  tree->SetBranchAddress("dR_leadLepton_subleadJet",&dR_l1j2);
-  tree->SetBranchAddress("dR_subleadLepton_leadJet",&dR_l2j1);
-  tree->SetBranchAddress("dR_subleadLepton_subleadJet",&dR_l2j2);
+	tree->SetBranchAddress("ptJet",ptJet);
+	tree->SetBranchAddress("etaJet",etaJet);
+	tree->SetBranchAddress("phiJet",phiJet);
 
-  tree->SetBranchAddress("nleptons",&nleptons);
-  tree->SetBranchAddress("njets",&njets);
-  tree->SetBranchAddress("nvertices",&nvertices);
-  
-  tree->SetBranchAddress("isGlobal",&isGlobal);
-  tree->SetBranchAddress("numberOfValidMuonHits",&numberOfValidMuonHits);
-  tree->SetBranchAddress("numberOfMatchedStations",&numberOfMatchedStations);
-  tree->SetBranchAddress("sigmapt",&sigmapt);
-  tree->SetBranchAddress("dxy",&dxy);
-  tree->SetBranchAddress("dz",&dz);
-  tree->SetBranchAddress("numberOfValidPixelHits",&numberOfValidPixelHits);
-  tree->SetBranchAddress("trackerLayersWithMeasurement",&trackerLayersWithMeasurement);
+	tree->SetBranchAddress("dileptonMass",&dileptonMass);
+	tree->SetBranchAddress("dijetMass",&dijetMass);
+	
+	tree->SetBranchAddress("dR_leadingLeptonSubleadingLepton",&dR_l1l2);
+	tree->SetBranchAddress("dR_leadingJetSubleadingJet",&dR_j1j2);
+	tree->SetBranchAddress("dR_leadingLeptonLeadingJet",&dR_l1j1);
+	tree->SetBranchAddress("dR_leadingLeptonSubleadingJet",&dR_l1j2);
+	tree->SetBranchAddress("dR_subleadingLeptonLeadingJet",&dR_l2j1);
+	tree->SetBranchAddress("dR_subleadingLeptonSubleadingJet",&dR_l2j2);
 
-  tree->SetBranchAddress("angle3D",&angle3D);
+	tree->SetBranchAddress("nLeptons",&nLeptons);
+	tree->SetBranchAddress("nJets",&nJets);
+	tree->SetBranchAddress("nVertices",&nVertices);
 
-  if(!is_data)
-    tree->SetBranchAddress("weight",&weight);
+	if(!is_data)
+		tree->SetBranchAddress("evWeightSign",&evWeightSign);
 
-  for (Int_t ev = 0; ev < nentries; ev++) {
-    float reweight = 1;
-    tree->GetEntry(ev); 
+	for (Int_t ev = 0; ev < nentries; ev++) {
+		Float_t reweight = 1;
+		tree->GetEntry(ev); 
 
-    if(Mlljj<600 && Mll<200 && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)//l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && Mll<200)// && (dR_l1l2 < 2.5 || dR_l1l2 > 3.5))// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
-      {
-	if(!is_data){
-	  if(pileup_reweight)
-	    reweight = weight/fabs(weight)*PUW[nvertices];
-	  else
-	    reweight = weight/fabs(weight);
+		if(true)//l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && dileptonMass<200)// && (dR_l1l2 < 2.5 || dR_l1l2 > 3.5))// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
+		{
+			if(!is_data){
+				if(pileup_reweight)
+					reweight = evWeightSign*PUW[nVertices];
+				else
+					reweight = evWeightSign;
 
-	  h1[0]->Fill(Mlljj,reweight);
-	  h1[1]->Fill(Mll,reweight);
-	  h1[2]->Fill(l1_pt,reweight);
-	  h1[3]->Fill(l2_pt,reweight);
-	  h1[4]->Fill(j1_pt,reweight);
-	  h1[5]->Fill(j2_pt,reweight);
-	  h1[6]->Fill(l1_eta,reweight);
-	  h1[7]->Fill(l2_eta,reweight);
-	  h1[8]->Fill(j1_eta,reweight);
-	  h1[9]->Fill(j2_eta,reweight);
-	  h1[10]->Fill(l1_phi,reweight);
-	  h1[11]->Fill(l2_phi,reweight);
-	  h1[12]->Fill(j1_phi,reweight);
-	  h1[13]->Fill(j2_phi,reweight);	
-	  h1[14]->Fill(nleptons,reweight);	
-	  h1[15]->Fill(njets,reweight);	
-	  h1[16]->Fill(nvertices,reweight);	
-	  h1[17]->Fill(dR_l1l2,reweight);
-	  h1[18]->Fill(dR_j1j2,reweight);
-	  h1[19]->Fill(dR_l1j1,reweight);
-	  h1[20]->Fill(dR_l1j2,reweight);
-	  h1[21]->Fill(dR_l2j1,reweight);
-	  h1[22]->Fill(dR_l2j2,reweight);
-	  if(isGlobal->size() > 0){
-	    if((*isGlobal)[0])
-	      h1[23]->Fill(1,reweight);
-	    else
-	      h1[23]->Fill(0,reweight);	  
-	    h1[25]->Fill((*numberOfValidMuonHits)[0],reweight);
-	    h1[27]->Fill((*numberOfMatchedStations)[0],reweight);
-	    h1[29]->Fill((*sigmapt)[0],reweight);
-	    h1[31]->Fill((*dxy)[0],reweight);
-	    h1[33]->Fill((*dz)[0],reweight);
-	    h1[35]->Fill((*numberOfValidPixelHits)[0],reweight);
-	    h1[37]->Fill((*trackerLayersWithMeasurement)[0],reweight);
-	  }
-	  if(isGlobal->size() > 1){
-	    if((*isGlobal)[1])
-	      h1[24]->Fill(1,reweight);
-	    else
-	      h1[24]->Fill(0,reweight);
-	    h1[26]->Fill((*numberOfValidMuonHits)[1],reweight);
-	    h1[28]->Fill((*numberOfMatchedStations)[1],reweight);
-	    h1[30]->Fill((*sigmapt)[1],reweight);
-	    h1[32]->Fill((*dxy)[1],reweight);
-	    h1[34]->Fill((*dz)[1],reweight);
-	    h1[36]->Fill((*numberOfValidPixelHits)[1],reweight);
-	    h1[38]->Fill((*trackerLayersWithMeasurement)[1],reweight);
-	  }
-	  h1[39]->Fill(log10(TMath::Pi() - angle3D),reweight);
-	}
-	else {
-	  h1[0]->Fill(Mlljj);
-	  h1[1]->Fill(Mll);
-	  h1[2]->Fill(l1_pt);
-	  h1[3]->Fill(l2_pt);
-	  h1[4]->Fill(j1_pt);
-	  h1[5]->Fill(j2_pt);
-	  h1[6]->Fill(l1_eta);
-	  h1[7]->Fill(l2_eta);
-	  h1[8]->Fill(j1_eta);
-	  h1[9]->Fill(j2_eta);
-	  h1[10]->Fill(l1_phi);
-	  h1[11]->Fill(l2_phi);
-	  h1[12]->Fill(j1_phi);
-	  h1[13]->Fill(j2_phi);	
-	  h1[14]->Fill(nleptons);	
-	  h1[15]->Fill(njets);	
-	  h1[16]->Fill(nvertices);	
-	  h1[17]->Fill(dR_l1l2);
-	  h1[18]->Fill(dR_j1j2);
-	  h1[19]->Fill(dR_l1j1);
-	  h1[20]->Fill(dR_l1j2);
-	  h1[21]->Fill(dR_l2j1);
-	  h1[22]->Fill(dR_l2j2);
-	  if(isGlobal->size() > 0){
-	    if((*isGlobal)[0])
-	      h1[23]->Fill(1);
-	    else
-	      h1[23]->Fill(0);	  
-	    h1[25]->Fill((*numberOfValidMuonHits)[0]);
-	    h1[27]->Fill((*numberOfMatchedStations)[0]);
-	    h1[29]->Fill((*sigmapt)[0]);
-	    h1[31]->Fill((*dxy)[0]);
-	    h1[33]->Fill((*dz)[0]);
-	    h1[35]->Fill((*numberOfValidPixelHits)[0]);
-	    h1[37]->Fill((*trackerLayersWithMeasurement)[0]);
-	  }
-	  if(isGlobal->size() > 1){
-	    if((*isGlobal)[1])
-	      h1[24]->Fill(1);
-	    else
-	      h1[24]->Fill(0);
-	    h1[26]->Fill((*numberOfValidMuonHits)[1]);
-	    h1[28]->Fill((*numberOfMatchedStations)[1]);
-	    h1[30]->Fill((*sigmapt)[1]);
-	    h1[32]->Fill((*dxy)[1]);
-	    h1[34]->Fill((*dz)[1]);
-	    h1[36]->Fill((*numberOfValidPixelHits)[1]);
-	    h1[38]->Fill((*trackerLayersWithMeasurement)[1]);
-	  }
-	  h1[39]->Fill(log10(TMath::Pi() - angle3D));
-	}
-      }
-  }
-}
+				h1[0]->Fill(fourObjectMass,reweight);
+				h1[1]->Fill(dileptonMass,reweight);
+				h1[2]->Fill(ptEle[0],reweight);
+				h1[3]->Fill(ptEle[1],reweight);
+				h1[4]->Fill(ptJet[0],reweight);
+				h1[5]->Fill(ptJet[1],reweight);
+				h1[6]->Fill(etaEle[0],reweight);
+				h1[7]->Fill(etaEle[1],reweight);
+				h1[8]->Fill(etaJet[0],reweight);
+				h1[9]->Fill(etaJet[1],reweight);
+				h1[10]->Fill(phiEle[0],reweight);
+				h1[11]->Fill(phiEle[1],reweight);
+				h1[12]->Fill(phiJet[0],reweight);
+				h1[13]->Fill(phiJet[1],reweight);	
+				h1[14]->Fill(nLeptons,reweight);	
+				h1[15]->Fill(nJets,reweight);	
+				h1[16]->Fill(nVertices,reweight);	
+				h1[17]->Fill(dR_l1l2,reweight);
+				h1[18]->Fill(dR_j1j2,reweight);
+				h1[19]->Fill(dR_l1j1,reweight);
+				h1[20]->Fill(dR_l1j2,reweight);
+				h1[21]->Fill(dR_l2j1,reweight);
+				h1[22]->Fill(dR_l2j2,reweight);
+				h1[23]->Fill(dijetMass,reweight);
+			}///end if(!is_data)
+			else {
+				h1[0]->Fill(fourObjectMass);
+				h1[1]->Fill(dileptonMass);
+				h1[2]->Fill(ptEle[0]);
+				h1[3]->Fill(ptEle[1]);
+				h1[4]->Fill(ptJet[0]);
+				h1[5]->Fill(ptJet[1]);
+				h1[6]->Fill(etaEle[0]);
+				h1[7]->Fill(etaEle[1]);
+				h1[8]->Fill(etaJet[0]);
+				h1[9]->Fill(etaJet[1]);
+				h1[10]->Fill(phiEle[0]);
+				h1[11]->Fill(phiEle[1]);
+				h1[12]->Fill(phiJet[0]);
+				h1[13]->Fill(phiJet[1]);	
+				h1[14]->Fill(nLeptons);	
+				h1[15]->Fill(nJets);	
+				h1[16]->Fill(nVertices);	
+				h1[17]->Fill(dR_l1l2);
+				h1[18]->Fill(dR_j1j2);
+				h1[19]->Fill(dR_l1j1);
+				h1[20]->Fill(dR_l1j2);
+				h1[21]->Fill(dR_l2j1);
+				h1[22]->Fill(dR_l2j2);
+				h1[23]->Fill(dijetMass);
+			}///end else (for real data)
+		}///end if(true)
+	}///end loop over events ev in tree
+
+#ifdef DEBUG
+	std::cout<<"leaving Fill_Histo"<<std::endl;
+#endif
+}///end Fill_Histo()
+
 std::vector<float> PileUpWeights(TTree* tree,TTree* tree_data){
-  TH1F *h_data = new TH1F("h_data","",50,0,50);
-  TH1F *h0 = new TH1F("h0","",50,0,50);  
+	TH1F *h_data = new TH1F("h_data","",50,0,50);
+	TH1F *h0 = new TH1F("h0","",50,0,50);  
 
-  UInt_t nvertices;
-  UInt_t nvertices_data;
-  tree->SetBranchAddress("nvertices",&nvertices);
-  tree_data->SetBranchAddress("nvertices",&nvertices_data);
+	Int_t nVertices;
+	Int_t nVertices_data;
+	tree->SetBranchAddress("nVertices",&nVertices);
+	tree_data->SetBranchAddress("nVertices",&nVertices_data);
 
-  for (Int_t ev = 0; ev < tree->GetEntries(); ev++) {
-    tree->GetEntry(ev);
-    h0->Fill(nvertices);
-  }
-  for (Int_t ev = 0; ev < tree_data->GetEntries(); ev++) {
-    tree_data->GetEntry(ev);
-    h_data->Fill(nvertices_data);
-  }
+	for (Int_t ev = 0; ev < tree->GetEntries(); ev++) {
+		tree->GetEntry(ev);
+		h0->Fill(nVertices);
+	}
+	for (Int_t ev = 0; ev < tree_data->GetEntries(); ev++) {
+		tree_data->GetEntry(ev);
+		h_data->Fill(nVertices_data);
+	}
 
-  h_data->Scale(1/h_data->Integral());
-  h0->Scale(1/h0->Integral());
+	h_data->Scale(1/h_data->Integral());
+	h0->Scale(1/h0->Integral());
 
-  std::vector<float> PUW(51);
+	std::vector<float> PUW(51);
 
-  for(int i = 0;i<51;i++)
-    if(h0->GetBinContent(i) != 0)
-      PUW[i] = h_data->GetBinContent(i)/h0->GetBinContent(i);
-    else
-      PUW[i] = 1.0;
+	for(int i = 0;i<51;i++)
+		if(h0->GetBinContent(i) != 0)
+			PUW[i] = h_data->GetBinContent(i)/h0->GetBinContent(i);
+		else
+			PUW[i] = 1.0;
 
-  h0->Delete();
-  h_data->Delete();
+	h0->Delete();
+	h_data->Delete();
 
-  return PUW;
+	return PUW;
 
 }

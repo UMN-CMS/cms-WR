@@ -713,20 +713,20 @@ void macroSandBox(){
 	string modAndTreeName = "recoAnalyzerTwo/recoObjectsWithPtEtaCuts";
 
 	TChain * dyPlusJetsEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
-	dyPlusJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/analyzed_DYJets_madgraph_50ns_skim_low_dilepton_mass_region_emujj.root");
+	dyPlusJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/analyzed_DYJets_Madgraph_50ns_skim_low_dilepton_mass_region_emujj.root");
 	//dyPlusJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_DYJets_50ns_skim_low_dilepton_mass_region_emujj.root");
 	
 	TChain * ttBarEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
-	ttBarEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_TTJets_50ns_skim_low_dilepton_mass_region_emujj.root");
+	ttBarEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/analyzed_TTJets_50ns_skim_low_dilepton_mass_region_emujj.root");
 	TChain * wJetsEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
-	wJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/analyzed_WJets_50ns_skim_low_dilepton_mass_region_emujj.root");
+	wJetsEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/analyzed_WJets_50ns_skim_low_dilepton_mass_region_emujj.root");
 	TChain * wzEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
-	wzEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/WZ_TuneCUETP8M1_13TeV-pythia8/analyzed_WZ_50ns_skim_low_dilepton_mass_region_emujj.root");
+	wzEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/analyzed_WZ_50ns_skim_low_dilepton_mass_region_emujj.root");
 	TChain * zzEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
-	zzEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/ZZ_TuneCUETP8M1_13TeV-pythia8/analyzed_ZZ_50ns_skim_low_dilepton_mass_region_emujj.root");
+	zzEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/analyzed_ZZ_50ns_skim_low_dilepton_mass_region_emujj.root");
 	
 	TChain * muonEGEMuJJLowMassSkim = new TChain(modAndTreeName.c_str());
-	muonEGEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/MuonEG/analyzed_MuonEG_50ns_skim_low_dilepton_mass_region_emujj.root");
+	muonEGEMuJJLowMassSkim->Add("/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/analyzed_MuonEG_50ns_skim_low_dilepton_mass_region_emujj.root");
 
 #ifdef DEBUG
 	cout<<"declared TChain to bkgnd and data"<<endl;
