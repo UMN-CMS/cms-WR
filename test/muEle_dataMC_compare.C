@@ -14,29 +14,29 @@
 #include <string>
 
 //#define DEBUG
-//#define PrintIntegral
+#define PrintIntegral
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
 std::vector<TH1F*> MakeNHistos(TString hname, int n, int bins, float x_min, float x_max);
 std::vector<float> PileUpWeights(TTree* tree,TTree* tree_data);
 
-void ele_dataMC_compare(){
+void muEle_dataMC_compare(){
 
 #ifdef DEBUG
-	std::cout<<"in ele_dataMC_compare()"<<std::endl;
+	std::cout<<"in muEle_dataMC_compare()"<<std::endl;
 #endif
+	
+	TString directory = "/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_mass_emujj/";
+	//TFile * hfile0 = new TFile(directory+"analyzed_DYJets_50ns_skim_low_dilepton_mass_region_emujj.root");//dyjets
+	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_low_dilepton_mass_region_emujj.root");//dyjets
+	TFile * hfile1 = new TFile(directory+"analyzed_TTJets_50ns_skim_low_dilepton_mass_region_emujj.root");//ttbar
+	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEMuJJ_MWR_2600_MNu_1300_low_dilepton_mass.root");//wr signal MC, by default will not be plotted
+	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_low_dilepton_mass_region_emujj.root");//wz
+	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_low_dilepton_mass_region_emujj.root");//zz
+	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_low_dilepton_mass_region_emujj.root");//wjets
 
-	TString directory = "/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_and_fourObj_mass_eejj/";
-	//TFile * hfile0 = new TFile(directory+"analyzed_DYJets_50ns_skim_low_mass_region_eejj.root");//dyjets
-	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_low_mass_region_eejj.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");//ttbar
-	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEEJJ_MWR_2600_MNu_1300_low_mass.root");//wr signal MC, by default will not be plotted
-	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_low_mass_region_eejj.root");//wz
-	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_low_mass_region_eejj.root");//zz
-	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_low_mass_region_eejj.root");//wjets
-
-	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_low_mass_region_eejj.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_50ns_skim_low_dilepton_mass_region_emujj.root");//data
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -57,7 +57,7 @@ void ele_dataMC_compare(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,20,0,650);
+	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,22,0,700);
 	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,22,0,220);
 	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,22,0,220);
 	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,14,0,140);
@@ -81,12 +81,14 @@ void ele_dataMC_compare(){
 	vector<TH1F*> h_dR_l2j1 = MakeNHistos("h_dR_l2j1", 7,20,0,5);
 	vector<TH1F*> h_dR_l2j2 = MakeNHistos("h_dR_l2j2", 7,20,0,5);
 	vector<TH1F*> h_Mjj = MakeNHistos("h_Mjj",7,40,0,400);
+	vector<TH1F*> h_nleptonsOne = MakeNHistos("h_nleptonsOne", 7,4,0,4);
+	vector<TH1F*> h_nleptonsTwo = MakeNHistos("h_nleptonsTwo", 7,4,0,4);
 	
 #ifdef DEBUG
 	std::cout<<"made vectors of TH1F pointers to histos"<<std::endl;
 #endif
 
-	int nhistos = 24;	//24
+	int nhistos = 26;	//max is 26
 	std::vector<THStack*> ths; // Stacks;
 	for(int istacks=0; istacks<nhistos; istacks++)
 	{
@@ -145,6 +147,8 @@ void ele_dataMC_compare(){
 		histos[j][21] = h_dR_l2j1[j];
 		histos[j][22] = h_dR_l2j2[j];
 		histos[j][23] = h_Mjj[j];
+		histos[j][24] = h_nleptonsOne[j];
+		histos[j][25] = h_nleptonsTwo[j];
 	}
 	
 #ifdef DEBUG
@@ -231,11 +235,11 @@ void ele_dataMC_compare(){
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
 	leg->SetFillColor( kWhite ) ;
 
-	TString xtitles[] = {"M_{EEJJ} [GeV]","M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading jet #eta","subleading jet #eta","leading electron #phi","subleading electron #phi","leading jet #phi","subleading jet #phi","number of electrons","number of jets","number of vertices","#DeltaR lead ele sublead ele","#DeltaR lead jet sublead jet","#DeltaR lead ele lead jet","#DeltaR lead ele sublead jet","#DeltaR sublead ele lead jet","#DeltaR sublead ele sublead jet","M_{JJ} [GeV]"};
+	TString xtitles[] = {"M_{EMuJJ} [GeV]","M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","electron #eta","muon #eta","leading jet #eta","subleading jet #eta","electron #phi","muon #phi","leading jet #phi","subleading jet #phi","number of leptons","number of jets","number of vertices","#DeltaR ele muon","#DeltaR lead jet sublead jet","#DeltaR ele lead jet","#DeltaR ele sublead jet","#DeltaR muon lead jet","#DeltaR muon sublead jet","M_{JJ} [GeV]","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary DiElectron Mass  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary leading jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of electrons  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of jets  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV  #intlumi = 41.6/pb"};
+	TString titles[] = {"CMS Preliminary M_{EMuJJ}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Dilepton Mass  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Muon #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Muon #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of leptons  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of jets  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Lead Jet Sublead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Ele Lead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Ele Sublead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Muon Lead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Muon Sublead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Number of Muons  #surds = 13 TeV  #intlumi = 41.6/pb"};
 
-	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ"};
+	TString fnames[] = {"MEMuJJ","MEMu","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","nelectrons","nmuons"};
 
 
 	for(int icanvas=0; icanvas<nhistos; icanvas++){
@@ -282,7 +286,7 @@ void ele_dataMC_compare(){
 		//TString dyJetsMC = "_aMCNLODYJets";
 		TString dyJetsMC = "_madgraphDYJets";
 		
-		TString fn = "tempPlots/electrons/";
+		TString fn = "tempPlots/muEle/";
 		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + ".pdf";
 		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + ".png";
 		mycanvas->Print(fn_pdf.Data());
@@ -296,7 +300,7 @@ void ele_dataMC_compare(){
 		mycanvas->Close();
 
 	}
-}
+}///end muEle_dataMC_compare()
 
 
 vector<TH1F*> MakeNHistos(TString hname, int n, int bins, float x_min, float x_max){
@@ -364,6 +368,8 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 	Float_t dR_l2j1;
 	Float_t dR_l2j2;
 	Int_t nLeptons;
+	Int_t nLeptonsOne;///electrons
+	Int_t nLeptonsTwo;///muons
 	Int_t nJets;
 	Int_t nVertices;
 	Float_t evWeightSign;
@@ -388,6 +394,8 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 	tree->SetBranchAddress("dR_subleadingLeptonSubleadingJet",&dR_l2j2);
 
 	tree->SetBranchAddress("nLeptons",&nLeptons);
+	tree->SetBranchAddress("nLeptonsOne",&nLeptonsOne);
+	tree->SetBranchAddress("nLeptonsTwo",&nLeptonsTwo);
 	tree->SetBranchAddress("nJets",&nJets);
 	tree->SetBranchAddress("nVertices",&nVertices);
 
@@ -408,16 +416,16 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 
 				h1[0]->Fill(fourObjectMass,reweight);
 				h1[1]->Fill(dileptonMass,reweight);
-				h1[2]->Fill(ptEle[0],reweight);
-				h1[3]->Fill(ptEle[1],reweight);
+				h1[2]->Fill(ptEle[0],reweight);	///electron pT
+				h1[3]->Fill(ptEle[1],reweight); ///muon pT
 				h1[4]->Fill(ptJet[0],reweight);
 				h1[5]->Fill(ptJet[1],reweight);
-				h1[6]->Fill(etaEle[0],reweight);
-				h1[7]->Fill(etaEle[1],reweight);
+				h1[6]->Fill(etaEle[0],reweight);///electron
+				h1[7]->Fill(etaEle[1],reweight);///muon
 				h1[8]->Fill(etaJet[0],reweight);
 				h1[9]->Fill(etaJet[1],reweight);
-				h1[10]->Fill(phiEle[0],reweight);
-				h1[11]->Fill(phiEle[1],reweight);
+				h1[10]->Fill(phiEle[0],reweight);///electron
+				h1[11]->Fill(phiEle[1],reweight);///muon
 				h1[12]->Fill(phiJet[0],reweight);
 				h1[13]->Fill(phiJet[1],reweight);	
 				h1[14]->Fill(nLeptons,reweight);	
@@ -430,6 +438,8 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 				h1[21]->Fill(dR_l2j1,reweight);
 				h1[22]->Fill(dR_l2j2,reweight);
 				h1[23]->Fill(dijetMass,reweight);
+				h1[24]->Fill(nLeptonsOne,reweight);
+				h1[25]->Fill(nLeptonsTwo,reweight);
 			}///end if(!is_data)
 			else {
 				h1[0]->Fill(fourObjectMass);
@@ -456,6 +466,8 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 				h1[21]->Fill(dR_l2j1);
 				h1[22]->Fill(dR_l2j2);
 				h1[23]->Fill(dijetMass);
+				h1[24]->Fill(nLeptonsOne);
+				h1[25]->Fill(nLeptonsTwo);
 			}///end else (for real data)
 		}///end if(true)
 	}///end loop over events ev in tree

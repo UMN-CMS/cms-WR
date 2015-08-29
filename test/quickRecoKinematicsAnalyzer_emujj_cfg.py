@@ -45,16 +45,16 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 		treeName = cms.string("recoObjectsNoCuts"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
-		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),
-		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),
+		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),#electrons
+		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),#muons
 		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
 	
 		)
 
 process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
 		treeName = cms.string("recoObjectsWithPtEtaCuts"),
-		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),
-		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),
+		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),#electrons
+		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),#muons
 		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1)

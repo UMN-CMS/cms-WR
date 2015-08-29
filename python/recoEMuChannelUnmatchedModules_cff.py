@@ -103,7 +103,7 @@ emuRecoLowMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
 		maxWrMass = cms.double(14000.0),
 		maxDileptonMass = cms.double(200.0),
 		inputLeadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonOne"),
-		inputSubleadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonOne"),
+		inputSubleadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
 		inputJetsCollTag = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut")
 		)
 

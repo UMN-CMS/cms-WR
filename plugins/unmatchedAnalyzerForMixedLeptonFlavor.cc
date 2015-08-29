@@ -438,15 +438,11 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 
 	///now declare the leadingLepton and subleadingLepton iterators which will be used below, and
 	///assign them to the appropriate leadingLeptonOne and leadingLeptonTwo iterators
-	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton, subleadingLepton;
-	if(leadingLeptonOne->pt() > leadingLeptonTwo->pt()){
-		leadingLepton = leadingLeptonOne;
-		subleadingLepton = leadingLeptonTwo;
-	}///end if(leadingLeptonOne from leptonsOne collection is harder than leadingLeptonTwo from leptonsTwo collection)
-	else{
-		leadingLepton = leadingLeptonTwo;
-		subleadingLepton = leadingLeptonOne;
-	}
+	///NOTE it is imperative that the electron and muon identities be preserved
+	///for this reason the leadingLepton iterator will always be assigned to leadingLeptonOne
+	///and the subleadingLepton iterator will always be assigned to leadingLeptonTwo
+
+	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton = leadingLeptonOne, subleadingLepton = leadingLeptonTwo;
 
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
