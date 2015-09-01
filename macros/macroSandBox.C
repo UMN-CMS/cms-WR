@@ -32,13 +32,13 @@
 using namespace std;
 
 //#define lowMassSkimmedBkgndOnRealData
-#define lowMassFlavorSidebandBkgndOnData
+//#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
 //#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
-//#define bkgndOverlaidOnMatchedSignal
+#define bkgndOverlaidOnMatchedSignal
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
 
@@ -471,14 +471,17 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 /** the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
  * the histogram name does not need to be passed into the fxn as an argument, it will be pulled from the map key
  * if doNormalizationByArea is true, then normalize the plotted histos so that the area under each curve = 1
+ * title will be shown at the top of the plot
+ * xLabel will be shown just below the horizontal axis
  *
  *
  */
-void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea){
+void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel){
+	gStyle->SetOptStat("");
 	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
 	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
-	map<string,TH1F*> overlayHistoMap;	///< links TString keys to TH1F histos which will ultimately be overlaid
+	map<string,TH1F*> overlayHistoMap;	///< links string keys to TH1F histos which will ultimately be overlaid
 	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
 		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
 		string uncutHistoName(chMapIt->first);
@@ -486,32 +489,35 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		///and store the substring in the new string object
 		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
 		(chMapIt->second)->Draw((chMapIt->first).c_str());
+		
+		///save pointers to all histograms into overlayHistoMap
 		overlayHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 	}///end loop over elements in inputChainMap
+
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
 	int colors[] = {1,2,4,8,12,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
 	Int_t i=0;
+	typedef map<string,TH1F*>::const_iterator cMapIt;
+	Double_t oldMax = 0;	///<height of tallest peak across all histos in overlayHistoMap
 	if(overlayHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
-	for(map<string,TH1F*>::const_iterator histIt=overlayHistoMap.begin(); histIt!=overlayHistoMap.end(); histIt++){
+	for(cMapIt histIt=overlayHistoMap.begin(); histIt!=overlayHistoMap.end(); histIt++){
 		(histIt->second)->SetLineColor(colorVect[i]);
 		(histIt->second)->SetLineWidth(3);
 		if(doNormalizationByArea){
 			Double_t oldIntegral = (histIt->second)->Integral();
 			(histIt->second)->Scale(1.0/oldIntegral);
 		}///end filter to normalize histo area to 1
-		if(histIt==overlayHistoMap.begin()){
-			string xLabel="";
-			if((histIt->first).find("Mass") !=string::npos || (histIt->first).find("ptEle") !=string::npos || (histIt->first).find("ptJet") !=string::npos){
-				xLabel += "GeV";
-			}///end if(histo is plotting a variable with dimension of energy)
-			(histIt->second)->GetXaxis()->SetTitle(xLabel.c_str());
-			Double_t oldMax = (histIt->second)->GetBinContent((histIt->second)->GetMaximumBin());
-			(histIt->second)->SetMaximum(3*oldMax);
-		}///end filter to set histogram X axis label
+
+		///add the x axis label and title to all histos
+		(histIt->second)->GetXaxis()->SetTitle(xLabel.c_str());
+		(histIt->second)->SetTitle(title.c_str());
+		Double_t tempMax = (histIt->second)->GetBinContent((histIt->second)->GetMaximumBin());
+		if(oldMax < tempMax) oldMax = tempMax;
+	
 		size_t lastChevron = (histIt->first).find_last_of('>');
 		size_t underscorePos = (histIt->first).find_first_of("_",lastChevron);
-		string legEntryName = (histIt->first).substr(lastChevron+1,underscorePos-lastChevron);
+		string legEntryName = (histIt->first).substr(lastChevron+1,underscorePos-lastChevron-1);
 #ifdef DEBUG
 		cout<<"histo name = \t"<< histIt->first <<endl;
 		cout<<"legEntry has name = \t"<< legEntryName << endl;
@@ -520,8 +526,13 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		i++;
 	}///end loop to set line colors of histos, and add entries to TLegend
 
+	///set the max Y scale on all histos in overlayHistoMap to 1.5 times oldMax
+	for(cMapIt mIt=overlayHistoMap.begin(); mIt!=overlayHistoMap.end(); mIt++){
+		(mIt->second)->SetMaximum(1.5*oldMax);
+	}///end loop over elements in overlayHistoMap
+	
 	string outputFile;
-	for(map<string,TH1F*>::const_iterator hIt=overlayHistoMap.begin(); hIt!=overlayHistoMap.end(); hIt++){
+	for(cMapIt hIt=overlayHistoMap.begin(); hIt!=overlayHistoMap.end(); hIt++){
 		if(hIt==overlayHistoMap.begin()){
 			(hIt->second)->Draw();
 			size_t firstChevron = (hIt->first).find_first_of('>');
@@ -744,7 +755,7 @@ void macroSandBox(){
 	map<string,vector<Float_t> > pileupWeights = computePileupWeights(bkgndMap, muonEGEMuJJLowMassSkim);
 
 
-	Float_t integratedLumi = 40.001/0.962;	///< in picobarns
+	Float_t integratedLumi = 41.8;	///< in picobarns
 
 
 	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","dijetMass","nLeptons","nJets","nVertices"};
@@ -838,7 +849,7 @@ void macroSandBox(){
 	map<string,vector<Float_t> > pileupWeights = computePileupWeights(bkgndMap, doubleEGEEJJLowMassSkim);
 
 
-	Float_t integratedLumi = 40.001/0.962;	///< in picobarns
+	Float_t integratedLumi = 41.8;	///< in picobarns
 
 
 	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","dijetMass","nLeptons","nJets","nVertices"};
@@ -1080,42 +1091,33 @@ void macroSandBox(){
 	ttBarNoCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/ttBar/*.root");
 	
 	TChain * dyPlusJetsAllCuts = new TChain("bkgndRecoAnalyzerFive/bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
-	dyPlusJetsAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/dyPlusJets/*.root");
+	dyPlusJetsAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/dyPlusJets/analyzedPhys14Samples/*.root");
 	TChain * ttBarAllCuts = new TChain("bkgndRecoAnalyzerFive/bkgndRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
-	ttBarAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/ttBar/*.root");
-	TChain * matchedRecoNoCuts = new TChain("matchedRecoAnalyzerOne/matchedRecoObjectsNoCuts");
-	matchedRecoNoCuts->Add("/uscms/home/skalafut/WR/CMSSW_7_4_0_pre9/src/ExoAnalysis/cmsWR/analysis_recoElectronChannel_two_stage_matching_for_jets.root");
-	
-	///get # of evts before all cuts, and after all cuts are applied
-	//cout<<"ttBar evts before cuts = \t"<< ttBarNoCuts->GetEntriesFast() <<"\t after cuts = \t"<< ttBarAllCuts->GetEntriesFast() << endl;
-	//cout<<"dyPlusJets evts before cuts = \t"<< dyPlusJetsNoCuts->GetEntriesFast() <<"\t after cuts = \t"<< dyPlusJetsAllCuts->GetEntriesFast() << endl;
-	//cout<<"signal evts before cuts = \t"<< matchedRecoNoCuts->GetEntriesFast() <<"\t after cuts = \t"<< matchedRecoPtEtaDileptonMassDrFourObjMassCuts->GetEntriesFast() << endl;
-	//ttBarNoCuts->Draw("evtNumber","");
-	//ttBarAllCuts->Draw("evtNumber","");
-	//dyPlusJetsNoCuts->Draw("evtNumber","");
-	//dyPlusJetsAllCuts->Draw("evtNumber","");
-	matchedRecoNoCuts->Draw("evtNumber","");
-
+	ttBarAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/bkgnds/ttBar/analyzedPhys14Samples/*.root");
+	TChain * matchedRecoAllCuts = new TChain("matchedRecoAnalyzerFive/matchedRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts");
+	matchedRecoAllCuts->Add("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/analyzed_gen_matched_WRtoEEJJ_MWr2600_MNu1300.root");
 
 	///setup inputs needed for makeAndSaveMultipleCurveOverlayHist() fxn, and call this fxn
 	string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","subleadingLeptonThreeObjMass","leadLeptonThreeObjMass"};
 	string link=">>";
 	string histoEndings[] = {"_leadLeptonPt(50,0.,1200.)","_subleadLeptonPt(50,0.,700.)","_leadLeptonEta(50,-3.0,3.0)","_subleadLeptonEta(50,-3.0,3.0)","_leadJetPt(70,0.,900.)","_subleadJetPt(50,0.,500.)","_leadJetEta(50,-3.0,3.0)","_subleadJetEta(50,-3.0,3.0)","_dileptonMass(50,0.,2500.)","_fourObjectMass(50,400.,3300.)","_dR_leadingLeptonLeadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingJet(50,0.,5.)","_dR_subleadingLeptonLeadingJet(50,0.,5.)","_dR_subleadingLeptonSubleadingJet(50,0.,5.)","_dR_leadingLeptonSubleadingLepton(50,0.,5.)","_dR_leadingJetSubleadingJet(50,0.,5.)","_subleadingLeptonThreeObjMass(50,0.,1600.)","_leadLeptonThreeObjMass(50,0.,2800.)",};
+	string histoTitles[]={"Lead Electron P_{T}  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Sublead Electron P_{T}  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Lead Electron #eta  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Sublead Electron #eta  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Lead Jet P_{T}  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Sublead Jet P_{T}  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Lead Jet #eta  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","Sublead Jet #eta  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","DiElectron Mass  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","M_{EEJJ}  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","#DeltaR Lead Electron Lead Jet  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","#DeltaR Lead Electron Sublead Jet  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","#DeltaR Sublead Electron Lead Jet  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","#DeltaR Sublead Electron Sublead Jet  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","#DeltaR Lead Electron Sublead Electron  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","#DeltaR Lead Jet Sublead Jet  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","M_{EJJ} using Sublead Electron  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV","M_{EJJ} using Lead Electron  #surds = 13 TeV M_{Nu} = 1.3 TeV M_{WR} = 2.6 TeV"};
+	string histoXaxisLabels[]={"Lead Electron P_{T} [GeV]","Sublead Electron P_{T} [GeV]","Lead Electron #eta","Sublead Electron #eta","Lead Jet P_{T} [GeV]","Sublead Jet P_{T} [GeV]","Lead Jet #eta","Sublead Jet #eta","DiElectron Mass [GeV]","M_{EEJJ} [GeV]","#DeltaR Lead Electron Lead Jet","#DeltaR Lead Electron Sublead Jet","#DeltaR Sublead Electron Lead Jet","#DeltaR Sublead Electron Sublead Jet","#DeltaR Lead Electron Sublead Electron","#DeltaR Lead Jet Sublead Jet","M_{EJJ} using Sublead Electron [GeV]","M_{EJJ} using Lead Electron [GeV]"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"mWR2600mNu1300","ttBar","dyPlusJets"};
+	string histoBeginnings[] = {"WR","TTBar","DY"};
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
-	/*
-	for(unsigned int i=0; i<1; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = matchedRecoPtEtaDileptonMassDrFourObjMassCuts;
+	for(unsigned int i=0; i<maxI; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = matchedRecoAllCuts;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = ttBarAllCuts;
 		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyPlusJetsAllCuts;
 		string cName = "o"+to_string(i);
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.8,0.6,0.95,0.9,true,histoTitles[i],histoXaxisLabels[i]);
 		placeHolderMap.clear();
 	}///end loop over branchNames
-	*/
 
+	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel){
+	
 #endif
 
 }///end macroSandBox()

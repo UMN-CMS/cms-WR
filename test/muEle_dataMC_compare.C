@@ -172,7 +172,7 @@ void muEle_dataMC_compare(){
 
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = (40.003/0.962);
+	Float_t intLumi = 41.8;
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -185,7 +185,7 @@ void muEle_dataMC_compare(){
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
-		histos[1][i]->Scale(815.96*(intLumi)/4994250);
+		histos[1][i]->Scale(815.96*(intLumi)*3/4994250);
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 		
@@ -237,7 +237,7 @@ void muEle_dataMC_compare(){
 
 	TString xtitles[] = {"M_{EMuJJ} [GeV]","M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","electron #eta","muon #eta","leading jet #eta","subleading jet #eta","electron #phi","muon #phi","leading jet #phi","subleading jet #phi","number of leptons","number of jets","number of vertices","#DeltaR ele muon","#DeltaR lead jet sublead jet","#DeltaR ele lead jet","#DeltaR ele sublead jet","#DeltaR muon lead jet","#DeltaR muon sublead jet","M_{JJ} [GeV]","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary M_{EMuJJ}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Dilepton Mass  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Muon #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Muon #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of leptons  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of jets  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Lead Jet Sublead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Ele Lead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Ele Sublead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Muon Lead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Muon Sublead Jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Number of Muons  #surds = 13 TeV  #intlumi = 41.6/pb"};
+	TString titles[] = {"CMS Preliminary M_{EMuJJ}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Dilepton Mass  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Electron #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Muon #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Sublead Jet #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Electron #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Muon #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Jet #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Sublead Jet #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of leptons  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of jets  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Lead Jet Sublead Jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Ele Lead Jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Ele Sublead Jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Muon Lead Jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Muon Sublead Jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Number of Muons  #surds = 13 TeV  #intlumi = 41.8/pb"};
 
 	TString fnames[] = {"MEMuJJ","MEMu","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","nelectrons","nmuons"};
 
@@ -279,7 +279,7 @@ void muEle_dataMC_compare(){
 		Double_t maxY = histos[6][icanvas]->GetMaximum();
 		std::cout<<"maxY = "<< maxY <<"  lastBinCenter = "<< lastBinCenter << std::endl;
 		TPaveText * beamDataBox = new TPaveText( 1.05*lastBinCenter*(leg->GetX1()) , 0.98*maxY, 1.05*lastBinCenter*(leg->GetX2()), 1.05*maxY);
-		beamDataBox->AddText("#intlumi = 41.6/pb     #surds = 13 TeV");
+		beamDataBox->AddText("#intlumi = 41.8/pb     #surds = 13 TeV");
 		beamDataBox->Draw();
 		*/
 		mycanvas->Update();
@@ -287,14 +287,14 @@ void muEle_dataMC_compare(){
 		TString dyJetsMC = "_madgraphDYJets";
 		
 		TString fn = "tempPlots/muEle/";
-		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + ".pdf";
-		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + ".png";
+		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree.pdf";
+		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree.png";
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
 		mycanvas->Update();
-		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_log.pdf";
-		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_log.png";
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree_log.png";
 		mycanvas->Print(fn_log_pdf.Data());
 		mycanvas->Print(fn_log_png.Data());
 		mycanvas->Close();

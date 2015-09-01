@@ -14,7 +14,7 @@
 #include <string>
 
 //#define DEBUG
-//#define PrintIntegral
+#define PrintIntegral
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
@@ -168,7 +168,7 @@ void ele_dataMC_compare(){
 
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = (40.003/0.962);
+	Float_t intLumi = 41.8;
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -181,7 +181,7 @@ void ele_dataMC_compare(){
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
-		histos[1][i]->Scale(815.96*(intLumi)/4994250);
+		histos[1][i]->Scale(815.96*(intLumi)*3/4994250);
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 		
@@ -233,7 +233,7 @@ void ele_dataMC_compare(){
 
 	TString xtitles[] = {"M_{EEJJ} [GeV]","M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading jet #eta","subleading jet #eta","leading electron #phi","subleading electron #phi","leading jet #phi","subleading jet #phi","number of electrons","number of jets","number of vertices","#DeltaR lead ele sublead ele","#DeltaR lead jet sublead jet","#DeltaR lead ele lead jet","#DeltaR lead ele sublead jet","#DeltaR sublead ele lead jet","#DeltaR sublead ele sublead jet","M_{JJ} [GeV]"};
 	
-	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary DiElectron Mass  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary leading jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of electrons  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of jets  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV  #intlumi = 41.6/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV  #intlumi = 41.6/pb"};
+	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary DiElectron Mass  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary leading jet #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of electrons  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of jets  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV  #intlumi = 41.8/pb"};
 
 	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ"};
 
@@ -275,7 +275,7 @@ void ele_dataMC_compare(){
 		Double_t maxY = histos[6][icanvas]->GetMaximum();
 		std::cout<<"maxY = "<< maxY <<"  lastBinCenter = "<< lastBinCenter << std::endl;
 		TPaveText * beamDataBox = new TPaveText( 1.05*lastBinCenter*(leg->GetX1()) , 0.98*maxY, 1.05*lastBinCenter*(leg->GetX2()), 1.05*maxY);
-		beamDataBox->AddText("#intlumi = 41.6/pb     #surds = 13 TeV");
+		beamDataBox->AddText("#intlumi = 41.8/pb     #surds = 13 TeV");
 		beamDataBox->Draw();
 		*/
 		mycanvas->Update();
@@ -283,14 +283,14 @@ void ele_dataMC_compare(){
 		TString dyJetsMC = "_madgraphDYJets";
 		
 		TString fn = "tempPlots/electrons/";
-		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + ".pdf";
-		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + ".png";
+		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree.pdf";
+		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree.png";
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
 		mycanvas->Update();
-		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_log.pdf";
-		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_log.png";
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_ttbarTimesThree_log.png";
 		mycanvas->Print(fn_log_pdf.Data());
 		mycanvas->Print(fn_log_png.Data());
 		mycanvas->Close();
@@ -398,7 +398,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 		Float_t reweight = 1;
 		tree->GetEntry(ev); 
 
-		if(true)//l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && dileptonMass<200)// && (dR_l1l2 < 2.5 || dR_l1l2 > 3.5))// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
+		if(dileptonMass > 50)//l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && dileptonMass<200)// && (dR_l1l2 < 2.5 || dR_l1l2 > 3.5))// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
 		{
 			if(!is_data){
 				if(pileup_reweight)
