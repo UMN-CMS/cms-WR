@@ -5,6 +5,35 @@ import FWCore.ParameterSet.Config as cms
 @{
 """
 
+emuwRtunePMuons = cms.EDProducer("TunePMuonProducer",
+		src = cms.InputTag("slimmedMuons")
+		)
+
+wrTunePMuProdFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("emuwRtunePMuons"),
+		minNumber = cms.uint32(1)
+		)
+
+wrTunePMuProdSeq = cms.Sequence(
+		emuwRtunePMuons
+		*wrTunePMuProdFilter
+		)
+
+# make a collection of TuneP muons which pass isHighPt ID
+isHighPtMuProd = cms.EDProducer("produceIsHighPtMuons",
+		src = cms.InputTag("emuwRtunePMuons"),
+		outputCollectionName = cms.string("TunePMuonsPassingIsHighPtID")
+		)
+
+isHighPtMuProdFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("isHighPtMuProd","TunePMuonsPassingIsHighPtID"),
+		minNumber = cms.uint32(1)
+		)
+
+isHighPtMuSeq = cms.Sequence(isHighPtMuProd*isHighPtMuProdFilter)
+
+
+
 ### make sure the evt has at least two jets, and one has a nontrivial pT
 emuwRhardJet = cms.EDFilter("PATJetRefSelector",
 		src = cms.InputTag("slimmedJets"),

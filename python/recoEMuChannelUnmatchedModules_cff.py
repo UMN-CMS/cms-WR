@@ -1,8 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-#this is a copy of recoElectronChannelUnmatchedModules_cff
-
-# make the TuneP muons
+# make a collection of TuneP muons which pass isHighPt ID
 wrTunePMuProd = cms.EDProducer("TunePMuonProducer",
 		src = cms.InputTag("slimmedMuons")
 		)
@@ -12,7 +10,52 @@ wrTunePMuProdFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(1)
 		)
 
-wrTunePMuProdSeq = cms.Sequence(wrTunePMuProd*wrTunePMuProdFilter)
+wrTunePMuProdSeq = cms.Sequence(
+		wrTunePMuProd
+		*wrTunePMuProdFilter
+		)
+
+# make a collection of TuneP muons which pass isHighPt ID
+isHighPtMuProd = cms.EDProducer("produceIsHighPtMuons",
+		src = cms.InputTag("wrTunePMuProd"),
+		outputCollectionName = cms.string("TunePMuonsPassingIsHighPtID")
+		)
+
+isHighPtMuProdFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("isHighPtMuProd","TunePMuonsPassingIsHighPtID"),
+		minNumber = cms.uint32(1)
+		)
+
+isHighPtMuSeq = cms.Sequence(isHighPtMuProd*isHighPtMuProdFilter)
+
+
+#turn the TuneP muon and HEEP electron objects into reco::Candidate objects
+#use this sequence to check the emu mass distribution, and ele and mu kinematics
+electronCheck = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("HEEPIDSelector"),
+		cut = cms.string("")
+		)
+electronCheckFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("electronCheck"),
+		minNumber = cms.uint32(1)
+		)
+
+muonCheck = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("isHighPtMuProd","TunePMuonsPassingIsHighPtID"),
+		cut = cms.string("abs(eta) < 2.4")
+		)
+muonCheckFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("muonCheck"),
+		minNumber = cms.uint32(1)
+		)
+
+checkEMuSeq = cms.Sequence(
+		electronCheck
+		*electronCheckFilter
+		*muonCheck
+		*muonCheckFilter
+		)
+
 
 ## transform the objects in slimmedJets, slimmedElectrons, and wrTunePMuProd into reco::Candidate objects
 emuBareRecoJet = cms.EDFilter("CandViewSelector",
@@ -38,8 +81,9 @@ emuBareRecoLeptonOneFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 emuBareRecoLeptonTwo = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("wrTunePMuProd"),
-		cut = cms.string("abs(eta) < 2.4 && pt>40")
+		#src = cms.InputTag("wrTunePMuProd"),
+		src = cms.InputTag("isHighPtMuProd","TunePMuonsPassingIsHighPtID"),
+		cut = cms.string("abs(eta) < 2.4 && pt>50")  #pt>50 to get above isHighPt ID turnon curve
 		)
 
 emuBareRecoLeptonTwoFilter = cms.EDFilter("CandViewCountFilter",

@@ -92,6 +92,7 @@ process.unmatchedBkgndRecoPath = cms.Path(
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSidebandSequence  #only look for 1 HEEP electron
 		*process.wrTunePMuProdSeq
+		*process.isHighPtMuSeq
 		*process.emuBareRecoParticleSeq
 		*process.emuBareRecoDrSeparationSeq
 		*process.recoAnalyzerOne
