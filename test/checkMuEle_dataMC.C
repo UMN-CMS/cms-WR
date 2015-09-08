@@ -28,14 +28,14 @@ void checkMuEle_dataMC(){
 #endif
 	
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_50ns_skims_check_emu/";
-	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_low_dilepton_mass_check_emu_noHLT.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTBar_50ns_skim_low_dilepton_mass_check_emu_noHLT.root");//ttbar
+	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_check_emu_noHLT.root");//dyjets
+	TFile * hfile1 = new TFile(directory+"analyzed_TTBar_50ns_skim_check_emu_noHLT.root");//ttbar
 	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEMuJJ_MWR_2600_MNu_1300_low_dilepton_mass.root");//wr signal MC, by default will not be plotted
-	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_low_dilepton_mass_check_emu_noHLT.root");//wz
-	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_low_dilepton_mass_check_emu_noHLT.root");//zz
-	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_low_dilepton_mass_check_emu_noHLT.root");//wjets
-
-	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_50ns_skim_low_dilepton_mass_check_emu_noHLT.root");//data
+	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_check_emu_noHLT.root");//wz
+	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_check_emu_noHLT.root");//zz
+	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_check_emu_noHLT.root");//wjets
+	
+	TFile * hfile_data = new TFile(directory+"analyzed_SingleMuon_50ns_skim_oneHEEPandIsHighPtID_check_emu_noHLT.root");//data
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -56,14 +56,14 @@ void checkMuEle_dataMC(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,30,0,300);
-	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,22,0,220);
-	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,14,0,140);
+	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,30,90,1000);
+	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,25,0,250);
+	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,25,0,250);
 	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
 	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,20,-3.,3.);
 	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,20,-3.15,3.15);
 	vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 7,20,-3.15,3.15);
-	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 7,4,0,4);
+	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 7,15,0,15);
 	vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", 7,33,0,33);
 	vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", 7,20,0,5);
 	vector<TH1F*> h_nleptonsOne = MakeNHistos("h_nleptonsOne", 7,12,0,12);
@@ -143,7 +143,7 @@ void checkMuEle_dataMC(){
 
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = 41.8;
+	Float_t intLumi = 47.49;
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -207,7 +207,7 @@ void checkMuEle_dataMC(){
 
 	TString xtitles[] = {"M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","electron #eta","muon #eta","electron #phi","muon #phi","number of leptons","number of vertices","#DeltaR ele muon","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Electron #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Muon #eta  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Electron #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Muon #phi  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of leptons  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV  #intlumi = 41.8/pb","CMS Preliminary Number of Muons  #surds = 13 TeV  #intlumi = 41.8/pb"};
+	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Electron #eta  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Muon #eta  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Electron #phi  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Muon #phi  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary number of leptons  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Number of Muons  #surds = 13 TeV  #intlumi = 47.49/pb"};
 
 	TString fnames[] = {"MEMu","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2","nelectrons","nmuons"};
 
@@ -351,7 +351,8 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 				else
 					reweight = evWeightSign;
 
-				h1[0]->Fill(dileptonMass,reweight);
+				//h1[0]->Fill(dileptonMass,reweight);
+				h1[0]->Fill(dileptonMass,1);
 				//h1[1]->Fill(ptEle[0],reweight);	///electron pT
 				//h1[2]->Fill(ptEle[1],reweight); ///muon pT
 				//h1[3]->Fill(etaEle[0],reweight);///electron

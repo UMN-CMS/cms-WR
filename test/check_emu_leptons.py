@@ -37,6 +37,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('emuAnalyzer',
 		treeName = cms.string("recoObjectsNoCuts"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
+		minDr = cms.double(0.1),
 		leptonsOneCollection = cms.InputTag("electronCheck"),#electrons
 		leptonsTwoCollection = cms.InputTag("muonCheck")#muons
 		)
@@ -44,8 +45,8 @@ process.recoAnalyzerOne = cms.EDAnalyzer('emuAnalyzer',
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.trigFilt
-		*process.egmGsfElectronIDSequence
+		#process.trigFilt
+		process.egmGsfElectronIDSequence
 		*process.HEEPIDSidebandSequence  #only look for 1 HEEP electron
 		*process.wrTunePMuProdSeq
 		*process.isHighPtMuSeq

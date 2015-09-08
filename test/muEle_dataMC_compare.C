@@ -88,7 +88,7 @@ void muEle_dataMC_compare(){
 	std::cout<<"made vectors of TH1F pointers to histos"<<std::endl;
 #endif
 
-	int nhistos = 26;	//max is 26
+	int nhistos = 2;	//max is 26
 	std::vector<THStack*> ths; // Stacks;
 	for(int istacks=0; istacks<nhistos; istacks++)
 	{
@@ -125,30 +125,30 @@ void muEle_dataMC_compare(){
 	for(int j=0; j<7; j++){
 		histos[j][0] = h_Mlljj[j];
 		histos[j][1] = h_Mll[j];
-		histos[j][2] = h_l1pt[j];
-		histos[j][3] = h_l2pt[j];
-		histos[j][4] = h_j1pt[j];
-		histos[j][5] = h_j2pt[j];
-		histos[j][6] = h_l1eta[j];
-		histos[j][7] = h_l2eta[j];
-		histos[j][8] = h_j1eta[j];
-		histos[j][9] = h_j2eta[j];
-		histos[j][10] = h_l1phi[j];
-		histos[j][11] = h_l2phi[j];
-		histos[j][12] = h_j1phi[j];
-		histos[j][13] = h_j2phi[j];
-		histos[j][14] = h_nleptons[j];
-		histos[j][15] = h_njets[j];
-		histos[j][16] = h_nvertices[j];
-		histos[j][17] = h_dR_l1l2[j];
-		histos[j][18] = h_dR_j1j2[j];
-		histos[j][19] = h_dR_l1j1[j];
-		histos[j][20] = h_dR_l1j2[j];
-		histos[j][21] = h_dR_l2j1[j];
-		histos[j][22] = h_dR_l2j2[j];
-		histos[j][23] = h_Mjj[j];
-		histos[j][24] = h_nleptonsOne[j];
-		histos[j][25] = h_nleptonsTwo[j];
+		//histos[j][2] = h_l1pt[j];
+		//histos[j][3] = h_l2pt[j];
+		//histos[j][4] = h_j1pt[j];
+		//histos[j][5] = h_j2pt[j];
+		//histos[j][6] = h_l1eta[j];
+		//histos[j][7] = h_l2eta[j];
+		//histos[j][8] = h_j1eta[j];
+		//histos[j][9] = h_j2eta[j];
+		//histos[j][10] = h_l1phi[j];
+		//histos[j][11] = h_l2phi[j];
+		//histos[j][12] = h_j1phi[j];
+		//histos[j][13] = h_j2phi[j];
+		//histos[j][14] = h_nleptons[j];
+		//histos[j][15] = h_njets[j];
+		//histos[j][16] = h_nvertices[j];
+		//histos[j][17] = h_dR_l1l2[j];
+		//histos[j][18] = h_dR_j1j2[j];
+		//histos[j][19] = h_dR_l1j1[j];
+		//histos[j][20] = h_dR_l1j2[j];
+		//histos[j][21] = h_dR_l2j1[j];
+		//histos[j][22] = h_dR_l2j2[j];
+		//histos[j][23] = h_Mjj[j];
+		//histos[j][24] = h_nleptonsOne[j];
+		//histos[j][25] = h_nleptonsTwo[j];
 	}
 	
 #ifdef DEBUG
@@ -185,7 +185,7 @@ void muEle_dataMC_compare(){
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
-		histos[1][i]->Scale(815.96*(intLumi)*3/4994250);
+		histos[1][i]->Scale(815.96*(intLumi)/4994250);
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 		
@@ -273,15 +273,6 @@ void muEle_dataMC_compare(){
 		///draw the legend, and a text box above the legend with the COM energy and integrated lumi
 		leg->Draw();
 		
-		/*
-		this is not working!!  show the integrated lumi and sqrt(s) = 13 TeV in the title as a backup
-		Double_t lastBinCenter = ths[icanvas]->GetXaxis()->GetBinCenter(ths[icanvas]->GetXaxis()->GetNbins() );
-		Double_t maxY = histos[6][icanvas]->GetMaximum();
-		std::cout<<"maxY = "<< maxY <<"  lastBinCenter = "<< lastBinCenter << std::endl;
-		TPaveText * beamDataBox = new TPaveText( 1.05*lastBinCenter*(leg->GetX1()) , 0.98*maxY, 1.05*lastBinCenter*(leg->GetX2()), 1.05*maxY);
-		beamDataBox->AddText("#intlumi = 41.8/pb     #surds = 13 TeV");
-		beamDataBox->Draw();
-		*/
 		mycanvas->Update();
 		//TString dyJetsMC = "_aMCNLODYJets";
 		TString dyJetsMC = "_madgraphDYJets";
@@ -416,58 +407,58 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 
 				h1[0]->Fill(fourObjectMass,reweight);
 				h1[1]->Fill(dileptonMass,reweight);
-				h1[2]->Fill(ptEle[0],reweight);	///electron pT
-				h1[3]->Fill(ptEle[1],reweight); ///muon pT
-				h1[4]->Fill(ptJet[0],reweight);
-				h1[5]->Fill(ptJet[1],reweight);
-				h1[6]->Fill(etaEle[0],reweight);///electron
-				h1[7]->Fill(etaEle[1],reweight);///muon
-				h1[8]->Fill(etaJet[0],reweight);
-				h1[9]->Fill(etaJet[1],reweight);
-				h1[10]->Fill(phiEle[0],reweight);///electron
-				h1[11]->Fill(phiEle[1],reweight);///muon
-				h1[12]->Fill(phiJet[0],reweight);
-				h1[13]->Fill(phiJet[1],reweight);	
-				h1[14]->Fill(nLeptons,reweight);	
-				h1[15]->Fill(nJets,reweight);	
-				h1[16]->Fill(nVertices,reweight);	
-				h1[17]->Fill(dR_l1l2,reweight);
-				h1[18]->Fill(dR_j1j2,reweight);
-				h1[19]->Fill(dR_l1j1,reweight);
-				h1[20]->Fill(dR_l1j2,reweight);
-				h1[21]->Fill(dR_l2j1,reweight);
-				h1[22]->Fill(dR_l2j2,reweight);
-				h1[23]->Fill(dijetMass,reweight);
-				h1[24]->Fill(nLeptonsOne,reweight);
-				h1[25]->Fill(nLeptonsTwo,reweight);
+				//h1[2]->Fill(ptEle[0],reweight);	///electron pT
+				//h1[3]->Fill(ptEle[1],reweight); ///muon pT
+				//h1[4]->Fill(ptJet[0],reweight);
+				//h1[5]->Fill(ptJet[1],reweight);
+				//h1[6]->Fill(etaEle[0],reweight);///electron
+				//h1[7]->Fill(etaEle[1],reweight);///muon
+				//h1[8]->Fill(etaJet[0],reweight);
+				//h1[9]->Fill(etaJet[1],reweight);
+				//h1[10]->Fill(phiEle[0],reweight);///electron
+				//h1[11]->Fill(phiEle[1],reweight);///muon
+				//h1[12]->Fill(phiJet[0],reweight);
+				//h1[13]->Fill(phiJet[1],reweight);	
+				//h1[14]->Fill(nLeptons,reweight);	
+				//h1[15]->Fill(nJets,reweight);	
+				//h1[16]->Fill(nVertices,reweight);	
+				//h1[17]->Fill(dR_l1l2,reweight);
+				//h1[18]->Fill(dR_j1j2,reweight);
+				//h1[19]->Fill(dR_l1j1,reweight);
+				//h1[20]->Fill(dR_l1j2,reweight);
+				//h1[21]->Fill(dR_l2j1,reweight);
+				//h1[22]->Fill(dR_l2j2,reweight);
+				//h1[23]->Fill(dijetMass,reweight);
+				//h1[24]->Fill(nLeptonsOne,reweight);
+				//h1[25]->Fill(nLeptonsTwo,reweight);
 			}///end if(!is_data)
 			else {
 				h1[0]->Fill(fourObjectMass);
 				h1[1]->Fill(dileptonMass);
-				h1[2]->Fill(ptEle[0]);
-				h1[3]->Fill(ptEle[1]);
-				h1[4]->Fill(ptJet[0]);
-				h1[5]->Fill(ptJet[1]);
-				h1[6]->Fill(etaEle[0]);
-				h1[7]->Fill(etaEle[1]);
-				h1[8]->Fill(etaJet[0]);
-				h1[9]->Fill(etaJet[1]);
-				h1[10]->Fill(phiEle[0]);
-				h1[11]->Fill(phiEle[1]);
-				h1[12]->Fill(phiJet[0]);
-				h1[13]->Fill(phiJet[1]);	
-				h1[14]->Fill(nLeptons);	
-				h1[15]->Fill(nJets);	
-				h1[16]->Fill(nVertices);	
-				h1[17]->Fill(dR_l1l2);
-				h1[18]->Fill(dR_j1j2);
-				h1[19]->Fill(dR_l1j1);
-				h1[20]->Fill(dR_l1j2);
-				h1[21]->Fill(dR_l2j1);
-				h1[22]->Fill(dR_l2j2);
-				h1[23]->Fill(dijetMass);
-				h1[24]->Fill(nLeptonsOne);
-				h1[25]->Fill(nLeptonsTwo);
+				//h1[2]->Fill(ptEle[0]);
+				//h1[3]->Fill(ptEle[1]);
+				//h1[4]->Fill(ptJet[0]);
+				//h1[5]->Fill(ptJet[1]);
+				//h1[6]->Fill(etaEle[0]);
+				//h1[7]->Fill(etaEle[1]);
+				//h1[8]->Fill(etaJet[0]);
+				//h1[9]->Fill(etaJet[1]);
+				//h1[10]->Fill(phiEle[0]);
+				//h1[11]->Fill(phiEle[1]);
+				//h1[12]->Fill(phiJet[0]);
+				//h1[13]->Fill(phiJet[1]);	
+				//h1[14]->Fill(nLeptons);	
+				//h1[15]->Fill(nJets);	
+				//h1[16]->Fill(nVertices);	
+				//h1[17]->Fill(dR_l1l2);
+				//h1[18]->Fill(dR_j1j2);
+				//h1[19]->Fill(dR_l1j1);
+				//h1[20]->Fill(dR_l1j2);
+				//h1[21]->Fill(dR_l2j1);
+				//h1[22]->Fill(dR_l2j2);
+				//h1[23]->Fill(dijetMass);
+				//h1[24]->Fill(nLeptonsOne);
+				//h1[25]->Fill(nLeptonsTwo);
 			}///end else (for real data)
 		}///end if(true)
 	}///end loop over events ev in tree

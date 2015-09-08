@@ -7,11 +7,6 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SKIM')
 
-#from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
-#loadHEEPIDSelector(process)
-#process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
-
-
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -24,12 +19,11 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(-1)
 )
 
 process.source = cms.Source("PoolSource",
-		#fileNames = cms.untracked.vstring('file:noFile.root'),
-		fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/40000/00D4DF0D-7735-E511-BD81-00259073E4F0.root'),
+		fileNames = cms.untracked.vstring('file:noFile.root'),
 		secondaryFileNames = cms.untracked.vstring()
 		)
 
@@ -96,8 +90,13 @@ process.load('ExoAnalysis.cmsWR.skimElectron_cff')
 # Path and EndPath definitions
 #process.eleEleSignalSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
 #process.eleEleLowMassSkim = cms.Path(process.wRjetAndDielectronSidebandSeq)
-process.eleEleLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
-#process.eleEleLowMassSkim = cms.Path(process.egmGsfElectronIDSequence*process.HEEPIDSequence)
+#process.eleEleLowMassSkim = cms.Path(process.wRdiElectronSidebandSeq)
+
+#non standard low mass WR signal sideband skim
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+process.eleEleLowMassSkim = cms.Path(process.egmGsfElectronIDSequence*process.HEEPIDSequence)
 
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)

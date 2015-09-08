@@ -40,6 +40,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 
 
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
@@ -103,7 +104,15 @@ class emuAnalyzer : public edm::EDAnalyzer {
 		  return mass;
 	  }///end getDileptonMass()
 
-	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::Handle<edm::OwnVector<reco::Candidate> > collectionOne, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collectionTwo,bool doDileptonMassCut){
+	  bool isCloseToMuon(edm::OwnVector<reco::Candidate>::const_iterator objIt,edm::Handle<std::vector<pat::Muon> > particlesToAvoid){
+		  for(std::vector<pat::Muon>::const_iterator avoidIt=particlesToAvoid->begin(); avoidIt!=particlesToAvoid->end(); avoidIt++){
+			  if(avoidIt->pt() < 5) continue;
+			  if(deltaR(objIt->eta(),objIt->phi(),avoidIt->eta(),avoidIt->phi()) < 0.1) return true;
+		  }///end loop over objects in particlesToAvoid collection
+		  return false;
+	  }///end isCloseToMuon()
+
+	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::Handle<edm::OwnVector<reco::Candidate> > collectionOne, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collectionTwo,bool doDileptonMassCut, edm::Handle<std::vector<pat::Muon> > musToAvoid){
 
 #ifdef DEBUG
 		  std::cout<<"checking pt of particles in two handled findLeadingAndSubleading fxn"<<std::endl;
@@ -115,11 +124,14 @@ class emuAnalyzer : public edm::EDAnalyzer {
 			  std::cout<<"a particle from collectionOne has pT = \t"<< genItOne->pt() << std::endl;
 #endif
 
+			  if(isCloseToMuon(genItOne, musToAvoid) ) continue;	///skip genItOne if it is close to an object in musToAvoid with pt>5
 			  if(first==collectionOne->end()) first=genItOne;
 			  else if(genItOne->pt() > first->pt() ) first = genItOne;
 		  }//end loop over reco::Candidate objects in collectionOne
 
+		  if(first==collectionOne->end()) return;	///don't look for a second lepton if a candidate for the first lepton is not found!
 
+		  ///make sure the candidate chosen from collectionTwo has the opposite charge of the reco candidate ref named first
 		  if(!doDileptonMassCut){
 			  ///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
 			  for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++){
@@ -127,11 +139,11 @@ class emuAnalyzer : public edm::EDAnalyzer {
 				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
 #endif
 
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 ) second = genItTwo;
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minDrSep && genItTwo->charge() != first->charge() ) second = genItTwo;
 
 				  if(second!=collectionTwo->end()){
 
-					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4) second = genItTwo;
+					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minDrSep && genItTwo->charge() != first->charge()) second = genItTwo;
 	
 				  }///check that second points to a real reco::Candidate
 			  
@@ -151,11 +163,11 @@ class emuAnalyzer : public edm::EDAnalyzer {
 				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
 #endif
 			  
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minDrSep && getDileptonMass(first,genItTwo) > minDileptonMass && genItTwo->charge() != first->charge() ) second = genItTwo;
 
 				  if(second!=collectionTwo->end() ){
 
-					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > 0.4 && getDileptonMass(first,genItTwo) > minDileptonMass ) second = genItTwo;
+					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minDrSep && getDileptonMass(first,genItTwo) > minDileptonMass && genItTwo->charge() != first->charge() ) second = genItTwo;
 	
 				  }///check that second points to a real reco::Candidate
 			  
@@ -184,11 +196,11 @@ class emuAnalyzer : public edm::EDAnalyzer {
 #endif
 				  if(first==collection->end()) first=genIt;
 				  else{
-					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
+					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minDrSep ){
 						  second = first;
 						  first = genIt;
 					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4  ) second = genIt;
+					  else if( (second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minDrSep  ) second = genIt;
 				  }
 			  }//end loop over reco::Candidate collection
 
@@ -202,11 +214,11 @@ class emuAnalyzer : public edm::EDAnalyzer {
 #endif
 				  if(first==collection->end()) first=genIt;
 				  else{
-					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
+					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minDrSep ){
 						  second = first;
 						  first = genIt;
 					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
+					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minDrSep ) second = genIt;
 				  }
 			  }//end loop over reco::Candidate collection
 
@@ -231,18 +243,21 @@ virtual void endJob() override;
 std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
+double minDrSep;
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsOne;
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsTwo;
 edm::Handle<GenEventInfoProduct> genEvtInfo;
 edm::Handle<std::vector<reco::Vertex> > vertices;
+edm::Handle<std::vector<pat::Muon> > muonsToAvoid;
 
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsOneToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsTwoToken;
 edm::EDGetTokenT<GenEventInfoProduct> genEventInfoToken;
 edm::EDGetTokenT<std::vector<reco::Vertex> > verticesToken;
+edm::EDGetTokenT<std::vector<pat::Muon> > muonsToAvoidToken;
 
 
 TTree * tree;
@@ -288,7 +303,8 @@ Float_t evWeightSign;	///< if the sign of evWeight is negative, then the evt sho
 emuAnalyzer::emuAnalyzer(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
+	minDrSep(iConfig.getParameter<double>("minDr"))
 
 {
    //now do what ever initialization is needed
@@ -320,6 +336,7 @@ emuAnalyzer::emuAnalyzer(const edm::ParameterSet& iConfig):
    leptonsTwoToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsTwoCollection"));///muons
    genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
    verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
+   muonsToAvoidToken = consumes<std::vector<pat::Muon> >(edm::InputTag("slimmedMuons"));
 
 }
 
@@ -355,6 +372,7 @@ emuAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	iEvent.getByToken(leptonsOneToken, leptonsOne);	///electrons
 	iEvent.getByToken(leptonsTwoToken, leptonsTwo);	///muons
 	iEvent.getByToken(verticesToken, vertices);
+	iEvent.getByToken(muonsToAvoidToken, muonsToAvoid);
 
 	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing MC
 
@@ -374,7 +392,8 @@ emuAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLeptonOne = leptonsOne->end(), leadingLeptonTwo = leptonsTwo->end();
 	
 	///now use the iterators to find the hardest and second hardest leptons
-	findLeadingAndSubleading(leadingLeptonOne, leptonsOne, leadingLeptonTwo, leptonsTwo, applyDileptonMassCut);
+	///avoid leptons from leptonsOne which are within dR < 0.1 of an object in muonsToAvoid with pt>5
+	findLeadingAndSubleading(leadingLeptonOne, leptonsOne, leadingLeptonTwo, leptonsTwo, applyDileptonMassCut, muonsToAvoid);
 	
 	if(leadingLeptonOne==leptonsOne->end() || leadingLeptonTwo==leptonsTwo->end()) return;	///< skip this evt if two leptons are not found
 

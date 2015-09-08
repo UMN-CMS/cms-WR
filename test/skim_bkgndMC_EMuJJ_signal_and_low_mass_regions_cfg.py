@@ -89,7 +89,22 @@ process.load('ExoAnalysis.cmsWR.skimEMu_cff')
 
 # Path and EndPath definitions
 #process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
-process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonSidebandSeq)
+#process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonSidebandSeq)
+
+#test a modified skim which selects evts with at least one HEEP ID v6.0 ele, and one muon which passes isHighPt ID
+#this is NOT the usual selection sequence
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
+process.eleMuLowMassSkim = cms.Path(
+		process.egmGsfElectronIDSequence
+		*process.HEEPIDSidebandSequence  #only look for 1 HEEP electron
+		*process.wrTunePMuProdSeq
+		*process.isHighPtMuSeq
+		)
+
+
 
 #process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
 #process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)

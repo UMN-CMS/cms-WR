@@ -18,7 +18,8 @@ wrTunePMuProdSeq = cms.Sequence(
 # make a collection of TuneP muons which pass isHighPt ID
 isHighPtMuProd = cms.EDProducer("produceIsHighPtMuons",
 		src = cms.InputTag("wrTunePMuProd"),
-		outputCollectionName = cms.string("TunePMuonsPassingIsHighPtID")
+		outputCollectionName = cms.string("TunePMuonsPassingIsHighPtID"),
+		minPt = cms.double(45)
 		)
 
 isHighPtMuProdFilter = cms.EDFilter("CandViewCountFilter",

@@ -19,12 +19,14 @@ private:
 	edm::Handle<std::vector<reco::Vertex> > vertices;
 	edm::EDGetTokenT<std::vector<reco::Vertex> > verticesToken;	///< needed for isHighPtMuon()
 	std::string outputCollName;	///<label name of collection made by this producer
+	double minPtThresh;	///<selected muons must have pT greater than this val
 
 };
 
 produceIsHighPtMuons::produceIsHighPtMuons(const edm::ParameterSet& cfg)
 	: src(cfg.getParameter<edm::InputTag>("src")),
-	outputCollName(cfg.getParameter<std::string>("outputCollectionName"))
+	outputCollName(cfg.getParameter<std::string>("outputCollectionName")),
+	minPtThresh(cfg.getParameter<double>("minPt"))
 {
  	verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
 
@@ -42,14 +44,7 @@ void produceIsHighPtMuons::produce(edm::Event& event, const edm::EventSetup&)
 	//reco::Candidate::PolarLorentzVector tmp_muon;
 
 	for(auto mu : *muons) {
-		/*
-		if(mu.tunePMuonBestTrack().isAvailable())
-			tmp_muon.SetCoordinates(mu.tunePMuonBestTrack()->pt(), mu.tunePMuonBestTrack()->eta(), mu.tunePMuonBestTrack()->phi(), 0.1057);
-		else
-			tmp_muon.SetCoordinates(0.0, 0.0, 0.0, 0.0);
-		mu.setP4(tmp_muon);
-		*/
-		if( mu.isHighPtMuon(vertices->at(0)) ) mus->push_back(mu);
+		if( mu.isHighPtMuon(vertices->at(0)) && mu.tunePMuonBestTrack()->pt() > minPtThresh) mus->push_back(mu);
 		
 	}
 	event.put(mus, outputCollName);
