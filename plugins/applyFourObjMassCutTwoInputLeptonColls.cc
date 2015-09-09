@@ -2,7 +2,7 @@
 //
 // 
 
-/**\class applyLeptonJetDrCutMixedLeptonFlavor applyLeptonJetDrCutMixedLeptonFlavor.cc doubleElectronTracklessTrigger/applyLeptonJetDrCutMixedLeptonFlavor/plugins/applyLeptonJetDrCutMixedLeptonFlavor.cc
+/**\class applyFourObjMassCutTwoInputLeptonColls applyFourObjMassCutTwoInputLeptonColls.cc doubleElectronTracklessTrigger/applyFourObjMassCutTwoInputLeptonColls/plugins/applyFourObjMassCutTwoInputLeptonColls.cc
  Description: [one line class summary]
 
 
@@ -73,18 +73,18 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include "TTree.h"
+#include "Math/GenVector/LorentzVector.h"
 
-//#define NOBJ 500
 //#define DEBUG
 
 //
 // class declaration
 //
 
-class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
+class applyFourObjMassCutTwoInputLeptonColls : public edm::EDProducer {
    public:
-      explicit applyLeptonJetDrCutMixedLeptonFlavor(const edm::ParameterSet&);
-      ~applyLeptonJetDrCutMixedLeptonFlavor();
+      explicit applyFourObjMassCutTwoInputLeptonColls(const edm::ParameterSet&);
+      ~applyFourObjMassCutTwoInputLeptonColls();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -121,9 +121,9 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
 #endif
 
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation ) second = genItTwo;
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ ) second = genItTwo;
 
-				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation) second = genItTwo;
+				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_) second = genItTwo;
 			  }///end loop over objects in collectionTwo
 
 		  }///end if(!doDileptonMassCut)
@@ -140,7 +140,7 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
 #endif
 			  
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation && getDileptonMass(first,genItTwo) > minDileptonMass ){
+				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ && getDileptonMass(first,genItTwo) > minDileptonMass_ ){
 #ifdef DEBUG
 					  std::cout<<"found a candidate for the iterator named second"<<std::endl;
 #endif
@@ -152,7 +152,7 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 #endif
 
 				  if(second!=collectionTwo->end()){
-					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation && getDileptonMass(first,genItTwo) > minDileptonMass ){
+					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ && getDileptonMass(first,genItTwo) > minDileptonMass_ ){
 #ifdef DEBUG
 						  std::cout<<"found a better candidate for the iterator named second"<<std::endl;
 #endif
@@ -170,6 +170,56 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 #endif
 
 	  }///end two handled findLeadingAndSubleading()
+
+
+
+	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection,bool doDileptonMassCut){
+
+#ifdef DEBUG
+		  std::cout<<"checking pt of particles in findLeadingAndSubleading fxn"<<std::endl;
+#endif
+
+		  if(!doDileptonMassCut){
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+#ifdef DEBUG
+				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+#endif
+				  if(first==collection->end()) first=genIt;
+				  else{
+					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ){
+						  second = first;
+						  first = genIt;
+					  }
+					  else if( ( second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) second = genIt;
+				  }
+			  }//end loop over reco::Candidate collection
+
+		  }///end if(!doDileptonMassCut)
+
+		  if(doDileptonMassCut){
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+#ifdef DEBUG
+				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+#endif
+				  if(first==collection->end()) first=genIt;
+				  else{
+					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass_ && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ){
+						  second = first;
+						  first = genIt;
+					  }
+					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass_ && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) second = genIt;
+				  }
+			  }//end loop over reco::Candidate collection
+
+		  }///end if(doDileptonMassCut)
+
+#ifdef DEBUG
+		  std::cout<<"leaving findLeadingAndSubleading fxn"<<std::endl;
+#endif
+
+	  }///end findLeadingAndSubleading()
 
 
 	  /**this fxn checks that the object pointed to by objIt does not already exist
@@ -203,15 +253,16 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
       //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
  
       // ----------member data ---------------------------
-	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputJetsToken;
-	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsOneToken;	///< leptons selected earlier
-	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsTwoToken;	///< leptons selected earlier
+	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputJetsToken_;
+	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsOneToken_;	///< leptons which have passed dilepton mass and earlier cuts
+	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsTwoToken_;	///< leptons which have passed dilepton mass and earlier cuts
 
-
-	  std::string outputCollName;
-	  double dRSeparation;	///< minimum dR separation btwn a lepton and jet
-	  double minDileptonMass;	///< min dilepton mass
-	  double minLeptonDrSeparation;	///< min separation btwn two leptons, used in findLeadingAndSubleading()
+	  std::string outputJetsCollName_;
+	  std::string outputLeptonsOneCollName_;
+	  std::string outputLeptonsTwoCollName_;
+	  double minFourObjMass_;	///< minimum four obj mass
+	  double minDileptonMass_;	///< min dilepton mass
+	  double minLeptonDrSeparation_;	///< min separation btwn two leptons, or two jets
 
 };
 
@@ -227,27 +278,31 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 //
 // constructors and destructor
 //
-applyLeptonJetDrCutMixedLeptonFlavor::applyLeptonJetDrCutMixedLeptonFlavor(const edm::ParameterSet& iConfig):
-	outputCollName(iConfig.getParameter<std::string>("outputJetsCollectionName")),
-	dRSeparation(iConfig.getParameter<double>("minDrSeparation")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMassCut")),
-	minLeptonDrSeparation(iConfig.getParameter<double>("minLeptonDrSeparation"))
+applyFourObjMassCutTwoInputLeptonColls::applyFourObjMassCutTwoInputLeptonColls(const edm::ParameterSet& iConfig):
+	outputJetsCollName_(iConfig.getParameter<std::string>("outputJetsCollectionName")),
+	outputLeptonsOneCollName_(iConfig.getParameter<std::string>("outputLeptonsOneCollectionName")),
+	outputLeptonsTwoCollName_(iConfig.getParameter<std::string>("outputLeptonsTwoCollectionName")),
+	minFourObjMass_(iConfig.getParameter<double>("minFourObjMassCut")),
+	minDileptonMass_(iConfig.getParameter<double>("minDileptonMassCut")),
+	minLeptonDrSeparation_(iConfig.getParameter<double>("minLeptonDrSeparation"))
 
 {
-   //edm::Service<TFileService> fs;
    
-   ///register the input collections	
-   inputJetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputJetsCollTag"));
-   inputLeptonsOneToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsOneCollTag"));
-   inputLeptonsTwoToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsTwoCollTag"));
+   ///register the input collections
+   inputJetsToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputJetsCollTag"));
+   inputLeptonsOneToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsOneCollTag"));
+   inputLeptonsTwoToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsTwoCollTag"));
+
 
    ///register the collections which are added to the event
-   produces<edm::OwnVector<reco::Candidate> >(outputCollName);
+   produces<edm::OwnVector<reco::Candidate> >(outputJetsCollName_);
+   produces<edm::OwnVector<reco::Candidate> >(outputLeptonsOneCollName_);
+   produces<edm::OwnVector<reco::Candidate> >(outputLeptonsTwoCollName_);
 
 }
 
 
-applyLeptonJetDrCutMixedLeptonFlavor::~applyLeptonJetDrCutMixedLeptonFlavor()
+applyFourObjMassCutTwoInputLeptonColls::~applyFourObjMassCutTwoInputLeptonColls()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -262,95 +317,85 @@ applyLeptonJetDrCutMixedLeptonFlavor::~applyLeptonJetDrCutMixedLeptonFlavor()
 
 // ------------ method called to produce the data  ------------
 void
-applyLeptonJetDrCutMixedLeptonFlavor::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+applyFourObjMassCutTwoInputLeptonColls::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
 
 #ifdef DEBUG
-   std::cout<<"entered applyLeptonJetDrCutMixedLeptonFlavor produce method"<<std::endl;
+   std::cout<<"entered applyFourObjMassCutTwoInputLeptonColls produce method"<<std::endl;
 #endif
 
    Handle<edm::OwnVector<reco::Candidate> > inputJetsColl;
-   iEvent.getByToken(inputJetsToken, inputJetsColl);
+   iEvent.getByToken(inputJetsToken_, inputJetsColl);
 
    Handle<edm::OwnVector<reco::Candidate> > inputLeptonsOneColl;
-   iEvent.getByToken(inputLeptonsOneToken, inputLeptonsOneColl);
+   iEvent.getByToken(inputLeptonsOneToken_, inputLeptonsOneColl);
 
    Handle<edm::OwnVector<reco::Candidate> > inputLeptonsTwoColl;
-   iEvent.getByToken(inputLeptonsTwoToken, inputLeptonsTwoColl);
+   iEvent.getByToken(inputLeptonsTwoToken_, inputLeptonsTwoColl);
 
 
 #ifdef DEBUG
    std::cout<<"made handles to input collections"<<std::endl;
 #endif
 
-   ///make an empty output collection to eventually hold jets, and a pointer to this collection
-   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjColl(new edm::OwnVector<reco::Candidate>());
+   ///make two empty output collection to eventually hold the two hardest jets and leptons, and a pointer to both collections
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputLeptonOneObjsColl(new edm::OwnVector<reco::Candidate>());
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputLeptonTwoObjsColl(new edm::OwnVector<reco::Candidate>());
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputJetObjsColl(new edm::OwnVector<reco::Candidate>());
 
-   ///find the two highest pT, separated leptons whose dilepton mass is > some threshold, and assign const_iterators to these two leptons
-   edm::OwnVector<reco::Candidate>::const_iterator leadLeptonOne=inputLeptonsOneColl->end(), leadLeptonTwo=inputLeptonsTwoColl->end();
-   findLeadingAndSubleading(leadLeptonOne, inputLeptonsOneColl, leadLeptonTwo, inputLeptonsTwoColl, true);
-   if(leadLeptonOne==inputLeptonsOneColl->end() || leadLeptonTwo==inputLeptonsTwoColl->end() ){
-	   iEvent.put(outputObjColl, outputCollName);
+  
+   ///find the two highest pT leptons whose dilepton mass is > 200 GeV, and assign const_iterators to these two leptons
+   edm::OwnVector<reco::Candidate>::const_iterator leadLepton=inputLeptonsOneColl->end(), subleadLepton=inputLeptonsTwoColl->end();
+   findLeadingAndSubleading(leadLepton, inputLeptonsOneColl, subleadLepton, inputLeptonsTwoColl, true);
+
+   ///find the two highest pT jets in inputJetsColl
+   edm::OwnVector<reco::Candidate>::const_iterator leadJet=inputJetsColl->end(), subleadJet=inputJetsColl->end();
+   findLeadingAndSubleading(leadJet, subleadJet, inputJetsColl, false);
+
+   if(leadJet==inputJetsColl->end() || subleadJet==inputJetsColl->end() || leadLepton==inputLeptonsOneColl->end() || subleadLepton==inputLeptonsTwoColl->end() ){
+	   iEvent.put(outputJetObjsColl, outputJetsCollName_);
+	   iEvent.put(outputLeptonOneObjsColl, outputLeptonsOneCollName_);
+	   iEvent.put(outputLeptonTwoObjsColl, outputLeptonsTwoCollName_);
 	   return;
    }
 
-   ///now that the two hardest, separated leptons have been found (one from each input lepton collection)
-   ///two const_iterators should be declared and initialized to const_iterators tied to the two hardest leptons
-   edm::OwnVector<reco::Candidate>::const_iterator leadLepton, subleadLepton;	///< use these const_iterators for further analysis
-   if(leadLeptonOne->pt() > leadLeptonTwo->pt() ){
-	   leadLepton = leadLeptonOne;
-	   subleadLepton = leadLeptonTwo;
-   }
-   else{
-	   leadLepton = leadLeptonTwo;
-	   subleadLepton = leadLeptonOne;
-   }
+   ///check if the four object mass (using the selected leptons and jets) is greater than the threshold value
+   ///if the four obj mass exceeds the threshold, add the two highest pT leptons and jets to the output collections
+   double fourObjMass = (leadJet->p4() + subleadJet->p4() + leadLepton->p4() + subleadLepton->p4()).M();
+   if(fourObjMass > minFourObjMass_){
+	   outputLeptonOneObjsColl->push_back(*leadLepton);
+	   outputLeptonTwoObjsColl->push_back(*subleadLepton);
+	   outputJetObjsColl->push_back(*leadJet);
+	   outputJetObjsColl->push_back(*subleadJet);
+   }///end filter to check that four obj mass is high enough
 
 #ifdef DEBUG
-   std::cout<<"declared and initialized leadLepton and subleadLepton iterators"<<std::endl;
-#endif
-   
-
-   ///for each possible jet object, check that the jet is at least dRSeparation away from the two hardest leptons which
-   ///have dilepton mass > some threshold 
-   for(edm::OwnVector<reco::Candidate>::const_iterator jetIt=inputJetsColl->begin();jetIt!=inputJetsColl->end(); jetIt++){
-	   double dRleadLepton=deltaR(jetIt->eta(),jetIt->phi(),leadLepton->eta(),leadLepton->phi());
-	   double dRsubleadLepton=deltaR(jetIt->eta(),jetIt->phi(),subleadLepton->eta(),subleadLepton->phi());
-	   
-	   if(dRleadLepton > dRSeparation){
-		   if(dRsubleadLepton > dRSeparation){
-			   outputObjColl->push_back(*jetIt);
-		   }///end filter on dRsubleadLepton > dRSeparation
-	   }///end filter on dRleadLepton > dRSeparation
-   
-   }///end loop over reco::Candidate leptons
-
-
-#ifdef DEBUG
-   std::cout<<"about to put collection of reco::Candidate objects into root file"<<std::endl;
+   std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;
 #endif
   
    ///now put the collection of matched higher level reco::Candidate objects into the event
-   iEvent.put(outputObjColl, outputCollName);
+   iEvent.put(outputJetObjsColl, outputJetsCollName_);
+   iEvent.put(outputLeptonOneObjsColl, outputLeptonsOneCollName_);
+   iEvent.put(outputLeptonTwoObjsColl, outputLeptonsTwoCollName_);
  
 }
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-applyLeptonJetDrCutMixedLeptonFlavor::beginJob()
+applyFourObjMassCutTwoInputLeptonColls::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-applyLeptonJetDrCutMixedLeptonFlavor::endJob() {
+applyFourObjMassCutTwoInputLeptonColls::endJob() {
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void
-applyLeptonJetDrCutMixedLeptonFlavor::beginRun(edm::Run const&, edm::EventSetup const&)
+applyFourObjMassCutTwoInputLeptonColls::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -358,7 +403,7 @@ applyLeptonJetDrCutMixedLeptonFlavor::beginRun(edm::Run const&, edm::EventSetup 
 // ------------ method called when ending the processing of a run  ------------
 /*
 void
-applyLeptonJetDrCutMixedLeptonFlavor::endRun(edm::Run const&, edm::EventSetup const&)
+applyFourObjMassCutTwoInputLeptonColls::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -366,7 +411,7 @@ applyLeptonJetDrCutMixedLeptonFlavor::endRun(edm::Run const&, edm::EventSetup co
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void
-applyLeptonJetDrCutMixedLeptonFlavor::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+applyFourObjMassCutTwoInputLeptonColls::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -374,14 +419,14 @@ applyLeptonJetDrCutMixedLeptonFlavor::beginLuminosityBlock(edm::LuminosityBlock 
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void
-applyLeptonJetDrCutMixedLeptonFlavor::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+applyFourObjMassCutTwoInputLeptonColls::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
  
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-applyLeptonJetDrCutMixedLeptonFlavor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+applyFourObjMassCutTwoInputLeptonColls::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -390,4 +435,4 @@ applyLeptonJetDrCutMixedLeptonFlavor::fillDescriptions(edm::ConfigurationDescrip
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(applyLeptonJetDrCutMixedLeptonFlavor);
+DEFINE_FWK_MODULE(applyFourObjMassCutTwoInputLeptonColls);

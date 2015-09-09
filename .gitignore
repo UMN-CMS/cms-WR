@@ -4,3 +4,6 @@ crab.history
 *.*~
 *.root
 *.pyc
+*.d
+*.pcm
+*.so
