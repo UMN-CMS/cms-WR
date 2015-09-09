@@ -11,28 +11,11 @@ options = VarParsing.VarParsing('standard')
 options.maxEvents = -1
 options.parseArguments()
 
-#process.matchedGenAnalyzerOne = cms.EDAnalyzer('matchedAnalyzer',
-#		treeName = cms.string("matchedGenObjectsNoCuts"),
-#		doDeltaRcut = cms.bool(False),
-#		doFourObjMassCut = cms.bool(False),
-#		minFourObjMass = cms.double(-1),
-#		minDeltaRforLeptonJetExclusion = cms.double(-1),
-#		saveGenMatched = cms.bool(False),
-#		leadingLeptonCollection = cms.InputTag("bareMatchedLeadingGenEle","","GENEEJJ"),
-#		subleadingLeptonCollection = cms.InputTag("bareMatchedSubleadingGenEle","","GENEEJJ"),
-#		quarkCollection = cms.InputTag("bareMatchedGenQuark","","GENEEJJ"),
-#		matchingLeadingLeptonCollection = cms.InputTag("","",""),
-#		matchingSubleadingLeptonCollection = cms.InputTag("","",""),
-#		matchingQuarkCollection = cms.InputTag("","","")
-#		)
+#both cutEfficiencyAndWrAndNuMasses and eeChnlCutSeq are defined in linkGenSequences cff
+process.runAnalyzer = cms.Path(process.cutEfficiencyAndWrAndNuMasses)
+process.runMatchedGenAnalysis = cms.Path(process.eeChnlCutSeq)
 
-
-
-process.runMatchedGenAnalysis = cms.Path(
-		process.eeChnlCutSeq
-		)
-
-process.schedule = cms.Schedule(process.runMatchedGenAnalysis)
+process.schedule = cms.Schedule(process.runMatchedGenAnalysis,process.runAnalyzer)
 
 process.TFileService = cms.Service("TFileService",
 		#fileName = cms.string('analysis_genElectronChannel_MWR_800_MNu_400_using_miniAOD.root')
