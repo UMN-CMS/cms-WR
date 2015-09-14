@@ -37,7 +37,7 @@ process.recoAnalyzerOne = cms.EDAnalyzer('emuAnalyzer',
 		treeName = cms.string("recoObjectsNoCuts"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
-		minDr = cms.double(0.1),
+		minDr = cms.double(0.4),
 		leptonsOneCollection = cms.InputTag("electronCheck"),#electrons
 		leptonsTwoCollection = cms.InputTag("muonCheck")#muons
 		)

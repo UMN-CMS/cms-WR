@@ -26,16 +26,20 @@ void checkMuEle_dataMC(){
 #ifdef DEBUG
 	std::cout<<"in muEle_dataMC_compare()"<<std::endl;
 #endif
-	
-	TString directory = "/eos/uscms/store/user/skalafut/analyzed_50ns_skims_check_emu/";
-	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_check_emu_noHLT.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTBar_50ns_skim_check_emu_noHLT.root");//ttbar
+
+	//change 25ns to 50ns to swap btwn input data files
+	TString directory = "/eos/uscms/store/user/skalafut/analyzed_25ns_skims_check_emu/";
+	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_25ns_skim_check_emu_noHLT.root");//dyjets
+	TFile * hfile1 = new TFile(directory+"analyzed_TTBar_25ns_skim_check_emu_noHLT.root");//ttbar
 	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEMuJJ_MWR_2600_MNu_1300_low_dilepton_mass.root");//wr signal MC, by default will not be plotted
-	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_check_emu_noHLT.root");//wz
-	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_check_emu_noHLT.root");//zz
-	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_check_emu_noHLT.root");//wjets
+	TFile * hfile3 = new TFile(directory+"analyzed_WZ_25ns_skim_check_emu_noHLT.root");//wz
+	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_25ns_skim_check_emu_noHLT.root");//zz
+	TFile * hfile5 = new TFile(directory+"analyzed_WJets_25ns_skim_check_emu_noHLT.root");//wjets
 	
-	TFile * hfile_data = new TFile(directory+"analyzed_SingleMuon_50ns_skim_oneHEEPandIsHighPtID_check_emu_noHLT.root");//data
+	//TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_50ns_skim_oneHEEPandIsHighPtID_check_emu_noHLT_Run2015BandC.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_25ns_skim_check_emu_noHLT.root");//data
+
+
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -56,7 +60,7 @@ void checkMuEle_dataMC(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,30,90,1000);
+	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,25,50,550);
 	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,25,0,250);
 	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,25,0,250);
 	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
@@ -73,7 +77,7 @@ void checkMuEle_dataMC(){
 	std::cout<<"made vectors of TH1F pointers to histos"<<std::endl;
 #endif
 
-	int nhistos = 1;	//max is 12
+	int nhistos = 12;	//max is 12
 	std::vector<THStack*> ths; // Stacks;
 	for(int istacks=0; istacks<nhistos; istacks++)
 	{
@@ -109,17 +113,17 @@ void checkMuEle_dataMC(){
 	///link the histos made by calls to MakeNHistos() above to specific elements of vector<vector<TH1F*> > container 
 	for(int j=0; j<7; j++){
 		histos[j][0] = h_Mll[j];
-		//histos[j][1] = h_l1pt[j];
-		//histos[j][2] = h_l2pt[j];
-		//histos[j][3] = h_l1eta[j];
-		//histos[j][4] = h_l2eta[j];
-		//histos[j][5] = h_l1phi[j];
-		//histos[j][6] = h_l2phi[j];
-		//histos[j][7] = h_nleptons[j];
-		//histos[j][8] = h_nvertices[j];
-		//histos[j][9] = h_dR_l1l2[j];
-		//histos[j][10] = h_nleptonsOne[j];
-		//histos[j][11] = h_nleptonsTwo[j];
+		histos[j][1] = h_l1pt[j];
+		histos[j][2] = h_l2pt[j];
+		histos[j][3] = h_l1eta[j];
+		histos[j][4] = h_l2eta[j];
+		histos[j][5] = h_l1phi[j];
+		histos[j][6] = h_l2phi[j];
+		histos[j][7] = h_nleptons[j];
+		histos[j][8] = h_nvertices[j];
+		histos[j][9] = h_dR_l1l2[j];
+		histos[j][10] = h_nleptonsOne[j];
+		histos[j][11] = h_nleptonsTwo[j];
 	}
 	
 #ifdef DEBUG
@@ -143,7 +147,8 @@ void checkMuEle_dataMC(){
 
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = 47.49;
+	//Float_t intLumi = 64.11;	//50ns Run2015B and C
+	Float_t intLumi = 15.48;	//25ns Run2015C
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -151,23 +156,28 @@ void checkMuEle_dataMC(){
 #endif
 		Double_t bkgndIntegral = 0;	///< integral of all bkgnd MC histos
 		
-		histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets
+		//histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets 50ns
+		histos[0][i]->Scale(6025.2*(intLumi)/9052671);	///madgraph DYJets 25ns
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
-		histos[1][i]->Scale(815.96*(intLumi)/4994250);
+		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	//ttBar to all 50ns
+		histos[1][i]->Scale(57.35*(intLumi)/24512786);		//ttBar to dilepton 25ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 		
-		histos[3][i]->Scale(66.1*(intLumi)/996920);
+		//histos[3][i]->Scale(66.1*(intLumi)/996920);		//WZ to all 50ns
+		histos[3][i]->Scale(5.52*(intLumi)/31054519);		//WZto2L2Q 25ns
 		histos[3][i]->SetFillColor(4);
 		bkgndIntegral += histos[3][i]->Integral();
 	
-		histos[4][i]->Scale(15.4*(intLumi)/998848);
+		//histos[4][i]->Scale(15.4*(intLumi)/998848);		//ZZ to all 50ns
+		histos[4][i]->Scale(3.38*(intLumi)/18898680);		//ZZto2L2Q 25ns
 		histos[4][i]->SetFillColor(7);
 		bkgndIntegral += histos[4][i]->Integral();
 		
-		histos[5][i]->Scale(6.15e4*(intLumi)/24089991);
+		//histos[5][i]->Scale(6.15e4*(intLumi)/24089991);		//WJetsToLNu 50ns
+		histos[5][i]->Scale(6.15e4*(intLumi)/24151270);		//WJetsToLNu 25ns
 		histos[5][i]->SetFillColor(6);
 		bkgndIntegral += histos[5][i]->Integral();
 	
@@ -207,7 +217,7 @@ void checkMuEle_dataMC(){
 
 	TString xtitles[] = {"M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","electron #eta","muon #eta","electron #phi","muon #phi","number of leptons","number of vertices","#DeltaR ele muon","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Electron #eta  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Muon #eta  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Electron #phi  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Muon #phi  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary number of leptons  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary number of vertices  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV  #intlumi = 47.49/pb","CMS Preliminary Number of Muons  #surds = 13 TeV  #intlumi = 47.49/pb"};
+	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb"};
 
 	TString fnames[] = {"MEMu","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2","nelectrons","nmuons"};
 
@@ -244,20 +254,20 @@ void checkMuEle_dataMC(){
 		leg->Draw();
 		
 		mycanvas->Update();
-		TString dyJetsMC = "_madgraphDYJets";
+		TString tag = "_25ns";
 		
-		TString fn = "tempPlots/checkEMu/";
-		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + ".pdf";
-		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + ".png";
+		TString fn = "tempPlots/checkEMuWithMuonEG25ns/";
+		TString fn_pdf = fn + fnames[icanvas].Data() + tag + ".pdf";
+		TString fn_png = fn + fnames[icanvas].Data() + tag + ".png";
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
 		mycanvas->Update();
-		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_log.pdf";
-		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_log.png";
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_log.png";
 		mycanvas->Print(fn_log_pdf.Data());
 		mycanvas->Print(fn_log_png.Data());
-		//mycanvas->Close();
+		mycanvas->Close();
 
 	}
 }///end checkMuEle_dataMC()
@@ -351,33 +361,32 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 				else
 					reweight = evWeightSign;
 
-				//h1[0]->Fill(dileptonMass,reweight);
-				h1[0]->Fill(dileptonMass,1);
-				//h1[1]->Fill(ptEle[0],reweight);	///electron pT
-				//h1[2]->Fill(ptEle[1],reweight); ///muon pT
-				//h1[3]->Fill(etaEle[0],reweight);///electron
-				//h1[4]->Fill(etaEle[1],reweight);///muon
-				//h1[5]->Fill(phiEle[0],reweight);///electron
-				//h1[6]->Fill(phiEle[1],reweight);///muon
-				//h1[7]->Fill(nLeptons,reweight);	
-				//h1[8]->Fill(nVertices,reweight);	
-				//h1[9]->Fill(dR_l1l2,reweight);
-				//h1[10]->Fill(nLeptonsOne,reweight);
-				//h1[11]->Fill(nLeptonsTwo,reweight);
+				h1[0]->Fill(dileptonMass,reweight);
+				h1[1]->Fill(ptEle[0],reweight);	///electron pT
+				h1[2]->Fill(ptEle[1],reweight); ///muon pT
+				h1[3]->Fill(etaEle[0],reweight);///electron
+				h1[4]->Fill(etaEle[1],reweight);///muon
+				h1[5]->Fill(phiEle[0],reweight);///electron
+				h1[6]->Fill(phiEle[1],reweight);///muon
+				h1[7]->Fill(nLeptons,reweight);	
+				h1[8]->Fill(nVertices,reweight);	
+				h1[9]->Fill(dR_l1l2,reweight);
+				h1[10]->Fill(nLeptonsOne,reweight);
+				h1[11]->Fill(nLeptonsTwo,reweight);
 			}///end if(!is_data)
 			else {
 				h1[0]->Fill(dileptonMass);
-				//h1[1]->Fill(ptEle[0]);
-				//h1[2]->Fill(ptEle[1]);
-				//h1[3]->Fill(etaEle[0]);
-				//h1[4]->Fill(etaEle[1]);
-				//h1[5]->Fill(phiEle[0]);
-				//h1[6]->Fill(phiEle[1]);
-				//h1[7]->Fill(nLeptons);	
-				//h1[8]->Fill(nVertices);	
-				//h1[9]->Fill(dR_l1l2);
-				//h1[10]->Fill(nLeptonsOne);
-				//h1[11]->Fill(nLeptonsTwo);
+				h1[1]->Fill(ptEle[0]);
+				h1[2]->Fill(ptEle[1]);
+				h1[3]->Fill(etaEle[0]);
+				h1[4]->Fill(etaEle[1]);
+				h1[5]->Fill(phiEle[0]);
+				h1[6]->Fill(phiEle[1]);
+				h1[7]->Fill(nLeptons);	
+				h1[8]->Fill(nVertices);	
+				h1[9]->Fill(dR_l1l2);
+				h1[10]->Fill(nLeptonsOne);
+				h1[11]->Fill(nLeptonsTwo);
 			}///end else (for real data)
 		}///end if(true)
 	}///end loop over events ev in tree
