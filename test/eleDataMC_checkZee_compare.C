@@ -14,7 +14,8 @@
 #include <string>
 
 //#define DEBUG
-#define PrintIntegral
+//#define PrintIntegral
+#define CHKTTBAR
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
@@ -27,14 +28,21 @@ void eleDataMC_checkZee_compare(){
 	std::cout<<"in ele_dataMC_compare()"<<std::endl;
 #endif
 
+	///swap btwn 50ns and 25ns in directory
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_25ns_skims_check_Zee_using_two_HEEP/";
-	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_skim_25ns_hasTwoHEEP.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTBar_Madgraph_skim_25ns_hasTwoHEEP.root");//ttbar
-	TFile * hfile3 = new TFile(directory+"analyzed_WZ_skim_25ns_hasTwoHEEP.root");//wz
-	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_skim_25ns_hasTwoHEEP.root");//zz
-	TFile * hfile5 = new TFile(directory+"analyzed_WJets_skim_25ns_hasTwoHEEP.root");//wjets
+	
+	///swap btwn skim_25ns_hasTwoHEEP.root and 50ns_skim_check_Zee_peak_twoHEEP_noHLT_Aug25.root in fileTag
+	//TString fileTag = "50ns_skim_check_Zee_peak_twoHEEP_noHLT_Aug25.root";
+	TString fileTag = "skim_25ns_hasTwoHEEP.root";
+	
+	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_"+fileTag);//dyjets
+	TFile * hfile1 = new TFile(directory+"analyzed_TTJets_"+fileTag);//ttbar
+	TFile * hfile3 = new TFile(directory+"analyzed_WZ_"+fileTag);//wz
+	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_"+fileTag);//zz
+	TFile * hfile5 = new TFile(directory+"analyzed_WJets_"+fileTag);//wjets
 
 	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_skim_25ns_hasTwoHEEP.root");//data
+	//TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_check_Zee_peak_twoHEEP_noHLT_Run2015BandC.root");//data
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -136,7 +144,8 @@ void eleDataMC_checkZee_compare(){
 
 	Fill_Histo(histos[5],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = 15.48;
+	Float_t intLumi = 15.48;	///25ns Run2015C integrated lumi
+	//Float_t intLumi = 64.11;	///50ns Run2015B and C integrated lumi
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -145,22 +154,30 @@ void eleDataMC_checkZee_compare(){
 		Double_t bkgndIntegral = 0;	///< integral of all bkgnd MC histos
 	
 		histos[0][i]->Scale(6025.2*(intLumi)/9052671);	///madgraph DYJets 25ns
+		//histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets 50ns
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
 		histos[1][i]->Scale(57.35*(intLumi)/24512786);	//TTBarTo2L2Q 25ns
+		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	//TTBar to all 50ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
-		
+#ifdef CHKTTBAR
+		std::cout<<"ee chnl ttBar integral =\t"<< histos[1][i]->Integral() <<std::endl;
+#endif
+	
 		histos[2][i]->Scale(5.52*(intLumi)/31054519);		//WZto2L2Q 25ns
+		//histos[2][i]->Scale(66.1*(intLumi)/996920);		//WZ to all 50ns
 		histos[2][i]->SetFillColor(4);
 		bkgndIntegral += histos[2][i]->Integral();
 	
 		histos[3][i]->Scale(3.38*(intLumi)/18898680);		//ZZto2L2Q 25ns
+		//histos[3][i]->Scale(15.4*(intLumi)/998848);		//ZZ to all 50ns
 		histos[3][i]->SetFillColor(7);
 		bkgndIntegral += histos[3][i]->Integral();
 		
 		histos[4][i]->Scale(6.15e4*(intLumi)/24151270);	//WJetsToLNu 25ns
+		//histos[4][i]->Scale(6.15e4*(intLumi)/24089991);	//WJetsToLNu 50ns
 		histos[4][i]->SetFillColor(6);
 		bkgndIntegral += histos[4][i]->Integral();
 	
@@ -238,20 +255,20 @@ void eleDataMC_checkZee_compare(){
 		leg->Draw();
 		
 		mycanvas->Update();
-		TString dyJetsMC = "_madgraphDYJets";
+		TString tag = "_25ns";
 		
-		TString fn = "tempPlots/checkZee/";
-		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_checkZee.pdf";
-		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + "_checkZee.png";
+		TString fn = "tempPlots/checkZee25ns/";
+		TString fn_pdf = fn + fnames[icanvas].Data() + tag + "_checkZee.pdf";
+		TString fn_png = fn + fnames[icanvas].Data() + tag + "_checkZee.png";
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
 		mycanvas->Update();
-		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_checkZee_log.pdf";
-		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_checkZee_log.png";
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_checkZee_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_checkZee_log.png";
 		mycanvas->Print(fn_log_pdf.Data());
 		mycanvas->Print(fn_log_png.Data());
-		//mycanvas->Close();
+		mycanvas->Close();
 
 	}
 }///end eleDataMC_checkZee_compare()

@@ -270,6 +270,10 @@ Int_t nLeptonsOne;
 Int_t nLeptonsTwo;
 Int_t nVertices;
 
+///charge of the two selected leptons
+Int_t chargeLeptonOne;
+Int_t chargeLeptonTwo;
+
 //first element is leading (highest pT) lepton 
 //second element is subleading lepton 
 Float_t etaEle[2];
@@ -316,6 +320,8 @@ emuAnalyzer::emuAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("ptEle",ptEle,"ptEle[2]/F");
    tree->Branch("phiEle",phiEle,"phiEle[2]/F");
    tree->Branch("dileptonMass",&dileptonMass,"dileptonMass/F");
+   tree->Branch("chargeLeptonOne",&chargeLeptonOne,"chargeLeptonOne/I");
+   tree->Branch("chargeLeptonTwo",&chargeLeptonTwo,"chargeLeptonTwo/I");
    
    tree->Branch("leadingIsHardest",&leadingIsHardest,"leadingIsHardest/I");
 
@@ -412,6 +418,8 @@ emuAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	std::cout<<"subleading lepton pt: \t"<<subleadingLepton->pt()<<std::endl;
 #endif
 
+	chargeLeptonOne = leadingLepton->charge();
+	chargeLeptonTwo = subleadingLepton->charge();
 	etaEle[0] = leadingLepton->eta();
 	ptEle[0] = leadingLepton->pt();
 	phiEle[0] = leadingLepton->phi();

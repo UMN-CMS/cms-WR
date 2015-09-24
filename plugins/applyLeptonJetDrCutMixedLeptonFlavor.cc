@@ -74,7 +74,6 @@
 #include <TROOT.h>
 #include "TTree.h"
 
-//#define NOBJ 500
 //#define DEBUG
 
 //
@@ -94,6 +93,57 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 		  return mass;
 	  }///end getDileptonMass()
 
+	  ///one handle findLeadingAndSubleading()    use this for jets
+	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection,bool doDileptonMassCut){
+
+#ifdef DEBUG
+		  std::cout<<"checking pt of particles in findLeadingAndSubleading fxn"<<std::endl;
+#endif
+
+		  if(!doDileptonMassCut){
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+#ifdef DEBUG
+				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+#endif
+				  if(first==collection->end()) first=genIt;
+				  else{
+					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
+						  second = first;
+						  first = genIt;
+					  }
+					  else if( ( second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
+				  }
+			  }//end loop over reco::Candidate collection
+
+		  }///end if(!doDileptonMassCut)
+
+		  if(doDileptonMassCut){
+
+			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+#ifdef DEBUG
+				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+#endif
+				  if(first==collection->end()) first=genIt;
+				  else{
+					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ){
+						  second = first;
+						  first = genIt;
+					  }
+					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
+				  }
+			  }//end loop over reco::Candidate collection
+
+		  }///end if(doDileptonMassCut)
+
+#ifdef DEBUG
+		  std::cout<<"leaving one handled findLeadingAndSubleading fxn"<<std::endl;
+#endif
+
+	  }///end one handled findLeadingAndSubleading()
+
+
+	  ///two handled findLeadingAndSubleading()     use this for leptons
 	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::Handle<edm::OwnVector<reco::Candidate> > collectionOne, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collectionTwo,bool doDileptonMassCut){
 
 #ifdef DEBUG
@@ -208,7 +258,9 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsTwoToken;	///< leptons selected earlier
 
 
-	  std::string outputCollName;
+	  std::string outputCollOneName;
+	  std::string outputCollTwoName;
+	  std::string outputCollThreeName;
 	  double dRSeparation;	///< minimum dR separation btwn a lepton and jet
 	  double minDileptonMass;	///< min dilepton mass
 	  double minLeptonDrSeparation;	///< min separation btwn two leptons, used in findLeadingAndSubleading()
@@ -228,21 +280,23 @@ class applyLeptonJetDrCutMixedLeptonFlavor : public edm::EDProducer {
 // constructors and destructor
 //
 applyLeptonJetDrCutMixedLeptonFlavor::applyLeptonJetDrCutMixedLeptonFlavor(const edm::ParameterSet& iConfig):
-	outputCollName(iConfig.getParameter<std::string>("outputJetsCollectionName")),
+	outputCollOneName(iConfig.getParameter<std::string>("outputLeptonsOneCollectionName")),
+	outputCollTwoName(iConfig.getParameter<std::string>("outputLeptonsTwoCollectionName")),
+	outputCollThreeName(iConfig.getParameter<std::string>("outputJetsCollectionName")),
 	dRSeparation(iConfig.getParameter<double>("minDrSeparation")),
 	minDileptonMass(iConfig.getParameter<double>("minDileptonMassCut")),
 	minLeptonDrSeparation(iConfig.getParameter<double>("minLeptonDrSeparation"))
 
 {
-   //edm::Service<TFileService> fs;
-   
    ///register the input collections	
    inputJetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputJetsCollTag"));
    inputLeptonsOneToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsOneCollTag"));
    inputLeptonsTwoToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsTwoCollTag"));
 
    ///register the collections which are added to the event
-   produces<edm::OwnVector<reco::Candidate> >(outputCollName);
+   produces<edm::OwnVector<reco::Candidate> >(outputCollOneName);
+   produces<edm::OwnVector<reco::Candidate> >(outputCollTwoName);
+   produces<edm::OwnVector<reco::Candidate> >(outputCollThreeName);
 
 }
 
@@ -284,55 +338,44 @@ applyLeptonJetDrCutMixedLeptonFlavor::produce(edm::Event& iEvent, const edm::Eve
    std::cout<<"made handles to input collections"<<std::endl;
 #endif
 
-   ///make an empty output collection to eventually hold jets, and a pointer to this collection
-   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjColl(new edm::OwnVector<reco::Candidate>());
+   ///make empty output collections to hold leptons and jets, and pointers to these collections
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjOneColl(new edm::OwnVector<reco::Candidate>());	///leptonsOne
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjTwoColl(new edm::OwnVector<reco::Candidate>());	///leptonsTwo
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjThreeColl(new edm::OwnVector<reco::Candidate>());	///jets
 
-   ///find the two highest pT, separated leptons whose dilepton mass is > some threshold, and assign const_iterators to these two leptons
-   edm::OwnVector<reco::Candidate>::const_iterator leadLeptonOne=inputLeptonsOneColl->end(), leadLeptonTwo=inputLeptonsTwoColl->end();
-   findLeadingAndSubleading(leadLeptonOne, inputLeptonsOneColl, leadLeptonTwo, inputLeptonsTwoColl, true);
-   if(leadLeptonOne==inputLeptonsOneColl->end() || leadLeptonTwo==inputLeptonsTwoColl->end() ){
-	   iEvent.put(outputObjColl, outputCollName);
-	   return;
-   }
+   typedef edm::OwnVector<reco::Candidate>::const_iterator recoCandIt;
+   recoCandIt leadJet = inputJetsColl->end(), subleadJet = inputJetsColl->end();
+   findLeadingAndSubleading(leadJet, subleadJet, inputJetsColl, false);
 
-   ///now that the two hardest, separated leptons have been found (one from each input lepton collection)
-   ///two const_iterators should be declared and initialized to const_iterators tied to the two hardest leptons
-   edm::OwnVector<reco::Candidate>::const_iterator leadLepton, subleadLepton;	///< use these const_iterators for further analysis
-   if(leadLeptonOne->pt() > leadLeptonTwo->pt() ){
-	   leadLepton = leadLeptonOne;
-	   subleadLepton = leadLeptonTwo;
-   }
-   else{
-	   leadLepton = leadLeptonTwo;
-	   subleadLepton = leadLeptonOne;
-   }
+   if(leadJet == inputJetsColl->end() || subleadJet == inputJetsColl->end()) return;
 
-#ifdef DEBUG
-   std::cout<<"declared and initialized leadLepton and subleadLepton iterators"<<std::endl;
-#endif
+   ///add the two leading jets to the outputObjThreeColl
+   outputObjThreeColl->push_back(*leadJet);
+   outputObjThreeColl->push_back(*subleadJet);
    
+   ///loop over all the leptons in inputLeptonsOneColl, and inputLeptonsTwoColl using two for loops
+   ///save the leptons from both input collections which are separated from the two leading jets from inputJetsColl into two output colls
+   ///inputJetsColl has objects which have already seen the pT, eta, and ID filters
+   for(recoCandIt lOne=inputLeptonsOneColl->begin(); lOne!=inputLeptonsOneColl->end(); lOne++){
+	   double leadJetdRseparation = deltaR(leadJet->eta(),leadJet->phi(),lOne->eta(),lOne->phi());
+	   double subleadJetdRseparation = deltaR(subleadJet->eta(),subleadJet->phi(),lOne->eta(),lOne->phi());
+	   if(leadJetdRseparation > dRSeparation && subleadJetdRseparation > dRSeparation) outputObjOneColl->push_back(*lOne);
+   }///end loop over lOnes in inputLeptonsOneColl
 
-   ///for each possible jet object, check that the jet is at least dRSeparation away from the two hardest leptons which
-   ///have dilepton mass > some threshold 
-   for(edm::OwnVector<reco::Candidate>::const_iterator jetIt=inputJetsColl->begin();jetIt!=inputJetsColl->end(); jetIt++){
-	   double dRleadLepton=deltaR(jetIt->eta(),jetIt->phi(),leadLepton->eta(),leadLepton->phi());
-	   double dRsubleadLepton=deltaR(jetIt->eta(),jetIt->phi(),subleadLepton->eta(),subleadLepton->phi());
-	   
-	   if(dRleadLepton > dRSeparation){
-		   if(dRsubleadLepton > dRSeparation){
-			   outputObjColl->push_back(*jetIt);
-		   }///end filter on dRsubleadLepton > dRSeparation
-	   }///end filter on dRleadLepton > dRSeparation
-   
-   }///end loop over reco::Candidate leptons
-
+   for(recoCandIt lTwo=inputLeptonsTwoColl->begin(); lTwo!=inputLeptonsTwoColl->end(); lTwo++){
+	   double leadJetdRseparation = deltaR(leadJet->eta(),leadJet->phi(),lTwo->eta(),lTwo->phi());
+	   double subleadJetdRseparation = deltaR(subleadJet->eta(),subleadJet->phi(),lTwo->eta(),lTwo->phi());
+	   if(leadJetdRseparation > dRSeparation && subleadJetdRseparation > dRSeparation) outputObjTwoColl->push_back(*lTwo);
+   }///end loop over lTwos in inputLeptonsTwoColl
 
 #ifdef DEBUG
    std::cout<<"about to put collection of reco::Candidate objects into root file"<<std::endl;
 #endif
   
-   ///now put the collection of matched higher level reco::Candidate objects into the event
-   iEvent.put(outputObjColl, outputCollName);
+   ///now put the collections of reco::Candidate objects into the event
+   iEvent.put(outputObjOneColl, outputCollOneName);
+   iEvent.put(outputObjTwoColl, outputCollTwoName);
+   iEvent.put(outputObjThreeColl, outputCollThreeName);
  
 }
 

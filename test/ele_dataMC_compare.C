@@ -15,6 +15,7 @@
 
 //#define DEBUG
 #define PrintIntegral
+#define CHKTTBAR
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
@@ -26,15 +27,18 @@ void ele_dataMC_compare(){
 #ifdef DEBUG
 	std::cout<<"in ele_dataMC_compare()"<<std::endl;
 #endif
-
+	
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_50ns_skims_low_dilepton_and_fourObj_mass_eejj/";
 	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_50ns_skim_low_mass_region_eejj.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");//ttbar
+	//TFile * hfile1 = new TFile(directory+"analyzed_TTJets_50ns_skim_low_mass_region_eejj.root");//ttbar
+	TFile * hfile1 = new TFile(directory+"analyzed_TTOnly_PowhegPythia_50ns_skim_low_mass_region_eejj.root");//ttbar
 	TFile * hfile3 = new TFile(directory+"analyzed_WZ_50ns_skim_low_mass_region_eejj.root");//wz
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_50ns_skim_low_mass_region_eejj.root");//zz
 	TFile * hfile5 = new TFile(directory+"analyzed_WJets_50ns_skim_low_mass_region_eejj.root");//wjets
 
 	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_low_mass_region_eejj_2015BandC.root");//data
+	//TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_25ns_skim_low_mass_region_eejj.root");//data
+
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -166,6 +170,7 @@ void ele_dataMC_compare(){
 	Fill_Histo(histos[5],tree_data,PUW_data,false,true);	///real data
 
 	Float_t intLumi = 64.11;	///50ns from Run2015B and 2015C
+	//Float_t intLumi = 15.48;	///25ns from Run2015C
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -173,24 +178,34 @@ void ele_dataMC_compare(){
 #endif
 		Double_t bkgndIntegral = 0;	///< integral of all bkgnd MC histos
 		
-		//histos[0][i]->Scale(6025.2*(intLumi)/19925500);	///aMC@NLO DYJets
-		histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets
+		//histos[0][i]->Scale(6025.2*(intLumi)/19925500);	///aMC@NLO DYJets 50ns
+		histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets 50ns
+		//histos[0][i]->Scale(6025.2*(intLumi)/9052671);	///madgraph DYJets 25ns
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
-		histos[1][i]->Scale(815.96*(intLumi)/4994250);
+		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	///aMCatNLO ttBar to all 50ns
+		histos[1][i]->Scale(831.76*(intLumi)/19665194);	///powheg-pythia ttBar to all 50ns
+		//histos[1][i]->Scale(831.76*(intLumi)/19899500);	///powheg-pythia ttBar to all 25ns
+		//histos[1][i]->Scale(57.35*(intLumi)/24512786);	///ttBar to dilepton 25ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
-		
-		histos[2][i]->Scale(66.1*(intLumi)/996920);
+#ifdef CHKTTBAR
+		std::cout<<"ee chnl ttBar integral =\t"<< histos[1][i]->Integral() <<std::endl;
+#endif
+	
+		histos[2][i]->Scale(66.1*(intLumi)/996920);	///WZ to all 50ns
+		//histos[2][i]->Scale(5.52*(intLumi)/31054519);	///WZ to 2L2Q 25ns
 		histos[2][i]->SetFillColor(4);
 		bkgndIntegral += histos[2][i]->Integral();
 	
-		histos[3][i]->Scale(15.4*(intLumi)/998848);
+		histos[3][i]->Scale(15.4*(intLumi)/998848);		///ZZ to all 50ns
+		//histos[3][i]->Scale(3.38*(intLumi)/18898680);		///ZZ to 2L2Q 25ns
 		histos[3][i]->SetFillColor(7);
 		bkgndIntegral += histos[3][i]->Integral();
 		
-		histos[4][i]->Scale(6.15e4*(intLumi)/24089991);
+		histos[4][i]->Scale(6.15e4*(intLumi)/24089991);		///WJetsToLNu 50ns
+		//histos[4][i]->Scale(6.15e4*(intLumi)/24151270);		///WJetsToLNu 25ns
 		histos[4][i]->SetFillColor(6);
 		bkgndIntegral += histos[4][i]->Integral();
 	
@@ -263,18 +278,17 @@ void ele_dataMC_compare(){
 		leg->Draw();
 		
 		mycanvas->Update();
-		//TString dyJetsMC = "_aMCNLODYJets";
-		TString dyJetsMC = "_madgraphDYJets";
+		TString tag = "_madgraphDYJets_powhegPythiaTT_updatedLJdeltaRcut_50ns";
 		
-		TString fn = "tempPlots/electrons/";
-		TString fn_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_50nsRun2015BandC.pdf";
-		TString fn_png = fn + fnames[icanvas].Data() + dyJetsMC + "_50nsRun2015BandC.png";
+		TString fn = "tempPlots/electrons50ns/";
+		TString fn_pdf = fn + fnames[icanvas].Data() + tag + ".pdf";
+		TString fn_png = fn + fnames[icanvas].Data() + tag + ".png";
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
 		mycanvas->Update();
-		TString fn_log_pdf = fn + fnames[icanvas].Data() + dyJetsMC + "_50nsRun2015BandC_log.pdf";
-		TString fn_log_png = fn + fnames[icanvas].Data() + dyJetsMC + "_50nsRun2015BandC_log.png";
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_log.png";
 		mycanvas->Print(fn_log_pdf.Data());
 		mycanvas->Print(fn_log_png.Data());
 		mycanvas->Close();

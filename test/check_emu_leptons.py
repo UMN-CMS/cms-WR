@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("RECOEMu")
 
 ## load the filters, producers, and sequences defined in other config file fragments
-process.load('ExoAnalysis.cmsWR.recoEMuChannelUnmatchedModules_cff')
+process.load('ExoAnalysis.cmsWR.recoEMuChannelSidebandUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")

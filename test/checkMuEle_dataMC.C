@@ -14,7 +14,8 @@
 #include <string>
 
 //#define DEBUG
-#define PrintIntegral
+//#define PrintIntegral
+#define CHKTTBAR
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
@@ -60,9 +61,9 @@ void checkMuEle_dataMC(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,25,50,550);
-	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,25,0,250);
-	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,25,0,250);
+	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,20,50,250);
+	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,22,0,220);
+	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,13,0,130);
 	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
 	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,20,-3.,3.);
 	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,20,-3.15,3.15);
@@ -165,6 +166,9 @@ void checkMuEle_dataMC(){
 		histos[1][i]->Scale(57.35*(intLumi)/24512786);		//ttBar to dilepton 25ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
+#ifdef CHKTTBAR
+		std::cout<<"emu chnl ttBar integral =\t"<< histos[1][i]->Integral() <<std::endl;
+#endif
 		
 		//histos[3][i]->Scale(66.1*(intLumi)/996920);		//WZ to all 50ns
 		histos[3][i]->Scale(5.52*(intLumi)/31054519);		//WZto2L2Q 25ns

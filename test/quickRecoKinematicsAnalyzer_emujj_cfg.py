@@ -5,7 +5,7 @@ process = cms.Process("RECOEMuJJ")
 #this is a copy of bkgndElectronChannel_cfg.py
 
 ## load the filters, producers, and sequences defined in other config file fragments
-process.load('ExoAnalysis.cmsWR.recoEMuChannelUnmatchedModules_cff')
+process.load('ExoAnalysis.cmsWR.recoEMuChannelSidebandUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -47,15 +47,20 @@ process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 		minDileptonMass = cms.double(-1),
 		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),#electrons
 		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),#muons
-		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
-	
+		jetsCollection = cms.InputTag("emuBareRecoJet"),
 		)
 
+#the unmatchedAnalyzerForMixed... will always pick the two leading jets from the input collection
+#this is also done in the recoEMuChannelSidebandUnmatchedModules_cff so that only the
+#two leading jets are used in the four object mass cut
+
+#use emuBareRecoJet here so that the jet multiplicity indicates the number of jets
+#with pt>40, |eta| < 2.5, and pass the loose jet ID
 process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
 		treeName = cms.string("recoObjectsWithPtEtaCuts"),
-		leptonsOneCollection = cms.InputTag("emuBareRecoLeptonOne"),#electrons
-		leptonsTwoCollection = cms.InputTag("emuBareRecoLeptonTwo"),#muons
-		jetsCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
+		leptonsOneCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","leptonOnesPassingDrSeparationCut"),#electrons
+		leptonsTwoCollection = cms.InputTag("emuBareRecoJetLeptonDrSeparation","leptonTwosPassingDrSeparationCut"),#muons
+		jetsCollection = cms.InputTag("emuBareRecoJet"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1)
 		)
@@ -94,8 +99,9 @@ process.unmatchedBkgndRecoPath = cms.Path(
 		*process.wrTunePMuProdSeq
 		*process.isHighPtMuSeq
 		*process.emuBareRecoParticleSeq
-		*process.emuBareRecoDrSeparationSeq
 		*process.recoAnalyzerOne
+		*process.emuBareRecoDrSeparationSeq
+		*process.emuPrepLeptonsAfterDrCutSeq
 		*process.emuLeadLeptonAndLowMassSeq
 		*process.recoAnalyzerTwo
 		#*process.recoDileptonCandidateSeq

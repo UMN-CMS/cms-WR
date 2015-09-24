@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("RECOEEJJUnmatched")
 
 ## load the filters, producers, and sequences defined in other config file fragments
-process.load('ExoAnalysis.cmsWR.recoElectronChannelUnmatchedModules_cff')
+process.load('ExoAnalysis.cmsWR.recoElectronChannelSignalUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -20,10 +20,10 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 #################################
 #Filters
-process.trigSelector = cms.EDFilter("triggerFilter",
-		checkThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1"),
-		alsoCheckThisHltPath = cms.string("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1")
-		)
+from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
+process.trigFilt = hltHighLevel.clone()
+process.trigFilt.HLTPaths = ['HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*']
+process.trigFilt.andOr = True  #if True, then multiple HLT paths will be combined with OR logic
 
 
 #################################
@@ -71,28 +71,20 @@ process.unmatchedSignalRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
 		minDileptonMass = cms.double(200.0)
 		)
 
-#process.investigateTrigger = cms.EDAnalyzer('triggerAnalyzer',
-#		treeName = cms.string("electronChannelSignalHLT"),
-#		commaSeparatedHltPaths = cms.string(),
-#		trigResultsColl = cms.InputTag("TriggerResults","","HLT"),
-#		trigObjectStandAloneColl = cms.InputTag("selectedPatTrigger")
-#		)
-
-
 #################################
 #Paths
 process.unmatchedRecoSignalPath = cms.Path(
-		process.trigSelector
+		process.trigFilt
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
-		*process.unmatchedSignalRecoAnalyzerOne
+		#*process.unmatchedSignalRecoAnalyzerOne
 		*process.ptEtaRestrictedSeq
-		*process.unmatchedSignalRecoAnalyzerTwo
+		#*process.unmatchedSignalRecoAnalyzerTwo
 		*process.recoDileptonCandidateSeq
-		*process.unmatchedSignalRecoAnalyzerThree
+		#*process.unmatchedSignalRecoAnalyzerThree
 		*process.recoDrSeparationSeq
-		*process.unmatchedSignalRecoAnalyzerFour
+		#*process.unmatchedSignalRecoAnalyzerFour
 		*process.recoFourObjMassSeq
 		*process.unmatchedSignalRecoAnalyzerFive
 		)

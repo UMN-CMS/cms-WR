@@ -5,7 +5,7 @@ process = cms.Process("RECOEEJJ")
 #this is a copy of bkgndElectronChannel_cfg.py
 
 ## load the filters, producers, and sequences defined in other config file fragments
-process.load('ExoAnalysis.cmsWR.recoElectronChannelUnmatchedModules_cff')
+process.load('ExoAnalysis.cmsWR.recoElectronChannelSidebandUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")

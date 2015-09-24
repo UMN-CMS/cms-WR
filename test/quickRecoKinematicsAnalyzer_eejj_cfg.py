@@ -2,10 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("RECOEEJJ")
 
-#this is a copy of bkgndElectronChannel_cfg.py
-
 ## load the filters, producers, and sequences defined in other config file fragments
-process.load('ExoAnalysis.cmsWR.recoElectronChannelUnmatchedModules_cff')
+process.load('ExoAnalysis.cmsWR.recoElectronChannelSidebandUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -42,16 +40,21 @@ process.trigFilt.andOr = True  #if True, then multiple HLT paths will be combine
 ## analyze the kinematic distributions of lepton and jet candidates in bkgnd evts with these analyzers
 process.recoAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("recoObjectsNoCuts"),
+		jetsCollection = cms.InputTag("bareRecoJet"),
 		leptonsCollection = cms.InputTag("bareRecoLepton"),
-		jetsCollection = cms.InputTag("bareRecoJetLeptonDrSeparation","bareJetsPassingDrSeparationCut"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
 		)
 
+#the unmatchedAnalyzer.cc will always pick the two leading jets from the input collection
+#this is also done in the recoElectronChannelSidebandUnmatchedModules_cff so that only the
+#two leading jets are used in the four object mass cut
+#use bareRecoJet here so that the jet multiplicity indicates the number of jets
+#with pt>40, |eta| < 2.5, and pass the loose jet ID
 process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("recoObjectsWithPtEtaCuts"),
 		leptonsCollection = cms.InputTag("ptEtaRestrictedRecoLeptons"),
-		jetsCollection = cms.InputTag("ptEtaRestrictedRecoJets"),
+		jetsCollection = cms.InputTag("bareRecoJet"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1)
 		)
@@ -88,8 +91,8 @@ process.unmatchedBkgndRecoPath = cms.Path(
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
-		*process.bareRecoDrSeparationSeq
 		*process.recoAnalyzerOne
+		*process.bareRecoDrSeparationSeq
 		*process.ptEtaRestrictedSeq
 		*process.lowMassLLJJObjectSeq
 		*process.recoAnalyzerTwo

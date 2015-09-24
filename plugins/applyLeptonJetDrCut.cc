@@ -143,26 +143,6 @@ class applyLeptonJetDrCut : public edm::EDProducer {
 	  }///end findLeadingAndSubleading()
 
 
-	  /**this fxn checks that the object pointed to by objIt does not already exist
-	   * in the collection pointed at by ptrToObjColl
-	   * returns false if objIt already exists in the collection pointed to by ptrToObjColl
-	   */
-	  bool isNotDuplicate(edm::OwnVector<reco::Candidate>::const_iterator & objIt,
-			  std::auto_ptr<edm::OwnVector<reco::Candidate> >& ptrToObjColl){
-		  if(ptrToObjColl->size()==0) return true;
-		  for(unsigned int i=0; i<ptrToObjColl->size(); i++){
-#ifdef DEBUG
-			  std::cout<<"about to check if reco::Candidate object has already been added to another collection"<<std::endl;
-			  std::cout<<"size of other collection = \t"<< ptrToObjColl->size() <<std::endl;
-#endif
-			  if(objIt->pt()==(*ptrToObjColl)[i].pt() && objIt->eta()==(*ptrToObjColl)[i].eta() 
-					  && objIt->phi()==(*ptrToObjColl)[i].phi()) return false;
-
-		  }///end loop over objects in collection pointed to by ptrToObjColl
-		  return true;
-	  }///end isNotDuplicate()
-
-
    private:
       virtual void beginJob() override;
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
@@ -178,6 +158,7 @@ class applyLeptonJetDrCut : public edm::EDProducer {
 	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsToken;	///< leptons which have passed dilepton mass and earlier cuts
 
 	  std::string outputCollName;
+	  std::string outputTwoCollName;
 	  double dRSeparation;	///< minimum dR separation btwn a lepton and jet
 	  double minDileptonMass;	///< min dilepton mass
 
@@ -196,7 +177,8 @@ class applyLeptonJetDrCut : public edm::EDProducer {
 // constructors and destructor
 //
 applyLeptonJetDrCut::applyLeptonJetDrCut(const edm::ParameterSet& iConfig):
-	outputCollName(iConfig.getParameter<std::string>("outputJetsCollectionName")),
+	outputCollName(iConfig.getParameter<std::string>("outputLeptonsCollectionName")),
+	outputTwoCollName(iConfig.getParameter<std::string>("outputJetsCollectionName")),
 	dRSeparation(iConfig.getParameter<double>("minDrSeparation")),
 	minDileptonMass(iConfig.getParameter<double>("minDileptonMassCut"))
 
@@ -210,6 +192,7 @@ applyLeptonJetDrCut::applyLeptonJetDrCut(const edm::ParameterSet& iConfig):
 
    ///register the collections which are added to the event
    produces<edm::OwnVector<reco::Candidate> >(outputCollName);
+   produces<edm::OwnVector<reco::Candidate> >(outputTwoCollName);
 
 }
 
@@ -248,46 +231,37 @@ applyLeptonJetDrCut::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    std::cout<<"made handles to input collections"<<std::endl;
 #endif
 
-   ///make an empty output collection to eventually hold jets, and a pointer to this collection
-   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjColl(new edm::OwnVector<reco::Candidate>());
+   ///make two empty output collections to hold leptons jets, and pointers to these collections
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjColl(new edm::OwnVector<reco::Candidate>());	///leptons
+   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputObjTwoColl(new edm::OwnVector<reco::Candidate>());	///jets
 
-   ///find the two highest pT leptons whose dilepton mass is > some threshold, and assign const_iterators to these two leptons
-   edm::OwnVector<reco::Candidate>::const_iterator leadLepton=inputLeptonsColl->end(), subleadLepton=inputLeptonsColl->end();
-   findLeadingAndSubleading(leadLepton, subleadLepton, inputLeptonsColl, true);
+   ///loop over all input leptons, and for each lepton loop over the two leading input jets 
+   ///the input jets have already passed pT, eta, and ID filters
+   ///add leptons to the output collection which are separated from all input jets by dR > 0.4
+   ///add two leading jets to a separate output collection
+   typedef edm::OwnVector<reco::Candidate>::const_iterator recoCandIt;
+   recoCandIt leadJet = inputJetsColl->end(), subleadJet = inputJetsColl->end();
+   findLeadingAndSubleading(leadJet, subleadJet, inputJetsColl, false);
 
-   ///if leadLepton or subleadLepton is still equal to end(), then add the empty collection outputObjColl to the
-   ///event record, and leave the produce method 
-   if(leadLepton==inputLeptonsColl->end() || subleadLepton==inputLeptonsColl->end() ){
-	   iEvent.put(outputObjColl, outputCollName);
-	   return;
-   }
+   if(leadJet == inputJetsColl->end() || subleadJet == inputJetsColl->end()) return;
 
-#ifdef DEBUG
-   if(leadLepton==inputLeptonsColl->end()) std::cout<<"lead lepton iterator points to end() element of inputLeptonsColl"<<std::endl;
-   if(subleadLepton==inputLeptonsColl->end()) std::cout<<"sublead lepton iterator points to end() element of inputLeptonsColl"<<std::endl;
+   ///add the two leading jets to the outputObjTwoColl
+   outputObjTwoColl->push_back(*leadJet);
+   outputObjTwoColl->push_back(*subleadJet);
 
-#endif
-
-   ///for each possible jet object, check that the jet is at least dRSeparation away from the two hardest leptons which have dilepton mass > 200
-   for(edm::OwnVector<reco::Candidate>::const_iterator jetIt=inputJetsColl->begin();jetIt!=inputJetsColl->end(); jetIt++){
-	   double dRleadLepton=deltaR(jetIt->eta(),jetIt->phi(),leadLepton->eta(),leadLepton->phi());
-	   double dRsubleadLepton=deltaR(jetIt->eta(),jetIt->phi(),subleadLepton->eta(),subleadLepton->phi());
-	   
-	   if(dRleadLepton > dRSeparation){
-		   if(dRsubleadLepton > dRSeparation){
-			   outputObjColl->push_back(*jetIt);
-		   }///end filter on dRsubleadLepton > dRSeparation
-	   }///end filter on dRleadLepton > dRSeparation
-   
-   }///end loop over reco::Candidate leptons
-
+   for(recoCandIt lepton=inputLeptonsColl->begin(); lepton!=inputLeptonsColl->end(); lepton++){
+	   double leadJetdRseparation = deltaR(leadJet->eta(),leadJet->phi(),lepton->eta(),lepton->phi());
+	   double subleadJetdRseparation = deltaR(subleadJet->eta(),subleadJet->phi(),lepton->eta(),lepton->phi());
+	   if(leadJetdRseparation > 0.4 && subleadJetdRseparation > 0.4) outputObjColl->push_back(*lepton);
+   }///end loop over input leptons
 
 #ifdef DEBUG
-   std::cout<<"about to put collection of reco::Candidate objects into root file"<<std::endl;
+   std::cout<<"about to put collections of reco::Candidate objects into root file"<<std::endl;
 #endif
   
    ///now put the collection of matched higher level reco::Candidate objects into the event
    iEvent.put(outputObjColl, outputCollName);
+   iEvent.put(outputObjTwoColl, outputTwoCollName);
  
 }
 
