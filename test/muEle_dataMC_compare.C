@@ -37,7 +37,7 @@ void muEle_dataMC_compare(){
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_25ns_skim_low_dilepton_mass_region_emujj.root");//zz
 	TFile * hfile5 = new TFile(directory+"analyzed_WJets_25ns_skim_low_dilepton_mass_region_emujj.root");//wjets
 
-	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_25ns_skim_low_dilepton_mass_region_emujj.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_25ns_skim_low_dilepton_mass_region_emujj_Run2015CandD.root");//data
 	//TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_50ns_skim_low_dilepton_mass_region_emujj_Run2015BandC.root");//data
 
 
@@ -176,7 +176,7 @@ void muEle_dataMC_compare(){
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
 	//Float_t intLumi = 64.11;	///50ns Run2015B and C
-	Float_t intLumi = 15.48;	///25ns Run2015C
+	Float_t intLumi = 166.937;	///25ns Run2015C and 2015D
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -193,6 +193,7 @@ void muEle_dataMC_compare(){
 		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	///ttBar to all 50ns
 		//histos[1][i]->Scale(57.35*(intLumi)/24512786);	//TTBarTo2L2Q 25ns
 		histos[1][i]->Scale(831.76*(intLumi)/19899500);	///powheg-pythia ttBar to all 25ns
+		//histos[1][i]->Scale(831.76*(intLumi)/19665194);	///powheg-pythia ttBar to all 50ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 #ifdef CHKTTBAR
@@ -226,18 +227,18 @@ void muEle_dataMC_compare(){
 		ths[i]->Add(histos[4][i]);
 		ths[i]->Add(histos[3][i]);
 		ths[i]->Add(histos[5][i]);
-		ths[i]->Add(histos[1][i]);
 		ths[i]->Add(histos[0][i]);
+		ths[i]->Add(histos[1][i]);
 		
 		///rescale the max y value to make room for the legend
-		Double_t oldMax = ( (ths[i]->GetMaximum() > histos[6][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[6][i]->GetMaximum() );
-		ths[i]->SetMaximum(20*oldMax);
-		histos[6][i]->SetMaximum(20*oldMax);
+		//Double_t oldMax = ( (ths[i]->GetMaximum() > histos[6][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[6][i]->GetMaximum() );
+		//ths[i]->SetMaximum(20*oldMax);
+		//histos[6][i]->SetMaximum(20*oldMax);
 	}
 
 
 	///make a legend with appropriate labels for MC processes
-	TLegend *leg = new TLegend( 0.62, 0.60, 0.89, 0.83 ) ;
+	TLegend *leg = new TLegend( 0.62, 0.64, 0.89, 0.87 ) ;
 	leg->SetNColumns(2);
 	leg->AddEntry( histos[6][0], "Data" ,"ep") ;
 	leg->AddEntry( histos[0][0], "DY" ) ; 
@@ -250,7 +251,7 @@ void muEle_dataMC_compare(){
 
 	TString xtitles[] = {"M_{EMuJJ} [GeV]","M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","electron #eta","muon #eta","leading jet #eta","subleading jet #eta","electron #phi","muon #phi","leading jet #phi","subleading jet #phi","number of leptons","number of jets","number of vertices","#DeltaR ele muon","#DeltaR lead jet sublead jet","#DeltaR ele lead jet","#DeltaR ele sublead jet","#DeltaR muon lead jet","#DeltaR muon sublead jet","M_{JJ} [GeV]","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary M_{EMuJJ}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Sublead Jet #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Lead Jet #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Sublead Jet #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of jets  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Lead Jet Sublead Jet  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Ele Lead Jet  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Ele Sublead Jet  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Muon Lead Jet  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Muon Sublead Jet  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb"};
+	TString titles[] = {"CMS Preliminary M_{EMuJJ}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Sublead Jet #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Lead Jet #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Sublead Jet #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of jets  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Lead Jet Sublead Jet  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Ele Lead Jet  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Ele Sublead Jet  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Muon Lead Jet  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Muon Sublead Jet  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb"};
 
 	TString fnames[] = {"MEMuJJ","MEMu","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","nelectrons","nmuons"};
 
@@ -266,6 +267,12 @@ void muEle_dataMC_compare(){
 		std::cout<<"made TCanvas and initialized a pointer to it"<<std::endl;
 #endif
 		mycanvas->cd();
+	
+		///rescale vertical axis for linear scale plot
+		Double_t oldMax = ( (ths[icanvas]->GetMaximum() > histos[6][icanvas]->GetMaximum() ) ? ths[icanvas]->GetMaximum() : histos[6][icanvas]->GetMaximum() );
+		ths[icanvas]->SetMaximum(1.5*oldMax);
+		histos[6][icanvas]->SetMaximum(1.5*oldMax);
+
 		ths[icanvas]->Draw("hist");
 		histos[6][icanvas]->Draw("epsame");
 		mycanvas->Update();
@@ -287,7 +294,7 @@ void muEle_dataMC_compare(){
 		leg->Draw();
 		
 		mycanvas->Update();
-		TString tag = "_powhegPythiaTT_updatedLJdeltaRcut_25ns";
+		TString tag = "_25ns";
 		
 		TString fn = "tempPlots/muEle25ns/";
 		TString fn_pdf = fn + fnames[icanvas].Data() + tag + ".pdf";
@@ -295,6 +302,14 @@ void muEle_dataMC_compare(){
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
+
+		///rescale vertical axis for log scale plot
+		ths[icanvas]->SetMaximum(27*oldMax);
+		histos[6][icanvas]->SetMaximum(27*oldMax);
+		ths[icanvas]->SetMinimum(0.1);
+		histos[6][icanvas]->SetMinimum(0.1);
+
+		leg->Draw();
 		mycanvas->Update();
 		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_log.pdf";
 		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_log.png";

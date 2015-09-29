@@ -14,7 +14,7 @@
 #include <string>
 
 //#define DEBUG
-//#define PrintIntegral
+#define PrintIntegral
 #define CHKTTBAR
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
@@ -36,12 +36,12 @@ void eleDataMC_checkZee_compare(){
 	TString fileTag = "skim_25ns_hasTwoHEEP.root";
 	
 	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_"+fileTag);//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTJets_"+fileTag);//ttbar
+	TFile * hfile1 = new TFile(directory+"analyzed_TTOnly_PowhegPythia_"+fileTag);//ttbar
 	TFile * hfile3 = new TFile(directory+"analyzed_WZ_"+fileTag);//wz
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_"+fileTag);//zz
 	TFile * hfile5 = new TFile(directory+"analyzed_WJets_"+fileTag);//wjets
 
-	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_skim_25ns_hasTwoHEEP.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_skim_25ns_hasTwoHEEP_Run2015CandD.root");//data
 	//TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_check_Zee_peak_twoHEEP_noHLT_Run2015BandC.root");//data
 
 #ifdef DEBUG
@@ -144,7 +144,7 @@ void eleDataMC_checkZee_compare(){
 
 	Fill_Histo(histos[5],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = 15.48;	///25ns Run2015C integrated lumi
+	Float_t intLumi = 166.937;	///25ns Run2015C and D
 	//Float_t intLumi = 64.11;	///50ns Run2015B and C integrated lumi
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
@@ -158,8 +158,11 @@ void eleDataMC_checkZee_compare(){
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
-		histos[1][i]->Scale(57.35*(intLumi)/24512786);	//TTBarTo2L2Q 25ns
+		//histos[1][i]->Scale(57.35*(intLumi)/24512786);	//TTBarTo2L2Q 25ns
 		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	//TTBar to all 50ns
+		histos[1][i]->Scale(831.76*(intLumi)/19899500);	///powheg-pythia ttBar to all 25ns
+		//histos[1][i]->Scale(831.76*(intLumi)/19665194);	///powheg-pythia ttBar to all 50ns
+	
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 #ifdef CHKTTBAR
@@ -194,11 +197,11 @@ void eleDataMC_checkZee_compare(){
 		ths[i]->Add(histos[0][i]);
 		
 		///rescale the max y value to make room for the legend
-		Double_t oldMax = ( (ths[i]->GetMaximum() > histos[5][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[5][i]->GetMaximum() );
-		ths[i]->SetMaximum(20*oldMax);
-		histos[5][i]->SetMaximum(20*oldMax);
-		ths[i]->SetMinimum(0.2);
-		histos[5][i]->SetMinimum(0.2);
+		//Double_t oldMax = ( (ths[i]->GetMaximum() > histos[5][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[5][i]->GetMaximum() );
+		//ths[i]->SetMaximum(20*oldMax);
+		//histos[5][i]->SetMaximum(20*oldMax);
+		//ths[i]->SetMinimum(0.2);
+		//histos[5][i]->SetMinimum(0.2);
 	}
 
 
@@ -215,7 +218,7 @@ void eleDataMC_checkZee_compare(){
 
 	TString xtitles[] = {"M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading electron #phi","subleading electron #phi","number of electrons","number of vertices","#DeltaR lead ele sublead ele"};
 	
-	TString titles[] = {"CMS Preliminary DiElectron Mass  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of electrons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV 25ns  #intlumi = 15.48/pb"};
+	TString titles[] = {"CMS Preliminary DiElectron Mass  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of electrons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV 25ns  #intlumi = 166.94/pb"};
 
 	TString fnames[] = {"MEE","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2"};
 
@@ -234,6 +237,12 @@ void eleDataMC_checkZee_compare(){
 		std::cout<<"made TCanvas and initialized a pointer to it"<<std::endl;
 #endif
 		mycanvas->cd();
+	
+		///rescale vertical axis for linear scale plot
+		Double_t oldMax = ( (ths[icanvas]->GetMaximum() > histos[5][icanvas]->GetMaximum() ) ? ths[icanvas]->GetMaximum() : histos[5][icanvas]->GetMaximum() );
+		ths[icanvas]->SetMaximum(1.2*oldMax);
+		histos[5][icanvas]->SetMaximum(1.2*oldMax);
+	
 		ths[icanvas]->Draw("hist");
 		histos[5][icanvas]->Draw("epsame");
 		mycanvas->Update();
@@ -263,12 +272,20 @@ void eleDataMC_checkZee_compare(){
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
+
+		///rescale vertical axis for log scale plot
+		ths[icanvas]->SetMaximum(22*oldMax);
+		histos[5][icanvas]->SetMaximum(22*oldMax);
+		ths[icanvas]->SetMinimum(0.2);
+		histos[5][icanvas]->SetMinimum(0.2);
+
+		leg->Draw();
 		mycanvas->Update();
 		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_checkZee_log.pdf";
 		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_checkZee_log.png";
 		mycanvas->Print(fn_log_pdf.Data());
 		mycanvas->Print(fn_log_png.Data());
-		mycanvas->Close();
+		//mycanvas->Close();
 
 	}
 }///end eleDataMC_checkZee_compare()

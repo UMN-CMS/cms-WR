@@ -14,7 +14,7 @@
 #include <string>
 
 //#define DEBUG
-//#define PrintIntegral
+#define PrintIntegral
 #define CHKTTBAR
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
@@ -31,14 +31,14 @@ void checkMuEle_dataMC(){
 	//change 25ns to 50ns to swap btwn input data files
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_25ns_skims_check_emu/";
 	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_25ns_skim_check_emu_noHLT.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTBar_25ns_skim_check_emu_noHLT.root");//ttbar
+	TFile * hfile1 = new TFile(directory+"analyzed_TTOnly_PowhegPythia_25ns_skim_check_emu_noHLT.root");//ttbar
 	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEMuJJ_MWR_2600_MNu_1300_low_dilepton_mass.root");//wr signal MC, by default will not be plotted
 	TFile * hfile3 = new TFile(directory+"analyzed_WZ_25ns_skim_check_emu_noHLT.root");//wz
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_25ns_skim_check_emu_noHLT.root");//zz
 	TFile * hfile5 = new TFile(directory+"analyzed_WJets_25ns_skim_check_emu_noHLT.root");//wjets
 	
 	//TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_50ns_skim_oneHEEPandIsHighPtID_check_emu_noHLT_Run2015BandC.root");//data
-	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_25ns_skim_check_emu_noHLT.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_25ns_skim_check_emu_noHLT_Run2015CandD.root");//data
 
 
 
@@ -149,7 +149,7 @@ void checkMuEle_dataMC(){
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
 	//Float_t intLumi = 64.11;	//50ns Run2015B and C
-	Float_t intLumi = 15.48;	//25ns Run2015C
+	Float_t intLumi = 166.937;	//25ns Run2015C and 2015D
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -163,7 +163,9 @@ void checkMuEle_dataMC(){
 		bkgndIntegral += histos[0][i]->Integral();
 		
 		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	//ttBar to all 50ns
-		histos[1][i]->Scale(57.35*(intLumi)/24512786);		//ttBar to dilepton 25ns
+		//histos[1][i]->Scale(57.35*(intLumi)/24512786);		//ttBar to dilepton 25ns
+		histos[1][i]->Scale(831.76*(intLumi)/19899500);	///powheg-pythia ttBar to all 25ns
+		//histos[1][i]->Scale(831.76*(intLumi)/19665194);	///powheg-pythia ttBar to all 50ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 #ifdef CHKTTBAR
@@ -197,18 +199,18 @@ void checkMuEle_dataMC(){
 		ths[i]->Add(histos[4][i]);
 		ths[i]->Add(histos[3][i]);
 		ths[i]->Add(histos[5][i]);
-		ths[i]->Add(histos[1][i]);
 		ths[i]->Add(histos[0][i]);
+		ths[i]->Add(histos[1][i]);
 		
 		///rescale the max y value to make room for the legend
-		Double_t oldMax = ( (ths[i]->GetMaximum() > histos[6][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[6][i]->GetMaximum() );
-		ths[i]->SetMaximum(20*oldMax);
-		histos[6][i]->SetMaximum(20*oldMax);
+		//Double_t oldMax = ( (ths[i]->GetMaximum() > histos[6][i]->GetMaximum() ) ? ths[i]->GetMaximum() : histos[6][i]->GetMaximum() );
+		//ths[i]->SetMaximum(20*oldMax);
+		//histos[6][i]->SetMaximum(20*oldMax);
 	}
 
 
 	///make a legend with appropriate labels for MC processes
-	TLegend *leg = new TLegend( 0.62, 0.60, 0.89, 0.83 ) ;
+	TLegend *leg = new TLegend( 0.62, 0.64, 0.89, 0.87 ) ;
 	leg->SetNColumns(2);
 	leg->AddEntry( histos[6][0], "Data" ,"ep") ;
 	leg->AddEntry( histos[0][0], "DY" ) ; 
@@ -221,7 +223,7 @@ void checkMuEle_dataMC(){
 
 	TString xtitles[] = {"M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","electron #eta","muon #eta","electron #phi","muon #phi","number of leptons","number of vertices","#DeltaR ele muon","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 15.48/pb"};
+	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb"};
 
 	TString fnames[] = {"MEMu","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2","nelectrons","nmuons"};
 
@@ -237,6 +239,12 @@ void checkMuEle_dataMC(){
 		std::cout<<"made TCanvas and initialized a pointer to it"<<std::endl;
 #endif
 		mycanvas->cd();
+	
+		///rescale vertical axis for linear scale plot
+		Double_t oldMax = ( (ths[icanvas]->GetMaximum() > histos[6][icanvas]->GetMaximum() ) ? ths[icanvas]->GetMaximum() : histos[6][icanvas]->GetMaximum() );
+		ths[icanvas]->SetMaximum(1.2*oldMax);
+		histos[6][icanvas]->SetMaximum(1.2*oldMax);
+
 		ths[icanvas]->Draw("hist");
 		histos[6][icanvas]->Draw("epsame");
 		mycanvas->Update();
@@ -266,6 +274,14 @@ void checkMuEle_dataMC(){
 		mycanvas->Print(fn_pdf.Data());
 		mycanvas->Print(fn_png.Data());
 		mycanvas->SetLogy();
+		
+		///rescale vertical axis for log scale plot
+		ths[icanvas]->SetMaximum(22*oldMax);
+		histos[6][icanvas]->SetMaximum(22*oldMax);
+		ths[icanvas]->SetMinimum(0.1);
+		histos[6][icanvas]->SetMinimum(0.1);
+
+		leg->Draw();
 		mycanvas->Update();
 		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_log.pdf";
 		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_log.png";
