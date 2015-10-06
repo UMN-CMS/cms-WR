@@ -120,7 +120,8 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.options = cms.untracked.PSet(
-		wantSummary = cms.untracked.bool(True)
+		wantSummary = cms.untracked.bool(True),
+		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
 inputFiles = cms.untracked.vstring(options.files)
