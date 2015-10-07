@@ -64,7 +64,7 @@ process.unmatchedSignalRecoAnalyzerFour = cms.EDAnalyzer('unmatchedAnalyzer',
 		)
 
 process.unmatchedSignalRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
-		treeName = cms.string("testUnmatchedSignalRecoObjectsWithPtEtaDileptonMassDrAndFourObjMassCuts"),
+		treeName = cms.string("signalRecoObjectsWithAllCuts"),
 		leptonsCollection = cms.InputTag("recoFourObjMass","leadingLeptonsPassingFourObjMassCut"),
 		jetsCollection = cms.InputTag("recoFourObjMass","leadingJetsPassingFourObjMassCut"),
 		doDileptonMassCut = cms.bool(True),
@@ -78,12 +78,12 @@ process.unmatchedRecoSignalPath = cms.Path(
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
+		*process.bareRecoDrSeparationSeq
 		#*process.unmatchedSignalRecoAnalyzerOne
 		*process.ptEtaRestrictedSeq
 		#*process.unmatchedSignalRecoAnalyzerTwo
 		*process.recoDileptonCandidateSeq
 		#*process.unmatchedSignalRecoAnalyzerThree
-		*process.recoDrSeparationSeq
 		#*process.unmatchedSignalRecoAnalyzerFour
 		*process.recoFourObjMassSeq
 		*process.unmatchedSignalRecoAnalyzerFive

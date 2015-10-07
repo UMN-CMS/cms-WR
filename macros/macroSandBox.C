@@ -31,8 +31,9 @@
 
 using namespace std;
 
+#define signalRegionEEJJBkgnds
 //#define lowMassSkimmedBkgndOnRealData
-#define lowMassFlavorSidebandBkgndOnData
+//#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
 //#define DEBUG
@@ -157,6 +158,124 @@ map<string,vector<Float_t> > computePileupWeights(map<string,TChain*> bkgndChain
 	return wgtsMap;
 }///end computePileupWeights()
 
+/**
+ * use this fxn to overlay kinematic distributions from MC events using a THStack object
+ * similar to overlayPointsOnStackedHistos()
+ */
+void makeStackedHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap,TString treeCuts,Bool_t doLogYaxis){
+	TCanvas * canv = new TCanvas(canvName,canvName,700,700);
+	canv->cd();
+	if(doLogYaxis) canv->SetLogy(1);
+	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
+	map<string,TH1F*> stackedHistoMap;	///< links TString keys to TH1F histos which will ultimately be stacked
+	
+	///loop over elements in inputChainMap
+	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
+		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
+		string uncutHistoName(chMapIt->first);
+		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
+		///and store the substring in the new string object
+		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
+		string afterLastChevron( uncutHistoName.substr(lastChevron+1) );
+		(chMapIt->second)->Draw((chMapIt->first).c_str(), treeCuts);
+		stackedHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
+	}///end loop over elements in inputChainMap
+
+	///now add all TH1F objects in stackedHistoMap into one THStack object
+	///1 = black for colors
+	int colors[] = {2,4,5,8,12,30,40,45};
+	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
+	Int_t i=0;
+	THStack * histoStack = new THStack("","");
+	vector<pair<Double_t,string> > vectOfBkgnds;	///< use this to link the # of rescaled bkgnd evts to each bkgnd source
+	pair<Double_t,string> newPair;
+	if(stackedHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
+#ifdef DEBUG
+	std::cout<<"made a THStack object with null name and title"<<std::endl;
+#endif
+
+	Double_t bkgndIntegral;	///< use this to track the integral of all bkgnd histos in the THStack object
+	for(map<string,TH1F*>::const_iterator histIt=stackedHistoMap.begin(); histIt!=stackedHistoMap.end(); histIt++){
+		
+		///set the line and fill color, and normalize the MC histos
+		(histIt->second)->SetLineColor(colorVect[i]);
+		(histIt->second)->SetFillColor(colorVect[i]);
+#ifdef DEBUG
+		std::cout<<"set line and fill color for the histo \t"<< histIt->first <<std::endl;
+		std::cout<<"before rescaling there are "<< (histIt->second)->Integral() <<" entries in the histo mentioned immediately above"<<std::endl;
+#endif
+
+		for(map<string,Float_t>::const_iterator mcIt=nEvtsMap.begin(); mcIt!=nEvtsMap.end(); mcIt++){
+			if((histIt->first).find(mcIt->first) != string::npos) (histIt->second)->Scale(crossSxnsMap[mcIt->first]*intLumi/nEvtsMap[mcIt->first]);
+		}///end loop which normalizes the MC histos to integrated lumi of real data
+
+		newPair = make_pair((histIt->second)->Integral(), histIt->first);
+		addPairToOrderedVector(vectOfBkgnds, newPair);
+		bkgndIntegral += (histIt->second)->Integral();
+#ifdef DEBUG
+		std::cout<<"rescaled the histo \t"<< histIt->first <<std::endl;
+		std::cout<<"after rescaling there are "<< (histIt->second)->Integral() <<" entries in the histo mentioned immediately above"<<std::endl;
+#endif
+	
+		//histoStack->Add((histIt->second));	///< add each histo in stackedHistoMap to the THStack object
+
+#ifdef DEBUG
+		std::cout<<"added \t"<< histIt->first <<"\t to the stacked histo object"<<std::endl;
+#endif
+		
+		if(histIt==stackedHistoMap.begin()){
+			histoStack->SetTitle( (histIt->second)->GetTitle() );
+			string xLabel="";
+			if((histIt->first).find("Mass") !=string::npos || (histIt->first).find("ptEle") !=string::npos || (histIt->first).find("ptJet") !=string::npos){
+				xLabel += "GeV";
+			}///end if(histo is plotting a variable with dimension of energy)
+#ifdef DEBUG
+			std::cout<<"xLabel = \t"<< xLabel <<std::endl;
+#endif
+			(histIt->second)->GetXaxis()->SetTitle(xLabel.c_str());
+		}///end filter to set histogram X axis label
+		
+		size_t lastChevron = (histIt->first).find_last_of('>');
+		size_t underscorePos = (histIt->first).find_first_of("_",lastChevron);
+#ifdef DEBUG
+		std::cout<<"lastChevron located at \t"<< lastChevron<<std::endl;
+		std::cout<<"underscorePos located at \t"<< underscorePos<<std::endl;
+#endif
+		string legEntryName = (histIt->first).substr(lastChevron+1,underscorePos-lastChevron-1);
+#ifdef DEBUG
+		cout<<"histo name = \t"<< histIt->first <<endl;
+		cout<<"legEntry has name = \t"<< legEntryName << endl;
+#endif
+		leg->AddEntry(histIt->second,legEntryName.c_str());
+		i++;
+	}///end loop to set line colors of histos, and add entries to TLegend
+
+	for(unsigned int i=0; i<vectOfBkgnds.size(); i++){
+		///calling second on the ith element of vectOfBkgnds returns a string which should be a key in stackedHistoMap
+		histoStack->Add( stackedHistoMap[vectOfBkgnds[i].second] );
+	}///end loop over pairs in vectOfBkgnds
+
+	if(doLogYaxis){
+		Double_t originalMax = histoStack->GetMaximum();
+		histoStack->SetMaximum(25*originalMax);
+		histoStack->SetMinimum(0.1);
+	}
+	histoStack->Draw("hist");
+
+#ifdef DEBUG
+	std::cout<<"stacked histo has been drawn"<<std::endl;
+#endif
+	
+	string outputFile;
+	map<string,TH1F*>::const_iterator hIt = stackedHistoMap.begin();
+	size_t firstChevron = (hIt->first).find_first_of('>');
+	outputFile = (hIt->first).substr(0,firstChevron);
+	outputFile += ".png";
+	
+	leg->Draw();
+	canv->SaveAs(outputFile.c_str(),"recreate");
+
+}///end makeStackedHisto()
 
 /**
  * use this fxn to overlay kinematic distributions from real data (points) onto MC (filled histos) using a THStack object and an overlaid TH1F object
@@ -340,9 +459,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 	std::cout<<"there are \t"<< overlaidHistoMap.size() <<"\t elements in overlaidHistoMap"<<std::endl;
 #endif
 
-	///now add all TH1F objects in stackedHistoMap into one THStack object, and overlay the
-	///histo in overlaidHistoMap onto the THStack object
-	///draw the THStack object first!
+	///now add all TH1F objects in stackedHistoMap into one THStack object
 	///1 = black for colors
 	int colors[] = {2,4,5,8,12,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
@@ -705,19 +822,67 @@ void macroSandBox(){
 	
 	///cross sxn values (picobarns) and dataset sizes (=total number of evts) for bkgnd processes
 	map<string,Float_t> xSxnsFiftyNs;
-	xSxnsFiftyNs[ttBarKey]=815.9;
+	xSxnsFiftyNs[ttBarKey]=831.76;
 	xSxnsFiftyNs[dyPlusJetsKey]=6025.2;
 	xSxnsFiftyNs[wJetsKey]=61500;
 	xSxnsFiftyNs[wzKey]=66.1;
 	xSxnsFiftyNs[zzKey]=15.4;
 	map<string,Float_t> numEvtsFiftyNs;
-	numEvtsFiftyNs[ttBarKey]=4994250;
-	//numEvtsFiftyNs[dyPlusJetsKey]=19925500;	///< aMC@NLO DY+JetsToLL M-50 sample
-	numEvtsFiftyNs[dyPlusJetsKey]=9051899;	///< madgraph DY+JetsToLL M-50 sample
-	numEvtsFiftyNs[wJetsKey]=24089991;
-	numEvtsFiftyNs[wzKey]=996920;
-	numEvtsFiftyNs[zzKey]=998848;
+	numEvtsFiftyNs[ttBarKey]=10000;
+	numEvtsFiftyNs[dyPlusJetsKey]=10000;	///< madgraph DY+JetsToLL M-50 sample
+	numEvtsFiftyNs[wJetsKey]=10000;
+	numEvtsFiftyNs[wzKey]=10000;
+	numEvtsFiftyNs[zzKey]=10000;
+	map<string,Float_t> numEvtsTwentyFiveNs;
+	numEvtsTwentyFiveNs[ttBarKey]=19899500;
+	numEvtsTwentyFiveNs[dyPlusJetsKey]=9052671;	///< madgraph DY+JetsToLL M-50 sample
+	numEvtsTwentyFiveNs[wJetsKey]=72121586;
+	numEvtsTwentyFiveNs[wzKey]=991232;
+	numEvtsTwentyFiveNs[zzKey]=996168;
 
+#ifdef signalRegionEEJJBkgnds
+
+	TString treeName = "unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts";
+	TString dirName = "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
+	TChain * ttBarTree = new TChain(treeName,"");
+	ttBarTree->Add(dirName+"analyzed_TTOnly_PowhegPythia_25ns_eejj_signal_region.root");
+	TChain * dyJetsTree = new TChain(treeName,"");
+	dyJetsTree->Add(dirName+"analyzed_DYJets_Madgraph_25ns_eejj_signal_region.root");
+	TChain * wJetsTree = new TChain(treeName,"");
+	wJetsTree->Add(dirName+"analyzed_WJets_Madgraph_25ns_eejj_signal_region.root");
+	//wJetsTree->Add(dirName+"analyzed_WJets_25ns_eejj_signal_region.root");	///< wJets aMCNLO
+	TChain * wzTree = new TChain(treeName,"");
+	wzTree->Add(dirName+"analyzed_WZ_25ns_eejj_signal_region.root");
+	//wzTree->Add(dirName+"analyzed_WZPlusJets_25ns_eejj_signal_region.root");	///< wzPlusJets aMCNLO
+	TChain * zzTree = new TChain(treeName,"");
+	zzTree->Add(dirName+"analyzed_ZZ_25ns_eejj_signal_region.root");
+
+	Float_t integratedLumi = 1000.;	///inverse picobarns
+	string branchNames[] = {"fourObjectMass"};
+	string histoEndings[] = {"_fourObjectMass(20,0.,3600.)"};
+	string link = ">>";
+
+	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
+
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	//string histoBeginnings[] = {zzKey,wzKey,ttBarKey,dyPlusJetsKey};
+	string histoBeginnings[] = {zzKey,wzKey,dyPlusJetsKey};
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = histoEndingVect.size();
+	for(unsigned int i=0; i<maxI; i++){
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyJetsTree;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = ttBarTree;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = wzTree;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = zzTree;
+		string cName = "o"+to_string(i);
+		makeStackedHisto(placeHolderMap,cName.c_str(),0.5,0.75,0.9,0.89,xSxnsFiftyNs,integratedLumi,numEvtsTwentyFiveNs,evWeightCut,false);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+	//makeStackedHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap,TString treeCuts,Bool_t doLogYaxis){
+	
+
+#endif
+///end signalRegionEEJJBkgnds
 
 
 #ifdef lowMassFlavorSidebandBkgndOnData
@@ -755,7 +920,7 @@ void macroSandBox(){
 	map<string,vector<Float_t> > pileupWeights = computePileupWeights(bkgndMap, muonEGEMuJJLowMassSkim);
 
 
-	Float_t integratedLumi = 41.8;	///< in picobarns
+	Float_t integratedLumi = 41.8;	///< in inverse picobarns
 
 
 	//string branchNames[] = {"ptEle[0]","ptEle[1]","etaEle[0]","etaEle[1]","ptJet[0]","ptJet[1]","etaJet[0]","etaJet[1]","dileptonMass","fourObjectMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","dR_leadingLeptonSubleadingLepton","dR_leadingJetSubleadingJet","leadLeptonThreeObjMass","subleadingLeptonThreeObjMass","dijetMass","nLeptons","nJets","nVertices"};
