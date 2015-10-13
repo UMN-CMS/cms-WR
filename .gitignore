@@ -4,5 +4,6 @@ crab.history
 *.*~
 *.root
 *.pyc
-*.txt
-test/psets
+*.d
+*.pcm
+*.so

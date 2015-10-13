@@ -14,6 +14,8 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/Math/interface/angle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+
 
 class TTreeMaker : public edm::EDAnalyzer {
 public:
@@ -344,12 +346,20 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
     }
   }
   else if(electron_mode){
-    for(auto ele : *electrons){         
+    for(auto ele : *electrons){  
+      nt.nleptons = electrons->size();       
       if(ele.pt() > leading_lepton_pt_cut && fabs(ele.eta()) < lepton_eta_cut){
 	eles.push_back(ele);	     
       }    
     }
-    for(auto j : *jets){  
+    
+    std::vector<pat::Jet> selected_jets;
+    for(auto j: *jets)
+      //if((j.neutralHadronEnergyFraction()<0.99 && j.neutralEmEnergyFraction()<0.99 && (j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.muonEnergyFraction()<0.8) && ((abs(j.eta())<=2.4 && j.chargedHadronEnergyFraction()>0 && j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.99) || abs(j.eta())>2.4))
+      selected_jets.push_back(j);
+    
+    nt.njets = selected_jets.size();
+    for(auto j : selected_jets){
       if(j.pt() > leading_jet_pt_cut && fabs(j.eta()) < jet_eta_cut){
 	bool isolated = true;
 	for(auto e : eles){
@@ -366,10 +376,12 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
       if(js.size() > 0) nt.dR_leadLepton_leadJet = deltaR(eles[0],js[0]);
       if(js.size() > 1) nt.dR_leadLepton_subleadJet = deltaR(eles[0],js[1]);
       if(eles.size() > 1){
+	nt.angle3D = angle(eles[0].momentum().x(),eles[0].momentum().y(),eles[0].momentum().z(),eles[1].momentum().x(),eles[1].momentum().y(),eles[1].momentum().z());
 	nt.subleading_lepton_pt = eles[1].pt();
 	nt.subleading_lepton_eta = eles[1].eta();
 	nt.subleading_lepton_phi = eles[1].phi();
 	nt.dilepton_mass = (eles[0].p4() + eles[1].p4()).M();
+	nt.dR_leadLepton_subleadLepton = deltaR(eles[0],eles[1]);
 	if(js.size() > 0) nt.dR_subleadLepton_leadJet = deltaR(eles[1],js[0]);
 	if(js.size() > 1){
 	  nt.dR_subleadLepton_subleadJet = deltaR(eles[1],js[1]);
@@ -385,6 +397,7 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	nt.subleading_jet_pt = js[1].pt();
 	nt.subleading_jet_eta = js[1].eta();
 	nt.subleading_jet_phi = js[1].phi();
+	nt.dR_leadJet_subleadJet = deltaR(js[0],js[1]);
       }
     }
   }

@@ -1,0 +1,12 @@
+universe = vanilla 
+Executable = /uscms/home/skalafut/nobackup/WR_starting2015/bkgndRecoAnalysis/runRecoAnalysis_BBKKGGNNDD_NUM.csh
+Requirements = OpSys == "LINUX"&& (Arch != "DUMMY" )
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Input_Files = /uscms/home/skalafut/nobackup/WR_starting2015/bkgndRecoAnalysis/forBkgndAnalysis.tar, /uscms/home/skalafut/nobackup/WR_starting2015/bkgndRecoAnalysis/bkgndRecoAnalysis_BBKKGGNNDD_NUM.py
+x509userproxy = $ENV(X509_USER_PROXY)
+Arguments = $(Process)
+Output = bkgndRecoAnalysis_BBKKGGNNDD_NUM_$(Cluster)_$(Process).stdout
+Error = bkgndRecoAnalysis_BBKKGGNNDD_NUM_$(Cluster)_$(Process).stderr
+Log = bkgndRecoAnalysis_BBKKGGNNDD_NUM_$(Cluster)_$(Process).log
+Queue 1 

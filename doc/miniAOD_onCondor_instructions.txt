@@ -1,0 +1,3 @@
+Instructions to run DIGI-RECO simulation and miniAOD compression on condor
+
+

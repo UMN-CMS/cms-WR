@@ -6,6 +6,14 @@
 import os
 import FWCore.ParameterSet.Config as cms
 
+doMuonChannel = False 
+doTTBar = False 
+doDyPlusJets = True
+
+print 'doTTBar is ', doTTBar
+print 'doDyPlusJets is ', doDyPlusJets
+print 'doMuonChannel is ', doMuonChannel 
+
 process = cms.Process('SKIM')
 
 # import of standard configurations
@@ -26,28 +34,57 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 
-# Input source
-process.source = cms.Source("PoolSource",
-                            #fileNames = cms.untracked.vstring('/store/user/jchaves/Nstep_MUMU_2000_reco/EXO-Phys14DR-00009_100_1_Ta8.root'),
-                            fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/60000/102CF7B3-1F08-E511-93BB-00074305CF52.root'),
-                            secondaryFileNames = cms.untracked.vstring()
-)
-#process.source = cms.Source("PoolSource",
-#                            fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'),
-#                            )
-os.system('das_client.py --query="file dataset=/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM instance=prod/phys03" --limit=0 > pappy.txt')
+process.load('ExoAnalysis.cmsWR.skim_cff')
 
-sec_file = open('pappy.txt', 'r')
-mysecfilelist = []
-for line in sec_file:
-    # add as many files as you wish this way
-    mysecfilelist.append(line.strip())
-process.source.fileNames = mysecfilelist
+# Input sources for muon and ele channels, both signal and bkgnd
+if(doMuonChannel == False and doTTBar == False and doDyPlusJets == False):
+	process.source = process.source.clone(
+			fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root')		
+			)##end clone()
+
+#
+
+if(doMuonChannel == False and doTTBar == True):
+	process.source = process.source.clone(
+			fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root')
+			)##end clone()
+
+#
+
+if(doMuonChannel == False and doDyPlusJets == True):
+	process.source = process.source.clone(
+			fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M-50_TuneCUETP8M1_FlatPU_10_to_50_13TeV_pythia8_1.root')
+			)##end clone()
+
+#
+
+
+if(doMuonChannel == True and doTTBar == False and doDyPlusJets == False):
+	process.source = process.source.clone(
+			fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuMuToMuMuJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root'),
+			)##end clone()
+
+#
+
+if(doMuonChannel == True and doTTBar == True):
+	process.source = process.source.clone(
+			fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root')
+			)##end clone()
+
+#
+
+if(doMuonChannel == True and doDyPlusJets == True):
+	process.source = process.source.clone(
+			fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M-50_TuneCUETP8M1_FlatPU_10_to_50_13TeV_pythia8_1.root')
+			)##end clone()
+
+#
 
 process.options = cms.untracked.PSet(
     allowUnscheduled = cms.untracked.bool(False),
-    wantSummary = cms.untracked.bool(True)
-)
+    wantSummary = cms.untracked.bool(True),
+	SkipEvent = cms.untracked.vstring('ProductNotFound')
+	)
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -59,21 +96,65 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 process.load('ExoAnalysis.cmsWR.microAOD_Output_cff')
 
+#define a process attribute for outputting a file which will be changed in a clone() call below
 process.MINIAODSIM_signal_output = cms.OutputModule("PoolOutputModule",
-    compressionAlgorithm = cms.untracked.string('LZMA'),
-    compressionLevel = cms.untracked.int32(4),
-    dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('MINIAODSIM'),
-        filterName = cms.untracked.string('')
-    ),
-    dropMetaData = cms.untracked.string('ALL'),
-    eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
-    fastCloning = cms.untracked.bool(False),
-    fileName = cms.untracked.string('file:skim_signal.root'),
-    outputCommands = process.MICROAODSIMEventContent.outputCommands,
-    overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalMuonSkim','signalElectronSkim'))
-)
+		compressionAlgorithm = cms.untracked.string('LZMA'),
+		compressionLevel = cms.untracked.int32(4),
+		dataset = cms.untracked.PSet(
+			dataTier = cms.untracked.string('MINIAODSIM'),
+			filterName = cms.untracked.string('')
+			),
+		dropMetaData = cms.untracked.string('ALL'),
+		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
+		fastCloning = cms.untracked.bool(False),
+		fileName = cms.untracked.string('file:noOutputFile.root'),
+		outputCommands = process.MICROAODSIMEventContent.outputCommands,
+		overrideInputFileSplitLevels = cms.untracked.bool(True),
+		SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('pathName'))
+
+		)
+
+if(doMuonChannel == True and doTTBar == False and doDyPlusJets == False):
+	process.MINIAODSIM_signal_output = process.MINIAODSIM_signal_output.clone(
+			fileName = cms.untracked.string('file:skim_MuonSignal.root'),
+			SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalMuonSkim'))
+			)##end clone
+#
+
+if(doMuonChannel == True and doTTBar == True):
+	process.MINIAODSIM_signal_output = process.MINIAODSIM_signal_output.clone(
+			fileName = cms.untracked.string('file:skim_MuonTTBarBkgnd.root'),
+			SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('bkgndMuonSkim'))
+			)##end clone
+#
+
+if(doMuonChannel == True and doDyPlusJets == True):
+	process.MINIAODSIM_signal_output = process.MINIAODSIM_signal_output.clone(
+			fileName = cms.untracked.string('file:skim_MuonDyPlusJetsBkgnd.root'),
+			SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('bkgndMuonSkim'))
+			)##end clone
+#
+
+if(doMuonChannel == False and doTTBar == False and doDyPlusJets == False):
+	process.MINIAODSIM_signal_output = process.MINIAODSIM_signal_output.clone(
+			fileName = cms.untracked.string('file:skim_ElectronSignal.root'),
+			SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('signalElectronSkim'))
+			)
+#
+
+if(doMuonChannel == False and doTTBar == True):
+	process.MINIAODSIM_signal_output = process.MINIAODSIM_signal_output.clone(
+			fileName = cms.untracked.string('file:skim_ElectronTTBarBkgnd.root'),
+			SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('bkgndElectronSkim'))
+			)
+#
+
+if(doMuonChannel == False and doDyPlusJets == True):
+	process.MINIAODSIM_signal_output = process.MINIAODSIM_signal_output.clone(
+			fileName = cms.untracked.string('file:skim_ElectronDyPlusJetsBkgnd.root'),
+			SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('bkgndElectronSkim'))
+			)
+#
 
 process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -88,7 +169,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:skim_sideband.root'),
     outputCommands = process.MICROAODSIMEventContent.outputCommands,
     overrideInputFileSplitLevels = cms.untracked.bool(True),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diMuonSidebandSkim','diElectronSidebandSkim'))
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('diMuonSidebandSkim','diElectronSidebandSkim','EMuSidebandSkim'))
 )
 
 # Additional output definition
@@ -98,19 +179,50 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
-process.load('ExoAnalysis.cmsWR.treeMaker_cff')
+process.load('ExoAnalysis.cmsWR.skimElectron_cff')
+process.load('ExoAnalysis.cmsWR.skimMuon_cff')
+process.load('ExoAnalysis.cmsWR.skimEMu_cff')
+process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
+process.load('ExoAnalysis.cmsWR.genMuonChannelModules_cff')
+
 
 # Path and EndPath definitions
+process.eleMuSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
 
-process.signalMuonSkim = cms.Path(process.wRdiMuonSignalSeq)
-process.signalElectronSkim = cms.Path(process.wRdiElectronSignalSeq)
-process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
-process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
+if(doMuonChannel == False and ( doTTBar == True or doDyPlusJets == True) ):
+	process.bkgndElectronSkim = cms.Path(process.wRdiElectronAndFourObjSignalSeq)
+
+#
+if(doMuonChannel == True and ( doTTBar == True or doDyPlusJets == True) ):
+	process.bkgndMuonSkim = cms.Path(process.wRdiMuonAndFourObjSignalSeq)
+
+#
+
+if(doMuonChannel == False and doTTBar == False and doDyPlusJets == False):
+	process.signalElectronSkim = cms.Path(
+			process.bareMatchedGenParticleSeq
+			*process.etaRestrictedMatchedGenParticleSeq
+			*process.wRdiElectronAndFourObjSignalSeq
+			)
+
+#
+
+if(doMuonChannel == True and doTTBar == False and doDyPlusJets == False):
+	process.signalMuonSkim = cms.Path(
+			process.muBareMatchedGenParticleSeq
+			*process.muEtaRestrictedMatchedGenParticleSeq
+			*process.wRdiMuonAndFourObjSignalSeq
+			)
+
+#
+
+#process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
+#process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
 
 #process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
 
-process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_signal_output)# + process.MakeTTree_Muons)
-#process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIM_sideband_output)
+process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_signal_output )
+
 
 #do not add changes to your config after this point (unless you know what you are doing)
 

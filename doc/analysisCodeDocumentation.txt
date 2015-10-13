@@ -1,0 +1,46 @@
+PYTHON SCRIPTS FOR SKIMS
+The python scripts in cmsWR/test/ named skim_realData_*.py and skim_bkgndMC_*.py are designed to be used with crab3.  The global tag used in skim_realData_*.py must be changed manually, while the global tag used in skim_bkgndMC_*.py is set to 'auto:run2_mc'.
+
+
+PYTHON SCRIPTS FOR SIDEBAND CONTROL REGIONS
+The python scripts in cmsWR/test/ whose names begin with quickRecoKinematicsAnalyzer run the emujj and eejj sideband selection sequences, and make trees of lepton and jet kinematic properties.  Near the top of all quickRecoKinematicsAnalyzer files is a statement which loads a cff python file defined in cmsWR/python/.  This cff file defines the cuts which constitute the sideband selection sequence.
+
+The quickRecoKinematicsAnalyzer files should be used with cmsRun in a command like the following (executed in the cmsWR/test/ directory):
+
+cmsRun quickRecoKinematicsAnalyzer_eejj_cfg.py files=$(cat ../doc/exampleInputFileList.txt) output=/path/to/outputTreeFile.root
+
+where exampleInputFileList.txt is formatted in a specific way, and lists the absolute path names to input files with EDM::Event objects.  See cmsWR/doc/exampleInputFileList.txt for details.
+
+
+PYTHON SCRIPTS FOR DILEPTON CHECKS
+The python scripts in cmsWR/test/ named checkZeeChain_cfg.py and check_emu_leptons.py apply lepton pT, eta, and ID requirements to root files with EDM::Event objects, and make trees which contain lepton kinematic information.  Each python script loads a cff file from cmsWR/python/ which defines the lepton pT and eta cuts.  Both scripts can be used with a command like the following (executed in cmsWR/test/ directory):
+
+cmsRun checkZeeChain_cfg.py files=$(cat ../doc/exampleInputFileList.txt) output=/path/to/outputTreeFile.root
+
+where exampleInputFileList.txt is formatted in a specific way, and lists the absolute path names to input files with EDM::Event objects.  See cmsWR/doc/exampleInputFileList.txt for details.
+
+
+PYTHON SCRIPTS FOR DYJETS MC COMPARISON
+The python script in cmsWR/test/ named compareDYJetsMC_cfg.py is used to study electrons from Z->ee decays in DY+Jets MC.  The script loads a cff file in cmsWR/python/ which defines how the electrons are selected at GEN and RECO level.  Like the dilepton check python scripts, compareDYJetsMC_cfg.py can be used with a command like the following (executed in cmsWR/test/ directory):
+
+cmsRun compareDYJetsMC_cfg.py files=$(cat ../doc/exampleInputFileList.txt) output=/path/to/outputTreeFile.root
+
+where exampleInputFileList.txt is formatted in a specific way, and lists the absolute path names to input files with EDM::Event objects.  See cmsWR/doc/exampleInputFileList.txt for details.
+
+
+PYTHON SCRIPTS FOR SIGNAL REGION
+The python scripts in cmsWR/test/ named unmatched_emuChannel_cfg.py and unmatched_recoElectronChannel_cfg.py apply the signal region cuts (dilepton mass > 200 GeV, four object mass > 600 GeV, other individual object cuts) to EDM::Event objects in root files, and make trees which contain lepton and jet kinematic information.  These two scripts are used with cmsRun in the same way as other python scripts described above.
+
+
+PLOTTING MACROS
+There are four plotting macros in cmsWR/test/ which are designed to run over
+TTree files produced by python scripts discussed above.  The plotting macros
+and corresponding python cmsRun scripts are listed below:
+
+ele_dataMC_compare.C<-->quickRecoKinematicsAnalyzer_eejj_cfg.py
+muEle_dataMC_compare.C<-->quickRecoKinematicsAnalyzer_emujj_cfg.py
+checkMuEle_dataMC.C<-->check_emu_leptons.py
+eleDataMC_checkZee_compare.C<-->checkZeeChain_cfg.py
+
+
+
