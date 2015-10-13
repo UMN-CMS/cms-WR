@@ -275,7 +275,8 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("leadingIsHardest",&leadingIsHardest,"leadingIsHardest/I");
 
    tree->Branch("runNumber",&runNumber,"runNumber/I");
-
+   tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
+ 
    tree->Branch("nJets",&nJets,"nJets/I");
    tree->Branch("nLeptons",&nLeptons,"nLeptons/I");
    tree->Branch("nVertices",&nVertices,"nVertices/I");

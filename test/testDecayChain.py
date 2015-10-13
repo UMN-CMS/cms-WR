@@ -13,7 +13,7 @@ import sys,os
 
 #from __future__ import print_function
 
-file='EXO-Phys14DR-00009.root'
+file='/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'
 events = Events (file)
 
 print file

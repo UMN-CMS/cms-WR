@@ -4,8 +4,8 @@ printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
 		maxEventsToPrint = cms.untracked.int32(-1),
 		printVertex = cms.untracked.bool(False),
 		printOnlyHardInteraction = cms.untracked.bool(False),
-		src = cms.InputTag("genParticles")
-		#src = cms.InputTag("prunedGenParticles")
+		#src = cms.InputTag("genParticles")
+		src = cms.InputTag("prunedGenParticles")
 		)
 
 hasGenNuMuOrTau = cms.EDFilter("CandViewSelector",
@@ -70,6 +70,19 @@ matchGenJetsToGenQuarksNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(2)
 		)
 
+
+## filters to select the generated WR
+bareMatchedWR = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("prunedGenParticles"),
+		cut = cms.string("abs(pdgId) == 9900024 && abs(mother(0).pdgId) == 9900024")
+		)
+
+bareMatchedWRFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("bareMatchedWR"),
+		minNumber = cms.uint32(1)
+		)
+
+bareMatchedWRSeq = cms.Sequence(bareMatchedWR*bareMatchedWRFilter)
 
 
 
