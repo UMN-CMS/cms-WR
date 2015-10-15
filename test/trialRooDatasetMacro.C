@@ -89,12 +89,12 @@ void macro(){
 	RooDataSet wz = applyNormalization(wzTree, "wz",(66.1*intLumi/991232), vars, massWR, genEvtWeights);
 	RooDataSet zz = applyNormalization(zzTree, "zz",(15.4*intLumi/996168), vars, massWR, genEvtWeights);
 
-	dyJets.append(ttBar);
-	dyJets.append(singleTopW);
-	//dyJets.append(wJets);
-	dyJets.append(wz);
-	dyJets.append(zz);
-	//dyJets.append(WR);
+	//ttBar.append(dyJets);
+	//ttBar.append(singleTopW);
+	////ttBar.append(wJets);
+	//ttBar.append(wz);
+	//ttBar.append(zz);
+	//ttBar.append(WR);
 	
 
 	/*
@@ -107,39 +107,37 @@ void macro(){
 	*/
 
 	///alpha, power, meanMassWR, and sigmaMassWR are needed for crystal ball fit
-	/*
-	RooRealVar alpha("alpha","",0,5);
-	RooRealVar power("power","",0,5);
-	RooRealVar meanMassWR("meanMassWR","",2500,2600);
-	RooRealVar sigmaMassWR("sigmaMassWR","",10,200);
-	RooCBShape signalPDF("wrFit","",massWR,meanMassWR,sigmaMassWR,alpha,power);
-	*/
+	//RooRealVar alpha("alpha","",0,5);
+	//RooRealVar power("power","",10,100);
+	//RooRealVar meanMassWR("meanMassWR","",2400,2620);
+	//RooRealVar sigmaMassWR("sigmaMassWR","",10,200);
+	//RooCBShape signalPDF("wrFit","",massWR,meanMassWR,sigmaMassWR,alpha,power);
+	//RooBreitWigner signalPDF("wrFit","",massWR,meanMassWR,sigmaMassWR);
 
-	/*
-	RooRealVar bkgndAlpha("bkgndAlpha","",-2,2);
+	/**/
+	RooRealVar bkgndAlpha("bkgndAlpha","",0,3);
 	RooRealVar bkgndPower("bkgndPower","",0,3);
 	RooRealVar bkgndMeanMassWR("bkgndMeanMassWR","",600,700);
-	RooRealVar bkgndSigmaMassWR("bkgndSigmaMassWR","",40,200);
-	RooCBShape bkgndPDF("bkgndFit","",massWR,bkgndMeanMassWR,bkgndSigmaMassWR,bkgndAlpha,bkgndPower);
-	*/
+	RooGamma bkgndPDF("bkgndFit","",massWR,bkgndMeanMassWR,bkgndAlpha,bkgndPower);
+	/**/
 
 	RooPlot *frame = massWR.frame();
 	frame->GetXaxis()->SetTitle("EEJJ Mass [GeV]");
-	frame->SetTitle("EEJJ Mass for WR signal MC M_{WR} = 2600 GeV");
-	//dyJets.plotOn(frame);
-	WR.plotOn(frame);
+	frame->SetTitle("EEJJ Mass for TTBar MC  #intlumi = 1000/pb");
+	ttBar.plotOn(frame);
+	//WR.plotOn(frame);
 
 
-	//bkgndPDF.fitTo(dyJets);
-	//bkgndPDF.plotOn(frame);
-	signalPDF.fitTo(WR);
-	signalPDF.plotOn(frame);
+	bkgndPDF.fitTo(ttBar, RooFit::Range(600,1250,kTRUE));
+	bkgndPDF.plotOn(frame);
+	//signalPDF.fitTo(WR, RooFit::Range(1800,2800,kTRUE));
+	//signalPDF.plotOn(frame);
 
 	TCanvas * c1 = new TCanvas("c1","c1",600,600);
 	c1->cd();
 	frame->Draw();
 	TString plotDir = "tempPlots/RooDataSetMC25ns/";
-	TString plotFileName = "eejj_mass_WR_signal_MC_MWR_2600_MNu_1300_with_CB_fit.png";
+	TString plotFileName = "eejj_mass_ttBar_with_domain_constrained_gamma_fit.png";
 	c1->SaveAs(plotDir+plotFileName,"recreate");
 
 }///end macro()

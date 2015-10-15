@@ -81,7 +81,7 @@ process.MINIAODSIM_sideband_output = cms.OutputModule("PoolOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v2', '')
 
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
 process.load('ExoAnalysis.cmsWR.skimEMu_cff')
