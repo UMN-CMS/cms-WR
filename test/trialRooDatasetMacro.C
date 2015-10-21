@@ -47,11 +47,13 @@ RooDataSet applyNormalization(TChain * chain, TString dataSetName, Float_t norma
 void macro(){
 
 	Float_t maxMassWR = 13000;	///< use this for the RooRealVar massWR, and the fit range near the end
+	/*
 	RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
 	RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
 
 	
 	RooArgSet vars(massWR,genEvtWeights);
+	*/
 
 	///declare TChains used to construct RooDataSet objects for each bkgnd source
 	TString treeName = "unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts";
@@ -81,26 +83,32 @@ void macro(){
 	zzTree->Add(dirName+"analyzed_ZZ_25ns_eejj_signal_region.root");
 	*/
 	
-	TChain * WRToEEJJTree = new TChain(treeName,"");
-	//std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
-	//std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
-	//std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
+	std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
+	std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
+	std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
 	
-	std::vector<TString> wrMass = {"1400"};
-	std::vector<TString> nuMass = {"700"};
-	std::vector<Float_t> xSxn = {0.389};
+	//std::vector<TString> wrMass = {"800","1000"};
+	
+
+	//std::vector<TString> wrMass = {"1000"};
+	//std::vector<TString> nuMass = {"500"};
+	//std::vector<Float_t> xSxn = {1.78};
 	
 	Int_t max = wrMass.size();
 	
 	for(Int_t i=0; i<max; i++){
 		///fit a function to each M_EEJJ distribution, save the image, then move on to a different input file
+		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
+		RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
+
+		RooArgSet vars(massWR,genEvtWeights);
+
 		TString genWrMass = wrMass[i];	///<gen WR mass shown in plot titles and names of saved images
 		TString genNuMass = nuMass[i];
 
 		Float_t maxRange = 1.7*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)
-		//WRToEEJJTree->Add(dirName+"analyzed_WRToENuToEEJJ_MWR_2600_MNu_1300_25ns_eejj_signal_region_no_gen_matching.root");	///< WR signal TChain
-		//WRToEEJJTree->Add(dirName+"analyzed_WRToENuToEEJJ_MWR_6000_MNu_3000_25ns_eejj_signal_region_no_gen_matching.root");	///< WR signal TChain
 
+		TChain * WRToEEJJTree = new TChain(treeName,"");
 		WRToEEJJTree->Add(dirName+"wr" + genWrMass + "nu" + genNuMass + "Tree.root");	///< WR signal TChain
 
 		///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
@@ -135,11 +143,11 @@ void macro(){
 		RooRealVar coefLowTail("coefLowTail","",1,0,3.);
 		RooRealVar coefHighTail("coefHighTail","",1,0,2.);
 		//RooAddPdf signalPDF("wrFit","",RooArgList(gaussRight,gaussLeft,gaussLowTail,gaussHighTail),RooArgList(coefRight,coefLeft,coefLowTail,coefHighTail));
-		RooAddPdf signalPDF("wrFit","",RooArgList(gausPeak,gausSecondGauss,gausThirdGauss),RooArgList(coefRight,coefLeft,coefLowTail));
+		RooAddPdf * signalPDF = new RooAddPdf("wrFit","",RooArgList(gausPeak,gausSecondGauss,gausThirdGauss),RooArgList(coefRight,coefLeft,coefLowTail));
 
 		//RooAddPdf signalPDF("wrFit","",RooArgList(logNorm,gaussLeft,gaussLowTail),RooArgList(coefRight,coefLeft,coefLowTail));
 
-		RooPlot *frame = massWR.frame();
+		RooPlot *frame = massWR.frame(300);
 		frame->GetXaxis()->SetRangeUser(600,maxRange);
 		frame->GetXaxis()->SetTitle("EEJJ Mass [GeV]");
 		frame->SetTitle("EEJJ Mass for WR MC M_{WR} = " + genWrMass + " GeV  #intlumi = 1000/pb");
@@ -148,21 +156,22 @@ void macro(){
 
 
 		//signalPDF.fitTo(WR, RooFit::Verbose(kTRUE));
-		signalPDF.fitTo(WR);
-		signalPDF.plotOn(frame, RooFit::LineColor(kRed));
-		signalPDF.plotOn(frame, RooFit::Components(gausSecondGauss), RooFit::LineColor(kMagenta), RooFit::LineStyle(2));
-		signalPDF.plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
-		signalPDF.plotOn(frame, RooFit::Components(gausThirdGauss), RooFit::LineColor(kBlue), RooFit::LineStyle(2));
+		signalPDF->fitTo(WR);
+		signalPDF->plotOn(frame, RooFit::LineColor(kRed));
+		signalPDF->plotOn(frame, RooFit::Components(gausSecondGauss), RooFit::LineColor(kMagenta), RooFit::LineStyle(2));
+		signalPDF->plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
+		signalPDF->plotOn(frame, RooFit::Components(gausThirdGauss), RooFit::LineColor(kBlue), RooFit::LineStyle(2));
 
 		TCanvas * c1 = new TCanvas("c1","c1",600,600);
 		c1->cd();
 		frame->Draw();
+		c1->Update();
 		TString plotDir = "tempPlots/RooDataSetMC25ns/";
 		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_triple_gauss_and_three_floating_coefficients_fit.png";
 		//TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_triple_gauss_and_no_floating_coefficients_fit.png";
 
 		c1->SaveAs(plotDir+plotFileName,"recreate");
-
+		signalPDF->Delete();
 
 	}///end loop over all input files
 
