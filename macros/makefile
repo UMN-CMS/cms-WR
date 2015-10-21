@@ -3,9 +3,9 @@
 #use this makefile to compile hybridInstructionalMacro.C into an executable file named hybridMacro
 CXXFLAGS=-pthread -std=c++11 -Wno-deprecated-declarations -m64
 INCDIR=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/
-ROOFIT_INC=roofit/5.34.22-cms3/
-ROOT_INC=root/5.34.22-cms3/
-LIBS=-lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lm -ldl -rdynamic -lRooFit -lRooFitCore -lMinuit -lRooStats
+ROOFIT_INC=roofit/6.02.00-odfocd5/
+ROOT_INC=root/6.02.00-odfocd5/
+LIBS=-lGui -lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lm -ldl -rdynamic -lRooFit -lRooFitCore -lMinuit -lRooStats
 
 hybridMacro: hybridInstructionalMacro.C
 	g++ $< -o $@ -I$(INCDIR)$(ROOFIT_INC)include $(CXXFLAGS) -I$(INCDIR)$(ROOT_INC)include -L$(INCDIR)$(ROOT_INC)lib $(LIBS) -L$(INCDIR)$(ROOFIT_INC)lib

@@ -76,6 +76,7 @@
 #include "RooStats/SimpleLikelihoodRatioTestStat.h"
 #include "RooStats/RatioOfProfiledLikelihoodsTestStat.h"
 #include "RooStats/MaxLikelihoodEstimateTestStat.h"
+#include "../interface/RooCruijff.h"
 
 #include <string>
 #include <iostream>
