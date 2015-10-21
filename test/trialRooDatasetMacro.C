@@ -82,9 +82,14 @@ void macro(){
 	*/
 	
 	TChain * WRToEEJJTree = new TChain(treeName,"");
-	std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
-	std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
-	std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
+	//std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
+	//std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
+	//std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
+	
+	std::vector<TString> wrMass = {"1400"};
+	std::vector<TString> nuMass = {"700"};
+	std::vector<Float_t> xSxn = {0.389};
+	
 	Int_t max = wrMass.size();
 	
 	for(Int_t i=0; i<max; i++){
@@ -92,7 +97,7 @@ void macro(){
 		TString genWrMass = wrMass[i];	///<gen WR mass shown in plot titles and names of saved images
 		TString genNuMass = nuMass[i];
 
-		Float_t maxRange = 1.6*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)
+		Float_t maxRange = 1.7*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)
 		//WRToEEJJTree->Add(dirName+"analyzed_WRToENuToEEJJ_MWR_2600_MNu_1300_25ns_eejj_signal_region_no_gen_matching.root");	///< WR signal TChain
 		//WRToEEJJTree->Add(dirName+"analyzed_WRToENuToEEJJ_MWR_6000_MNu_3000_25ns_eejj_signal_region_no_gen_matching.root");	///< WR signal TChain
 
@@ -105,18 +110,18 @@ void macro(){
 		RooRealVar meanPeak("meanPeak", "", 1000, 600, maxMassWR);
 		//mean of the two other gaussians must be less than the mean of the peak gaussian
 		RooRealVar meanShiftSecondGauss("meanShiftSecondGauss","", -0.05, -0.3, 0.);
-		RooRealVar meanShiftThirdGauss("meanShiftThirdGauss","", -0.06, -3., 0.);
+		RooRealVar meanShiftThirdGauss("meanShiftThirdGauss","", -0.06, -0.5, 0.);
 
 		RooFormulaVar meanSecondGauss("meanSecondGauss", "", "@0+@1*@0", RooArgSet(meanPeak, meanShiftSecondGauss));
 		RooFormulaVar meanThirdGauss("meanThirdGauss", "", "@0+@1*@0", RooArgSet(meanPeak, meanShiftThirdGauss));
 
 		RooRealVar sigmaRelPeak("sigmaRelPeak", "", 50./2600, 10./2600, 300./2600);
 		RooRealVar sigmaShiftSecondGaus("sigmaShiftSecondGaus", "", 1, 0.9, 3);
-		RooRealVar sigmaShiftThirdGaus("sigmaShiftThirdGaus", "", 1.5, 1., 30);
+		RooRealVar sigmaShiftThirdGaus("sigmaShiftThirdGaus", "", 2, 1, 5);
 
 		RooFormulaVar sigmaPeak("sigmaPeak", "@0*@1", RooArgSet(meanPeak, sigmaRelPeak));
 		RooFormulaVar sigmaSecondGauss("sigmaSecondGauss", "@0*@1", RooArgSet(sigmaPeak, sigmaShiftSecondGaus));
-		RooFormulaVar sigmaThirdGauss("sigmaThirdGauss", "220+@0*@1", RooArgSet(sigmaPeak, sigmaShiftThirdGaus));
+		RooFormulaVar sigmaThirdGauss("sigmaThirdGauss", "300+@0*@1", RooArgSet(sigmaPeak, sigmaShiftThirdGaus));
 		//RooRealVar sigmaThirdGauss("sigmaThirdGauss", "sigmaThirdGauss", 600, 300, 1200);
 
 		RooGaussian gausPeak("gausPeak","", massWR, meanPeak, sigmaPeak);
@@ -125,9 +130,9 @@ void macro(){
 
 
 		//define coefficients for the gaussian fxns
-		RooRealVar coefRight("coefRight","",1,0,10.);
-		RooRealVar coefLeft("coefLeft","",1,0,10.);
-		RooRealVar coefLowTail("coefLowTail","",1,0,10.);
+		RooRealVar coefRight("coefRight","",1,0,3.);
+		RooRealVar coefLeft("coefLeft","",1,0,3.);
+		RooRealVar coefLowTail("coefLowTail","",1,0,3.);
 		RooRealVar coefHighTail("coefHighTail","",1,0,2.);
 		//RooAddPdf signalPDF("wrFit","",RooArgList(gaussRight,gaussLeft,gaussLowTail,gaussHighTail),RooArgList(coefRight,coefLeft,coefLowTail,coefHighTail));
 		RooAddPdf signalPDF("wrFit","",RooArgList(gausPeak,gausSecondGauss,gausThirdGauss),RooArgList(coefRight,coefLeft,coefLowTail));
