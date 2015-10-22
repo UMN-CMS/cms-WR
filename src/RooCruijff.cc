@@ -3,7 +3,7 @@
 ///constructor from user defined args
 ///two Gaussians with the same mean and different sigmas, which far from the mean
 ///transform into two exponential decays with different decay powers alphaL and alphaR
-/*
+/**/
 RooCruijff::RooCruijff(const char * name, const char * title,
 		RooAbsReal& _x, RooAbsReal& _mean,
 		RooAbsReal& _sigmaL, RooAbsReal& _sigmaR,
@@ -48,5 +48,5 @@ Double_t RooCruijff::evaluate() const{
 
 	return exp(- delta_x2 / (2 * sigma * sigma + alpha * delta_x2));
 }
-*/
+/**/
 

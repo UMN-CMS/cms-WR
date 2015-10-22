@@ -97,11 +97,11 @@ int main(void){
 	zzTree->Add(dirName+"analyzed_ZZ_25ns_eejj_signal_region.root");
 	*/
 	
-	std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
+	//std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
 	std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
 	std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
 	
-	//std::vector<TString> wrMass = {"800","1000"};
+	std::vector<TString> wrMass = {"800"};
 	
 
 	//std::vector<TString> wrMass = {"1000"};
@@ -129,6 +129,7 @@ int main(void){
 		Float_t intLumi = 1000.;	///< integrated lumi
 		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
 
+		/*
 		RooRealVar meanPeak("meanPeak", "", 1000, 600, maxMassWR);
 		//mean of the two other gaussians must be less than the mean of the peak gaussian
 		RooRealVar meanShiftSecondGauss("meanShiftSecondGauss","", -0.05, -0.3, 0.);
@@ -156,34 +157,42 @@ int main(void){
 		RooRealVar coefLeft("coefLeft","",1,0,3.);
 		RooRealVar coefLowTail("coefLowTail","",1,0,3.);
 		RooRealVar coefHighTail("coefHighTail","",1,0,2.);
-		//RooAddPdf signalPDF("wrFit","",RooArgList(gaussRight,gaussLeft,gaussLowTail,gaussHighTail),RooArgList(coefRight,coefLeft,coefLowTail,coefHighTail));
 		RooAddPdf * signalPDF = new RooAddPdf("wrFit","",RooArgList(gausPeak,gausSecondGauss,gausThirdGauss),RooArgList(coefRight,coefLeft,coefLowTail));
+		*/
 
-		//RooAddPdf signalPDF("wrFit","",RooArgList(logNorm,gaussLeft,gaussLowTail),RooArgList(coefRight,coefLeft,coefLowTail));
+		///define the vars needed for RooCruijff, and make a RooCruijff pointer named signalPDF
+		RooRealVar gaussMean("gaussMean","",1000,600,maxMassWR);
+		RooRealVar rightSigmaRelShift("rightSigmaRelShift","",0.05,0.01,0.06);
+		RooRealVar leftSigmaRelShift("leftSigmaRelShift","",1,0.9,3);
+		RooRealVar rightOneOverExpPower("rightOneOverExpPower","",0.1,0,0.7);
+		RooRealVar leftOneOverExpPower("leftOneOverExpPower","",0.1,0,0.7);
 
-		RooPlot *frame = massWR.frame(300);
+		RooFormulaVar rightSigma("rightSigma","@0*@1",RooArgSet(gaussMean,rightSigmaRelShift));
+		RooFormulaVar leftSigma("leftSigma","@0*@1",RooArgSet(rightSigma,leftSigmaRelShift));
+		RooCruijff * signalPDF = new RooCruijff("wrFit","",massWR,gaussMean,leftSigma,rightSigma,leftOneOverExpPower,rightOneOverExpPower);
+
+
+		///plot the data distribution and the fit, and save an image of the result
+		RooPlot *frame = massWR.frame(500);
 		frame->GetXaxis()->SetRangeUser(600,maxRange);
 		frame->GetXaxis()->SetTitle("EEJJ Mass [GeV]");
 		frame->SetTitle("EEJJ Mass for WR MC M_{WR} = " + genWrMass + " GeV  #intlumi = 1000/pb");
-		//frame->SetTitle("EEJJ Mass for WR MC M_{WR} = " + genWrMass + " GeV   arbitrary normalization");
 		WR.plotOn(frame);
 
 
 		//signalPDF.fitTo(WR, RooFit::Verbose(kTRUE));
 		signalPDF->fitTo(WR);
 		signalPDF->plotOn(frame, RooFit::LineColor(kRed));
-		signalPDF->plotOn(frame, RooFit::Components(gausSecondGauss), RooFit::LineColor(kMagenta), RooFit::LineStyle(2));
-		signalPDF->plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
-		signalPDF->plotOn(frame, RooFit::Components(gausThirdGauss), RooFit::LineColor(kBlue), RooFit::LineStyle(2));
+		//signalPDF->plotOn(frame, RooFit::Components(gausSecondGauss), RooFit::LineColor(kMagenta), RooFit::LineStyle(2));
+		//signalPDF->plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
+		//signalPDF->plotOn(frame, RooFit::Components(gausThirdGauss), RooFit::LineColor(kBlue), RooFit::LineStyle(2));
 
 		TCanvas * c1 = new TCanvas("c1","c1",600,600);
 		c1->cd();
 		frame->Draw();
 		c1->Update();
-		TString plotDir = "tempPlots/RooDataSetMC25ns/";
-		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_triple_gauss_and_three_floating_coefficients_fit.png";
-		//TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_triple_gauss_and_no_floating_coefficients_fit.png";
-
+		TString plotDir = "test/tempPlots/RooDataSetMC25ns/";
+		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_RooCruijff_fit.png";
 		c1->SaveAs(plotDir+plotFileName,"recreate");
 		signalPDF->Delete();
 

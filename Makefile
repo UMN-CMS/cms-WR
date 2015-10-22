@@ -75,6 +75,8 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(OBJ_DIR)/*.d
 	rm -f $(BUILDDIR)/*.exe
+	rm -f *.exe
+	rm -f *.d
 
 
 

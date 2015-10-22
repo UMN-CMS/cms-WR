@@ -2,11 +2,11 @@
 //#define ROO_CRUIJFF
 
 //#ifndef __CINT__
-//#include "RooAbsPdf.h"
-//#include "RooRealProxy.h"
+#include "RooAbsPdf.h"
+#include "RooRealProxy.h"
 //#endif
 
-/*
+/**/
 class RooCruijff : public RooAbsPdf {
 	public:
 
@@ -38,4 +38,4 @@ class RooCruijff : public RooAbsPdf {
 
 
 };
-*/
+/**/
