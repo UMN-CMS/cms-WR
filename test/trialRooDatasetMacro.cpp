@@ -1,4 +1,5 @@
 //#define DEBUG
+#define PLOTCHECK
 
 #include "TChain.h"
 #include "TString.h"
@@ -11,7 +12,8 @@
 #include "TAxis.h"
 #include "RooGaussian.h"
 #include "RooAddPdf.h"
-#include "RooCruijff.h"
+//#include "RooCruijff.h"
+#include "RooDoubleCB.h"
 
 /*
  * use this fxn to loop over events in a TChain, pull the event weights from the TChain,
@@ -98,15 +100,15 @@ int main(void){
 	*/
 	
 	//std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
-	std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
-	std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
+	//std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
+	//std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
 	
-	std::vector<TString> wrMass = {"800"};
+	//std::vector<TString> wrMass = {"800"};
 	
 
-	//std::vector<TString> wrMass = {"1000"};
-	//std::vector<TString> nuMass = {"500"};
-	//std::vector<Float_t> xSxn = {1.78};
+	std::vector<TString> wrMass = {"6000"};
+	std::vector<TString> nuMass = {"3000"};
+	std::vector<Float_t> xSxn = {0.1};
 	
 	Int_t max = wrMass.size();
 	
@@ -160,16 +162,43 @@ int main(void){
 		RooAddPdf * signalPDF = new RooAddPdf("wrFit","",RooArgList(gausPeak,gausSecondGauss,gausThirdGauss),RooArgList(coefRight,coefLeft,coefLowTail));
 		*/
 
-		///define the vars needed for RooCruijff, and make a RooCruijff pointer named signalPDF
+		///define the vars needed for RooDoubleCB, and make a RooDoubleCB pointer named signalPDF
+
+#ifndef PLOTCHECK
+		///variable values
 		RooRealVar gaussMean("gaussMean","",1000,600,maxMassWR);
-		RooRealVar rightSigmaRelShift("rightSigmaRelShift","",0.05,0.01,0.06);
-		RooRealVar leftSigmaRelShift("leftSigmaRelShift","",1,0.9,3);
-		RooRealVar rightOneOverExpPower("rightOneOverExpPower","",0.1,0,0.7);
-		RooRealVar leftOneOverExpPower("leftOneOverExpPower","",0.1,0,0.7);
+		RooRealVar rightSigmaRelShift("rightSigmaRelShift","",0.1,0.,0.7);
+		RooRealVar leftSigmaRelShift("leftSigmaRelShift","",0.2,0.,0.7);
+		RooRealVar rightPower("rightPower","",1.5,0.1,4);
+		RooRealVar leftPower("leftPower","",1,0.01,3);
+		RooRealVar rightAlpha("rightAlpha","",1,0.,4.);
+		RooRealVar leftAlpha("leftAlpha","",-0.1,-2,-0.001);
 
 		RooFormulaVar rightSigma("rightSigma","@0*@1",RooArgSet(gaussMean,rightSigmaRelShift));
 		RooFormulaVar leftSigma("leftSigma","@0*@1",RooArgSet(rightSigma,leftSigmaRelShift));
-		RooCruijff * signalPDF = new RooCruijff("wrFit","",massWR,gaussMean,leftSigma,rightSigma,leftOneOverExpPower,rightOneOverExpPower);
+#endif
+
+#ifdef PLOTCHECK
+		///fixed values
+		RooRealVar gaussMean("gaussMean","",750,600,maxMassWR);
+		RooRealVar rightSigmaRelShift("rightSigmaRelShift","",0.05,0.,0.2);
+		RooRealVar leftSigmaRelShift("leftSigmaRelShift","",0.05,0,0.7);
+		RooFormulaVar rightSigma("rightSigma","@0*@1",RooArgSet(gaussMean,rightSigmaRelShift));
+		RooFormulaVar leftSigma("leftSigma","@0*@1",RooArgSet(gaussMean,leftSigmaRelShift));
+		RooRealVar rightPower("rightPower","",2.8,0,100);
+		RooRealVar leftPower("leftPower","",1,0,100);
+		RooRealVar rightAlpha("rightAlpha","",0.72,0,4);
+		RooRealVar leftAlpha("leftAlpha","",0.7,0,4);
+		//rightSigmaRelShift.setConstant();
+		////leftSigmaRelShift.setConstant();
+		//rightPower.setConstant();
+		////leftPower.setConstant();
+		//rightAlpha.setConstant();
+		////leftAlpha.setConstant();
+#endif
+
+		RooDoubleCB * signalPDF = new RooDoubleCB("wrFit","",massWR,gaussMean,leftSigma,rightSigma,leftAlpha,rightAlpha,leftPower,rightPower);
+
 
 
 		///plot the data distribution and the fit, and save an image of the result
@@ -181,7 +210,10 @@ int main(void){
 
 
 		//signalPDF.fitTo(WR, RooFit::Verbose(kTRUE));
+	
+//#ifndef PLOTCHECK	
 		signalPDF->fitTo(WR);
+//#endif
 		signalPDF->plotOn(frame, RooFit::LineColor(kRed));
 		//signalPDF->plotOn(frame, RooFit::Components(gausSecondGauss), RooFit::LineColor(kMagenta), RooFit::LineStyle(2));
 		//signalPDF->plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
@@ -192,7 +224,7 @@ int main(void){
 		frame->Draw();
 		c1->Update();
 		TString plotDir = "test/tempPlots/RooDataSetMC25ns/";
-		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_RooCruijff_fit.png";
+		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_DoubleCrystalBall_fit.png";
 		c1->SaveAs(plotDir+plotFileName,"recreate");
 		signalPDF->Delete();
 
