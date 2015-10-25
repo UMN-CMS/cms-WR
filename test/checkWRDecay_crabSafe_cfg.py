@@ -9,10 +9,10 @@ process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 
-import FWCore.ParameterSet.VarParsing as VarParsing
-options = VarParsing.VarParsing('standard') 
-options.maxEvents = -1
-options.parseArguments()
+#import FWCore.ParameterSet.VarParsing as VarParsing
+#options = VarParsing.VarParsing('standard') 
+#options.maxEvents = -1
+#options.parseArguments()
 
 
 #################################
@@ -34,8 +34,7 @@ process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string(options.output)
-		#fileName = cms.string('file:analyzedZToEleEleSkim.root')
+		fileName = cms.string('file:genWrKinematics.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -43,19 +42,16 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
-inputFiles = cms.untracked.vstring(options.files)
 
 process.source = cms.Source( "PoolSource",
-	fileNames = inputFiles,
-	#fileNames = cms.untracked.vstring('file:noFile.root'),
+	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-1400_MNu-700-TuneCUETP8M1_pythia8_13TeV_1.root'),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(options.maxEvents)
-    #input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(-1)
 )
 
 

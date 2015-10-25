@@ -103,12 +103,22 @@ int main(void){
 	//std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
 	//std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
 	
+	//std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200"};
+	//std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600"};
+	//std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034};
+	
+
+	//std::vector<TString> wrMass = {"3600","3800","4400","5000","5200","5600","5800","6000"};
+	//std::vector<TString> nuMass = {"1800","1900","2200","2500","2600","2800","2900","3000"};
+	//std::vector<Float_t> xSxn = {0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
+	
+
 	//std::vector<TString> wrMass = {"800"};
 	
 
 	std::vector<TString> wrMass = {"6000"};
 	std::vector<TString> nuMass = {"3000"};
-	std::vector<Float_t> xSxn = {0.1};
+	std::vector<Float_t> xSxn = {0.0000144};
 	
 	Int_t max = wrMass.size();
 	
@@ -180,21 +190,21 @@ int main(void){
 
 #ifdef PLOTCHECK
 		///fixed values
-		RooRealVar gaussMean("gaussMean","",750,600,maxMassWR);
+		RooRealVar gaussMean("gaussMean","",1000,600,maxMassWR);
 		RooRealVar rightSigmaRelShift("rightSigmaRelShift","",0.05,0.,0.2);
 		RooRealVar leftSigmaRelShift("leftSigmaRelShift","",0.05,0,0.7);
 		RooFormulaVar rightSigma("rightSigma","@0*@1",RooArgSet(gaussMean,rightSigmaRelShift));
 		RooFormulaVar leftSigma("leftSigma","@0*@1",RooArgSet(gaussMean,leftSigmaRelShift));
 		RooRealVar rightPower("rightPower","",2.8,0,100);
-		RooRealVar leftPower("leftPower","",1,0,100);
-		RooRealVar rightAlpha("rightAlpha","",0.72,0,4);
-		RooRealVar leftAlpha("leftAlpha","",0.7,0,4);
+		RooRealVar leftPower("leftPower","",3,0,500);
+		RooRealVar rightAlpha("rightAlpha","",1.1,0,4);	///< signs are accounted for in the DoubleCB implementation
+		RooRealVar leftAlpha("leftAlpha","",0.7,0,4);		///< signs are accounted for in the DoubleCB implementation
 		//rightSigmaRelShift.setConstant();
-		////leftSigmaRelShift.setConstant();
+		//leftSigmaRelShift.setConstant();
 		//rightPower.setConstant();
-		////leftPower.setConstant();
+		//leftPower.setConstant();
 		//rightAlpha.setConstant();
-		////leftAlpha.setConstant();
+		//leftAlpha.setConstant();
 #endif
 
 		RooDoubleCB * signalPDF = new RooDoubleCB("wrFit","",massWR,gaussMean,leftSigma,rightSigma,leftAlpha,rightAlpha,leftPower,rightPower);
