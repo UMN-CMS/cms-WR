@@ -7,14 +7,16 @@ process = cms.Process("RECOEEJJ")
 ## load the filters, producers, and sequences defined in other config file fragments
 process.load('ExoAnalysis.cmsWR.recoElectronChannelSidebandUnmatchedModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 
-import FWCore.ParameterSet.VarParsing as VarParsing
-options = VarParsing.VarParsing('standard') 
-options.maxEvents = -1
-options.parseArguments()
+from ExoAnalysis.cmsWR.additionalVarParsing_cff import *
+
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, options.GT, '')
 
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)

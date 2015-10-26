@@ -34,7 +34,7 @@ process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('file:genWrKinematics.root')
+		fileName = cms.string('genWrKinematics.root')
 )
 
 process.options = cms.untracked.PSet(
