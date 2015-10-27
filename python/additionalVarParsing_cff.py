@@ -11,6 +11,7 @@ options.register('GT',
 		"global tag name")
 
 options.maxEvents = -1
+options.GT = '74X_mcRun2_asymptotic_v2'
 options.parseArguments()
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v1', '') for Run2015C data

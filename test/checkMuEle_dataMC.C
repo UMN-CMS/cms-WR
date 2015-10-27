@@ -14,8 +14,8 @@
 #include <string>
 
 //#define DEBUG
-#define PrintIntegral
-#define CHKTTBAR
+//#define PrintIntegral
+//#define CHKTTBAR
 
 TString DetermineYaxisName(TH1F * ptrDataHist, TString xLabel);
 void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool pileup_reweight, bool is_data);
@@ -31,7 +31,7 @@ void checkMuEle_dataMC(){
 	//change 25ns to 50ns to swap btwn input data files
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_25ns_skims_check_emu/";
 	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_25ns_skim_check_emu_noHLT.root");//dyjets
-	TFile * hfile1 = new TFile(directory+"analyzed_TTOnly_PowhegPythia_25ns_skim_check_emu_noHLT.root");//ttbar
+	TFile * hfile1 = new TFile(directory+"analyzed_TTOnly_PowhegPythia_25ns_skim_check_emu_noHLT_reMiniAOD.root");//ttbar
 	TFile * hfile2 = new TFile(directory+"analyzed_WRtoENuToEMuJJ_MWR_2600_MNu_1300_low_dilepton_mass.root");//wr signal MC, by default will not be plotted
 	TFile * hfile3 = new TFile(directory+"analyzed_WZ_25ns_skim_check_emu_noHLT.root");//wz
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_25ns_skim_check_emu_noHLT.root");//zz
@@ -149,7 +149,7 @@ void checkMuEle_dataMC(){
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
 	//Float_t intLumi = 64.11;	//50ns Run2015B and C
-	Float_t intLumi = 166.937;	//25ns Run2015C and 2015D
+	Float_t intLumi = 569.494;	//25ns Run2015C and 2015D
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -164,21 +164,23 @@ void checkMuEle_dataMC(){
 		
 		//histos[1][i]->Scale(815.96*(intLumi)/4994250);	//ttBar to all 50ns
 		//histos[1][i]->Scale(57.35*(intLumi)/24512786);		//ttBar to dilepton 25ns
-		histos[1][i]->Scale(831.76*(intLumi)/19899500);	///powheg-pythia ttBar to all 25ns
+		histos[1][i]->Scale(831.76*(intLumi)/96834559);	///powheg-pythia ttBar to all 25ns
 		//histos[1][i]->Scale(831.76*(intLumi)/19665194);	///powheg-pythia ttBar to all 50ns
 		histos[1][i]->SetFillColor(3);
 		bkgndIntegral += histos[1][i]->Integral();
 #ifdef CHKTTBAR
 		std::cout<<"emu chnl ttBar integral =\t"<< histos[1][i]->Integral() <<std::endl;
 #endif
-		
+	
+		histos[3][i]->Scale(66.1*(intLumi)/991232);		//WZ to all 25ns
 		//histos[3][i]->Scale(66.1*(intLumi)/996920);		//WZ to all 50ns
-		histos[3][i]->Scale(5.52*(intLumi)/31054519);		//WZto2L2Q 25ns
+		//histos[3][i]->Scale(5.52*(intLumi)/31054519);		//WZto2L2Q 25ns
 		histos[3][i]->SetFillColor(4);
 		bkgndIntegral += histos[3][i]->Integral();
 	
+		histos[4][i]->Scale(15.4*(intLumi)/996168);		//ZZ to all 25ns
 		//histos[4][i]->Scale(15.4*(intLumi)/998848);		//ZZ to all 50ns
-		histos[4][i]->Scale(3.38*(intLumi)/18898680);		//ZZto2L2Q 25ns
+		//histos[4][i]->Scale(3.38*(intLumi)/18898680);		//ZZto2L2Q 25ns
 		histos[4][i]->SetFillColor(7);
 		bkgndIntegral += histos[4][i]->Integral();
 		
@@ -223,7 +225,7 @@ void checkMuEle_dataMC(){
 
 	TString xtitles[] = {"M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","electron #eta","muon #eta","electron #phi","muon #phi","number of leptons","number of vertices","#DeltaR ele muon","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 166.94/pb"};
+	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 569.5/pb"};
 
 	TString fnames[] = {"MEMu","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2","nelectrons","nmuons"};
 
