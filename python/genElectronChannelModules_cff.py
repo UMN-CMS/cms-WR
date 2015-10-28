@@ -42,8 +42,9 @@ bareGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 bareGenParticleSeq = cms.Sequence(bareGenJet*bareGenJetFilter*bareGenEle*bareGenEleFilter)
 
-## producers to find GenJets matched to Gen quarks
+bareGenJetSeq = cms.Sequence(bareGenJet*bareGenJetFilter)
 
+## producers to find GenJets matched to Gen quarks
 matchGenJetsToGenQuarksNoCuts = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedGenJetsNoCuts"),
 		dRforMatching = cms.double(0.6),
@@ -70,6 +71,21 @@ matchGenJetsToGenQuarksNoCutsNewPathFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(2)
 		)
 
+matchGenJetsToGenQuarksSeq = cms.Sequence(matchGenJetsToGenQuarksNoCuts*matchGenJetsToGenQuarksNoCutsFilter)
+
+## filters to select the generated Nu
+bareMatchedNu = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("prunedGenParticles"),
+		cut = cms.string("abs(pdgId) == 9900012 && abs(mother(0).pdgId) == 9900024")
+		)
+
+bareMatchedNuFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("bareMatchedNu"),
+		minNumber = cms.uint32(1)
+		)
+
+bareMatchedNuSeq = cms.Sequence(bareMatchedNu*bareMatchedNuFilter)
+
 
 ## filters to select the generated WR
 bareMatchedWR = cms.EDFilter("CandViewSelector",
@@ -83,7 +99,6 @@ bareMatchedWRFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareMatchedWRSeq = cms.Sequence(bareMatchedWR*bareMatchedWRFilter)
-
 
 
 ##filters to select gen particles matched to WR decay products via pdgId
@@ -125,13 +140,20 @@ bareMatchedGenQuarkFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(2)
 		)
 
-bareMatchedGenParticleSeq = cms.Sequence(bareMatchedLeadingGenEle*bareMatchedLeadingGenEleFilter*bareMatchedSubleadingGenEle*
-		bareMatchedSubleadingGenEleFilter*bareMatchedGenQuark*bareMatchedGenQuarkFilter)
+bareMatchedGenParticleSeq = cms.Sequence(
+		bareMatchedLeadingGenEle
+		*bareMatchedLeadingGenEleFilter
+		*bareMatchedSubleadingGenEle
+		*bareMatchedSubleadingGenEleFilter
+		*bareMatchedGenQuark
+		*bareMatchedGenQuarkFilter
+		)
 
 
 ##filters to cut out gen particles which could never hit the tracker based on eta trajectory
 ##use these modules to determine efficiency of signal skim (skim applies pT cuts to leptons and possibly jets)
 ##skim efficiency on signal = # evts passing reco cuts / # evts before reco cuts with gen objects falling within tracker coverage
+
 etaRestrictedMatchedGenQuark = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("bareMatchedGenQuark"),
 		cut = cms.string("abs(eta) < 2.5")
@@ -167,6 +189,52 @@ etaRestrictedMatchedGenParticleSeq = cms.Sequence(
 		*etaRestrictedMatchedGenSubleadingLepton
 		*etaRestrictedMatchedGenSubleadingLeptonFilter
 		)
+
+
+## filters on pt and eta of gen leptons from WR decay, and gen jets
+## matched to gen quarks from WR decay
+simultaneousPtEtaCutMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("bareMatchedLeadingGenEle"),
+		cut = cms.string("pt>40 && abs(eta) < 2.5")
+		)
+
+simultaneousPtEtaCutMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("simultaneousPtEtaCutMatchedLeadingGenEle"),
+		minNumber = cms.uint32(1)
+		)
+
+simultaneousPtEtaCutMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("bareMatchedSubleadingGenEle"),
+		cut = cms.string("pt>40 && abs(eta) < 2.5")
+		)
+
+simultaneousPtEtaCutMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("simultaneousPtEtaCutMatchedSubleadingGenEle"),
+		minNumber = cms.uint32(1)
+		)
+
+simultaneousPtEtaCutMatchedGenJets = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
+		cut = cms.string("pt>40 && abs(eta) < 2.5")
+		)
+
+simultaneousPtEtaCutMatchedGenJetsFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("simultaneousPtEtaCutMatchedGenJets"),
+		minNumber = cms.uint32(2)
+		)
+
+
+simultaneousPtEtaCutMatchedObjectsSeq = cms.Sequence(
+		simultaneousPtEtaCutMatchedLeadingGenEle
+		*simultaneousPtEtaCutMatchedLeadingGenEleFilter
+		*simultaneousPtEtaCutMatchedSubleadingGenEle
+		*simultaneousPtEtaCutMatchedSubleadingGenEleFilter
+		*simultaneousPtEtaCutMatchedGenJets
+		*simultaneousPtEtaCutMatchedGenJetsFilter
+		)
+
+## end simultaneous pt and eta filters on gen leptons from WR decays,
+## and gen jets matched to gen quarks from WR decay
 
 
 ##filters on pt and eta of gen leptons and jets
@@ -244,7 +312,6 @@ ptEtaRestrictedMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 matchedPtEtaConstrainedSeq = cms.Sequence(ptEtaRestrictedMatchedGenQuark*ptEtaRestrictedMatchedGenQuarkFilter
 		*ptEtaRestrictedMatchedSubleadingGenEle*ptEtaRestrictedMatchedSubleadingGenEleFilter
 		*ptEtaRestrictedMatchedLeadingGenEle*ptEtaRestrictedMatchedLeadingGenEleFilter)
-
 
 
 

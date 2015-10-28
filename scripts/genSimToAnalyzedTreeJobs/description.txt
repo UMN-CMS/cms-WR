@@ -1,0 +1,10 @@
+this collection of files and bash scripts are used to generate WR->EEJJ events at GEN-SIM lvl, simulate DIGI, 40 PU mixing, and RECO, and subsequently compress the RECO into miniAOD.  Finally, the HLT and offline selection cuts (signal region) are applied to miniAOD collections, and a TTree is produced which contains info on the final state leptons and jets.
+
+This code is a combination of previously created recoToMiniAOD (which took GENSIM files as input) and genSim simulations.
+
+the GENSIM files are saved to permanent storage near the end of each job.  Each GENSIM event takes about 2 minutes to generate!
+
+pu.tar is a tar file containing multiple minBias .root files with events at GENSIM level.  These root files are only needed in the digi-reco step.
+
+cmsswReleaseForGenSimToAnalyzedTrees.tar contains ExoAnalysis/cmsWR/ branch signalPdf from Oct 28 2015.  The file test/unmatched_recoElectronChannel_noCmdLineInputs_cfg.py is needed to apply the HLT and offline selections to miniAOD files.
+ 
