@@ -75,9 +75,10 @@ process.checkWRdecay = cms.Path(
 		#now apply pt and eta cuts to the gen leptons and gen jets
 		*process.simultaneousPtEtaCutMatchedObjectsSeq
 		*process.genMatchedParticleAnalyzerTwo
-		#now apply the dR(lepton, jet), dilepton mass, and four object mass cuts
+		#now apply the dR(lepton, jet), one lepton pt>60, dilepton mass, and four object mass cuts
 		*process.genMatchedJetLeptonDrSeparationSeq
 		*process.pickGenMatchedEleSeq
+		*process.requireGenMatchedHighPtEleSeq
 		*process.genMatchedDiLeptonCandidateSeq
 		*process.genMatchedFourObjMassSeq
 		*process.genMatchedParticleAnalyzerThree

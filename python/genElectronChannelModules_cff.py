@@ -291,6 +291,29 @@ pickGenMatchedEleSeq = cms.Sequence(pickGenMatchedLeadingEle*pickGenMatchedSuble
 ## end modules which slim leptons from dR(l,j) filter down to a signle module name
 
 
+## modules which require one gen electron have pt>60
+mergeGenMatchedEles = cms.EDProducer("CandViewMerger",
+		src = cms.VInputTag("pickGenMatchedLeadingEle","pickGenMatchedSubleadingEle")
+		)
+
+requireGenMatchedHighPtEle = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("mergeGenMatchedEles"),
+		cut = cms.string("pt>60")
+		)
+
+requireGenMatchedHighPtEleFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("requireGenMatchedHighPtEle"),
+		minNumber = cms.uint32(1)
+		)
+
+requireGenMatchedHighPtEleSeq = cms.Sequence(
+		mergeGenMatchedEles
+		*requireGenMatchedHighPtEle
+		*requireGenMatchedHighPtEleFilter
+		)
+
+## end modules which require one gen electron have pt>60
+
 ## modules which apply the dilepton mass cut to electrons which are being studied with gen jets
 genMatchedDiLeptonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
 		decay = cms.string("pickGenMatchedLeadingEle pickGenMatchedSubleadingEle"),
