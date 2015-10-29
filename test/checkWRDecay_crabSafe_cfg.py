@@ -24,11 +24,63 @@ process.genWRAnalyzerOne = cms.EDAnalyzer('singleParticleAnalyzer',
 		rightHandWsCollection = cms.InputTag("bareMatchedWR")
 		)
 
+process.genNuAnalyzerOne = cms.EDAnalyzer('singleParticleAnalyzer',
+		treeName = cms.string("genNu"),
+		rightHandWsCollection = cms.InputTag("bareMatchedNu")
+		)
+
+process.genMatchedParticleAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsNoCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("bareMatchedLeadingGenEle"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("bareMatchedSubleadingGenEle"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
+		)
+
+process.genMatchedParticleAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("simultaneousPtEtaCutMatchedLeadingGenEle"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("simultaneousPtEtaCutMatchedSubleadingGenEle"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("simultaneousPtEtaCutMatchedGenJets")
+		)
+
+process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithAllCuts"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200),
+		leptonsOneCollection = cms.InputTag("genMatchedFourObjMass","genMatchedLeadingElectronPassingFourObjMassCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedFourObjMass","genMatchedSubleadingElectronPassingFourObjMassCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedFourObjMass","genJetsPassingFourObjMassCut")
+		)
+
+
 #################################
 #Paths
 process.checkWRdecay = cms.Path(
 		process.bareMatchedWRSeq
 		*process.genWRAnalyzerOne
+		*process.bareMatchedNuSeq
+		*process.genNuAnalyzerOne
+		#identify the gen leptons from the WR decay, and the gen jets
+		#matched to the gen quarks from the WR decay
+		*process.bareMatchedGenParticleSeq
+		*process.bareGenJetSeq
+		*process.matchGenJetsToGenQuarksSeq
+		#now that the gen leptons and gen jets have been selected
+		#run an analyzer to study their kinematics before any cuts
+		*process.genMatchedParticleAnalyzerOne
+		#now apply pt and eta cuts to the gen leptons and gen jets
+		*process.simultaneousPtEtaCutMatchedObjectsSeq
+		*process.genMatchedParticleAnalyzerTwo
+		#now apply the dR(lepton, jet), dilepton mass, and four object mass cuts
+		*process.genMatchedJetLeptonDrSeparationSeq
+		*process.pickGenMatchedEleSeq
+		*process.genMatchedDiLeptonCandidateSeq
+		*process.genMatchedFourObjMassSeq
+		*process.genMatchedParticleAnalyzerThree	
 		)
 process.schedule = cms.Schedule(process.checkWRdecay)
 
@@ -51,7 +103,7 @@ process.source = cms.Source( "PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)
+    input = cms.untracked.int32(-1)
 )
 
 

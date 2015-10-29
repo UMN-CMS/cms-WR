@@ -149,7 +149,7 @@ void checkMuEle_dataMC(){
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
 	//Float_t intLumi = 64.11;	//50ns Run2015B and C
-	Float_t intLumi = 569.494;	//25ns Run2015C and 2015D
+	Float_t intLumi = 1285.201;	//25ns Run2015C and 2015D
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -225,7 +225,7 @@ void checkMuEle_dataMC(){
 
 	TString xtitles[] = {"M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","electron #eta","muon #eta","electron #phi","muon #phi","number of leptons","number of vertices","#DeltaR ele muon","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 569.5/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 569.5/pb"};
+	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb"};
 
 	TString fnames[] = {"MEMu","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2","nelectrons","nmuons"};
 

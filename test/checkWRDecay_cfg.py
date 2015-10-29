@@ -47,6 +47,15 @@ process.genMatchedParticleAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixe
 		jetsCollection = cms.InputTag("simultaneousPtEtaCutMatchedGenJets")
 		)
 
+process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithAllCuts"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200),
+		leptonsOneCollection = cms.InputTag("genMatchedFourObjMass","genMatchedLeadingElectronPassingFourObjMassCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedFourObjMass","genMatchedSubleadingElectronPassingFourObjMassCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedFourObjMass","genJetsPassingFourObjMassCut")
+		)
+
 
 #################################
 #Paths
@@ -66,8 +75,12 @@ process.checkWRdecay = cms.Path(
 		#now apply pt and eta cuts to the gen leptons and gen jets
 		*process.simultaneousPtEtaCutMatchedObjectsSeq
 		*process.genMatchedParticleAnalyzerTwo
-		#now apply the dilepton mass, dR(lepton, jet), and four object mass cuts
-
+		#now apply the dR(lepton, jet), dilepton mass, and four object mass cuts
+		*process.genMatchedJetLeptonDrSeparationSeq
+		*process.pickGenMatchedEleSeq
+		*process.genMatchedDiLeptonCandidateSeq
+		*process.genMatchedFourObjMassSeq
+		*process.genMatchedParticleAnalyzerThree
 		)
 process.schedule = cms.Schedule(process.checkWRdecay)
 

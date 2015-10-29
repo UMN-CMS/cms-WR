@@ -237,6 +237,116 @@ simultaneousPtEtaCutMatchedObjectsSeq = cms.Sequence(
 ## and gen jets matched to gen quarks from WR decay
 
 
+## apply the dR(lepton, jet) cut on gen leptons and gen jets matched to WR decay products
+genMatchedJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLeptonFlavor",
+		outputJetsCollectionName = cms.string("genJetsPassingDrSeparationCut"),
+		outputLeptonsOneCollectionName = cms.string("matchedLeadingGenElePassingDrSeparationCut"),
+		outputLeptonsTwoCollectionName = cms.string("matchedSubleadingGenElePassingDrSeparationCut"),
+		minDrSeparation = cms.double(0.4),
+		inputJetsCollTag = cms.InputTag("simultaneousPtEtaCutMatchedGenJets"),
+		inputLeptonsOneCollTag = cms.InputTag("simultaneousPtEtaCutMatchedLeadingGenEle"),
+		inputLeptonsTwoCollTag = cms.InputTag("simultaneousPtEtaCutMatchedSubleadingGenEle"),
+		minDileptonMassCut = cms.double(-1),
+		minLeptonDrSeparation = cms.double(0.4)  #separation btwn the two leptons
+		)
+
+genMatchedJetLeptonDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut"),
+		minNumber = cms.uint32(2)
+		)
+
+genMatchedLeadingEleDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),
+		minNumber = cms.uint32(1)
+		)
+
+genMatchedSubleadingEleDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),
+		minNumber = cms.uint32(1)
+		)
+
+genMatchedJetLeptonDrSeparationSeq = cms.Sequence(
+		genMatchedJetLeptonDrSeparation
+		*genMatchedJetLeptonDrSeparationFilter
+		*genMatchedLeadingEleDrSeparationFilter
+		*genMatchedSubleadingEleDrSeparationFilter
+		)
+
+## end modules which apply dR(lepton, jet) cut
+
+
+## modules which slim the leptons from dR(l,j) filter down to a single module name, instead of collections identified with two strings 
+pickGenMatchedLeadingEle = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),
+		cut = cms.string("")
+		)
+
+pickGenMatchedSubleadingEle = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),
+		cut = cms.string("")
+		)
+
+pickGenMatchedEleSeq = cms.Sequence(pickGenMatchedLeadingEle*pickGenMatchedSubleadingEle)
+
+## end modules which slim leptons from dR(l,j) filter down to a signle module name
+
+
+## modules which apply the dilepton mass cut to electrons which are being studied with gen jets
+genMatchedDiLeptonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+		decay = cms.string("pickGenMatchedLeadingEle pickGenMatchedSubleadingEle"),
+		role = cms.string("matchedLeadingEle matchedSubleadingEle"),
+		checkCharge = cms.bool(False),
+		cut = cms.string("mass > 200")
+		)
+
+genMatchedDiLeptonCandidateFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedDiLeptonCandidate"),
+		minNumber = cms.uint32(1)
+		)
+
+genMatchedDiLeptonCandidateSeq = cms.Sequence(genMatchedDiLeptonCandidate*genMatchedDiLeptonCandidateFilter)
+
+## end modules which apply the dilepton mass cut
+
+
+## modules which apply the four object mass cut using gen electrons and gen jets matched to WR decay products
+genMatchedFourObjMass = cms.EDProducer("applyFourObjMassCutTwoInputLeptonColls",
+		outputJetsCollectionName = cms.string("genJetsPassingFourObjMassCut"),
+		outputLeptonsOneCollectionName = cms.string("genMatchedLeadingElectronPassingFourObjMassCut"),
+		outputLeptonsTwoCollectionName = cms.string("genMatchedSubleadingElectronPassingFourObjMassCut"),
+		minFourObjMassCut = cms.double(600.0),
+		minDileptonMassCut = cms.double(200.0),
+		minLeptonDrSeparation = cms.double(0.4),  #separation btwn selected leptons
+		inputJetsCollTag = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut"),
+		inputLeptonsOneCollTag = cms.InputTag("pickGenMatchedLeadingEle"),
+		inputLeptonsTwoCollTag = cms.InputTag("pickGenMatchedSubleadingEle"),
+		)
+
+genMatchedFourObjMassLeptonsOneFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedFourObjMass","genMatchedLeadingElectronPassingFourObjMassCut"),
+		minNumber = cms.uint32(1)
+		)
+
+genMatchedFourObjMassLeptonsTwoFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedFourObjMass","genMatchedSubleadingElectronPassingFourObjMassCut"),
+		minNumber = cms.uint32(1)
+		)
+
+genMatchedFourObjMassJetsFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("genMatchedFourObjMass","genJetsPassingFourObjMassCut"),
+		minNumber = cms.uint32(2)
+		)
+
+genMatchedFourObjMassSeq = cms.Sequence(
+		genMatchedFourObjMass
+		*genMatchedFourObjMassLeptonsOneFilter
+		*genMatchedFourObjMassLeptonsTwoFilter
+		*genMatchedFourObjMassJetsFilter
+		)
+
+## end modules which apply the four object mass cut using gen electrons and gen jets matched to WR decay products
+
+
 ##filters on pt and eta of gen leptons and jets
 ptEtaRestrictedGenJet = cms.EDFilter("CandViewSelector",
 		#src = cms.InputTag("slimmedGenJets"),
