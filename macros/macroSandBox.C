@@ -31,7 +31,10 @@
 
 using namespace std;
 
-#define signalRegionEEJJBkgnds
+//#define genPlotsUsingWRDecayProducts
+//#define compareCentrallyProducedToPrivateWrSignal
+#define genWrAndNuMass
+//#define signalRegionEEJJBkgnds
 //#define lowMassSkimmedBkgndOnRealData
 //#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
@@ -42,6 +45,54 @@ using namespace std;
 //#define bkgndOverlaidOnMatchedSignal
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
+
+
+
+///use this fxn to plot and save one histogram using one branch from one TTree (or TChain)
+void makeAndSaveSingleHistoFromTree(TChain * chain,string canvName,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName){
+	gStyle->SetOptStat("");
+	TCanvas * cc = new TCanvas(canvName.c_str(),canvName.c_str(),750,700);
+	cc->cd();
+	chain->Draw(treeDrawArgs.c_str());
+	TH1 * tempHist = (TH1*) gROOT->FindObject(histName.c_str());
+	tempHist->SetTitle(histTitle.c_str());
+	tempHist->GetXaxis()->SetTitle(xAxisTitle.c_str());
+	tempHist->SetLineWidth(3);
+	tempHist->SetLineColor(1);
+
+	//adjust the horizontal axis range
+	Double_t mean = tempHist->GetMean(1);
+	tempHist->GetXaxis()->SetRangeUser((mean)/2,1.3*(mean));
+	tempHist->Draw("");
+	cc->SaveAs(outputFileName.c_str(),"recreate");
+	tempHist->Delete();
+
+}///end makeAndSaveSingleHistoFromTree()
+
+
+///use this fxn to plot and save one histogram using two branches from one TTree (or TChain) and a friend TTree or TChain
+void makeAndSaveSingleHistoFromTreeWithFriend(TChain * chain,TChain * friendChain,string friendAlias,string canvName,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName){
+	gStyle->SetOptStat("");
+	TCanvas * cc = new TCanvas(canvName.c_str(),canvName.c_str(),750,700);
+	cc->cd();
+	chain->AddFriend(friendChain,friendAlias.c_str());
+	chain->Draw(treeDrawArgs.c_str());
+	TH1 * tempHist = (TH1*) gROOT->FindObject(histName.c_str());
+	tempHist->SetTitle(histTitle.c_str());
+	tempHist->GetXaxis()->SetTitle(xAxisTitle.c_str());
+	tempHist->SetLineWidth(3);
+	tempHist->SetLineColor(1);
+
+	//adjust the horizontal axis range
+	Double_t mean = tempHist->GetMean(1);
+	tempHist->GetXaxis()->SetRangeUser((mean)/3,1.6*(mean));
+	tempHist->Draw("");
+	cc->SaveAs(outputFileName.c_str(),"recreate");
+	tempHist->Delete();
+
+}///end makeAndSaveSingleHistoFromTreeWithFriend()
+
+
 
 /**
  *
@@ -585,7 +636,9 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
 }///end overlayPointsOnStackedHistos
 
 
-/** the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
+/**
+ * use this fxn to overlay multiple curves onto one TCanvas 
+ * the TString key in inputChainMap contains the histogram plotting argument to use with TChain->Draw("plottingArgs")
  * the histogram name does not need to be passed into the fxn as an argument, it will be pulled from the map key
  * if doNormalizationByArea is true, then normalize the plotted histos so that the area under each curve = 1
  * title will be shown at the top of the plot
@@ -593,7 +646,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
  *
  *
  */
-void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel){
+void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier){
 	gStyle->SetOptStat("");
 	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
@@ -654,6 +707,9 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			(hIt->second)->Draw();
 			size_t firstChevron = (hIt->first).find_first_of('>');
 			outputFile = (hIt->first).substr(0,firstChevron);
+			size_t badFwdSlash = outputFile.find_first_of('/');
+			if(badFwdSlash != string::npos) outputFile.replace(badFwdSlash,1,"Over");
+			outputFile += outputFileNameModifier;
 			outputFile += ".png";
 #ifdef DEBUG
 			cout<<"outputFile = \t"<< outputFile <<endl;
@@ -1284,6 +1340,152 @@ void macroSandBox(){
 	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel){
 	
 #endif
+
+
+#ifdef genWrAndNuMass
+	//plot the gen WR and Nu mass distributions using the GEN lvl WR and Nu, not their decay products
+	string dir= "/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/";
+	string fileBegin = "all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-";
+	string fileEnd = ".root";
+	string fileMiddle = "_Nu_M-";
+	string wrMassOutputBegin = "genWRMass_WR_M-";
+	string nuMassOutputBegin = "genNuMass_WR_M-";
+	string nuWrMassRatioOutputBegin = "genNuMassOverWrMass_WR_M-";
+	string outputMiddle = "_Nu_M-";
+	string outputEnd = ".png";
+	int wrMass[] = {800,1000,1200,1400,1600,2000,2200,2400,2600,2800,3000,3200,3600,3800,4400,5000,5200,5600,5800,6000};
+	//int wrMass[] = {800,1000};
+	vector<int> wrMassVect(wrMass,wrMass + sizeof(wrMass)/sizeof(int));
+
+	string massDrawArgs="massWr>>+particleMassHisto";
+	string massHistoName="particleMassHisto";
+
+	//loop over all root files, plot the wr mass, and save png image of the plot
+	unsigned int maxI = wrMassVect.size();
+	for(unsigned int i=0;i<maxI ;i++){
+		string pfn = dir + fileBegin + to_string(wrMassVect[i]) + fileMiddle + to_string(wrMassVect[i]/2) + fileEnd;
+		TChain * wrChain = new TChain("genWRAnalyzerOne/genWR");
+		wrChain->Add(pfn.c_str());
+		TChain * nuChain = new TChain("genNuAnalyzerOne/genNu");
+		nuChain->Add(pfn.c_str());
+		makeAndSaveSingleHistoFromTree(wrChain,"c"+to_string(i),massDrawArgs,massHistoName,"GEN WR mass when Nu mass = "+to_string(wrMassVect[i]/2)+" GeV","WR Mass [GeV]",wrMassOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
+		makeAndSaveSingleHistoFromTree(nuChain,"d"+to_string(i),massDrawArgs,massHistoName,"GEN Nu mass when WR mass = "+to_string(wrMassVect[i])+" GeV","Nu Mass [GeV]",nuMassOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
+
+		//use the friend tree fxn to plot Nu mass / WR mass
+		string chAlias="wrTree", massRatioDrawArgs="(massWr/"+chAlias+".massWr)>>+nuMassOverWrMassHisto", massRatioHistoName="nuMassOverWrMassHisto";
+		makeAndSaveSingleHistoFromTreeWithFriend(nuChain,wrChain,chAlias,"e"+to_string(i),massRatioDrawArgs,massRatioHistoName,"GEN Nu Mass / WR Mass when WR mass = "+to_string(wrMassVect[i])+" GeV","Nu Mass / WR Mass",nuWrMassRatioOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
+
+		nuChain->Delete(), wrChain->Delete();
+
+	}//end loop over root files
+	
+
+#endif
+
+
+#ifdef compareCentrallyProducedToPrivateWrSignal
+
+	//compare distributions of the gen WR mass using the WR particle itself between centrally produced WR->eejj datasets
+	//and privately produced WR->eejj datasets
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel)
+	TChain * MWR2600MNu1300_matchedGenPrivateProduction = new TChain("genWRAnalyzerOne/genWR","");
+	MWR2600MNu1300_matchedGenPrivateProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/analyzed_privately_generated_WRToEEJJ_MWR2600_MNu1300_GENSIM.root");
+	TChain * MWR2600MNu520_matchedGenPrivateProduction = new TChain("genWRAnalyzerOne/genWR","");
+	MWR2600MNu520_matchedGenPrivateProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/analyzed_privately_generated_WRToEEJJ_MWR2600_MNu520_GENSIM.root");
+	TChain * MWR2600MNu2080_matchedGenPrivateProduction = new TChain("genWRAnalyzerOne/genWR","");
+	MWR2600MNu2080_matchedGenPrivateProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/analyzed_privately_generated_WRToEEJJ_MWR2600_MNu2080_GENSIM.root");
+	TChain * MWR2600MNu1300_matchedGenCentralProduction = new TChain("genWRAnalyzerOne/genWR","");
+	MWR2600MNu1300_matchedGenCentralProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrKinematics_WR_M-2600_Nu_M-1300.root");
+
+	string branchNames[] = {"nWRs","etaWr","ptWr","phiWr","massWr"};
+	string link=">>";
+	//string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3300)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3000)"};	//compare private GENSIM to centrally produced miniAOD
+	string titles[] = {"GEN WR Multiplicity","GEN WR #eta","GEN WR P_{T}","GEN WR #phi","GEN WR Mass"};
+	string xAxisLabels[] = {"number of WRs","WR eta","WR pT [GeV]","WR #phi","WR mass [GeV]"};
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	//string histoBeginnings[] = {"MNu 520","MNu 2080","MNu 1300"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = histoEndingVect.size();
+	for(unsigned int i=0; i<maxI; i++){
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu520_matchedGenPrivateProduction;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu2080_matchedGenPrivateProduction;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR2600MNu1300_matchedGenPrivateProduction;
+		
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu1300_matchedGenCentralProduction;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenPrivateProduction;
+		
+		string cName = "o"+to_string(i);
+		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" different GEN Nu Masses",xAxisLabels[i]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" Central vs Private Production",xAxisLabels[i]);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+
+
+#endif
+
+#ifdef genPlotsUsingWRDecayProducts
+	TChain * MWR2600MNu1300_matchedGenDecayProductsNoCuts = new TChain("genMatchedParticleAnalyzerOne/genLeptonsAndJetsNoCuts","");
+	MWR2600MNu1300_matchedGenDecayProductsNoCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-2600_Nu_M-1300.root");
+	TChain * MWR1400MNu700_matchedGenDecayProductsNoCuts = new TChain("genMatchedParticleAnalyzerOne/genLeptonsAndJetsNoCuts","");
+	MWR1400MNu700_matchedGenDecayProductsNoCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-1400_Nu_M-700.root");
+	TChain * MWR4400MNu2200_matchedGenDecayProductsNoCuts = new TChain("genMatchedParticleAnalyzerOne/genLeptonsAndJetsNoCuts","");
+	MWR4400MNu2200_matchedGenDecayProductsNoCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-4400_Nu_M-2200.root");
+	
+	
+	TChain * MWR2600MNu1300_matchedGenDecayProductsPtEtaDrCuts = new TChain("genMatchedParticleAnalyzerTwoPFive/genLeptonsAndJetsWithPtEtaDrCuts","");
+	MWR2600MNu1300_matchedGenDecayProductsPtEtaDrCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-2600_Nu_M-1300.root");
+	TChain * MWR1400MNu700_matchedGenDecayProductsPtEtaDrCuts = new TChain("genMatchedParticleAnalyzerTwoPFive/genLeptonsAndJetsWithPtEtaDrCuts","");
+	MWR1400MNu700_matchedGenDecayProductsPtEtaDrCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-1400_Nu_M-700.root");
+	TChain * MWR4400MNu2200_matchedGenDecayProductsPtEtaDrCuts = new TChain("genMatchedParticleAnalyzerTwoPFive/genLeptonsAndJetsWithPtEtaDrCuts","");
+	MWR4400MNu2200_matchedGenDecayProductsPtEtaDrCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-4400_Nu_M-2200.root");
+
+
+	TChain * MWR2600MNu1300_matchedGenDecayProductsAllCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts","");
+	MWR2600MNu1300_matchedGenDecayProductsAllCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-2600_Nu_M-1300.root");
+	TChain * MWR1400MNu700_matchedGenDecayProductsAllCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts","");
+	MWR1400MNu700_matchedGenDecayProductsAllCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-1400_Nu_M-700.root");
+	TChain * MWR4400MNu2200_matchedGenDecayProductsAllCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts","");
+	MWR4400MNu2200_matchedGenDecayProductsAllCuts->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-4400_Nu_M-2200.root");
+	
+
+	string branchNames[] = {"fourObjectMass","subleadingLeptonThreeObjMass","dileptonMass","dijetMass","dR_leadingLeptonLeadingJet","dR_leadingLeptonSubleadingJet","dR_subleadingLeptonLeadingJet","dR_subleadingLeptonSubleadingJet","ptEle[0]","etaEle[0]","phiEle[0]","ptEle[1]","etaEle[1]","phiEle[1]","ptJet[0]","etaJet[0]","phiJet[0]","ptJet[1]","etaJet[1]","phiJet[1]","subleadingLeptonThreeObjMass/fourObjectMass"};
+	string link=">>";
+	string histoEndings[] = {"_massWR(50,700,4900)","_subleadLeptonNuMass(50,300,2400)","_mLL(50,0,3700)","_mJJ(50,0,2500)","_leadLeptonLeadJetSeparation(30,0.,5)","_leadLeptonSubleadJetSeparation(30,0.,5)","_subleadLeptonLeadJetSeparation(30,0.,5)","_subleadLeptonSubleadJetSeparation(30,0.,5)","_leadLeptonPt(70,30,2100)","_leadLeptonEta(30,-2.5,2.5)","_leadLeptonPhi(30,-3.2,3.2)","_subleadLeptonPt(50,0,1600)","_subleadLeptonEta(30,-2.5,2.5)","_subleadLeptonPhi(30,-3.2,3.2)","_leadJetPt(60,0,1900)","_leadJetEta(30,-2.5,2.5)","_leadJetPhi(30,-3.2,3.2)","_subleadJetPt(50,0,1000)","_subleadJetEta(30,-2.5,2.5)","_subleadJetPhi(30,-3.2,3.2)","_threeObjMassDivByFourObjMass(50,0.,1.)"};
+	string titles[] = {"GEN WR Mass using gen leptons and jets","GEN Nu Mass using gen leptons and jets","GEN M_{EE} using gen leptons","GEN M_{JJ} using gen jets","GEN #DeltaR(lead lepton,lead jet)","GEN #DeltaR(lead lepton,sublead jet)","GEN #DeltaR(sublead lepton,lead jet)","GEN #DeltaR(sublead lepton,sublead jet)","P_{T} of GEN lepton with WR mother","#eta of GEN lepton with WR mother","#phi of GEN lepton with WR mother","P_{T} of GEN lepton with Nu mother","#eta of GEN lepton with Nu mother","#phi of GEN lepton with Nu mother","P_{T} of lead GEN jet with Nu mother","#eta of lead GEN jet with Nu mother","#phi of lead GEN jet with Nu mother","P_{T} of sublead GEN jet with Nu mother","#eta of sublead GEN jet with Nu mother","#phi of sublead GEN jet with Nu mother","GEN Nu Mass/WR Mass using gen leptons and jets"};
+	string xAxisLabels[] = {"WR mass [GeV]","Nu mass [GeV]","Dilepton mass [GeV]","Dijet mass [GeV]","#DeltaR(L,J)","#DeltaR(L,J)","#DeltaR(L,J)","#DeltaR(L,J)","pT [GeV]","#eta","#phi","pT [GeV]","#eta","#phi","pT [GeV]","#eta","#phi","pT [GeV]","#eta","#phi","Nu Mass/WR Mass"};
+	string outputFileModifier[] = {"_MWR_4400_2600_1400_MNu_2200_1300_700_with_no_cuts","_MWR_4400_2600_1400_MNu_2200_1300_700_with_pt_eta_dR_cuts","_MWR_4400_2600_1400_MNu_2200_1300_700_with_all_cuts"};
+	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
+	string histoBeginnings[] = {"MWR 1400 GeV","MWR 2600 GeV","MWR 4400 GeV"};
+	map<string,TChain*> placeHolderMapOne, placeHolderMapTwo, placeHolderMapThree;
+	unsigned int maxI = histoEndingVect.size();
+	//unsigned int maxI = 2;
+	for(unsigned int i=0; i<maxI; i++){
+		placeHolderMapOne[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR1400MNu700_matchedGenDecayProductsNoCuts;
+		placeHolderMapOne[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenDecayProductsNoCuts;
+		placeHolderMapOne[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR4400MNu2200_matchedGenDecayProductsNoCuts;
+	
+		placeHolderMapTwo[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR1400MNu700_matchedGenDecayProductsPtEtaDrCuts;
+		placeHolderMapTwo[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenDecayProductsPtEtaDrCuts;
+		placeHolderMapTwo[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR4400MNu2200_matchedGenDecayProductsPtEtaDrCuts;
+		
+		placeHolderMapThree[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR1400MNu700_matchedGenDecayProductsAllCuts;
+		placeHolderMapThree[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenDecayProductsAllCuts;
+		placeHolderMapThree[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR4400MNu2200_matchedGenDecayProductsAllCuts;
+		
+		string cNameOne = "o"+to_string(i), cNameTwo = "j"+to_string(i), cNameThree = "k"+to_string(i);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMapOne,cNameOne.c_str(),0.72,0.53,0.95,0.88,true,titles[i]+" after no cuts",xAxisLabels[i],outputFileModifier[0]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMapTwo,cNameTwo.c_str(),0.72,0.53,0.95,0.88,true,titles[i]+" after pT, #eta, #DeltaR(L,J) cuts",xAxisLabels[i],outputFileModifier[1]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMapThree,cNameThree.c_str(),0.72,0.53,0.95,0.88,true,titles[i]+" after all cuts",xAxisLabels[i],outputFileModifier[2]);
+	
+		placeHolderMapOne.clear(), placeHolderMapTwo.clear(), placeHolderMapThree.clear();
+	
+	}///end loop over branchNames
+
+
+#endif
+
 
 }///end macroSandBox()
 

@@ -47,6 +47,15 @@ process.genMatchedParticleAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixe
 		jetsCollection = cms.InputTag("simultaneousPtEtaCutMatchedGenJets")
 		)
 
+process.genMatchedParticleAnalyzerTwoPFive = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaDrCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut")
+		)
+
 process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
 		treeName = cms.string("genLeptonsAndJetsWithAllCuts"),
 		doDileptonMassCut = cms.bool(True),
@@ -62,26 +71,27 @@ process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMi
 process.checkWRdecay = cms.Path(
 		process.bareMatchedWRSeq
 		*process.genWRAnalyzerOne
-		*process.bareMatchedNuSeq
-		*process.genNuAnalyzerOne
-		#identify the gen leptons from the WR decay, and the gen jets
-		#matched to the gen quarks from the WR decay
-		*process.bareMatchedGenParticleSeq
-		*process.bareGenJetSeq
-		*process.matchGenJetsToGenQuarksSeq
-		#now that the gen leptons and gen jets have been selected
-		#run an analyzer to study their kinematics before any cuts
-		*process.genMatchedParticleAnalyzerOne
-		#now apply pt and eta cuts to the gen leptons and gen jets
-		*process.simultaneousPtEtaCutMatchedObjectsSeq
-		*process.genMatchedParticleAnalyzerTwo
-		#now apply the dR(lepton, jet), one lepton pt>60, dilepton mass, and four object mass cuts
-		*process.genMatchedJetLeptonDrSeparationSeq
-		*process.pickGenMatchedEleSeq
-		*process.requireGenMatchedHighPtEleSeq
-		*process.genMatchedDiLeptonCandidateSeq
-		*process.genMatchedFourObjMassSeq
-		*process.genMatchedParticleAnalyzerThree
+		#*process.bareMatchedNuSeq
+		#*process.genNuAnalyzerOne
+		###identify the gen leptons from the WR decay, and the gen jets
+		###matched to the gen quarks from the WR decay
+		#*process.bareMatchedGenParticleSeq
+		#*process.bareGenJetSeq
+		#*process.matchGenJetsToGenQuarksSeq
+		##now that the gen leptons and gen jets have been selected
+		##run an analyzer to study their kinematics before any cuts
+		#*process.genMatchedParticleAnalyzerOne
+		##now apply pt, eta, and dR(lepton,jet) cuts to the gen leptons and gen jets
+		#*process.simultaneousPtEtaCutMatchedObjectsSeq
+		#*process.genMatchedParticleAnalyzerTwo
+		#*process.genMatchedJetLeptonDrSeparationSeq
+		#*process.genMatchedParticleAnalyzerTwoPFive	
+		##now apply the one lepton pt>60, dilepton mass, and four object mass cuts
+		#*process.pickGenMatchedEleSeq
+		#*process.requireGenMatchedHighPtEleSeq
+		#*process.genMatchedDiLeptonCandidateSeq
+		#*process.genMatchedFourObjMassSeq
+		#*process.genMatchedParticleAnalyzerThree
 		)
 process.schedule = cms.Schedule(process.checkWRdecay)
 

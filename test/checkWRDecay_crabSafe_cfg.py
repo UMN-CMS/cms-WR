@@ -47,6 +47,15 @@ process.genMatchedParticleAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixe
 		jetsCollection = cms.InputTag("simultaneousPtEtaCutMatchedGenJets")
 		)
 
+process.genMatchedParticleAnalyzerTwoPFive = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaDrCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut")
+		)
+
 process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
 		treeName = cms.string("genLeptonsAndJetsWithAllCuts"),
 		doDileptonMassCut = cms.bool(True),
@@ -72,11 +81,12 @@ process.checkWRdecay = cms.Path(
 		#now that the gen leptons and gen jets have been selected
 		#run an analyzer to study their kinematics before any cuts
 		*process.genMatchedParticleAnalyzerOne
-		#now apply pt and eta cuts to the gen leptons and gen jets
+		#now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
 		*process.simultaneousPtEtaCutMatchedObjectsSeq
 		*process.genMatchedParticleAnalyzerTwo
-		#now apply the dR(lepton, jet), one lepton pt>60, dilepton mass, and four object mass cuts
 		*process.genMatchedJetLeptonDrSeparationSeq
+		*process.genMatchedParticleAnalyzerTwoPFive
+		#now apply the one lepton pt>60, dilepton mass, and four object mass cuts
 		*process.pickGenMatchedEleSeq
 		*process.requireGenMatchedHighPtEleSeq
 		*process.genMatchedDiLeptonCandidateSeq
@@ -87,7 +97,7 @@ process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('genWrKinematics.root')
+		fileName = cms.string('genWrNuAndDecayKinematicsNoMatchingInfo.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -97,7 +107,7 @@ process.options = cms.untracked.PSet(
 
 
 process.source = cms.Source( "PoolSource",
-	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-1400_MNu-700-TuneCUETP8M1_pythia8_13TeV_1.root'),
+	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_1.root'),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)

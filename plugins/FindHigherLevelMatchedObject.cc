@@ -76,6 +76,7 @@
 
 #define NOBJ 500
 //#define DEBUG
+//#define FILLTREE
 
 //
 // class declaration
@@ -211,6 +212,7 @@ FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterS
    
    tree=fs->make<TTree>(tName.c_str(),"matching higher level objects to lower level objects");
 
+#ifdef FILLTREE
    tree->Branch("nHigherLevel",&nHigherLevel,"nHigherLevel/I");
    tree->Branch("dR_lowerToHigherLvlObj",dR_lowerToHigherLvlObj,"dR_lowerToHigherLvlObj[nHigherLevel]/F");
    tree->Branch("ptHigherLevel",ptHigherLevel,"ptHigherLevel[nHigherLevel]/F");
@@ -228,7 +230,7 @@ FindHigherLevelMatchedObject::FindHigherLevelMatchedObject(const edm::ParameterS
  
    tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
    tree->Branch("runNumber",&runNumber,"runNumber/I");
-
+#endif
 	
    ///register the input collections	
    lowLevelToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("lowLevelCollTag"));
@@ -316,9 +318,11 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 	   nLowerLevel++;
 
    }///end loop over reco::Candidate objects in lowLevelObjectColl
- 
+
+#ifdef FILLTREE 
    ///fill the tree branches
    tree->Fill();
+#endif
 
 #ifdef DEBUG
    std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;

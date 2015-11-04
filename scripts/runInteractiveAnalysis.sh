@@ -15,7 +15,7 @@ workingDir='/uscms/home/skalafut/nobackup/WR_starting2015/mostUpToDateCode/CMSSW
 #NOTE the order of elements in these arrays is important
 #the Nth element in one array should correspond to the Nth element in all other arrays
 stdOutFileName=('analysisOutput_doubleEGCheckZee25nsRun2015D_Oct29_noHLT.txt'  'analysisOutput_muonEGCheckEMu_Run2015D25ns_Oct29_noHLT.txt'  'analysisOutput_doubleEGToEEJJLowMassSideband25nsRun2015D_Oct29_withHLT.txt'  'analysisOutput_muonEGToEMuJJLowMassSideband_Run2015D25ns_Oct29_withHLT.txt')
-inputFilesList=('doubleEGHasTwoHEEPRun2015D25ns_Oct_28_formatted.txt'  'muonEGHasHEEPandIsHighPtRun2015D25ns_Oct_28_formatted.txt'  'doubleEGHasTwoHEEPRun2015D25ns_Oct_28_formatted.txt'  'muonEGHasHEEPandIsHighPtRun2015D25ns_Oct_28_formatted.txt')
+inputFilesList=('doubleEGHasTwoHEEPRun2015D25ns_gold_Nov_01_formatted.txt'  'muonEGHasHEEPandIsHighPtRun2015D25ns_gold_Nov_01_formatted.txt'  'doubleEGHasTwoHEEPRun2015D25ns_gold_Nov_01_formatted.txt'  'muonEGHasHEEPandIsHighPtRun2015D25ns_gold_Nov_01_formatted.txt')
 outputFileDir=('analyzed_25ns_skims_check_Zee_using_two_HEEP'  'analyzed_25ns_skims_check_emu'  'analyzed_25ns_skims_low_dilepton_and_fourObj_mass_eejj'  'analyzed_25ns_skims_low_dilepton_mass_emujj')
 outputTreeFileName=('analyzed_DoubleEG_skim_25ns_hasTwoHEEP_Run2015D.root'  'analyzed_MuonEG_25ns_skim_check_emu_noHLT_Run2015D.root'  'analyzed_DoubleEG_25ns_skim_low_mass_region_eejj_Run2015D.root'  'analyzed_MuonEG_25ns_skim_low_dilepton_mass_region_emujj_Run2015D.root')
 globalTag=('74X_dataRun2_Prompt_v2'  '74X_dataRun2_Prompt_v2'  '74X_dataRun2_Prompt_v2'  '74X_dataRun2_Prompt_v2')
