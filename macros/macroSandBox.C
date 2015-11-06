@@ -32,8 +32,8 @@
 using namespace std;
 
 //#define genPlotsUsingWRDecayProducts
-//#define compareCentrallyProducedToPrivateWrSignal
-#define genWrAndNuMass
+#define compareCentrallyProducedToPrivateWrSignal
+//#define genWrAndNuMass
 //#define signalRegionEEJJBkgnds
 //#define lowMassSkimmedBkgndOnRealData
 //#define lowMassFlavorSidebandBkgndOnData
@@ -646,7 +646,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
  *
  *
  */
-void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier){
+void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
 	gStyle->SetOptStat("");
 	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
@@ -665,15 +665,25 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 	}///end loop over elements in inputChainMap
 
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
-	int colors[] = {1,2,4,8,12,30,40,45};
+	int colors[] = {1,2,4,8,12,25,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
+	short colorsSpecial[] = {kBlack,kBlack,kBlack,kRed,kRed,kRed,kBlue,kBlue,kBlue};
+	vector<short> colorSpecialVect(colorsSpecial,colorsSpecial + sizeof(colorsSpecial)/sizeof(short) );
+	int lineStyleSpecial[] = {1,3,7,1,3,7,1,3,7};	///1 is solid, 3 is dotted, 7 is medium dash
+	vector<int> lineStyleSpecialVect(lineStyleSpecial,lineStyleSpecial + sizeof(lineStyleSpecial)/sizeof(int));
 	Int_t i=0;
 	typedef map<string,TH1F*>::const_iterator cMapIt;
 	Double_t oldMax = 0;	///<height of tallest peak across all histos in overlayHistoMap
 	if(overlayHistoMap.size() > colorVect.size() ) cout<<"not enough unique colors in MultipleCurveOverlayHisto fxn!"<<endl;
 	for(cMapIt histIt=overlayHistoMap.begin(); histIt!=overlayHistoMap.end(); histIt++){
-		(histIt->second)->SetLineColor(colorVect[i]);
 		(histIt->second)->SetLineWidth(3);
+		if(!specialGrouping) (histIt->second)->SetLineColor(colorVect[i]);
+		else{
+			cout<<"using colorSpecialVect"<<endl;
+			cout<<"NOTE colorSpecialVect and lineStyleSpecialVect are current setup for 3 groups, each with 3 elements"<<endl;
+			(histIt->second)->SetLineColor(colorSpecialVect[i]);
+			(histIt->second)->SetLineStyle(lineStyleSpecialVect[i]);
+		}
 		if(doNormalizationByArea){
 			Double_t oldIntegral = (histIt->second)->Integral();
 			(histIt->second)->Scale(1.0/oldIntegral);
@@ -1388,37 +1398,61 @@ void macroSandBox(){
 	//compare distributions of the gen WR mass using the WR particle itself between centrally produced WR->eejj datasets
 	//and privately produced WR->eejj datasets
 	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel)
-	TChain * MWR2600MNu1300_matchedGenPrivateProduction = new TChain("genWRAnalyzerOne/genWR","");
-	MWR2600MNu1300_matchedGenPrivateProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/analyzed_privately_generated_WRToEEJJ_MWR2600_MNu1300_GENSIM.root");
-	TChain * MWR2600MNu520_matchedGenPrivateProduction = new TChain("genWRAnalyzerOne/genWR","");
-	MWR2600MNu520_matchedGenPrivateProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/analyzed_privately_generated_WRToEEJJ_MWR2600_MNu520_GENSIM.root");
-	TChain * MWR2600MNu2080_matchedGenPrivateProduction = new TChain("genWRAnalyzerOne/genWR","");
-	MWR2600MNu2080_matchedGenPrivateProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/analyzed_privately_generated_WRToEEJJ_MWR2600_MNu2080_GENSIM.root");
-	TChain * MWR2600MNu1300_matchedGenCentralProduction = new TChain("genWRAnalyzerOne/genWR","");
-	MWR2600MNu1300_matchedGenCentralProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrKinematics_WR_M-2600_Nu_M-1300.root");
 
-	string branchNames[] = {"nWRs","etaWr","ptWr","phiWr","massWr"};
+	TChain * Gen1000MWR500MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen1000MWR500MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_1000_NU_500_1.root");
+	TChain * Gen1000MWR150MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen1000MWR150MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_1000_NU_150_1.root");
+	TChain * Gen1000MWR900MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen1000MWR900MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_1000_NU_900_1.root");
+	
+	TChain * Gen2000MWR1000MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen2000MWR1000MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_2000_NU_1000_1.root");
+	TChain * Gen2000MWR200MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen2000MWR200MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_2000_NU_200_1.root");
+	TChain * Gen2000MWR1900MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen2000MWR1900MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_2000_NU_1900_1.root");
+	
+	TChain * Gen3200MWR1600MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen3200MWR1600MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_3200_NU_1600_1.root");
+	TChain * Gen3200MWR300MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen3200MWR300MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_3200_NU_300_1.root");
+	TChain * Gen3200MWR3100MNu = new TChain("genWRAnalyzerOne/genWR","");
+	Gen3200MWR3100MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_3200_NU_3100_1.root");
+	
+	//TChain * GenMWR1300_matchedGenCentralProduction = new TChain("genWRAnalyzerOne/genWR","");
+	//MWR2600MNu1300_matchedGenCentralProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrKinematics_WR_M-2600_Nu_M-1300.root");
+
+	string branchNames[] = {"massWr"};
 	string link=">>";
-	//string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3300)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3000)"};	//compare private GENSIM to centrally produced miniAOD
-	string titles[] = {"GEN WR Multiplicity","GEN WR #eta","GEN WR P_{T}","GEN WR #phi","GEN WR Mass"};
-	string xAxisLabels[] = {"number of WRs","WR eta","WR pT [GeV]","WR #phi","WR mass [GeV]"};
+	string histoEndings[] = {"_massWR(50,400,3800)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3000)"};	//compare private GENSIM to centrally produced miniAOD
+	string titles[] = {"GEN WR Mass"};
+	string xAxisLabels[] = {"WR mass [GeV]"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	//string histoBeginnings[] = {"MNu 520","MNu 2080","MNu 1300"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
+	string histoBeginnings[] = {"MWR 1000 MNU 150","MWR 1000 MNU 500","MWR 1000 MNU 900","MWR 2000 MNU 200","MWR 2000 MNU 1000","MWR 2000 MNU 1900","MWR 3200 MNU 300","MWR 3200 MNU 1600","MWR 3200 MNU 3100"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu520_matchedGenPrivateProduction;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu2080_matchedGenPrivateProduction;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = MWR2600MNu1300_matchedGenPrivateProduction;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen1000MWR150MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen1000MWR500MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen1000MWR900MNu;
+	
+		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = Gen2000MWR200MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = Gen2000MWR1000MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = Gen2000MWR1900MNu;
+	
+		placeHolderMap[branchNames[i]+link+histoBeginnings[6]+histoEndings[i]] = Gen3200MWR300MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[7]+histoEndings[i]] = Gen3200MWR1600MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[8]+histoEndings[i]] = Gen3200MWR3100MNu;
 		
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu1300_matchedGenCentralProduction;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300_matchedGenPrivateProduction;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu1300_matchedGenCentralProduction;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300;
 		
 		string cName = "o"+to_string(i);
-		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" different GEN Nu Masses",xAxisLabels[i]);
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" Central vs Private Production",xAxisLabels[i]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.45,0.95,0.90,true,titles[i]+" different GEN Nu Masses",xAxisLabels[i],"_GEN_WR_mass_multipleNuAndWRMasses",true);
+		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" Central vs Private Production",xAxisLabels[i],"_GEN_WR_mass_multipleNuAndWRMasses");
 		placeHolderMap.clear();
 	}///end loop over branchNames
 

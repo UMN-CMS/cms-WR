@@ -76,6 +76,7 @@ matchGenJetsToGenQuarksSeq = cms.Sequence(matchGenJetsToGenQuarksNoCuts*matchGen
 ## filters to select the generated Nu
 bareMatchedNu = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("prunedGenParticles"),
+		#src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 9900012 && abs(mother(0).pdgId) == 9900024")
 		)
 

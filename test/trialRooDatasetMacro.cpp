@@ -1,5 +1,6 @@
 //#define DEBUG
-#define PLOTCHECK
+//#define PLOTCHECK
+//#define countEvts
 
 #include "TChain.h"
 #include "TString.h"
@@ -113,14 +114,14 @@ int main(void){
 	//std::vector<Float_t> xSxn = {0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
 	
 
-	//std::vector<TString> wrMass = {"800"};
-	
-
-	std::vector<TString> wrMass = {"6000"};
-	std::vector<TString> nuMass = {"3000"};
-	std::vector<Float_t> xSxn = {0.0000144};
+	std::vector<TString> wrMass = {"1000","2000","3200"};
+	std::vector<TString> nuMass = {"500","1000","1600"};
+	std::vector<Float_t> xSxn = {1.78,0.0707,0.0034};
 	
 	Int_t max = wrMass.size();
+
+	TCanvas * c1 = new TCanvas("c1","c1",700,700);
+	c1->cd();
 	
 	for(Int_t i=0; i<max; i++){
 		///fit a function to each M_EEJJ distribution, save the image, then move on to a different input file
@@ -138,8 +139,13 @@ int main(void){
 		WRToEEJJTree->Add(dirName+"wr" + genWrMass + "nu" + genNuMass + "Tree.root");	///< WR signal TChain
 
 		///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
-		Float_t intLumi = 1000.;	///< integrated lumi
+		Float_t intLumi = 1500.;	///< integrated lumi
 		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
+
+#ifdef countEvts
+		Float_t normalizedEvtsPassing = (Float_t) ((WRToEEJJTree->GetEntries())*intLumi*xSxn[i]/50000);
+		std::cout<< normalizedEvtsPassing <<" evts would be expected with 1500/pb of 13TeV data from a WR signal with MWR=\t"<<genWrMass<<"\tMNu=\t"<<genNuMass<<"\t GeV"<<std::endl;
+#endif
 
 		/*
 		RooRealVar meanPeak("meanPeak", "", 1000, 600, maxMassWR);
@@ -207,6 +213,7 @@ int main(void){
 		//leftAlpha.setConstant();
 #endif
 
+		/*uncomment this when any fitting work should be done with this macro*/
 		RooDoubleCB * signalPDF = new RooDoubleCB("wrFit","",massWR,gaussMean,leftSigma,rightSigma,leftAlpha,rightAlpha,leftPower,rightPower);
 
 
@@ -229,17 +236,19 @@ int main(void){
 		//signalPDF->plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
 		//signalPDF->plotOn(frame, RooFit::Components(gausThirdGauss), RooFit::LineColor(kBlue), RooFit::LineStyle(2));
 
-		TCanvas * c1 = new TCanvas("c1","c1",600,600);
-		c1->cd();
+		//TCanvas * c1 = new TCanvas("c1","c1",700,700);
+		//c1->cd();
 		frame->Draw();
 		c1->Update();
-		TString plotDir = "test/tempPlots/RooDataSetMC25ns/";
-		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_DoubleCrystalBall_fit.png";
-		c1->SaveAs(plotDir+plotFileName,"recreate");
-		signalPDF->Delete();
+		//TString plotDir = "test/tempPlots/RooDataSetMC25ns/";
+		//TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_DoubleCrystalBall_fit.png";
+		//c1->SaveAs(plotDir+plotFileName,"recreate");
+		//signalPDF->Delete();
+		/**/
 
 	}///end loop over all input files
 
+	c1->SaveAs("MWR_1000_2000_3200_MNu_halfMWR_doubleCB_fit.png","recreate");
 
 	/*
 	Float_t maxRange = 1.6*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)

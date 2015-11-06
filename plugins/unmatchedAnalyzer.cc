@@ -357,7 +357,11 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	}
 
 	///get the number of vertices, jets, and leptons in the event
-	nVertices = vertices->size();
+	nVertices = 1;
+	if(vertices.isValid() ){
+		///GEN evt root files do not have a collection of reco::Vertex objects
+		nVertices = vertices->size();
+	}
 	nJets = jets->size();
 	nLeptons = leptons->size();
 

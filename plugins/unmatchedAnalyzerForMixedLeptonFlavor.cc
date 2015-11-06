@@ -421,7 +421,12 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	nLeptonsOne = leptonsOne->size();
 	nLeptonsTwo = leptonsTwo->size();
 	nLeptons = nLeptonsOne+nLeptonsTwo;
-	nVertices = vertices->size();
+	nVertices = 1;
+
+	if(vertices.isValid() ){
+		///GEN evt root files do not have a collection of reco::Vertex objects
+		nVertices = vertices->size();
+	}
 	
 	///assign iterators to both input leptons collections, and use these iterators to find the hardest and second hardest leptons in the evt
 	///if one lepton is not found in both collections, then skip this evt 

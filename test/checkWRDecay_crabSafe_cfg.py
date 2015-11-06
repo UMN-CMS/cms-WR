@@ -97,7 +97,7 @@ process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('genWrNuAndDecayKinematicsNoMatchingInfo.root')
+		fileName = cms.string('analyzed_genWrToEEJJFullOfflineAnalysis.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -105,9 +105,9 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
-
 process.source = cms.Source( "PoolSource",
-	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_1.root'),
+	#fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_1.root'),
+	fileNames = cms.untracked.vstring('file:WR_GEN_13TeV.root'),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)

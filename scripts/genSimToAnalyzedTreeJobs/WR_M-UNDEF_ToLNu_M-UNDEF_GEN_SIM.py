@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: WprimeToENu_M-2000_TuneCUETP8M1_13TeV-pythia8_cff --conditions auto:run2_mc -n 5 --eventcontent FEVTDEBUG -s GEN,SIM --datatier GEN-SIM --mc --beamspot Realistic8TeVCollision --fileout file:WR_GEN_SIM.root --no_exec
+# with command line options: WprimeToENu_M-2000_TuneCUETP8M1_13TeV-pythia8_cff --conditions auto:run2_mc -n 5 --eventcontent FEVTDEBUG -s GEN,SIM --datatier GEN-SIM --mc --beamspot NominalCollision2015 --fileout file:WR_GEN_SIM.root --no_exec
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SIM')
@@ -17,7 +17,7 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.Geometry.GeometrySimDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
-process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic8TeVCollision_cfi')
+process.load('IOMC.EventVertexGenerators.VtxSmearedNominalCollision2015_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
