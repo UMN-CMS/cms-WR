@@ -60,7 +60,7 @@ void muEle_dataMC_compare(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,20,0,650);
+	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,22,150,1500);
 	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,22,0,220);
 	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,22,0,220);
 	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,14,0,140);
@@ -240,7 +240,7 @@ void muEle_dataMC_compare(){
 
 
 	///make a legend with appropriate labels for MC processes
-	TLegend *leg = new TLegend( 0.62, 0.64, 0.89, 0.87 ) ;
+	TLegend *leg = new TLegend( 0.60, 0.64, 0.89, 0.87 ) ;
 	leg->SetNColumns(2);
 	leg->AddEntry( histos[6][0], "Data" ,"ep") ;
 	leg->AddEntry( histos[0][0], "DY" ) ; 
@@ -257,6 +257,7 @@ void muEle_dataMC_compare(){
 
 	TString fnames[] = {"MEMuJJ","MEMu","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","nelectrons","nmuons"};
 
+	gStyle->SetTitleOffset(1.3,"Y");
 
 	for(int icanvas=0; icanvas<nhistos; icanvas++){
 #ifdef DEBUG

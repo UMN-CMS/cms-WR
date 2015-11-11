@@ -48,6 +48,7 @@
 #include "DataFormats/EgammaReco/interface/BasicClusterFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
@@ -164,6 +165,17 @@ class unmatchedAnalyzer : public edm::EDAnalyzer {
 		  }///end loop over reco::Candidate objects in the collection named coll
 
 	  }///end findHighestPt()
+
+	  /// this fxn finds the highest MET object, and assigns it to a const_iterator of type std::vector<pat::MET>
+	  void findHighestMET(std::vector<pat::MET>::const_iterator & iter, edm::Handle<std::vector<pat::MET> > coll){
+		  for(std::vector<pat::MET>::const_iterator it = coll->begin(); it!=coll->end(); it++){
+			  if(iter==coll->end()) iter=it;
+			  else{
+				  if(it->et() > iter->et()) iter=it;
+			  }
+		  }///end loop over pat::MET objects in the collection named coll
+
+	  }///end findHighestMET()
 	 
 
 private:
@@ -184,12 +196,14 @@ edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > >
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > jets;
 edm::Handle<GenEventInfoProduct> genEvtInfo;
 edm::Handle<std::vector<reco::Vertex> > vertices;
+edm::Handle<std::vector<pat::MET> > met;
 
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsToken;
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > jetsToken;
 edm::EDGetTokenT<GenEventInfoProduct> genEventInfoToken;
 edm::EDGetTokenT<std::vector<reco::Vertex> > verticesToken;
+edm::EDGetTokenT<std::vector<pat::MET> > metToken;
 
 
 TTree * tree;
@@ -200,6 +214,9 @@ ULong64_t evtNumber;
 Int_t nJets;
 Int_t nLeptons;
 Int_t nVertices;
+Int_t nMETs;
+
+Float_t missingET;
 
 //first element is leading (highest pT) electron
 //second element is subleading electron
@@ -280,7 +297,10 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    tree->Branch("nJets",&nJets,"nJets/I");
    tree->Branch("nLeptons",&nLeptons,"nLeptons/I");
    tree->Branch("nVertices",&nVertices,"nVertices/I");
-
+   tree->Branch("nMETs",&nMETs,"nMETs/I");
+   
+   tree->Branch("missingET",&missingET,"missingET/F");
+ 
    tree->Branch("etaJet",etaJet,"etaJet[2]/F");
    tree->Branch("ptJet",ptJet,"ptJet[2]/F");
    tree->Branch("phiJet",phiJet,"phiJet[2]/F");
@@ -312,6 +332,7 @@ unmatchedAnalyzer::unmatchedAnalyzer(const edm::ParameterSet& iConfig):
    jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
    genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
    verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
+   metToken = consumes<std::vector<pat::MET> >(edm::InputTag("slimmedMETs"));
 
 }
 
@@ -354,6 +375,18 @@ unmatchedAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		///real data does not have gen lvl event weights
 		evWeight = genEvtInfo->weight();
 		if(evWeight < 0) evWeightSign = -1.0;
+	}
+
+	///get MET info if it is available (only from MINIAOD files)
+	missingET = 0, nMETs = 0;
+	iEvent.getByToken(metToken, met);
+	if(met.isValid() ){
+		nMETs = met->size();
+		///find the highest MET object in the met handle
+		std::vector<pat::MET>::const_iterator leadMET = met->end();
+		findHighestMET(leadMET, met);
+		///pat::MET objects inherit methods defined for reco::Candidate objects, like eta(), et(), and pt()
+		if(leadMET != met->end() ) missingET = leadMET->et();
 	}
 
 	///get the number of vertices, jets, and leptons in the event

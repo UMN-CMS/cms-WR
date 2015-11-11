@@ -69,35 +69,36 @@ process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMi
 #################################
 #Paths
 process.checkWRdecay = cms.Path(
-		process.bareMatchedWRSeq
-		*process.genWRAnalyzerOne
-		*process.bareMatchedNuSeq
-		*process.genNuAnalyzerOne
-		#identify the gen leptons from the WR decay, and the gen jets
-		#matched to the gen quarks from the WR decay
-		*process.bareMatchedGenParticleSeq
-		*process.bareGenJetSeq
-		*process.matchGenJetsToGenQuarksSeq
-		#now that the gen leptons and gen jets have been selected
-		#run an analyzer to study their kinematics before any cuts
-		*process.genMatchedParticleAnalyzerOne
-		#now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
-		*process.simultaneousPtEtaCutMatchedObjectsSeq
-		*process.genMatchedParticleAnalyzerTwo
-		*process.genMatchedJetLeptonDrSeparationSeq
-		*process.genMatchedParticleAnalyzerTwoPFive
-		#now apply the one lepton pt>60, dilepton mass, and four object mass cuts
-		*process.pickGenMatchedEleSeq
-		*process.requireGenMatchedHighPtEleSeq
-		*process.genMatchedDiLeptonCandidateSeq
-		*process.genMatchedFourObjMassSeq
-		*process.genMatchedParticleAnalyzerThree	
+		process.hasGenMuOrTauFlavorsSeq
+		#process.bareMatchedWRSeq
+		#*process.genWRAnalyzerOne
+		#*process.bareMatchedNuSeq
+		#*process.genNuAnalyzerOne
+		##identify the gen leptons from the WR decay, and the gen jets
+		##matched to the gen quarks from the WR decay
+		#*process.bareMatchedGenParticleSeq
+		#*process.bareGenJetSeq
+		#*process.matchGenJetsToGenQuarksSeq
+		##now that the gen leptons and gen jets have been selected
+		##run an analyzer to study their kinematics before any cuts
+		#*process.genMatchedParticleAnalyzerOne
+		##now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
+		#*process.simultaneousPtEtaCutMatchedObjectsSeq
+		#*process.genMatchedParticleAnalyzerTwo
+		#*process.genMatchedJetLeptonDrSeparationSeq
+		#*process.genMatchedParticleAnalyzerTwoPFive
+		##now apply the one lepton pt>60, dilepton mass, and four object mass cuts
+		#*process.pickGenMatchedEleSeq
+		#*process.requireGenMatchedHighPtEleSeq
+		#*process.genMatchedDiLeptonCandidateSeq
+		#*process.genMatchedFourObjMassSeq
+		#*process.genMatchedParticleAnalyzerThree	
 		)
 process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analyzed_genWrToEEJJFullOfflineAnalysis.root')
+		fileName = cms.string('checkEMuContamination.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -107,7 +108,8 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
 	#fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_1.root'),
-	fileNames = cms.untracked.vstring('file:WR_GEN_13TeV.root'),
+	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/WRSignal_slimmedGEN/WR_MWR_1000_ToLNu_MNu_600_GEN_13TeV_1.root'),
+	#fileNames = cms.untracked.vstring('file:WR_GEN_13TeV.root'),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)

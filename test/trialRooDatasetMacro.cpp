@@ -1,5 +1,5 @@
 //#define DEBUG
-//#define PLOTCHECK
+#define PLOTCHECK
 //#define countEvts
 
 #include "TChain.h"
@@ -120,9 +120,6 @@ int main(void){
 	
 	Int_t max = wrMass.size();
 
-	TCanvas * c1 = new TCanvas("c1","c1",700,700);
-	c1->cd();
-	
 	for(Int_t i=0; i<max; i++){
 		///fit a function to each M_EEJJ distribution, save the image, then move on to a different input file
 		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
@@ -217,7 +214,6 @@ int main(void){
 		RooDoubleCB * signalPDF = new RooDoubleCB("wrFit","",massWR,gaussMean,leftSigma,rightSigma,leftAlpha,rightAlpha,leftPower,rightPower);
 
 
-
 		///plot the data distribution and the fit, and save an image of the result
 		RooPlot *frame = massWR.frame(500);
 		frame->GetXaxis()->SetRangeUser(600,maxRange);
@@ -236,19 +232,20 @@ int main(void){
 		//signalPDF->plotOn(frame, RooFit::Components(gausPeak), RooFit::LineColor(kGreen), RooFit::LineStyle(2));
 		//signalPDF->plotOn(frame, RooFit::Components(gausThirdGauss), RooFit::LineColor(kBlue), RooFit::LineStyle(2));
 
-		//TCanvas * c1 = new TCanvas("c1","c1",700,700);
-		//c1->cd();
+		TCanvas * c1 = new TCanvas("c1","c1",700,700);
+		c1->cd();
 		frame->Draw();
 		c1->Update();
-		//TString plotDir = "test/tempPlots/RooDataSetMC25ns/";
-		//TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_DoubleCrystalBall_fit.png";
-		//c1->SaveAs(plotDir+plotFileName,"recreate");
-		//signalPDF->Delete();
+		TString plotDir = "test/tempPlots/RooDataSetMC25ns/";
+		TString plotFileName = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_DoubleCrystalBall_fit.png";
+		TString plotFileNamePdf = "eejj_mass_WR_signal_MWR_" + genWrMass + "_MNu_halfMWR_with_DoubleCrystalBall_fit.pdf";	
+		c1->SaveAs(plotDir+plotFileName,"recreate");
+		c1->SaveAs(plotDir+plotFileNamePdf,"recreate");
+		signalPDF->Delete();
 		/**/
 
 	}///end loop over all input files
 
-	c1->SaveAs("MWR_1000_2000_3200_MNu_halfMWR_doubleCB_fit.png","recreate");
 
 	/*
 	Float_t maxRange = 1.6*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)

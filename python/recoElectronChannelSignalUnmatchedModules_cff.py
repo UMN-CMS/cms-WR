@@ -1,5 +1,18 @@
 import FWCore.ParameterSet.Config as cms
 
+## transform objects in slimmedMETs collection into reco::Candidate objects
+#bareMET = cms.EDFilter("CandViewSelector",
+#		src = cms.InputTag("slimmedMETs"),
+#		cut = cms.string("")
+#		)
+#
+#bareMETFilter = cms.EDFilter("CandViewCountFilter",
+#		src = cms.InputTag("bareMET"),
+#		minNumber = cms.uint32(0)
+#		)
+#
+#bareMETSeq = cms.Sequence(bareMET*bareMETFilter)
+
 ## transform the objects in slimmedJets and slimmedElectrons into reco::Candidate objects
 bareRecoJet = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedJets"),

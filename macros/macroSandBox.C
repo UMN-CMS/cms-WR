@@ -4,6 +4,7 @@
 #include <TStyle.h>
 #include <TString.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <THStack.h>
 #include <TF1.h>
 #include <TGraphErrors.h>
@@ -21,6 +22,9 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <stdio.h>
+#include <sstream>
 #include <vector>
 #include <map>
 #include <utility>
@@ -31,8 +35,9 @@
 
 using namespace std;
 
+#define twoDimPlotGenWrAcceptance
 //#define genPlotsUsingWRDecayProducts
-#define compareCentrallyProducedToPrivateWrSignal
+//#define compareCentrallyProducedToPrivateWrSignal
 //#define genWrAndNuMass
 //#define signalRegionEEJJBkgnds
 //#define lowMassSkimmedBkgndOnRealData
@@ -667,9 +672,11 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
 	int colors[] = {1,2,4,8,12,25,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
-	short colorsSpecial[] = {kBlack,kBlack,kBlack,kRed,kRed,kRed,kBlue,kBlue,kBlue};
+	//short colorsSpecial[] = {kBlack,kBlack,kBlack,kRed,kRed,kRed,kBlue,kBlue,kBlue};
+	short colorsSpecial[] = {kRed,kBlack,kBlue};
 	vector<short> colorSpecialVect(colorsSpecial,colorsSpecial + sizeof(colorsSpecial)/sizeof(short) );
-	int lineStyleSpecial[] = {1,3,7,1,3,7,1,3,7};	///1 is solid, 3 is dotted, 7 is medium dash
+	//int lineStyleSpecial[] = {2,1,6,1,6,2,1,2,6};	///1 is solid, 2 is small dash, 3 is dotted, 7 is medium dash, 9 is large dash, 10 is large dash dot
+	int lineStyleSpecial[] = {1,1,1};	///1 is solid, 2 is small dash, 3 is dotted, 7 is medium dash, 9 is large dash, 10 is large dash dot
 	vector<int> lineStyleSpecialVect(lineStyleSpecial,lineStyleSpecial + sizeof(lineStyleSpecial)/sizeof(int));
 	Int_t i=0;
 	typedef map<string,TH1F*>::const_iterator cMapIt;
@@ -711,7 +718,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		(mIt->second)->SetMaximum(1.5*oldMax);
 	}///end loop over elements in overlayHistoMap
 	
-	string outputFile;
+	string outputFile, outputFilePdf;
 	for(cMapIt hIt=overlayHistoMap.begin(); hIt!=overlayHistoMap.end(); hIt++){
 		if(hIt==overlayHistoMap.begin()){
 			(hIt->second)->Draw();
@@ -720,7 +727,9 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			size_t badFwdSlash = outputFile.find_first_of('/');
 			if(badFwdSlash != string::npos) outputFile.replace(badFwdSlash,1,"Over");
 			outputFile += outputFileNameModifier;
+			outputFilePdf += outputFile;
 			outputFile += ".png";
+			outputFilePdf += ".pdf";
 #ifdef DEBUG
 			cout<<"outputFile = \t"<< outputFile <<endl;
 #endif
@@ -729,6 +738,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 	}///end loop which draws histograms
 	leg->Draw();
 	canv->SaveAs(outputFile.c_str(),"recreate");
+	canv->SaveAs(outputFilePdf.c_str(),"recreate");
 
 }///end makeAndSaveMultipleCurveOverlayHisto()
 
@@ -1425,33 +1435,40 @@ void macroSandBox(){
 
 	string branchNames[] = {"massWr"};
 	string link=">>";
-	string histoEndings[] = {"_massWR(50,400,3800)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoEndings[] = {"_massWR(50,700,1300)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoEndings[] = {"_massWR(50,1600,2400)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	string histoEndings[] = {"_massWR(50,2800,3800)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+		
 	//string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3000)"};	//compare private GENSIM to centrally produced miniAOD
 	string titles[] = {"GEN WR Mass"};
 	string xAxisLabels[] = {"WR mass [GeV]"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"MWR 1000 MNU 150","MWR 1000 MNU 500","MWR 1000 MNU 900","MWR 2000 MNU 200","MWR 2000 MNU 1000","MWR 2000 MNU 1900","MWR 3200 MNU 300","MWR 3200 MNU 1600","MWR 3200 MNU 3100"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoBeginnings[] = {"MWR 1000 MNU 150","MWR 1000 MNU 500","MWR 1000 MNU 900"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoBeginnings[] = {"MWR 2000 MNU 200","MWR 2000 MNU 1000","MWR 2000 MNU 1900"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	string histoBeginnings[] = {"MWR 3200 MNU 300","MWR 3200 MNU 1600","MWR 3200 MNU 3100"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoBeginnings[] = {"MWR 1000 MNU 150","MWR 1000 MNU 500","MWR 1000 MNU 900","MWR 2000 MNU 200","MWR 2000 MNU 1000","MWR 2000 MNU 1900","MWR 3200 MNU 300","MWR 3200 MNU 1600","MWR 3200 MNU 3100"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	
 	//string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen1000MWR150MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen1000MWR500MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen1000MWR900MNu;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen1000MWR150MNu;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen1000MWR500MNu;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen1000MWR900MNu;
 	
-		placeHolderMap[branchNames[i]+link+histoBeginnings[3]+histoEndings[i]] = Gen2000MWR200MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[4]+histoEndings[i]] = Gen2000MWR1000MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[5]+histoEndings[i]] = Gen2000MWR1900MNu;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen2000MWR200MNu;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen2000MWR1000MNu;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen2000MWR1900MNu;
 	
-		placeHolderMap[branchNames[i]+link+histoBeginnings[6]+histoEndings[i]] = Gen3200MWR300MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[7]+histoEndings[i]] = Gen3200MWR1600MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[8]+histoEndings[i]] = Gen3200MWR3100MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen3200MWR300MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen3200MWR1600MNu;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen3200MWR3100MNu;
 		
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu1300_matchedGenCentralProduction;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300;
 		
 		string cName = "o"+to_string(i);
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.45,0.95,0.90,true,titles[i]+" different GEN Nu Masses",xAxisLabels[i],"_GEN_WR_mass_multipleNuAndWRMasses",true);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.45,0.95,0.90,true,titles[i]+" at different GEN Nu Masses",xAxisLabels[i],"_GEN_WR_mass_3200_Nu_masses_300_1600_3100",true);
 		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" Central vs Private Production",xAxisLabels[i],"_GEN_WR_mass_multipleNuAndWRMasses");
 		placeHolderMap.clear();
 	}///end loop over branchNames
@@ -1520,6 +1537,71 @@ void macroSandBox(){
 
 #endif
 
+
+#ifdef twoDimPlotGenWrAcceptance
+	///make a 2D plot with MNu as the vertical axis, MWR as the horizontal axis, and the fraction of GEN WR->eejj evts which
+	///pass all offline cuts at each point in the (MWR, MNu) space
+	///also print a table of these values
+
+	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
+	string dir= "/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/";
+	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
+	string fileEnd = "_1.root";
+	string fileMiddle = "_NU_";
+	string cutEfficiencyVsMassFile = "offlineEfficienciesVsMasses.txt";
+	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::app);
+	Float_t passingPercentage=-1;
+	gStyle->SetTitleOffset(1.5,"Y");
+	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing GEN pT, eta, and #DeltaR cuts",58,700,3600,72,0,3600);
+	gStyle->SetOptStat("");
+
+	int maxWrMass=3500, increment=50;
+	//int maxWrMass=1850, increment=50;
+	//starting value for wrMass equals the minimum wr mass
+	for(int wrMass=800; wrMass<=maxWrMass ; wrMass+=increment){
+		///loop over WR mass values
+		
+		for(int nuMass=50; nuMass<wrMass ; nuMass+=increment){
+			///loop over Nu mass values
+
+			///define input root file name
+			string pfn = dir+fileBegin+to_string(wrMass)+fileMiddle+to_string(nuMass)+fileEnd;
+			
+			///define one TChain to count the number of events generated, and record the desired WR and Nu masses
+			///define another TChain to count the number of evts passing all offline cuts at GEN lvl (no HLT or ID)
+			TChain * genInfo = new TChain("genNuAnalyzerOne/genNu");
+			genInfo->Add(pfn.c_str());
+			//TChain * afterOfflineCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts");
+			TChain * afterOfflineCuts = new TChain("genMatchedParticleAnalyzerTwoPFive/genLeptonsAndJetsWithPtEtaDrCuts");
+			afterOfflineCuts->Add(pfn.c_str());
+
+			///calculate percentage of evts which pass GEN cuts, and store this percentage along with the nu and wr mass values in a txt file
+			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries()/genInfo->GetEntries());
+			//writeToEfficiencyFile << passingPercentage <<"\tpercent of events with WR mass=\t"<< wrMass <<"\tand Nu mass=\t"<< nuMass <<"\tpass all cuts"<< endl;
+			
+			///fill a bin in the 2D histo with a weight equal to passingPercentage
+			twoDimAcceptanceHist->Fill((Double_t) wrMass, (Double_t) nuMass,passingPercentage);
+			genInfo->Delete();
+			afterOfflineCuts->Delete();
+
+		}///end loop over Nu mass values
+
+	}///end loop over WR mass values	
+	
+	///set axis labels and draw the histo, save an image of it (both pdf and png formats), and close the txt file
+	twoDimAcceptanceHist->GetXaxis()->SetTitle("WR Mass [GeV]");
+	twoDimAcceptanceHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
+	TCanvas * r1 = new TCanvas("r1","r1",900,700);
+	r1->cd();
+	twoDimAcceptanceHist->Draw("COLZ");
+	r1->SaveAs("twoDimGenWrAcceptances_afterBasePtEtaDrCuts.png","recreate");
+	r1->SaveAs("twoDimGenWrAcceptances_afterBasePtEtaDrCuts.pdf","recreate");
+
+	writeToEfficiencyFile.close();
+
+
+#endif
+	//end twoDimPlotGenWrAcceptance
 
 }///end macroSandBox()
 

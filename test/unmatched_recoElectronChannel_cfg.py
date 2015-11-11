@@ -111,9 +111,7 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
-
 inputFiles = cms.untracked.vstring(options.files)
-
 
 
 process.source = cms.Source( "PoolSource",

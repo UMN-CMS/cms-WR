@@ -56,7 +56,7 @@ process.schedule = cms.Schedule(process.unmatchedRecoSignalPath)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analyzed_tree_eejjSignalRegion_WR_Signal.root')
+		fileName = cms.string('analyzed_tree_eejjSignalRegion.root')
 	
 )
 
@@ -70,7 +70,7 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-		'file:eejjSignalRegion_WR_Signal.root'
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root'
     ),
     #inputCommands = cms.untracked.vstring(
     #    'keep *'

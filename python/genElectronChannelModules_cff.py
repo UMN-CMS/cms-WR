@@ -8,6 +8,16 @@ printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
 		#src = cms.InputTag("prunedGenParticles")
 		)
 
+hasGenMuOrTau = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("genParticles"),
+		cut = cms.string("(abs(pdgId) == 13 && abs(mother(0).pdgId) > 9900011) || (abs(pdgId) == 15 && abs(mother(0).pdgId) > 9900011)")
+		)
+
+hasGenMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("hasGenMuOrTau"),
+		minNumber = cms.uint32(1)
+		)
+
 hasGenNuMuOrTau = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) > 9900012 && abs(pdgId) < 9900024")
@@ -16,6 +26,12 @@ hasGenNuMuOrTau = cms.EDFilter("CandViewSelector",
 hasGenNuMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("hasGenNuMuOrTau"),
 		minNumber = cms.uint32(1)
+		)
+
+hasGenMuOrTauFlavorsSeq = cms.Sequence(
+		#hasGenNuMuOrTau
+		#*hasGenNuMuOrTauFilter
+		hasGenMuOrTau*hasGenMuOrTauFilter
 		)
 
 bareGenJet = cms.EDFilter("CandViewSelector",
