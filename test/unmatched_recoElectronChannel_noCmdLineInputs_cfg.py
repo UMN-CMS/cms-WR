@@ -4,6 +4,7 @@ process = cms.Process("RECOEEJJUnmatched")
 
 ## load the filters, producers, and sequences defined in other config file fragments
 process.load('ExoAnalysis.cmsWR.recoElectronChannelSignalUnmatchedModules_cff')
+process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -38,6 +39,36 @@ process.unmatchedSignalRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
 		minDileptonMass = cms.double(200.0)
 		)
 
+process.unmatchedSignalRecoAnalyzerFivePostHLT = cms.EDAnalyzer('unmatchedAnalyzer',
+		treeName = cms.string("signalRecoObjectsWithAllCutsAfterHLT"),
+		leptonsCollection = cms.InputTag("recoFourObjMass","leadingLeptonsPassingFourObjMassCut"),
+		jetsCollection = cms.InputTag("recoFourObjMass","leadingJetsPassingFourObjMassCut"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200.0)
+		)
+
+process.genMatchedParticleAnalyzerAfterGenPtEtaDrCuts = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaDrCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut")
+		)
+
+process.genMatchedParticleAnalyzerAfterGenPtEtaDrCutsPostHLT = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaDrCutsPostHLT"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut")
+		)
+
+
+
+
+
 #################################
 #Paths
 process.unmatchedRecoSignalPath = cms.Path(
@@ -52,11 +83,41 @@ process.unmatchedRecoSignalPath = cms.Path(
 		*process.unmatchedSignalRecoAnalyzerFive
 		)
 
-process.schedule = cms.Schedule(process.unmatchedRecoSignalPath)
+process.signalCutsHLTEfficiencyPath = cms.Path(
+		process.egmGsfElectronIDSequence
+		*process.HEEPIDSequence
+		*process.bareRecoParticleSeq
+		*process.bareRecoDrSeparationSeq
+		*process.ptEtaRestrictedSeq
+		*process.recoDileptonCandidateSeq
+		*process.recoFourObjMassSeq
+		*process.unmatchedSignalRecoAnalyzerFive
+		*process.trigFilt
+		*process.unmatchedSignalRecoAnalyzerFivePostHLT
+		)
+
+process.genAccCutsHLTEfficiencyPath = cms.Path(
+		#identify the gen leptons from the WR decay, and the gen jets
+		#matched to the gen quarks from the WR decay
+		process.bareMatchedGenParticleSeq
+		*process.bareGenJetSeq
+		*process.matchGenJetsToGenQuarksSeq
+		#now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
+		*process.simultaneousPtEtaCutMatchedObjectsSeq
+		*process.genMatchedJetLeptonDrSeparationSeq
+		*process.genMatchedParticleAnalyzerAfterGenPtEtaDrCuts
+		#now apply the trigger filter, and count the number of evts
+		#which pass the trigger filter AND the GEN cuts
+		*process.trigFilt
+		*process.genMatchedParticleAnalyzerAfterGenPtEtaDrCutsPostHLT
+		)
+
+#process.schedule = cms.Schedule(process.unmatchedRecoSignalPath)
+process.schedule = cms.Schedule(process.signalCutsHLTEfficiencyPath,process.genAccCutsHLTEfficiencyPath)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analyzed_tree_eejjSignalRegion.root')
+		fileName = cms.string('analyzed_tree_checkHLTEfficiencyRecoFullOfflineAndGenPtEtaDr_eejjSignalRegion.root')
 	
 )
 
@@ -70,7 +131,8 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root'
+		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root'
+		'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_5.root'
     ),
     #inputCommands = cms.untracked.vstring(
     #    'keep *'

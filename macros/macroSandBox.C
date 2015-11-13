@@ -35,7 +35,8 @@
 
 using namespace std;
 
-#define twoDimPlotGenWrAcceptance
+//#define twoDimPlotGenWrAcceptance
+#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
 //#define compareCentrallyProducedToPrivateWrSignal
 //#define genWrAndNuMass
@@ -1603,5 +1604,102 @@ void macroSandBox(){
 #endif
 	//end twoDimPlotGenWrAcceptance
 
+#ifdef recoAndGenHLTEfficiency
+	///similar to what is done in twoDimPlotGenWrAcceptance, but with HLT efficiency for evts passing:
+	///		all offline cuts (pT, eta, dR, MLL, MLLJJ)
+	///		gen pT (pT > 40 for gen leptons and jets matched to WR decay products), gen eta (|eta| < 2.5), and gen dR(L,J) cuts
+	
+	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
+	string dir= "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
+	string fileBegin = "all_analyzed_tree_checkHLTEfficiencyRecoFullOfflineAndGenPtEtaDr_eejjSignalRegion_WR_M-";
+	string fileEnd = ".root";
+	string fileMiddle = "_Nu_M-";
+	string hltEfficiencyVsMassFile = "hltEfficienciesVsMasses.txt";
+	ofstream writeToHltEfficiencyFile(hltEfficiencyVsMassFile.c_str(),ofstream::app);
+	//Float_t genHltPassingPercentage=-1, recoFullOfflineHltPassingPercentage=-1;
+	gStyle->SetTitleOffset(1.4,"Y");
+	Int_t nBins = 23;	///max is 23
+	Float_t wrMassVals[nBins], genPtEtaDrHltEff[nBins], recoFullOfflineHltEff[nBins];
+	gStyle->SetOptStat("");
+
+	int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,5000,5200,5600,5800,6000};
+	//int wrMassArr[] = {800,1000};
+
+	for(int i=0; i<nBins ; i++){
+		///loop over WR mass values
+		
+		///define input root file name and add a Float_t to the x axis array used for later TGraph objects
+		string pfn = dir+fileBegin+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2)+fileEnd;
+		wrMassVals[i] = (Float_t) wrMassArr[i];
+
+		///define one TChain to count the number of events which pass cuts before HLT
+		///define another TChain to count the number of evts passing cuts and HLT
+		TChain * genCutsBeforeHlt = new TChain("genMatchedParticleAnalyzerAfterGenPtEtaDrCuts/genLeptonsAndJetsWithPtEtaDrCuts");
+		genCutsBeforeHlt->Add(pfn.c_str());
+		TChain * genCutsAfterHlt = new TChain("genMatchedParticleAnalyzerAfterGenPtEtaDrCutsPostHLT/genLeptonsAndJetsWithPtEtaDrCutsPostHLT");
+		genCutsAfterHlt->Add(pfn.c_str());
+
+
+		TChain * recoOfflineCutsBeforeHlt = new TChain("unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts");
+		recoOfflineCutsBeforeHlt->Add(pfn.c_str());
+		TChain * recoOfflineCutsAfterHlt = new TChain("unmatchedSignalRecoAnalyzerFivePostHLT/signalRecoObjectsWithAllCutsAfterHLT");
+		recoOfflineCutsAfterHlt->Add(pfn.c_str());
+
+
+		///calculate percentage of evts which pass GEN cuts, and store this percentage along with the nu and wr mass values in a txt file
+		//genHltPassingPercentage = (100)*((Float_t) genCutsAfterHlt->GetEntries()/genCutsBeforeHlt->GetEntries());
+		//recoFullOfflineHltPassingPercentage = (100)*((Float_t) );
+		genPtEtaDrHltEff[i] = (100)*((Float_t) genCutsAfterHlt->GetEntries()/genCutsBeforeHlt->GetEntries());
+		recoFullOfflineHltEff[i] = (100)*((Float_t) recoOfflineCutsAfterHlt->GetEntries()/recoOfflineCutsBeforeHlt->GetEntries());
+
+		writeToHltEfficiencyFile << genPtEtaDrHltEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tfire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts"<< endl;
+		writeToHltEfficiencyFile << recoFullOfflineHltEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tfire HLT_DoubleEle33 after passing all offline RECO cuts"<< endl;
+
+		genCutsBeforeHlt->Delete();
+		genCutsAfterHlt->Delete();
+		recoOfflineCutsBeforeHlt->Delete();
+		recoOfflineCutsAfterHlt->Delete();
+
+	}///end loop over WR mass values	
+
+	///close txt file
+	writeToHltEfficiencyFile.close();
+
+
+	///make TGraph objects after arrays of TGraph contents have been filled
+	TGraph * genHltEffGraph = new TGraph(nBins,wrMassVals,genPtEtaDrHltEff);
+	TGraph * recoFullOfflineHltEffGraph = new TGraph(nBins,wrMassVals,recoFullOfflineHltEff);
+	
+	///set axis labels and draw the histo, save an image of it (both pdf and png formats)
+	genHltEffGraph->GetXaxis()->SetTitle("WR Mass [GeV]");
+	genHltEffGraph->GetYaxis()->SetTitle("Percentage of events passing");
+	genHltEffGraph->SetTitle("Percentage of WR signal events passing HLT after GEN pT, #eta, and #DeltaR cuts  MNu = MWR/2");
+	genHltEffGraph->SetMarkerStyle(20);
+	genHltEffGraph->SetMarkerColor(2);
+
+	recoFullOfflineHltEffGraph->GetXaxis()->SetTitle("WR Mass [GeV]");
+	recoFullOfflineHltEffGraph->GetYaxis()->SetTitle("Percentage of events passing");
+	recoFullOfflineHltEffGraph->SetTitle("Percentage of WR signal events passing HLT after all RECO offline cuts  MNu = MWR/2");
+	recoFullOfflineHltEffGraph->SetMarkerStyle(20);
+	recoFullOfflineHltEffGraph->SetMarkerColor(2);
+
+	
+	TCanvas * r1 = new TCanvas("r1","r1",900,700);
+	r1->cd();
+	genHltEffGraph->Draw("AP");
+	r1->SaveAs("hltEfficiencyAfterGenPtEtaDrCuts.png","recreate");
+	r1->SaveAs("hltEfficiencyAfterGenPtEtaDrCuts.pdf","recreate");
+
+	TCanvas * q1 = new TCanvas("q1","q1",900,700);
+	q1->cd();
+	recoFullOfflineHltEffGraph->Draw("AP");
+	q1->SaveAs("hltEfficiencyAfterAllOfflineRecoCuts.png","recreate");
+	q1->SaveAs("hltEfficiencyAfterAllOfflineRecoCuts.pdf","recreate");
+
+
+
+#endif
+	//end recoAndGenHLTEfficiency
+	
 }///end macroSandBox()
 

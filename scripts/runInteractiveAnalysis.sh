@@ -16,12 +16,12 @@ workingDir='/uscms/home/skalafut/nobackup/WR_starting2015/mostUpToDateCode/CMSSW
 #NOTE the order of elements in these arrays is important
 #the Nth element in one array should correspond to the Nth element in all other arrays
 #the most important array is outputFileDir.  Mistakes in elements of this array will cause this script to fail.
-stdOutFileName=('analysisOutput_dyJetsAMCNLOReMiniAODToEEJJSignalRegion_Nov11_M_50_with_MET_and_HLT.txt'  'analysisOutput_dyJetsMadgraphReMiniAODToEEJJSignalRegion_Nov11_M_50_with_MET_and_HLT.txt')
-inputFilesList=('dyJetsAMCNLOHasTwoHEEP25nsNov11_formatted.txt'  'dyJetsMadgraphHasTwoHEEP25nsNov11_formatted.txt')
+stdOutFileName=('analysisOutput_wrToEEJJSignalRegion_MWR_2000_MNu_1000_Nov12_with_MET_and_HLT.txt')
+inputFilesList=('wrToNuEToEEJJ_MWR_2000_MNu_1000_MINIAOD_formatted.txt')
 #outputFileDir=('analyzed_25ns_skims_check_Zee_using_two_HEEP'  'analyzed_25ns_skims_check_emu'  'analyzed_25ns_skims_low_dilepton_and_fourObj_mass_eejj'  'analyzed_25ns_skims_low_dilepton_mass_emujj')
 outputFileDir=('analyzed_25ns_eejj_signal_region')
-outputTreeFileName=('analyzed_DYJets_amcnlo_M_50_25ns_eejj_signal_region_reMiniAOD.root'  'analyzed_DYJets_Madgraph_M_50_25ns_eejj_signal_region_reMiniAOD.root')
-globalTag=('74X_mcRun2_asymptotic_v2'  '74X_mcRun2_asymptotic_v2')
+outputTreeFileName=('analyzed_WRToENuToEEJJ_MWR_2000_MNu_1000_25ns_eejj_signal_region_no_gen_matching.root')
+globalTag=('auto:run2_mc')
 
 
 for r in ${!inputFilesList[*]}
