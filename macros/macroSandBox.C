@@ -35,8 +35,8 @@
 
 using namespace std;
 
-//#define twoDimPlotGenWrAcceptance
-#define recoAndGenHLTEfficiency
+#define twoDimPlotGenWrAcceptance
+//#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
 //#define compareCentrallyProducedToPrivateWrSignal
 //#define genWrAndNuMass
@@ -1549,12 +1549,14 @@ void macroSandBox(){
 	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
+	gStyle->SetTitleOffset(1.5,"Y");
+	gStyle->SetOptStat("");
+
+	/*
 	string cutEfficiencyVsMassFile = "offlineEfficienciesVsMasses.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::app);
 	Float_t passingPercentage=-1;
-	gStyle->SetTitleOffset(1.5,"Y");
 	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing GEN pT, eta, and #DeltaR cuts",58,700,3600,72,0,3600);
-	gStyle->SetOptStat("");
 
 	int maxWrMass=3500, increment=50;
 	//int maxWrMass=1850, increment=50;
@@ -1589,6 +1591,9 @@ void macroSandBox(){
 
 	}///end loop over WR mass values	
 	
+	writeToEfficiencyFile.close();
+
+
 	///set axis labels and draw the histo, save an image of it (both pdf and png formats), and close the txt file
 	twoDimAcceptanceHist->GetXaxis()->SetTitle("WR Mass [GeV]");
 	twoDimAcceptanceHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
@@ -1597,9 +1602,62 @@ void macroSandBox(){
 	twoDimAcceptanceHist->Draw("COLZ");
 	r1->SaveAs("twoDimGenWrAcceptances_afterBasePtEtaDrCuts.png","recreate");
 	r1->SaveAs("twoDimGenWrAcceptances_afterBasePtEtaDrCuts.pdf","recreate");
+	*/
 
-	writeToEfficiencyFile.close();
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	///use a combination of privately produced GEN samples with centrally produced MINIAOD samples to make a TGraph of
+	///the ratio of (RECO evts passing all WR signal region cuts)/(GEN evts passing all WR signal region cuts)
+	///the RECO cuts will include HEEP and jet ID requirements, whereas the GEN cuts will not
+	///neither set of cuts requires that the trigger is fired (HLT_DoubleEle33)
+	string recoDir = "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
+	string recoFileBegin = "all_analyzed_tree_checkHLTEfficiencyRecoFullOfflineAndGenPtEtaDr_eejjSignalRegion_WR_M-";
+	string recoFileEnd = ".root";
+	string recoFileMiddle = "_Nu_M-";
+	string RecoOvrGenvsMassFile = "recoOvrGenScaleFactorsVsMass.txt";
+	ofstream writeToRecoGenScaleFactorsFile(RecoOvrGenvsMassFile.c_str(),ofstream::app);
+	Int_t nBins = 12;	///max is 12
+	Float_t wrMassVals[nBins], recoGenScaleFactors[nBins];
 
+	int wrMassArr[] = {800,1000,1200,1400,1600,2000,2200,2400,2600,2800,3000,3200};
+	//int wrMassArr[] = {800,1000};
+
+	for(int i=0; i<nBins ; i++){
+		string recoPfn = recoDir+recoFileBegin+to_string(wrMassArr[i])+recoFileMiddle+to_string(wrMassArr[i]/2)+recoFileEnd;
+		string genPfn = dir+fileBegin+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2)+fileEnd;
+		wrMassVals[i] = (Float_t) wrMassArr[i];
+	
+		///for simplicity, assume 50k MINIAOD evts
+		TChain * genAfterCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts");
+		genAfterCuts->Add(genPfn.c_str());
+		TChain * recoAfterCuts = new TChain("unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts");
+		recoAfterCuts->Add(recoPfn.c_str());
+		TChain * genBeforeCuts = new TChain("genNuAnalyzerOne/genNu");
+		genBeforeCuts->Add(genPfn.c_str());
+	
+		Float_t recoRatio = ((Float_t) recoAfterCuts->GetEntries()/50000);
+		Float_t genRatio = ((Float_t) genAfterCuts->GetEntries()/genBeforeCuts->GetEntries());
+		recoGenScaleFactors[i] = recoRatio/genRatio;
+		writeToRecoGenScaleFactorsFile << "for MWR=\t"<< wrMassArr[i] << "\tand MNu=\t"<< wrMassArr[i]/2 << "\tthe ratio of RECO evts passing all cuts to GEN evts passing all cuts (RECO/GEN) is\t"<< recoGenScaleFactors[i] << endl;
+
+		genAfterCuts->Delete();
+		recoAfterCuts->Delete();
+
+	}
+	writeToRecoGenScaleFactorsFile.close();
+
+	///make the TGraph, and save an image of it
+	TGraph * recoGenFactorsGraph = new TGraph(nBins,wrMassVals,recoGenScaleFactors);
+	recoGenFactorsGraph->GetXaxis()->SetTitle("WR Mass [GeV]");
+	recoGenFactorsGraph->GetYaxis()->SetTitle("RECO/GEN");
+	recoGenFactorsGraph->SetTitle("RECO evts passing / GEN evts passing  MNu = MWR/2");
+	recoGenFactorsGraph->SetMarkerStyle(20);
+	recoGenFactorsGraph->SetMarkerColor(2);
+	
+	TCanvas * f1 = new TCanvas("f1","f1",800,700);
+	f1->cd();
+	recoGenFactorsGraph->Draw("AP");
+	f1->SaveAs("recoOverGenScaleFactorVsWRMass.png","recreate");
+	f1->SaveAs("recoOverGenScaleFactorVsWRMass.pdf","recreate");
 
 #endif
 	//end twoDimPlotGenWrAcceptance
@@ -1616,7 +1674,6 @@ void macroSandBox(){
 	string fileMiddle = "_Nu_M-";
 	string hltEfficiencyVsMassFile = "hltEfficienciesVsMasses.txt";
 	ofstream writeToHltEfficiencyFile(hltEfficiencyVsMassFile.c_str(),ofstream::app);
-	//Float_t genHltPassingPercentage=-1, recoFullOfflineHltPassingPercentage=-1;
 	gStyle->SetTitleOffset(1.4,"Y");
 	Int_t nBins = 23;	///max is 23
 	Float_t wrMassVals[nBins], genPtEtaDrHltEff[nBins], recoFullOfflineHltEff[nBins];

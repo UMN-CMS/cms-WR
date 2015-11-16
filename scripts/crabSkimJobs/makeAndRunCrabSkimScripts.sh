@@ -1,17 +1,18 @@
 #!/bin/bash
 
 #all arrays must have the same number of elements
-#datasets=(SingleMuon  SingleMuon  SingleMuon  DoubleEG  DoubleEG  DoubleEG  MuonEG  MuonEG  MuonEG)
-#identifier=(Run2015B-17Jul2015-v1  Run2015B-05Aug2015-v1  Run2015C-PromptReco-v1  Run2015B-17Jul2015-v1  Run2015B-05Aug2015-v1  Run2015C-PromptReco-v1  Run2015B-17Jul2015-v1  Run2015B-05Aug2015-v1  Run2015C-PromptReco-v1)
-#channel=(emujj  emujj  emujj  eejj  eejj  eejj  emujj  emujj  emujj)
-#suffix=('OneHEEPOneIsHighPtID_17Jul2015_50ns_Sept8_2015' 'OneHEEPOneIsHighPtID_5Aug2015_50ns_Sept8_2015' 'OneHEEPOneIsHighPtID_25ns_Sept8_2015' 'TwoHEEPIDEles_17Jul2015_50ns_Sept8_2015' 'TwoHEEPIDEles_5Aug2015_50ns_Sept8_2015' 'TwoHEEPIDEles_25ns_Sept8_2015' 'OneHEEPOneIsHighPtID_17Jul2015_50ns_Sept8_2015' 'OneHEEPOneIsHighPtID_5Aug2015_50ns_Sept8_2015' 'OneHEEPOneIsHighPtID_25ns_Sept8_2015')
-#lumiFiles=('/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt')
+datasets=(DoubleEG  DoubleEG)
+identifier=(Run2015D-PromptReco-v4  Run2015D-PromptReco-v3)
+channel=(eejj  eejj)
+suffix=('OneHEEPIDEleAndLooseOrTightDoubleEleHLT_Run2015D_v4_25ns_GoldenJSON_Nov12_2015'  'OneHEEPIDEleAndLooseOrTightDoubleEleHLT_Run2015D_v3_25ns_GoldenJSON_Nov12_2015')
+lumiFiles=('/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-259891_13TeV_PromptReco_Collisions15_25ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-259891_13TeV_PromptReco_Collisions15_25ns_JSON.txt')
 
-datasets=(SingleMuon  DoubleEG  MuonEG)
-identifier=(Run2015B-05Aug2015-v1  Run2015B-05Aug2015-v1  Run2015B-05Aug2015-v1)
-channel=(emujj  eejj  emujj)
-suffix=('OneHEEPOneIsHighPtID_5Aug2015_50ns_CorrectGTandRelease_Sept8_2015' 'TwoHEEPIDEles_5Aug2015_50ns_CorrectGTandRelease_Sept8_2015' 'OneHEEPOneIsHighPtID_5Aug2015_50ns_CorrectGTandRelease_Sept8_2015')
-lumiFiles=('/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt')
+#datasets=(DoubleEG  MuonEG)
+#identifier=(Run2015D-PromptReco-v3  Run2015D-PromptReco-v3)
+#channel=(eejj  emujj)
+#suffix=('TwoHEEPIDEles_Run2015D_v3_25ns_ExclusiveSilverJSON_Nov04_2015'  'OneHEEPOneIsHighPtID_Run2015D_v3_25ns_ExclusiveSilverJSON_Nov04_2015')
+#lumiFiles=('/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_256729-258313_13TeV_PromptReco_Collisions15_25ns_JSON_ExclusiveSilver.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_256729-258313_13TeV_PromptReco_Collisions15_25ns_JSON_ExclusiveSilver.txt')
+
 
 
 for q in ${!datasets[*]}

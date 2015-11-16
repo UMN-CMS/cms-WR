@@ -29,16 +29,17 @@ void ele_dataMC_compare(){
 #endif
 	
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_25ns_skims_low_dilepton_and_fourObj_mass_eejj/";
-	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_25ns_skim_low_mass_region_eejj.root");//dyjets
+	TFile * hfile0 = new TFile(directory+"analyzed_DYJets_Madgraph_25ns_skim_low_mass_region_eejj_reMiniAOD.root");//dyjets
 	//TFile * hfile1 = new TFile(directory+"analyzed_TTJets_25ns_skim_low_mass_region_eejj.root");//ttbar
 	TFile * hfile1 = new TFile(directory+"analyzed_TTOnly_PowhegPythia_25ns_skim_low_mass_region_eejj_reMiniAOD.root");//ttbar
 	TFile * hfile3 = new TFile(directory+"analyzed_WZ_25ns_skim_low_mass_region_eejj.root");//wz
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_25ns_skim_low_mass_region_eejj.root");//zz
-	TFile * hfile5 = new TFile(directory+"analyzed_WJets_25ns_skim_low_mass_region_eejj.root");//wjets
+	TFile * hfile5 = new TFile(directory+"analyzed_WJets_Madgraph_25ns_skim_low_mass_region_eejj_reMiniAOD.root");//wjets
 
 	//TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_low_mass_region_eejj_2015BandC.root");//data
 	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_25ns_skim_low_mass_region_eejj_Run2015CandD.root");//data
 
+	int numProcesses = 6;
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -59,36 +60,37 @@ void ele_dataMC_compare(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",6,20,0,650);
-	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",6,22,0,220);
-	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",6,22,0,220);
-	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",6,14,0,140);
-	vector<TH1F*> h_j1pt = MakeNHistos("h_j1pt",6,22,0,220);
-	vector<TH1F*> h_j2pt = MakeNHistos("h_j2pt",6,14,0,140);
-	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 6,20,-3.,3.);
-	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 6,20,-3.,3.);
-	vector<TH1F*> h_j1eta = MakeNHistos("h_j1eta", 6,20,-3.,3.);
-	vector<TH1F*> h_j2eta = MakeNHistos("h_j2eta", 6,20,-3.,3.);
-	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 6,20,-3.15,3.15);
-	vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 6,20,-3.15,3.15);
-	vector<TH1F*> h_j1phi = MakeNHistos("h_j1phi", 6,20,-3.15,3.15);
-	vector<TH1F*> h_j2phi = MakeNHistos("h_j2phi", 6,20,-3.15,3.15);
-	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 6,4,0,4);
-	vector<TH1F*> h_njets = MakeNHistos("h_njets", 6,6,0,6);
-	vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", 6,33,0,33);
-	vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", 6,20,0,5);
-	vector<TH1F*> h_dR_j1j2 = MakeNHistos("h_dR_j1j2", 6,20,0,5);
-	vector<TH1F*> h_dR_l1j1 = MakeNHistos("h_dR_l1j1", 6,20,0,5);
-	vector<TH1F*> h_dR_l1j2 = MakeNHistos("h_dR_l1j2", 6,20,0,5);
-	vector<TH1F*> h_dR_l2j1 = MakeNHistos("h_dR_l2j1", 6,20,0,5);
-	vector<TH1F*> h_dR_l2j2 = MakeNHistos("h_dR_l2j2", 6,20,0,5);
-	vector<TH1F*> h_Mjj = MakeNHistos("h_Mjj",6,40,0,400);
+	vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",numProcesses,20,0,650);
+	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",numProcesses,22,0,220);
+	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",numProcesses,22,0,220);
+	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",numProcesses,14,0,140);
+	vector<TH1F*> h_j1pt = MakeNHistos("h_j1pt",numProcesses,22,0,220);
+	vector<TH1F*> h_j2pt = MakeNHistos("h_j2pt",numProcesses,14,0,140);
+	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", numProcesses,20,-3.,3.);
+	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", numProcesses,20,-3.,3.);
+	vector<TH1F*> h_j1eta = MakeNHistos("h_j1eta", numProcesses,20,-3.,3.);
+	vector<TH1F*> h_j2eta = MakeNHistos("h_j2eta", numProcesses,20,-3.,3.);
+	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", numProcesses,20,-3.15,3.15);
+	vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", numProcesses,20,-3.15,3.15);
+	vector<TH1F*> h_j1phi = MakeNHistos("h_j1phi", numProcesses,20,-3.15,3.15);
+	vector<TH1F*> h_j2phi = MakeNHistos("h_j2phi", numProcesses,20,-3.15,3.15);
+	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", numProcesses,4,0,4);
+	vector<TH1F*> h_njets = MakeNHistos("h_njets", numProcesses,6,0,6);
+	vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", numProcesses,33,0,33);
+	vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", numProcesses,20,0,5);
+	vector<TH1F*> h_dR_j1j2 = MakeNHistos("h_dR_j1j2", numProcesses,20,0,5);
+	vector<TH1F*> h_dR_l1j1 = MakeNHistos("h_dR_l1j1", numProcesses,20,0,5);
+	vector<TH1F*> h_dR_l1j2 = MakeNHistos("h_dR_l1j2", numProcesses,20,0,5);
+	vector<TH1F*> h_dR_l2j1 = MakeNHistos("h_dR_l2j1", numProcesses,20,0,5);
+	vector<TH1F*> h_dR_l2j2 = MakeNHistos("h_dR_l2j2", numProcesses,20,0,5);
+	vector<TH1F*> h_Mjj = MakeNHistos("h_Mjj",numProcesses,40,0,400);
+	vector<TH1F*> h_MET = MakeNHistos("h_MET",numProcesses,20,0,400);
 	
 #ifdef DEBUG
 	std::cout<<"made vectors of TH1F pointers to histos"<<std::endl;
 #endif
 
-	int nhistos = 24;	//24
+	int nhistos = 25;	//max is 25
 	std::vector<THStack*> ths; // Stacks;
 	for(int istacks=0; istacks<nhistos; istacks++)
 	{
@@ -112,16 +114,16 @@ void ele_dataMC_compare(){
 	std::vector<TH1F*> histos_data(nhistos); // data
 
 	///load the vectors tied to all MC and real data samples into one vector<vector<TH1F*> > object
-	vector<vector<TH1F*> > histos(6);
+	vector<vector<TH1F*> > histos(numProcesses);
 	histos[0] = histos0;
 	histos[1] = histos1;
 	histos[2] = histos3;
 	histos[3] = histos4;
 	histos[4] = histos5;
-	histos[5] = histos_data;
+	histos[numProcesses-1] = histos_data;
 
 	///link the histos made by calls to MakeNHistos() above to specific elements of vector<vector<TH1F*> > container 
-	for(int j=0; j<6; j++){
+	for(int j=0; j<numProcesses; j++){
 		histos[j][0] = h_Mlljj[j];
 		histos[j][1] = h_Mll[j];
 		histos[j][2] = h_l1pt[j];
@@ -146,6 +148,8 @@ void ele_dataMC_compare(){
 		histos[j][21] = h_dR_l2j1[j];
 		histos[j][22] = h_dR_l2j2[j];
 		histos[j][23] = h_Mjj[j];
+		histos[j][24] = h_MET[j];
+	
 	}
 	
 #ifdef DEBUG
@@ -167,10 +171,10 @@ void ele_dataMC_compare(){
 	Fill_Histo(histos[3],tree4,PUW4,false,false); // ZZ
 	Fill_Histo(histos[4],tree5,PUW5,false,false); // WJets
 
-	Fill_Histo(histos[5],tree_data,PUW_data,false,true);	///real data
+	Fill_Histo(histos[numProcesses-1],tree_data,PUW_data,false,true);	///real data
 
 	//Float_t intLumi = 64.11;	///50ns from Run2015B and 2015C
-	Float_t intLumi = 1285.201;	///25ns from Run2015C and 2015D
+	Float_t intLumi = 1570.674;	///25ns from Run2015C and 2015D
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -180,7 +184,7 @@ void ele_dataMC_compare(){
 		
 		//histos[0][i]->Scale(6025.2*(intLumi)/19925500);	///aMC@NLO DYJets 50ns
 		//histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets 50ns
-		histos[0][i]->Scale(6025.2*(intLumi)/9052671);	///madgraph DYJets 25ns
+		histos[0][i]->Scale(6025.2*(intLumi)/9042031);	///madgraph DYJets 25ns
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
@@ -209,14 +213,14 @@ void ele_dataMC_compare(){
 		bkgndIntegral += histos[3][i]->Integral();
 		
 		//histos[4][i]->Scale(6.15e4*(intLumi)/24089991);		///WJetsToLNu 50ns
-		histos[4][i]->Scale(6.15e4*(intLumi)/24151270);		///WJetsToLNu 25ns
+		histos[4][i]->Scale(6.15e4*(intLumi)/72207128);		///WJetsToLNu 25ns
 		histos[4][i]->SetFillColor(6);
 		bkgndIntegral += histos[4][i]->Integral();
 	
-		histos[5][i]->SetMarkerStyle(20);
+		histos[numProcesses-1][i]->SetMarkerStyle(20);
 #ifdef PrintIntegral
 		std::cout<<"integral of bkgnd histos =\t"<< bkgndIntegral <<std::endl;
-		std::cout<<"integral of real data histo =\t"<< histos[5][i]->Integral() <<std::endl;
+		std::cout<<"integral of real data histo =\t"<< histos[numProcesses-1][i]->Integral() <<std::endl;
 #endif
 
 		ths[i]->Add(histos[3][i]);
@@ -241,7 +245,7 @@ void ele_dataMC_compare(){
 	///make a legend with appropriate labels for MC processes
 	TLegend *leg = new TLegend( 0.62, 0.64, 0.89, 0.87 ) ;
 	leg->SetNColumns(2);
-	leg->AddEntry( histos[5][0], "Data" ,"ep") ;
+	leg->AddEntry( histos[numProcesses-1][0], "Data" ,"ep") ;
 	leg->AddEntry( histos[0][0], "DY" ) ; 
 	leg->AddEntry( histos[1][0], "ttbar" ) ;
 	leg->AddEntry( histos[4][0], "WJets" ) ;  
@@ -249,11 +253,11 @@ void ele_dataMC_compare(){
 	leg->AddEntry( histos[3][0], "ZZ" ) ;
 	leg->SetFillColor( kWhite ) ;
 
-	TString xtitles[] = {"M_{EEJJ} [GeV]","M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading jet #eta","subleading jet #eta","leading electron #phi","subleading electron #phi","leading jet #phi","subleading jet #phi","number of electrons","number of jets","number of vertices","#DeltaR lead ele sublead ele","#DeltaR lead jet sublead jet","#DeltaR lead ele lead jet","#DeltaR lead ele sublead jet","#DeltaR sublead ele lead jet","#DeltaR sublead ele sublead jet","M_{JJ} [GeV]"};
+	TString xtitles[] = {"M_{EEJJ} [GeV]","M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading jet #eta","subleading jet #eta","leading electron #phi","subleading electron #phi","leading jet #phi","subleading jet #phi","number of electrons","number of jets","number of vertices","#DeltaR lead ele sublead ele","#DeltaR lead jet sublead jet","#DeltaR lead ele lead jet","#DeltaR lead ele sublead jet","#DeltaR sublead ele lead jet","#DeltaR sublead ele sublead jet","M_{JJ} [GeV]","Missing E_{T} [GeV]"};
 	
-	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary DiElectron Mass  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary leading jet #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of electrons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of jets  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb"};
+	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary DiElectron Mass  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary leading jet #phi  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary number of electrons  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary number of jets  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Dijet Mass  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb","CMS Preliminary Missing E_{T}  #surds = 13 TeV 25ns  #intlumi = 1570.7/pb"};
 
-	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ"};
+	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","MET"};
 
 
 	for(int icanvas=0; icanvas<nhistos; icanvas++){
@@ -269,26 +273,26 @@ void ele_dataMC_compare(){
 		mycanvas->cd();
 
 		///rescale vertical axis for linear scale plot
-		Double_t oldMax = ( (ths[icanvas]->GetMaximum() > histos[5][icanvas]->GetMaximum() ) ? ths[icanvas]->GetMaximum() : histos[5][icanvas]->GetMaximum() );
+		Double_t oldMax = ( (ths[icanvas]->GetMaximum() > histos[numProcesses-1][icanvas]->GetMaximum() ) ? ths[icanvas]->GetMaximum() : histos[numProcesses-1][icanvas]->GetMaximum() );
 		ths[icanvas]->SetMaximum(1.5*oldMax);
-		histos[5][icanvas]->SetMaximum(1.5*oldMax);
+		histos[numProcesses-1][icanvas]->SetMaximum(1.5*oldMax);
 		
 		ths[icanvas]->Draw("hist");
-		histos[5][icanvas]->Draw("epsame");
+		histos[numProcesses-1][icanvas]->Draw("epsame");
 		mycanvas->Update();
 
 		///set the x axis title
 		ths[icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
-		histos[5][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
+		histos[numProcesses-1][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
 	
 		///set the y axis title using the bin size from the data histo, and the x axis title
-		TString yLabel = DetermineYaxisName(histos[5][icanvas], xtitles[icanvas]);
+		TString yLabel = DetermineYaxisName(histos[numProcesses-1][icanvas], xtitles[icanvas]);
 		ths[icanvas]->GetYaxis()->SetTitle(yLabel );
-		histos[5][icanvas]->GetYaxis()->SetTitle(yLabel );
+		histos[numProcesses-1][icanvas]->GetYaxis()->SetTitle(yLabel );
 
 		///set the histogram title to show a name
 		ths[icanvas]->SetTitle(titles[icanvas]);
-		histos[5][icanvas]->SetTitle(titles[icanvas]);
+		histos[numProcesses-1][icanvas]->SetTitle(titles[icanvas]);
 
 		///draw the legend, and a text box above the legend with the COM energy and integrated lumi
 		leg->Draw();
@@ -305,9 +309,9 @@ void ele_dataMC_compare(){
 
 		///rescale vertical axis for log scale plot
 		ths[icanvas]->SetMaximum(27*oldMax);
-		histos[5][icanvas]->SetMaximum(27*oldMax);
+		histos[numProcesses-1][icanvas]->SetMaximum(27*oldMax);
 		ths[icanvas]->SetMinimum(0.2);
-		histos[5][icanvas]->SetMinimum(0.2);
+		histos[numProcesses-1][icanvas]->SetMinimum(0.2);
 
 		leg->Draw();
 		mycanvas->Update();
@@ -378,6 +382,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 	Float_t phiJet[2];
 	Float_t dileptonMass;
 	Float_t dijetMass;
+	Float_t missingET;
 	
 	Float_t dR_l1l2;
 	Float_t dR_j1j2;
@@ -401,6 +406,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 
 	tree->SetBranchAddress("dileptonMass",&dileptonMass);
 	tree->SetBranchAddress("dijetMass",&dijetMass);
+	tree->SetBranchAddress("missingET",&missingET);
 	
 	tree->SetBranchAddress("dR_leadingLeptonSubleadingLepton",&dR_l1l2);
 	tree->SetBranchAddress("dR_leadingJetSubleadingJet",&dR_j1j2);
@@ -452,6 +458,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 				h1[21]->Fill(dR_l2j1,reweight);
 				h1[22]->Fill(dR_l2j2,reweight);
 				h1[23]->Fill(dijetMass,reweight);
+				h1[24]->Fill(missingET,reweight);
 			}///end if(!is_data)
 			else {
 				h1[0]->Fill(fourObjectMass);
@@ -478,6 +485,7 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
 				h1[21]->Fill(dR_l2j1);
 				h1[22]->Fill(dR_l2j2);
 				h1[23]->Fill(dijetMass);
+				h1[24]->Fill(missingET);
 			}///end else (for real data)
 		}///end if(true)
 	}///end loop over events ev in tree
