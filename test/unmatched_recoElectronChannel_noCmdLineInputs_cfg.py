@@ -30,6 +30,21 @@ process.trigFilt.andOr = True  #if True, then multiple HLT paths will be combine
 #################################
 #Analyzers
 
+process.genWRAnalyzer = cms.EDAnalyzer('singleParticleAnalyzer',
+		treeName = cms.string("genWR"),
+		rightHandWsCollection = cms.InputTag("bareMatchedWR")
+		)
+
+process.genMatchedParticleAnalyzerAfterFullGenSelection = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithAllCuts"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200),
+		leptonsOneCollection = cms.InputTag("genMatchedFourObjMass","genMatchedLeadingElectronPassingFourObjMassCut"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("genMatchedFourObjMass","genMatchedSubleadingElectronPassingFourObjMassCut"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedFourObjMass","genJetsPassingFourObjMassCut")
+		)
+
+
 ## analyze the kinematic distributions of the reco jets and leptons in WR->ENu->EEJJ evts with these analyzers
 process.unmatchedSignalRecoAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzer',
 		treeName = cms.string("signalRecoObjectsWithAllCuts"),
@@ -83,6 +98,40 @@ process.unmatchedRecoSignalPath = cms.Path(
 		*process.unmatchedSignalRecoAnalyzerFive
 		)
 
+#use this path to apply the full GEN offline selection, then apply
+#the full RECO offline selection without HLT
+process.genAndRecoSignalCutsPath = cms.Path(
+		#run a quick analyzer to check the number of evts used as input
+		process.bareMatchedWRSeq
+		*process.genWRAnalyzer
+		###identify the gen leptons from the WR decay, and the gen jets
+		###matched to the gen quarks from the WR decay
+		*process.bareMatchedGenParticleSeq
+		*process.bareGenJetSeq
+		*process.matchGenJetsToGenQuarksSeq
+		##now apply pt, eta, and dR(lepton,jet) cuts to the gen leptons and gen jets
+		*process.simultaneousPtEtaCutMatchedObjectsSeq
+		#*process.genMatchedParticleAnalyzerTwo
+		*process.genMatchedJetLeptonDrSeparationSeq
+		#*process.genMatchedParticleAnalyzerTwoPFive	
+		##now apply the one lepton pt>60, dilepton mass, and four object mass cuts
+		*process.pickGenMatchedEleSeq
+		*process.requireGenMatchedHighPtEleSeq
+		*process.genMatchedDiLeptonCandidateSeq
+		*process.genMatchedFourObjMassSeq
+		##run an analyzer to count the number of evts passing the full GEN offline selection
+		*process.genMatchedParticleAnalyzerAfterFullGenSelection
+		##now apply the full RECO offline selection without HLT and count the number of evts passing
+		*process.egmGsfElectronIDSequence
+		*process.HEEPIDSequence
+		*process.bareRecoParticleSeq
+		*process.bareRecoDrSeparationSeq
+		*process.ptEtaRestrictedSeq
+		*process.recoDileptonCandidateSeq
+		*process.recoFourObjMassSeq
+		*process.unmatchedSignalRecoAnalyzerFive
+		)
+
 process.signalCutsHLTEfficiencyPath = cms.Path(
 		process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
@@ -112,12 +161,11 @@ process.genAccCutsHLTEfficiencyPath = cms.Path(
 		*process.genMatchedParticleAnalyzerAfterGenPtEtaDrCutsPostHLT
 		)
 
-#process.schedule = cms.Schedule(process.unmatchedRecoSignalPath)
-process.schedule = cms.Schedule(process.signalCutsHLTEfficiencyPath,process.genAccCutsHLTEfficiencyPath)
+process.schedule = cms.Schedule(process.genAndRecoSignalCutsPath)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analyzed_tree_checkHLTEfficiencyRecoFullOfflineAndGenPtEtaDr_eejjSignalRegion.root')
+		fileName = cms.string('analyzed_tree_allGenAndRecoOfflineCuts_eejjSignalRegion.root')
 	
 )
 

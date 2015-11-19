@@ -252,7 +252,7 @@ applyLeptonJetDrCut::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    for(recoCandIt lepton=inputLeptonsColl->begin(); lepton!=inputLeptonsColl->end(); lepton++){
 	   double leadJetdRseparation = deltaR(leadJet->eta(),leadJet->phi(),lepton->eta(),lepton->phi());
 	   double subleadJetdRseparation = deltaR(subleadJet->eta(),subleadJet->phi(),lepton->eta(),lepton->phi());
-	   if(leadJetdRseparation > 0.4 && subleadJetdRseparation > 0.4) outputObjColl->push_back(*lepton);
+	   if(leadJetdRseparation > dRSeparation && subleadJetdRseparation > dRSeparation) outputObjColl->push_back(*lepton);
    }///end loop over input leptons
 
 #ifdef DEBUG

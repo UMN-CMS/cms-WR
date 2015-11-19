@@ -1549,7 +1549,7 @@ void macroSandBox(){
 	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
-	gStyle->SetTitleOffset(1.5,"Y");
+	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
 	/*
@@ -1606,39 +1606,39 @@ void macroSandBox(){
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	///use a combination of privately produced GEN samples with centrally produced MINIAOD samples to make a TGraph of
-	///the ratio of (RECO evts passing all WR signal region cuts)/(GEN evts passing all WR signal region cuts)
-	///the RECO cuts will include HEEP and jet ID requirements, whereas the GEN cuts will not
+	///the ratio of (RECO evts passing all WR signal region cuts|all GEN cuts passed)/(GEN evts passing all WR signal region cuts)
+	///the RECO cuts include HEEP and jet ID requirements, whereas the GEN cuts do not
 	///neither set of cuts requires that the trigger is fired (HLT_DoubleEle33)
 	string recoDir = "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
-	string recoFileBegin = "all_analyzed_tree_checkHLTEfficiencyRecoFullOfflineAndGenPtEtaDr_eejjSignalRegion_WR_M-";
+	string recoFileBegin = "all_analyzed_tree_allGenAndRecoOfflineCuts_eejjSignalRegion_WR_M-";
 	string recoFileEnd = ".root";
 	string recoFileMiddle = "_Nu_M-";
 	string RecoOvrGenvsMassFile = "recoOvrGenScaleFactorsVsMass.txt";
 	ofstream writeToRecoGenScaleFactorsFile(RecoOvrGenvsMassFile.c_str(),ofstream::app);
-	Int_t nBins = 12;	///max is 12
+	Int_t nBins = 23;	///max is 23
 	Float_t wrMassVals[nBins], recoGenScaleFactors[nBins];
-
-	int wrMassArr[] = {800,1000,1200,1400,1600,2000,2200,2400,2600,2800,3000,3200};
+	
+	int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,5000,5200,5600,5800,6000};
 	//int wrMassArr[] = {800,1000};
 
 	for(int i=0; i<nBins ; i++){
 		string recoPfn = recoDir+recoFileBegin+to_string(wrMassArr[i])+recoFileMiddle+to_string(wrMassArr[i]/2)+recoFileEnd;
-		string genPfn = dir+fileBegin+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2)+fileEnd;
 		wrMassVals[i] = (Float_t) wrMassArr[i];
-	
-		///for simplicity, assume 50k MINIAOD evts
-		TChain * genAfterCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts");
-		genAfterCuts->Add(genPfn.c_str());
+
+		TChain * genAfterCuts = new TChain("genMatchedParticleAnalyzerAfterFullGenSelection/genLeptonsAndJetsWithAllCuts");
+		genAfterCuts->Add(recoPfn.c_str());
 		TChain * recoAfterCuts = new TChain("unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts");
 		recoAfterCuts->Add(recoPfn.c_str());
-		TChain * genBeforeCuts = new TChain("genNuAnalyzerOne/genNu");
-		genBeforeCuts->Add(genPfn.c_str());
+		//TChain * genBeforeCuts = new TChain("genWRAnalyzer/genWR");
+		//genBeforeCuts->Add(recoPfn.c_str());
 	
-		Float_t recoRatio = ((Float_t) recoAfterCuts->GetEntries()/50000);
-		Float_t genRatio = ((Float_t) genAfterCuts->GetEntries()/genBeforeCuts->GetEntries());
-		recoGenScaleFactors[i] = recoRatio/genRatio;
-		writeToRecoGenScaleFactorsFile << "for MWR=\t"<< wrMassArr[i] << "\tand MNu=\t"<< wrMassArr[i]/2 << "\tthe ratio of RECO evts passing all cuts to GEN evts passing all cuts (RECO/GEN) is\t"<< recoGenScaleFactors[i] << endl;
+		Float_t recoRatio = ((Float_t) recoAfterCuts->GetEntries()/genAfterCuts->GetEntries());
+		//Float_t genRatio = ((Float_t) genAfterCuts->GetEntries()/genBeforeCuts->GetEntries());
+		//recoGenScaleFactors[i] = recoRatio/genRatio;
+		recoGenScaleFactors[i] = recoRatio;
+		writeToRecoGenScaleFactorsFile << "for MWR=\t"<< wrMassArr[i] << "\tand MNu=\t"<< wrMassArr[i]/2 << "\tthe ratio of RECO evts passing all cuts (given evts which pass all GEN cuts) to GEN evts passing all cuts (RECO|GEN/GEN) is\t"<< recoGenScaleFactors[i] << endl;
 
+		//genBeforeCuts->Delete();
 		genAfterCuts->Delete();
 		recoAfterCuts->Delete();
 
@@ -1648,8 +1648,8 @@ void macroSandBox(){
 	///make the TGraph, and save an image of it
 	TGraph * recoGenFactorsGraph = new TGraph(nBins,wrMassVals,recoGenScaleFactors);
 	recoGenFactorsGraph->GetXaxis()->SetTitle("WR Mass [GeV]");
-	recoGenFactorsGraph->GetYaxis()->SetTitle("RECO/GEN");
-	recoGenFactorsGraph->SetTitle("RECO evts passing / GEN evts passing  MNu = MWR/2");
+	recoGenFactorsGraph->GetYaxis()->SetTitle("RECO/GEN scale factor");
+	recoGenFactorsGraph->SetTitle("RECO to GEN scale factors vs MWR  MNu = MWR/2");
 	recoGenFactorsGraph->SetMarkerStyle(20);
 	recoGenFactorsGraph->SetMarkerColor(2);
 	
