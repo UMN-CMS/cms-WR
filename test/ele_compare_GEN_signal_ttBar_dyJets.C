@@ -1,5 +1,6 @@
 #include "TH1F.h"
 #include "TH2F.h"
+#include <TStyle.h>
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
@@ -24,10 +25,10 @@ void Fill_TwoDimHisto(std::vector<TH2F*> h1, TTree* tree, std::vector<float> PUW
 std::vector<TH2F*> MakeTwoNHistos(TString hname, int n, int binsX, float x_min, float x_max, int binsY, float y_min, float y_max);
 std::vector<float> PileUpWeights(TTree* tree,TTree* tree_data);
 
-void ele_signal_and_bkgndMC_compare(){
+void ele_compare_GEN_signal_ttBar_dyJets(){
 
 #ifdef DEBUG
-	std::cout<<"in ele_dataMC_compare()"<<std::endl;
+	std::cout<<"in ele_compare_GEN_signal_ttBar_dyJets()"<<std::endl;
 #endif
 	
 	TString directory = "/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/";
@@ -100,7 +101,8 @@ void ele_signal_and_bkgndMC_compare(){
 
 	int nhistos = 1;	//max is 27
 	int nTwoDimHistos = 1;	//max is 1
-	std::vector<THStack*> ths, std::vector<THStack*> thsTwoDim; // Stacks;
+	std::vector<THStack*> ths;
+	std::vector<THStack*> thsTwoDim; // Stacks;
 	for(int istacks=0; istacks<nhistos; istacks++)
 	{
 		TString full_name = Form("th%d",istacks);      
@@ -109,7 +111,7 @@ void ele_signal_and_bkgndMC_compare(){
 	}
 	for(int istacks=0; istacks<nTwoDimHistos; istacks++)
 	{
-		TString full_name = Form("th%d",istacks);      
+		TString full_name = Form("thtwo%d",istacks);      
 		THStack *thtwo = new THStack(full_name.Data(),"");
 		thsTwoDim.push_back(thtwo);
 	}
@@ -330,12 +332,14 @@ void ele_signal_and_bkgndMC_compare(){
 		histosTwoDim[5][i]->Scale(0.389*intLumi/50000);
 		histosTwoDim[5][i]->SetLineStyle(1);
 		histosTwoDim[5][i]->SetLineColor(1);
-		histosTwoDim[5][i]->SetLineWidth(3);
+		histosTwoDim[5][i]->SetFillColor(1);
+		//histosTwoDim[5][i]->SetLineWidth(3);
 
 		histosTwoDim[6][i]->Scale(0.0707*intLumi/50000);
 		histosTwoDim[6][i]->SetLineStyle(1);
 		histosTwoDim[6][i]->SetLineColor(2);
-		histosTwoDim[6][i]->SetLineWidth(3);
+		histosTwoDim[6][i]->SetFillColor(2);
+		//histosTwoDim[6][i]->SetLineWidth(3);
 
 		thsTwoDim[i]->Add(histosTwoDim[4][i]);
 		thsTwoDim[i]->Add(histosTwoDim[3][i]);
@@ -346,8 +350,8 @@ void ele_signal_and_bkgndMC_compare(){
 	}//end rescaling of 2D histos
 
 	///make a legend with appropriate labels for MC processes
-	TLegend *leg = new TLegend( 0.62, 0.64, 0.89, 0.87 );
-	leg->SetNColumns(2);
+	TLegend *leg = new TLegend( 0.56, 0.60, 0.89, 0.87 );
+	leg->SetNColumns(3);
 	//leg->AddEntry( histos[5][0], "M_{WR}=1 M_{NU}=0.5 TeV" ,"ep");
 	leg->AddEntry( histos[5][0], "M_{WR}=1.4 TeV","l");
 	leg->AddEntry( histos[6][0], "M_{WR}=2 TeV","l");
@@ -360,11 +364,12 @@ void ele_signal_and_bkgndMC_compare(){
 
 	TString xtitles[] = {"M_{EEJJ} [GeV]","M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading jet p_{T} [GeV]","subleading jet p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading jet #eta","subleading jet #eta","leading electron #phi","subleading electron #phi","leading jet #phi","subleading jet #phi","number of electrons","number of jets","number of vertices","#DeltaR lead ele sublead ele","#DeltaR lead jet sublead jet","#DeltaR lead ele lead jet","#DeltaR lead ele sublead jet","#DeltaR sublead ele lead jet","#DeltaR sublead ele sublead jet","M_{JJ} [GeV]","Missing E_{T} [GeV]"};
 	
-	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary DiElectron Mass  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary leading electron #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary leading jet #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary number of electrons  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary number of jets  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary number of vertices  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Dijet Mass  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Missing E_{T}  #surds = 13 TeV   #intlumi = 1.5/fb"};
+	TString titles[] = {"CMS Preliminary M_{EEJJ}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary DiElectron Mass  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Jet p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Sublead Jet p_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Lead Jet #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Subleading jet #eta  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary leading electron #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary leading jet #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Subleading jet #phi  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary number of electrons  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary number of jets  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary number of vertices  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead jet Sublead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead ele lead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR lead ele Sublead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR Sublead ele lead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary #DeltaR Sublead ele Sublead jet  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Dijet Mass  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary Missing E_{T}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary sublead electron M_{EJJ}  #surds = 13 TeV   #intlumi = 1.5/fb","CMS Preliminary lead electron M_{EJJ}  #surds = 13 TeV   #intlumi = 1.5/fb"};
 
-	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","MET"};
+	TString fnames[] = {"MEEJJ","MEE","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","MJJ","MET","subleadEleMEJJ","leadEleMEJJ"};
 
-
+	gStyle->SetTitleOffset(1.5,"Y");
+	
 	for(int icanvas=0; icanvas<nhistos; icanvas++){
 #ifdef DEBUG
 		std::cout<<"drawing histos on canvas"<<std::endl;
@@ -379,43 +384,43 @@ void ele_signal_and_bkgndMC_compare(){
 
 		///rescale vertical axis for linear scale plot
 		Double_t oldMax = ( (ths[icanvas]->GetMaximum() > histos[5][icanvas]->GetMaximum() ) ? ths[icanvas]->GetMaximum() : histos[5][icanvas]->GetMaximum() );
-		ths[icanvas]->SetMaximum(1.5*oldMax);
-		histos[5][icanvas]->SetMaximum(1.5*oldMax);
+		ths[icanvas]->SetMaximum(1.3*oldMax);
+		histos[5][icanvas]->SetMaximum(1.3*oldMax);
 		//histos[6][icanvas]->SetMaximum(1.5*oldMax);
 		//histos[7][icanvas]->SetMaximum(1.5*oldMax);
 	
 		ths[icanvas]->Draw("hist");
 		histos[5][icanvas]->Draw("Csame");
-		//histos[6][icanvas]->Draw("Csame");
-		//histos[7][icanvas]->Draw("lsame");
+		histos[6][icanvas]->Draw("Csame");
+		//histos[7][icanvas]->Draw("Csame");
 		mycanvas->Update();
 
 		///set the x axis title
 		ths[icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
 		histos[5][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
-		//histos[6][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
+		histos[6][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
 		//histos[7][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
 	
 		///set the y axis title using the bin size from the data histo, and the x axis title
 		TString yLabel = DetermineYaxisName(histos[5][icanvas], xtitles[icanvas]);
 		ths[icanvas]->GetYaxis()->SetTitle(yLabel );
 		histos[5][icanvas]->GetYaxis()->SetTitle(yLabel );
-		//histos[6][icanvas]->GetYaxis()->SetTitle(yLabel );
+		histos[6][icanvas]->GetYaxis()->SetTitle(yLabel );
 		//histos[7][icanvas]->GetYaxis()->SetTitle(yLabel );
 
 		///set the histogram title to show a name
 		ths[icanvas]->SetTitle(titles[icanvas]);
 		histos[5][icanvas]->SetTitle(titles[icanvas]);
-		//histos[6][icanvas]->SetTitle(titles[icanvas]);
+		histos[6][icanvas]->SetTitle(titles[icanvas]);
 		//histos[7][icanvas]->SetTitle(titles[icanvas]);
 
 		///draw the legend, and a text box above the legend with the COM energy and integrated lumi
 		leg->Draw();
 		
 		mycanvas->Update();
-		TString tag = "_amcnloDYJets_25ns";
+		TString tag = "_DYJetsHighMass_25ns";
 		
-		TString fn = "tempPlots/wrSignalAndBkgndMCs25ns/";
+		TString fn = "tempPlots/genWRTTAndDYJets/";
 		TString fn_pdf = fn + fnames[icanvas].Data() + tag + ".pdf";
 		TString fn_png = fn + fnames[icanvas].Data() + tag + ".png";
 		mycanvas->Print(fn_pdf.Data());
@@ -425,11 +430,11 @@ void ele_signal_and_bkgndMC_compare(){
 		///rescale vertical axis for log scale plot
 		ths[icanvas]->SetMaximum(27*oldMax);
 		histos[5][icanvas]->SetMaximum(27*oldMax);
-		//histos[6][icanvas]->SetMaximum(27*oldMax);
+		histos[6][icanvas]->SetMaximum(27*oldMax);
 		//histos[7][icanvas]->SetMaximum(27*oldMax);
 		ths[icanvas]->SetMinimum(0.2);
 		histos[5][icanvas]->SetMinimum(0.2);
-		//histos[6][icanvas]->SetMinimum(0.2);
+		histos[6][icanvas]->SetMinimum(0.2);
 		//histos[7][icanvas]->SetMinimum(0.2);
 
 		leg->Draw();
@@ -440,8 +445,115 @@ void ele_signal_and_bkgndMC_compare(){
 		mycanvas->Print(fn_log_png.Data());
 		mycanvas->Close();
 
-	}
-}
+	}//end loop over 1D histos
+
+	///2D histo plotting
+	//TLegend *legTwoDim = new TLegend( 0.62, 0.64, 0.89, 0.87 );
+	//legTwoDim->SetNColumns(2);
+	////legTwoDim->AddEntry( histosTwoDim[5][0], "M_{WR}=1 M_{NU}=0.5 TeV" ,"ep");
+	//legTwoDim->AddEntry( histosTwoDim[5][0], "M_{WR}=1.4 TeV","l");
+	//legTwoDim->AddEntry( histosTwoDim[6][0], "M_{WR}=2 TeV","l");
+	//legTwoDim->AddEntry( histosTwoDim[0][0], "DY MLL 200to400" ); 
+	//legTwoDim->AddEntry( histosTwoDim[1][0], "ttbar" );
+	//legTwoDim->AddEntry( histosTwoDim[2][0], "DY MLL 400to500" );  
+	//legTwoDim->AddEntry( histosTwoDim[3][0], "DY MLL 500to700" ); 
+	//legTwoDim->AddEntry( histosTwoDim[4][0], "DY MLL 700to800" );
+	//legTwoDim->SetFillColor( kWhite );
+
+	TString xtitlesTwoDim[] = {"M_{EEJJ} [GeV]"};
+	TString ytitlesTwoDim[] = {"M_{EJJ} [GeV]"};
+	
+	TString titlesTwoDim[] = {"CMS Preliminary M_{EJJ} vs M_{EEJJ}  #surds = 13 TeV   #intlumi = 1.5/fb"};
+
+	TString fnamesTwoDim[] = {"MEJJvsMEEJJ"};
+
+	gStyle->SetTitleOffset(1.5,"X");
+	
+	for(int icanvas=0; icanvas<nTwoDimHistos; icanvas++){
+#ifdef DEBUG
+		std::cout<<"drawing 2D histos on canvas"<<std::endl;
+#endif
+		TString name = "";
+		name += icanvas;
+		TCanvas* mycanvas = new TCanvas( name, name, 800, 800 ) ;
+#ifdef DEBUG
+		std::cout<<"made TCanvas and initialized a pointer to it"<<std::endl;
+#endif
+		mycanvas->cd();
+
+		///rescale vertical axis for linear scale plot
+		//Double_t oldMax = ( (thsTwoDim[icanvas]->GetMaximum() > histosTwoDim[5][icanvas]->GetMaximum() ) ? thsTwoDim[icanvas]->GetMaximum() : histosTwoDim[5][icanvas]->GetMaximum() );
+		//thsTwoDim[icanvas]->SetMaximum(1.3*oldMax);
+		//histosTwoDim[5][icanvas]->SetMaximum(1.3*oldMax);
+		//histosTwoDim[6][icanvas]->SetMaximum(1.3*oldMax);
+		//histosTwoDim[7][icanvas]->SetMaximum(1.3*oldMax);
+	
+		//thsTwoDim[icanvas]->Draw("hist");
+		thsTwoDim[icanvas]->Draw("");
+		histosTwoDim[5][icanvas]->Draw("same");
+		histosTwoDim[6][icanvas]->Draw("same");
+		//histosTwoDim[7][icanvas]->Draw("same");
+		mycanvas->Update();
+
+		///set the x axis title
+		thsTwoDim[icanvas]->GetXaxis()->SetTitle(xtitlesTwoDim[icanvas].Data());
+		histosTwoDim[5][icanvas]->GetXaxis()->SetTitle(xtitlesTwoDim[icanvas].Data());
+		histosTwoDim[6][icanvas]->GetXaxis()->SetTitle(xtitlesTwoDim[icanvas].Data());
+		//histosTwoDim[7][icanvas]->GetXaxis()->SetTitle(xtitlesTwoDim[icanvas].Data());
+	
+		///set the y axis title using the bin size from the data histo, and the x axis title
+		//TString yLabel = DetermineYaxisName(histos[5][icanvas], xtitles[icanvas]);
+		//thsTwoDim[icanvas]->GetYaxis()->SetTitle(yLabel );
+		thsTwoDim[icanvas]->GetYaxis()->SetTitle(ytitlesTwoDim[icanvas]);
+		histosTwoDim[5][icanvas]->GetYaxis()->SetTitle(ytitlesTwoDim[icanvas]);
+		histosTwoDim[6][icanvas]->GetYaxis()->SetTitle(ytitlesTwoDim[icanvas]);
+		//histosTwoDim[7][icanvas]->GetYaxis()->SetTitle(ytitlesTwoDim[icanvas]);
+
+		///set the histogram title to show a name
+		thsTwoDim[icanvas]->SetTitle(titlesTwoDim[icanvas]);
+		histosTwoDim[5][icanvas]->SetTitle(titlesTwoDim[icanvas]);
+		histosTwoDim[6][icanvas]->SetTitle(titlesTwoDim[icanvas]);
+		//histosTwoDim[7][icanvas]->SetTitle(titlesTwoDim[icanvas]);
+
+		///draw the legend
+		leg->Draw();
+		
+		mycanvas->Update();
+		TString tag = "_TwoDim_DYJetsHighMass_25ns";
+		
+		TString fn = "tempPlots/genWRTTAndDYJets/";
+		TString fn_pdf = fn + fnamesTwoDim[icanvas].Data() + tag + ".pdf";
+		TString fn_png = fn + fnamesTwoDim[icanvas].Data() + tag + ".png";
+		mycanvas->Print(fn_pdf.Data());
+		mycanvas->Print(fn_png.Data());
+		
+		/*
+		mycanvas->SetLogy();
+
+		///rescale vertical axis for log scale plot
+		ths[icanvas]->SetMaximum(27*oldMax);
+		histos[5][icanvas]->SetMaximum(27*oldMax);
+		histos[6][icanvas]->SetMaximum(27*oldMax);
+		//histos[7][icanvas]->SetMaximum(27*oldMax);
+		ths[icanvas]->SetMinimum(0.2);
+		histos[5][icanvas]->SetMinimum(0.2);
+		histos[6][icanvas]->SetMinimum(0.2);
+		//histos[7][icanvas]->SetMinimum(0.2);
+
+		leg->Draw();
+		mycanvas->Update();
+		TString fn_log_pdf = fn + fnames[icanvas].Data() + tag + "_log.pdf";
+		TString fn_log_png = fn + fnames[icanvas].Data() + tag + "_log.png";
+		mycanvas->Print(fn_log_pdf.Data());
+		mycanvas->Print(fn_log_png.Data());
+		*/
+		mycanvas->Close();
+
+	}//end loop over 2D histos
+
+
+
+}//end ele_compare_GEN_signal_ttBar_dyJets()
 
 
 vector<TH1F*> MakeNHistos(TString hname, int n, int bins, float x_min, float x_max){
