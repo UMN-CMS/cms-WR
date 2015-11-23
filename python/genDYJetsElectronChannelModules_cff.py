@@ -9,8 +9,9 @@ printDYJetsParticleTree = printParticleTree.clone(
 
 #bareMatchedLeadingGenEle is an EDFilter module
 #if the filter returns False, the path running the filter will stop
+#the || status==23 fixes problems with DYJets M200to400 (and higher mass) datasets
 dyJetsBareMatchedGenEle = bareMatchedLeadingGenEle.clone(
-		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 23 && mother(0).status == 62")
+		cut = cms.string("abs(pdgId) == 11 && ( (abs(mother(0).pdgId) == 23 && mother(0).status == 62 ) || status == 23 )")
 		)
 
 dyJetsBareMatchedGenEleFilter = cms.EDFilter("CandViewCountFilter",

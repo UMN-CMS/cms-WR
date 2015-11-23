@@ -74,6 +74,7 @@ process.studyGenQuarks = cms.Path(
 
 process.schedule = cms.Schedule(process.studyDYJetsDecay,process.studyGenGluons,process.studyGenQuarks)
 
+
 process.TFileService = cms.Service("TFileService",
 		fileName = cms.string('genDYJetsDecayKinematics.root')
 )
@@ -84,7 +85,7 @@ process.options = cms.untracked.PSet(
 		)
 
 process.source = cms.Source( "PoolSource",
-	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M_50_madgraph_13TeV_25ns_reMiniAOD_50kevts.root'),
+	fileNames = cms.untracked.vstring('file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M_200to400_amcnlo_13TeV_25ns_reMiniAOD_26kevts.root'),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
