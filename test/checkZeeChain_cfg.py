@@ -18,6 +18,10 @@ from ExoAnalysis.cmsWR.additionalVarParsing_cff import *
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.GT, '')
 
+##jet energy corrections
+from ExoAnalysis.cmsWR.JEC_cff import *
+JEC_correction(process, options.GT)
+
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
 process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
@@ -80,8 +84,10 @@ process.recoAnalyzerOne = cms.EDAnalyzer('zeeAnalyzer',
 #################################
 #Paths
 process.checkZeePath = cms.Path(
+		process.patJetCorrFactorsReapplyJEC
+		+process.patJetsReapplyJEC
 		#process.trigSelector
-		process.egmGsfElectronIDSequence
+		+process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.checkZeeSeq
 		*process.recoAnalyzerOne

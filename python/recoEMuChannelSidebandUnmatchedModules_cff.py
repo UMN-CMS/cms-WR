@@ -19,7 +19,7 @@ wrTunePMuProdSeq = cms.Sequence(
 isHighPtMuProd = cms.EDProducer("produceIsHighPtMuons",
 		src = cms.InputTag("wrTunePMuProd"),
 		outputCollectionName = cms.string("TunePMuonsPassingIsHighPtID"),
-		minPt = cms.double(45)
+		minPt = cms.double(50)
 		)
 
 isHighPtMuProdFilter = cms.EDFilter("CandViewCountFilter",

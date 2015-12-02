@@ -41,8 +41,9 @@ void eleDataMC_checkZee_compare(){
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_"+fileTag);//zz
 	TFile * hfile5 = new TFile(directory+"analyzed_WJets_"+fileTag);//wjets
 
-	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_skim_25ns_hasTwoHEEP_Run2015CandD.root");//data
-	//TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_50ns_skim_check_Zee_peak_twoHEEP_noHLT_Run2015BandC.root");//data
+	//TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_skim_25ns_hasTwoHEEP_Run2015CandD_gold.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_DoubleEG_skim_25ns_hasTwoHEEP_Run2015D_all_silver.root");//data
+
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -136,15 +137,16 @@ void eleDataMC_checkZee_compare(){
 	std::vector<float> PUW_data = PileUpWeights(tree_data,tree_data);
 
 	///fill the histos with content from TTrees
-	Fill_Histo(histos[0],tree0,PUW0,false,false); // DY
-	Fill_Histo(histos[1],tree1,PUW1,false,false); // TTbar
-	Fill_Histo(histos[2],tree3,PUW3,false,false); // WZ
-	Fill_Histo(histos[3],tree4,PUW4,false,false); // ZZ
-	Fill_Histo(histos[4],tree5,PUW5,false,false); // WJets
+	Fill_Histo(histos[0],tree0,PUW0,true,false); // DY
+	Fill_Histo(histos[1],tree1,PUW1,true,false); // TTbar
+	Fill_Histo(histos[2],tree3,PUW3,true,false); // WZ
+	Fill_Histo(histos[3],tree4,PUW4,true,false); // ZZ
+	Fill_Histo(histos[4],tree5,PUW5,true,false); // WJets
 
 	Fill_Histo(histos[5],tree_data,PUW_data,false,true);	///real data
 
-	Float_t intLumi = 1285.201;	///25ns Run2015C and D
+	//Float_t intLumi = 1570.674;	///25ns Run2015C and D golden
+	Float_t intLumi = 351.885;	///25ns Run2015D silver
 	//Float_t intLumi = 64.11;	///50ns Run2015B and C integrated lumi
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
@@ -220,7 +222,7 @@ void eleDataMC_checkZee_compare(){
 
 	TString xtitles[] = {"M_{EE} [GeV]","leading electron p_{T} [GeV]","subleading electron p_{T} [GeV]","leading electron #eta","subleading electron #eta","leading electron #phi","subleading electron #phi","number of electrons","number of vertices","#DeltaR lead ele sublead ele"};
 	
-	TString titles[] = {"CMS Preliminary DiElectron Mass  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of electrons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb"};
+	TString titles[] = {"CMS Preliminary DiElectron Mass  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Lead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Sublead Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Lead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Sublead Electron #eta  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary leading electron #phi  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Subleading electron #phi  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary number of electrons  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary #DeltaR lead ele Sublead ele  #surds = 13 TeV 25ns  #intlumi = 351.9/pb"};
 
 	TString fnames[] = {"MEE","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2"};
 

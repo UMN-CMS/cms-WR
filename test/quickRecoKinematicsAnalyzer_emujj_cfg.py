@@ -19,6 +19,10 @@ from ExoAnalysis.cmsWR.additionalVarParsing_cff import *
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.GT, '')
 
+##jet energy corrections
+from ExoAnalysis.cmsWR.JEC_cff import *
+JEC_correction(process, options.GT)
+
 # import the HEEP selection modules and sequences
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
@@ -30,7 +34,8 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
 process.trigFilt = hltHighLevel.clone()
 #process.trigFilt.HLTPaths = ['HLT_Mu45_eta2p1_v*','HLT_Mu50_v*','HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*']
-process.trigFilt.HLTPaths = ['HLT_Mu30_Ele30_CaloIdL_GsfTrkIdVL_v*']
+#process.trigFilt.HLTPaths = ['HLT_Mu30_Ele30_CaloIdL_GsfTrkIdVL_v*']
+process.trigFilt.HLTPaths = ['HLT_Mu45_eta2p1_v*']
 process.trigFilt.andOr = True  #if True, then multiple HLT paths will be combined with OR logic
 
 #no need for trigSelector, or triggerFilter.cc
@@ -95,7 +100,9 @@ process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor'
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.trigFilt
+		process.patJetCorrFactorsReapplyJEC
+		+process.patJetsReapplyJEC
+		+process.trigFilt
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSidebandSequence  #only look for 1 HEEP electron
 		*process.wrTunePMuProdSeq

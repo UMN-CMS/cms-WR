@@ -19,7 +19,7 @@ wrTunePMuProdSeq = cms.Sequence(
 isHighPtMuProd = cms.EDProducer("produceIsHighPtMuons",
 		src = cms.InputTag("wrTunePMuProd"),
 		outputCollectionName = cms.string("TunePMuonsPassingIsHighPtID"),
-		minPt = cms.double(45)
+		minPt = cms.double(50)
 		)
 
 isHighPtMuProdFilter = cms.EDFilter("CandViewCountFilter",
@@ -80,7 +80,6 @@ emuBareRecoLeptonOneFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 emuBareRecoLeptonTwo = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("wrTunePMuProd"),
 		src = cms.InputTag("isHighPtMuProd","TunePMuonsPassingIsHighPtID"),
 		cut = cms.string("abs(eta) < 2.4 && pt>50")  #pt>50 to get above isHighPt ID turnon curve
 		)
@@ -101,16 +100,16 @@ emuBareRecoParticleSeq = cms.Sequence(
 
 ## for the low dilepton mass sideband, skip evts which have leptons passing ID requirements
 ## which also have dilepton mass > 200 GeV
-
-emuEarlyRecoLowMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
-		maxWrMass = cms.double(14000.0),
-		maxDileptonMass = cms.double(200.0),
-		inputLeadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonOne"),
-		inputSubleadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
-		inputJetsCollTag = cms.InputTag("emuBareRecoJet")
-		)
-
-emuEarlyLowDileptonMassSeq = cms.Sequence(emuEarlyRecoLowMassFilter)
+#
+#emuEarlyRecoLowMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
+#		maxWrMass = cms.double(14000.0),
+#		maxDileptonMass = cms.double(200.0),
+#		inputLeadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonOne"),
+#		inputSubleadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
+#		inputJetsCollTag = cms.InputTag("emuBareRecoJet")
+#		)
+#
+#emuEarlyLowDileptonMassSeq = cms.Sequence(emuEarlyRecoLowMassFilter)
 
 ## end modules to skip high dilepton mass evts
 
@@ -120,6 +119,8 @@ emuEarlyLowDileptonMassSeq = cms.Sequence(emuEarlyRecoLowMassFilter)
 
 emuBareRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLeptonFlavor",
 		outputJetsCollectionName = cms.string("jetsPassingDrSeparationCut"),
+		outputLeptonsOneCollectionName = cms.string("leptonsOnePassingDrSeparationCut"),
+		outputLeptonsTwoCollectionName = cms.string("leptonsTwoPassingDrSeparationCut"),
 		minDrSeparation = cms.double(0.4),
 		inputJetsCollTag = cms.InputTag("emuBareRecoJet"),
 		inputLeptonsOneCollTag = cms.InputTag("emuBareRecoLeptonOne"),
@@ -128,16 +129,43 @@ emuBareRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLepto
 		minLeptonDrSeparation = cms.double(0.4)
 		)
 
-emuBareRecoJetLeptonDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+emuBareRecoJetLeptonDrSeparationJetsFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
 		minNumber = cms.uint32(2)
 		)
 
+emuBareRecoJetLeptonDrSeparationLeptonsOneFilter = emuBareRecoJetLeptonDrSeparationJetsFilter.clone(
+		src = cms.InputTag("emuBareRecoJetLeptonDrSeparation","leptonsOnePassingDrSeparationCut"),
+		minNumber = cms.uint32(1)
+		)
+
+emuBareRecoJetLeptonDrSeparationLeptonsTwoFilter = emuBareRecoJetLeptonDrSeparationLeptonsOneFilter.clone(
+		src = cms.InputTag("emuBareRecoJetLeptonDrSeparation","leptonsTwoPassingDrSeparationCut")
+		)
+
 emuBareRecoDrSeparationSeq = cms.Sequence(
 		emuBareRecoJetLeptonDrSeparation
-		*emuBareRecoJetLeptonDrSeparationFilter
+		*emuBareRecoJetLeptonDrSeparationJetsFilter
+		*emuBareRecoJetLeptonDrSeparationLeptonsOneFilter
+		*emuBareRecoJetLeptonDrSeparationLeptonsTwoFilter
 		)
+#end modules which apply dR(L,J) cuts
 ##########################
+
+### begin modules which collimate lepton collection names in preparation for high pT lepton cut
+emuCollimateLeptonsOne = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("emuBareRecoJetLeptonDrSeparation","leptonsOnePassingDrSeparationCut"),
+		cut = cms.string("")
+		)
+
+emuCollimateLeptonsTwo = emuCollimateLeptonsOne.clone(
+		src = cms.InputTag("emuBareRecoJetLeptonDrSeparation","leptonsTwoPassingDrSeparationCut")
+		)
+
+emuCollimateLeptonsSeq = cms.Sequence(emuCollimateLeptonsOne*emuCollimateLeptonsTwo)
+
+### end modules which collimate lepton collection names in preparation for high pT lepton cut
+
 
 ## the jets have already been required to pass the loose jet ID and have pt>40
 ## the leptons have already been required to have pt>40
@@ -145,7 +173,7 @@ emuBareRecoDrSeparationSeq = cms.Sequence(
 ## run the low mass filter plugin in a module, but set the max lljj mass to 14000, and the max dilepton mass to 200
 
 emuMergeLeptons = cms.EDProducer("CandViewMerger",
-		src = cms.VInputTag("emuBareRecoLeptonOne","emuBareRecoLeptonTwo")
+		src = cms.VInputTag("emuCollimateLeptonsOne","emuCollimateLeptonsTwo")
 		)
 
 emuRequireHighPtLepton = cms.EDFilter("CandViewSelector",
@@ -158,20 +186,20 @@ emuRequireHighPtLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(1)
 		)
 
-emuRecoLowMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
-		maxWrMass = cms.double(14000.0),
-		maxDileptonMass = cms.double(200.0),
-		inputLeadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonOne"),
-		inputSubleadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
-		inputJetsCollTag = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut")
-		)
-
-emuLeadLeptonAndLowMassSeq = cms.Sequence(
-		emuMergeLeptons
-		*emuRequireHighPtLepton
-		*emuRequireHighPtLeptonFilter
-		*emuRecoLowMassFilter
-		)
+#emuRecoLowMassFilter = cms.EDFilter("hasNoHighMassWrObjects",
+#		maxWrMass = cms.double(14000.0),
+#		maxDileptonMass = cms.double(200.0),
+#		inputLeadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonOne"),
+#		inputSubleadLeptonsCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
+#		inputJetsCollTag = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut")
+#		)
+#
+#emuLeadLeptonAndLowMassSeq = cms.Sequence(
+#		emuMergeLeptons
+#		*emuRequireHighPtLepton
+#		*emuRequireHighPtLeptonFilter
+#		*emuRecoLowMassFilter
+#		)
 
 ## end lepton pt>60 and dilepton mass < 200 
 
@@ -186,7 +214,7 @@ emuLeadLeptonSeq = cms.Sequence(
 
 ## require the two leptons have dilepton mass > 200
 emuRecoDiLeptonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-		decay = cms.string("emuBareRecoLeptonOne emuBareRecoLeptonTwo"),
+		decay = cms.string("emuCollimateLeptonsOne emuCollimateLeptonsTwo"),
 		role = cms.string(""),
 		checkCharge = cms.bool(False),
 		cut = cms.string("mass > 200")
@@ -206,26 +234,26 @@ emuDileptonSignalSeq = cms.Sequence(
 
 ##filter the jets and only retain those which are separated from the leptons
 ##by dR > 0.4
-emuFilteredRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLeptonFlavor",
-		outputJetsCollectionName = cms.string("filteredJetsPassingDrSeparationCut"),
-		minDrSeparation = cms.double(0.4),
-		inputJetsCollTag = cms.InputTag("emuBareRecoJet"),
-		inputLeptonsOneCollTag = cms.InputTag("emuBareRecoLeptonOne"),
-		inputLeptonsTwoCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
-		minDileptonMassCut = cms.double(200),
-		minLeptonDrSeparation = cms.double(0.4)
-		)
-
-emuFilteredRecoJetLeptonDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("emuFilteredRecoJetLeptonDrSeparation","filteredJetsPassingDrSeparationCut"),
-		minNumber = cms.uint32(2)
-		)
-
-emuFilteredRecoDrSeparationSeq = cms.Sequence(
-		emuFilteredRecoJetLeptonDrSeparation
-		*emuFilteredRecoJetLeptonDrSeparationFilter
-		)
-
+#emuFilteredRecoJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLeptonFlavor",
+#		outputJetsCollectionName = cms.string("filteredJetsPassingDrSeparationCut"),
+#		minDrSeparation = cms.double(0.4),
+#		inputJetsCollTag = cms.InputTag("emuBareRecoJet"),
+#		inputLeptonsOneCollTag = cms.InputTag("emuBareRecoLeptonOne"),
+#		inputLeptonsTwoCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
+#		minDileptonMassCut = cms.double(200),
+#		minLeptonDrSeparation = cms.double(0.4)
+#		)
+#
+#emuFilteredRecoJetLeptonDrSeparationFilter = cms.EDFilter("CandViewCountFilter",
+#		src = cms.InputTag("emuFilteredRecoJetLeptonDrSeparation","filteredJetsPassingDrSeparationCut"),
+#		minNumber = cms.uint32(2)
+#		)
+#
+#emuFilteredRecoDrSeparationSeq = cms.Sequence(
+#		emuFilteredRecoJetLeptonDrSeparation
+#		*emuFilteredRecoJetLeptonDrSeparationFilter
+#		)
+#
 ##end dR(lepton,jet) filter modules
 
 
@@ -237,9 +265,9 @@ emuRecoFourObjMass = cms.EDProducer("applyFourObjMassCutTwoInputLeptonColls",
 		minFourObjMassCut = cms.double(600.0),
 		minDileptonMassCut = cms.double(200.0),
 		minLeptonDrSeparation = cms.double(0.4),
-		inputJetsCollTag = cms.InputTag("emuFilteredRecoJetLeptonDrSeparation","filteredJetsPassingDrSeparationCut"),
-		inputLeptonsOneCollTag = cms.InputTag("emuBareRecoLeptonOne"),
-		inputLeptonsTwoCollTag = cms.InputTag("emuBareRecoLeptonTwo"),
+		inputJetsCollTag = cms.InputTag("emuBareRecoJetLeptonDrSeparation","jetsPassingDrSeparationCut"),
+		inputLeptonsOneCollTag = cms.InputTag("emuCollimateLeptonsOne"),
+		inputLeptonsTwoCollTag = cms.InputTag("emuCollimateLeptonsTwo"),
 		)
 
 emuRecoFourObjMassLeptonsOneFilter = cms.EDFilter("CandViewCountFilter",

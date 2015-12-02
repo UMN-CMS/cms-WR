@@ -73,7 +73,6 @@ int main(void){
 
 	///declare TChains used to construct RooDataSet objects for each bkgnd source
 	TString treeName = "unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts";
-//	TString dirName = "root://cmsxrootd.fnal.gov//store/user/skalafut/analyzed_25ns_eejj_signal_region/";
 	TString dirName = "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
 
 	//backgrounds

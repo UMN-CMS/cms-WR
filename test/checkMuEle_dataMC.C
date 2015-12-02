@@ -37,10 +37,11 @@ void checkMuEle_dataMC(){
 	TFile * hfile4 = new TFile(directory+"analyzed_ZZ_25ns_skim_check_emu_noHLT.root");//zz
 	TFile * hfile5 = new TFile(directory+"analyzed_WJets_25ns_skim_check_emu_noHLT.root");//wjets
 	
-	//TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_50ns_skim_oneHEEPandIsHighPtID_check_emu_noHLT_Run2015BandC.root");//data
-	TFile * hfile_data = new TFile(directory+"analyzed_MuonEG_25ns_skim_check_emu_noHLT_Run2015CandD.root");//data
+	//TFile * hfile_data = new TFile(directory+"analyzed_SingleMuon_25ns_skim_check_emu_noHLT_Run2015CandD_golden.root");//data
+	TFile * hfile_data = new TFile(directory+"analyzed_SingleMuon_25ns_skim_check_emu_noHLT_Run2015D_all_silver.root");//data
 
 
+	int numDiffProcesses = 7;
 
 #ifdef DEBUG
 	std::cout<<"declared pointers to input files"<<std::endl;
@@ -61,18 +62,18 @@ void checkMuEle_dataMC(){
 #endif
 
 	///set histo names, number of bins, and axis limits here
-	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,20,50,250);
-	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,22,0,220);
-	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,13,0,130);
-	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
-	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,20,-3.,3.);
-	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,20,-3.15,3.15);
-	vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 7,20,-3.15,3.15);
-	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 7,15,0,15);
-	vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", 7,33,0,33);
-	vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", 7,20,0,5);
-	vector<TH1F*> h_nleptonsOne = MakeNHistos("h_nleptonsOne", 7,12,0,12);
-	vector<TH1F*> h_nleptonsTwo = MakeNHistos("h_nleptonsTwo", 7,10,0,10);
+	vector<TH1F*> h_Mll = MakeNHistos("h_Mll",numDiffProcesses,20,50,250);
+	vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",numDiffProcesses,22,0,220);
+	vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",numDiffProcesses,13,0,130);
+	vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", numDiffProcesses,20,-3.,3.);
+	vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", numDiffProcesses,20,-3.,3.);
+	vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", numDiffProcesses,20,-3.15,3.15);
+	vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", numDiffProcesses,20,-3.15,3.15);
+	vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", numDiffProcesses,15,0,15);
+	vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", numDiffProcesses,33,0,33);
+	vector<TH1F*> h_dR_l1l2 = MakeNHistos("h_dR_l1l2", numDiffProcesses,20,0,5);
+	vector<TH1F*> h_nleptonsOne = MakeNHistos("h_nleptonsOne", numDiffProcesses,12,0,12);
+	vector<TH1F*> h_nleptonsTwo = MakeNHistos("h_nleptonsTwo", numDiffProcesses,10,0,10);
 	
 #ifdef DEBUG
 	std::cout<<"made vectors of TH1F pointers to histos"<<std::endl;
@@ -102,7 +103,7 @@ void checkMuEle_dataMC(){
 	std::vector<TH1F*> histos_data(nhistos); // data
 
 	///load the vectors tied to all MC and real data samples into one vector<vector<TH1F*> > object
-	vector<vector<TH1F*> > histos(7);
+	vector<vector<TH1F*> > histos(numDiffProcesses);
 	histos[0] = histos0;
 	histos[1] = histos1;
 	histos[2] = histos2;
@@ -112,7 +113,7 @@ void checkMuEle_dataMC(){
 	histos[6] = histos_data;
 
 	///link the histos made by calls to MakeNHistos() above to specific elements of vector<vector<TH1F*> > container 
-	for(int j=0; j<7; j++){
+	for(int j=0; j<numDiffProcesses; j++){
 		histos[j][0] = h_Mll[j];
 		histos[j][1] = h_l1pt[j];
 		histos[j][2] = h_l2pt[j];
@@ -140,16 +141,18 @@ void checkMuEle_dataMC(){
 	std::vector<float> PUW_data = PileUpWeights(tree_data,tree_data);
 
 	///fill the histos with content from TTrees
-	Fill_Histo(histos[0],tree0,PUW0,false,false); // DY
-	Fill_Histo(histos[1],tree1,PUW1,false,false); // TTbar
-	Fill_Histo(histos[3],tree3,PUW3,false,false); // WZ
-	Fill_Histo(histos[4],tree4,PUW4,false,false); // ZZ
-	Fill_Histo(histos[5],tree5,PUW5,false,false); // WJets
+	Fill_Histo(histos[0],tree0,PUW0,true,false); // DY
+	Fill_Histo(histos[1],tree1,PUW1,true,false); // TTbar
+	Fill_Histo(histos[3],tree3,PUW3,true,false); // WZ
+	Fill_Histo(histos[4],tree4,PUW4,true,false); // ZZ
+	Fill_Histo(histos[5],tree5,PUW5,true,false); // WJets
 
 	Fill_Histo(histos[6],tree_data,PUW_data,false,true);	///real data
 
 	//Float_t intLumi = 64.11;	//50ns Run2015B and C
-	Float_t intLumi = 1285.201;	//25ns Run2015C and 2015D
+	//Float_t intLumi = 1570.674;	//25ns Run2015C and 2015D golden
+	Float_t intLumi = 351.885;	//25ns Run2015D silver (no silver data in Run2015C)
+	
 	// Scale = xsection*luminosity/events
 	for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
 #ifdef DEBUG
@@ -158,7 +161,7 @@ void checkMuEle_dataMC(){
 		Double_t bkgndIntegral = 0;	///< integral of all bkgnd MC histos
 		
 		//histos[0][i]->Scale(6025.2*(intLumi)/9051899);	///madgraph DYJets 50ns
-		histos[0][i]->Scale(6025.2*(intLumi)/9052671);	///madgraph DYJets 25ns
+		histos[0][i]->Scale(6025.2*(intLumi)/9042031);	///madgraph DYJets 25ns
 		histos[0][i]->SetFillColor(5);
 		bkgndIntegral += histos[0][i]->Integral();
 		
@@ -172,20 +175,20 @@ void checkMuEle_dataMC(){
 		std::cout<<"emu chnl ttBar integral =\t"<< histos[1][i]->Integral() <<std::endl;
 #endif
 	
-		histos[3][i]->Scale(66.1*(intLumi)/991232);		//WZ to all 25ns
+		histos[3][i]->Scale(66.1*(intLumi)/978512);		//WZ to all 25ns
 		//histos[3][i]->Scale(66.1*(intLumi)/996920);		//WZ to all 50ns
 		//histos[3][i]->Scale(5.52*(intLumi)/31054519);		//WZto2L2Q 25ns
 		histos[3][i]->SetFillColor(4);
 		bkgndIntegral += histos[3][i]->Integral();
 	
-		histos[4][i]->Scale(15.4*(intLumi)/996168);		//ZZ to all 25ns
+		histos[4][i]->Scale(15.4*(intLumi)/996944);		//ZZ to all 25ns
 		//histos[4][i]->Scale(15.4*(intLumi)/998848);		//ZZ to all 50ns
 		//histos[4][i]->Scale(3.38*(intLumi)/18898680);		//ZZto2L2Q 25ns
 		histos[4][i]->SetFillColor(7);
 		bkgndIntegral += histos[4][i]->Integral();
 		
 		//histos[5][i]->Scale(6.15e4*(intLumi)/24089991);		//WJetsToLNu 50ns
-		histos[5][i]->Scale(6.15e4*(intLumi)/24151270);		//WJetsToLNu 25ns
+		histos[5][i]->Scale(6.15e4*(intLumi)/72207128);		//WJetsToLNu 25ns
 		histos[5][i]->SetFillColor(6);
 		bkgndIntegral += histos[5][i]->Integral();
 	
@@ -216,7 +219,7 @@ void checkMuEle_dataMC(){
 	leg->SetNColumns(2);
 	leg->AddEntry( histos[6][0], "Data" ,"ep") ;
 	leg->AddEntry( histos[0][0], "DY" ) ; 
-	leg->AddEntry( histos[1][0], "ttbar" ) ;
+	leg->AddEntry( histos[1][0], "TTBar" ) ;
 	leg->AddEntry( histos[5][0], "WJets" ) ;  
 	leg->AddEntry( histos[3][0], "WZ" ) ; 
 	leg->AddEntry( histos[4][0], "ZZ" ) ;
@@ -225,10 +228,11 @@ void checkMuEle_dataMC(){
 
 	TString xtitles[] = {"M_{EMu} [GeV]","electron p_{T} [GeV]","muon p_{T} [GeV]","electron #eta","muon #eta","electron #phi","muon #phi","number of leptons","number of vertices","#DeltaR ele muon","number of electrons","number of muons"};
 	
-	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 1285.2/pb"};
+	TString titles[] = {"CMS Preliminary Dilepton Mass  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Electron p_{T}  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Muon p_{T}  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Electron #eta  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Muon #eta  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Electron #phi  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Muon #phi  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary number of leptons  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary number of vertices  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary #DeltaR Ele Muon  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Number of Electrons  #surds = 13 TeV 25ns  #intlumi = 351.9/pb","CMS Preliminary Number of Muons  #surds = 13 TeV 25ns  #intlumi = 351.9/pb"};
 
 	TString fnames[] = {"MEMu","l1_pt","l2_pt","l1_eta","l2_eta","l1_phi","l2_phi","nleptons","nvertices","dR_l1l2","nelectrons","nmuons"};
 
+	gStyle->SetTitleOffset(1.3,"Y");
 
 	for(int icanvas=0; icanvas<nhistos; icanvas++){
 #ifdef DEBUG
@@ -270,7 +274,7 @@ void checkMuEle_dataMC(){
 		mycanvas->Update();
 		TString tag = "_25ns";
 		
-		TString fn = "tempPlots/checkEMuWithMuonEG25ns/";
+		TString fn = "tempPlots/checkEMuWithSingleMuon25ns/";
 		TString fn_pdf = fn + fnames[icanvas].Data() + tag + ".pdf";
 		TString fn_png = fn + fnames[icanvas].Data() + tag + ".png";
 		mycanvas->Print(fn_pdf.Data());

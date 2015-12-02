@@ -1,4 +1,5 @@
 //#define DEBUG
+#define DOFIT
 
 /*
  * use this fxn to loop over events in a TChain, pull the event weights from the TChain,
@@ -44,16 +45,7 @@ RooDataSet applyNormalization(TChain * chain, TString dataSetName, Float_t norma
 
 }///end applyNormalization()
 
-void macro(){
-
-	Float_t maxMassWR = 2500;	///< use this for the RooRealVar massWR, and the fit range near the end
-	/*
-	RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
-	RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
-
-	
-	RooArgSet vars(massWR,genEvtWeights);
-	*/
+void bkgndFitRooMacro(){
 
 	///declare TChains used to construct RooDataSet objects for each bkgnd source
 	TString treeName = "recoAnalyzerOne/recoObjectsAllCuts";
@@ -71,21 +63,91 @@ void macro(){
 	TChain * zzTree = new TChain(treeName,"");
 	zzTree->Add(dirName+"analyzed_ZZ_25ns_emujj_signal_region_reMiniAOD.root");
 	std::vector<Float_t> xSxnBkgnds = {6025.2,831.76,66.1,15.4};	///< elements are in this order: DYJets, TTBar, WZ, ZZ
-	std::vector<Float_t> numEvtsBkgnds = {9042031,96834559,978512,996944};
-	
-	//std::vector<TString> wrMass = {"800","1000","1200","1400","1600","2000","2200","2400","2600","2800","3000","3200","3600","3800","4400","5000","5200","5600","5800","6000"};
-	//std::vector<TString> nuMass = {"400","500","600","700","800","1000","1100","1200","1300","1400","1500","1600","1800","1900","2200","2500","2600","2800","2900","3000"};
-	//std::vector<Float_t> xSxn = {3.65,1.78,0.663,0.389,0.177,0.0707,0.045,0.0248,0.015,0.00913,0.00576,0.0034,0.00154,0.00119,0.000375,0.0000912,0.0000665,0.0000254,0.0000202,0.0000144};
-	
-	//std::vector<TString> wrMass = {"800","1000"};
-	
+	std::vector<Float_t> numEvtsBkgnds = {9042031,static_cast<float>(96834559),978512,996944};
 
-	//std::vector<TString> wrMass = {"1000"};
-	//std::vector<TString> nuMass = {"500"};
-	//std::vector<Float_t> xSxn = {1.78};
+	///make a RooDataset for each bkgnd source using applyNormalization(), then append all of the RooDataset objects to one RooDataset
+	Float_t maxMassWR = 2100;	///< use this for the RooRealVar massWR, and the fit range near the end
+	Float_t intLumi = 1570.674;
+	RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
+	RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
+	RooArgSet vars(massWR,genEvtWeights);
+
+	RooDataSet ttBar = applyNormalization(ttBarTree,"ttBar",intLumi*xSxnBkgnds[1]/numEvtsBkgnds[1], vars, massWR, genEvtWeights);
+	RooDataSet dyJets = applyNormalization(dyJetsTree,"dyJets",intLumi*xSxnBkgnds[0]/numEvtsBkgnds[0], vars, massWR, genEvtWeights);
+	RooDataSet wz = applyNormalization(wzTree,"wz",intLumi*xSxnBkgnds[2]/numEvtsBkgnds[2], vars, massWR, genEvtWeights);
+	RooDataSet zz = applyNormalization(zzTree,"zz",intLumi*xSxnBkgnds[3]/numEvtsBkgnds[3], vars, massWR, genEvtWeights);
+
+	ttBar.append(dyJets);
+	ttBar.append(wz);
+	ttBar.append(zz);
+
+	///now define fit parameters and fit a function (exponential, quadratic, etc) to the massWR distribution
+	///and plot the distribution with the fit
+	RooPlot *frame = massWR.frame(300);
+	frame->GetXaxis()->SetRangeUser(600,maxMassWR);
+	frame->GetXaxis()->SetTitle("RECO EMuJJ Mass [GeV]");
+	frame->SetTitle("RECO EMuJJ Mass #SigmaAll Backgrounds  #intlumi = 1570.7/pb");
+	ttBar.plotOn(frame);
+
+#ifdef DOFIT
+	RooRealVar expPower("expPower","",-0.05,-0.2,0.);
+	RooExponential expPdf("expPdf","", massWR, expPower);
+	RooRealVar coef("coef","",100,0,600);
+	RooAddPdf * scaledExpPdf = new RooAddPdf("fourObjMassFit","",RooArgList(expPdf),RooArgList(coef));
 	
-	Int_t max = wrMass.size();
-	
+	//scaledExpPdf->fitTo(ttBar, RooFit::Verbose(kTRUE));
+	scaledExpPdf->fitTo(ttBar);
+	scaledExpPdf->plotOn(frame, RooFit::LineColor(kRed));
+	//RooDataSet * scaledExpPdfDataSet = scaledExpPdf->generate(RooArgSet(massWR));
+	/*
+	Int_t numBins = 1000;
+	TH1 * fitHisto = scaledExpPdf->createHistogram("fourObjectMass",numBins);
+	TH1 * dataPtsHisto = ttBar.createHistogram("fourObjectMass",numBins);
+	///loop over the bin contents of fitHisto and reset them to (fit - data)/data
+	for(Int_t i=1; i<=fitHisto->GetNbinsX(); i++){
+		Double_t dataBinContent = dataPtsHisto->GetBinContent(i);
+		Double_t fitBinContent = fitHisto->GetBinContent(i);
+		if(dataBinContent != 0){
+			Double_t residualFrxn = (fitBinContent-dataBinContent)/dataBinContent;
+			fitHisto->SetBinContent(i,residualFrxn);
+			if(i==10||i==30||i==50) std::cout<<"residualFrxn =\t"<< residualFrxn << std::endl;
+		}///end if(dataPtsHisto bin has nonzero entries)
+		else{
+			///set the bin content to 1 if there are no entries in dataPtsHisto, but there are entries in fitHisto
+			if(fitBinContent == 0) fitHisto->SetBinContent(i,0);
+			else fitHisto->SetBinContent(i,1);
+		}
+
+	}///end loop over fitHisto and dataPtsHisto bin contents
+	fitHisto->SetTitle("RECO M_{EMuJJ} #Delta(Exp Fit, Data) / Data");
+	fitHisto->GetXaxis()->SetTitle("RECO M_{EMuJJ} [GeV]");
+	fitHisto->GetYaxis()->SetTitle("#Delta(Fit, Data) / Data");
+	TCanvas * c2 = new TCanvas("c2","c2",800,800);
+	c2->cd();
+	fitHisto->Draw("");
+	c2->SaveAs("tempPlots/rooFitBkgndsEMuSignalRegion/residualExpFitAndBkgndMCsEMuJJBkgndsSignalRegion.png","recreate");
+	c2->SaveAs("tempPlots/rooFitBkgndsEMuSignalRegion/residualExpFitAndBkgndMCsEMuJJBkgndsSignalRegion.pdf","recreate");
+	*/
+
+#endif
+
+	TCanvas * c1 = new TCanvas("c1","c1",800,800);
+	c1->cd();
+	frame->Draw();
+	c1->Update();
+	TString plotDir = "tempPlots/rooFitBkgndsEMuSignalRegion/";
+	TString fitType = "noFit";
+#ifdef DOFIT
+	fitType = "two_DOF_scaledExpFit";
+#endif
+	TString plotFileName = "emujj_mass_all_bkgnds_signal_region_" + fitType;
+	TString pngFile = ".png";
+	TString pdfFile = ".pdf";
+
+	c1->SaveAs(plotDir+plotFileName+pngFile,"recreate");
+	c1->SaveAs(plotDir+plotFileName+pdfFile,"recreate");
+
+	/*
 	for(Int_t i=0; i<max; i++){
 		///fit a function to each M_EEJJ distribution, save the image, then move on to a different input file
 		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
@@ -93,16 +155,10 @@ void macro(){
 
 		RooArgSet vars(massWR,genEvtWeights);
 
-		TString genWrMass = wrMass[i];	///<gen WR mass shown in plot titles and names of saved images
-		TString genNuMass = nuMass[i];
-
-		Float_t maxRange = 1.7*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)
-
 		TChain * WRToEEJJTree = new TChain(treeName,"");
 		WRToEEJJTree->Add(dirName+"wr" + genWrMass + "nu" + genNuMass + "Tree.root");	///< WR signal TChain
 
 		///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
-		Float_t intLumi = 1000.;	///< integrated lumi
 		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
 
 		RooRealVar meanPeak("meanPeak", "", 1000, 600, maxMassWR);
@@ -138,7 +194,7 @@ void macro(){
 		//RooAddPdf signalPDF("wrFit","",RooArgList(logNorm,gaussLeft,gaussLowTail),RooArgList(coefRight,coefLeft,coefLowTail));
 
 		RooPlot *frame = massWR.frame(300);
-		frame->GetXaxis()->SetRangeUser(600,maxRange);
+		frame->GetXaxis()->SetRangeUser(600,maxMassWR);
 		frame->GetXaxis()->SetTitle("EEJJ Mass [GeV]");
 		frame->SetTitle("EEJJ Mass for WR MC M_{WR} = " + genWrMass + " GeV  #intlumi = 1000/pb");
 		//frame->SetTitle("EEJJ Mass for WR MC M_{WR} = " + genWrMass + " GeV   arbitrary normalization");
@@ -165,6 +221,8 @@ void macro(){
 
 	}///end loop over all input files
 
+	*/
+	
 
 	/*
 	Float_t maxRange = 1.6*(genWrMass.Atof());	///<max value of M_LLJJ shown in RooPlot (RooPlot pointer named frame)
@@ -291,5 +349,5 @@ void macro(){
 
 	*/
 
-}///end macro()
+}///end BkgndFitRooMacro()
 

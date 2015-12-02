@@ -13,7 +13,11 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v2', '')
+
+##jet energy corrections
+from ExoAnalysis.cmsWR.JEC_cff import *
+JEC_correction(process,'74X_mcRun2_asymptotic_v2')
 
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
@@ -87,7 +91,9 @@ process.genMatchedParticleAnalyzerAfterGenPtEtaDrCutsPostHLT = cms.EDAnalyzer('u
 #################################
 #Paths
 process.unmatchedRecoSignalPath = cms.Path(
-		process.trigFilt
+		process.patJetCorrFactorsReapplyJEC
+		+process.patJetsReapplyJEC
+		+process.trigFilt
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
@@ -122,6 +128,8 @@ process.genAndRecoSignalCutsPath = cms.Path(
 		##run an analyzer to count the number of evts passing the full GEN offline selection
 		*process.genMatchedParticleAnalyzerAfterFullGenSelection
 		##now apply the full RECO offline selection without HLT and count the number of evts passing
+		+process.patJetCorrFactorsReapplyJEC
+		+process.patJetsReapplyJEC
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
@@ -133,7 +141,9 @@ process.genAndRecoSignalCutsPath = cms.Path(
 		)
 
 process.signalCutsHLTEfficiencyPath = cms.Path(
-		process.egmGsfElectronIDSequence
+		process.patJetCorrFactorsReapplyJEC
+		+process.patJetsReapplyJEC
+		+process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
 		*process.bareRecoDrSeparationSeq
@@ -161,11 +171,10 @@ process.genAccCutsHLTEfficiencyPath = cms.Path(
 		*process.genMatchedParticleAnalyzerAfterGenPtEtaDrCutsPostHLT
 		)
 
-process.schedule = cms.Schedule(process.genAndRecoSignalCutsPath)
-
+process.schedule = cms.Schedule(process.unmatchedRecoSignalPath)
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('analyzed_tree_allGenAndRecoOfflineCuts_eejjSignalRegion.root')
+		fileName = cms.string('analyzed_tree_hltAndAllRecoOfflineCuts_eejjSignalRegion.root')
 	
 )
 

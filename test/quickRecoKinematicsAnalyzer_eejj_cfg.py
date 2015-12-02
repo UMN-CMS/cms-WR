@@ -12,11 +12,17 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 
+
 from ExoAnalysis.cmsWR.additionalVarParsing_cff import *
 
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.GT, '')
 
+##jet energy corrections
+from ExoAnalysis.cmsWR.JEC_cff import *
+JEC_correction(process, options.GT)
+
+##HEEP ID
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
 process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
@@ -90,7 +96,9 @@ process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 #################################
 #Paths
 process.unmatchedBkgndRecoPath = cms.Path(
-		process.trigFilt
+		process.patJetCorrFactorsReapplyJEC
+		+process.patJetsReapplyJEC
+		+process.trigFilt
 		*process.egmGsfElectronIDSequence
 		*process.HEEPIDSequence
 		*process.bareRecoParticleSeq
