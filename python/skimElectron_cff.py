@@ -37,13 +37,13 @@ wRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>40"),
+                                 cut = cms.string("pt>45"),
                                  )
 
 ### select subleading electron
 wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
-                                 cut = cms.string("pt>20"),
+                                 cut = cms.string("pt>30"),
                                  )
 #wRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
 
@@ -52,10 +52,10 @@ wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                        decay = cms.string("wRleadingElectron wRsubleadingElectron"),
                                        role = cms.string("leading subleading"),
                                        checkCharge = cms.bool(False),
-                                       # the cut on the pt of the daughter is to respect the order of leading and subleading:
-                                           # if both electrons have pt>60 GeV there will be two di-electron candidates with inversed order
-                                       cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
-									   )
+                        # the cut on the pt of the daughter is to respect the order of leading and subleading:
+                        # if both electrons have pt>60 GeV there will be two di-electron candidates with inversed order
+                                       cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
+                                   )
 
 ### filter: at least one di-electron candidate in signal region
 wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
