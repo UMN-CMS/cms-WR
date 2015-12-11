@@ -21,6 +21,14 @@ for line in $datasets
 do
 	dataset=`echo $line | awk '{print $1}'`
 	echo $dataset
+	l=`echo $line | awk '{print $1,$2}'`
+	case $dataset in
+		*/MINIAODSIM)
+			;;
+		*)
+			continue
+			;;
+	esac
 	#echo $file
 	mkdir -p $logDir/$dataset
 	logfile=$logDir/$dataset/log.log
@@ -29,7 +37,7 @@ do
 		file=`echo $file | sed 's|, |,|g; s|,$||'`
 		( echo $file &> $logfile; cmsRun ana.py inputFiles="$file" maxEvents=50000 &>> $logfile ) &
 	fi
-	echo -n $dataset >> $logDir/l.list
+	echo -n $l >> $logDir/l.list
 	grep 'After filter' $logfile | cut -d '=' -f 2 | awk '{print "\t", $1, $3}' >> $logDir/l.list
 
 done
