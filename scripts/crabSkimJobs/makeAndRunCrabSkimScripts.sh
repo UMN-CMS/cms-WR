@@ -1,43 +1,99 @@
 #!/bin/bash
+### this script should be done in python!!!! to be well integrated with the crab submission
+#source /cvmfs/cms.cern.ch/crab3/crab.sh
 
-#all arrays must have the same number of elements
-datasets=(DoubleEG  DoubleEG)
-identifier=(Run2015D-PromptReco-v4  Run2015D-PromptReco-v3)
-channel=(eejj  eejj)
-suffix=('OneHEEPIDEleAndLooseOrTightDoubleEleHLT_Run2015D_v4_25ns_GoldenJSON_Nov12_2015'  'OneHEEPIDEleAndLooseOrTightDoubleEleHLT_Run2015D_v3_25ns_GoldenJSON_Nov12_2015')
-lumiFiles=('/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-259891_13TeV_PromptReco_Collisions15_25ns_JSON.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_246908-259891_13TeV_PromptReco_Collisions15_25ns_JSON.txt')
-
-#datasets=(DoubleEG  MuonEG)
-#identifier=(Run2015D-PromptReco-v3  Run2015D-PromptReco-v3)
-#channel=(eejj  emujj)
-#suffix=('TwoHEEPIDEles_Run2015D_v3_25ns_ExclusiveSilverJSON_Nov04_2015'  'OneHEEPOneIsHighPtID_Run2015D_v3_25ns_ExclusiveSilverJSON_Nov04_2015')
-#lumiFiles=('/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_256729-258313_13TeV_PromptReco_Collisions15_25ns_JSON_ExclusiveSilver.txt' '/uscms/home/skalafut/nobackup/WR_starting2015/crabDir/realData/Cert_256729-258313_13TeV_PromptReco_Collisions15_25ns_JSON_ExclusiveSilver.txt')
+datasetFile=configs/datasets.dat
+jsonFile=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt
+jsonName=246908-260627-Prompt_25ns-golden_silver-v1
+crabFile=tmp/crab.py
 
 
+datasets=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
+datasetNames=(`cat $datasetFile | grep -v '#' | awk '(NF==2 || NF>=4){print $2}'`)
+IFS=$'\n'
 
-for q in ${!datasets[*]}
+if [ ! -d "tmp/" ];then mkdir tmp/; fi
+
+#echo ${#datasets[*]}
+for i in `seq 0 ${#datasets[@]}`
 do
+	params=""
+	dataset=${datasets[${i}]}
+	datasetName=${datasetNames[${i}]}
+	if [ -z "${datasetName}" ];then continue; fi
+	echo $i $datasetName
+	#echo $dataset
+	crabFile=tmp/skim_$datasetName.py
 
-		#replace FNLST with an element from datasets, CHNL with an element from channel,
-		#and TAG with an element from identifier in skim_realData_chnl_temp.py
-		eval "sed 's/FNLST/${datasets[$q]}/g' skim_realData_chnl_temp.py > skim_realData_chnl_one.py"
-		eval "sed 's@TAG@${identifier[$q]}@g' skim_realData_chnl_one.py > skim_realData_chnl_two.py"
-		eval "sed 's@UNIQUE@${suffix[$q]}@g' skim_realData_chnl_two.py > skim_realData_chnl_three.py"
-		eval "sed 's@LUMI@${lumiFiles[$q]}@g' skim_realData_chnl_three.py > skim_realData_chnl_four.py"
-		eval "sed 's/CHNL/${channel[$q]}/g' skim_realData_chnl_four.py > skim_realData_${channel[$q]}_${datasets[$q]}_${suffix[$q]}.py"
-		
-		rm skim_realData_chnl_one.py skim_realData_chnl_two.py skim_realData_chnl_three.py skim_realData_chnl_four.py
-		
-		#these if statements delete crab skim cfg files for skims which should not be run
-		#this is saved just as a reference example
-		#if [ "${datasets[$q]}" == 'MuonEG' -a "${channel[$q]}" == 'eejj' ]; then
-		#	rm skim_realData_${channel[$q]}_${datasets[$q]}_${suffix[$q]}.py
-		#fi
+	cat > $crabFile  <<EOF
+from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+config = config()
 
-		#submit jobs to crab using the newly created crab skim .py file
-		#echo "crab submit -c skim_realData_${channel[$q]}_${datasets[$q]}_${suffix[$q]}.py"
-		eval "crab submit -c skim_realData_${channel[$q]}_${datasets[$q]}_${suffix[$q]}.py"
+config.General.requestName = "$datasetName"
+config.General.workArea = 'crab_skim_'+"$datasetName"
+config.General.transferOutputs = True
+config.General.transferLogs = True
+
+config.JobType.pluginName = 'Analysis'
+config.JobType.psetName = 'test/skims_cfg.py'
+EOF
+
+#### if the dataset is DATA or DY save the TagAndProbe triggers
+case $dataset in 
+	/DoubleEG/*)
+		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		;;
+	/DoubleMu/*)
+		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		;;
+	/MuonEG/*)
+		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		;;
+	DY*)
+		params="$params, 'saveTnP=1', 'GT=74X_mcRun2_asymptotic_v2'"
+		jsonFile=""
+		;;
+	*)
+		params="$params, 'saveTnP=0', 'GT=74X_mcRun2_asymptotic_v2'"
+		jsonFile=""
+		;;
+esac
+params=`echo $params | sed -r 's|^,||;s|[,]+|,|g'`
+
+cat >> $crabFile <<EOF
+config.JobType.pyCfgParams = [ $params ]
+#config.JobType.maxMemoryMB = 2500 should not need this option for skims
+
+config.Data.inputDataset = "$dataset"
+config.Data.inputDBS = 'global'
+config.Data.splitting = 'LumiBased'
+config.Data.lumiMask = 'LUMI'
+config.Data.unitsPerJob = 30 
+
+#True allows the jobs to run anywhere, regardless of where the input data is located
+config.Data.ignoreLocality = True
+
+#totalUnits only needs to be specified for GEN-SIM jobs
+#config.Data.totalUnits = 200000
+config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.publication = True 
+#config.Data.publishDataName = 'realData_FNLST_13TeV_CHNL_UNIQUE'
+config.Data.outputDatasetTag =  config.General.requestName
+config.Data.lumiMask = "$jsonFile"
+
+
+#a list of the only sites at which these jobs can run
+#config.Site.whitelist = ["T2_US*"]
+#config.Site.storageSite = 'T3_US_FNALLPC'
+config.Site.storageSite = 'T2_CH_CERN'
+
+EOF
+
+
+echo "crab submit -c $crabFile"
 
 done
+#skim_realData_${channel[$q]}_${datasets[$q]}_${suffix[$q]}.py"
+
 
 
