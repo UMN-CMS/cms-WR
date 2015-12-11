@@ -4,9 +4,9 @@
 /DoubleEG/Run2015D-PromptReco-v3/MINIAOD		   DoubleEG_RunD_v3
 /DoubleEG/Run2015D-PromptReco-v4/MINIAOD		   DoubleEG_RunD_v4
 #
-/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	   DoubleMu_RunC
-/DoubleMuon/Run2015D-PromptReco-v3/MINIAOD		   DoubleMu_RunD_v3
-/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD		   DoubleMu_RunD_v4
+/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	   SingleMu_RunC
+/SingleMuon/Run2015D-PromptReco-v3/MINIAOD		   SingleMu_RunD_v3
+/SingleMuon/Run2015D-PromptReco-v4/MINIAOD		   SingleMu_RunD_v4
 #
 /MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD		   MuEG_RunC
 /MuonEG/Run2015D-PromptReco-v3/MINIAOD			   MuEG_RunD_v3

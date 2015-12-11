@@ -20,7 +20,7 @@ options.register('GT',
 		"global tag name")
 
 #default options
-options.maxEvents = 2000
+options.maxEvents = -1
 options.files="file:TTBar_test.root"
 
 options.parseArguments()

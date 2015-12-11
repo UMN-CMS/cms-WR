@@ -4,5 +4,17 @@
 Download instructions: \ref instructions_
 
 Analysis workflow:
+ - skims
+
+The list of datasets is written in 
+\verbatim
+configs/datasets.dat
+\endverbatim
+
+In order to make the skims:
+\verbatim
+scripts/crabSkimJobs/makeAndRunCrabSkimScripts.sh
+\endverbatim
+and then submit the relevant crab tasks
 
 */
