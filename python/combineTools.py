@@ -1,4 +1,5 @@
 import ROOT as r
+import re
 import numpy as np
 import subprocess
 from random import gauss
@@ -51,9 +52,20 @@ def getMassHisto(dirname, treename, process, binsize=100):
 	infile = r.TFile.Open(filename)
 	tree = infile.Get(dirname + '/' + treename)
 	r.gROOT.cd()
-	h = r.TH1F(histname, histname, 10000/binsize, 0, 10000)
+	nbins = 10000/int(binsize)
+	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
 	tree.Draw("fourObjectMass>>" + histname, "" ,"goff")
 	return h
+
+def runCombine(command):
+		output = subprocess.check_output(command)
+		p = re.compile(r'mean   expected limit: r < ([0-9.]*) \+/- ([0-9.]*)')
+		mean,meanError = p.search(output).groups()
+		p = re.compile(r'68% expected band : ([0-9.]*) < r < ([0-9.]*)')
+		onesig_minus,onesig_plus = p.search(output).groups()
+		p = re.compile(r'95% expected band : ([0-9.]*) < r < ([0-9.]*)')
+		twosig_minus,twosig_plus = p.search(output).groups()
+		return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
 
 #def getHists(dirname, treename, processes):
 #	 return [getMassHisto(dirname,  treename,  p) for p in processes]
