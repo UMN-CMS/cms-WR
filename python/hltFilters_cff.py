@@ -41,7 +41,7 @@ tagAndProbeDoubleMuHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLeve
 )
 
 
-wRHLTFilterMC =  HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
+wRHLTFilter =  HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = wReejjHLTFilter.HLTPaths + wRmumujjHLTFilter.HLTPaths + wRemujjHLTFilter.HLTPaths
 )
@@ -50,3 +50,7 @@ tagAndProbeHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = tagAndProbeDoubleMuHLTFilter.HLTPaths + tagAndProbeDoubleEleHLTFilter.HLTPaths
 )
+
+
+signalHltSequence = cms.Sequence(wRHLTFilter)
+tagAndProbeHltSequence = cms.Sequence(tagAndProbeHLTFilter)

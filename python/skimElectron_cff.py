@@ -5,35 +5,6 @@ import FWCore.ParameterSet.Config as cms
 @{
 """
 
-### make sure the evt has at least two jets, and one has a nontrivial pT
-wRhardJet = cms.EDFilter("PATJetRefSelector",
-		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
-		)
-
-##for use in the sideband skim
-wRhardJetFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("wRhardJet"),
-		minNumber = cms.uint32(2)
-		)
-
-wRsoftJet = cms.EDFilter("PATJetRefSelector",
-		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
-		)
-
-wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-		decay = cms.string("wRhardJet wRsoftJet"),
-		role = cms.string("leadingJet subleadingJet"),
-		checkCharge = cms.bool(False),
-		cut = cms.string("mass > 0")
-		)
-
-wRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("wRdiJetCandidate"),
-		minNumber = cms.uint32(1)
-		)
-
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
@@ -62,6 +33,38 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            src = cms.InputTag("wRdiElectronCandidate"),
                                            minNumber = cms.uint32(1)
                                            )
+
+############################################################
+
+
+### make sure the evt has at least two jets, and one has a nontrivial pT
+wRhardJet = cms.EDFilter("PATJetRefSelector",
+		src = cms.InputTag("slimmedJets"),
+		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
+		)
+
+##for use in the sideband skim
+wRhardJetFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("wRhardJet"),
+		minNumber = cms.uint32(2)
+		)
+
+wRsoftJet = cms.EDFilter("PATJetRefSelector",
+		src = cms.InputTag("slimmedJets"),
+		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)")
+		)
+
+wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+		decay = cms.string("wRhardJet wRsoftJet"),
+		role = cms.string("leadingJet subleadingJet"),
+		checkCharge = cms.bool(False),
+		cut = cms.string("mass > 0")
+		)
+
+wRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("wRdiJetCandidate"),
+		minNumber = cms.uint32(1)
+		)
 
 ### create an object from two jets and two electrons in the evt, and cut on its mass
 wRdiLeptonDijetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",

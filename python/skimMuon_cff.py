@@ -5,6 +5,47 @@ import FWCore.ParameterSet.Config as cms
 @{
 """
 
+tunePMuons = cms.EDProducer("TunePMuonProducer",
+		src = cms.InputTag("slimmedMuons")
+		)
+
+
+### select leading muon \ingroup muonSkim_Group
+wRleadingMuon = cms.EDFilter("PATMuonRefSelector",
+                             src = cms.InputTag("tunePMuons"),
+                             cut = cms.string("pt>45"),
+                         )
+
+### select subleading muon
+wRsubleadingMuon = cms.EDFilter("PATMuonRefSelector",
+                                src = cms.InputTag("tunePMuons"),
+                                cut = cms.string("pt>30"),
+                            )
+
+
+### create di-muon pair in signal region
+wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+                                   decay = cms.string("wRleadingMuon wRsubleadingMuon"),
+                                   role = cms.string("leading subleading"),
+                                   checkCharge = cms.bool(False),
+                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
+                                   # if both muons have pt>60 GeV there will be two di-muon candidates with inversed order
+                                   #cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
+                                   cut = cms.string("mass > 0  && daughter(0).pt>daughter(1).pt"),
+                                   
+									   )
+
+### filter: at least one di-muon candidate in signal region
+wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
+                                           src = cms.InputTag("wRdiMuonCandidate"),
+                                           minNumber = cms.uint32(1)
+                                           )
+
+############################################################
+
+
+
+
 ### make sure the evt has at least two jets, and one has a nontrivial pT
 muwRhardJet = cms.EDFilter("PATJetRefSelector",
 		src = cms.InputTag("slimmedJets"),
@@ -30,17 +71,6 @@ muwRdiJetCandidateFilter = cms.EDFilter("CandViewCountFilter",
 
 
 
-### select leading muon \ingroup muonSkim_Group
-wRleadingMuon = cms.EDFilter("PATMuonRefSelector",
-                             src = cms.InputTag("slimmedMuons"),
-                             cut = cms.string("pt>45"),
-                         )
-
-### select subleading muon
-wRsubleadingMuon = cms.EDFilter("PATMuonRefSelector",
-                                src = cms.InputTag("slimmedMuons"),
-                                cut = cms.string("pt>30"),
-                            )
 ### select loose-ID jets
 #wRlooseJet = cms.EDFilter("PATJetSelector",
 #                            src = cms.InputTag("slimmedJets"),
@@ -48,23 +78,6 @@ wRsubleadingMuon = cms.EDFilter("PATMuonRefSelector",
 #                            #cut = cms.string("pt>60"),
 #                            )
 
-### create di-muon pair in signal region
-wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string("wRleadingMuon wRsubleadingMuon"),
-                                   role = cms.string("leading subleading"),
-                                   checkCharge = cms.bool(False),
-                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
-                                   # if both muons have pt>60 GeV there will be two di-muon candidates with inversed order
-                                   #cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
-                                   cut = cms.string("mass > 0  && daughter(0).pt>daughter(1).pt"),
-                                   
-									   )
-
-### filter: at least one di-muon candidate in signal region
-wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
-                                           src = cms.InputTag("wRdiMuonCandidate"),
-                                           minNumber = cms.uint32(1)
-                                           )
 
 
 ### create an object from two jets and two muons in the evt, and cut on its mass
