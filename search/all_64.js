@@ -1,6 +1,7 @@
 var searchData=
 [
   ['dataset',['dataset',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#a09b3c884be62a1a78b7c96d34f709ecf',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
+  ['datasets_2emd',['datasets.md',['../datasets_8md.html',1,'']]],
   ['drawhist',['drawHist',['../namespacepython_1_1PlotUtils.html#a61d60aa43cd0a15aad2658130a7460da',1,'python::PlotUtils']]],
   ['drawmultiplegrid',['drawMultipleGrid',['../namespacepython_1_1PlotUtils.html#ae835b9ba02b0e2972a3dba236e5bd036',1,'python::PlotUtils']]],
   ['drawmultiplesame',['drawMultipleSame',['../namespacepython_1_1PlotUtils.html#ac55c763117eacd4369777d80ab76f447',1,'python::PlotUtils']]],
@@ -40,5 +41,6 @@ var searchData=
   ['dyjetsrequirehighptmatchedgenleptonseq',['dyJetsRequireHighPtMatchedGenLeptonSeq',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#aba1650bdfde0aeaea2c2468ccaf44195',1,'python::genDYJetsElectronChannelModules_cff']]],
   ['dyjetsselectleptonsafterdrseparation',['dyJetsSelectLeptonsAfterDrSeparation',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a9e40ac33a220bf2ee1297ad3214b5874',1,'python::genDYJetsElectronChannelModules_cff']]],
   ['dyjetsselectleptonsafterdrseparationfilter',['dyJetsSelectLeptonsAfterDrSeparationFilter',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#adce008fca3eeecb9c32e5c2a84296818',1,'python::genDYJetsElectronChannelModules_cff']]],
-  ['dyjetsselectleptonsafterdrseparationseq',['dyJetsSelectLeptonsAfterDrSeparationSeq',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a06753631292a6bd00ffa19e07c664d92',1,'python::genDYJetsElectronChannelModules_cff']]]
+  ['dyjetsselectleptonsafterdrseparationseq',['dyJetsSelectLeptonsAfterDrSeparationSeq',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a06753631292a6bd00ffa19e07c664d92',1,'python::genDYJetsElectronChannelModules_cff']]],
+  ['datasets',['datasets',['../md_doc_datasets.html',1,'']]]
 ];
