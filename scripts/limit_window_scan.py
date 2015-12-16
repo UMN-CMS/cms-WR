@@ -25,7 +25,7 @@ for MWR in MWRs:
 	#while signal.Integral(mid_bin - bin_range, mid_bin + bin_range)/ signal.Integral() < .98:
 		#bin_range +=1
 	#search = bin_range*binsize
-	low_mass_bins = np.linspace(.4,.8, 21)*MWR
+	low_mass_bins = np.linspace(.4,1, 31)*MWR
 	hi_mass_bins = np.linspace(1,1.4, 21)*MWR
 	#mass_bins = range(int(MWR - search), int(MWR + (search + binsize)), int(binsize))
 	#for low_m, high_m in combinations(mass_bins, 2):
@@ -39,10 +39,11 @@ for MWR in MWRs:
 		#bg_tuples.append( ("TTbar", bgFits.TTbarFit.Integral(low_m, high_m)/bgFits.binWidth* (lumi /2000.) ))
 		#bg_tuples.append( ("DY",    bgFits.DYFit.Integral(low_m, high_m)   /bgFits.binWidth* (lumi /2000.) ))
 		bg_tuples.append( ("AllBG",  bgFits.All_ee.Integral(low_m, high_m) * (lumi /2000.) ))
+		nBG = sum( [ b for a,b in bg_tuples ] )
 
 		datacard = "WReejj_MASS%d_LOW%d_HIGH%d" % (MWR, low_m, high_m)
 		datacard_file = "data/" + datacard + ".txt"
-		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, "eejj", 0, signal_tuple, bg_tuples)
+		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, "eejj", nBG, signal_tuple, bg_tuples)
 		method = "ProfileLikelihood"
 		command = ["combine","-M",method,"-S","0",datacard_file,"-n", datacard,"-t","1000"]
 		ret = combineTools.runCombine(command)

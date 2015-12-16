@@ -4,18 +4,30 @@ from array import array
 import sys
 
 from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
+import ExoAnalysis.cmsWR.cross_sections as xs
 from collections import defaultdict
 customROOTstyle()
+
+def findBounds(tuples, start, ratio):
+	err = [start,start]
+	for a,b in tuples:
+		if a == start: 
+			ref = b
+		if a >= start:
+			err[1] = a
+			if b/ref > ratio:
+				break
+	for a, b in tuples[::-1]:
+		if a <= start:
+			err[0] = a
+			if b/ref > ratio:
+				break
+	return err
 
 c = ROOT.TCanvas()
 #c.SetLogz()
 min_limit = 1000
 
-crossections = {800:3.65, 1200:0.663, 1400:0.389, 1600:0.177, 2000:0.0707,
-		2400:0.0248, 2600:0.015, 2800:0.00913, 3000:0.00576, 3200:0.0034,
-		3600:0.00154, 3800:0.00119, 4000:0.000801, 4200:0.000473, 4400:0.000375,
-		4600:0.00019, 4800:0.000152, 5000:0.0000912, 5200:0.0000665,
-		5600:0.0000254, 5800:0.0000202, 6000:0.0000144,}
 #args = "_".join(sys.argv[1:5])
 #slope1 = float(sys.argv[1])
 #intercept1 = float(sys.argv[2])
@@ -101,10 +113,42 @@ for MWR,MNR in hists:
 #	print i,arg
 #	results_opt.append( [int(MWR),  h["low"][arg], h["hi"][arg], h["limit"][arg] ])
 #
+	n_limits = len(h["low"])
 	MWRi = float(MWR)
 	arg = np.argmin(h["limit"])
-	results_min.append( [MWRi,  h["low"][arg], h["hi"][arg], h["limit"][arg] ])
 	print MWR,MNR, h["low"][arg], h["hi"][arg], h["limit"][arg]
+
+	min_row = sorted([ (h["low"][i],h["limit"][i]) for i in xrange(n_limits) if h["hi"][i] == h["hi"][arg] ])
+	min_col  = sorted([ (h["hi"][i] ,h["limit"][i]) for i in xrange(n_limits) if h["low"][i] == h["low"][arg] ])
+	low_err = [h["low"][arg],h["low"][arg]]
+	hi_err = [h["hi"][arg],h["hi"][arg]]
+
+	low_err = findBounds(min_row, h["low"][arg], 1.05)
+	hi_err =  findBounds(min_col, h["hi"][arg], 1.05)
+	#for low, limit in min_row:
+	#	if low > h["low"][arg]:
+	#		low_err[1] = low
+	#		if limit/h["limit"][arg] > 1.05:
+	#			break
+	#for low, limit in reversed(min_row):
+	#	if low < h["low"][arg]:
+	#		low_err[0] = low
+	#		if limit/h["limit"][arg] > 1.05:
+	#			break
+	#for hi, limit in min_col:
+	#	if hi > h["hi"][arg]:
+	#		hi_err[1] = hi
+	#		if limit/h["limit"][arg] > 1.05:
+	#			break
+	#for hi, limit in reversed(min_col):
+	#	if hi < h["hi"][arg]:
+	#		hi_err[0] = hi
+	#		if limit/h["limit"][arg] > 1.05:
+	#			break
+	
+	print low_err, hi_err
+			
+	results_min.append( [MWRi,  h["low"][arg], h["hi"][arg], h["limit"][arg]] + low_err + hi_err )
 
 	min_low = min(h["low"])
 	max_low = max(h["low"])
@@ -118,39 +162,52 @@ for MWR,MNR in hists:
 	#hist = ROOT.TH2F(name, name,n_low, min_low/MWRi,(max_low+binsize)/MWRi,n_hi,(min_hi)/MWRi,(max_hi+binsize)/MWRi)
 	#hist = ROOT.TH2F(name, name, n_low, min_low/MWRi,(max_low+binsize)/MWRi,n_hi,(min_hi)/MWRi,(max_hi+binsize)/MWRi)
 	hist = ROOT.TH2F(name, name, 31, .59-.2, 1.01, 21, .99, 1.41)
-	hist.SetXTitle("Min")
-	hist.SetYTitle("Max")
+	hist.SetXTitle("(Low Mass Cut)/M_{W_{R}}")
+	hist.SetYTitle("(High Mass Cut)/M_{W_{R}}")
 	#hist.GetZaxis().SetMoreLogLabels()
 	hist.SetMinimum(min(h["limit"]) - 1e-5)
-	hist.SetMaximum(min(h["limit"]) * 1.3)
-	for i in range(len(h["low"])):
+	hist.SetMaximum(min(h["limit"]) * 1.05)
+	for i in range(n_limits):
 		hist.Fill(h["low"][i]/MWRi, h["hi"][i]/MWRi, h["limit"][i])
 	hist.Draw("colz")
-	c.SaveAs("plots/mass_window_opt2/window_plot" + name + ".png")
+	c.SaveAs("plots/mass_window_opt3/window_plot" + name + ".png")
 
 #results_opt.sort()
 results_min.sort()
 print results_min
 #print results_opt
 
+norm = True
 #for res,name in [(results_opt,"opt"), (results_min, "min")]:
 for res,name in [(results_min, "min")]:
 	npresults = np.array(res, dtype="float64")
 	min_mass  = np.copy(npresults.T[0])
-	min_low   = np.copy(npresults.T[1])/min_mass
-	min_hi    = np.copy(npresults.T[2])/min_mass
 	min_limit = np.copy(npresults.T[3])*.01
-	npcrosssection = np.array( [ crossections[m] for m in min_mass], dtype="float64")
+	if norm:
+		min_low   = np.copy(npresults.T[1])/min_mass
+		min_hi    = np.copy(npresults.T[2])/min_mass
+		min_low_err_low = abs(min_low - np.copy(npresults.T[4])/min_mass)
+		min_low_err_hi  = abs(min_low - np.copy(npresults.T[5])/min_mass)
+		min_hi_err_low  = abs(min_hi  - np.copy(npresults.T[6])/min_mass)
+		min_hi_err_hi   = abs(min_hi  - np.copy(npresults.T[7])/min_mass)
+	else:
+		min_low   = np.copy(npresults.T[1])
+		min_hi    = np.copy(npresults.T[2])
+		min_low_err_low = abs(min_low - np.copy(npresults.T[4]))
+		min_low_err_hi  = abs(min_low - np.copy(npresults.T[5]))
+		min_hi_err_low  = abs(min_hi  - np.copy(npresults.T[6]))
+		min_hi_err_hi   = abs(min_hi  - np.copy(npresults.T[7]))
+	npcrosssection = np.array( [ xs.WR_eejj[m] for m in min_mass], dtype="float64")
 	
 	lowmass = min(min_mass)
 	himass = max(min_mass)
 	h = ROOT.TH1F("h","Mass Window",1,lowmass,himass)
 	h.Fill(np.average((lowmass,himass)))
-	h.SetMinimum(.5)
-	h.SetMaximum(1.5)
+	h.SetMinimum(.4)
+	h.SetMaximum(1.4)
 
-	low_graph = ROOT.TGraph(len(min_mass),  min_mass, min_low)
-	hi_graph = ROOT.TGraph(len(min_mass), min_mass, min_hi)
+	low_graph = ROOT.TGraphAsymmErrors(len(min_mass),  min_mass, min_low, ROOT.nullptr, ROOT.nullptr, min_low_err_low, min_low_err_hi)
+	hi_graph = ROOT.TGraphAsymmErrors(len(min_mass), min_mass, min_hi, ROOT.nullptr, ROOT.nullptr, min_hi_err_low, min_hi_err_hi)
 	limit_graph = ROOT.TGraph(len(min_mass), min_mass, min_limit)
 	xs_graph = ROOT.TGraph(len(min_mass), min_mass, npcrosssection)
 	
@@ -192,7 +249,7 @@ for res,name in [(results_min, "min")]:
 	xs_graph.Draw("PLsame")
 	leg2.Draw()
 	#c.SaveAs("mass_window_" + args + "_" + name + ".png")
-	c.SaveAs("plots/mass_window_opt2/mass_window_" + name + ".png")
+	c.SaveAs("plots/mass_window_opt3/mass_window_" + name + ".png")
  
 #npresmin = np.array(results_min, dtype="float64")
 #npresopt = np.array(results_opt, dtype="float64")
@@ -206,5 +263,5 @@ for res,name in [(results_min, "min")]:
 #limit_diff = np.copy((-npresmin.T[3] + npresopt.T[3])/npresmin.T[3])
 #graph = ROOT.TGraph(len(min_mass),  min_mass, limit_diff)
 #graph.Draw("PLsame")
-#c.SaveAs("plots/mass_window_opt2mass_window_diff_" + args + ".png")
+#c.SaveAs("plots/mass_window_opt3/mass_window_diff_" + args + ".png")
 

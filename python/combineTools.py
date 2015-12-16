@@ -5,21 +5,16 @@ import subprocess
 from random import gauss
 import ExoAnalysis.cmsWR.backgroundFits as bgfits
 
-#def getRates(histos, norms, lumi, mass_range):
-#	if len(histos) != len(norms):
-#		print "LENGTH MISMATCH"
-#		return
-#	low,hi = mass_range
-#	ret = []
-#	for i in range(len(histos)):
-#		lowbin = histos[i].FindBin(low)
-#		hibin = histos[i].FindBin(hi)
-#		ret.append( (histos[i].GetName(), histos[i].Integrate(lowbin,hibin)*norms[i]*lumi) )
-#	return [ (histos[i].GetName(), histos[i].GetEntries()*norms[i]*lumi) for i in range(len(histos))]
+##
+# @brief creates a datacard for combine for signal and background
 #
-#def sumRateTuple(rates):
-#	return sum([r[1] for r in rates])
-
+# @param outfile String of filename
+# @param bin_name Name for bin
+# @param nObs number of observed
+# @param signal_tuple (sig_name, signal_rate)
+# @param background_tuples list of (name, rate) for backgrounds
+#
+# @return signal_rate, tuple of bg rates
 def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples):
 
 	nBGs = len(background_tuples)
@@ -47,6 +42,15 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		out.write("------------\n")
 	return signal_rate, tuple(bg_rates.split())
 
+##
+# @brief gets fourObjectMass histogram from tree in root file
+#
+# @param dirname name for TDirectory that contains TTree
+# @param treename name of TTree
+# @param process tuple of (histname, filename). histname is name of output histogram. filename which contains TTree
+# @param binsize
+#
+# @return 
 def getMassHisto(dirname, treename, process, binsize=100):
 	histname, filename = process
 	infile = r.TFile.Open(filename)
@@ -57,6 +61,12 @@ def getMassHisto(dirname, treename, process, binsize=100):
 	tree.Draw("fourObjectMass>>" + histname, "" ,"goff")
 	return h
 
+##
+# @brief calls and parses command for `combine'
+#
+# @param command a list to pass to subprocess.check_output
+#
+# @return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
 def runCombine(command):
 		output = subprocess.check_output(command)
 		p = re.compile(r'mean   expected limit: r < ([0-9.]*) \+/- ([0-9.]*)')
@@ -69,44 +79,4 @@ def runCombine(command):
 
 #def getHists(dirname, treename, processes):
 #	 return [getMassHisto(dirname,  treename,  p) for p in processes]
-
-WR_eejj_norm = 0.0707/50000
-#DYJets_eejj_norm = 6025.2/9052671
-#TTonly_eejj_norm = 831.76/96834559
-#WZ_eejj_norm = 66.1/991232
-#ZZ_eejj_norm = 15.4/996168
-#bg_norms = [DYJets_eejj_norm, TTonly_eejj_norm, WZ_eejj_norm, ZZ_eejj_norm]
-
-#processes = [("DYJets_eejj", "data/analyzed_DYJets_Madgraph_M_50_25ns_eejj_signal_region.root"),
-#		("TTOnly_eejj", "data/analyzed_TTOnly_PowhegPythia_25ns_eejj_signal_region_reMiniAOD.root"),
-#		("WZ_eejj", "data/analyzed_WZ_25ns_eejj_signal_region.root"),
-#		("ZZ_eejj", "data/analyzed_ZZ_25ns_eejj_signal_region.root")
-#		]
-
-#backgrounds = getHists(dirname, treename, processes)
-
-
-
-#lumi = 1900
-#print "#lumi\tbg\tsig\tobs\tobs/bg\tMethod\tr(sig/expect sig)"
-#bg_tuples = getRates(backgrounds, bg_norms, lumi)
-#signal_tuple = getRates([signal], [WR_eejj_norm], lumi)[0]
-#total_bg = sumRateTuple(bg_tuples)
-#for obs in np.linspace(total_bg, (total_bg + signal_tuple[1])*1.2, 10, dtype=int):
-#	data = r.TH1F("data_eejj","data_eejj",100,600,4600)
-#	[data.Fill(gauss(2000, 500)) for i in range(obs)]
-#
-#	datacard = "WReejj_LUMI%d_OBS%d" % (lumi, obs)
-#	datacard_file = "data/" + datacard + ".txt"
-#	makeDataCardSingleBin(datacard_file, "eejj", data, signal_tuple, bg_tuples)
-#	#for method in ["BayesianSimple", "HybridNew"]:
-#	for method in ["BayesianSimple"]:
-#		output = subprocess.check_output(["combine","-M",method,"-S","0",datacard_file,"-n", datacard])
-#		combinefile = r.TFile.Open("higgsCombine" + datacard + "." + method + ".mH120.root")
-#		tree = combinefile.Get("limit")
-#		tree.GetEntry(0)
-#		print "%d\t%d\t%d\t%d\t%.3f\t%s\t%.4f" %(lumi, int(total_bg), signal_tuple[1],
-#				obs, obs/float(total_bg), method, tree.limit)
-#		subprocess.check_output(["mv", "higgsCombine" + datacard + "." + method + ".mH120.root", "data/"])
-	
 

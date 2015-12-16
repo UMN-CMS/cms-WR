@@ -1,3 +1,4 @@
+import ROOT
 """ \addtogroup BackgroundFits_Group Background Fits 
 @{
 """
