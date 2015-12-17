@@ -17,7 +17,13 @@ import FWCore.ParameterSet.Config as cms
 ## - events with 2 leptons and 2 jets (no flavour requirement)
 ##
 ## Data and MC are selected using ((OR of all the triggers physics triggers) AND (skim selection)) \b OR (tag&probe)
-
+#
+# skims are defined in different cff files:
+# - \b skimElectron_cff
+# - \b skimMuon_cff
+# - \b skimEMu_cff
+# - \b skimJets_cff
+# and combined in microAOD_cff
 
 """ \addtogroup microAODSeq_Group Sequences to produce microAOD
 @{

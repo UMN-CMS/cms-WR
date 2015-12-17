@@ -8,8 +8,8 @@ from ExoAnalysis.cmsWR.skimElectron_cff import *
 from ExoAnalysis.cmsWR.skimMuon_cff import *
 
 #mixed flavour candidates
-wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                  decay = cms.string("wRleadingElectron wRsubleadingMuon"),
+wReleMuCandidatePresel = cms.EDProducer("CandViewShallowCloneCombiner",
+                                  decay = cms.string("wRleadingElectronPresel wRsubleadingMuonPresel"),
                                   role = cms.string("leading subleading"),
                                   checkCharge = cms.bool(False),
                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -17,8 +17,8 @@ wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-wRmuEleCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                  decay = cms.string("wRleadingMuon wRsubleadingElectron"),
+wRmuEleCandidatePresel = cms.EDProducer("CandViewShallowCloneCombiner",
+                                  decay = cms.string("wRleadingMuonPresel wRsubleadingElectronPresel"),
                                   role = cms.string("leading subleading"),
                                   checkCharge = cms.bool(False),
                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:

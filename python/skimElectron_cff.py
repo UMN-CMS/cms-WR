@@ -6,21 +6,21 @@ import FWCore.ParameterSet.Config as cms
 """
 
 ### select leading electron \ingroup electronSkim_Group
-wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
+wRleadingElectronPresel = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
                                  cut = cms.string("pt>45"),
                                  )
 
 ### select subleading electron
-wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
+wRsubleadingElectronPresel = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("slimmedElectrons"),
                                  cut = cms.string("pt>30"),
                                  )
 #wRpreSelectedElectrons = cms.EDProducer("CandViewMerger",
 
 ### create di-electron pair in signal region
-wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                       decay = cms.string("wRleadingElectron wRsubleadingElectron"),
+wRdiElectronCandidatePresel = cms.EDProducer("CandViewShallowCloneCombiner",
+                                       decay = cms.string("wRleadingElectronPresel wRsubleadingElectronPresel"),
                                        role = cms.string("leading subleading"),
                                        checkCharge = cms.bool(False),
                         # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -29,8 +29,8 @@ wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                    )
 
 ### filter: at least one di-electron candidate in signal region
-wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
-                                           src = cms.InputTag("wRdiElectronCandidate"),
+wRdiElectronCandidateFilterPresel = cms.EDFilter("CandViewCountFilter",
+                                           src = cms.InputTag("wRdiElectronCandidatePresel"),
                                            minNumber = cms.uint32(1)
                                            )
 

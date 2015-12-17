@@ -11,21 +11,21 @@ tunePMuons = cms.EDProducer("TunePMuonProducer",
 
 
 ### select leading muon \ingroup muonSkim_Group
-wRleadingMuon = cms.EDFilter("PATMuonRefSelector",
+wRleadingMuonPresel = cms.EDFilter("PATMuonRefSelector",
                              src = cms.InputTag("tunePMuons"),
                              cut = cms.string("pt>45"),
                          )
 
 ### select subleading muon
-wRsubleadingMuon = cms.EDFilter("PATMuonRefSelector",
+wRsubleadingMuonPresel = cms.EDFilter("PATMuonRefSelector",
                                 src = cms.InputTag("tunePMuons"),
                                 cut = cms.string("pt>30"),
                             )
 
 
 ### create di-muon pair in signal region
-wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string("wRleadingMuon wRsubleadingMuon"),
+wRdiMuonCandidatePresel = cms.EDProducer("CandViewShallowCloneCombiner",
+                                   decay = cms.string("wRleadingMuonPresel wRsubleadingMuonPresel"),
                                    role = cms.string("leading subleading"),
                                    checkCharge = cms.bool(False),
                                    # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -36,8 +36,8 @@ wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
 									   )
 
 ### filter: at least one di-muon candidate in signal region
-wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
-                                           src = cms.InputTag("wRdiMuonCandidate"),
+wRdiMuonCandidateFilterPresel = cms.EDFilter("CandViewCountFilter",
+                                           src = cms.InputTag("wRdiMuonCandidatePresel"),
                                            minNumber = cms.uint32(1)
                                            )
 

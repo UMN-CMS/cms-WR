@@ -14,7 +14,7 @@ configs/datasets.dat
 
 \par Skims
 \ref skim_page
-
+\note microAOD_cff
 
 In order to make the skims:
 \verbatim

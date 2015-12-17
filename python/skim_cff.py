@@ -11,22 +11,22 @@ from ExoAnalysis.cmsWR.skimEMu_cff import *
 """
 
 
-wRdiLeptonCandidate = cms.EDProducer("CandViewMerger",
-                                     src = cms.VInputTag("wRdiElectronCandidate", "wRdiMuonCandidate", "wReleMuCandidate", "wRmuEleCandidate")
+wRdiLeptonCandidatePresel = cms.EDProducer("CandViewMerger",
+                                     src = cms.VInputTag("wRdiElectronCandidatePresel", "wRdiMuonCandidatePresel", "wReleMuCandidatePresel", "wRmuEleCandidatePresel")
                                  )
 
 
 # filter events with at least 2 leptons
-wRdiLeptonFilter = cms.EDFilter("CandViewCountFilter",
-                                src = cms.InputTag("wRdiLeptonCandidate"),
+wRdiLeptonFilterPresel = cms.EDFilter("CandViewCountFilter",
+                                src = cms.InputTag("wRdiLeptonCandidatePresel"),
                                 minNumber = cms.uint32(1)
                             )
 
 
 wRdiLeptonSkimSequence = cms.Sequence(tunePMuons *
-    (wRleadingElectron + wRleadingMuon + wRsubleadingElectron + wRsubleadingMuon) *
-    (wReleMuCandidate + wRmuEleCandidate + wRdiElectronCandidate + wRdiMuonCandidate) *
-    wRdiLeptonCandidate * wRdiLeptonFilter
+    (wRleadingElectronPresel + wRleadingMuonPresel + wRsubleadingElectronPresel + wRsubleadingMuonPresel) *
+    (wReleMuCandidatePresel + wRmuEleCandidatePresel + wRdiElectronCandidatePresel + wRdiMuonCandidatePresel) *
+    wRdiLeptonCandidatePresel * wRdiLeptonFilterPresel
 )
 
 
