@@ -1,7 +1,24 @@
 import FWCore.ParameterSet.Config as cms
 
+### \page skim_page Skim 
+# (preselection)
+# 
+# Sequences to produce microAOD are contained in microAOD_cff
+#
+# it contains the HLT filters and the skim selection sequences
+# 
+# the output format is defined in microAOD_Output_cff
+#
+# 
+### \par Skim selections
+## - leading lepton pt>45 GeV
+## - subleading lepton pt>30 GeV
+## - jets pt>20 GeV
+## - events with 2 leptons and 2 jets (no flavour requirement)
+##
+## Data and MC are selected using ((OR of all the triggers physics triggers) AND (skim selection)) \b OR (tag&probe)
 
-# Sequences to produce microAOD
+
 """ \addtogroup microAODSeq_Group Sequences to produce microAOD
 @{
 """

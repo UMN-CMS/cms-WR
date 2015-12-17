@@ -1,3 +1,4 @@
 /**
 \defgroup electronSkim_Group electronSkim sequences
+\defgroup hlt_Group HLT triggers
 */

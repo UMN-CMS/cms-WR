@@ -32,27 +32,32 @@ config = config()
 config.General.requestName = "$datasetName"
 config.General.workArea = 'crab_skim_'+"$datasetName"
 config.General.transferOutputs = True
-config.General.transferLogs = True
+config.General.transferLogs = False
 
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'test/skims_cfg.py'
 EOF
 
+LUMI=2000
 #### if the dataset is DATA or DY save the TagAndProbe triggers
 case $dataset in 
 	/DoubleEG/*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		LUMI=1000
 		;;
-	/DoubleMu/*)
+	/SingleMu/*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		LUMI=1000
 		;;
 	/MuonEG/*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		LUMI=1000
 		;;
 	DY*)
 		params="$params, 'saveTnP=1', 'GT=74X_mcRun2_asymptotic_v2'"
 		jsonFile=""
 		;;
+	
 	*)
 		params="$params, 'saveTnP=0', 'GT=74X_mcRun2_asymptotic_v2'"
 		jsonFile=""
@@ -68,7 +73,7 @@ config.Data.inputDataset = "$dataset"
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
 config.Data.lumiMask = 'LUMI'
-config.Data.unitsPerJob = 30 
+config.Data.unitsPerJob = ${LUMI}
 
 #True allows the jobs to run anywhere, regardless of where the input data is located
 config.Data.ignoreLocality = True

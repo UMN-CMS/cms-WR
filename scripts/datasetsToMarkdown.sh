@@ -2,16 +2,16 @@
 
 cat > tmp/datasetToMarkdown.awk <<EOF
 (NR==1){
-  print "| Dataset                                      | Dataset name  | cross section | filter efficiency | number of events |"
-  print "| -------------------------------------------- | ------------- | ------------- | ----------------- | ---------------- | "
+  print "| Dataset                                      | Dataset name  | cross section | filter efficiency | number of events | new cross section | new cross section error | "
+  print "| -------------------------------------------- | ------------- | ------------- | ----------------- | ---------------- | ----------------- | ----------------------- | "
 }
 
 
 (NF!=0){
   if(match(\$1,"#")){
-    print "|                                              |               |               |                   |                  | "
+    print "|                                              |               |               |                   |                  |   |  |"
   }else{
-    print "| ", \$1, " | ", \$2, " | ", \$3, " | ", \$4, " | ", \$5, " |"
+    print "| ", \$1, " | ", \$2, " | ", \$3, " | ", \$4, " | ", \$5, " | ", \$6, " | ", \$7, " |"
   }
 }
 

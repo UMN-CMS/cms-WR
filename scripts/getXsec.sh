@@ -21,7 +21,7 @@ for line in $datasets
 do
 	dataset=`echo $line | awk '{print $1}'`
 	echo $dataset
-	l=`echo $line | awk '{print $1,$2}'`
+	l=`echo $line | awk '{print $0}'`
 	case $dataset in
 		*/MINIAODSIM)
 			;;

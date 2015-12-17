@@ -1,4 +1,4 @@
-#dataset name                                                                                                                  cross sxn(pb)  filter eff   total evts
+#dataset name                                                           cross_sxn(pb)  filter_eff   total_evts  skimmed_dataset  skimmed_events
 ################################################## Data
 /DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	   DoubleEG_RunC		- - -
 /DoubleEG/Run2015D-PromptReco-v3/MINIAOD		   DoubleEG_RunD_v3		- - -
@@ -28,12 +28,15 @@
 /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_amctnlo		6025.2	-	28747969	 5.915e+03 3.414e+01
 /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_madgraph		6025.2	-	9042031	 4.978e+03 1.796e+01
 ##
-/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_2000to3000 - - -	 5.239e-04 5.152e-06
-/DYJetsToLL_M-1500to2000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_1500to2000 - - -	 2.186e-03 2.001e-05
-/DYJetsToLL_M-1000to1500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_1000to1500 - - -/DYJetsToLL_M-800to1000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_800to1000 - - -/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_700to800		1,0.035	-	96011	 3.595e-02 2.849e-04
-/DYJetsToLL_M-500to700_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_500to700		1,0.24	-	101029/DYJetsToLL_M-400to500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_400to500		1,0.423 -	98441	 4.035e-01 2.974e-03
-/DYJetsToLL_M-200to400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_200to400		1,7.67	-	96310	 7.733e+00 5.252e-02
 /DYJetsToLL_M-100to200_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_100to200 - - -	 2.294e+02 1.373e+00
+/DYJetsToLL_M-200to400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_200to400		1,7.67	-	96310	 7.733e+00 5.252e-02
+/DYJetsToLL_M-400to500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_400to500		1,0.423 -	98441	 4.035e-01 2.974e-03
+/DYJetsToLL_M-500to700_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_500to700		1,0.24	-	101029
+/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	DYJets_700to800		1,0.035	-	96011	 3.595e-02 2.849e-04
+/DYJetsToLL_M-800to1000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_800to1000 - - - - -
+/DYJetsToLL_M-1000to1500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_1000to1500 - - -
+/DYJetsToLL_M-1500to2000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_1500to2000 - - -	 2.186e-03 2.001e-05
+/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM DYJets_2000to3000 - - -	 5.239e-04 5.152e-06
 ##################################
 /WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoEEJJ_800_400		3.65			-	 4.261e+00 1.449e-02
 /WRToNuEToEEJJ_MW-1000_MNu-500_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoEEJJ_1000_500	    1.78   0	 1.692e+00 5.007e-03
@@ -59,3 +62,28 @@
 /WRToNuEToEEJJ_MW-5600_MNu-2800_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoEEJJ_5600_2800			0.0000254	-	 	 2.786e-05 5.731e-08
 /WRToNuEToEEJJ_MW-5800_MNu-2900_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoEEJJ_5800_2900			0.0000202	-	 	 1.858e-05 3.727e-08
 /WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoEEJJ_6000_3000			0.0000144	-	 	 1.249e-05 2.508e-08
+##################################
+/WRToNuMuToMuMuJJ_MW-800_MNu-400_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoMuMuJJ_800_400		3.65			-	 4.261e+00 1.449e-02
+/WRToNuMuToMuMuJJ_MW-1000_MNu-500_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoMuMuJJ_1000_500	    1.78   0	 1.692e+00 5.007e-03
+/WRToNuMuToMuMuJJ_MW-1200_MNu-600_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoMuMuJJ_1200_600	    0.663 -	 7.653e-01 2.873e-03
+/WRToNuMuToMuMuJJ_MW-1400_MNu-700_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoMuMuJJ_1400_700	    0.389 -	 3.784e-01 1.116e-03
+/WRToNuMuToMuMuJJ_MW-1600_MNu-800_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoMuMuJJ_1600_800	    0.177 -	 2.025e-01 6.003e-04
+/WRToNuMuToMuMuJJ_MW-1800_MNu-900_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM		WRtoMuMuJJ_1800_1400	    0.117 -	 1.146e-01 6.659e-04
+/WRToNuMuToMuMuJJ_MW-2000_MNu-1000_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM    WRtoMuMuJJ_2000_1000      0.0707           -	 6.561e-02 3.084e-04
+/WRToNuMuToMuMuJJ_MW-2200_MNu-1100_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_2200_1100		    0.045		  - /WRToNuMuToMuMuJJ_MW-2400_MNu-1200_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_2400_1200		    0.0248		 -  	 2.394e-02 7.355e-05
+/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_2600_1300		    0.015            -	 1.490e-02 4.192e-05
+/WRToNuMuToMuMuJJ_MW-2800_MNu-1400_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_2800_1400		    0.00913		-	 	 9.439e-03 2.627e-05
+/WRToNuMuToMuMuJJ_MW-3000_MNu-1500_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_3000_1500		    0.00576		-	 	 5.958e-03 2.653e-04
+/WRToNuMuToMuMuJJ_MW-3200_MNu-1600_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_3200_1600		    0.0034		-	 	 3.900e-03 1.502e-05
+/WRToNuMuToMuMuJJ_MW-3600_MNu-1800_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_3600_1800		    0.00154		-	 	 1.665e-03 6.634e-06
+/WRToNuMuToMuMuJJ_MW-3800_MNu-1900_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_3800_1900		    0.00119		-	 	 1.095e-03 4.781e-06
+/WRToNuMuToMuMuJJ_MW-4000_MNu-2000_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_4000_2000		    0.000801	-	 	 7.273e-04 2.533e-06
+/WRToNuMuToMuMuJJ_MW-4200_MNu-2100_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_4200_2100		    0.000473	-	 	 4.799e-04 1.248e-06
+/WRToNuMuToMuMuJJ_MW-4400_MNu-2200_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_4400_2200			0.000375	-	 	 3.175e-04 7.705e-07
+/WRToNuMuToMuMuJJ_MW-4600_MNu-2300_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_4600_2300			0.00019		-	 	 2.117e-04 4.970e-07
+/WRToNuMuToMuMuJJ_MW-4800_MNu-2400_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_4800_2400			0.000152	-	 	 1.414e-04 3.210e-07
+/WRToNuMuToMuMuJJ_MW-5000_MNu-2500_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_5000_2500			0.0000912	-	 	 9.406e-05 2.542e-07
+/WRToNuMuToMuMuJJ_MW-5200_MNu-2600_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_5200_2600			0.0000665	-	 	 6.248e-05 1.342e-07
+/WRToNuMuToMuMuJJ_MW-5600_MNu-2800_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_5600_2800			0.0000254	-	 	 2.786e-05 5.731e-08
+/WRToNuMuToMuMuJJ_MW-5800_MNu-2900_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_5800_2900			0.0000202	-	 	 1.858e-05 3.727e-08
+/WRToNuMuToMuMuJJ_MW-6000_MNu-3000_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	WRtoMuMuJJ_6000_3000			0.0000144	-	 	 1.249e-05 2.508e-08

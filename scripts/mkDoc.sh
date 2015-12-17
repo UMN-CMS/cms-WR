@@ -33,6 +33,8 @@ git pull
 git add *.html
 git add *.css *.js
 git add *.gif *.png
+git add *.map
+git add *.md5
 git add search
 git add search/*.html search/*.js
 git commit -m "updated documentation" -a
