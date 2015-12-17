@@ -21,7 +21,7 @@ options.register('GT',
 
 #default options
 options.maxEvents = -1
-options.files="file:TTBar_test.root"
+options.files="file:skim_test.root"
 
 options.parseArguments()
 
@@ -30,10 +30,8 @@ print options
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
-#process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-#process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
@@ -56,9 +54,7 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
 )
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-
-
+process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 
 ############################################################ OUTPUT MODULES
@@ -71,30 +67,6 @@ else:
                 SelectEventsPSet = cms.untracked.PSet(
                     SelectEvents = cms.vstring( [ 'skimPreselected' ] )
                 )
-
-
-#define a process attribute for outputting a file which will be changed in a clone() call below
-process.MINIAODSIM_test_output = cms.OutputModule("PoolOutputModule",
-		compressionAlgorithm = cms.untracked.string('LZMA'),
-		compressionLevel = cms.untracked.int32(4),
-		dataset = cms.untracked.PSet(
-			dataTier = cms.untracked.string('MINIAODSIM'),
-			filterName = cms.untracked.string('')
-			),
-		dropMetaData = cms.untracked.string('ALL'),
-		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
-		fastCloning = cms.untracked.bool(False),
-		fileName = cms.untracked.string('file:test.root'),
-		outputCommands = process.MICROAODSIMEventContent.outputCommands,
-		overrideInputFileSplitLevels = cms.untracked.bool(True),
-                SelectEvents = cms.untracked.PSet(
-                    SelectEvents = cms.vstring( [ 
-                        'skimPreselected', 
-                        'tagAndProbe'
-                    ]
-                                            )
-                )
-)
 
 
 #define a process attribute for outputting a file which will be changed in a clone() call below
@@ -118,52 +90,12 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 # here the full set of sequences and hlt paths used to make the first step
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
 
-
-
 # Path and EndPath definitions
 process.tagAndProbe = cms.Path(process.tagAndProbeHltSequence)
 process.skimPreselected = cms.Path(process.signalHltSequence * process.wRdiLeptonSkimSequence * process.wRdijetSkimSequence)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
-#process.test_output = cms.EndPath(process.MINIAODSIM_test_output)
-
 
 ############################################################ SCHEDULE
 process.schedule = cms.Schedule(process.skimPreselected, process.tagAndProbe, process.microAODoutput_step)
 
-
-
-
-
-
-
-#process.eleMuSignalSkim = cms.Path(process.emuwRdiLeptonAndFourObjSignalSeq)
-#process.eleMuLowMassSkim = cms.Path(process.emuwRdiLeptonSidebandSeq)
-
-#test a modified skim which selects evts with at least one HEEP ID v6.0 ele, and one muon which passes isHighPt ID
-#this is NOT the usual selection sequence
-from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
-loadHEEPIDSelector(process)
-process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
-
-process.eleMuLowMassSkim = cms.Path(
-		process.egmGsfElectronIDSequence
-		*process.HEEPIDSidebandSequence  #only look for 1 HEEP electron
-		*process.wrTunePMuProdSeq
-		*process.isHighPtMuSeq
-		)
-
-
-
-#process.diMuonSidebandSkim = cms.Path(process.wRdiMuonSidebandSeq)
-#process.diElectronSidebandSkim = cms.Path(process.wRdiElectronSidebandSeq)
-
-#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * (process.MINIAODSIM_signal_output + process.MINIAODSIM_sideband_output))
-
-
-#process.MINIAODSIMoutput_step = cms.EndPath(process.microAODslimmingSeq * process.MINIAODSIM_signal_output )
-
-
-#do not add changes to your config after this point (unless you know what you are doing)
-
-# End of customisation functions
