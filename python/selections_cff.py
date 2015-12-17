@@ -5,15 +5,46 @@ leadingPt=60.
 subleadingPt=40.
 maxEtaLeptons=2.4
 jetPt = 40.
+
+### need the reference for this selection, with link to the presentation and twiki page
 jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && 
         ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"
 
 
+
+############################################################ Jets
+from ExoAnalysis.cmsWR.JEC_cff import *
+#patJetsReapplyJEC
+wRJets = cms.EDFilter("PATJetRefSelector",
+                      src = cms.InputTag("patJetsReapplyJEC"),
+                      cut = cms.string( ("pt>%f") % (jetPt)),
+		)
+
+### select loose-ID jets
+wRlooseJet = cms.EDFilter("PATJetRefSelector",
+                          src = cms.InputTag("wRJets"),
+                          cut = cms.string(jetID),
+                          )
+
+wRJetFilter = cms.EDFilter("CandViewCountFilter",
+                                 src = cms.InputTag("wRJets"),
+                                 minNumber = cms.uint32(2)
+                             )
+
+
 ############################################################ Electrons
+
+
+# muons considered here are only those far from any jet with Pt>ptJets 
+wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
+                                   src = cms.InputTag("slimmedElectrons"),
+                                   overlap = cms.InputTag("wRJets"),
+                                   maxDeltaR = cms.double(0.04),
+                                   )
 
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
-                                 src = cms.InputTag("slimmedElectrons"),
+                                 src = cms.InputTag("wRIsolatedElectrons"),
                                  cut = cms.string( 
         (("pt>%f") % (leadingPt)) + 
         (("abs(eta)<%f") % (maxEtaLeptons))
@@ -22,7 +53,7 @@ wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
 
 ### select subleading electron
 wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
-                                    src = cms.InputTag("slimmedElectrons"),
+                                    src = cms.InputTag("wRIsolatedElectrons"),
                                     cut = cms.string( 
         (("pt>%f") % (subleadingPt))
         (("abs(eta)<%f") % (maxEtaLeptons))
@@ -46,23 +77,29 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            )
 
 
-
 ############################################################ Muons
 
 tunePMuons = cms.EDProducer("TunePMuonProducer",
 		src = cms.InputTag("slimmedMuons")
 		)
 
+# muons considered here are only those far from any jet with Pt>ptJets 
+tunePIsolatedMuons = cms.EDFilter( "DeltaROverlapExclusionSelector",
+                                   src = cms.InputTag("tunePMuons"),
+                                   overlap = cms.InputTag("wRJets"),
+                                   maxDeltaR = cms.double(0.04),
+                                   )
+
 
 ### select leading muon \ingroup muonSkim_Group
 wRleadingMuon = cms.EDFilter("PATMuonRefSelector",
-                             src = cms.InputTag("tunePMuons"),
+                             src = cms.InputTag("tunePIsolatedMuons"),
                              cut = wRleadingElectron.cut,
                          )
 
 ### select subleading muon
 wRsubleadingMuon = cms.EDFilter("PATMuonRefSelector",
-                                src = cms.InputTag("tunePMuons"),
+                                src = cms.InputTag("tunePIsolatedMuons"),
                                 cut = wRsubleadingElectron.cut,
                                 )
 
@@ -84,26 +121,6 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            src = cms.InputTag("wRdiMuonCandidate"),
                                            minNumber = cms.uint32(1)
                                            )
-
-
-############################################################ Jets
-from ExoAnalysis.cmsWR.JEC_cff import *
-#patJetsReapplyJEC
-wRJets = cms.EDFilter("PATJetRefSelector",
-                      src = cms.InputTag("patJetsReapplyJEC"),
-                      cut = cms.string( ("pt>%f") % (jetPt)),
-		)
-
-### select loose-ID jets
-wRlooseJet = cms.EDFilter("PATJetRefSelector",
-                          src = cms.InputTag("wRJets"),
-                          cut = cms.string(jetID),
-                          )
-
-wRJetFilter = cms.EDFilter("CandViewCountFilter",
-                                 src = cms.InputTag("wRJets"),
-                                 minNumber = cms.uint32(2)
-                             )
 
 
 ############################################################ E-Mu candidate
