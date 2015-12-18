@@ -12,8 +12,8 @@ source configs/2015-v1.conf
 
 crabFile=tmp/crab.py
 
-datasets=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
-datasetNames=(`cat $datasetFile | grep -v '#' | awk '(NF==2 || NF>=4){print $2}'`)
+datasets=(`cat $datasetFile | grep -v '#' | awk '{print $2}'`)
+datasetNames=(`cat $datasetFile | grep -v '#' | awk '(NF==2 || NF>=4){print $1}'`)
 IFS=$'\n'
 
 if [ ! -d "tmp/" ];then mkdir tmp/; fi
