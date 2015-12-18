@@ -1,4 +1,4 @@
-#name	dataset	cross_sxn(pb)	filter_eff	total_evts	skimmed_dataset	skimmed_events
+#name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 # Data	##################################################
 DoubleEG_RunC	/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1854782	-	-
 DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	-	-	-
