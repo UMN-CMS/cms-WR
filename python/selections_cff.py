@@ -1,4 +1,7 @@
 import FWCore.ParameterSet.Config as cms
+### \todo add deltaR cut between leptons?
+### \todo add HEEP ID for electrons
+### \todo add muon ID
 
 
 leadingPt=60.
@@ -39,7 +42,7 @@ wRJetFilter = cms.EDFilter("CandViewCountFilter",
 wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    src = cms.InputTag("slimmedElectrons"),
                                    overlap = cms.InputTag("wRJets"),
-                                   maxDeltaR = cms.double(0.04),
+                                   maxDeltaR = cms.double(0.4),
                                    )
 
 ### select leading electron \ingroup electronSkim_Group
@@ -89,6 +92,7 @@ tunePIsolatedMuons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    overlap = cms.InputTag("wRJets"),
                                    maxDeltaR = cms.double(0.04),
                                    )
+
 
 
 ### select leading muon \ingroup muonSkim_Group
@@ -143,3 +147,25 @@ wRmuEleCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
+
+############################################################# di lepton candidate
+wRdiLeptonCandidate = cms.EDProducer("CandViewMerger",
+                                     src = cms.VInputTag("wRdiElectronCandidate", "wRdiMuonCandidate", "wReleMuCandidate", "wRmuEleCandidate")
+                                     )
+
+
+############################################################# Flavour sideband filter
+flavourSidebandFilter = cms.EDFilter("CompositeCandAndSelector",
+                                     src = cms.InputTag("wRdiLeptonCandidate"),
+                                     cut = cms.string("daughter(0).isElectron && daughter(1).isElectron"),
+                                     )
+
+lowDiLeptonSidebandFilter = cms.EDFilter("CandViewCountFilter",
+                                     src = cms.InputTag("wRdiElectronCandidate"),
+                                     minNumber = cms.uint32(1),
+                                     )
+
+selectionSequence = cms.Sequence(
+    wRJets
+    )
+                                     

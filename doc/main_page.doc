@@ -3,6 +3,14 @@
 
 Download instructions: \ref instructions_
 
+\par Main configuration file
+Trying to collect all possible configurable things in a configuration file in configs/.
+The file is \b configs/2015-v1.conf
+
+Currently the following informations are stored there:
+ - json file
+ - dataset file (configs/datsets.dat)
+
 \par Datasets
 The list of datasets is written in 
 \verbatim
