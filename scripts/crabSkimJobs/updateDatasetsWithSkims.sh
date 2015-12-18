@@ -22,6 +22,13 @@ do
 	#check if the skim of the sample have been submitted
 	ls -d $crabDir > /dev/null || continue
 
+	if [ ! "$(ls -A $crabDir/results)" ]; then 
+		crab status -d $crabDir
+		if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
+			crab report -d $crabDir
+		fi
+	fi
+
 	if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
 		readEvents=`grep "events have been read" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
 		echo $datasetName $readEvents
@@ -35,10 +42,4 @@ exit 0
 for crabDir in crab_*/*
 do
 	
-	if [ ! "$(ls -A $crabDir/results)" ]; then 
-		crab status -d $crabDir
-		if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
-			crab report -d $crabDir
-		fi
-	fi
 done
