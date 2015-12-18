@@ -5,6 +5,8 @@ var searchData=
   ['selectheepeles',['selectHEEPEles',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#a7a800783cd5974d6c882a2b4daf48530',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
   ['selectheepelesfilter',['selectHEEPElesFilter',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#a17d7eabda682d9a0180cbc3cbd5e6498',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
   ['selectheepelesseq',['selectHEEPElesSeq',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#a14d345a61bc4f399ae57aaebb2ea9e31',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
+  ['selections_5fcff_2epy',['selections_cff.py',['../selections__cff_8py.html',1,'']]],
+  ['selectionsequence',['selectionSequence',['../namespacepython_1_1selections__cff.html#a9946726e4b227993295ff6216394635f',1,'python::selections_cff']]],
   ['signalhltsequence',['signalHltSequence',['../namespacepython_1_1hltFilters__cff.html#ac146faaacdde38e226752d6cca29b70c',1,'python::hltFilters_cff']]],
   ['simultaneousptetacutmatchedgenjets',['simultaneousPtEtaCutMatchedGenJets',['../namespacepython_1_1genElectronChannelModules__cff.html#a1dc195bb648adf15ea1db63ba595d26d',1,'python::genElectronChannelModules_cff']]],
   ['simultaneousptetacutmatchedgenjetsfilter',['simultaneousPtEtaCutMatchedGenJetsFilter',['../namespacepython_1_1genElectronChannelModules__cff.html#aebb470b377426556596d2dde52bee834',1,'python::genElectronChannelModules_cff']]],
@@ -20,5 +22,6 @@ var searchData=
   ['skimemu_5fcff_2epy',['skimEMu_cff.py',['../skimEMu__cff_8py.html',1,'']]],
   ['skimjets_5fcff_2epy',['skimJets_cff.py',['../skimJets__cff_8py.html',1,'']]],
   ['skimmuon_5fcff_2epy',['skimMuon_cff.py',['../skimMuon__cff_8py.html',1,'']]],
-  ['splitlevel',['splitLevel',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#a8b5295da58a8cd5772bab957cf056aa2',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]]
+  ['splitlevel',['splitLevel',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#a8b5295da58a8cd5772bab957cf056aa2',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
+  ['subleadingpt',['subleadingPt',['../namespacepython_1_1selections__cff.html#ab033c59a3cb7ea240de70efabc3234c3',1,'python::selections_cff']]]
 ];

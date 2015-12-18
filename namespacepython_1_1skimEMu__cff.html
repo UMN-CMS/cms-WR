@@ -94,10 +94,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a6bd5a67311f5958ffc1c991e39d54981"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skimEMu__cff.html#a6bd5a67311f5958ffc1c991e39d54981">wReleMuCandidate</a></td></tr>
-<tr class="separator:a6bd5a67311f5958ffc1c991e39d54981"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fce19839f1fe9b019de5ff08975e99e"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skimEMu__cff.html#a2fce19839f1fe9b019de5ff08975e99e">wRmuEleCandidate</a></td></tr>
-<tr class="separator:a2fce19839f1fe9b019de5ff08975e99e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c83e75e328d4156368535deaa194152"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skimEMu__cff.html#a2c83e75e328d4156368535deaa194152">wReleMuCandidatePresel</a></td></tr>
+<tr class="separator:a2c83e75e328d4156368535deaa194152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a248b5c5786876ab271455f174405d803"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skimEMu__cff.html#a248b5c5786876ab271455f174405d803">wRmuEleCandidatePresel</a></td></tr>
+<tr class="separator:a248b5c5786876ab271455f174405d803"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83df63558bcf1236cf5c03b311e6f767"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skimEMu__cff.html#a83df63558bcf1236cf5c03b311e6f767">emuwRtunePMuons</a></td></tr>
 <tr class="separator:a83df63558bcf1236cf5c03b311e6f767"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac57f0c29ea70d7790723330828fa02c8"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skimEMu__cff.html#ac57f0c29ea70d7790723330828fa02c8">wrTunePMuProdFilter</a></td></tr>
@@ -525,17 +525,17 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a6bd5a67311f5958ffc1c991e39d54981"></a>
+<a class="anchor" id="a2c83e75e328d4156368535deaa194152"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.skimEMu_cff.wReleMuCandidate</td>
+          <td class="memname">tuple python.skimEMu_cff.wReleMuCandidatePresel</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1skimEMu__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewShallowCloneCombiner&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRleadingElectron wRsubleadingMuon&quot;</span>),</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRleadingElectronPresel wRsubleadingMuonPresel&quot;</span>),</div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                  role = cms.string(<span class="stringliteral">&quot;leading subleading&quot;</span>),</div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                  checkCharge = cms.bool(<span class="keyword">False</span>),</div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                                  <span class="comment"># the cut on the pt of the daughter is to respect the order of leading and subleading:</span></div>
@@ -545,17 +545,17 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a2fce19839f1fe9b019de5ff08975e99e"></a>
+<a class="anchor" id="a248b5c5786876ab271455f174405d803"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.skimEMu_cff.wRmuEleCandidate</td>
+          <td class="memname">tuple python.skimEMu_cff.wRmuEleCandidatePresel</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1skimEMu__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewShallowCloneCombiner&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRleadingMuon wRsubleadingElectron&quot;</span>),</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRleadingMuonPresel wRsubleadingElectronPresel&quot;</span>),</div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                  role = cms.string(<span class="stringliteral">&quot;leading subleading&quot;</span>),</div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                  checkCharge = cms.bool(<span class="keyword">False</span>),</div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                                  <span class="comment"># the cut on the pt of the daughter is to respect the order of leading and subleading:</span></div>
@@ -600,7 +600,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 11 2015 15:41:43 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 18 2015 14:57:57 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

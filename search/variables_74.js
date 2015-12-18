@@ -40,5 +40,6 @@ var searchData=
   ['ttbarselectleptonsafterdrseparation',['ttBarSelectLeptonsAfterDrSeparation',['../namespacepython_1_1genTTBarElectronChannelModules__cff.html#a228e9e5c3534c31a4b6c83b99aa0b00a',1,'python::genTTBarElectronChannelModules_cff']]],
   ['ttbarselectleptonsafterdrseparationfilter',['ttBarSelectLeptonsAfterDrSeparationFilter',['../namespacepython_1_1genTTBarElectronChannelModules__cff.html#a7887bd81e6232398c8fd62e5250d3b16',1,'python::genTTBarElectronChannelModules_cff']]],
   ['ttbarselectleptonsafterdrseparationseq',['ttBarSelectLeptonsAfterDrSeparationSeq',['../namespacepython_1_1genTTBarElectronChannelModules__cff.html#ad2eacf02570fc6cb0a3a8b906715ea50',1,'python::genTTBarElectronChannelModules_cff']]],
-  ['tunepmuons',['tunePMuons',['../namespacepython_1_1skimMuon__cff.html#a9b21ee968919d1cd8615517f1d644dc1',1,'python::skimMuon_cff']]]
+  ['tunepisolatedmuons',['tunePIsolatedMuons',['../namespacepython_1_1selections__cff.html#a37b50f0e2b4cdae269b6ef4863cbf828',1,'python::selections_cff']]],
+  ['tunepmuons',['tunePMuons',['../namespacepython_1_1selections__cff.html#a801db56aec438a2f54a6757f411722dc',1,'python.selections_cff.tunePMuons()'],['../namespacepython_1_1skimMuon__cff.html#a9b21ee968919d1cd8615517f1d644dc1',1,'python.skimMuon_cff.tunePMuons()']]]
 ];

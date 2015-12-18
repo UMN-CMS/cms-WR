@@ -33,6 +33,7 @@ var searchData=
   ['matchrecojetstogenquarksnocutsnewpathfilter',['matchRecoJetsToGenQuarksNoCutsNewPathFilter',['../namespacepython_1_1recoElectronChannelModules__cff.html#a355446e302bf68333fcdb5f669213afc',1,'python::recoElectronChannelModules_cff']]],
   ['matchreconocutsseq',['matchRecoNoCutsSeq',['../namespacepython_1_1recoElectronChannelModules__cff.html#a169b87ace8846845b4163e60c392d11c',1,'python::recoElectronChannelModules_cff']]],
   ['matchrecosinglestagejetsnocutsseq',['matchRecoSingleStageJetsNoCutsSeq',['../namespacepython_1_1recoElectronChannelModules__cff.html#a3d8387f8ef7bd853e084fcc6697628c9',1,'python::recoElectronChannelModules_cff']]],
+  ['maxetaleptons',['maxEtaLeptons',['../namespacepython_1_1selections__cff.html#a0910dadd7fd92e22246c10b22be03316',1,'python::selections_cff']]],
   ['maxeventstoprint',['maxEventsToPrint',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#af24924ede7e4d345765dffdb3322c35f',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
   ['mergegenmatchedeles',['mergeGenMatchedEles',['../namespacepython_1_1genElectronChannelModules__cff.html#ab46396b08706ffb5e8184882a13c5530',1,'python::genElectronChannelModules_cff']]],
   ['microaod_5fcff_2epy',['microAOD_cff.py',['../microAOD__cff_8py.html',1,'']]],
@@ -67,10 +68,5 @@ var searchData=
   ['mumuchnlptetafilteredmatchedsubleadinggenlepton',['mumuChnlPtEtaFilteredMatchedSubleadingGenLepton',['../namespacepython_1_1genMuMuChnlCutSeqForTwoDimLimits__cff.html#a7fb445f65e4a6c5a19ab6bc9b6e6e898',1,'python::genMuMuChnlCutSeqForTwoDimLimits_cff']]],
   ['mumuchnlptetafilteredmatchedsubleadinggenleptonfilter',['mumuChnlPtEtaFilteredMatchedSubleadingGenLeptonFilter',['../namespacepython_1_1genMuMuChnlCutSeqForTwoDimLimits__cff.html#a0ea3054bcae96d6c267ba0552582b5fc',1,'python::genMuMuChnlCutSeqForTwoDimLimits_cff']]],
   ['muoncheck',['muonCheck',['../namespacepython_1_1recoEMuChannelSidebandUnmatchedModules__cff.html#adfe7ac5fb5fe24bf466eca8302dac068',1,'python.recoEMuChannelSidebandUnmatchedModules_cff.muonCheck()'],['../namespacepython_1_1recoEMuChannelSignalUnmatchedModules__cff.html#a09affb6b33aa9b9eb689d58f32642440',1,'python.recoEMuChannelSignalUnmatchedModules_cff.muonCheck()']]],
-  ['muoncheckfilter',['muonCheckFilter',['../namespacepython_1_1recoEMuChannelSidebandUnmatchedModules__cff.html#a9fb124db54a657e941fc2bddbce37488',1,'python.recoEMuChannelSidebandUnmatchedModules_cff.muonCheckFilter()'],['../namespacepython_1_1recoEMuChannelSignalUnmatchedModules__cff.html#abfb0a06566bf6e03bbb253171ba8c800',1,'python.recoEMuChannelSignalUnmatchedModules_cff.muonCheckFilter()']]],
-  ['muwrdijetcandidate',['muwRdiJetCandidate',['../namespacepython_1_1skimMuon__cff.html#af2bb17abfd02460a3e217a6c6730f292',1,'python::skimMuon_cff']]],
-  ['muwrdijetcandidatefilter',['muwRdiJetCandidateFilter',['../namespacepython_1_1skimMuon__cff.html#a8f8a55611041759f608901df9a871e28',1,'python::skimMuon_cff']]],
-  ['muwrhardjet',['muwRhardJet',['../namespacepython_1_1skimMuon__cff.html#ad5e3e3c331341483e299acf30f89c37f',1,'python::skimMuon_cff']]],
-  ['muwrjetselectionseq',['muwRjetSelectionSeq',['../namespacepython_1_1skimMuon__cff.html#aea4cc3991baec4ef7e7306020dae1552',1,'python::skimMuon_cff']]],
-  ['muwrsoftjet',['muwRsoftJet',['../namespacepython_1_1skimMuon__cff.html#a1108ab7d9a520c3634be74b2eeb9c0ef',1,'python::skimMuon_cff']]]
+  ['muoncheckfilter',['muonCheckFilter',['../namespacepython_1_1recoEMuChannelSidebandUnmatchedModules__cff.html#a9fb124db54a657e941fc2bddbce37488',1,'python.recoEMuChannelSidebandUnmatchedModules_cff.muonCheckFilter()'],['../namespacepython_1_1recoEMuChannelSignalUnmatchedModules__cff.html#abfb0a06566bf6e03bbb253171ba8c800',1,'python.recoEMuChannelSignalUnmatchedModules_cff.muonCheckFilter()']]]
 ];

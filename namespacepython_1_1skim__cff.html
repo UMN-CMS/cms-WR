@@ -94,10 +94,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a66db396beeb3759b3e8dec9ad5f88acb"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skim__cff.html#a66db396beeb3759b3e8dec9ad5f88acb">wRdiLeptonCandidate</a></td></tr>
-<tr class="separator:a66db396beeb3759b3e8dec9ad5f88acb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a631f48459762a0f2385f8a8b4ec270c0"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skim__cff.html#a631f48459762a0f2385f8a8b4ec270c0">wRdiLeptonFilter</a></td></tr>
-<tr class="separator:a631f48459762a0f2385f8a8b4ec270c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac415a5afc4226ac1e6f414207c43bc3e"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skim__cff.html#ac415a5afc4226ac1e6f414207c43bc3e">wRdiLeptonCandidatePresel</a></td></tr>
+<tr class="separator:ac415a5afc4226ac1e6f414207c43bc3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5506da7934bccabe70291cc3f39d002f"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skim__cff.html#a5506da7934bccabe70291cc3f39d002f">wRdiLeptonFilterPresel</a></td></tr>
+<tr class="separator:a5506da7934bccabe70291cc3f39d002f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeac1b68161212abee4bdc72260cc1935"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skim__cff.html#aeac1b68161212abee4bdc72260cc1935">wRdiLeptonSkimSequence</a></td></tr>
 <tr class="separator:aeac1b68161212abee4bdc72260cc1935"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad192c4d6083621826e79501fea526397"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1skim__cff.html#ad192c4d6083621826e79501fea526397">wRdijetSkimSequence</a> = cms.Sequence( wRpreselJets * wRpreselJetFilter )</td></tr>
@@ -116,32 +116,32 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a66db396beeb3759b3e8dec9ad5f88acb"></a>
+<a class="anchor" id="ac415a5afc4226ac1e6f414207c43bc3e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.skim_cff.wRdiLeptonCandidate</td>
+          <td class="memname">tuple python.skim_cff.wRdiLeptonCandidatePresel</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1skim__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewMerger&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.VInputTag(<span class="stringliteral">&quot;wRdiElectronCandidate&quot;</span>, <span class="stringliteral">&quot;wRdiMuonCandidate&quot;</span>, <span class="stringliteral">&quot;wReleMuCandidate&quot;</span>, <span class="stringliteral">&quot;wRmuEleCandidate&quot;</span>)</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.VInputTag(<span class="stringliteral">&quot;wRdiElectronCandidatePresel&quot;</span>, <span class="stringliteral">&quot;wRdiMuonCandidatePresel&quot;</span>, <span class="stringliteral">&quot;wReleMuCandidatePresel&quot;</span>, <span class="stringliteral">&quot;wRmuEleCandidatePresel&quot;</span>)</div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                 )</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a631f48459762a0f2385f8a8b4ec270c0"></a>
+<a class="anchor" id="a5506da7934bccabe70291cc3f39d002f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.skim_cff.wRdiLeptonFilter</td>
+          <td class="memname">tuple python.skim_cff.wRdiLeptonFilterPresel</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1skim__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewCountFilter&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                src = cms.InputTag(<span class="stringliteral">&quot;wRdiLeptonCandidate&quot;</span>),</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                src = cms.InputTag(<span class="stringliteral">&quot;wRdiLeptonCandidatePresel&quot;</span>),</div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                minNumber = cms.uint32(1)</div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                            )</div>
 </div><!-- fragment -->
@@ -157,9 +157,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1skim__cff.html">    1</a></span>&#160;= cms.Sequence(tunePMuons *</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;    (wRleadingElectron + wRleadingMuon + wRsubleadingElectron + wRsubleadingMuon) *</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;    (wReleMuCandidate + wRmuEleCandidate + wRdiElectronCandidate + wRdiMuonCandidate) *</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;    wRdiLeptonCandidate * wRdiLeptonFilter</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;    (wRleadingElectronPresel + wRleadingMuonPresel + wRsubleadingElectronPresel + wRsubleadingMuonPresel) *</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;    (wReleMuCandidatePresel + wRmuEleCandidatePresel + wRdiElectronCandidatePresel + wRdiMuonCandidatePresel) *</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;    wRdiLeptonCandidatePresel * wRdiLeptonFilterPresel</div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;)</div>
 </div><!-- fragment -->
 </div>
@@ -167,7 +167,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 11 2015 15:41:43 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 18 2015 14:57:57 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
