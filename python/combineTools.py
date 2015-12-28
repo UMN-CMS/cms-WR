@@ -15,23 +15,28 @@ import ExoAnalysis.cmsWR.backgroundFits as bgfits
 # @param background_tuples list of (name, rate) for backgrounds
 #
 # @return signal_rate, tuple of bg rates
-def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples):
+def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples, systematics = []):
 
 	nBGs = len(background_tuples)
+	nSystematics = len(systematics)
 	ns = "  ".join([str(i) for i in range(nBGs+1)])
 	sig_name = signal_tuple[0]
-	signal_rate = "%.2f" % (signal_tuple[1])
+	signal_rate = "%.2g" % (signal_tuple[1])
 
 	bg_names = ""
 	bg_rates = ""
-	for bg_name, bg_rate in background_tuples:
+	name_lookup = {sig_name:0}
+	for i,(bg_name, bg_rate) in enumerate(background_tuples):
+		name_lookup[bg_name] = i+1
 		bg_names += bg_name + "  "
-		bg_rates   += "%.2e" % bg_rate + "  "
+		bg_rates   += "%.2g" % bg_rate + "  "
 	names = sig_name + "  " + bg_names
 	rates = signal_rate + '  ' + bg_rates
 	with open(outfile, "w") as out:
 		out.write("imax 1  number of channels\n")
 		out.write("jmax %d  number of backgrounds\n" % nBGs)
+		if systematics:
+			out.write("kmax %d  number of nuisance parameters\n" % nSystematics)
 		out.write("bin " + bin_name + "\n")
 		out.write("observation %d\n" % nObs)
 		out.write("------------\n")
@@ -40,6 +45,12 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		out.write("process  " + ns + "\n")
 		out.write("rate  " + rates + "\n")
 		out.write("------------\n")
+		if systematics:
+			for name, syst_type, channels in systematics:
+				channel_list = ['-']*(nBGs + 1)
+				for chan_name, err in channels:
+					channel_list[name_lookup[chan_name]] = str(err)
+				out.write(name + ' ' + syst_type + ' ' + ' '.join(channel_list) + '\n')
 	return signal_rate, tuple(bg_rates.split())
 
 ##
