@@ -1,16 +1,16 @@
 #name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 # Data	##################################################
-DoubleEG_RunC	/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1854782	-	-
+DoubleEG_RunC	/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1854782	/DoubleEG/shervin-DoubleEG_RunC-3abca7d59e67ed900134b3dd7b186f2f/USER	-
 DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	-	-	-
-DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	49401569	-	-
+DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	49401569	/DoubleEG/shervin-DoubleEG_RunD_v4-3abca7d59e67ed900134b3dd7b186f2f/USER	-
 #
-SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1341179	-	-
-SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	31822683	-	-
-SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	-	-
+SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1341179	/SingleMuon/shervin-SingleMu_RunC-4d756c7f1d5213e47791949f82248944/USER	-
+SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	31822683	/SingleMuon/shervin-SingleMu_RunD_v3-4d756c7f1d5213e47791949f82248944/USER	-
+SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	/SingleMuon/shervin-SingleMu_RunD_v4-4d756c7f1d5213e47791949f82248944/USER	-
 #
-MuEG_RunC	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	-	-
-MuEG_RunD_v3	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	-	-
-MuEG_RunD_v4	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	-	-
+MuEG_RunC	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	/MuonEG/shervin-MuEG_RunC-3abca7d59e67ed900134b3dd7b186f2f/USER	-
+MuEG_RunD_v3	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	/MuonEG/shervin-MuEG_RunD_v3-3abca7d59e67ed900134b3dd7b186f2f/USER	-
+MuEG_RunD_v4	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	/MuonEG/shervin-MuEG_RunD_v4-3abca7d59e67ed900134b3dd7b186f2f/USER	-
 #	##################################################
 WJetsLNu	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	6.15E4	-	72207128	5.027e+04	1.782e+02
 WZ	/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	2.340e+01	4.670e-02	978512	2.340e+01	4.736e-02
