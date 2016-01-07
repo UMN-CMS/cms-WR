@@ -10,13 +10,13 @@ maxEtaLeptons=2.4
 jetPt = 40.
 
 ### need the reference for this selection, with link to the presentation and twiki page
-jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && 
-        ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"
+jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"
 
 
 
 ############################################################ Jets
 from ExoAnalysis.cmsWR.JEC_cff import *
+
 #patJetsReapplyJEC
 wRJets = cms.EDFilter("PATJetRefSelector",
                       src = cms.InputTag("patJetsReapplyJEC"),
@@ -49,8 +49,8 @@ wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
 wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                  src = cms.InputTag("wRIsolatedElectrons"),
                                  cut = cms.string( 
-        (("pt>%f") % (leadingPt)) + 
-        (("abs(eta)<%f") % (maxEtaLeptons))
+        (("pt>%f") % (leadingPt)) 
+        + (("abs(eta)<%f") % (maxEtaLeptons))
         ),
                                  )
 
@@ -58,7 +58,7 @@ wRleadingElectron = cms.EDFilter("PATElectronRefSelector",
 wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
                                     src = cms.InputTag("wRIsolatedElectrons"),
                                     cut = cms.string( 
-        (("pt>%f") % (subleadingPt))
+        (("pt>%f") % (subleadingPt)) +
         (("abs(eta)<%f") % (maxEtaLeptons))
         ),
                                     )

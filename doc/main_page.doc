@@ -19,6 +19,12 @@ configs/datasets.dat
 
 \ref triggers
 
+\par How to estimate cross sections
+Once the dataset is entered in the datasets.dat config file putting dashes for cross section, cross section uncetainty, then you can use the script
+\verbatim
+ ./scripts/getXsec.sh
+\endverbatim
+to update the file with the estimated cross sections
 
 \par Skims
 \ref skim_page
@@ -39,5 +45,11 @@ To update the list of datasets with the published skims:
 \verbatim
 scripts/crabSkimJobs/updateDatasetsWithSkims.sh
 \endverbatim
+
+\par JEC
+The twiki page is:
+\url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
+
+74X_mcRun2_asymptotic_v4
 
 */
