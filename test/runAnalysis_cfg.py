@@ -6,8 +6,6 @@ process = cms.Process('SELECTION')
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('standard') 
 
-
-
 options.register('isMC',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -45,6 +43,7 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(
 #    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True),
+    SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 process.source = cms.Source("PoolSource",
@@ -80,7 +79,7 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
 		fastCloning = cms.untracked.bool(False),
 		fileName = cms.untracked.string(options.output),
-		outputCommands = process.MICROAODSIMEventContent.outputCommands,
+		outputCommands = process.MICROAODSIMEventContent.outputCommands + [ 'keep *_*_*_SELECTION' ],
 		overrideInputFileSplitLevels = cms.untracked.bool(True),
 		
 		)
@@ -94,10 +93,25 @@ from ExoAnalysis.cmsWR.JEC_cff import *
 #if(options.isMC==0):
 #    JEC_correction_data(process)
 
-process.test = cms.Path(process.jecSequence * process.selectionSequence)
+process.blindSeq = cms.Sequence()
 
-#process.microAODoutput_step = cms.EndPath(process.microAOD_output)
+process.fullSeq = cms.Sequence(process.jecSequence * process.selectionSequence * process.filterSequence)
+
+process.FlavourSideband = cms.Path(process.fullSeq * process.flavourSidebandFilter)
+process.LowDiLeptonSideband = cms.Path(process.fullSeq * process.lowDiLeptonSidebandFilter)
+process.SignalRegion    = cms.Path(process.fullSeq * process.blindSeq * process.signalRegionFilter)
+
+process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
 ############################################################ SCHEDULE
-#process.schedule = cms.Schedule(process.skimPreselected, process.tagAndProbe, process.microAODoutput_step)
+if (options.isMC==0):
+    process.blindSeq += ~process.signalRegionFilter
+    print "########################################################################"
+    print "# WARNING!!! You are running on DATA, but the analysis is still BLIND! #"
+    print "# The signal region path will not be run!                              #"
+    print "########################################################################"
+
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband)
+else:
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion)
 
