@@ -12,7 +12,7 @@ MuEG_RunC	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	/MuonEG/shervin-
 MuEG_RunD_v3	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	/MuonEG/shervin-MuEG_RunD_v3-3abca7d59e67ed900134b3dd7b186f2f/USER	-
 MuEG_RunD_v4	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	/MuonEG/shervin-MuEG_RunD_v4-3abca7d59e67ed900134b3dd7b186f2f/USER	-
 #	##################################################
-WJetsLNu	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	6.15E4	-	72207128	5.027e+04	1.782e+02
+WJetsLNu	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	6.15e4	-	72207128	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/shervin-WJetsLNu-4d756c7f1d5213e47791949f82248944/USER	1.782e+02
 WZ	/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	2.340e+01	4.670e-02	978512	/WZ_TuneCUETP8M1_13TeV-pythia8/shervin-WZ-4d756c7f1d5213e47791949f82248944/USER	4.736e-02
 ZZ	/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.015e+01	2.284e-02	996944	/ZZ_TuneCUETP8M1_13TeV-pythia8/shervin-ZZ-4d756c7f1d5213e47791949f82248944/USER	2.284e-02
 #	##########
