@@ -10,7 +10,7 @@ logDir=$myPWD/logs/
 source configs/2015-v1.conf
 
 datasets=(`cat $datasetFile | grep -v '#' | awk '{print $2}'`)
-datasetNames=(`cat $datasetFile | grep -v '#' | awk '(NF==2 || NF>=4){print $1}'`)
+datasetNames=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
 IFS=$'\n'
 
 #create temporary working area 
@@ -88,7 +88,7 @@ do
 	echo $datasetName $afterFilter >> $logDir/l.list
 
 	# this updated always
-	#sed -i -r  "/$datasetName/{s|([[:alnum:]_]+\t[[:alnum:]_/-]+\t)[[:digit:].-]+\t[[:digit:].-]+\t|\1$afterFilter\t|}" $datasetFile
+	#sed -i -r  "/$datasetName/{s|([[:alnum:]_]+\t[[:alnum:]_/-]+\t)[[:digit:].e+-]+\t[[:digit:].e+-]+\t|\1$afterFilter\t|}" $datasetFile
 
 	# this updates only if not set
 	sed -i -r  "/$datasetName/{s|([[:alnum:]_]+\t[[:alnum:]_/-]+\t)[-]\t[-]\t|\1$afterFilter\t|}" $datasetFile 

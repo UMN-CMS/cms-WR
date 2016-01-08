@@ -31,8 +31,10 @@ do
 
 	if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
 		readEvents=`grep "events have been read" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
-		echo $datasetName $readEvents
-		sed -i -r  "/$datasetName/{s|([[:alnum:]_]+\t[[:alnum:]_/-]+\t[[:digit:].-]+\t[[:digit:].-]+\t)[[:digit:].-]+|\1$readEvents\t|}" $datasetFile 
+		writtenEvents=`grep "events have been written" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
+		outputDataset=`grep "Output dataset:" $crabDir/crab.log | tail -1| cut -d ':' -f 2 | sed 's|[[:space:]]*||'`
+		echo $datasetName $readEvents $writtenEvents $outputDataset
+		sed -i -r  "/$datasetName/{s|([[:alnum:]_]+\t[[:alnum:]_/-]+\t[[:digit:].e+-]+\t[[:digit:].e+-]+\t)[[:digit:]-]+\t[[:alnum:]_/.+-]+\t[[:digit:].e+-]+|\1$readEvents\t$outputDataset\t$writtenEvents|}" $datasetFile 
 		./scripts/reformatDatasets.sh
 #		break
 	fi
