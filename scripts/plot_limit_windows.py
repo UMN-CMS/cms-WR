@@ -24,6 +24,32 @@ def findBounds(tuples, start, ratio):
 				break
 	return err
 
+
+limit_result = {
+		800:4.382,
+		1200:2.14568,
+		1400:1.38037,
+		1600:1.14283,
+		2000:0.755154,
+		2400:0.441011,
+		2600:0.393615,
+		2800:0.347478,
+		3000:0.341481,
+		3200:0.332075,
+		3600:0.260124,
+		3800:0.242352,
+		4000:0.226261,
+		4200:0.238213,
+		4400:0.217768,
+		4600:0.230623,
+		4800:0.205487,
+		5000:0.206074,
+		5200:0.203554,
+		5600:0.206664,
+		5800:0.204903,
+		6000:0.212133,
+		}
+
 c = ROOT.TCanvas()
 #c.SetLogz()
 min_limit = 1000
@@ -89,11 +115,6 @@ choice ={ 800:(700,900), 1200:(1000,1400), 1400:(1200,1600), 1600:(1400,1800),
 #	if mass > 4600:
 #		low = round(slope1*4600 + intercept1, -2)
 #	choice[mass] = (low, hi)
-#
-#cs = choice.keys()
-#cs.sort()
-#for ci in cs:
-#	print ci, choice[ci]
 
 results_opt = []
 results_min = []
@@ -104,15 +125,15 @@ for MWR,MNR in hists:
 	#print MWR,MNR, h["low"][arg], h["hi"][arg], h["limit"][arg]
 	#low = int(MWR) - round(choice[int(MWR)],-2)
 	#hi = int(MWR) + round(choice[int(MWR)],-2)
-#	low, hi = choice[int(MWR)]
-#	print MWR,low,hi
-#	for i in range(len(h["low"])):
-#		if low == h["low"][i] and hi == h["hi"][i]:
-#			arg = i
-#			break
-#	print i,arg
-#	results_opt.append( [int(MWR),  h["low"][arg], h["hi"][arg], h["limit"][arg] ])
-#
+	#low, hi = choice[int(MWR)]
+	#print MWR,low,hi
+	#for i in range(len(h["low"])):
+	#	if low == h["low"][i] and hi == h["hi"][i]:
+	#		arg = i
+	#		break
+	#print i,arg
+	#results_opt.append( [int(MWR),  h["low"][arg], h["hi"][arg], h["limit"][arg] ])
+
 	n_limits = len(h["low"])
 	MWRi = float(MWR)
 	arg = np.argmin(h["limit"])
@@ -183,6 +204,11 @@ for res,name in [(results_min, "min")]:
 	npresults = np.array(res, dtype="float64")
 	min_mass  = np.copy(npresults.T[0])
 	min_limit = np.copy(npresults.T[3])*.01
+
+	lowmass = min(min_mass)
+	himass = max(min_mass)
+	h = ROOT.TH1F("h","Mass Window",1,lowmass,himass)
+	h.Fill(np.average((lowmass,himass)))
 	if norm:
 		min_low   = np.copy(npresults.T[1])/min_mass
 		min_hi    = np.copy(npresults.T[2])/min_mass
@@ -190,6 +216,8 @@ for res,name in [(results_min, "min")]:
 		min_low_err_hi  = abs(min_low - np.copy(npresults.T[5])/min_mass)
 		min_hi_err_low  = abs(min_hi  - np.copy(npresults.T[6])/min_mass)
 		min_hi_err_hi   = abs(min_hi  - np.copy(npresults.T[7])/min_mass)
+		h.SetMinimum(.4)
+		h.SetMaximum(1.4)
 	else:
 		min_low   = np.copy(npresults.T[1])
 		min_hi    = np.copy(npresults.T[2])
@@ -197,40 +225,67 @@ for res,name in [(results_min, "min")]:
 		min_low_err_hi  = abs(min_low - np.copy(npresults.T[5]))
 		min_hi_err_low  = abs(min_hi  - np.copy(npresults.T[6]))
 		min_hi_err_hi   = abs(min_hi  - np.copy(npresults.T[7]))
+		h.SetMinimum(0)
+		h.SetMaximum(10000)
 	npcrosssection = np.array( [ xs.WR_eejj[m] for m in min_mass], dtype="float64")
+	limit_result_np = np.array( [ limit_result[m] for m in min_mass], dtype="float64")*.01
 	
-	lowmass = min(min_mass)
-	himass = max(min_mass)
-	h = ROOT.TH1F("h","Mass Window",1,lowmass,himass)
-	h.Fill(np.average((lowmass,himass)))
-	h.SetMinimum(.4)
-	h.SetMaximum(1.4)
-
 	low_graph = ROOT.TGraphAsymmErrors(len(min_mass),  min_mass, min_low, ROOT.nullptr, ROOT.nullptr, min_low_err_low, min_low_err_hi)
 	hi_graph = ROOT.TGraphAsymmErrors(len(min_mass), min_mass, min_hi, ROOT.nullptr, ROOT.nullptr, min_hi_err_low, min_hi_err_hi)
 	limit_graph = ROOT.TGraph(len(min_mass), min_mass, min_limit)
+	opt_limit_graph = ROOT.TGraph(len(min_mass), min_mass, limit_result_np)
 	xs_graph = ROOT.TGraph(len(min_mass), min_mass, npcrosssection)
 	
 	low_graph.SetLineColor(ROOT.kRed)
 	h.SetLineColor(ROOT.kBlack)
 	hi_graph.SetLineColor(ROOT.kBlue)
 	limit_graph.SetLineColor(ROOT.kBlack)
+	opt_limit_graph.SetLineColor(ROOT.kBlue)
 	xs_graph.SetLineColor(ROOT.kRed)
 	low_graph.SetLineWidth(2)
 	h.SetLineWidth(2)
 	hi_graph.SetLineWidth(2)
 	limit_graph.SetLineWidth(2)
+	opt_limit_graph.SetLineWidth(2)
 	xs_graph.SetLineWidth(2)
 	
-	leg1 = ROOT.TLegend(.15, .15, .5, .25)
+	if norm:
+		lowfit = ROOT.TF1("lowfit","([1])*(x<[0]) + ([1]*[0]/x)*(x>=[0]) ",lowmass,himass)
+		lowfit.SetParameters(3000, .85)
+		hifit = ROOT.TF1("hifit","[0]",lowmass,1800)
+		hifit.SetParameter(0,1.35)
+	else:
+		lowfit = ROOT.TF1("lowfit","([1]*x)*(x<[0]) + ([1]*[0])*(x>=[0]) ",lowmass,himass)
+		lowfit.SetParameters(3000, .85)
+		hifit = ROOT.TF1("hifit","[0]*x",lowmass,1800)
+		hifit.SetParameter(0,1.35)
+	
+	lowfit.FixParameter(0,3500)
+	lowfit.FixParameter(1,.85)
+	hifit.FixParameter(0,1.15)
+	#lowfit.SetParLimits(0,800,6000)
+	low_graph.Fit("lowfit")
+	#hi_graph.Fit("hifit", "","",0, 1800)
+	hi_graph.Fit("hifit")
+
+	for i in range(len(min_mass)):
+		if norm:
+			print min_mass[i], min_low[i]*min_mass[i], min_hi[i]*min_mass[i], round(lowfit(min_mass[i])*min_mass[i]/50.)*50,  round(lowfit(min_mass[i]),3),  round(hifit(min_mass[i])*min_mass[i]/50.)*50,  round(hifit(min_mass[i]),3)
+		else:
+			print min_mass[i], min_low[i], min_hi[i], round(lowfit(min_mass[i])/50.)*50,  round(lowfit(min_mass[i])/min_mass[i],3), round(hifit(min_mass[i])/50.)*50, round(hifit(min_mass[i])/min_mass[i],3)
+	if norm:
+		leg1 = ROOT.TLegend(.15, .15, .5, .25)
+	else:
+		leg1 = ROOT.TLegend(.15, .75, .5, .85)
 	leg1.SetNColumns(3)
-	leg1.AddEntry(low_graph, "Low/Mass", "l")
-	leg1.AddEntry(hi_graph, "High/Mass", "l")
+	leg1.AddEntry(low_graph, "Low", "l")
+	leg1.AddEntry(hi_graph, "High", "l")
 	leg1.AddEntry(h, "Mass", "l")
-	leg2 = ROOT.TLegend(.55, .75, .9, .85)
-	leg2.SetNColumns(2)
-	leg2.AddEntry(limit_graph, "XS limit", "l")
-	leg2.AddEntry(xs_graph, "WR XS", "l")
+	leg2 = ROOT.TLegend(.55, .65, .83, .85)
+	leg2.SetNColumns(1)
+	leg2.AddEntry(limit_graph, "WR XS Expected Limit Minimum", "l")
+	leg2.AddEntry(opt_limit_graph, "WR XS Expected Limit Choice", "l")
+	leg2.AddEntry(xs_graph, "WR XS Theory", "l")
 	c = ROOT.TCanvas("c","c",1200,800)
 	c.Divide(1,2)
 
@@ -243,13 +298,23 @@ for res,name in [(results_min, "min")]:
 	#hi_graph.Fit("pol1","","",800,4000)
 	leg1.Draw()
 	
-	c.cd(2)
-	limit_graph.SetTitle("Resulting limit (if XS = .01)")
-	limit_graph.Draw("APL")
-	xs_graph.Draw("PLsame")
+	p = c.cd(2)
+	p.SetLogy()
+	h2 = ROOT.TH1F("h2","",1,lowmass,himass)
+	h2.SetMaximum(max(np.maximum(npcrosssection,min_limit))*2)
+	h2.SetMinimum(min(np.minimum(npcrosssection,min_limit))/2)
+	h2.Draw()
+	limit_graph.SetTitle("Resulting limit")
+	xs_graph.SetTitle("Resulting limit")
+	xs_graph.Draw("Lsame")
+	limit_graph.Draw("PLsame")
+	opt_limit_graph.Draw("PLsame")
 	leg2.Draw()
 	#c.SaveAs("mass_window_" + args + "_" + name + ".png")
-	c.SaveAs("plots/mass_window_opt3/mass_window_" + name + ".png")
+	norm_str = ""
+	if norm:
+		norm_str = "norm_"
+	c.SaveAs("plots/mass_window_opt3/mass_window_" + norm_str + name + ".png")
  
 #npresmin = np.array(results_min, dtype="float64")
 #npresopt = np.array(results_opt, dtype="float64")

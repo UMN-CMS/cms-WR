@@ -21,7 +21,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 	nSystematics = len(systematics)
 	ns = "  ".join([str(i) for i in range(nBGs+1)])
 	sig_name = signal_tuple[0]
-	signal_rate = "%.2g" % (signal_tuple[1])
+	signal_rate = "%.4g" % (signal_tuple[1])
 
 	bg_names = ""
 	bg_rates = ""
@@ -29,7 +29,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 	for i,(bg_name, bg_rate) in enumerate(background_tuples):
 		name_lookup[bg_name] = i+1
 		bg_names += bg_name + "  "
-		bg_rates   += "%.2g" % bg_rate + "  "
+		bg_rates   += "%.4g" % bg_rate + "  "
 	names = sig_name + "  " + bg_names
 	rates = signal_rate + '  ' + bg_rates
 	with open(outfile, "w") as out:
@@ -79,6 +79,7 @@ def getMassHisto(dirname, treename, process, binsize=100):
 #
 # @return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
 def runCombine(command):
+	try:
 		output = subprocess.check_output(command)
 		p = re.compile(r'mean   expected limit: r < ([0-9.]*) \+/- ([0-9.]*)')
 		mean,meanError = p.search(output).groups()
@@ -87,6 +88,8 @@ def runCombine(command):
 		p = re.compile(r'95% expected band : ([0-9.]*) < r < ([0-9.]*)')
 		twosig_minus,twosig_plus = p.search(output).groups()
 		return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
+	except:
+		print output
 
 #def getHists(dirname, treename, processes):
 #	 return [getMassHisto(dirname,  treename,  p) for p in processes]
