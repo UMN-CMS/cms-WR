@@ -319,7 +319,7 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
   nt.lumi = event.luminosityBlock();
   nt.event = event.id().event();
 
-  edm::Handle<pat::MuonCollection> muons;
+  edm::Handle<pat::MuonRefVector> muons;
   event.getByLabel(muons_src, muons);
   edm::Handle<edm::View<reco::GsfElectron> > electrons;
   event.getByToken(electronsMiniAODToken_,electrons);
@@ -409,7 +409,8 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 
   // Muon Mode
   if(muon_mode && !electron_mode){
-    for(auto mu : *muons){
+    for(auto muon : *muons){
+		pat::Muon mu = *muon;
       if(mu.pt() > leading_lepton_pt_cut && fabs(mu.eta()) < lepton_eta_cut && mu.isHighPtMuon(primary_vertex->at(0)) && (mu.isolationR03().sumPt/mu.pt()) < 0.1 ){
 	if(js.size()>1)
 	  if(deltaR(js[0],mu)>isolation_dR && deltaR(js[1],mu)>isolation_dR)
@@ -482,7 +483,8 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
   // Muon Electron Mode
   // Muon = leading, electron = subleading
   if(muon_mode && electron_mode){
-    for(auto mu : *muons){    
+    for(auto muon : *muons){    
+		pat::Muon mu = *muon;
       if(mu.pt() > leading_lepton_pt_cut && fabs(mu.eta()) < lepton_eta_cut && mu.isHighPtMuon(primary_vertex->at(0)) && (mu.isolationR03().sumPt/mu.pt()) < 0.1 ){
 	if(js.size()>1)
 	  if(deltaR(js[0],mu)>isolation_dR && deltaR(js[1],mu)>isolation_dR)
