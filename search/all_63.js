@@ -10,5 +10,6 @@ var searchData=
   ['crosssection',['crossSection',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#ae4116590cdcb4df8dfc4a3e85ce6fae4',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
   ['custompalette',['customPalette',['../namespacepython_1_1PlotUtils.html#a0e9b7d48b1e62ba559aa4d714df6b5ac',1,'python::PlotUtils']]],
   ['customrootstyle',['customROOTstyle',['../namespacepython_1_1PlotUtils.html#a04f29ffec216ec02322ad19b35681148',1,'python::PlotUtils']]],
+  ['cut',['cut',['../namespacepython_1_1selections__cff.html#a922c93111d254c47f65bb22f2ae5efd2',1,'python::selections_cff']]],
   ['cutefficiencyandwrandnumasses',['cutEfficiencyAndWrAndNuMasses',['../namespacepython_1_1linkGenSequencesForTwoDimLimits__cff.html#a6a3c54c5047610e1f575b0b919a30a98',1,'python::linkGenSequencesForTwoDimLimits_cff']]]
 ];

@@ -93,14 +93,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <div class="textblock"><code>#include &quot;TTree.h&quot;</code><br/>
 <code>#include &quot;CommonTools/UtilAlgos/interface/TFileService.h&quot;</code><br/>
+<code>#include &quot;DataFormats/VertexReco/interface/VertexFwd.h&quot;</code><br/>
 <code>#include &quot;DataFormats/VertexReco/interface/Vertex.h&quot;</code><br/>
+<code>#include &quot;DataFormats/EgammaCandidates/interface/ConversionFwd.h&quot;</code><br/>
+<code>#include &quot;DataFormats/EgammaCandidates/interface/Conversion.h&quot;</code><br/>
+<code>#include &quot;RecoEgamma/EgammaTools/interface/ConversionTools.h&quot;</code><br/>
 <code>#include &quot;FWCore/Framework/interface/EDAnalyzer.h&quot;</code><br/>
 <code>#include &quot;FWCore/Framework/interface/Event.h&quot;</code><br/>
 <code>#include &quot;FWCore/Framework/interface/MakerMacros.h&quot;</code><br/>
 <code>#include &quot;FWCore/ServiceRegistry/interface/Service.h&quot;</code><br/>
 <code>#include &quot;DataFormats/PatCandidates/interface/Muon.h&quot;</code><br/>
+<code>#include &quot;DataFormats/EgammaCandidates/interface/GsfElectron.h&quot;</code><br/>
 <code>#include &quot;DataFormats/PatCandidates/interface/Electron.h&quot;</code><br/>
 <code>#include &quot;DataFormats/PatCandidates/interface/Jet.h&quot;</code><br/>
+<code>#include &quot;DataFormats/PatCandidates/interface/MET.h&quot;</code><br/>
 <code>#include &quot;DataFormats/JetReco/interface/Jet.h&quot;</code><br/>
 <code>#include &quot;DataFormats/JetReco/interface/GenJetCollection.h&quot;</code><br/>
 <code>#include &quot;DataFormats/Math/interface/deltaPhi.h&quot;</code><br/>
@@ -108,6 +114,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &quot;SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h&quot;</code><br/>
 <code>#include &quot;DataFormats/Math/interface/angle.h&quot;</code><br/>
 <code>#include &quot;DataFormats/HepMCCandidate/interface/GenParticle.h&quot;</code><br/>
+<code>#include &quot;DataFormats/PatCandidates/interface/VIDCutFlowResult.h&quot;</code><br/>
+<code>#include &quot;DataFormats/Common/interface/ValueMap.h&quot;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for TTreeMaker.cc:</div>
 <div class="dyncontent">
@@ -139,7 +147,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 18 2015 14:57:57 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Jan 27 2016 14:57:58 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

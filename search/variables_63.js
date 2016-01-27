@@ -6,5 +6,6 @@ var searchData=
   ['countevtsaftercuts',['countEvtsAfterCuts',['../namespacepython_1_1linkGenSequencesForTwoDimLimits__cff.html#af64946e3606fa865266a807ae6b383b3',1,'python::linkGenSequencesForTwoDimLimits_cff']]],
   ['countevtsbeforecuts',['countEvtsBeforeCuts',['../namespacepython_1_1linkGenSequencesForTwoDimLimits__cff.html#ad6d60245ecd76d3615d8ada7bd9da100',1,'python::linkGenSequencesForTwoDimLimits_cff']]],
   ['crosssection',['crossSection',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#ae4116590cdcb4df8dfc4a3e85ce6fae4',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
+  ['cut',['cut',['../namespacepython_1_1selections__cff.html#a922c93111d254c47f65bb22f2ae5efd2',1,'python::selections_cff']]],
   ['cutefficiencyandwrandnumasses',['cutEfficiencyAndWrAndNuMasses',['../namespacepython_1_1linkGenSequencesForTwoDimLimits__cff.html#a6a3c54c5047610e1f575b0b919a30a98',1,'python::linkGenSequencesForTwoDimLimits_cff']]]
 ];

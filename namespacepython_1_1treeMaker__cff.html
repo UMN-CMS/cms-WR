@@ -94,12 +94,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:abf8ab6efefd476c0d4bae61dab1f9005"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1treeMaker__cff.html#abf8ab6efefd476c0d4bae61dab1f9005">TFileService</a> = cms.Service('TFileService', fileName = cms.string('made_ttree.root'))</td></tr>
-<tr class="separator:abf8ab6efefd476c0d4bae61dab1f9005"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f2e9cebc0fd9e5d92cb153525cf4f07"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1treeMaker__cff.html#a6f2e9cebc0fd9e5d92cb153525cf4f07">MakeTTree_Muons</a></td></tr>
-<tr class="separator:a6f2e9cebc0fd9e5d92cb153525cf4f07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95c573972094355394c62927dbf04bbf"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1treeMaker__cff.html#a95c573972094355394c62927dbf04bbf">MakeTTree_Electrons</a> = MakeTTree_Muons.clone(muon_mode = cms.bool(False))</td></tr>
+<tr class="memitem:a95c573972094355394c62927dbf04bbf"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1treeMaker__cff.html#a95c573972094355394c62927dbf04bbf">MakeTTree_Electrons</a></td></tr>
 <tr class="separator:a95c573972094355394c62927dbf04bbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0640cb0118594c6fed46c589e08a9b21"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1treeMaker__cff.html#a0640cb0118594c6fed46c589e08a9b21">MakeTTree_EleMuon</a></td></tr>
+<tr class="separator:a0640cb0118594c6fed46c589e08a9b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Variable Documentation</h2>
 <a class="anchor" id="a95c573972094355394c62927dbf04bbf"></a>
@@ -107,59 +105,33 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.treeMaker_cff.MakeTTree_Electrons = MakeTTree_Muons.clone(muon_mode = cms.bool(False))</td>
+          <td class="memname">tuple python.treeMaker_cff.MakeTTree_Electrons</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a6f2e9cebc0fd9e5d92cb153525cf4f07"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.treeMaker_cff.MakeTTree_Muons</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1treeMaker__cff.html">    1</a></span>&#160;= cms.EDAnalyzer(<span class="stringliteral">&#39;TTreeMaker&#39;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                            muons_src = cms.InputTag(<span class="stringliteral">&#39;wRsubleadingMuon&#39;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                            electrons_src = cms.InputTag(<span class="stringliteral">&#39;slimmedElectrons&#39;</span>),</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                            jets_src = cms.InputTag(<span class="stringliteral">&#39;wRlooseJet&#39;</span>),</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                            genparticles_src = cms.InputTag(<span class="stringliteral">&#39;prunedGenParticles&#39;</span>),</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                            genjets_src = cms.InputTag(<span class="stringliteral">&#39;slimmedGenJets&#39;</span>),</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                            primary_vertex_src = cms.InputTag(<span class="stringliteral">&#39;offlineSlimmedPrimaryVertices&#39;</span>),</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;                            isolation_dR = cms.double(0.0),</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;                            leading_lepton_pt_cut = cms.double(0),</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;                            lepton_eta_cut = cms.double(5),</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;                            subleading_lepton_pt_cut = cms.double(0),</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;                            leading_jet_pt_cut = cms.double(0),</div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="namespacepython_1_1treeMaker__cff.html#abf8ab6efefd476c0d4bae61dab1f9005">   13</a></span>&#160;                            jet_eta_cut = cms.double(5),</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;                            subleading_jet_pt_cut = cms.double(0),</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;                            Mlljj_cut = cms.double(0.0),</div>
-<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="namespacepython_1_1treeMaker__cff.html#a6f2e9cebc0fd9e5d92cb153525cf4f07">   16</a></span>&#160;                            Mll_cut = cms.double(0.0),</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;                            muon_mode = cms.bool(<span class="keyword">True</span>)</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;                            )</div>
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1treeMaker__cff.html">    1</a></span>&#160;= MakeTTree_Muons.clone(muon_mode = cms.bool(<span class="keyword">False</span>),</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                            electron_mode = cms.bool(<span class="keyword">True</span>))</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="abf8ab6efefd476c0d4bae61dab1f9005"></a>
+<a class="anchor" id="a0640cb0118594c6fed46c589e08a9b21"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.treeMaker_cff.TFileService = cms.Service('TFileService', fileName = cms.string('made_ttree.root'))</td>
+          <td class="memname">tuple python.treeMaker_cff.MakeTTree_EleMuon</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1treeMaker__cff.html">    1</a></span>&#160;= MakeTTree_Muons.clone(muon_mode = cms.bool(<span class="keyword">True</span>),</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                            electron_mode = cms.bool(<span class="keyword">True</span>))</div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 18 2015 14:57:57 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Jan 27 2016 14:57:59 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

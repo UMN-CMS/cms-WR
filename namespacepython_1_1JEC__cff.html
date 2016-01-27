@@ -86,56 +86,72 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">python.JEC_cff Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:acdd7a2e8ba9eed733c72ee18a3947c2c"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#acdd7a2e8ba9eed733c72ee18a3947c2c">JEC_correction_data</a></td></tr>
-<tr class="separator:acdd7a2e8ba9eed733c72ee18a3947c2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad8056d89d46c8d2c9b528993b2a1d653"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#ad8056d89d46c8d2c9b528993b2a1d653">JEC_correction_MC</a></td></tr>
-<tr class="separator:ad8056d89d46c8d2c9b528993b2a1d653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a05c466d4e952508cecfe17e93add732d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a></td></tr>
+<tr class="separator:a05c466d4e952508cecfe17e93add732d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1190c9807d6bc2a12275fec2f6e8d576"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a></td></tr>
+<tr class="separator:a1190c9807d6bc2a12275fec2f6e8d576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd4daa50496c42a385b99beca9d7b7aa"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#acd4daa50496c42a385b99beca9d7b7aa">jecSequence</a> = cms.Sequence(<a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a>)</td></tr>
+<tr class="separator:acd4daa50496c42a385b99beca9d7b7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="acdd7a2e8ba9eed733c72ee18a3947c2c"></a>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="acd4daa50496c42a385b99beca9d7b7aa"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def python.JEC_cff.JEC_correction_data </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>process</em></td><td>)</td>
-          <td></td>
+          <td class="memname">tuple python.JEC_cff.jecSequence = cms.Sequence(<a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a class="anchor" id="ad8056d89d46c8d2c9b528993b2a1d653"></a>
+<a class="anchor" id="a05c466d4e952508cecfe17e93add732d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def python.JEC_cff.JEC_correction_MC </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>process</em></td><td>)</td>
-          <td></td>
+          <td class="memname">tuple python.JEC_cff.patJetCorrFactorsReapplyJEC</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1JEC__cff.html">    1</a></span>&#160;= patJetCorrFactorsUpdated.clone(</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;    src = cms.InputTag(<span class="stringliteral">&quot;slimmedJets&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;    levels = cms.vstring(<span class="stringliteral">&#39;L1FastJet&#39;</span>, </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                         <span class="stringliteral">&#39;L2Relative&#39;</span>, </div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                         <span class="stringliteral">&#39;L3Absolute&#39;</span>),</div>
+<div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">    6</a></span>&#160;    payload = cms.string(<span class="stringliteral">&#39;AK4PFchs&#39;</span>) )</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a1190c9807d6bc2a12275fec2f6e8d576"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">tuple python.JEC_cff.patJetsReapplyJEC</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1JEC__cff.html">    1</a></span>&#160;= patJetsUpdated.clone(</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;    jetSource = cms.InputTag(<span class="stringliteral">&quot;slimmedJets&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;    jetCorrFactorsSource = cms.VInputTag(cms.InputTag(<span class="stringliteral">&quot;patJetCorrFactorsReapplyJEC&quot;</span>))</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;    )</div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 18 2015 14:57:57 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Jan 27 2016 14:57:59 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

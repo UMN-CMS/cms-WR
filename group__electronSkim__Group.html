@@ -123,13 +123,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;PATElectronRefSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                 src = cms.InputTag(<span class="stringliteral">&quot;wRIsolatedElectrons&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                 cut = cms.string( </div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;        ((<span class="stringliteral">&quot;pt&gt;%f&quot;</span>) % (leadingPt)) + </div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;        ((<span class="stringliteral">&quot;abs(eta)&lt;%f&quot;</span>) % (maxEtaLeptons))</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;        ),</div>
-<div class="line"><a name="l00007"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html#a9c102660250de04d23b89c3979295c41">    7</a></span>&#160;                                 )</div>
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;PATElectronSelector&quot;</span>,</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                 src = cms.InputTag(<span class="stringliteral">&quot;slimmedElectrons&quot;</span>), <span class="comment">#wRIsolatedElectrons&quot;),                                 cut = cms.string(         ((&quot;(pt&gt;%f) &amp;&amp; (abs(eta)&lt;%f)&quot;) % (leadingPt, maxEtaLeptons))        ),                                 )### select subleading electronwRsubleadingElectron = cms.EDFilter(&quot;PATElectronRefSelector&quot;,                                    src = cms.InputTag(&quot;slimmedElectrons&quot;), #wRIsolatedElectrons&quot;)</span></div>
 </div><!-- fragment -->
 <p>select leading electron </p>
 
@@ -156,7 +151,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 18 2015 14:57:57 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Jan 27 2016 14:57:59 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
