@@ -14,8 +14,6 @@ jetPt = 40.
 jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"
 
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
-loadHEEPIDSelector(process)
-process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 
 ############################################################ Jets
