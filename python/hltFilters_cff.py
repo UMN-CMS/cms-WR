@@ -9,20 +9,18 @@ import HLTrigger.HLTfilters.hltHighLevel_cfi
 ## Here the list of triggers:
 ##  - \b HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*  
 ##    - electron channel
-##  - \b HLT_Mu45_eta2p1_v* 
-##    - actual muon channel and emjj sideband -> to be removed?
 ##  - \b HLT_Mu50_v*'                          
-##    - [PROPOSED] new muon channel trigger
+##    - muon channel trigger
 ##  - \b HLT_Mu30_Ele30_CaloIdL_GsfTrkIdVL_v*  
-##    - [PROPOSED] emujj sideband
+##    - emujj sideband
 ##  - \b HLT_Ele30WP60_Ele8_Mass55_v*          
 ##    - electron tag&probe
 ##  - \b HLT_Ele30WP60_SC4_Mass55_v*           
 ##    -  electron tag&probe
 ##  - \b HLT_IsoMu22_v*                        
-##    - [PROPOSED] muon tag&probe
+##    - muon tag&probe
 ##  - \b HLT_IsoMu27_v*                        
-##    - [PROPOSED] muon tag&probe
+##    - muon tag&probe
 ## 
 
 wReejjHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
@@ -36,7 +34,6 @@ wReejjHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
 wRmumujjHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = [
-        'HLT_Mu45_eta2p1_v*', 
         'HLT_Mu50_v*',        ## \ingroup hlt_Group muon channel trigger
         ]
 )

@@ -1,9 +1,12 @@
 /**
 \page instructions_ Instructions
+\par Prerequisites for using GIT with github
+Please make sure you have your github account, you have properly added your private key such that you are able to use the SSH protocol
+
 Download the code:
 \verbatim
-scram project CMSSW_7_4_0_pre9
-cd CMSSW_7_4_0_pre9/src/
+scram project CMSSW_7_4_15_patch1
+cd CMSSW_7_4_15_patch1/src/
 cmsenv 
 git cms-init
 mkdir ExoAnalysis/

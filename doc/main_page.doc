@@ -52,4 +52,26 @@ The twiki page is:
 
 74X_mcRun2_asymptotic_v4
 
+
+
+
+\par Running the analysis
+the cfg to be used is 
+\verbatim 
+test/runAnalysis_cfg.py
+\endverbatim
+
+There are three paths defined:
+ - SignalRegion
+ - FlavourSideband
+ - LowDiLeptonSideband
+
+A simple blinding filter is used if option isMC is set to 0 (so for data). This can be improved
+
+\par selection ID scale factors
+
+Electrons: https://cds.cern.ch/record/2118397/export/hx?ln=en
+
+Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
+
 */
