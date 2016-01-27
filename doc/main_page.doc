@@ -1,5 +1,6 @@
 /**
 \mainpage 
+\tableofcontents
 
 Download instructions: \ref instructions_
 
@@ -17,7 +18,7 @@ The list of datasets is written in
 configs/datasets.dat
 \endverbatim
 
-\ref triggers
+\ref triggers List of triggers used to filter events at preselection level
 
 \par How to estimate cross sections
 Once the dataset is entered in the datasets.dat config file putting dashes for cross section, cross section uncetainty, then you can use the script

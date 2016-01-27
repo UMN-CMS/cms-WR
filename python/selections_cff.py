@@ -13,6 +13,9 @@ jetPt = 40.
 ### need the reference for this selection, with link to the presentation and twiki page
 jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"
 
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 
 ############################################################ Jets
@@ -44,7 +47,7 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-jetSelectionSeq = cms.Sequence(wRJets * wRlooseJet * wRdiJetCandidate)
+jetSelectionSeq = cms.Sequence(wRJets * wRlooseJet ) #* wRdiJetCandidate)
 
 ############################################################ Electrons
 
@@ -102,7 +105,9 @@ tunePIsolatedMuons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    maxDeltaR = cms.double(0.04),
                                    )
 
+### add here the rochester corrections
 
+### add here the trigger matching
 
 ### select leading muon \ingroup muonSkim_Group
 wRleadingMuon = cms.EDFilter("PATMuonRefSelector",

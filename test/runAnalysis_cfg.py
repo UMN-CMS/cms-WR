@@ -30,6 +30,7 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
+### \todo set the global tag in a separate file such that it will be common to all cfg files
 if(options.isMC==0):
     process.GlobalTag.globaltag = '74X_dataRun2_v5'
 else:
@@ -43,7 +44,7 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(
 #    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True),
-    SkipEvent = cms.untracked.vstring('ProductNotFound'),
+#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 process.source = cms.Source("PoolSource",
@@ -51,19 +52,18 @@ process.source = cms.Source("PoolSource",
                             secondaryFileNames = cms.untracked.vstring(options.secondaryFiles)
 )
 
-process.options = cms.untracked.PSet(
-#    allowUnscheduled = cms.untracked.bool(False),
-    wantSummary = cms.untracked.bool(True),
-)
-
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 
+process.TFileService = cms.Service('TFileService', fileName = cms.string('ttree.root'))
+
+
 ############################################################ OUTPUT MODULES
+# this module defines the event content of our microAOD
 process.load('ExoAnalysis.cmsWR.microAOD_Output_cff')
 
 SelectEventsPSet = cms.untracked.PSet(
-    SelectEvents = cms.vstring( [ 'skimPreselected' ] )
+    SelectEvents = cms.vstring( [ 'FlavourSideband', 'SignalRegion', 'LowDiLeptonSideband' ] )
     )
 
 
@@ -81,25 +81,24 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 		fileName = cms.untracked.string(options.output),
 		outputCommands = process.MICROAODSIMEventContent.outputCommands + [ 'keep *_*_*_SELECTION' ],
 		overrideInputFileSplitLevels = cms.untracked.bool(True),
-		
+		SelectEvents = SelectEventsPSet
 		)
 
 
 # here the full set of sequences and hlt paths used to make the first step
 process.load('ExoAnalysis.cmsWR.selections_cff')
-from ExoAnalysis.cmsWR.JEC_cff import *
-
-# Path and EndPath definitions
-#if(options.isMC==0):
-#    JEC_correction_data(process)
+from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
+process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 
 process.blindSeq = cms.Sequence()
-
+process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.fullSeq = cms.Sequence(process.jecSequence * process.selectionSequence * process.filterSequence)
 
-process.FlavourSideband = cms.Path(process.fullSeq * process.flavourSidebandFilter)
-process.LowDiLeptonSideband = cms.Path(process.fullSeq * process.lowDiLeptonSidebandFilter)
-process.SignalRegion    = cms.Path(process.fullSeq * process.blindSeq * process.signalRegionFilter)
+
+############################################################ PATHs definition
+process.SignalRegion    = cms.Path(process.fullSeq * process.blindSeq * process.signalRegionFilter * process.dumperSeq)
+process.FlavourSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.dumperSeq)
+process.LowDiLeptonSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.dumperSeq)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -113,5 +112,5 @@ if (options.isMC==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.microAODoutput_step)
 

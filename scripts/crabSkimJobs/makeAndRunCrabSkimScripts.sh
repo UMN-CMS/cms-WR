@@ -13,7 +13,7 @@ source configs/2015-v1.conf
 crabFile=tmp/crab.py
 
 datasets=(`cat $datasetFile | grep -v '#' | awk '{print $2}'`)
-datasetNames=(`cat $datasetFile | grep -v '#' | awk '(NF==2 || NF>=4){print $1}'`)
+datasetNames=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
 IFS=$'\n'
 
 if [ ! -d "tmp/" ];then mkdir tmp/; fi
@@ -87,7 +87,7 @@ config.Data.ignoreLocality = True
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True 
 #config.Data.publishDataName = 'realData_FNLST_13TeV_CHNL_UNIQUE'
-config.Data.outputDatasetTag =  config.General.requestName
+config.Data.outputDatasetTag =  config.General.requestName + '_SHv2'
 config.Data.lumiMask = "$jsonFile"
 
 

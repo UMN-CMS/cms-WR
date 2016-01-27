@@ -2,8 +2,8 @@
 //#define ROO_CRUIJFF
 
 //#ifndef __CINT__
-#include "RooAbsPdf.h"
-#include "RooRealProxy.h"
+#include <RooAbsPdf.h>
+#include <RooRealProxy.h>
 //#endif
 
 /**/
