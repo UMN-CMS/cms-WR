@@ -1,0 +1,38 @@
+this collection of code is used to generate WR->ENu->EEQQ events at GEN level, and subject the generated events to
+a sequence of cuts which are representative of the RECO level eejj signal region (M_LL>200, M_LLJJ>600) cuts.  Running
+this code will create two sets of output files: one set of GEN events in .root files, and one set of TTrees in .root
+files representing the GEN events which have been subjected to the offline cuts.  This code collection is designed
+to run on the FNAL LPC cluster with condor, and store the two sets of output files in FNAL /eos/uscms/store/user
+space.
+
+This code will generate a fixed number of GEN events at many points in a 2D (MWR, MNu) space.  The number of events
+generated at each point, the distance (in GeV) between neighboring points in the MWR or MNu directions, the minimum
+MNu and maximum MWR values, path names to the directories which will store the output TTree and GEN event files, and
+the absolute path name of the directory which contains the job run .csh scripts are all defined in
+makeGenRunOfflineAnalysisScripts.sh.  The generation can be switched to muon flavor from electron flavor by changing
+the following line in WR_M-UNDEF_ToLNu_M-UNDEF_GEN.py
+
+            '9900024:onIfAny = 11 9900012'
+to
+            '9900024:onIfAny = 13 9900014'
+
+the offline cuts will require the muons to have |eta| < 2.5 (instead of 2.4), but the effect of this on the events
+passing the full selection will be negligible.  The entire generation and offline selection sequence will work as
+it should whether the WR decay products are electrons or muons.
+
+To run this code in your own area you must update several parameters in the makeGenRunOfflineAnalysisScripts.sh file.
+The absolute path names to the output TTree and GEN event directories must be changed, as does the path name to the
+directory in which the job run .csh files are stored.  The parameter named 'increment' controls the distance between
+neighboring points in the (MWR, MNu) plane.  50 (GeV) is the default spacing.  The other numerical parameters control
+the min MNu value, the min and max MWR value, and the number of events to generate at each (MWR, MNu) point.
+
+
+Once the GEN jobs finish, the macro calculateGenWrScaleFactors.C can be used.  This macro calculates the efficiency ratio
+as a function of MNu and MWR, saves this information to a txt file, and plots the same information in a 2D color plot.
+Once the jobs finish, this macro can be executed by calling
+
+root -l calculateGenWrScaleFactors.C
+
+the name of the txt file and 2D plot created by this macro can be modified within the macro.
+
+
