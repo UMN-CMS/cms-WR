@@ -4,6 +4,12 @@ import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('standard')
 
+options.register('datasetTag',
+		"",
+		VarParsing.VarParsing.multiplicity.singleton,
+		VarParsing.VarParsing.varType.string,
+		"unique dataset identifier")
+
 options.register('GT',
 		"",
 		VarParsing.VarParsing.multiplicity.singleton,
@@ -12,6 +18,7 @@ options.register('GT',
 
 options.maxEvents = -1
 options.GT = '74X_mcRun2_asymptotic_v2'
+options.datasetTag = ''
 options.parseArguments()
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v1', '') for Run2015C data
