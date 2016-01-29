@@ -32,13 +32,16 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 
-#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
 
-typedef edm::ValueMap<float> JECUnc_Map;
+typedef double JECUnc_t;
+typedef edm::ValueMap<JECUnc_t> JECUnc_Map;
 
 //
 // class declaration
@@ -52,35 +55,23 @@ class produceJECUnc : public edm::stream::EDProducer<> {
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
    private:
-      virtual void beginStream(edm::StreamID) override;
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
-      virtual void endStream() override;
-
-      //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-      //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
       // ----------member data ---------------------------
       const edm::InputTag src;        ///<input particle objects
+		const std::string jetUncOutput;
+		const std::string jetType;
 };
-
-//
-// constants, enums and typedefs
-//
-
-
-//
-// static data member definitions
-//
 
 //
 // constructors and destructor
 //
 produceJECUnc::produceJECUnc(const edm::ParameterSet& iConfig)
-        : src(iConfig.getParameter<edm::InputTag>("src"))
+   : src(iConfig.getParameter<edm::InputTag>("src")),
+   jetUncOutput(iConfig.getParameter<std::string>("jetUncOutput")),
+   jetType(iConfig.getParameter<std::string>("jetType"))
 {
-        produces<JECUnc_Map>("JECUnc");
+        produces<JECUnc_Map>(jetUncOutput);
 }
 
 
@@ -103,72 +94,37 @@ produceJECUnc::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
 	ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-	iSetup.get<JetCorrectionsRecord>().get("AK5PF",JetCorParColl); 
+	iSetup.get<JetCorrectionsRecord>().get(jetType,JetCorParColl); 
 	JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
 	JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
 
-	float eta = 0.0;
-	float ptCor = 80.0;
-	jecUnc->setJetEta(eta);
-	jecUnc->setJetPt(ptCor); // here you must use the CORRECTED jet pt
-	double unc = jecUnc->getUncertainty(true);
-	double ptCor_shifted = ptCor*(1+unc);
+   edm::Handle<pat::JetCollection> jets;
+   iEvent.getByLabel(src, jets);
+	std::vector<JECUnc_t> JECUncertainties;
+   for(auto jet : *jets) {
+		jecUnc->setJetEta(jet.eta());
+		jecUnc->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+		double unc = jecUnc->getUncertainty(true);
+		JECUncertainties.push_back(unc);
+		
+   }
+   std::auto_ptr<JECUnc_Map> JEC_uncertainty_Map(new JECUnc_Map());
+   JECUnc_Map::Filler JEC_uncertainty_filler(*JEC_uncertainty_Map);
+   JEC_uncertainty_filler.insert(jets,JECUncertainties.begin(),JECUncertainties.end());
 
-	std::cout << "eta: " << eta << " pt: " << ptCor << " unc: " << unc << " cor: " << ptCor_shifted << std::endl;
-
+   iEvent.put(JEC_uncertainty_Map, jetUncOutput);
  
 }
 
-// ------------ method called once each stream before processing any runs, lumis or events  ------------
-void
-produceJECUnc::beginStream(edm::StreamID)
-{
-}
-
-// ------------ method called once each stream after processing all runs, lumis and events  ------------
-void
-produceJECUnc::endStream() {
-}
-
-// ------------ method called when starting to processes a run  ------------
-/*
-void
-produceJECUnc::beginRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when ending the processing of a run  ------------
-/*
-void
-produceJECUnc::endRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when starting to processes a luminosity block  ------------
-/*
-void
-produceJECUnc::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when ending the processing of a luminosity block  ------------
-/*
-void
-produceJECUnc::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
- 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
 produceJECUnc::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
+  desc.add<edm::InputTag>("src");
+  desc.add<std::string>("jetUncOutput", "JECUncertainty");
+  desc.add<std::string>("jetType", "AK4PF");
   descriptions.addDefault(desc);
 }
 
