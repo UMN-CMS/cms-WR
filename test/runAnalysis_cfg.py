@@ -89,16 +89,20 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 process.load('ExoAnalysis.cmsWR.selections_cff')
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
+process.load('ExoAnalysis.cmsWR.minitree_cff')
+
+process.MiniTTree.is_mc = cms.bool(options.isMC==1)
 
 process.blindSeq = cms.Sequence()
-process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
+#process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
+process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 process.fullSeq = cms.Sequence(process.jecSequence * process.selectionSequence * process.filterSequence)
 
 
 ############################################################ PATHs definition
-process.SignalRegion    = cms.Path(process.fullSeq * process.blindSeq * process.signalRegionFilter * process.dumperSeq)
-process.FlavourSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.dumperSeq)
-process.LowDiLeptonSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.dumperSeq)
+process.SignalRegion    = cms.Path(process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTTreeSeq)
+process.FlavourSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
+process.LowDiLeptonSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 

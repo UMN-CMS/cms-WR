@@ -12,6 +12,8 @@ jetPt = 40.
 
 ### need the reference for this selection, with link to the presentation and twiki page
 jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"
+muonIDIso=" isolationR03().sumPt/pt < 0.1"
+#"isHighPtMuon(primary_vertex(0)) && isolationR03().sumPt/pt()) < 0.1"
 
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 
@@ -25,19 +27,19 @@ wRJets = cms.EDFilter("PATJetSelector",
                       cut = cms.string( ("pt>%f") % (jetPt)),
 		)
 
-### select loose-ID jets
-wRlooseJet = cms.EDFilter("PATJetSelector",
+### select tight-ID jets
+wRtightJets = cms.EDFilter("PATJetSelector",
                           src = cms.InputTag("wRJets"),
                           cut = cms.string(jetID),
                           )
 
 wRJetFilter = cms.EDFilter("CandViewCountFilter",
-                                 src = cms.InputTag("wRJets"),
+                                 src = cms.InputTag("wRtightJets"),
                                  minNumber = cms.uint32(2)
                              )
 
 wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                  decay = cms.string("slimmedJets slimmedJets"),
+                                  decay = cms.string("wRtightJets wRtightJets"),
                                   #role = cms.string("leading subleading"),
                                   checkCharge = cms.bool(False),
                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -45,7 +47,7 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-jetSelectionSeq = cms.Sequence(wRJets * wRlooseJet ) #* wRdiJetCandidate)
+jetSelectionSeq = cms.Sequence(wRJets * wRtightJets ) #* wRdiJetCandidate)
 
 ############################################################ Electrons
 
@@ -66,7 +68,7 @@ wRleadingElectron = cms.EDFilter("PATElectronSelector",
                                  )
 
 ### select subleading electron
-wRsubleadingElectron = cms.EDFilter("PATElectronRefSelector",
+wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
                                     src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
                                     cut = cms.string( 
         (("(pt>%f) && (abs(eta)<%f)") % (subleadingPt, maxEtaLeptons))
@@ -105,17 +107,23 @@ tunePIsolatedMuons = cms.EDFilter( "DeltaROverlapExclusionSelector",
 
 ### add here the rochester corrections
 
+### muon ID and isolation
+tunePIDIsoMuons = cms.EDFilter("PATMuonSelector",
+                               src = cms.InputTag("tunePMuons"),
+                               cut = cms.string(muonIDIso),
+                               )
+
 ### add here the trigger matching
 
 ### select leading muon \ingroup muonSkim_Group
-wRleadingMuon = cms.EDFilter("PATMuonRefSelector",
-                             src = cms.InputTag("slimmedMuons"), #tunePIsolatedMuons"),
+wRleadingMuon = cms.EDFilter("PATMuonSelector",
+                             src = cms.InputTag("tunePIDIsoMuons"), #tunePIsolatedMuons"),
                              cut = wRleadingElectron.cut,
                          )
 
 ### select subleading muon
-wRsubleadingMuon = cms.EDFilter("PATMuonRefSelector",
-                                src = cms.InputTag("slimmedMuons"), #tunePIsolatedMuons"),
+wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
+                                src = cms.InputTag("tunePIDIsoMuons"), #tunePIsolatedMuons"),
                                 cut = wRsubleadingElectron.cut,
                                 )
 
@@ -138,7 +146,7 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-muonSelectionSeq = cms.Sequence(tunePMuons * tunePIsolatedMuons * wRleadingMuon * wRsubleadingMuon * wRdiMuonCandidate)
+muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * wRleadingMuon * wRsubleadingMuon * wRdiMuonCandidate)
 ############################################################ E-Mu candidate
 #mixed flavour candidates
 wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
