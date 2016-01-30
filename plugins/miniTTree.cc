@@ -26,6 +26,9 @@ private:
   edm::EDGetToken electronsMiniAODToken_;
   edm::EDGetToken muonsMiniAODToken_;
   edm::EDGetToken jetsMiniAODToken_;
+  edm::EDGetToken pileUpInfoToken_;
+  edm::EDGetToken primaryVertexToken_;
+  edm::EDGetToken evinfoToken_;
 
   const std::string jec_unc_src;
 
@@ -75,6 +78,9 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg)
   electronsMiniAODToken_   = mayConsume<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
   muonsMiniAODToken_ = mayConsume<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
   jetsMiniAODToken_ = mayConsume<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
+  pileUpInfoToken_ = mayConsume<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
+  primaryVertexToken_ = mayConsume<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
+  evinfoToken_ = mayConsume<GenEventInfoProduct>(edm::InputTag("generator"));
 
   edm::Service<TFileService> fs;
   tree = fs->make<TTree>("t", "");
@@ -115,7 +121,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
   edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
 
   edm::Handle<edm::View<reco::Vertex> > primary_vertex;
-  event.getByLabel("offlineSlimmedPrimaryVertices", primary_vertex);
+  event.getByToken(primaryVertexToken_,primary_vertex);
 
   if(primary_vertex->size() > 0) {
     for(auto pv: *primary_vertex)
@@ -124,9 +130,9 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
 
   if(!event.isRealData()) 
     {
-      event.getByLabel("generator", evinfo);
+      event.getByToken(evinfoToken_, evinfo);
       nt.weight = evinfo->weight();
-      event.getByLabel("slimmedAddPileupInfo", PU_Info);
+      event.getByToken(pileUpInfoToken_, PU_Info);
       for(auto p: *PU_Info){
 	int BX = p.getBunchCrossing();
 	if(BX==0)
