@@ -92,10 +92,11 @@ process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.load('ExoAnalysis.cmsWR.minitree_cff')
 
 process.MiniTTree.is_mc = cms.bool(options.isMC==1)
+process.JECUnc.src = cms.InputTag('wRtightJets')
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
-process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
+process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
 process.fullSeq = cms.Sequence(process.jecSequence * process.selectionSequence * process.filterSequence)
 
 

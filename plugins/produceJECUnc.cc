@@ -112,6 +112,7 @@ produceJECUnc::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    std::auto_ptr<JECUnc_Map> JEC_uncertainty_Map(new JECUnc_Map());
    JECUnc_Map::Filler JEC_uncertainty_filler(*JEC_uncertainty_Map);
    JEC_uncertainty_filler.insert(jets,JECUncertainties.begin(),JECUncertainties.end());
+   JEC_uncertainty_filler.fill();
 
    iEvent.put(JEC_uncertainty_Map, jetUncOutput);
  
