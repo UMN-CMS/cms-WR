@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 MakeTTree_Muons = cms.EDAnalyzer('TTreeMaker',
                             muons_src = cms.InputTag('wRsubleadingMuon'),
                             electrons_src = cms.InputTag('slimmedElectrons'),
-                            jets_src = cms.InputTag('wRlooseJet'),
+                            jets_src = cms.InputTag('wRtightJets'),
                             met_src = cms.InputTag('slimmedMETs'),
                             genparticles_src = cms.InputTag('prunedGenParticles'),
                             genjets_src = cms.InputTag('slimmedGenJets'),

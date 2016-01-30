@@ -13,6 +13,9 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
+typedef double JECUnc_t;
+typedef edm::ValueMap<JECUnc_t> JECUnc_Map;
+
 class miniTTree : public edm::EDAnalyzer {
 public:
   explicit miniTTree(const edm::ParameterSet&);
@@ -23,6 +26,8 @@ private:
   edm::EDGetToken electronsMiniAODToken_;
   edm::EDGetToken muonsMiniAODToken_;
   edm::EDGetToken jetsMiniAODToken_;
+
+  const std::string jec_unc_src;
 
   const bool is_mc;
 
@@ -66,7 +71,7 @@ private:
 };
 
 miniTTree::miniTTree(const edm::ParameterSet& cfg)
-  : 
+  : jec_unc_src(cfg.getParameter<std::string>("jec_unc_src")),
     is_mc(cfg.getParameter<bool>("is_mc"))
 {
   electronsMiniAODToken_   = mayConsume<edm::View<reco::GsfElectron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
@@ -106,6 +111,9 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
   event.getByToken(jetsMiniAODToken_,jets);
   edm::Handle<GenEventInfoProduct> evinfo;
 
+  edm::Handle< edm::ValueMap<double> > jec_unc;
+  event.getByLabel(jec_unc_src, "JECUncertainty", jec_unc);
+
   if(is_mc) 
     {
       event.getByLabel("generator", evinfo);
@@ -133,7 +141,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     TLorentzVector p4;
     p4.SetPtEtaPhiM(jet->pt(),jet->eta(),jet->phi(),jet->mass());
     nt.jets_p4.push_back(p4);
-    nt.jet_uncertainty.push_back(1.0);
+    nt.jet_uncertainty.push_back((*jec_unc)[jet]);
   }
 
 

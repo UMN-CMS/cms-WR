@@ -22,4 +22,6 @@
 <use name="PhysicsTools/SelectorUtils"/>
 <use name="DataFormats/VertexReco" />
 <use name="RecoEgamma/EgammaTools" />
+<use name="CondFormats/JetMETObjects" />
+<use name="JetMETCorrections/Objects" />
 <flags EDM_PLUGIN="1"/>

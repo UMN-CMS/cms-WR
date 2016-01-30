@@ -1,7 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-
-    
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
 patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
     src = cms.InputTag("slimmedJets"),
@@ -17,6 +15,12 @@ patJetsReapplyJEC = patJetsUpdated.clone(
     jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
     )
 
+
+JECUnc = cms.EDProducer('produceJECUnc',
+		src = cms.InputTag("patJetsReapplyJEC"),
+		jetUncOutput = cms.string("JECUncertainty"),
+		jetType = cms.string("AK4PF"),
+		)
 
 #jecDataOnly = cms.Sequence(jec * es_prefer_jec)
 
