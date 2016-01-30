@@ -3,9 +3,14 @@ import FWCore.ParameterSet.Config as cms
 ### \todo add HEEP ID for electrons
 ### \todo add muon ID
 ### \todo check composite candidate cut string for pt ordering: pt_0 >= pt_1
+### \todo make sure that the miniTree is using objects with looser selection
+
+
+###
 
 leadingPt=60.
 subleadingPt=50.
+miniTreeLeptonPt=40.
 maxEtaLeptons=2.4
 jetPt = 40.
 
@@ -72,6 +77,13 @@ wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
                                     src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
                                     cut = cms.string( 
         (("(pt>%f) && (abs(eta)<%f)") % (subleadingPt, maxEtaLeptons))
+        ),
+                                    )
+
+wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
+                                    src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
+                                    cut = cms.string( 
+        (("(pt>%f) && (abs(eta)<%f)") % (miniTreeLeptonPt, maxEtaLeptons))
         ),
                                     )
 
