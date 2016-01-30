@@ -28,40 +28,6 @@ private:
 
   const std::string jec_unc_src;
 
-  struct tree_t {
-    unsigned run;
-    unsigned lumi;
-    unsigned long long event;
-
-    std::vector<TLorentzVector> electrons_p4;
-    std::vector<TLorentzVector> muons_p4;
-    std::vector<TLorentzVector> jets_p4;
-    
-    std::vector<float> jet_uncertainty;
-    std::vector<float> electron_scale;
-    std::vector<float> electron_smearing;
-
-    float PU;
-    float weight;
-        
-    tree_t() { clear(); }
-
-    void clear() {
-      run = lumi = event = 0;
-    
-      electrons_p4.clear();
-      muons_p4.clear();
-      jets_p4.clear();
-
-      jet_uncertainty.clear();
-      electron_scale.clear();
-      electron_smearing.clear();
-
-      PU = -999.;
-      weight = 0.0;
-      
-    }
-  };
 
   TTree* tree;
   tree_t nt;
@@ -76,6 +42,12 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg)
 
   edm::Service<TFileService> fs;
   tree = fs->make<TTree>("t", "");
+
+  miniTreeEvent myEvent;
+  myEvent.SetBranches(tree);
+  myEvent.SetBranchAddresses(tree);
+
+
   tree->Branch("run", &nt.run);
   tree->Branch("lumi", &nt.lumi);
   tree->Branch("event", &nt.event);
