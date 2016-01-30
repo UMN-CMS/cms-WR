@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -98,7 +98,9 @@ Variables</h2></td></tr>
 <tr class="separator:a05c466d4e952508cecfe17e93add732d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1190c9807d6bc2a12275fec2f6e8d576"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a></td></tr>
 <tr class="separator:a1190c9807d6bc2a12275fec2f6e8d576"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd4daa50496c42a385b99beca9d7b7aa"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#acd4daa50496c42a385b99beca9d7b7aa">jecSequence</a> = cms.Sequence(<a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a>)</td></tr>
+<tr class="memitem:a217a92b231f5afda80f5f92f3e86c807"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#a217a92b231f5afda80f5f92f3e86c807">JECUnc</a></td></tr>
+<tr class="separator:a217a92b231f5afda80f5f92f3e86c807"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd4daa50496c42a385b99beca9d7b7aa"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1JEC__cff.html#acd4daa50496c42a385b99beca9d7b7aa">jecSequence</a> = cms.Sequence(<a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a217a92b231f5afda80f5f92f3e86c807">JECUnc</a>)</td></tr>
 <tr class="separator:acd4daa50496c42a385b99beca9d7b7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Variable Documentation</h2>
@@ -107,11 +109,28 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.JEC_cff.jecSequence = cms.Sequence(<a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a>)</td>
+          <td class="memname">tuple python.JEC_cff.jecSequence = cms.Sequence(<a class="el" href="namespacepython_1_1JEC__cff.html#a05c466d4e952508cecfe17e93add732d">patJetCorrFactorsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a1190c9807d6bc2a12275fec2f6e8d576">patJetsReapplyJEC</a> * <a class="el" href="namespacepython_1_1JEC__cff.html#a217a92b231f5afda80f5f92f3e86c807">JECUnc</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+</div>
+</div>
+<a class="anchor" id="a217a92b231f5afda80f5f92f3e86c807"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">tuple python.JEC_cff.JECUnc</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1JEC__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&#39;produceJECUnc&#39;</span>,</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        src = cms.InputTag(<span class="stringliteral">&quot;patJetsReapplyJEC&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        jetUncOutput = cms.string(<span class="stringliteral">&quot;JECUncertainty&quot;</span>),</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;        jetType = cms.string(<span class="stringliteral">&quot;AK4PF&quot;</span>),</div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;        )</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a class="anchor" id="a05c466d4e952508cecfe17e93add732d"></a>
@@ -151,7 +170,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jan 27 2016 14:57:59 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jan 30 2016 12:52:07 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

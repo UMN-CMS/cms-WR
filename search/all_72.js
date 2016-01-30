@@ -21,5 +21,8 @@ var searchData=
   ['recosidebanddileptoncandidatefilter',['recoSidebandDiLeptonCandidateFilter',['../namespacepython_1_1recoElectronChannelSidebandUnmatchedModules__cff.html#aedcec637dbd7300d2748d81bf6d59b1d',1,'python::recoElectronChannelSidebandUnmatchedModules_cff']]],
   ['requiregenmatchedhighptele',['requireGenMatchedHighPtEle',['../namespacepython_1_1genElectronChannelModules__cff.html#af28290924cbfa3cbf868e09aaefcd338',1,'python::genElectronChannelModules_cff']]],
   ['requiregenmatchedhighptelefilter',['requireGenMatchedHighPtEleFilter',['../namespacepython_1_1genElectronChannelModules__cff.html#a5b98d48d4bf55c8f6cc0e936c2a07343',1,'python::genElectronChannelModules_cff']]],
-  ['requiregenmatchedhighpteleseq',['requireGenMatchedHighPtEleSeq',['../namespacepython_1_1genElectronChannelModules__cff.html#a09e21e90cd19b1e6761a9d39c8d948f5',1,'python::genElectronChannelModules_cff']]]
+  ['requiregenmatchedhighpteleseq',['requireGenMatchedHighPtEleSeq',['../namespacepython_1_1genElectronChannelModules__cff.html#a09e21e90cd19b1e6761a9d39c8d948f5',1,'python::genElectronChannelModules_cff']]],
+  ['results',['results',['../namespacepython_1_1produceIdIsoSF__cff.html#a449537b1671d232d4a7efeeea48555f4',1,'python::produceIdIsoSF_cff']]],
+  ['rochcor2015_2ecc',['rochcor2015.cc',['../rochcor2015_8cc.html',1,'']]],
+  ['rochcor2015_5fcxx',['rochcor2015_cxx',['../rochcor2015_8cc.html#a230134da3269d85fdc05b9bdc9a9a824',1,'rochcor2015.cc']]]
 ];
