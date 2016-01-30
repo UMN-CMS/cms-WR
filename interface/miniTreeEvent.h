@@ -11,7 +11,8 @@ class miniTreeEvent{
     std::vector<float> electron_scale;
     std::vector<float> electron_smearing;
 
-    float PU;
+    float nPU;
+	float nPV;
     float weight;
         
     miniTreeEvent(void) { clear(); };
