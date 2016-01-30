@@ -18,8 +18,9 @@ class miniTreeEvent{
   Int_t nPU;
   Int_t nPV;
   Float_t weight;
+  
+  miniTreeEvent(void) { clear(); };
 
-  miniTreeEvent(void){ clear(); };
   void clear();
   void SetBranches(TTree* tree);
   void SetBranchAddresses(TTree* tree, miniTreeEvent& event);
