@@ -1,5 +1,5 @@
 
-#include "../interface/RooCruijff.hh"
+#include "ExoAnalysis/cmsWR/interface/RooCruijff.h"
 
 //ClassImp(RooCruijff)
 

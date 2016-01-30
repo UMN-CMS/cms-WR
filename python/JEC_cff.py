@@ -17,7 +17,12 @@ patJetsReapplyJEC = patJetsUpdated.clone(
     jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
     )
 
+JECUnc = cms.EDProducer('produceJECUnc',
+		src = cms.InputTag("patJetsReapplyJEC"),
+		jetUncOutput = cms.string("JECUncertainty"),
+		jetType = cms.string("AK4PF"),
+		)
 
 #jecDataOnly = cms.Sequence(jec * es_prefer_jec)
 
-jecSequence = cms.Sequence(patJetCorrFactorsReapplyJEC * patJetsReapplyJEC)
+jecSequence = cms.Sequence(patJetCorrFactorsReapplyJEC * patJetsReapplyJEC * JECUnc)
