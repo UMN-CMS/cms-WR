@@ -128,12 +128,14 @@ git commit -m "new point in the history, this is a comment to make clear which a
 ...
 git add files_you_have_worked_on.cc
 git commit -m "another commit"
+# to make sure what you did works
+scram b -j16 &amp;&amp; cmsRun test/runAnalysis_cfg.py test=3
 git push origin myWorkingBranch:myWorkingBranch
 git checkout shervinWorking
 </pre> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 14:42:21 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jan 30 2016 14:43:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
