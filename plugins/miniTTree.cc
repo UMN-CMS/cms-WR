@@ -6,7 +6,6 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/JetReco/interface/Jet.h"
@@ -28,8 +27,6 @@ private:
   edm::EDGetToken jetsMiniAODToken_;
 
   const std::string jec_unc_src;
-
-  const bool is_mc;
 
   struct tree_t {
     unsigned run;
@@ -71,10 +68,9 @@ private:
 };
 
 miniTTree::miniTTree(const edm::ParameterSet& cfg)
-  : jec_unc_src(cfg.getParameter<std::string>("jec_unc_src")),
-    is_mc(cfg.getParameter<bool>("is_mc"))
+  : jec_unc_src(cfg.getParameter<std::string>("jec_unc_src"))
 {
-  electronsMiniAODToken_   = mayConsume<edm::View<reco::GsfElectron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
+  electronsMiniAODToken_   = mayConsume<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
   muonsMiniAODToken_ = mayConsume<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
   jetsMiniAODToken_ = mayConsume<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
 
@@ -103,7 +99,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
   nt.lumi = event.luminosityBlock();
   nt.event = event.id().event();
 
-  edm::Handle<edm::View<reco::GsfElectron> > electrons;
+  edm::Handle<edm::View<pat::Electron> > electrons;
   event.getByToken(electronsMiniAODToken_,electrons);
   edm::Handle<edm::View<pat::Muon> > muons;
   event.getByToken(muonsMiniAODToken_,muons);
@@ -114,7 +110,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
   edm::Handle< edm::ValueMap<double> > jec_unc;
   event.getByLabel(jec_unc_src, "JECUncertainty", jec_unc);
 
-  if(is_mc) 
+  if(!event.isRealData()) 
     {
       event.getByLabel("generator", evinfo);
       nt.weight = evinfo->weight();
