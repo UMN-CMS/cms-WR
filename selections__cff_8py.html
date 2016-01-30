@@ -115,16 +115,18 @@ Variables</h2></td></tr>
 <tr class="separator:ace3340b57135cae7dc0606c6acfb7327"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad7d2aca7256a2a33d1072998de8d0d7"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aad7d2aca7256a2a33d1072998de8d0d7">python.selections_cff.muonIDIso</a> = &quot; isolationR03().sumPt/pt &lt; 0.1&quot;</td></tr>
 <tr class="separator:aad7d2aca7256a2a33d1072998de8d0d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a585f4a5175aaf2db9b3c289b01fe6ba0"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a585f4a5175aaf2db9b3c289b01fe6ba0">python.selections_cff.wRJets</a></td></tr>
-<tr class="separator:a585f4a5175aaf2db9b3c289b01fe6ba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9dec4201ace5486ad62041e7c931d6f8"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9dec4201ace5486ad62041e7c931d6f8">python.selections_cff.wRtightJets</a></td></tr>
 <tr class="memdesc:a9dec4201ace5486ad62041e7c931d6f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">select tight-ID jets  <a href="#a9dec4201ace5486ad62041e7c931d6f8">More...</a><br/></td></tr>
 <tr class="separator:a9dec4201ace5486ad62041e7c931d6f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a585f4a5175aaf2db9b3c289b01fe6ba0"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a585f4a5175aaf2db9b3c289b01fe6ba0">python.selections_cff.wRJets</a></td></tr>
+<tr class="separator:a585f4a5175aaf2db9b3c289b01fe6ba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01433cd6b9b466a42e54ab4007892422"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a01433cd6b9b466a42e54ab4007892422">python.selections_cff.wRJECUncert</a></td></tr>
+<tr class="separator:a01433cd6b9b466a42e54ab4007892422"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35778c78956ad95a6f714866898ad9ae"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a35778c78956ad95a6f714866898ad9ae">python.selections_cff.wRJetFilter</a></td></tr>
 <tr class="separator:a35778c78956ad95a6f714866898ad9ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acda2e72eee29c61dc5c60b8f47059194"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#acda2e72eee29c61dc5c60b8f47059194">python.selections_cff.wRdiJetCandidate</a></td></tr>
 <tr class="separator:acda2e72eee29c61dc5c60b8f47059194"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adbc62a1533f1f5a4d70d6f818b5bc411"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#adbc62a1533f1f5a4d70d6f818b5bc411">python.selections_cff.jetSelectionSeq</a> = cms.Sequence(wRJets * wRtightJets )</td></tr>
+<tr class="memitem:adbc62a1533f1f5a4d70d6f818b5bc411"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#adbc62a1533f1f5a4d70d6f818b5bc411">python.selections_cff.jetSelectionSeq</a> = cms.Sequence( wRtightJets * wRJets * wRJECUncert )</td></tr>
 <tr class="separator:adbc62a1533f1f5a4d70d6f818b5bc411"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a22004cc23959365756623e2e3fba3a"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a2a22004cc23959365756623e2e3fba3a">python.selections_cff.wRIsolatedElectrons</a></td></tr>
 <tr class="memdesc:a2a22004cc23959365756623e2e3fba3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Electrons.  <a href="#a2a22004cc23959365756623e2e3fba3a">More...</a><br/></td></tr>
@@ -136,11 +138,74 @@ Variables</h2></td></tr>
 <tr class="separator:a922c93111d254c47f65bb22f2ae5efd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0eca09ba84fb56616b6dff5263092499"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a0eca09ba84fb56616b6dff5263092499">python.selections_cff.wRminiTreeElectron</a></td></tr>
 <tr class="separator:a0eca09ba84fb56616b6dff5263092499"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a518fbc1be29b5c3b887c980fe7aec20e"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e">python.selections_cff.wRdiElectronCandidate</a></td></tr>
+<tr class="memdesc:a518fbc1be29b5c3b887c980fe7aec20e"><td class="mdescLeft">&#160;</td><td class="mdescRight">create di-electron pair in signal region  <a href="#a518fbc1be29b5c3b887c980fe7aec20e">More...</a><br/></td></tr>
+<tr class="separator:a518fbc1be29b5c3b887c980fe7aec20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ca36346f0c71fff39317c30f1faf818"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a3ca36346f0c71fff39317c30f1faf818">python.selections_cff.wRdiElectronCandidateFilter</a></td></tr>
+<tr class="memdesc:a3ca36346f0c71fff39317c30f1faf818"><td class="mdescLeft">&#160;</td><td class="mdescRight">filter: at least one di-electron candidate in signal region  <a href="#a3ca36346f0c71fff39317c30f1faf818">More...</a><br/></td></tr>
+<tr class="separator:a3ca36346f0c71fff39317c30f1faf818"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab587204b5679ea0e348ae4b2a7d4bc1d">python.selections_cff.electronSelectionSeq</a> = cms.Sequence(wRIsolatedElectrons * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)</td></tr>
+<tr class="separator:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a801db56aec438a2f54a6757f411722dc"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a801db56aec438a2f54a6757f411722dc">python.selections_cff.tunePMuons</a></td></tr>
+<tr class="memdesc:a801db56aec438a2f54a6757f411722dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Muons.  <a href="#a801db56aec438a2f54a6757f411722dc">More...</a><br/></td></tr>
+<tr class="separator:a801db56aec438a2f54a6757f411722dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37b50f0e2b4cdae269b6ef4863cbf828"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a37b50f0e2b4cdae269b6ef4863cbf828">python.selections_cff.tunePIsolatedMuons</a></td></tr>
+<tr class="separator:a37b50f0e2b4cdae269b6ef4863cbf828"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a23df2a272fe1abd409ca3a50e4efc8a8">python.selections_cff.tunePIDIsoMuons</a></td></tr>
+<tr class="memdesc:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">add here the rochester corrections  <a href="#a23df2a272fe1abd409ca3a50e4efc8a8">More...</a><br/></td></tr>
+<tr class="separator:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9a1d92604f1ca05def5ab50db8ab1f08">python.selections_cff.wRleadingMuon</a></td></tr>
+<tr class="memdesc:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="mdescLeft">&#160;</td><td class="mdescRight">add here the trigger matching  <a href="#a9a1d92604f1ca05def5ab50db8ab1f08">More...</a><br/></td></tr>
+<tr class="separator:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ab229680e1770d10323d8f0075df14d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9ab229680e1770d10323d8f0075df14d">python.selections_cff.wRdiMuonCandidate</a></td></tr>
+<tr class="memdesc:a9ab229680e1770d10323d8f0075df14d"><td class="mdescLeft">&#160;</td><td class="mdescRight">create di-muon pair in signal region  <a href="#a9ab229680e1770d10323d8f0075df14d">More...</a><br/></td></tr>
+<tr class="separator:a9ab229680e1770d10323d8f0075df14d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade942be3cf0e8f18e981df2781b2a1d9"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ade942be3cf0e8f18e981df2781b2a1d9">python.selections_cff.wRdiMuonCandidateFilter</a></td></tr>
+<tr class="memdesc:ade942be3cf0e8f18e981df2781b2a1d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">filter: at least one di-muon candidate in signal region  <a href="#ade942be3cf0e8f18e981df2781b2a1d9">More...</a><br/></td></tr>
+<tr class="separator:ade942be3cf0e8f18e981df2781b2a1d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab161ea555afdc036f91dd614fb4fac59"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab161ea555afdc036f91dd614fb4fac59">python.selections_cff.muonSelectionSeq</a> = cms.Sequence(tunePMuons * tunePIDIsoMuons * wRleadingMuon * wRsubleadingMuon * wRdiMuonCandidate)</td></tr>
+<tr class="separator:ab161ea555afdc036f91dd614fb4fac59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b17d33d8037cedf6be8a70f16965a82"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a6b17d33d8037cedf6be8a70f16965a82">python.selections_cff.wReleMuCandidate</a></td></tr>
+<tr class="memdesc:a6b17d33d8037cedf6be8a70f16965a82"><td class="mdescLeft">&#160;</td><td class="mdescRight">E-Mu candidate mixed flavour candidates.  <a href="#a6b17d33d8037cedf6be8a70f16965a82">More...</a><br/></td></tr>
+<tr class="separator:a6b17d33d8037cedf6be8a70f16965a82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0bb18db2b07b0b3dafa66ff12ea6e23"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aa0bb18db2b07b0b3dafa66ff12ea6e23">python.selections_cff.wRmuEleCandidate</a></td></tr>
+<tr class="separator:aa0bb18db2b07b0b3dafa66ff12ea6e23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a975cc52b3c25e97bcecca1bf021b44aa"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a975cc52b3c25e97bcecca1bf021b44aa">python.selections_cff.wRdiLeptonCandidate</a></td></tr>
+<tr class="memdesc:a975cc52b3c25e97bcecca1bf021b44aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">di lepton candidate  <a href="#a975cc52b3c25e97bcecca1bf021b44aa">More...</a><br/></td></tr>
+<tr class="separator:a975cc52b3c25e97bcecca1bf021b44aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad826b302c6f1a9a0e9ecff3beb9870ca"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ad826b302c6f1a9a0e9ecff3beb9870ca">python.selections_cff.wRdiLeptonCandidateFilter</a></td></tr>
+<tr class="separator:ad826b302c6f1a9a0e9ecff3beb9870ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a970febb69c0492f68b2347ad8f60d65b"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a970febb69c0492f68b2347ad8f60d65b">python.selections_cff.wRCandidate</a></td></tr>
+<tr class="separator:a970febb69c0492f68b2347ad8f60d65b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45044b972e598f9230efbd586f617b75"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a45044b972e598f9230efbd586f617b75">python.selections_cff.flavourSidebandSelection</a> = '(daughter(0).isElectron &amp;&amp; daughter(1).isMuon) || (daughter(1).isElectron &amp;&amp; daughter(0).isMuon)'</td></tr>
+<tr class="memdesc:a45044b972e598f9230efbd586f617b75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flavour sideband filter.  <a href="#a45044b972e598f9230efbd586f617b75">More...</a><br/></td></tr>
+<tr class="separator:a45044b972e598f9230efbd586f617b75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a688d9beaa35afbc3786702cc9f95af49"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a688d9beaa35afbc3786702cc9f95af49">python.selections_cff.diLeptonSelection</a> = '(mass&gt;200)'</td></tr>
+<tr class="separator:a688d9beaa35afbc3786702cc9f95af49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62c874e40232fee670f5855732d863eb"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a62c874e40232fee670f5855732d863eb">python.selections_cff.flavourSidebandSelector</a></td></tr>
+<tr class="separator:a62c874e40232fee670f5855732d863eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01e87b27fbcd0617844c68b168aeb3ac"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a01e87b27fbcd0617844c68b168aeb3ac">python.selections_cff.flavourSidebandFilter</a></td></tr>
+<tr class="separator:a01e87b27fbcd0617844c68b168aeb3ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a635ba570cb7634683547ee182d919c65"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a635ba570cb7634683547ee182d919c65">python.selections_cff.lowDiLeptonSidebandSelector</a></td></tr>
+<tr class="memdesc:a635ba570cb7634683547ee182d919c65"><td class="mdescLeft">&#160;</td><td class="mdescRight">to be fixed  <a href="#a635ba570cb7634683547ee182d919c65">More...</a><br/></td></tr>
+<tr class="separator:a635ba570cb7634683547ee182d919c65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85213ce6d35cc5cd57032f911610889f"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a85213ce6d35cc5cd57032f911610889f">python.selections_cff.lowDiLeptonSidebandFilter</a></td></tr>
+<tr class="separator:a85213ce6d35cc5cd57032f911610889f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a958f3f66f6b010c04acd35966efe3000"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a958f3f66f6b010c04acd35966efe3000">python.selections_cff.signalRegionSelector</a></td></tr>
+<tr class="separator:a958f3f66f6b010c04acd35966efe3000"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a743e23f7a0e113a6df6700c04e5b2940"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a743e23f7a0e113a6df6700c04e5b2940">python.selections_cff.signalRegionFilter</a></td></tr>
+<tr class="separator:a743e23f7a0e113a6df6700c04e5b2940"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaef057a63bd8b14472fac8b7de1290f3"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aaef057a63bd8b14472fac8b7de1290f3">python.selections_cff.signalRegionFilterSeq</a> = cms.Sequence(~flavourSidebandFilter * ~lowDiLeptonSidebandSelector)</td></tr>
+<tr class="separator:aaef057a63bd8b14472fac8b7de1290f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9946726e4b227993295ff6216394635f"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9946726e4b227993295ff6216394635f">python.selections_cff.selectionSequence</a></td></tr>
+<tr class="separator:a9946726e4b227993295ff6216394635f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54ca1307224ef8f2bf61ebb9db4d529d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a54ca1307224ef8f2bf61ebb9db4d529d">python.selections_cff.filterSequence</a></td></tr>
+<tr class="separator:a54ca1307224ef8f2bf61ebb9db4d529d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 12:52:59 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jan 30 2016 14:39:50 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

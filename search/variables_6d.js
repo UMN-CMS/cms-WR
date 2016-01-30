@@ -68,5 +68,6 @@ var searchData=
   ['muonidiso',['muonIDIso',['../namespacepython_1_1selections__cff.html#aad7d2aca7256a2a33d1072998de8d0d7',1,'python::selections_cff']]],
   ['muonidisosfprod',['MuonIdIsoSFProd',['../namespacepython_1_1produceIdIsoSF__cff.html#aa030d0e013272b015c954e2573cd89c6',1,'python::produceIdIsoSF_cff']]],
   ['muonidisosfprodsequence',['MuonIdIsoSFProdSequence',['../namespacepython_1_1produceIdIsoSF__cff.html#a49ec5e50c2b93fedc7e8f37abb98cf59',1,'python::produceIdIsoSF_cff']]],
+  ['muonselectionseq',['muonSelectionSeq',['../namespacepython_1_1selections__cff.html#ab161ea555afdc036f91dd614fb4fac59',1,'python::selections_cff']]],
   ['muresol1',['muresol1',['../rochcor2015_8cc.html#af01e20a5a5f93f2780d75a4f2513295d',1,'rochcor2015.cc']]]
 ];

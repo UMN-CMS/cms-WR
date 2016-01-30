@@ -1,6 +1,7 @@
 var searchData=
 [
   ['dataset',['dataset',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#a09b3c884be62a1a78b7c96d34f709ecf',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
+  ['dileptonselection',['diLeptonSelection',['../namespacepython_1_1selections__cff.html#a688d9beaa35afbc3786702cc9f95af49',1,'python::selections_cff']]],
   ['dyfit',['DYFit',['../namespacepython_1_1backgroundFits.html#a07cc0e368953482b17ecfc2adc65ac68',1,'python::backgroundFits']]],
   ['dyjetsbaregenjets',['dyJetsBareGenJets',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a1561a97a7cca4eb285a6613ffbc5cad6',1,'python::genDYJetsElectronChannelModules_cff']]],
   ['dyjetsbaregenjetsfilter',['dyJetsBareGenJetsFilter',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#ab22b3528ba6496fa119c871598c5225c',1,'python::genDYJetsElectronChannelModules_cff']]],
