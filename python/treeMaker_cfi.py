@@ -52,5 +52,6 @@ MakeTTree_Muons = cms.EDAnalyzer('TTreeMaker',
                                 'pfCombinedSecondaryVertexV2BJetTags',
                                 'pfCombinedInclusiveSecondaryVertexV2BJetTags',
                                 'pfCombinedMVABJetTags'
-                                )
+                                ),
+                            JECUnc_src = cms.InputTag('JECUncertainty'),
                             )

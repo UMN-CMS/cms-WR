@@ -71,7 +71,8 @@ produceJECUnc::produceJECUnc(const edm::ParameterSet& iConfig)
    jetUncOutput(iConfig.getParameter<std::string>("jetUncOutput")),
    jetType(iConfig.getParameter<std::string>("jetType"))
 {
-        produces<JECUnc_Map>(jetUncOutput);
+	consumes<pat::JetCollection>(src);
+   produces<JECUnc_Map>(jetUncOutput);
 }
 
 

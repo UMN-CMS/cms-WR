@@ -41,6 +41,8 @@ private:
   const edm::InputTag genparticles_src;
   const edm::InputTag genjets_src;
   const edm::InputTag primary_vertex_src;
+  const edm::InputTag JECUnc_src;
+  edm::EDGetTokenT<edm::ValueMap<double> > JECUncertaintiesToken_;
   edm::EDGetTokenT<reco::ConversionCollection> conversionsMiniAODToken_;
 
   // ID decisions objects
@@ -87,6 +89,9 @@ private:
     float subleading_lepton_phi;
     float leading_jet_phi;
     float subleading_jet_phi;
+
+    float leading_jet_JECUnc;
+    float subleading_jet_JECUnc;
 
     int leading_lepton_charge;
     int subleading_lepton_charge;
@@ -164,6 +169,7 @@ private:
       leading_lepton_pt = leading_lepton_eta = leading_lepton_phi = subleading_lepton_pt = subleading_lepton_eta = subleading_lepton_phi = -999;
       leading_lepton_charge = subleading_lepton_charge = -999;
       leading_jet_pt = leading_jet_eta = leading_jet_phi = subleading_jet_pt = subleading_jet_eta = subleading_jet_phi = -999;
+    	leading_jet_JECUnc = subleading_jet_JECUnc = -999;
       gen_leading_lepton_pt = gen_leading_lepton_eta = gen_leading_lepton_phi = gen_subleading_lepton_pt = gen_subleading_lepton_eta = gen_subleading_lepton_phi = -999;
       gen_leading_jet_pt = gen_leading_jet_eta = gen_leading_jet_phi = gen_subleading_jet_pt = gen_subleading_jet_eta = gen_subleading_jet_phi = -999;
       dilepton_mass = gen_dilepton_mass = Mlljj = gen_Mlljj = -999;
@@ -206,6 +212,7 @@ TTreeMaker::TTreeMaker(const edm::ParameterSet& cfg)
     genparticles_src(cfg.getParameter<edm::InputTag>("genparticles_src")),
     genjets_src(cfg.getParameter<edm::InputTag>("genjets_src")),
     primary_vertex_src(cfg.getParameter<edm::InputTag>("primary_vertex_src")),
+    JECUncertaintiesToken_(consumes<edm::ValueMap<double> >(cfg.getParameter<edm::InputTag>("JECUnc_src"))),
 
     eleVetoIdMapToken_(consumes<edm::ValueMap<bool> >(cfg.getParameter<edm::InputTag>("eleVetoIdMap"))),
     eleLooseIdMapToken_(consumes<edm::ValueMap<bool> >(cfg.getParameter<edm::InputTag>("eleLooseIdMap"))),
@@ -252,6 +259,9 @@ TTreeMaker::TTreeMaker(const edm::ParameterSet& cfg)
   tree->Branch("subleading_jet_pt", &nt.subleading_jet_pt, "subleading_jet_pt/F");
   tree->Branch("subleading_jet_eta", &nt.subleading_jet_eta, "subleading_jet_eta/F");
   tree->Branch("subleading_jet_phi", &nt.subleading_jet_phi, "subleading_jet_phi/F");
+
+  tree->Branch("leading_jet_JECUnc", &nt.leading_jet_JECUnc, "leading_jet_JECUnc/F");
+  tree->Branch("subleading_jet_JECUnc", &nt.subleading_jet_JECUnc, "subleading_jet_JECUnc/F");
 
   tree->Branch("leading_lepton_charge", &nt.leading_lepton_charge, "leading_lepton_charge/I");
   tree->Branch("subleading_lepton_charge", &nt.subleading_lepton_charge, "subleading_lepton_charge/I");
@@ -331,6 +341,9 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
   event.getByLabel(genparticles_src, gen_particles);
   edm::Handle<reco::GenJetCollection> gen_jets;
   event.getByLabel(genjets_src, gen_jets);
+
+  edm::Handle<edm::ValueMap<double> > JECUncertainties;
+  event.getByToken(JECUncertaintiesToken_, JECUncertainties);
   
   std::vector<reco::GenParticle> gmuons(2);
   std::vector<reco::GenParticle> geles(2);
@@ -467,12 +480,14 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
       nt.leading_jet_pt = js[0].pt();
       nt.leading_jet_eta = js[0].eta();
       nt.leading_jet_phi = js[0].phi();
+      nt.leading_jet_JECUnc = (*JECUncertainties)[js[0]];
       for(auto b:bDiscriminators)
 	nt.leading_bTags.push_back(js[0].bDiscriminator(b));
       if(js.size() > 1){
 	nt.subleading_jet_pt = js[1].pt();
 	nt.subleading_jet_eta = js[1].eta();
 	nt.subleading_jet_phi = js[1].phi();
+	nt.subleading_jet_JECUnc = (*JECUncertainties)[js[1]];
 	nt.dR_leadJet_subleadJet = deltaR(js[0],js[1]);
 	for(auto b:bDiscriminators)
 	  nt.subleading_bTags.push_back(js[1].bDiscriminator(b));
@@ -543,12 +558,14 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
       nt.leading_jet_pt = js[0].pt();
       nt.leading_jet_eta = js[0].eta();
       nt.leading_jet_phi = js[0].phi();
+      nt.leading_jet_JECUnc = (*JECUncertainties)[js[0]];
       for(auto b:bDiscriminators)
 	nt.leading_bTags.push_back(js[0].bDiscriminator(b));
       if(js.size() > 1){
 	nt.subleading_jet_pt = js[1].pt();
 	nt.subleading_jet_eta = js[1].eta();
 	nt.subleading_jet_phi = js[1].phi();
+	nt.subleading_jet_JECUnc = (*JECUncertainties)[js[1]];
 	nt.dR_leadJet_subleadJet = deltaR(js[0],js[1]);
 	for(auto b:bDiscriminators)
 	  nt.subleading_bTags.push_back(js[1].bDiscriminator(b));
@@ -593,12 +610,14 @@ void TTreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
       nt.leading_jet_pt = js[0].pt();
       nt.leading_jet_eta = js[0].eta();
       nt.leading_jet_phi = js[0].phi();
+      nt.leading_jet_JECUnc = (*JECUncertainties)[js[0]];
       for(auto b:bDiscriminators)
 	nt.leading_bTags.push_back(js[0].bDiscriminator(b));
       if(js.size() > 1){
 	nt.subleading_jet_pt = js[1].pt();
 	nt.subleading_jet_eta = js[1].eta();
 	nt.subleading_jet_phi = js[1].phi();
+	nt.subleading_jet_JECUnc = (*JECUncertainties)[js[1]];
 	nt.dR_leadJet_subleadJet = deltaR(js[0],js[1]);
 	for(auto b:bDiscriminators)
 	  nt.subleading_bTags.push_back(js[1].bDiscriminator(b));
