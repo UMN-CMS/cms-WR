@@ -57,7 +57,7 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(
 #    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True),
-    SkipEvent = cms.untracked.vstring('ProductNotFound'),
+    #SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 process.source = cms.Source("PoolSource",
@@ -102,10 +102,8 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 process.load('ExoAnalysis.cmsWR.selections_cff')
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
-process.load('ExoAnalysis.cmsWR.minitree_cff')
+process.load('ExoAnalysis.cmsWR.minitree_cfi')
 
-process.MiniTTree.is_mc = cms.bool(options.isMC==1)
-process.JECUnc.src = cms.InputTag('wRtightJets')
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)

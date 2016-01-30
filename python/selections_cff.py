@@ -27,24 +27,29 @@ from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 from ExoAnalysis.cmsWR.JEC_cff import *
 
 #patJetsReapplyJEC
-wRJets = cms.EDFilter("PATJetSelector",
-                      src = cms.InputTag("patJetsReapplyJEC"),
-                      cut = cms.string( ("pt>%f") % (jetPt)),
-		)
 
 ### select tight-ID jets
 wRtightJets = cms.EDFilter("PATJetSelector",
-                          src = cms.InputTag("wRJets"),
+                          src = cms.InputTag("patJetsReapplyJEC"),
                           cut = cms.string(jetID),
                           )
 
+wRJets = cms.EDFilter("PATJetSelector",
+                      src = cms.InputTag("wRtightJets"),
+                      cut = cms.string( ("pt>%f") % (jetPt)),
+		)
+
+wRJECUncert = JECUnc.clone(
+    src = cms.InputTag('wRJets')
+    )
+
 wRJetFilter = cms.EDFilter("CandViewCountFilter",
-                                 src = cms.InputTag("wRtightJets"),
+                                 src = cms.InputTag("wRJets"),
                                  minNumber = cms.uint32(2)
                              )
 
 wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                  decay = cms.string("wRtightJets wRtightJets"),
+                                  decay = cms.string("wRJets wRJets"),
                                   #role = cms.string("leading subleading"),
                                   checkCharge = cms.bool(False),
                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -52,7 +57,7 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-jetSelectionSeq = cms.Sequence(wRJets * wRtightJets ) #* wRdiJetCandidate)
+jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert ) #* wRdiJetCandidate)
 
 ############################################################ Electrons
 
@@ -81,11 +86,11 @@ wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
                                     )
 
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
+                                    src = cms.InputTag("slimmedElectrons"), 
                                     cut = cms.string( 
         (("(pt>%f) && (abs(eta)<%f)") % (miniTreeLeptonPt, maxEtaLeptons))
         ),
-                                    )
+                                  )
 
 ### create di-electron pair in signal region
 wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
@@ -103,7 +108,7 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons * (wRleadingElectron + wRsubleadingElectron) * wRdiElectronCandidate)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)
 ############################################################ Muons
 
 tunePMuons = cms.EDProducer("TunePMuonProducer",
