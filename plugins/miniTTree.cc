@@ -11,6 +11,7 @@
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 typedef double JECUnc_t;
 typedef edm::ValueMap<JECUnc_t> JECUnc_Map;
@@ -25,6 +26,9 @@ private:
   edm::EDGetToken electronsMiniAODToken_;
   edm::EDGetToken muonsMiniAODToken_;
   edm::EDGetToken jetsMiniAODToken_;
+  edm::EDGetToken pileUpInfoToken_;
+  edm::EDGetToken primaryVertexToken_;
+  edm::EDGetToken evinfoToken_;
 
   const std::string jec_unc_src;
 
@@ -41,7 +45,8 @@ private:
     std::vector<float> electron_scale;
     std::vector<float> electron_smearing;
 
-    float PU;
+    float nPU;
+    float nPV;
     float weight;
         
     tree_t() { clear(); }
@@ -57,7 +62,7 @@ private:
       electron_scale.clear();
       electron_smearing.clear();
 
-      PU = -999.;
+      nPU = -999.;
       weight = 0.0;
       
     }
@@ -73,6 +78,9 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg)
   electronsMiniAODToken_   = mayConsume<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
   muonsMiniAODToken_ = mayConsume<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
   jetsMiniAODToken_ = mayConsume<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
+  pileUpInfoToken_ = mayConsume<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
+  primaryVertexToken_ = mayConsume<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
+  evinfoToken_ = mayConsume<GenEventInfoProduct>(edm::InputTag("generator"));
 
   edm::Service<TFileService> fs;
   tree = fs->make<TTree>("t", "");
@@ -88,7 +96,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg)
   tree->Branch("electron_scale",&nt.electron_scale);
   tree->Branch("electron_smearing",&nt.electron_smearing);
 
-  tree->Branch("PU", &nt.PU, "PU/F");
+  tree->Branch("nPU", &nt.nPU, "nPU/F");
   tree->Branch("weight",&nt.weight,"weight/F");
 
 }
@@ -105,19 +113,34 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
   event.getByToken(muonsMiniAODToken_,muons);
   edm::Handle<edm::View<pat::Jet> > jets;
   event.getByToken(jetsMiniAODToken_,jets);
-  edm::Handle<GenEventInfoProduct> evinfo;
 
   edm::Handle< edm::ValueMap<double> > jec_unc;
   event.getByLabel(jec_unc_src, "JECUncertainty", jec_unc);
 
+  edm::Handle<GenEventInfoProduct> evinfo;
+  edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
+
+  edm::Handle<edm::View<reco::Vertex> > primary_vertex;
+  event.getByToken(primaryVertexToken_,primary_vertex);
+
+  if(primary_vertex->size() > 0) {
+    for(auto pv: *primary_vertex)
+      nt.nPV++;
+  }
+
   if(!event.isRealData()) 
     {
-      event.getByLabel("generator", evinfo);
+      event.getByToken(evinfoToken_, evinfo);
       nt.weight = evinfo->weight();
+      event.getByToken(pileUpInfoToken_, PU_Info);
+      for(auto p: *PU_Info){
+	int BX = p.getBunchCrossing();
+	if(BX==0)
+	  nt.nPU = p.getTrueNumInteractions();
+      }
     }
-
-  nt.PU = 1.0;
   
+
   for (size_t i = 0; i < electrons->size(); ++i){
     const auto ele = electrons->ptrAt(i);
     TLorentzVector p4;
