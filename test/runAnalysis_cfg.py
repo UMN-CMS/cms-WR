@@ -17,8 +17,17 @@ options.register('test',
                 VarParsing.VarParsing.varType.int,
                 "define the test type: 0=data, 1=signalMC, 2=background MC, 3=local file called skim_test.root")
 
+options.register('datasetTag',
+                 "",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "unique dataset identifier")
+
+
 #default options
 options.maxEvents = -1
+defaultFileOutput = "myfile.root"
+options.output = defaultFileOutput
 #
 
 options.parseArguments()
@@ -33,6 +42,8 @@ elif(options.test==2):
 
 print options
 
+if(options.output == defaultFileOutput and options.datasetTag!=''):
+    options.output = options.datasetTag + '.root'
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -42,6 +53,9 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+
+process.load('ExoAnalysis.cmsWR.produceStringTag_cfi')
+process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.datasetTag)
 
 ### \todo set the global tag in a separate file such that it will be common to all cfg files
 if(options.isMC==0):
@@ -108,7 +122,7 @@ process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
-process.fullSeq = cms.Sequence(process.jecSequence * process.selectionSequence * process.filterSequence)
+process.fullSeq = cms.Sequence(process.addStringIdentifier * process.jecSequence * process.selectionSequence * process.filterSequence)
 
 
 ############################################################ PATHs definition
