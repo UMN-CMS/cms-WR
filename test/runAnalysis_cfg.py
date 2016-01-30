@@ -11,12 +11,25 @@ options.register('isMC',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "")
+options.register('test',
+                2,
+                VarParsing.VarParsing.multiplicity.singleton,
+                VarParsing.VarParsing.varType.int,
+                "define the test type: 0=data, 1=signalMC, 2=background MC, 3=local file called skim_test.root")
 
 #default options
 options.maxEvents = -1
-options.files="file:skim_test.root"
+#
 
 options.parseArguments()
+if(options.test==3):
+    options.files="file:skim_test.root"   
+    options.maxEvents=100
+    options.isMC=1
+elif(options.test==2):
+    options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
+    options.maxEvents=100
+    options.isMC=1
 
 print options
 
@@ -44,7 +57,7 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(
 #    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True),
-#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
+    SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 process.source = cms.Source("PoolSource",
