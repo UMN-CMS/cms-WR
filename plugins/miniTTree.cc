@@ -134,10 +134,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     p4.SetPtEtaPhiM(mu->pt(),mu->eta(),mu->phi(),mu->mass());
     myEvent.muons_p4->push_back(p4);
     myEvent.muon_charge->push_back(mu->charge());
-    // myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
-    // myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
-    // myEvent.muon_IDSF_error->push_back((*muon_IDSF_error)[mu]);
-    // myEvent.muon_IsoSF_error->push_back((*muon_IsoSF_error)[mu]); 
+    myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
+    myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
+    myEvent.muon_IDSF_error->push_back((*muon_IDSF_error)[mu]);
+    myEvent.muon_IsoSF_error->push_back((*muon_IsoSF_error)[mu]); 
   }
 
   for (size_t i = 0; i < jets->size(); ++i){
