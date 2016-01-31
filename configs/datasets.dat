@@ -39,24 +39,24 @@ DYJets_2000to3000	/DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythi
 ####
 DYToEE_powheg	/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	0.000e+00	0.000e+00	-	-	-
 DYToMuMu_powheg_50to120	/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_120to200	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_200to400	/ZToMuMu_NNPDF30_13TeV-powheg_M_200_400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_400to800	/ZToMuMu_NNPDF30_13TeV-powheg_M_400_800/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_800to1400	/ZToMuMu_NNPDF30_13TeV-powheg_M_800_1400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_1400to2300	/ZToMuMu_NNPDF30_13TeV-powheg_M_1400_2300/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_2300to3500	/ZToMuMu_NNPDF30_13TeV-powheg_M_2300_3500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_3500to4500	/ZToMuMu_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToMuMu_powheg_6000toInf	/ZToMuMu_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
+DYToMuMu_powheg_120to200	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/shervin-DYToMuMu_powheg_120to200_SHv2-e73ab3558da1b418bca464e13b669858/USER	39691
+DYToMuMu_powheg_200to400	/ZToMuMu_NNPDF30_13TeV-powheg_M_200_400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_200_400/shervin-DYToMuMu_powheg_200to400_SHv2-e73ab3558da1b418bca464e13b669858/USER	56232
+DYToMuMu_powheg_400to800	/ZToMuMu_NNPDF30_13TeV-powheg_M_400_800/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_400_800/shervin-DYToMuMu_powheg_400to800_SHv2-e73ab3558da1b418bca464e13b669858/USER	70687
+DYToMuMu_powheg_800to1400	/ZToMuMu_NNPDF30_13TeV-powheg_M_800_1400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_800_1400/shervin-DYToMuMu_powheg_800to1400_SHv2-e73ab3558da1b418bca464e13b669858/USER	82668
+DYToMuMu_powheg_1400to2300	/ZToMuMu_NNPDF30_13TeV-powheg_M_1400_2300/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	99600	/ZToMuMu_NNPDF30_13TeV-powheg_M_1400_2300/shervin-DYToMuMu_powheg_1400to2300_SHv2-e73ab3558da1b418bca464e13b669858/USER	88470
+DYToMuMu_powheg_2300to3500	/ZToMuMu_NNPDF30_13TeV-powheg_M_2300_3500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_2300_3500/shervin-DYToMuMu_powheg_2300to3500_SHv2-e73ab3558da1b418bca464e13b669858/USER	91616
+DYToMuMu_powheg_3500to4500	/ZToMuMu_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_3500_4500/shervin-DYToMuMu_powheg_3500to4500_SHv2-e73ab3558da1b418bca464e13b669858/USER	92644
+DYToMuMu_powheg_6000toInf	/ZToMuMu_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_6000_Inf/shervin-DYToMuMu_powheg_6000toInf_SHv2-e73ab3558da1b418bca464e13b669858/USER	91613
 ##
-DYToEE_powheg_50to120	/ZToEE_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_120to200	/ZToEE_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_200to400	/ZToEE_NNPDF30_13TeV-powheg_M_200_400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_400to800	/ZToEE_NNPDF30_13TeV-powheg_M_400_800/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_800to1400	/ZToEE_NNPDF30_13TeV-powheg_M_800_1400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_1400to2300	/ZToEE_NNPDF30_13TeV-powheg_M_1400_2300/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_2300to3500	/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_3500to4500	/ZToEE_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
-DYToEE_powheg_6000toInf	/ZToEE_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
+DYToEE_powheg_50to120	/ZToEE_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	2997600	/ZToEE_NNPDF30_13TeV-powheg_M_50_120/shervin-DYToEE_powheg_50to120_SHv2-e73ab3558da1b418bca464e13b669858/USER	368667
+DYToEE_powheg_120to200	/ZToEE_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_120_200/shervin-DYToEE_powheg_120to200_SHv2-e73ab3558da1b418bca464e13b669858/USER	36112
+DYToEE_powheg_200to400	/ZToEE_NNPDF30_13TeV-powheg_M_200_400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_200_400/shervin-DYToEE_powheg_200to400_SHv2-e73ab3558da1b418bca464e13b669858/USER	50134
+DYToEE_powheg_400to800	/ZToEE_NNPDF30_13TeV-powheg_M_400_800/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_400_800/shervin-DYToEE_powheg_400to800_SHv2-e73ab3558da1b418bca464e13b669858/USER	63980
+DYToEE_powheg_800to1400	/ZToEE_NNPDF30_13TeV-powheg_M_800_1400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_800_1400/shervin-DYToEE_powheg_800to1400_SHv2-e73ab3558da1b418bca464e13b669858/USER	74880
+DYToEE_powheg_1400to2300	/ZToEE_NNPDF30_13TeV-powheg_M_1400_2300/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_1400_2300/shervin-DYToEE_powheg_1400to2300_SHv2-e73ab3558da1b418bca464e13b669858/USER	80610
+DYToEE_powheg_2300to3500	/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/shervin-DYToEE_powheg_2300to3500_SHv2-e73ab3558da1b418bca464e13b669858/USER	83573
+DYToEE_powheg_3500to4500	/ZToEE_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_3500_4500/shervin-DYToEE_powheg_3500to4500_SHv2-e73ab3558da1b418bca464e13b669858/USER	84836
+DYToEE_powheg_6000toInf	/ZToEE_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToEE_NNPDF30_13TeV-powheg_M_6000_Inf/shervin-DYToEE_powheg_6000toInf_SHv2-e73ab3558da1b418bca464e13b669858/USER	85132
 #	##################################
 WRtoEEJJ_800_400	/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	4.261e+00	1.449e-02	50000	/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_13TeV-pythia8/shervin-WRtoEEJJ_800_400_SHv2-268f42a0545bb6ce2052dd5a41d331a8/USER	35270
 WRtoEEJJ_1000_500	/WRToNuEToEEJJ_MW-1000_MNu-500_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.692e+00	5.007e-03	50000	/WRToNuEToEEJJ_MW-1000_MNu-500_TuneCUETP8M1_13TeV-pythia8/shervin-WRtoEEJJ_1000_500_SHv2-268f42a0545bb6ce2052dd5a41d331a8/USER	37799
