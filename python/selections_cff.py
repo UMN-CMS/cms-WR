@@ -12,7 +12,8 @@ leadingPt=60.
 subleadingPt=50.
 miniTreeLeptonPt=40.
 maxEtaLeptons=2.4
-jetPt = 40.
+#jetPt = 40.
+jetPt = 35.
 
 
 ### need the reference for this selection, with link to the presentation and twiki page
