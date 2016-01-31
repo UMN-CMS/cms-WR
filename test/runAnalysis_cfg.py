@@ -55,6 +55,8 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.load('ExoAnalysis.cmsWR.produceStringTag_cfi')
+process.load('ExoAnalysis.cmsWR.pileupWeight_cff')
+
 process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.datasetTag)
 
 ### \todo set the global tag in a separate file such that it will be common to all cfg files
@@ -122,7 +124,8 @@ process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
-process.fullSeq = cms.Sequence(process.addStringIdentifier * process.jecSequence * process.selectionSequence * process.filterSequence)
+#process.fullSeq = cms.Sequence(process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
+process.fullSeq = cms.Sequence(process.addStringIdentifier *  process.jecSequence * process.selectionSequence * process.filterSequence)
 
 
 ############################################################ PATHs definition
