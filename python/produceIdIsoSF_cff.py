@@ -1,6 +1,10 @@
 import FWCore.ParameterSet.Config as cms
-
 import pickle
+import math
+
+Additional_ID_Systematics = 0.01
+Additional_ISO_Systematics = 0.01
+
 f = open('/afs/cern.ch/work/r/rchatter/CMSSW_7_4_15_patch1/src/ExoAnalysis/cmsWR/python/MuonHighPt_Z_RunCD_Reco74X_Dec17.pkl', 'r')
 results = pickle.load(f)
 results.keys()
@@ -19,20 +23,20 @@ for i in xrange(0,13):
 
 for key, result in sorted(results["HighPtID_EtaBins_Pt53"]["pTtuneP_ratio"].iteritems()) : 
     SF_ID_C[ii] = result["value"]
-    SF_ID_E[ii] = result["error"]
+    SF_ID_E[ii] = math.sqrt(pow(result["error"],2) + pow(Additional_ID_Systematics,2))
     ii += 1
 
 ii=0
 for key, result in sorted(results["tkRelIsoID_EtaBins_Pt53"]["eta_ratio"].iteritems()) :
     SF_ISO_C[ii] = result["value"]
-    SF_ISO_E[ii] = result["error"]
+    SF_ISO_E[ii] = math.sqrt(pow(result["error"],2) + pow(Additional_ISO_Systematics,2))
     ii += 1
 
     
 
 # make a collection of TuneP muons which pass isHighPt ID
 MuonIdIsoSFProd = cms.EDProducer("produceLepIdIsoScaleFactors",
-		src = cms.InputTag("ScaleCorrectedMuonsProd","ScaleCorrectedMuons"),
+		src = cms.InputTag("ScaleCorrectedMuonsProd","ScaleCorrectedtunePIDIsoMuons"),
                 OutputCollectionName1 = cms.string("MuonSFIdCentral"),
                 OutputCollectionName2 = cms.string("MuonSFIdError"),
                 OutputCollectionName3 = cms.string("MuonSFIsoCentral"),
