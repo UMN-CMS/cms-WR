@@ -14,6 +14,8 @@ cd ExoAnalysis/
 git clone git@github.com:UMN-CMS/cms-WR.git cmsWR
 scram b
 cd cmsWR/
+mkdir data/
+cp /afs/cern.ch/user/p/phansen/public/wr/CMSSW_7_4_15_patch1/src/ExoAnalysis/cmsWR/DataPileup.root data/
 \endverbatim
 
 Check if you have astyle command installed:

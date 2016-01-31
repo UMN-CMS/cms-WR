@@ -58,12 +58,12 @@ case $dataset in
 		LUMI=1000
 		;;
 	DY*)
-		params="$params, 'saveTnP=1', 'GT=74X_mcRun2_asymptotic_v2'"
+		params="$params, 'saveTnP=1', 'GT=74X_mcRun2_asymptotic_v4'"
 		jsonFile=""
 		;;
 	
 	*)
-		params="$params, 'saveTnP=0', 'GT=74X_mcRun2_asymptotic_v2'"
+		params="$params, 'saveTnP=0', 'GT=74X_mcRun2_asymptotic_v4'"
 		jsonFile=""
 		;;
 esac
