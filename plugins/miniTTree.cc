@@ -31,9 +31,11 @@ private:
   edm::EDGetToken primaryVertexToken_;
   edm::EDGetToken evinfoToken_;
 
-  const std::string jec_unc_src;
-  const std::string muon_IDSF_central_src;
-  const std::string muon_IsoSF_central_src;
+  edm::EDGetToken  jec_unc_src;
+  edm::EDGetToken  muon_IDSF_central_src;
+  edm::EDGetToken  muon_IsoSF_central_src;
+  edm::EDGetToken  muon_IDSF_error_src;
+  edm::EDGetToken  muon_IsoSF_error_src;
 
   TTree* tree;
   miniTreeEvent myEvent;
@@ -41,16 +43,18 @@ private:
 };
 
 miniTTree::miniTTree(const edm::ParameterSet& cfg)
-  : jec_unc_src(cfg.getParameter<std::string>("jec_unc_src")),
-    muon_IDSF_central_src(cfg.getParameter<std::string>("muon_IDSF_central_src")),
-    muon_IsoSF_central_src(cfg.getParameter<std::string>("muon_IsoSF_central_src"))
 {
-  electronsMiniAODToken_   = mayConsume<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
-  muonsMiniAODToken_ = mayConsume<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
-  jetsMiniAODToken_ = mayConsume<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
-  pileUpInfoToken_ = mayConsume<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
-  primaryVertexToken_ = mayConsume<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
-  evinfoToken_ = mayConsume<GenEventInfoProduct>(edm::InputTag("generator"));
+  electronsMiniAODToken_   = consumes<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
+  muonsMiniAODToken_ = consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
+  jetsMiniAODToken_ = consumes<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
+  pileUpInfoToken_ = consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
+  primaryVertexToken_ = consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
+  evinfoToken_ = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
+  jec_unc_src = consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"));
+  muon_IDSF_central_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"));
+  muon_IsoSF_central_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"));
+  muon_IDSF_error_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_error_src"));
+  muon_IsoSF_error_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_error_src"));
 
   edm::Service<TFileService> fs;
   tree = fs->make<TTree>("t", "");
@@ -72,12 +76,17 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
   edm::Handle<edm::View<pat::Jet> > jets;
   event.getByToken(jetsMiniAODToken_,jets);
 
-  edm::Handle< edm::ValueMap<double> > jec_unc;
-  event.getByLabel(jec_unc_src, "JECUncertainty", jec_unc);
+  edm::Handle<JECUnc_Map > jec_unc;
+  event.getByToken(jec_unc_src,jec_unc);
+
   edm::Handle< edm::ValueMap<float> > muon_IDSF;
-  event.getByLabel(muon_IDSF_central_src, "MuonIdIsoSFProd", muon_IDSF);
+  event.getByToken(muon_IDSF_central_src,muon_IDSF);
   edm::Handle< edm::ValueMap<float> > muon_IsoSF;
-  event.getByLabel(muon_IsoSF_central_src, "MuonIdIsoSFProd", muon_IsoSF);
+  event.getByToken(muon_IsoSF_central_src,muon_IsoSF);
+  edm::Handle< edm::ValueMap<float> > muon_IDSF_error;
+  event.getByToken(muon_IDSF_error_src,muon_IDSF_error);
+  edm::Handle< edm::ValueMap<float> > muon_IsoSF_error;
+  event.getByToken(muon_IsoSF_error_src,muon_IsoSF_error);
 
   edm::Handle<GenEventInfoProduct> evinfo;
   edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
@@ -121,6 +130,8 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     myEvent.muon_charge->push_back(mu->charge());
     myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
     myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
+    myEvent.muon_IDSF_error->push_back((*muon_IDSF_error)[mu]);
+    myEvent.muon_IsoSF_error->push_back((*muon_IsoSF_error)[mu]);
   }
 
   for (size_t i = 0; i < jets->size(); ++i){

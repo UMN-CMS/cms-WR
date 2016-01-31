@@ -18,6 +18,8 @@ class miniTreeEvent{
   std::vector<Int_t> * muon_charge;
   std::vector<Float_t> * muon_IDSF_central;
   std::vector<Float_t> * muon_IsoSF_central;
+  std::vector<Float_t> * muon_IDSF_error;
+  std::vector<Float_t> * muon_IsoSF_error;
 
   Int_t nPU;
   Int_t nPV;
@@ -42,7 +44,9 @@ electrons_p4(new std::vector<TLorentzVector>),
   electron_charge(new std::vector<Int_t>),
   muon_charge(new std::vector<Int_t>),
   muon_IDSF_central(new std::vector<Float_t>),
-  muon_IsoSF_central(new std::vector<Float_t>)
+  muon_IsoSF_central(new std::vector<Float_t>),
+  muon_IDSF_error(new std::vector<Float_t>),
+  muon_IsoSF_error(new std::vector<Float_t>)
 {
   clear();
 };
@@ -62,6 +66,8 @@ void miniTreeEvent::clear() {
   muon_charge->clear();
   muon_IDSF_central->clear();
   muon_IsoSF_central->clear();
+  muon_IDSF_error->clear();
+  muon_IsoSF_error->clear();
 
   nPU = -999.;
   nPV = 0.;
@@ -86,6 +92,8 @@ void miniTreeEvent::SetBranches(TTree* tree) {
   tree->Branch("muon_charge",muon_charge);
   tree->Branch("muon_IDSF_central",muon_IDSF_central);
   tree->Branch("muon_IsoSF_central",muon_IsoSF_central);
+  tree->Branch("muon_IDSF_error",muon_IDSF_error);
+  tree->Branch("muon_IsoSF_error",muon_IsoSF_error);
 
   tree->Branch("nPU", &nPU);
   tree->Branch("nPV", &nPV);
@@ -95,7 +103,21 @@ void miniTreeEvent::SetBranches(TTree* tree) {
 }
 
 void miniTreeEvent::SetBranchAddresses(TTree* tree, miniTreeEvent& event) {
-  
+
+  delete event.electrons_p4;
+  delete event.muons_p4;
+  delete event.jets_p4;
+
+  delete event.jec_uncertainty;
+  delete event.electron_scale;
+  delete event.electron_smearing;
+  delete event.electron_charge;
+  delete event.muon_charge;
+  delete event.muon_IDSF_central;
+  delete event.muon_IsoSF_central;
+  delete event.muon_IDSF_error;
+  delete event.muon_IsoSF_error;
+
   event.electrons_p4 = 0;
   event.muons_p4 = 0;
   event.jets_p4 = 0;
@@ -107,6 +129,8 @@ void miniTreeEvent::SetBranchAddresses(TTree* tree, miniTreeEvent& event) {
   event.muon_charge = 0;
   event.muon_IDSF_central = 0;
   event.muon_IsoSF_central = 0;
+  event.muon_IDSF_error = 0;
+  event.muon_IsoSF_error = 0;
 
   tree->SetBranchAddress("run",&event.run);
   tree->SetBranchAddress("lumi", &event.lumi);
@@ -123,6 +147,8 @@ void miniTreeEvent::SetBranchAddresses(TTree* tree, miniTreeEvent& event) {
   tree->SetBranchAddress("muon_charge",&event.muon_charge);
   tree->SetBranchAddress("muon_IDSF_central",&event.muon_IDSF_central);
   tree->SetBranchAddress("muon_IsoSF_central",&event.muon_IsoSF_central);
+  tree->SetBranchAddress("muon_IDSF_error",&event.muon_IDSF_error);
+  tree->SetBranchAddress("muon_IsoSF_error",&event.muon_IsoSF_error);
 
   tree->SetBranchAddress("nPU", &event.nPU);
   tree->SetBranchAddress("nPV", &event.nPV);
