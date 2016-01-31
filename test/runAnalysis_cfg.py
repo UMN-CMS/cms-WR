@@ -124,7 +124,7 @@ process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
-process.fullSeq = cms.Sequence(process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
+process.fullSeq = cms.Sequence(process.addStringIdentifier * process.PUWeights * process.jecSequence * process.selectionSequence * process.filterSequence)
 #process.fullSeq = cms.Sequence(process.addStringIdentifier *  process.jecSequence * process.selectionSequence * process.filterSequence)
 
 
