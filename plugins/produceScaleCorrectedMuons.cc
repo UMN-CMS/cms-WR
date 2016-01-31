@@ -40,24 +40,19 @@ void produceScaleCorrectedMuons::produce(edm::Event& event, const edm::EventSetu
 {
 	edm::Handle<pat::MuonCollection> muons;
 	event.getByLabel(src, muons);
-//        pat::Lepton<LeptonType> *newmuon;  
 	std::auto_ptr<pat::MuonCollection> mus(new pat::MuonCollection);
-//        mus->reserve(muons->size());
-//        muonModifier->setEvent(event);
-//        muonModifier->setEventContent(setup);
-        rochcor2015 *rmcor = new rochcor2015();
+	rochcor2015 *rmcor = new rochcor2015();
 	for(auto mu : *muons) {
-//            pat::Muon *newmuon = (pat::Muon*) mu.clone();
-            charge = mu.charge();
-            Mu_Original.SetPtEtaPhiE(mu.pt(),mu.eta(),mu.phi(),mu.energy());
-            if(!event.isRealData())  rmcor->momcor_mc(Mu_Original, charge, 0, qter);
-            else      rmcor->momcor_data(Mu_Original, charge, 0, qter);  
-            reco::Candidate::PolarLorentzVector p4(Mu_Original.Px(),Mu_Original.Py(),Mu_Original.Pz(),0.1057);
-            mu.setP4(p4);
-            mus->push_back(mu);
-		
+		charge = mu.charge();
+		Mu_Original.SetPtEtaPhiE(mu.pt(),mu.eta(),mu.phi(),mu.energy());
+		if(!event.isRealData())  rmcor->momcor_mc(Mu_Original, charge, 0, qter);
+		else      rmcor->momcor_data(Mu_Original, charge, 0, qter);  
+		reco::Candidate::PolarLorentzVector p4(Mu_Original.Px(),Mu_Original.Py(),Mu_Original.Pz(),0.1057);
+		mu.setP4(p4);
+		mus->push_back(mu);
 	}
 	event.put(mus, outputCollName);
+	delete rmcor;
 }
 
 DEFINE_FWK_MODULE(produceScaleCorrectedMuons);

@@ -33,7 +33,7 @@ options.output = defaultFileOutput
 options.parseArguments()
 if(options.test==3):
     options.files="file:skim_test.root"   
-    options.maxEvents=100
+    #options.maxEvents=100
     options.isMC=1
 elif(options.test==2):
     options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
