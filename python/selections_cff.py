@@ -69,6 +69,7 @@ wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    maxDeltaR = cms.double(0.4),
                                    )
 
+
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronSelector",
                                  src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
@@ -130,19 +131,27 @@ tunePIDIsoMuons = cms.EDFilter("PATMuonSelector",
                                cut = cms.string(muonIDIso),
                                )
 
+# make a collection of TuneP muons which pass isHighPt ID
+scaleCorrectedMuons = cms.EDProducer("produceScaleCorrectedMuons",
+		src = cms.InputTag("tunePIDIsoMuons"),
+                OutputCollectionName = cms.string("")
+		)
+
 ### add here the trigger matching
 
 ### select leading muon \ingroup muonSkim_Group
 wRleadingMuon = cms.EDFilter("PATMuonSelector",
-                             src = cms.InputTag("tunePIDIsoMuons"), #tunePIsolatedMuons"),
+                             src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
                              cut = wRleadingElectron.cut,
                          )
 
 ### select subleading muon
 wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
-                                src = cms.InputTag("tunePIDIsoMuons"), #tunePIsolatedMuons"),
+                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
                                 cut = wRsubleadingElectron.cut,
                                 )
+
+from ExoAnalysis.cmsWR.produceIdIsoSF_cff import *
 
 
 ### create di-muon pair in signal region
@@ -163,7 +172,7 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * wRleadingMuon * wRsubleadingMuon * wRdiMuonCandidate)
+muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
 ############################################################ E-Mu candidate
 #mixed flavour candidates
 wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",

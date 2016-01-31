@@ -6,4 +6,3 @@ ScaleCorrectedMuonsProd = cms.EDProducer("produceScaleCorrectedMuons",
                 OutputCollectionName = cms.string("ScaleCorrectedtunePIDIsoMuons")
 		)
 
-ScaleCorrectedMuonsSequence = cms.Sequence(ScaleCorrectedMuonsProd)

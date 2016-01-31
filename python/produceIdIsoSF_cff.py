@@ -5,7 +5,7 @@ import math
 Additional_ID_Systematics = 0.01
 Additional_ISO_Systematics = 0.01
 
-f = open('/afs/cern.ch/work/r/rchatter/CMSSW_7_4_15_patch1/src/ExoAnalysis/cmsWR/python/MuonHighPt_Z_RunCD_Reco74X_Dec17.pkl', 'r')
+f = open('python/MuonHighPt_Z_RunCD_Reco74X_Dec17.pkl', 'r')
 results = pickle.load(f)
 results.keys()
 results["HighPtID_EtaBins_Pt53"].keys()
@@ -35,8 +35,8 @@ for key, result in sorted(results["tkRelIsoID_EtaBins_Pt53"]["eta_ratio"].iterit
     
 
 # make a collection of TuneP muons which pass isHighPt ID
-MuonIdIsoSFProd = cms.EDProducer("produceLepIdIsoScaleFactors",
-		src = cms.InputTag("ScaleCorrectedMuonsProd","ScaleCorrectedtunePIDIsoMuons"),
+muonIdIsoSF = cms.EDProducer("produceLepIdIsoScaleFactors",
+		src = cms.InputTag("wRsubleadingMuon"),
                 OutputCollectionName1 = cms.string("MuonSFIdCentral"),
                 OutputCollectionName2 = cms.string("MuonSFIdError"),
                 OutputCollectionName3 = cms.string("MuonSFIsoCentral"),
@@ -47,4 +47,4 @@ MuonIdIsoSFProd = cms.EDProducer("produceLepIdIsoScaleFactors",
                 Scale_Factor_ISO_Error = cms.vdouble(SF_ISO_E)
 )
 
-MuonIdIsoSFProdSequence = cms.Sequence(MuonIdIsoSFProd)
+#MuonIdIsoSFProdSequence = cms.Sequence(MuonIdIsoSFProd)
