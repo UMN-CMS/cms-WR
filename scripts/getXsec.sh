@@ -80,11 +80,20 @@ do
 #Filter efficiency (taking into account weights)= (50088) / (50088) = 1.000e+00 +- 0.000e+00
 #Filter efficiency (event-level)= (50088) / (50088) = 1.000e+00 +- 0.000e+00
 #After filter: final cross section = 1.015e+01 +- 2.284e-02 pb
-	beforeFilter=`grep "Before Filtrer" $logfile | cut -d '=' -f 2 | awk '{print $1, $3}'`
+	beforeFilter=`grep "Before matching" $logfile | cut -d '=' -f 2 | awk '{print $1, $3}'`
 	filter_weight=`grep "Filter efficiency (taking into account weights)" $logfile | cut -d '=' -f 2 | awk '{print $1, $3}'`
 	filter_event=`grep "Filter efficiency (event-level)" $logfile | cut -d '=' -f 2 | awk '{print $1, $3}'`
 	afterFilter=`grep "After filter" $logfile | cut -d '=' -f 2 | awk '{print $1, "\t", $3}'`
 
+	case $datasetName in
+		*powheg*)
+			afterFilter=$beforeFilter
+			# echo $beforeFilter
+			# echo $afterFilter
+			;;
+		*)
+			;;
+	esac
 	echo $datasetName $afterFilter >> $logDir/l.list
 
 	# this updated always
