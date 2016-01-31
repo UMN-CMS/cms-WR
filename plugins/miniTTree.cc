@@ -99,24 +99,24 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     const auto ele = electrons->ptrAt(i);
     TLorentzVector p4;
     p4.SetPtEtaPhiM(ele->pt(),ele->eta(),ele->phi(),ele->mass());
-    myEvent.electrons_p4.push_back(p4);
-    myEvent.electron_scale.push_back(1.0);
-    myEvent.electron_smearing.push_back(1.0);
+    myEvent.electrons_p4->push_back(p4);
+    myEvent.electron_scale->push_back(1.0);
+    myEvent.electron_smearing->push_back(1.0);
   }
 
   for (size_t i = 0; i < muons->size(); ++i){
     const auto mu = muons->ptrAt(i);
     TLorentzVector p4;
     p4.SetPtEtaPhiM(mu->pt(),mu->eta(),mu->phi(),mu->mass());
-    myEvent.muons_p4.push_back(p4);
+    myEvent.muons_p4->push_back(p4);
   }
 
   for (size_t i = 0; i < jets->size(); ++i){
     const auto jet = jets->ptrAt(i);
     TLorentzVector p4;
     p4.SetPtEtaPhiM(jet->pt(),jet->eta(),jet->phi(),jet->mass());
-    myEvent.jets_p4.push_back(p4);
-    myEvent.jet_uncertainty.push_back((*jec_unc)[jet]);
+    myEvent.jets_p4->push_back(p4);
+    myEvent.jec_uncertainty->push_back((*jec_unc)[jet]);
   }
 
   tree->Fill();
