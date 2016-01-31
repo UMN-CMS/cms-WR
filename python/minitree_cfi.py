@@ -9,4 +9,5 @@ MiniTTree = cms.EDAnalyzer('miniTTree',
                             muon_IsoSF_central_src = cms.InputTag('muonIdIsoSF', 'MuonSFIsoCentral'),
                             muon_IDSF_error_src = cms.InputTag('muonIdIsoSF','MuonSFIdError'),
                             muon_IsoSF_error_src = cms.InputTag('muonIdIsoSF','MuonSFIsoError'),
+                            PUWeights_src = cms.InputTag('PUWeights','PileupWeights'),
                             )

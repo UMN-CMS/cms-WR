@@ -28,6 +28,7 @@ private:
   edm::EDGetToken muonsMiniAODToken_;
   edm::EDGetToken jetsMiniAODToken_;
   edm::EDGetToken pileUpInfoToken_;
+  edm::EDGetToken pileUpReweightToken_;
   edm::EDGetToken primaryVertexToken_;
   edm::EDGetToken evinfoToken_;
 
@@ -48,6 +49,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg)
   muonsMiniAODToken_ = consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
   jetsMiniAODToken_ = consumes<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
   pileUpInfoToken_ = consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
+  pileUpReweightToken_ = consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"));
   primaryVertexToken_ = consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
   evinfoToken_ = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
   jec_unc_src = consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"));
@@ -90,6 +92,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
 
   edm::Handle<GenEventInfoProduct> evinfo;
   edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
+  edm::Handle<float > PU_Weights;
 
   edm::Handle<edm::View<reco::Vertex> > primary_vertex;
   event.getByToken(primaryVertexToken_,primary_vertex);
@@ -109,6 +112,9 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
 	if(BX==0)
 	  myEvent.nPU = p.getTrueNumInteractions();
       }
+      event.getByToken(pileUpReweightToken_, PU_Weights);
+      myEvent.PU_reweight = *PU_Weights;
+
     }  
   
 
@@ -128,10 +134,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     p4.SetPtEtaPhiM(mu->pt(),mu->eta(),mu->phi(),mu->mass());
     myEvent.muons_p4->push_back(p4);
     myEvent.muon_charge->push_back(mu->charge());
-    myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
-    myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
-    myEvent.muon_IDSF_error->push_back((*muon_IDSF_error)[mu]);
-    myEvent.muon_IsoSF_error->push_back((*muon_IsoSF_error)[mu]);
+    // myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
+    // myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
+    // myEvent.muon_IDSF_error->push_back((*muon_IDSF_error)[mu]);
+    // myEvent.muon_IsoSF_error->push_back((*muon_IsoSF_error)[mu]); 
   }
 
   for (size_t i = 0; i < jets->size(); ++i){
