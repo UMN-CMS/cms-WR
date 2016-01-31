@@ -24,4 +24,5 @@
 <use name="RecoEgamma/EgammaTools" />
 <use name="CondFormats/JetMETObjects" />
 <use name="JetMETCorrections/Objects" />
+<use name="SimDataFormats/PileupSummaryInfo" />
 <flags EDM_PLUGIN="1"/>
