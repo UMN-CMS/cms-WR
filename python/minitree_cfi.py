@@ -5,5 +5,6 @@ MiniTTree = cms.EDAnalyzer('miniTTree',
                             electrons_src = cms.InputTag('wRminiTreeElectron'),
                             jets_src = cms.InputTag('wRJets'),
                             jec_unc_src = cms.string('wRJECUncert'),
-                            is_mc = cms.bool(False),
+                            muon_IDSF_central_src = cms.string(''),
+                            muon_IsoSF_central_src = cms.string(''),
                             )

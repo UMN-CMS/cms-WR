@@ -32,6 +32,8 @@ private:
   edm::EDGetToken evinfoToken_;
 
   const std::string jec_unc_src;
+  const std::string muon_IDSF_central_src;
+  const std::string muon_IsoSF_central_src;
 
   TTree* tree;
   miniTreeEvent myEvent;
@@ -39,7 +41,9 @@ private:
 };
 
 miniTTree::miniTTree(const edm::ParameterSet& cfg)
-  : jec_unc_src(cfg.getParameter<std::string>("jec_unc_src"))
+  : jec_unc_src(cfg.getParameter<std::string>("jec_unc_src")),
+    muon_IDSF_central_src(cfg.getParameter<std::string>("muon_IDSF_central_src")),
+    muon_IsoSF_central_src(cfg.getParameter<std::string>("muon_IsoSF_central_src"))
 {
   electronsMiniAODToken_   = mayConsume<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
   muonsMiniAODToken_ = mayConsume<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
@@ -52,7 +56,6 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg)
   tree = fs->make<TTree>("t", "");
 
   myEvent.SetBranches(tree);
-  //myEvent.SetBranchAddresses(tree);
 
 }
 
@@ -71,6 +74,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
 
   edm::Handle< edm::ValueMap<double> > jec_unc;
   event.getByLabel(jec_unc_src, "JECUncertainty", jec_unc);
+  edm::Handle< edm::ValueMap<float> > muon_IDSF;
+  event.getByLabel(muon_IDSF_central_src, "MuonIdIsoSFProd", muon_IDSF);
+  edm::Handle< edm::ValueMap<float> > muon_IsoSF;
+  event.getByLabel(muon_IsoSF_central_src, "MuonIdIsoSFProd", muon_IsoSF);
 
   edm::Handle<GenEventInfoProduct> evinfo;
   edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
@@ -102,6 +109,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     myEvent.electrons_p4->push_back(p4);
     myEvent.electron_scale->push_back(1.0);
     myEvent.electron_smearing->push_back(1.0);
+    myEvent.electron_charge->push_back(ele->charge());
   }
 
   for (size_t i = 0; i < muons->size(); ++i){
@@ -109,6 +117,9 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     TLorentzVector p4;
     p4.SetPtEtaPhiM(mu->pt(),mu->eta(),mu->phi(),mu->mass());
     myEvent.muons_p4->push_back(p4);
+    myEvent.muon_charge->push_back(mu->charge());
+    myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
+    myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
   }
 
   for (size_t i = 0; i < jets->size(); ++i){

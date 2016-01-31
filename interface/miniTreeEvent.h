@@ -11,9 +11,13 @@ class miniTreeEvent{
   std::vector<TLorentzVector> * muons_p4;
   std::vector<TLorentzVector> * jets_p4;
     
-  std::vector<float> * jec_uncertainty;
-  std::vector<float> * electron_scale;
-  std::vector<float> * electron_smearing;
+  std::vector<Float_t> * jec_uncertainty;
+  std::vector<Float_t> * electron_scale;
+  std::vector<Float_t> * electron_smearing;
+  std::vector<Int_t> * electron_charge;
+  std::vector<Int_t> * muon_charge;
+  std::vector<Float_t> * muon_IDSF_central;
+  std::vector<Float_t> * muon_IsoSF_central;
 
   Int_t nPU;
   Int_t nPV;
@@ -32,9 +36,13 @@ miniTreeEvent::miniTreeEvent():
 electrons_p4(new std::vector<TLorentzVector>),
   muons_p4(new std::vector<TLorentzVector>),
   jets_p4(new std::vector<TLorentzVector>),
-  jec_uncertainty(new std::vector<float>),
-  electron_scale(new std::vector<float>),
-  electron_smearing(new std::vector<float>)
+  jec_uncertainty(new std::vector<Float_t>),
+  electron_scale(new std::vector<Float_t>),
+  electron_smearing(new std::vector<Float_t>),
+  electron_charge(new std::vector<Int_t>),
+  muon_charge(new std::vector<Int_t>),
+  muon_IDSF_central(new std::vector<Float_t>),
+  muon_IsoSF_central(new std::vector<Float_t>)
 {
   clear();
 };
@@ -50,6 +58,10 @@ void miniTreeEvent::clear() {
   jec_uncertainty->clear();
   electron_scale->clear();
   electron_smearing->clear();
+  electron_charge->clear();
+  muon_charge->clear();
+  muon_IDSF_central->clear();
+  muon_IsoSF_central->clear();
 
   nPU = -999.;
   nPV = 0.;
@@ -70,6 +82,10 @@ void miniTreeEvent::SetBranches(TTree* tree) {
   tree->Branch("jec_uncertainty",jec_uncertainty);
   tree->Branch("electron_scale",electron_scale);
   tree->Branch("electron_smearing",electron_smearing);
+  tree->Branch("electron_charge",electron_charge);
+  tree->Branch("muon_charge",muon_charge);
+  tree->Branch("muon_IDSF_central",muon_IDSF_central);
+  tree->Branch("muon_IsoSF_central",muon_IsoSF_central);
 
   tree->Branch("nPU", &nPU);
   tree->Branch("nPV", &nPV);
@@ -87,6 +103,10 @@ void miniTreeEvent::SetBranchAddresses(TTree* tree, miniTreeEvent& event) {
   event.jec_uncertainty = 0;
   event.electron_scale = 0;
   event.electron_smearing = 0;
+  event.electron_charge = 0;
+  event.muon_charge = 0;
+  event.muon_IDSF_central = 0;
+  event.muon_IsoSF_central = 0;
 
   tree->SetBranchAddress("run",&event.run);
   tree->SetBranchAddress("lumi", &event.lumi);
@@ -99,6 +119,10 @@ void miniTreeEvent::SetBranchAddresses(TTree* tree, miniTreeEvent& event) {
   tree->SetBranchAddress("jec_uncertainty",&event.jec_uncertainty);
   tree->SetBranchAddress("electron_scale",&event.electron_scale);
   tree->SetBranchAddress("electron_smearing",&event.electron_smearing);
+  tree->SetBranchAddress("electron_charge",&event.electron_charge);
+  tree->SetBranchAddress("muon_charge",&event.muon_charge);
+  tree->SetBranchAddress("muon_IDSF_central",&event.muon_IDSF_central);
+  tree->SetBranchAddress("muon_IsoSF_central",&event.muon_IsoSF_central);
 
   tree->SetBranchAddress("nPU", &event.nPU);
   tree->SetBranchAddress("nPV", &event.nPV);
