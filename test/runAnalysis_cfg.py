@@ -123,6 +123,7 @@ process.load('ExoAnalysis.cmsWR.selections_cff')
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.load('ExoAnalysis.cmsWR.minitree_cfi')
+process.load('ExoAnalysis.cmsWR.hltFilters_cff')
 
 
 process.blindSeq = cms.Sequence()
@@ -133,9 +134,11 @@ process.fullSeq = cms.Sequence(process.addStringIdentifier * process.PUWeightsSe
 
 
 ############################################################ PATHs definition
-process.SignalRegion    = cms.Path(process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTTreeSeq)
-process.FlavourSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
-process.LowDiLeptonSideband = cms.Path(process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
+process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTTreeSeq)
+process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
+process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
+
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -147,7 +150,7 @@ if (options.isMC==0):
     print "# The signal region path will not be run!                              #"
     print "########################################################################"
 
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.microAODoutput_step)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe, process.microAODoutput_step)
 

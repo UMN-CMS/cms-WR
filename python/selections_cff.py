@@ -230,7 +230,7 @@ flavourSidebandFilter = cms.EDFilter('CandViewCountFilter',
 ## to be fixed
 lowDiLeptonSidebandSelector = cms.EDFilter("CandViewSelector",
                                      src = cms.InputTag("wRdiLeptonCandidate"),
-                                     cut = cms.string('(!'+diLeptonSelection + ') && (!'+flavourSidebandSelection+')' )
+                                     cut = cms.string('(mass< 180) && (!'+flavourSidebandSelection+')' )
                                      )
 lowDiLeptonSidebandFilter  = cms.EDFilter('CandViewCountFilter',
                                           src = cms.InputTag('lowDiLeptonSidebandSelector'),
