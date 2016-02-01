@@ -1,22 +1,31 @@
 import FWCore.ParameterSet.Config as cms
 
-mixedFlavorSignalRegionAnalyzer = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
 		doDileptonMassCut = cms.bool(True),
 		minDileptonMass = cms.double(200.),
 		treeName = cms.string("mixedFlavorSignalRegionTree"),
-		leptonsOneCollection = cms.InputTag("wRleadingElectron"),
+		leptonsOneCollection = cms.InputTag("wRsubleadingElectron"),
 		leptonsTwoCollection = cms.InputTag("wRleadingMuon"),
-		jetsCollection = cms.InputTag("wRtightJets"),
-		ignoreJets = cms.bool(False)
+		jetsCollection = cms.InputTag("wRJets"),
+		ignoreJets = cms.bool(False),
+		checkThisSelector = cms.InputTag("flavourSidebandSelector"),
+		dontCheckSelector = cms.InputTag(False)
 		)
 
-zToEEAnalyzer = mixedFlavorSignalRegionAnalyzer.clone(treeName = cms.string("zEECheckTree"),
-		leptonsOneCollection = cms.InputTag("wRleadingElectron"),
-		leptonsTwoCollection = cms.InputTag("wRsubleadingElectron"),
+
+mixedFlavorSignalRegionAnalyzerLeadEleSubleadMu = mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle.clone(leptonsOneCollection = cms.InputTag("wRleadingElectron"),
+		leptonsTwoCollection = cms.InputTag("wRsubleadingMuon")
+		)
+
+zToEEAnalyzer = mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle.clone(treeName = cms.string("zEECheckTree"),
+		leptonsOneCollection = cms.InputTag("wRHEEPElectron"),
+		leptonsTwoCollection = cms.InputTag("wRHEEPElectron"),
 		jetsCollection = cms.InputTag(""),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
-		ignoreJets = cms.bool(True)
+		ignoreJets = cms.bool(True),
+		checkThisSelector = cms.InputTag(""),
+		dontCheckSelector = cms.bool(True)
 		)
 
 zToMuMuAnalyzer = zToEEAnalyzer.clone(treeName = cms.string("zMuMuCheckTree"),
@@ -24,32 +33,31 @@ zToMuMuAnalyzer = zToEEAnalyzer.clone(treeName = cms.string("zMuMuCheckTree"),
 		leptonsTwoCollection = cms.InputTag("scaleCorrectedMuons")
 		)
 
-lowDileptonMassAnalyzerMuMu = mixedFlavorSignalRegionAnalyzer.clone(treeName = cms.string("lowMmumuTree"),
+lowDileptonMassAnalyzerMuMu = mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle.clone(treeName = cms.string("lowMmumuTree"),
 		leptonsOneCollection = cms.InputTag("wRleadingMuon"),
 		leptonsTwoCollection = cms.InputTag("wRsubleadingMuon"),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
+		checkThisSelector = cms.InputTag("lowDiLeptonSidebandSelector")
 		)
 
-lowDileptonMassAnalyzerEE = mixedFlavorSignalRegionAnalyzer.clone(treeName = cms.string("lowMeeTree"),
+lowDileptonMassAnalyzerEE = lowDileptonMassAnalyzerMuMu.clone(treeName = cms.string("lowMeeTree"),
 		leptonsOneCollection = cms.InputTag("wRleadingElectron"),
-		leptonsTwoCollection = cms.InputTag("wRsubleadingElectron"),
-		doDileptonMassCut = cms.bool(False),
-		minDileptonMass = cms.double(-1),
+		leptonsTwoCollection = cms.InputTag("wRsubleadingElectron")
 		)
 
 lowFourObjectMassAnalyzerEE = lowDileptonMassAnalyzerEE.clone(treeName = cms.string("lowMeejjTree"),
 		doDileptonMassCut = cms.bool(True),
-		minDileptonMass = cms.double(200.)
+		minDileptonMass = cms.double(200.),
+		checkThisSelector = cms.InputTag("lowFourObjectSidebandSelector")
 		)
 
-lowFourObjectMassAnalyzerMuMu = lowDileptonMassAnalyzerMuMu.clone(treeName = cms.string("lowMmumujjTree"),
-		doDileptonMassCut = cms.bool(True),
-		minDileptonMass = cms.double(200.)
-		)
+lowFourObjectMassAnalyzerMuMu = lowFourObjectMassAnalyzerEE.clone(treeName = cms.string("lowMmumujjTree"))
 
-sameFlavorSignalRegionAnalyzerEE = lowFourObjectMassAnalyzerEE.clone(treeName = cms.string("eeSignalRegionTree"))
-sameFlavorSignalRegionAnalyzerMuMu = lowFourObjectMassAnalyzerMuMu.clone(treeName = cms.string("mumuSignalRegionTree"))
+sameFlavorSignalRegionAnalyzerEE = lowFourObjectMassAnalyzerEE.clone(treeName = cms.string("eeSignalRegionTree"),
+		checkThisSelector = cms.InputTag("signalRegionSelector")
+		)
+sameFlavorSignalRegionAnalyzerMuMu = sameFlavorSignalRegionAnalyzerEE.clone(treeName = cms.string("mumuSignalRegionTree"))
 
 
 
