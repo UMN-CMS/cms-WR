@@ -1,6 +1,7 @@
 import sys
 import ExoAnalysis.cmsWR.cross_sections as xs 
 import ExoAnalysis.cmsWR.combineTools as combineTools
+import ExoAnalysis.cmsWR.plot as plt
 
 infile = sys.argv[1]
 header = []
@@ -20,8 +21,12 @@ with open(infile,"r") as f:
 sig_name = header[1]
 bg_names = header[2:]
 
+plotter = plt.limit1d(0.01)
+plotter.addTheory(xs.WR_mumujj)
+
 for i in range(len(MWR)):
 	signal_tuple = (sig_name, signal[i])
+	bg[i] = [x*2 for x in bg[i]]
 	bg_tuples = zip(bg_names, bg[i])
 	nBG = sum(bg[i])
 
@@ -31,7 +36,10 @@ for i in range(len(MWR)):
 	method = "ProfileLikelihood"
 	command = ["combine","-M",method,"-S","0",datacard_file,"-n", datacard,"-t","1000"]
 	ret = combineTools.runCombine(command)
-	(mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = ret
-	print MWR[i], mean, xs.WR_mumujj[MWR[i]]
+	plotter.add(MWR[i], ret)
+	median, (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = ret
+	print MWR[i], median, mean, meanError, onesig_minus, onesig_plus, twosig_minus,twosig_plus, xs.WR_mumujj[MWR[i]]
+
+plotter.plot("limWRmumu.png", x_title = "M_{W_{R}} [TEV]", y_title="#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mu) [fb]", )
 
 		

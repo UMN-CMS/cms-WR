@@ -4,6 +4,7 @@ import numpy as np
 import subprocess
 from random import gauss
 import ExoAnalysis.cmsWR.backgroundFits as bgfits
+import ExoAnalysis.cmsWR.cross_sections as xs
 
 ##
 # @brief creates a datacard for combine for signal and background
@@ -56,22 +57,105 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 ##
 # @brief gets fourObjectMass histogram from tree in root file
 #
-# @param dirname name for TDirectory that contains TTree
-# @param treename name of TTree
-# @param process tuple of (histname, filename). histname is name of output histogram. filename which contains TTree
+# @param MWR Mass of WR
 # @param binsize
 #
-# @return 
-def getMassHisto(dirname, treename, process, binsize=100):
-	histname, filename = process
+# @return TH1F of fourobjectmass
+def getEEJJMassHisto(MWR, binsize=100):
+	filename = "data/all_analyzed_tree_hltAndAllRecoOfflineCuts_eejjSignalRegion_WR_M-%d_Nu_M-%d.root" % (MWR, MWR/2)
+	dirname =  "unmatchedSignalRecoAnalyzerFive"
+	treename = "signalRecoObjectsWithAllCuts"
+	histname = "WR_eejj_" + str(MWR)
 	infile = r.TFile.Open(filename)
 	tree = infile.Get(dirname + '/' + treename)
 	r.gROOT.cd()
 	nbins = 10000/int(binsize)
 	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
 	tree.Draw("fourObjectMass>>" + histname, "" ,"goff")
+	nevents = 50000.
+	h.Scale( xs.WR_eejj[MWR]/nevents )
 	return h
 
+def getMuMuJJMassHisto(MWR, binsize=100):
+	filename = "data/mumu_histos.root"
+	infile = r.TFile.Open(filename)
+	r.gROOT.cd()
+	h = infile.Get("h_" + str(MWR)).Clone()
+	orig_lumi = 2460.
+	h.Scale((xs.WR_mumujj[MWR]/0.01)*(1./orig_lumi))
+	return h
+
+def getSignalMassHisto(MWR, channel, binsize=100):
+	if "ee" in channel or "EE" in channel:
+		return getEEJJMassHisto(MWR,binsize=binsize)
+	else:
+		return getMuMuJJMassHisto(MWR,binsize=binsize)
+
+def getTTBarNEvents(MWR, channel, lumi):
+	if "ee" in channel or "EE" in channel:
+		filename = "data/ttBarBkgndEleEstimate.root"
+		workname = "ttBarElectronEstimate"
+		corr_name = "EEtoEMuCorrection"
+	else:
+		filename = "data/ttBarBkgndMuonEstimate.root"
+		workname = "ttBarMuonEstimate"
+		corr_name = "MuMutoEMuCorrection"
+	f = r.TFile.Open(filename)
+	work = f.Get(workname)
+	pdf = work.pdf("rescaledExpPdf")
+	mass = work.var("fourObjectMass")
+	data = work.data("eMuRealDataSet")
+
+	mass.setRange(str(MWR), mass_cut[MWR][0], mass_cut[MWR][1])
+	argset = r.RooArgSet(mass)
+	integral = pdf.createIntegral(argset, r.RooFit.NormSet(argset), r.RooFit.Range(str(MWR)))
+
+	real_norm = work.var("realEMuDataNormalization").getVal()
+	corr = work.var(corr_name).getVal()
+	orig_lumi = 2488.245
+	ret = integral.getVal()*real_norm*corr*lumi/orig_lumi
+	f.Close()
+	return  ret
+
+def getDYNEvents(MWR, channel, lumi):
+	if "ee" in channel or "EE" in channel:
+		filename = "data/DYElectronFits.root"
+		workname = "DYElectronFits"
+		dataname = "DY_EEDataSet_120to200"
+	else:
+		filename = "data/DYMuonFits.root"
+		workname = "DYMuonFits"
+		dataname = "DY_MuMuDataSet_120to200"
+
+	f = r.TFile.Open(filename)
+	work = f.Get(workname)
+	pdf = work.pdf("rescaledExpPdf")
+	mass = work.var("fourObjectMass")
+	data = work.data(dataname)
+
+	mass.setRange(str(MWR), mass_cut[MWR][0], mass_cut[MWR][1])
+	argset = r.RooArgSet(mass)
+	integral = pdf.createIntegral(argset, r.RooFit.NormSet(argset), r.RooFit.Range(str(MWR)))
+
+	norm = data.sumEntries()
+	orig_lumi = 2488.245
+	ret = integral.getVal()*norm*lumi/orig_lumi
+	f.Close()
+	return  ret
+
+def getNEvents(MWR, channel, process, lumi):
+	if process == "signal":
+		h = getSignalMassHisto(MWR, channel)
+		low,hi = mass_cut[int(MWR)]
+		lowbin = h.FindBin(low)
+		hibin = h.FindBin(hi) - 1
+		return h.Integral(lowbin, hibin) * lumi
+	elif process == "TTBar":
+		return getTTBarNEvents(MWR, channel, lumi)
+	elif process == "DY":
+		return getDYNEvents(MWR, channel, lumi)
+	else:
+		return None
 ##
 # @brief calls and parses command for `combine'
 #
@@ -91,6 +175,27 @@ def runCombine(command):
 	except:
 		print output
 
-#def getHists(dirname, treename, processes):
-#	 return [getMassHisto(dirname,  treename,  p) for p in processes]
-
+mass_cut = {
+		800 :( 700,  900),
+		1200:(1000, 1400),
+		1400:(1200, 1600),
+		1600:(1350, 1850),
+		2000:(1700, 2300),
+		2400:(2050, 2750),
+		2600:(2200, 3000),
+		2800:(2400, 3200),
+		3000:(2550, 3450),
+		3200:(2700, 3700),
+		3600:(3000, 4150),
+		3800:(3000, 4350),
+		4000:(3000, 4600),
+		4200:(3000, 4850),
+		4400:(3000, 5050),
+		4600:(3000, 5300),
+		4800:(3000, 5500),
+		5000:(3000, 5750),
+		5200:(3000, 6000),
+		5600:(3000, 6450),
+		5800:(3000, 6650),
+		6000:(3000, 6900),
+		}
