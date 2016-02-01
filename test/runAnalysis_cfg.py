@@ -124,13 +124,16 @@ from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.load('ExoAnalysis.cmsWR.hltFilters_cff')
+process.load('ExoAnalysis.cmsWR.heepSelector_cfi')
+
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
 
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
-process.fullSeq = cms.Sequence(process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
-#process.fullSeq = cms.Sequence(process.addStringIdentifier *  process.jecSequence * process.selectionSequence * process.filterSequence)
+process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
 
 
 ############################################################ PATHs definition
@@ -138,7 +141,7 @@ process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq *
 process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
 process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -153,4 +156,3 @@ if (options.isMC==0):
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe, process.microAODoutput_step)
-

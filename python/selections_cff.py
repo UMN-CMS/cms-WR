@@ -21,7 +21,6 @@ jetID=" (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (cha
 #muonIDIso=" isolationR03().sumPt/pt < 0.1"
 muonIDIso=' isolationR03().sumPt/pt < 0.1 && userInt("highPtID") == 1'
 
-from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 
 
 ############################################################ Jets
@@ -70,10 +69,15 @@ wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    maxDeltaR = cms.double(0.4),
                                    )
 
+#wRHEEPElectron = 
+wRHEEPElectron = cms.EDProducer('HEEPIDSelector',
+                                electrons= cms.InputTag("slimmedElectrons"),
+                                eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
+                                )
 
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronSelector",
-                                 src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
+                                 src = cms.InputTag("wRHEEPElectron"), #wRIsolatedElectrons"),
                                  cut = cms.string( 
         (("(pt>%f) && (abs(eta)<%f)") % (leadingPt, maxEtaLeptons))
         ),
@@ -81,7 +85,7 @@ wRleadingElectron = cms.EDFilter("PATElectronSelector",
 
 ### select subleading electron
 wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("slimmedElectrons"), #wRIsolatedElectrons"),
+                                    src = cms.InputTag("wRHEEPElectron"), #wRIsolatedElectrons"),
                                     cut = cms.string( 
         (("(pt>%f) && (abs(eta)<%f)") % (subleadingPt, maxEtaLeptons))
         ),
@@ -110,7 +114,7 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)
 ############################################################ Muons
 
 tunePMuons = cms.EDProducer("TunePMuonProducer",
