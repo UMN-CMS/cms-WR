@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+import os, sys, imp, re
 
 process = cms.Process('SELECTION')
 
@@ -12,7 +13,7 @@ options.register('isMC',
                  VarParsing.VarParsing.varType.int,
                  "")
 options.register('test',
-                2,
+                0,
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.int,
                 "define the test type: 0=data, 1=signalMC, 2=background MC, 3=local file called skim_test.root")
@@ -156,3 +157,13 @@ if (options.isMC==0):
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe, process.microAODoutput_step)
+
+
+CMSSW_VERSION=os.getenv("CMSSW_VERSION")
+CMSSW_BASE=os.getenv("CMSSW_BASE")
+
+pathPrefix=CMSSW_BASE+'/src/ExoAnalysis/cmsWR/'
+
+process.PUWeights.PileupMCFilename = cms.string(pathPrefix + "data/MCPileup.root")
+process.PUWeights.PileupDataFilename = cms.string(pathPrefix + "data/DataPileup.root")
+

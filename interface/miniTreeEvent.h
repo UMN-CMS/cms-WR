@@ -21,7 +21,7 @@ class miniTreeEvent{
   std::vector<Float_t> * muon_IDSF_error;
   std::vector<Float_t> * muon_IsoSF_error;
 
-  Int_t nPU;
+  Float_t nPU;
   Int_t nPV;
   Float_t weight;
   Float_t PU_reweight;

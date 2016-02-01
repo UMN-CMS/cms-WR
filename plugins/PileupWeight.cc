@@ -31,7 +31,7 @@ private:
 	//Tokens
 	edm::EDGetToken pileUpInfoToken_;
 	// typedef
-	typedef std::map<int, double> PUweights_t;
+	typedef std::map<float, double> PUweights_t;
 	PUweights_t pu_weights;
 
 	static const int MAX_PU_REWEIGHT = 59;
@@ -120,7 +120,7 @@ producePileupWeight::producePileupWeight(const edm::ParameterSet& cfg):
 
 void producePileupWeight::produce(edm::Event& event, const edm::EventSetup&)
 {
-	int nPU = 0;
+	float nPU = 0;
 	float PU_weight = 1.0;
 	if(!event.isRealData()) {
 		edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
