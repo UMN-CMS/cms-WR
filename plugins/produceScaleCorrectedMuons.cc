@@ -47,7 +47,7 @@ void produceScaleCorrectedMuons::produce(edm::Event& event, const edm::EventSetu
 		Mu_Original.SetPtEtaPhiE(mu.pt(),mu.eta(),mu.phi(),mu.energy());
 		if(!event.isRealData())  rmcor->momcor_mc(Mu_Original, charge, 0, qter);
 		else      rmcor->momcor_data(Mu_Original, charge, 0, qter);  
-		reco::Candidate::PolarLorentzVector p4(Mu_Original.Px(),Mu_Original.Py(),Mu_Original.Pz(),0.1057);
+		reco::Candidate::PolarLorentzVector p4(Mu_Original.Pt(),Mu_Original.Eta(),Mu_Original.Phi(),0.1057);
 		mu.setP4(p4);
 		mus->push_back(mu);
 	}
