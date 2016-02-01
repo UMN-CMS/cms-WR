@@ -9,7 +9,7 @@ mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle = cms.EDAnalyzer('unmatchedAnaly
 		jetsCollection = cms.InputTag("wRJets"),
 		ignoreJets = cms.bool(False),
 		checkThisSelector = cms.InputTag("flavourSidebandSelector"),
-		dontCheckSelector = cms.InputTag(False)
+		dontCheckSelector = cms.bool(False)
 		)
 
 
@@ -18,8 +18,8 @@ mixedFlavorSignalRegionAnalyzerLeadEleSubleadMu = mixedFlavorSignalRegionAnalyze
 		)
 
 zToEEAnalyzer = mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle.clone(treeName = cms.string("zEECheckTree"),
-		leptonsOneCollection = cms.InputTag("wRHEEPElectron"),
-		leptonsTwoCollection = cms.InputTag("wRHEEPElectron"),
+		leptonsOneCollection = cms.InputTag("wRHEEPElectronRefiner"),
+		leptonsTwoCollection = cms.InputTag("wRHEEPElectronRefiner"),
 		jetsCollection = cms.InputTag(""),
 		doDileptonMassCut = cms.bool(False),
 		minDileptonMass = cms.double(-1),
@@ -29,8 +29,8 @@ zToEEAnalyzer = mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle.clone(treeName =
 		)
 
 zToMuMuAnalyzer = zToEEAnalyzer.clone(treeName = cms.string("zMuMuCheckTree"),
-		leptonsOneCollection = cms.InputTag("scaleCorrectedMuons"),
-		leptonsTwoCollection = cms.InputTag("scaleCorrectedMuons")
+		leptonsOneCollection = cms.InputTag("scaleCorrectedMuonsRefiner"),
+		leptonsTwoCollection = cms.InputTag("scaleCorrectedMuonsRefiner")
 		)
 
 lowDileptonMassAnalyzerMuMu = mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle.clone(treeName = cms.string("lowMmumuTree"),

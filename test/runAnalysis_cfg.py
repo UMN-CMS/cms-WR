@@ -30,14 +30,16 @@ defaultFileOutput = "myfile.root"
 options.output = defaultFileOutput
 #
 
+#print 'about to parse option args'
 options.parseArguments()
 if(options.test==3):
     options.files="file:skim_test.root"   
     #options.maxEvents=100
     options.isMC=1
 elif(options.test==2):
-    options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
-    options.maxEvents=100
+    #options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
+    options.files='root://cms-xrd-global.cern.ch//store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
+    options.maxEvents=200
     options.isMC=1
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
@@ -77,7 +79,7 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(
 #    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True),
-    #SkipEvent = cms.untracked.vstring('ProductNotFound'),
+    SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 process.source = cms.Source("PoolSource",
@@ -118,30 +120,42 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 		)
 
 
+print 'about to load selections_cff'
 # here the full set of sequences and hlt paths used to make the first step
 process.load('ExoAnalysis.cmsWR.selections_cff')
+print 'about to import everything from JEC_cff'
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.load('ExoAnalysis.cmsWR.hltFilters_cff')
-process.load('ExoAnalysis.cmsWR.heepSelector_cfi')
 
+print 'about to import from heepSelector'
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
+process.load('ExoAnalysis.cmsWR.heepSelector_cfi')
+
+from ExoAnalysis.cmsWR.dataMcAnalyzers_cfi import *
 
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
-process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
+#process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
+process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.jecSequence * process.selectionSequence * process.filterSequence)
 
-
+print 'about to declare paths'
 ############################################################ PATHs definition
-process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTTreeSeq)
-process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
-process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
+#process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTTreeSeq)
+#process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
+#process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
+process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter)
+process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter)
+process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence)
+
+#process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.jecSequence * process.selectionSequence)
+
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 

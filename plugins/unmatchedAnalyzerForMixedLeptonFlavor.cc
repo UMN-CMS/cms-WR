@@ -245,6 +245,7 @@ std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
 bool ignoreJets;
+bool ignoreSelector;
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsOne;
@@ -253,6 +254,7 @@ edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > >
 edm::Handle<GenEventInfoProduct> genEvtInfo;
 edm::Handle<std::vector<reco::Vertex> > vertices;
 edm::Handle<std::vector<pat::MET> > met;
+edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > selectorToCheck;
 
 ///tokens to input collections
 edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > leptonsOneToken;
@@ -261,6 +263,7 @@ edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > jetsToken;
 edm::EDGetTokenT<GenEventInfoProduct> genEventInfoToken;
 edm::EDGetTokenT<std::vector<reco::Vertex> > verticesToken;
 edm::EDGetTokenT<std::vector<pat::MET> > metToken;
+edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > selectorToken;
 
 
 TTree * tree;
@@ -337,7 +340,8 @@ unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(con
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
 	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
-	ignoreJets(iConfig.getParameter<bool>("ignoreJets"))
+	ignoreJets(iConfig.getParameter<bool>("ignoreJets")),
+	ignoreSelector(iConfig.getParameter<bool>("dontCheckSelector"))
 
 {
    //now do what ever initialization is needed
@@ -397,6 +401,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(con
    genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
    verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
    metToken = consumes<std::vector<pat::MET> >(edm::InputTag("slimmedMETs"));
+   if(!ignoreSelector) selectorToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("checkThisSelector"));
 
 }
 
@@ -424,6 +429,9 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	std::cout<<"in analyze method of unmatchedAnalyzerForMixedLeptonFlavor class"<<std::endl;
 #endif
 
+	if(!ignoreSelector) iEvent.getByToken(selectorToken, selectorToCheck);
+	if(!ignoreSelector && selectorToCheck->size() < 1) return;	///<leave analyzer if the appropriate diLepton or wRCandidate is not found
+
 	evtNumber = iEvent.id().event();
 	runNumber = iEvent.id().run();
 	evWeight = 1.0;
@@ -433,7 +441,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	iEvent.getByToken(leptonsTwoToken, leptonsTwo);
 	if(!ignoreJets) iEvent.getByToken(jetsToken, jets);
 	iEvent.getByToken(verticesToken, vertices);
-
+	
 	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing MC
 
 	if(genEvtInfo.isValid() ){
