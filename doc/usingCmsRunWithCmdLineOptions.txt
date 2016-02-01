@@ -1,0 +1,4 @@
+to pass options from the command line into a python file like test/quickRecoKinematicsAnalyzer_eejj_cfg.py when executing the file with cmsRun, I should enter a command like this:
+
+cmsRun test/quickRecoKinematicsAnalyzer_eejj_cfg.py output=/path/to/output/file.root files=$(cat path/to/input/file/list.txt) maxEvents=someNum >& analysisOutput_processFinalStateAndSkimRegion.txt &
+

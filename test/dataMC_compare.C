@@ -30,20 +30,20 @@ void dataMC_compare(){
 
   TTree *tree_data = (TTree*)hfile_data->Get("MakeTTree_Muons/t");  
 
-  vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,20,0,1000);
-  vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,20,0,300);
-  vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,20,0,400);
-  vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,20,0,200);
-  vector<TH1F*> h_j1pt = MakeNHistos("h_j1pt",7,20,0,500);
-  vector<TH1F*> h_j2pt = MakeNHistos("h_j2pt",7,20,0,500);
-  vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,20,-3.,3.);
-  vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,20,-3.,3.);
-  vector<TH1F*> h_j1eta = MakeNHistos("h_j1eta", 7,20,-3.,3.);
-  vector<TH1F*> h_j2eta = MakeNHistos("h_j2eta", 7,20,-3.,3.);
-  vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_j1phi = MakeNHistos("h_j1phi", 7,20,-3.15,3.15);
-  vector<TH1F*> h_j2phi = MakeNHistos("h_j2phi", 7,20,-3.15,3.15);
+  vector<TH1F*> h_Mlljj = MakeNHistos("h_Mlljj",7,30,0,1000);
+  vector<TH1F*> h_Mll = MakeNHistos("h_Mll",7,30,50,300);
+  vector<TH1F*> h_l1pt = MakeNHistos("h_l1pt",7,30,0,400);
+  vector<TH1F*> h_l2pt = MakeNHistos("h_l2pt",7,30,0,200);
+  vector<TH1F*> h_j1pt = MakeNHistos("h_j1pt",7,30,0,500);
+  vector<TH1F*> h_j2pt = MakeNHistos("h_j2pt",7,30,0,500);
+  vector<TH1F*> h_l1eta = MakeNHistos("h_l1eta", 7,30,-3.,3.);
+  vector<TH1F*> h_l2eta = MakeNHistos("h_l2eta", 7,30,-3.,3.);
+  vector<TH1F*> h_j1eta = MakeNHistos("h_j1eta", 7,30,-3.,3.);
+  vector<TH1F*> h_j2eta = MakeNHistos("h_j2eta", 7,30,-3.,3.);
+  vector<TH1F*> h_l1phi = MakeNHistos("h_l1phi", 7,30,-3.15,3.15);
+  vector<TH1F*> h_l2phi = MakeNHistos("h_l2phi", 7,30,-3.15,3.15);
+  vector<TH1F*> h_j1phi = MakeNHistos("h_j1phi", 7,30,-3.15,3.15);
+  vector<TH1F*> h_j2phi = MakeNHistos("h_j2phi", 7,30,-3.15,3.15);
   vector<TH1F*> h_nleptons = MakeNHistos("h_nleptons", 7,10,0,10);
   vector<TH1F*> h_njets = MakeNHistos("h_njets", 7,25,0,25);
   vector<TH1F*> h_nvertices = MakeNHistos("h_nvertices", 7,50,0,50);
@@ -71,7 +71,7 @@ void dataMC_compare(){
   vector<TH1F*> h_numberoflayers_0 = MakeNHistos("h_numberoflayers_0", 7,20,0,20);
   vector<TH1F*> h_numberoflayers_1 = MakeNHistos("h_numberoflayers_1", 7,20,0,20);
 
-  vector<TH1F*> h_angle3D = MakeNHistos("h_angle3D", 7,50,-6,6);
+  vector<TH1F*> h_angle3D = MakeNHistos("h_angle3D", 7,50,-1,1);
 
   int nhistos = 40;
 
@@ -164,7 +164,7 @@ void dataMC_compare(){
 
   // Scale = xsection*luminosity/events
   for(std::vector<TH1F*>::size_type i = 0; i != nhistos; i++){
-    histos[0][i]->Scale(6025.2*40.003/19925500);
+    histos[0][i]->Scale(6025.2*40.003/(19925500*0.835));
     histos[0][i]->SetFillColor(kYellow);
     histos[1][i]->Scale(815.96*40.003/4994250);
     histos[1][i]->SetFillColor(kGreen);
@@ -201,20 +201,48 @@ void dataMC_compare(){
   TString fnames[] = {"Mlljj","Mll","l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","nleptons","njets","nvertices","dR_l1l2","dR_j1j2","dR_l1j1","dR_l1j2","dR_l2j1","dR_l2j2","isGlobal0","isGlobal1","nhits0","nhits1","nstations0","nstations1","sigmapt0","sigmapt1","dxy0","dxy1","dz0","dz1","npixels0","npixels1","nlayers0","nlayers1","angle3D"};
 
   for(int icanvas=0; icanvas<nhistos; icanvas++){
-    TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 400 ) ;
+
+    TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
+    Double_t eps = 0.001;
+    TPad* p1 = new TPad("p1","p1",0,0.25,1,1,0); p1->Draw();
+    TPad* p2 = new TPad("p2","p2",0,0.1,1,0.25+eps,0); p2->Draw();
+    p1->SetBottomMargin(0);
+    p2->SetTopMargin(0);   
+    p1->cd();
+    histos[6][icanvas]->SetStats(0);
     //ths[icanvas]->Draw();
-    histos[6][icanvas]->Draw("ep");
+    histos[6][icanvas]->DrawCopy("ep");
     ths[icanvas]->Draw("same");
     ths[icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
     histos[6][icanvas]->GetXaxis()->SetTitle(xtitles[icanvas].Data());
+    ths[icanvas]->GetXaxis()->SetTickSize(1.0);
+    ths[icanvas]->GetXaxis()->SetTitleSize(0.1);
+    histos[6][icanvas]->GetXaxis()->SetTickSize(0.40);
+    histos[6][icanvas]->GetXaxis()->SetTitleSize(0.2);
+    histos[6][icanvas]->SetLabelSize(0.1,"x");
     //histos[2][0]->Draw("same");
     leg->Draw(); 
+    mycanvas->cd();
+    p2->cd();
+    histos[6][icanvas]->Sumw2();
+    histos[6][icanvas]->SetStats(0);
+
+    histos[0][icanvas]->Add(histos[1][icanvas]);
+    histos[0][icanvas]->Add(histos[3][icanvas]);
+    histos[0][icanvas]->Add(histos[4][icanvas]);
+    histos[0][icanvas]->Add(histos[5][icanvas]);
+
+    histos[6][icanvas]->Divide(histos[0][icanvas]);
+    histos[6][icanvas]->SetMarkerStyle(21);
+    histos[6][icanvas]->SetLabelSize(0.1,"y");
+    histos[6][icanvas]->Draw("p");
+    mycanvas->cd();
     TString fn = "~/www/plots/WR/skimmed/data/";
     TString fn_pdf = fn + fnames[icanvas].Data() + ".pdf";
     TString fn_png = fn + fnames[icanvas].Data() + ".png";
     mycanvas->Print(fn_pdf.Data());
     mycanvas->Print(fn_png.Data());
-    mycanvas->SetLogy();
+    p1->SetLogy();
     TString fn_log_pdf = fn + fnames[icanvas].Data() + "_log.pdf";
     TString fn_log_png = fn + fnames[icanvas].Data() + "_log.png";
     mycanvas->Print(fn_log_pdf.Data());
@@ -320,13 +348,13 @@ void Fill_Histo(std::vector<TH1F*> h1, TTree* tree, std::vector<float> PUW, bool
     float reweight = 1;
     tree->GetEntry(ev); 
 
-    if(Mlljj<600 && l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && Mll<200)// && (dR_l1l2 < 2.5 || dR_l1l2 > 3.5))// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
+    if(Mlljj<600 && l1_pt>60 && l2_pt>50 && j1_pt>40 && j2_pt>40 && Mll<200 && Mll>50 && dR_l1l2 > 0.1)// && dR_l1j1 > 0.4 && dR_l1j2 > 0.4 && dR_l2j1 > 0.4 && dR_l2j2 > 0.4)
       {
 	if(!is_data){
 	  if(pileup_reweight)
 	    reweight = weight/fabs(weight)*PUW[nvertices];
 	  else
-	    reweight = weight/fabs(weight);
+	    reweight = (weight)/fabs(weight);
 
 	  h1[0]->Fill(Mlljj,reweight);
 	  h1[1]->Fill(Mll,reweight);

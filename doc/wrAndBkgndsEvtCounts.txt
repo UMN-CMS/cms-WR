@@ -1,0 +1,24 @@
+135.84 evts are expected with 1500/pb of 13TeV data from TTBar background
+32.95 evts are expected with 1500/pb of 13TeV data from DY+Jets background
+10.12 evts are expected with 1500/pb of 13TeV data from other SM backgrounds
+
+1560.81 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	800	MNu=	400	 GeV
+1007.76 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	1000	MNu=	500	 GeV
+403.648 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	1200	MNu=	600	 GeV
+274.992 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	1400	MNu=	700	 GeV
+130.477 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	1600	MNu=	800	 GeV
+56.0898 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	2000	MNu=	1000	 GeV
+37.1264 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	2200	MNu=	1100	 GeV
+20.9488 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	2400	MNu=	1200	 GeV
+12.7886 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	2600	MNu=	1300	 GeV
+7.89654 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	2800	MNu=	1400	 GeV
+5.05665 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	3000	MNu=	1500	 GeV
+2.86559 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	3200	MNu=	1600	 GeV
+1.30607 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	3600	MNu=	1800	 GeV
+1.0278 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	3800	MNu=	1900	 GeV
+0.327555 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	4400	MNu=	2200	 GeV
+0.0809911 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	5000	MNu=	2500	 GeV
+0.0592515 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	5200	MNu=	2600	 GeV
+0.0220226 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	5600	MNu=	2800	 GeV
+0.0175752 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	5800	MNu=	2900	 GeV
+0.0120364 evts are expected with 1500/pb of 13TeV data from a WR signal with MWR=	6000	MNu=	3000	 GeV

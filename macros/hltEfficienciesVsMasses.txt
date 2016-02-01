@@ -1,0 +1,46 @@
+88.3784	percent of events with WR mass=	800	and Nu mass=	400	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.3781	percent of events with WR mass=	800	and Nu mass=	400	fire HLT_DoubleEle33 after passing all offline RECO cuts
+89.0564	percent of events with WR mass=	1000	and Nu mass=	500	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.3378	percent of events with WR mass=	1000	and Nu mass=	500	fire HLT_DoubleEle33 after passing all offline RECO cuts
+89.274	percent of events with WR mass=	1200	and Nu mass=	600	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.5576	percent of events with WR mass=	1200	and Nu mass=	600	fire HLT_DoubleEle33 after passing all offline RECO cuts
+89.562	percent of events with WR mass=	1400	and Nu mass=	700	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.6395	percent of events with WR mass=	1400	and Nu mass=	700	fire HLT_DoubleEle33 after passing all offline RECO cuts
+89.661	percent of events with WR mass=	1600	and Nu mass=	800	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.7422	percent of events with WR mass=	1600	and Nu mass=	800	fire HLT_DoubleEle33 after passing all offline RECO cuts
+89.3163	percent of events with WR mass=	1800	and Nu mass=	900	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.3031	percent of events with WR mass=	1800	and Nu mass=	900	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.041	percent of events with WR mass=	2000	and Nu mass=	1000	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9116	percent of events with WR mass=	2000	and Nu mass=	1000	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.1699	percent of events with WR mass=	2200	and Nu mass=	1100	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.928	percent of events with WR mass=	2200	and Nu mass=	1100	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.342	percent of events with WR mass=	2400	and Nu mass=	1200	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9736	percent of events with WR mass=	2400	and Nu mass=	1200	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.8457	percent of events with WR mass=	2600	and Nu mass=	1300	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9692	percent of events with WR mass=	2600	and Nu mass=	1300	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.8204	percent of events with WR mass=	2800	and Nu mass=	1400	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9633	percent of events with WR mass=	2800	and Nu mass=	1400	fire HLT_DoubleEle33 after passing all offline RECO cuts
+91.0556	percent of events with WR mass=	3000	and Nu mass=	1500	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.1159	percent of events with WR mass=	3000	and Nu mass=	1500	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.1229	percent of events with WR mass=	3200	and Nu mass=	1600	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9539	percent of events with WR mass=	3200	and Nu mass=	1600	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.4846	percent of events with WR mass=	3600	and Nu mass=	1800	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9526	percent of events with WR mass=	3600	and Nu mass=	1800	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.7022	percent of events with WR mass=	3800	and Nu mass=	1900	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.0641	percent of events with WR mass=	3800	and Nu mass=	1900	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.2579	percent of events with WR mass=	4000	and Nu mass=	2000	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.1389	percent of events with WR mass=	4000	and Nu mass=	2000	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.6693	percent of events with WR mass=	4200	and Nu mass=	2100	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.1943	percent of events with WR mass=	4200	and Nu mass=	2100	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.315	percent of events with WR mass=	4400	and Nu mass=	2200	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.0745	percent of events with WR mass=	4400	and Nu mass=	2200	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.4186	percent of events with WR mass=	5000	and Nu mass=	2500	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.1293	percent of events with WR mass=	5000	and Nu mass=	2500	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.5237	percent of events with WR mass=	5200	and Nu mass=	2600	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.0429	percent of events with WR mass=	5200	and Nu mass=	2600	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.3016	percent of events with WR mass=	5600	and Nu mass=	2800	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.0405	percent of events with WR mass=	5600	and Nu mass=	2800	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.2426	percent of events with WR mass=	5800	and Nu mass=	2900	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+99.0133	percent of events with WR mass=	5800	and Nu mass=	2900	fire HLT_DoubleEle33 after passing all offline RECO cuts
+90.5052	percent of events with WR mass=	6000	and Nu mass=	3000	fire HLT_DoubleEle33 after passing GEN pT, eta, and dR(L,J) cuts
+98.9734	percent of events with WR mass=	6000	and Nu mass=	3000	fire HLT_DoubleEle33 after passing all offline RECO cuts

@@ -5,65 +5,69 @@ import FWCore.ParameterSet.Config as cms
 @{
 """
 
-## create new muons with the tuneP track \ingroup muonSkim_Group
-wRtunePMuons = cms.EDProducer("TunePMuonProducer",
-                             src = cms.InputTag("slimmedMuons")
-                             )
+tunePMuons = cms.EDProducer("TunePMuonProducer",
+		src = cms.InputTag("slimmedMuons")
+		)
 
 
-### select leading muon
-wRleadingMuon = cms.EDFilter("PATMuonSelector",
-                                 src = cms.InputTag("wRtunePMuons"),
-                                 cut = cms.string("pt>60"),
-                                 )
+### select leading muon \ingroup muonSkim_Group
+wRleadingMuonPresel = cms.EDFilter("PATMuonRefSelector",
+                             src = cms.InputTag("tunePMuons"),
+                             cut = cms.string("pt>45"),
+                         )
 
 ### select subleading muon
-wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
-                                 src = cms.InputTag("wRtunePMuons"),
-                                 cut = cms.string("pt>40 && abs(eta)<2.4"),
-                                 )
-### select loose-ID jets
-wRlooseJet = cms.EDFilter("PATJetSelector",
-                            src = cms.InputTag("slimmedJets"),
-                            cut = cms.string("(neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4)"),
-                            #cut = cms.string("pt>60"),
+wRsubleadingMuonPresel = cms.EDFilter("PATMuonRefSelector",
+                                src = cms.InputTag("tunePMuons"),
+                                cut = cms.string("pt>30"),
                             )
 
+
 ### create di-muon pair in signal region
-wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                       decay = cms.string("wRleadingMuon wRsubleadingMuon"),
-                                       role = cms.string("leading subleading"),
-                                       checkCharge = cms.bool(False),
-                                       # the cut on the pt of the daughter is to respect the order of leading and subleading:
-                                           # if both muons have pt>60 GeV there will be two di-muon candidates with inversed order
-                                       cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
-                                       )
+wRdiMuonCandidatePresel = cms.EDProducer("CandViewShallowCloneCombiner",
+                                   decay = cms.string("wRleadingMuonPresel wRsubleadingMuonPresel"),
+                                   role = cms.string("leading subleading"),
+                                   checkCharge = cms.bool(False),
+                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
+                                   # if both muons have pt>60 GeV there will be two di-muon candidates with inversed order
+                                   #cut = cms.string("mass > 200 && daughter(0).pt>daughter(1).pt"),
+                                   cut = cms.string("mass > 0  && daughter(0).pt>daughter(1).pt"),
+                                   
+									   )
 
 ### filter: at least one di-muon candidate in signal region
-wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
-                                           src = cms.InputTag("wRdiMuonCandidate"),
+wRdiMuonCandidateFilterPresel = cms.EDFilter("CandViewCountFilter",
+                                           src = cms.InputTag("wRdiMuonCandidatePresel"),
                                            minNumber = cms.uint32(1)
                                            )
 
+############################################################
+
+
+
+
+### create an object from two jets and two muons in the evt, and cut on its mass
+wRdiMuonDijetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
+		decay = cms.string("muwRdiJetCandidate wRdiMuonCandidate"),
+		role = cms.string("dijet dilepton"),
+		checkCharge = cms.bool(False),
+		cut = cms.string("mass > 500")
+		)
+
+### filter: require at least one LLJJ object in the evt
+wRdiMuonDijetCandidateFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("wRdiMuonDijetCandidate"),
+		minNumber = cms.uint32(1)
+		)
+
+
+
 ### create di-muon pair in sideband region
 wRdiMuonSidebandCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                       decay = cms.string("wRleadingMuon wRsubleadingMuon"),
+                                       decay = cms.string("wRleadingMuonPresel wRsubleadingMuonPresel"),
                                        checkCharge = cms.bool(False),
                                        cut = cms.string("0< mass < 200 && daughter(0).pt>daughter(1).pt")
                                        )
-
-### filter: at least one di-muon candidate in sideband region
-wRdiMuonSidebandCandidateFilter = cms.EDFilter("CandViewCountFilter",
-                                                   src = cms.InputTag("wRdiMuonSidebandCandidate"),
-                                                   minNumber = cms.uint32(1)
-                                                   )
-
-### di-muon selection sequence
-wRmuonSelectionSeq = cms.Sequence(wRtunePMuons + wRleadingMuon + wRsubleadingMuon + wRlooseJet)
-### di-muon selection in signal region sequence
-wRdiMuonSignalSeq = cms.Sequence(wRmuonSelectionSeq * wRdiMuonCandidate * wRdiMuonCandidateFilter)
-### di-muon selection in sideband region sequence
-wRdiMuonSidebandSeq = cms.Sequence(wRmuonSelectionSeq * wRdiMuonSidebandCandidate * wRdiMuonSidebandCandidateFilter)
 
 
 ### @}

@@ -1,0 +1,49 @@
+Instructions for using the reco analysis code to investigate kinematic distributions made from reco objects matched to GEN quarks
+and leptons in WR->LLJJ events.  This code was first developed for studying WR->eejj events, but is equally applicable to
+WR->mumu jj events.
+
+1. Within the cmsWR/ directory, make a directory named plots.  Within this 'plots' directory, make a directory named GEN and
+   another directory named RECO.
+
+2. Move into the 'GEN' directory, and make five new directories with these names:
+matched_noCuts
+matched_ptEtaCuts
+matched_ptEtaDileptonMassCuts
+matched_ptEtaDileptonMassDrCuts
+matched_ptEtaDileptonMassDrFourObjMassCuts
+
+3. Move up one directory and into the 'RECO' directory.  Make ten new directories with these names:
+matched_noCuts
+matched_noCuts_dR_genJetsToGenQuarks
+matched_noCuts_dR_recoElesToGenLeadingEles
+matched_noCuts_dR_recoElesToGenSubleadingEles
+matched_noCuts_dR_recoJetsToGenJets
+matched_ptEtaCuts
+matched_ptEtaDileptonMassCuts
+matched_ptEtaDileptonMassDrCuts
+matched_ptEtaDileptonMassDrFourObjMassCuts
+matchingEfficiencyVsPtEtaPhi
+
+4. Move up two directories and go into the directory named python.
+
+5. There are two files in the 'python' directory which identify the collections of gen and reco objects
+   which should be used by the analysis code.  The two files are named genElectronChannelModules_cff.py, and
+   recoElectronChannelModules_cff.py.  If you want to run the analysis code on electron channel events, nothing needs to
+   change in either file.  To run the analysis code on muon channel events one InputTag and a few pdgId values need to be
+   changed in these two files.  To run on muon channel events:
+   1. open genElectronChannelModules_cff.py and change all instances of 9900012 to 9900014, and all instances of
+     11 to 12 (electron pdgId-->muon pdgId).
+   2. open recoElectronChannelModules_cff.py and change the one instance of "slimmedElectrons" to a muon collection InputTag.
+
+6. In the 'python' directory, open the file named recoElectronChannel_cfg.py.  Change the file name listed in the TFileService module to
+   a sensible name.  In the cms.Source module, input the absolute path names to the miniAOD root files which need to be analyzed.
+
+7. Go up one directory and run the reco analysis code by executing:
+   cmsRun python/recoElectronChannel_cfg.py
+
+8. Go into the macros directory.  Within 'macros', open the file named dumpTreePlots.C. There are many absolute file path
+   names listed in this file, both for .root files output by recoElectronChannel_cfg.py and path names to directories within the 'plots'
+   directory.  These path names need to be updated so that they point to existing root files and directories.  Once these path names are
+   updated you can run dumpTreePlots.C as a macro, and generate plots using reco objects matched to GEN objects after different levels of
+   reco cuts (pt and eta, dilepton mass, etc).
+ 

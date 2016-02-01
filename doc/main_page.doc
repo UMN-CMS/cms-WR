@@ -1,6 +1,108 @@
 /**
 \mainpage 
+\tableofcontents
 
 Download instructions: \ref instructions_
 
+\par Main configuration file
+Trying to collect all possible configurable things in a configuration file in configs/.
+The file is \b configs/2015-v1.conf
+
+Currently the following informations are stored there:
+ - json file
+ - dataset file (configs/datsets.dat)
+
+\par Datasets
+The list of datasets is written in 
+\verbatim
+configs/datasets.dat
+\endverbatim
+
+\ref triggers List of triggers used to filter events at preselection level
+
+\par How to estimate cross sections
+Once the dataset is entered in the datasets.dat config file putting dashes for cross section, cross section uncetainty, then you can use the script
+\verbatim
+ ./scripts/getXsec.sh
+\endverbatim
+to update the file with the estimated cross sections
+
+\par Skims
+\ref skim_page
+\note microAOD_cff
+
+In order to make the skims:
+\verbatim
+scripts/crabSkimJobs/makeAndRunCrabSkimScripts.sh
+\endverbatim
+and then submit the relevant crab tasks
+
+\verbatim
+for skim in tmp/skim*.py; do crab submit -c $skim; done
+\endverbatim
+
+
+To update the list of datasets with the published skims:
+\verbatim
+scripts/crabSkimJobs/updateDatasetsWithSkims.sh
+\endverbatim
+
+\par JEC
+The twiki page is:
+\url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
+
+74X_mcRun2_asymptotic_v4
+
+
+
+
+\par Running the analysis
+the cfg to be used is 
+\verbatim 
+test/runAnalysis_cfg.py
+\endverbatim
+
+There are three paths defined:
+ - SignalRegion
+ - FlavourSideband
+ - LowDiLeptonSideband
+
+A simple blinding filter is used if option isMC is set to 0 (so for data). This can be improved
+
+\par selection ID scale factors
+
+Electrons: https://cds.cern.ch/record/2118397/export/hx?ln=en
+
+Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
+
+
+\par Energy corrections
+\subpar muons
+https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
+
+
+
+
+\par GIT instructions
+The main branch is downloaded by default the first time you download the code. It is \b shervinWorking
+
+Developers have to:
+\verbatim
+git checkout shervinWorking
+git pull
+git branch myWorkingBranch
+git checkout myWorkingBranch
+...
+...
+git add files_you_have_worked_on.cc
+git commit -m "new point in the history, this is a comment to make clear which are the changes"
+...
+...
+git add files_you_have_worked_on.cc
+git commit -m "another commit"
+# to make sure what you did works
+scram b -j16 && cmsRun test/runAnalysis_cfg.py test=3
+git push origin myWorkingBranch:myWorkingBranch
+git checkout shervinWorking
+\endverbatim
 */

@@ -1,0 +1,6 @@
+this collection of files is used to submit jobs which take GENSIM evts as input, mix in pileup and recostruct the events, compress the events to miniAOD, and apply selection cuts (HLT and offline) to the miniAOD evts.
+
+currently the first cmsRun python file, which controls the digi-reco, needs a physical file name of the GENSIM .root file as input.  However, this python file can be modified to look for logical file names through xrootd.
+
+cmssRelease...tar contains the code which runs the HLT and offline selections on miniAOD evts.
+

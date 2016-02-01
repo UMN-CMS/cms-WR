@@ -43,15 +43,12 @@
 
 
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
-//#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
 #include "DataFormats/EgammaReco/interface/ClusterShape.h"
 #include "DataFormats/EgammaReco/interface/ClusterShapeFwd.h"
 #include "DataFormats/EgammaReco/interface/BasicCluster.h"
 #include "DataFormats/EgammaReco/interface/BasicClusterFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
-//#include "DataFormats/EgammaCandidates/interface/ElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-//#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
@@ -81,6 +78,7 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 
+//#define DEBUG
 
 //
 // class declaration
@@ -95,7 +93,14 @@ class genAnalyzer : public edm::EDAnalyzer {
 
 	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection){
 
+#ifdef DEBUG
+		  std::cout<<"checking pt of all gen particles in findLeadingAndSubleading fxn"<<std::endl;
+#endif
+
 		  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+#ifdef DEBUG
+			  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+#endif
 			  if(first==collection->end()) first=genIt;
 			  else{
 				  if(genIt->pt() > first->pt()){
@@ -105,6 +110,10 @@ class genAnalyzer : public edm::EDAnalyzer {
 				  else if(second==collection->end() || genIt->pt() > second->pt()) second = genIt;
 			  }
 		  }//end loop over reco::Candidate collection
+
+#ifdef DEBUG
+		  std::cout<<"leaving findLeadingAndSubleading fxn"<<std::endl;
+#endif
 
 	  }///end findLeadingAndSubleading()
     
@@ -234,7 +243,6 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	iEvent.getByLabel(genLeptonCollTag, leptons);
 	iEvent.getByLabel(genJetCollTag, jets);
 
-
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLepton = leptons->end(), subleadingLepton = leptons->end();
 	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = jets->end(), subleadingJet = jets->end();
 
@@ -243,13 +251,22 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
+#ifdef DEBUG
+	std::cout<<"leading lepton pt: \t"<<leadingLepton->pt()<<std::endl;
+	std::cout<<"subleading lepton pt: \t"<<subleadingLepton->pt()<<std::endl;
+#endif
+
 	etaGenEle[0] = leadingLepton->eta();
 	ptGenEle[0] = leadingLepton->pt();
 	phiGenEle[0] = leadingLepton->phi();
 	etaGenEle[1] = subleadingLepton->eta();
 	ptGenEle[1] = subleadingLepton->pt();
 	phiGenEle[1] = subleadingLepton->phi();
-	dileptonMassGen = TMath::Sqrt(2*ptGenEle[0]*ptGenEle[1]*( TMath::CosH(etaGenEle[0]-etaGenEle[1])-TMath::Cos(phiGenEle[0]-phiGenEle[1]) ) );
+
+#ifdef DEBUG
+	std::cout<<"leading jet pt: \t"<<leadingJet->pt()<<std::endl;
+	std::cout<<"subleading jet pt: \t"<<subleadingJet->pt()<<std::endl;
+#endif
 
 	etaGenJet[0] = leadingJet->eta();
 	ptGenJet[0] = leadingJet->pt();
@@ -257,7 +274,6 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	etaGenJet[1] = subleadingJet->eta();
 	ptGenJet[1] = subleadingJet->pt();
 	phiGenJet[1] = subleadingJet->phi();
-	dijetMassGen = TMath::Sqrt(2*ptGenJet[0]*ptGenJet[1]*( TMath::CosH(etaGenJet[0]-etaGenJet[1])-TMath::Cos(phiGenJet[0]-phiGenJet[1]) ) );
 
 	///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
 	///invariant mass values.
@@ -266,6 +282,8 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	TLorentzVector j1(ptGenJet[0]*TMath::Cos(phiGenJet[0]),ptGenJet[0]*TMath::Sin(phiGenJet[0]),ptGenJet[0]*TMath::SinH(etaGenJet[0]),ptGenJet[0]*TMath::CosH(etaGenJet[0]));	///leading jet lorentz vector (px, py, pz, E)
 	TLorentzVector j2(ptGenJet[1]*TMath::Cos(phiGenJet[1]),ptGenJet[1]*TMath::Sin(phiGenJet[1]),ptGenJet[1]*TMath::SinH(etaGenJet[1]),ptGenJet[1]*TMath::CosH(etaGenJet[1]));
 
+	dileptonMassGen = (l1+l2).M();
+	dijetMassGen = (j1+j2).M();
 	fourObjectMassGen = (l1+l2+j1+j2).M();
 	leadLeptonThreeObjMassGen = (l1+j1+j2).M();
 	subleadingLeptonThreeObjMassGen = (l2+j1+j2).M();

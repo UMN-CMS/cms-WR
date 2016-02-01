@@ -1,0 +1,11 @@
+universe = vanilla 
+Executable = /uscms/home/skalafut/nobackup/WR_starting2015/inputGenSimOutputAnalyzedTrees/runGenSimToAnalyzedTree_WR_MMAASS_NU_MASSNU_NUM.csh
+Requirements = OpSys == "LINUX"&& (Arch != "DUMMY" )
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Input_Files = cmsswReleaseForGenSimToAnalyzedTrees.tar, step2_DIGI_RECO_WR_MMAASS_NU_MASSNU_NUM.py, step3_PAT_WR_MMAASS_NU_MASSNU_NUM.py, pu.tar, pathToInputGenSim/WR_M-MMAASS_ToENu_M-MASSNU_13TeV_GEN_SIM_NUM.root
+Arguments = $(Process)
+Output = genSimToAnalyzedTreeMaker_WR_MMAASS_NU_MASSNU_NUM_$(Cluster)_$(Process).stdout
+Error = genSimToAnalyzedTreeMaker_WR_MMAASS_NU_MASSNU_NUM_$(Cluster)_$(Process).stderr
+Log = genSimToAnalyzedTreeMaker_WR_MMAASS_NU_MASSNU_NUM_$(Cluster)_$(Process).log
+Queue 1 
