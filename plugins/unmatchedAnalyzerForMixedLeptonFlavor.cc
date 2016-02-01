@@ -244,6 +244,7 @@ virtual void endJob() override;
 std::string tName;
 bool applyDileptonMassCut;
 double minDileptonMass;
+bool ignoreJets;
 
 ///Handles to RECO object collections
 edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptonsOne;
@@ -335,7 +336,8 @@ Float_t evWeightSign;	///< if the sign of evWeight is negative, then the evt sho
 unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(const edm::ParameterSet& iConfig):
 	tName(iConfig.getParameter<std::string>("treeName")),
 	applyDileptonMassCut(iConfig.getParameter<bool>("doDileptonMassCut")),
-	minDileptonMass(iConfig.getParameter<double>("minDileptonMass"))
+	minDileptonMass(iConfig.getParameter<double>("minDileptonMass")),
+	ignoreJets(iConfig.getParameter<bool>("ignoreJets"))
 
 {
    //now do what ever initialization is needed
@@ -391,7 +393,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::unmatchedAnalyzerForMixedLeptonFlavor(con
  
    leptonsOneToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsOneCollection"));
    leptonsTwoToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("leptonsTwoCollection"));
-   jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
+   if(!ignoreJets) jetsToken = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("jetsCollection")); 
    genEventInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
    verticesToken = consumes<std::vector<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
    metToken = consumes<std::vector<pat::MET> >(edm::InputTag("slimmedMETs"));
@@ -429,7 +431,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 
 	iEvent.getByToken(leptonsOneToken, leptonsOne);
 	iEvent.getByToken(leptonsTwoToken, leptonsTwo);
-	iEvent.getByToken(jetsToken, jets);
+	if(!ignoreJets) iEvent.getByToken(jetsToken, jets);
 	iEvent.getByToken(verticesToken, vertices);
 
 	iEvent.getByToken(genEventInfoToken, genEvtInfo);	///< get evt weights if analyzing MC
@@ -452,7 +454,7 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 		if(leadMET != met->end() ) missingET = leadMET->et();
 	}
 
-	nJets = jets->size();
+	if(!ignoreJets) nJets = jets->size();
 	nLeptonsOne = leptonsOne->size();
 	nLeptonsTwo = leptonsTwo->size();
 	nLeptons = nLeptonsOne+nLeptonsTwo;
@@ -466,15 +468,19 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 	///assign iterators to both input leptons collections, and use these iterators to find the hardest and second hardest leptons in the evt
 	///if one lepton is not found in both collections, then skip this evt 
 	edm::OwnVector<reco::Candidate>::const_iterator leadingLeptonOne = leptonsOne->end(), leadingLeptonTwo = leptonsTwo->end();
-	edm::OwnVector<reco::Candidate>::const_iterator leadingJet = jets->end(), subleadingJet = jets->end();
 	
 	///now use the iterators to find the hardest and second hardest leptons and jets
 	///thanks to modules run before this, all leptons and jets will be separated from each other by more than dR = 0.4
 	findLeadingAndSubleading(leadingLeptonOne, leptonsOne, leadingLeptonTwo, leptonsTwo, applyDileptonMassCut);
-	findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
 	
 	if(leadingLeptonOne==leptonsOne->end() || leadingLeptonTwo==leptonsTwo->end()) return;	///< skip this evt if two leptons are not found
-	if(leadingJet==jets->end() || subleadingJet==jets->end()) return;	///< skip this evt if two jets are not found
+
+	edm::OwnVector<reco::Candidate>::const_iterator leadingJet, subleadingJet;
+	if(!ignoreJets){
+		leadingJet = jets->end(), subleadingJet = jets->end();
+		findLeadingAndSubleading(leadingJet, subleadingJet, jets, false);
+		if(leadingJet==jets->end() || subleadingJet==jets->end()) return;	///< skip this evt if two jets are not found
+	}
 
 	///now declare the leadingLepton and subleadingLepton iterators which will be used below, and
 	///assign them to the appropriate leadingLeptonOne and leadingLeptonTwo iterators
@@ -504,40 +510,44 @@ unmatchedAnalyzerForMixedLeptonFlavor::analyze(const edm::Event& iEvent, const e
 
 
 #ifdef DEBUG
-	std::cout<<"leading jet pt: \t"<<leadingJet->pt()<<std::endl;
-	std::cout<<"subleading jet pt: \t"<<subleadingJet->pt()<<std::endl;
+	if(!ignoreJets) std::cout<<"leading jet pt: \t"<<leadingJet->pt()<<std::endl;
+	if(!ignoreJets) std::cout<<"subleading jet pt: \t"<<subleadingJet->pt()<<std::endl;
 #endif
 
-	etaJet[0] = leadingJet->eta();
-	ptJet[0] = leadingJet->pt();
-	phiJet[0] = leadingJet->phi();
-	etaJet[1] = subleadingJet->eta();
-	ptJet[1] = subleadingJet->pt();
-	phiJet[1] = subleadingJet->phi();
+	if(!ignoreJets){
+		etaJet[0] = leadingJet->eta();
+		ptJet[0] = leadingJet->pt();
+		phiJet[0] = leadingJet->phi();
+		etaJet[1] = subleadingJet->eta();
+		ptJet[1] = subleadingJet->pt();
+		phiJet[1] = subleadingJet->phi();
+	}
 
-	///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
-	///invariant mass values.
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > l1 = leadingLepton->p4(), l2 = subleadingLepton->p4();
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > j1 = leadingJet->p4(), j2 = subleadingJet->p4();
-	dileptonMass = (l1+l2).M(), dijetMass = (j1+j2).M();
-	leadLeptonThreeObjMass = (l1+j1+j2).M(), subleadingLeptonThreeObjMass = (l2+j1+j2).M();
-	fourObjectMass = (l1+l2+j1+j2).M();
-	etaHvyNu = (l2+j1+j2).Eta(), ptHvyNu = (l2+j1+j2).Pt(), phiHvyNu = (l2+j1+j2).Phi();
-	etaWr = (l1+l2+j1+j2).Eta(), ptWr = (l1+l2+j1+j2).Pt(), phiWr = (l1+l2+j1+j2).Phi();
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > j1 , j2;
+
+	if(!ignoreJets) j1=leadingJet->p4(), j2=subleadingJet->p4();
+	dileptonMass = (l1+l2).M();
+	if(!ignoreJets) dijetMass = (j1+j2).M();
+	if(!ignoreJets) leadLeptonThreeObjMass = (l1+j1+j2).M(), subleadingLeptonThreeObjMass = (l2+j1+j2).M();
+	if(!ignoreJets) fourObjectMass = (l1+l2+j1+j2).M();
+	if(!ignoreJets){
+		etaHvyNu = (l2+j1+j2).Eta(), ptHvyNu = (l2+j1+j2).Pt(), phiHvyNu = (l2+j1+j2).Phi();
+		etaWr = (l1+l2+j1+j2).Eta(), ptWr = (l1+l2+j1+j2).Pt(), phiWr = (l1+l2+j1+j2).Phi();
+	}
 
 #ifdef DEBUG
 	std::cout<<"dilepton mass = \t"<< dileptonMass << std::endl;
-	std::cout<<"dijet mass = \t"<< dijetMass << std::endl;
+	if(!ignoreJets) std::cout<<"dijet mass = \t"<< dijetMass << std::endl;
 	std::cout<<"\t"<<std::endl;
 #endif
 
-	///now use the individual GEN object eta and phi values to calculate dR between different (lepton, jet) pairs
-	dR_leadingLeptonLeadingJet = deltaR(etaEle[0],phiEle[0],etaJet[0],phiJet[0]);
-	dR_leadingLeptonSubleadingJet = deltaR(etaEle[0],phiEle[0],etaJet[1],phiJet[1]);
-	dR_subleadingLeptonLeadingJet = deltaR(etaEle[1],phiEle[1],etaJet[0],phiJet[0]);
-	dR_subleadingLeptonSubleadingJet = deltaR(etaEle[1],phiEle[1],etaJet[1],phiJet[1]);
+	if(!ignoreJets) dR_leadingLeptonLeadingJet = deltaR(etaEle[0],phiEle[0],etaJet[0],phiJet[0]);
+	if(!ignoreJets) dR_leadingLeptonSubleadingJet = deltaR(etaEle[0],phiEle[0],etaJet[1],phiJet[1]);
+	if(!ignoreJets) dR_subleadingLeptonLeadingJet = deltaR(etaEle[1],phiEle[1],etaJet[0],phiJet[0]);
+	if(!ignoreJets) dR_subleadingLeptonSubleadingJet = deltaR(etaEle[1],phiEle[1],etaJet[1],phiJet[1]);
 	dR_leadingLeptonSubleadingLepton = deltaR(etaEle[0],phiEle[0],etaEle[1],phiEle[1]);
-	dR_leadingJetSubleadingJet = deltaR(etaJet[0],phiJet[0],etaJet[1],phiJet[1]);
+	if(!ignoreJets) dR_leadingJetSubleadingJet = deltaR(etaJet[0],phiJet[0],etaJet[1],phiJet[1]);
 	
 	tree->Fill();
 
