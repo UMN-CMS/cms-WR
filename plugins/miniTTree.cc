@@ -124,7 +124,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
     p4.SetPtEtaPhiM(ele->pt(),ele->eta(),ele->phi(),ele->mass());
     myEvent.electrons_p4->push_back(p4);
     myEvent.electron_scale->push_back(1.0);
-    myEvent.electron_smearing->push_back(1.0);
+    myEvent.electron_smearing->push_back(0.01);
     myEvent.electron_charge->push_back(ele->charge());
   }
 
