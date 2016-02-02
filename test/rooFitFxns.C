@@ -1,3 +1,11 @@
+#include "RooExponential.h"
+#include "RooGenericPdf.h"
+#include "RooAbsPdf.h"
+#include "RooProdPdf.h"
+#include "RooAddPdf.h"
+#include "RooPolynomial.h"
+
+
 ///consts needed for TTBar or MuonEG fit rescaling
 Float_t nEMuDataEvts = 464.;
 Float_t intLumi = 2488.245, ttBarXsxn = 56.7, nTTBarEvts = 24521141.f, emuInter = 1.165;
