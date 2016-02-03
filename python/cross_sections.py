@@ -3,6 +3,8 @@ datasetsfile = open("configs/datasets.dat")
 WR_eejj = {}
 WR_mumujj = {}
 
+WR_jj = {"ee":WR_eejj, "mumu":WR_mumujj}
+
 for line in datasetsfile:
 	line = line.split()
 	name = line[0]

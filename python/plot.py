@@ -12,8 +12,8 @@ class limit1d:
 	medians = []
 	errors = []
 	masses = []
-	def __init__(self,name, xs=None):
-		self.name = name
+	def __init__(self,xs=None):
+		self.theory = None
 		if xs is None:
 			xs = 1
 		self.xs = xs
@@ -30,7 +30,9 @@ class limit1d:
 	def addTheory(self, theory):
 		self.theory = theory
 
-	def plot(self, filename, x_title="", y_title="", x_limits=(600,6000), y_limits=(1e-3, 1e-1)):
+	def plot(self, filename, x_title="", y_title="",
+			x_limits=(600,6000), y_limits=(1e-3, 1e-1), 
+			leg_x = .55, leg_y=.66):
 		#customROOTstyle()
 		ROOT.gROOT.LoadMacro("scripts/tdrStyle.C")
 		c1 = ROOT.TCanvas("c1","c1",800,800);
@@ -58,8 +60,10 @@ class limit1d:
 
 		dummy.GetYaxis().SetTitleOffset(1.1)
 		dummy.Draw("HIST")
-		leg = ROOT.TLegend(0.55,0.66,0.99,0.87)
-		latex = ROOT.TLatex(0.57, 0.89, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
+		leg_w = .44
+		leg_h = .21
+		leg = ROOT.TLegend(leg_x,leg_y,leg_x + leg_w, leg_y + leg_h)
+		latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
 		latex.SetNDC();
 		latex.SetTextSize(0.032);
 		latex.SetTextFont(42);
@@ -96,7 +100,7 @@ class limit1d:
 			g_theory.SetFillColor(ROOT.kRed);
 			g_theory.Draw("L SAME")
 
-		g_exp = ROOT.TGraphErrors(n,mass_array, expected_limit_array, expected_limit_error_array);
+		g_exp = ROOT.TGraph(n,mass_array, expected_limit_array);
 		g_exp.SetLineWidth(2);
 		g_exp.SetLineColor(ROOT.kBlue); g_exp.SetLineStyle(2);
 		g_exp.Draw("L SAME");
@@ -104,16 +108,18 @@ class limit1d:
 		leg.AddEntry(g_exp, "Expected limit","L")
 		leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
 		leg.AddEntry(g_twosig, "Expected #pm 2 #sigma", "F")
-		leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
+		if self.theory:
+			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
 		leg.Draw("same")
 
 
 		text = ROOT.TText(0.72,0.97,"CMS Preliminary")
 		text.SetNDC();
 		text.SetTextFont(42);
-		text.SetTextSize(0.05);
+		text.SetTextSize(0.04);
 		text.Draw()
 
 		c1.RedrawAxis()
-		c1.SaveAs(filename)
+		c1.SaveAs(filename + ".png")
+		c1.SaveAs(filename + ".pdf")
 

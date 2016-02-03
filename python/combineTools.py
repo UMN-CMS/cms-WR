@@ -5,6 +5,7 @@ import subprocess
 from random import gauss
 import ExoAnalysis.cmsWR.backgroundFits as bgfits
 import ExoAnalysis.cmsWR.cross_sections as xs
+import math
 
 ##
 # @brief creates a datacard for combine for signal and background
@@ -39,7 +40,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		if systematics:
 			out.write("kmax %d  number of nuisance parameters\n" % nSystematics)
 		out.write("bin " + bin_name + "\n")
-		out.write("observation %d\n" % nObs)
+		out.write("observation %.4g\n" % nObs)
 		out.write("------------\n")
 		out.write("bin" + ("    " + bin_name)* (nBGs + 1) + "\n")
 		out.write("process  " + names + "\n")
@@ -113,9 +114,10 @@ def getTTBarNEvents(MWR, channel, lumi):
 	real_norm = work.var("realEMuDataNormalization").getVal()
 	corr = work.var(corr_name).getVal()
 	orig_lumi = 2488.245
-	ret = integral.getVal()*real_norm*corr*lumi/orig_lumi
+	scale = real_norm*corr*lumi/orig_lumi
+	nevents = integral.getVal()*scale
 	f.Close()
-	return  ret
+	return  nevents
 
 def getDYNEvents(MWR, channel, lumi):
 	if "ee" in channel or "EE" in channel:
@@ -139,9 +141,10 @@ def getDYNEvents(MWR, channel, lumi):
 
 	norm = data.sumEntries()
 	orig_lumi = 2488.245
-	ret = integral.getVal()*norm*lumi/orig_lumi
+	scale = norm*lumi/orig_lumi
+	nevents = integral.getVal()*scale
 	f.Close()
-	return  ret
+	return nevents
 
 def getNEvents(MWR, channel, process, lumi):
 	if process == "signal":
@@ -149,7 +152,8 @@ def getNEvents(MWR, channel, process, lumi):
 		low,hi = mass_cut[int(MWR)]
 		lowbin = h.FindBin(low)
 		hibin = h.FindBin(hi) - 1
-		return h.Integral(lowbin, hibin) * lumi
+		nevents = h.Integral(lowbin, hibin)*lumi
+		return nevents
 	elif process == "TTBar":
 		return getTTBarNEvents(MWR, channel, lumi)
 	elif process == "DY":
@@ -165,15 +169,19 @@ def getNEvents(MWR, channel, process, lumi):
 def runCombine(command):
 	try:
 		output = subprocess.check_output(command)
+		p = re.compile(r'median expected limit: r < ([0-9.]*)')
+		median = p.search(output).group(1)
 		p = re.compile(r'mean   expected limit: r < ([0-9.]*) \+/- ([0-9.]*)')
 		mean,meanError = p.search(output).groups()
 		p = re.compile(r'68% expected band : ([0-9.]*) < r < ([0-9.]*)')
 		onesig_minus,onesig_plus = p.search(output).groups()
 		p = re.compile(r'95% expected band : ([0-9.]*) < r < ([0-9.]*)')
 		twosig_minus,twosig_plus = p.search(output).groups()
-		return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
+		return median, (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
 	except:
-		print output
+		errfile = open("_".join(command) + ".err","w")
+		errfile.write(output)
+		return None
 
 mass_cut = {
 		800 :( 700,  900),
