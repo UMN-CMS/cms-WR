@@ -16,7 +16,7 @@
 
 void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vector<string> list, int isData){
 
-      int DEBUG = 1;
+      int DEBUG = 0;
       float qter = 1.0;
       double Smear = 0.0;
       int Iterator = 0;
@@ -47,7 +47,7 @@ void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vec
           if(Flag_Smear_Muon_Scale){
              if(isData) 
                   rmcor->momcor_data((*(myEvent.muons_p4))[Iterator], (*(myEvent.muon_charge))[Iterator], 0, qter);
-//             else rmcor->momcor_mc((*(myEvent.muons_p4))[Iterator], (*(myEvent.muon_charge))[Iterator], 0, qter);
+             else rmcor->momcor_mc((*(myEvent.muons_p4))[Iterator], (*(myEvent.muon_charge))[Iterator], 0, qter);
             }
 
           if(DEBUG) cout<<endl<<" Muon number= "<<Iterator<<" Muon Pt After = "<<(*(myEvent.muons_p4))[Iterator].Pt()<<" Muon Eta After = "<<(*(myEvent.muons_p4))[Iterator].Eta()<<endl;
@@ -61,7 +61,7 @@ void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vec
           Smear=rand->Gaus(0.0,1);
           if(DEBUG) cout<<endl<<" Electron number= "<<Iterator<<" Electron Pt Before = "<<(*(myEvent.electrons_p4))[Iterator].Pt()<<" Electron Eta Before = "<<(*(myEvent.electrons_p4))[Iterator].Eta()<<endl;
 
-          if(Flag_Smear_Muon_Scale){
+          if(Flag_Smear_Electron_Scale){
             if(isData)
                            (*(myEvent.electrons_p4))[Iterator] = (1 + (Smear)*(*(myEvent.electron_scale))[Iterator])*(*(myEvent.electrons_p4))[Iterator];
             else           (*(myEvent.electrons_p4))[Iterator] = (1 + (Smear)*(*(myEvent.electron_smearing))[Iterator])*(*(myEvent.electrons_p4))[Iterator];
