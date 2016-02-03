@@ -2,7 +2,7 @@
 
 
 miniTreeEvent::miniTreeEvent():
-electrons_p4(new std::vector<TLorentzVector>),
+  electrons_p4(new std::vector<TLorentzVector>),
   muons_p4(new std::vector<TLorentzVector>),
   jets_p4(new std::vector<TLorentzVector>),
   jec_uncertainty(new std::vector<Float_t>),
@@ -13,8 +13,8 @@ electrons_p4(new std::vector<TLorentzVector>),
   muon_IDSF_central(new std::vector<Float_t>),
   muon_IsoSF_central(new std::vector<Float_t>),
   muon_IDSF_error(new std::vector<Float_t>),
-	muon_IsoSF_error(new std::vector<Float_t>),
-	_owningMembers(true)
+  muon_IsoSF_error(new std::vector<Float_t>),
+  _owningMembers(true)
 {
 	
   clear();
@@ -22,7 +22,7 @@ electrons_p4(new std::vector<TLorentzVector>),
 
 
 miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
-electrons_p4(new std::vector<TLorentzVector>),
+  electrons_p4(new std::vector<TLorentzVector>),
   muons_p4(new std::vector<TLorentzVector>),
   jets_p4(new std::vector<TLorentzVector>),
   jec_uncertainty(new std::vector<Float_t>),
@@ -33,13 +33,35 @@ electrons_p4(new std::vector<TLorentzVector>),
   muon_IDSF_central(new std::vector<Float_t>),
   muon_IsoSF_central(new std::vector<Float_t>),
   muon_IDSF_error(new std::vector<Float_t>),
-	muon_IsoSF_error(new std::vector<Float_t>),
-	_owningMembers(true)
+  muon_IsoSF_error(new std::vector<Float_t>),
+  _owningMembers(true)
 {
   clear();
   *electrons_p4 = *(otherEvent.electrons_p4);
-};
+  *muons_p4 = *(otherEvent.muons_p4);
+  *jets_p4 = *(otherEvent.jets_p4);
+  *jec_uncertainty = *(otherEvent.jec_uncertainty);
+  *electron_scale = *(otherEvent.electron_scale);
+  *electron_smearing = *(otherEvent.electron_smearing);
+  *electron_charge = *(otherEvent.electron_charge);
+  *muon_charge = *(otherEvent.muon_charge);
+  *muon_IDSF_central = *(otherEvent.muon_IDSF_central);
+  *muon_IsoSF_central = *(otherEvent.muon_IsoSF_central);
+  *muon_IDSF_error = *(otherEvent.muon_IDSF_error);
+  *muon_IsoSF_error = *(otherEvent.muon_IsoSF_error);
+  _owningMembers = false;
 
+  run = otherEvent.run;
+  lumi = otherEvent.lumi;
+  event = otherEvent.event;
+
+  nPU = otherEvent.nPU;
+  nPV = otherEvent.nPV;
+  weight = otherEvent.weight;
+  PU_reweight = otherEvent.PU_reweight;
+  
+
+};
 
 
 void miniTreeEvent::clear() {

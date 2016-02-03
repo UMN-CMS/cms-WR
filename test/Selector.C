@@ -1,7 +1,7 @@
 #include "../interface/Selector.h"
 #include "DataFormats/Math/interface/deltaR.h"
+//#define DEBUG
 
-bool wayToSort(TLorentzVector m1, TLorentzVector m2) { return m1.Pt() > m2.Pt(); }
 float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); }
 void goodJets(std::vector<TLorentzVector> *evJets, std::vector<TLorentzVector> *selJets){
   for(auto j:*evJets){
@@ -29,14 +29,9 @@ int SelectEvent(Selector *selEvent, Int_t tag){
   std::vector<TLorentzVector> gMuons;
 
   // Basic Kinematic cuts
-  goodJets(selEvent->event.jets_p4, &gJets);
-  goodEles(selEvent->event.electrons_p4, &gEles);
-  goodMuons(selEvent->event.muons_p4, &gMuons);
-
-  // Sort Collections by pT
-  sort(gJets.begin(), gJets.end(), wayToSort);
-  sort(gEles.begin(), gEles.end(), wayToSort);
-  sort(gMuons.begin(), gMuons.end(), wayToSort);
+  goodJets(selEvent->jets_p4, &gJets);
+  goodEles(selEvent->electrons_p4, &gEles);
+  goodMuons(selEvent->muons_p4, &gMuons);
   
   selEvent->pass_selection = true;
 
@@ -46,6 +41,16 @@ int SelectEvent(Selector *selEvent, Int_t tag){
     return 0;
   }
 
+#ifdef DEBUG
+  if(gJets[0].Pt() != (selEvent->jets_p4)->at(0).Pt()){
+    cout<<"UNSORTED JETS"<<endl;
+    cout<<gJets[0].Pt()<< " " <<(selEvent->jets_p4)->at(0).Pt()<<endl;
+    cout<<gJets[1].Pt()<< " " <<(selEvent->jets_p4)->at(1).Pt()<<endl;
+    cout<<gJets[0].Eta()<< " " <<(selEvent->jets_p4)->at(0).Eta()<<endl;
+    cout<<gJets[1].Eta()<< " " <<(selEvent->jets_p4)->at(1).Eta()<<endl;
+  }
+#endif
+
   if(tag == 0) // EEJJ Channel
     {
       // Assert at least 2 good leptons
@@ -53,6 +58,10 @@ int SelectEvent(Selector *selEvent, Int_t tag){
 	selEvent->pass_selection = false;
 	return 0;
       }
+
+      if(gEles[0].Pt() != (selEvent->electrons_p4)->at(0).Pt())
+	cout<<"UNSORTED ELECTRONS"<<endl;
+
       // Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
       selEvent->WR_mass = (gEles[0] + gEles[1] + gJets[0] + gJets[1]).M();
       selEvent->dilepton_mass = (gEles[0] + gEles[1]).M();
@@ -68,6 +77,13 @@ int SelectEvent(Selector *selEvent, Int_t tag){
 	selEvent->pass_selection = false;
 	return 0;
       }
+#ifdef DEBUG
+      if(gMuons[0].Pt() != (selEvent->muons_p4)->at(0).Pt()){
+	cout<<"UNSORTED MUONS"<<endl;
+	cout<<gMuons[0].Pt()<< " " <<(selEvent->muons_p4)->at(0).Pt()<<endl;
+	cout<<gMuons[1].Pt()<< " " <<(selEvent->muons_p4)->at(1).Pt()<<endl;
+      }
+#endif
       // Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
       selEvent->WR_mass = (gMuons[0] + gMuons[1] + gJets[0] + gJets[1]).M();
       selEvent->dilepton_mass = (gMuons[0] + gMuons[1]).M();

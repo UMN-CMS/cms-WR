@@ -5,11 +5,12 @@
 #include "RooDataSet.h"
 #include "TRandom3.h"
 #include <iostream>
-#include "../interface/FitRooDataSet.h"
+#include "ExoAnalysis/cmsWR/interface/FitRooDataSet.h"
+#include "ExoAnalysis/cmsWR/src/Selector.cc"
+#include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "rooFitFxns.C"
 //#include "ToyThrower.C"
 #include "Selector.C"
-
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -23,12 +24,8 @@ void tmp(){
   TTree *tree = (TTree*)hfile->Get("MiniTTree/t");  
   
   miniTreeEvent myEvent;
-
-  myEvent.SetBranchAddresses(tree, myEvent); 
-
-
-  Selector selEvent(myEvent);
-
+  
+  myEvent.SetBranchAddresses(tree, myEvent);
 
   int nToys = 1;
 
@@ -41,8 +38,9 @@ void tmp(){
 
     for(int ev = 0; ev<tree->GetEntries(); ev++){
       tree->GetEntry(ev);
-      
-      ToyThrower(myEvent, ev+1);
+    
+      Selector selEvent(myEvent);
+      //ToyThrower(myEvent, ev+1);
 
       // Select events with one good WR candidate
       // Tags:
@@ -51,7 +49,7 @@ void tmp(){
       // 2 -- EMuJJ Channel
       SelectEvent(&selEvent,1);
 
-      if(selEvent.pass_selection){
+      if(selEvent.pass_selection && selEvent.dilepton_mass > 200){
 	//cout<<"PASS"<<endl;       
 	//cout<<selEvent.WR_mass<<endl;
 	
@@ -66,18 +64,18 @@ void tmp(){
       // for(auto m:*(myEvent.muons_p4))
       //   cout<<m.Pt()<<endl;
       // cout<<"NuMu"<<endl;
-      // for(auto m:*(selEvent.event.muons_p4))
+      // for(auto m:*(selEvent.muons_p4))
       //   cout<<m.Pt()<<endl;
     
     }
 
     tempDataSet->Print();
 
-    RooFitResult * tempFitRslt = NULL;
-    fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+    // RooFitResult * tempFitRslt = NULL;
+    // fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
 
-    std::cout<<"Res="<<std::endl;
-    expPdfRooAbsPdf->Print();
+    // std::cout<<"Res="<<std::endl;
+    // expPdfRooAbsPdf->Print();
 
   }
 
