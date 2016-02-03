@@ -1,24 +1,22 @@
-#include "../interface/miniTreeEvent.h"
+#ifndef selector_h
+#define selector_h
+
+#include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
 
 class Selector: public miniTreeEvent{
- public:
-    Float_t WR_mass;
+public:
+    Float_t WR_mass; // this is of Float_t because want to save it into a tree
     Float_t dilepton_mass;
     Bool_t pass_selection;
-    miniTreeEvent event;
+	
+	Selector(const miniTreeEvent& myEvent);
 
-    void clear();
+private:
+	
+    void Clear();
 
- Selector(miniTreeEvent myEvent)
-   : miniTreeEvent()
-  {
-    clear();
-    event = myEvent;
-  }
 };
 
-void Selector::clear() {
-  WR_mass = dilepton_mass = 0.0;
-  pass_selection = false;
-  event.clear();
-};
+
+
+#endif
