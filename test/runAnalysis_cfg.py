@@ -133,16 +133,20 @@ loadHEEPIDSelector(process)
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
-process.miniTTreeSeq = cms.Sequence(process.JECUnc * process.MiniTTree)
+process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
 
+process.miniTree_signal = process.MiniTTree.clone()
+process.miniTree_flavoursideband = process.MiniTTree.clone()
+process.miniTree_lowdileptonsideband = process.MiniTTree.clone()
+process.miniTree_dytagandprobe = process.MiniTTree.clone()
 
 ############################################################ PATHs definition
-process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTTreeSeq)
-process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTTreeSeq)
-process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTTreeSeq)
+process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
+process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTree_flavoursideband)
+process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -156,7 +160,7 @@ if (options.isMC==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe, process.microAODoutput_step)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe) #, process.microAODoutput_step)
 
 
 CMSSW_VERSION=os.getenv("CMSSW_VERSION")

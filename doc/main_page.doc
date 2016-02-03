@@ -105,4 +105,14 @@ scram b -j16 && cmsRun test/runAnalysis_cfg.py test=3
 git push origin myWorkingBranch:myWorkingBranch
 git checkout shervinWorking
 \endverbatim
+
+
+\par miniTree production
+\verbatim
+./scripts/makeLSFTTreeScripts.sh
+for file in tmp/analysis_WRto*.cfg tmp/analysis_TTJets_DiLept_v*.cfg tmp/analysis_DY*powheg*.cfg ; do crab -create -submit -cfg $file; done
+\endverbatim
 */
+
+
+
