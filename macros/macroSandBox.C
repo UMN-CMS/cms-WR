@@ -35,7 +35,8 @@
 
 using namespace std;
 
-#define twoDimPlotGenWrAcceptance
+#define genAndRecoWrPlotsMinimalCuts
+//#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
 //#define compareCentrallyProducedToPrivateWrSignal
@@ -53,6 +54,16 @@ using namespace std;
 //#define DEBUGVECTOR
 
 
+
+///use this fxn to calculate the efficiency of a selection applied to a TChain, and return the efficiency value
+Float_t calculateEfficiencyWithOneChain(TChain * chain,TString branchToScan,TString baseSelection,TString tighterSelection){
+	chain->SetScanField(0);
+	Long64_t evtsBeforeCut = chain->Scan(branchToScan,baseSelection);
+	Long64_t evtsAfterCut = chain->Scan(branchToScan,tighterSelection);
+	Float_t efficiency = ((Float_t) evtsAfterCut/evtsBeforeCut);
+	return efficiency;
+
+}///end calculateEfficiencyWithOneChain()
 
 ///use this fxn to plot and save one histogram using one branch from one TTree (or TChain)
 void makeAndSaveSingleHistoFromTree(TChain * chain,string canvName,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName){
@@ -1758,5 +1769,60 @@ void macroSandBox(){
 #endif
 	//end recoAndGenHLTEfficiency
 	
+	
+#ifdef genAndRecoWrPlotsMinimalCuts
+	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
+	string dir= "/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_genAndRecoAnalysis/";
+	string fileBegin = "all_analyzedWr_WR_M-";
+	string fileEnd = ".root";
+	string fileMiddle = "_Nu_M-";
+	string genCutEffVsMassFile = "genCutEfficienciesVsMasses.txt";
+	ofstream writeToGenEfficiencyFile(genCutEffVsMassFile.c_str(),ofstream::app);
+	gStyle->SetTitleOffset(1.4,"Y");
+	Int_t nBins = 25;	///max is 25
+	Float_t wrMassVals[nBins], genMatchedPtEtaEff[nBins], genLeadAndSubleadPtEtaEff[nBins];
+	gStyle->SetOptStat("");
+
+	int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000,800};
+	//int wrMassArr[] = {800,1000};
+
+	for(int i=0; i<nBins ; i++){
+		///loop over WR mass values
+		
+		///define input root file name and add a Float_t to the x axis array used for later TGraph objects
+		string pfn = dir+fileBegin+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2)+fileEnd;
+		wrMassVals[i] = (Float_t) wrMassArr[i];
+		string plotDir = "plotHolder/noCutsGenAndRecoWr_MWR-"+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2);
+
+		TChain * wrChain = new TChain("wrAnalyzerOne/genAndMatchedRecoWrDecayNoCuts");
+		wrChain->Add(pfn.c_str());
+		TString baseGenMatchedCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<8 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<8 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<8 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<8";
+		TString genMatchedEtaCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<2.5 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<2.5 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<2.5 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<2.5";
+		TString genMatchedPtCutString = "ptGenLeptFromFstHvyPtcl>40 && ptGenLeptFromScdHvyPtcl>40 && ptGenQuarkOneFromScdHvyPtcl>40 && ptGenQuarkTwoFromScdHvyPtcl>40";
+		
+		TString baseGenLeadingCutString = "TMath::Abs(etaLeadGenLepton)<8 && TMath::Abs(etaSubleadGenLepton)<8 && TMath::Abs(etaLeadGenQuark)<8 && TMath::Abs(etaSubleadGenQuark)<8";
+		TString genLeadingEtaCutString = "TMath::Abs(etaLeadGenLepton)<2.5 && TMath::Abs(etaSubleadGenLepton)<2.5 && TMath::Abs(etaLeadGenQuark)<2.5 && TMath::Abs(etaSubleadGenQuark)<2.5";
+		TString genLeadingPtCutString = "ptLeadGenLepton>40 && ptSubleadGenLepton>40 && ptLeadGenQuark>40 && ptSubleadGenQuark>40";
+
+		genMatchedPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenMatchedCutString, genMatchedEtaCutString+" && "+genMatchedPtCutString));
+		genLeadAndSubleadPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenLeadingCutString, genLeadingEtaCutString+" && "+genLeadingPtCutString));
+
+		writeToGenEfficiencyFile << genMatchedPtEtaEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tpass the requirement that the gen leptons and quarks from WR and Nu decays have |eta| < 2.5 and pt > 40"<< endl;
+		writeToGenEfficiencyFile << genLeadAndSubleadPtEtaEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tpass the requirement that lead and sublead gen leptons and quarks have |eta| < 2.5 and pt > 40"<< endl;
+		writeToGenEfficiencyFile <<" "<< endl;
+
+		SaveTreePlots(wrChain, plotDir.c_str());
+
+		wrChain->Delete();
+
+	}///end loop over WR mass values	
+
+	///close txt file
+	writeToGenEfficiencyFile.close();
+
+
+
+#endif
+	//end genAndRecoWrPlotsMinimalCuts
 }///end macroSandBox()
 

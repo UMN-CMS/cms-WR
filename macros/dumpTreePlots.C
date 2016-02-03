@@ -348,9 +348,11 @@ void saveSingleHisto(TString canvName,TString histName,TString histTitle,TString
 	//hist->GetYaxis()->SetTitle(temp);
 
 	hist->Draw();
+	canv->Update();
 	canv->SaveAs(outFile,"recreate");
+	canv->Close();
+	canv->Delete();
 }///end saveSingleHisto()
-
 
 ///use this fxn to take one tuple and dump all branches into plots with unique names
 void SaveTreePlots(TChain * chain, TString outputFileName){
@@ -362,7 +364,7 @@ void SaveTreePlots(TChain * chain, TString outputFileName){
 		std::cout<<"brName = \t"<< brName <<std::endl;
 #endif
 		string tempBrName(brName);
-		if(tempBrName.find("Matching") != string::npos) continue;	///<ignore branches with gen information
+		if(tempBrName.find("Weight") != string::npos || brName.CompareTo("evtNumber")==0 || brName.CompareTo("runNumber")==0) continue;	///<ignore branches with miscellaneous information
 		if(brName.CompareTo("etaEle")==0 || brName.CompareTo("phiEle")==0 || brName.CompareTo("ptEle")==0 || 
 				brName.CompareTo("ptJet")==0 || brName.CompareTo("etaJet")==0 || brName.CompareTo("phiJet")==0 ){
 			///NOTE the max value of 2 is set knowing that the max number of array elements per entry is 2
@@ -375,7 +377,7 @@ void SaveTreePlots(TChain * chain, TString outputFileName){
 
 				///now updatedBrName has the array name and element of interest, either [0] or [1]
 				saveSingleHisto(brName+num,brName+num+"Hist",brName+"["+num+"]",outputFileName+"_"+brName+"["+num+"]"+".png");
-
+				saveSingleHisto(brName+num,brName+num+"Hist",brName+"["+num+"]",outputFileName+"_"+brName+"["+num+"]"+".pdf");
 			}///end for loop
 
 		}///end filter to do something different if the branch name corresponds to an array branch
@@ -390,11 +392,13 @@ void SaveTreePlots(TChain * chain, TString outputFileName){
 			chain->Draw(updatedBrName);
 			
 			TString outFilePath = outputFileName+"_"+brName+".png";
+			TString outFilePathPdf = outputFileName+"_"+brName+".pdf";
 #ifdef DEBUG
 			std::cout<<"outFilePath = \t"<< outFilePath <<std::endl;
 #endif
 			saveSingleHisto(brName,histName,brName,outFilePath);
-			
+			saveSingleHisto(brName,histName,brName,outFilePathPdf);
+		
 		}
 
 	}///end loop over branches in TChain pointer named chain

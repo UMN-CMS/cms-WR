@@ -4,8 +4,8 @@ printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
 		maxEventsToPrint = cms.untracked.int32(-1),
 		printVertex = cms.untracked.bool(False),
 		printOnlyHardInteraction = cms.untracked.bool(False),
-		src = cms.InputTag("genParticles")
-		#src = cms.InputTag("prunedGenParticles")
+		#src = cms.InputTag("genParticles")
+		src = cms.InputTag("prunedGenParticles")
 		)
 
 hasGenMuOrTau = cms.EDFilter("CandViewSelector",

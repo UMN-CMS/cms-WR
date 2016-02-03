@@ -16,15 +16,17 @@ the following line in WR_M-UNDEF_ToLNu_M-UNDEF_GEN.py
 to
             '9900024:onIfAny = 13 9900014'
 
-the offline cuts will require the muons to have |eta| < 2.5 (instead of 2.4), but the effect of this on the events
+the offline cuts will require the electrons and muons to have |eta| < 2.4 , but the effect of this on the events
 passing the full selection will be negligible.  The entire generation and offline selection sequence will work as
 it should whether the WR decay products are electrons or muons.
 
 To run this code in your own area you must update several parameters in the makeGenRunOfflineAnalysisScripts.sh file.
-The absolute path names to the output TTree and GEN event directories must be changed, as does the path name to the
-directory in which the job run .csh files are stored.  The parameter named 'increment' controls the distance between
+The absolute path names to the output TTree, GEN event, and input job .csh scripts directories must be changed.
+In makeGen...sh the parameter named 'increment' controls the distance between
 neighboring points in the (MWR, MNu) plane.  50 (GeV) is the default spacing.  The other numerical parameters control
-the min MNu value, the min and max MWR value, and the number of events to generate at each (MWR, MNu) point.
+the min MNu value, the min and max MWR value, and the number of events to generate at each (MWR, MNu) point.  Once these
+parameters are updated you can execute the makeGenRunOfflineAnalysisScripts.sh script, and submitGenAndOfflineAnalysisJobs.sh
+to start the simulations.
 
 
 Once the GEN jobs finish, the macro calculateGenWrScaleFactors.C can be used.  This macro calculates the efficiency ratio

@@ -20,11 +20,11 @@ q=1
 
 #absolute path names to output file directories
 #where GEN events and TTree files will be stored
-pathToTrees='/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid'
+pathToTrees='/uscms/home/skalafut/nobackup/WR_starting2015/genWrTTrees'
 pathToGenEvts='/eos/uscms/store/user/skalafut/WR/13TeV/WRSignal_slimmedGEN'
 
 #absolute path name to the directory where the job executable .csh file is stored
-pathToExe='/uscms/home/skalafut/nobackup/WR_starting2015/genWrSignal'
+pathToExe='/uscms/home/skalafut/nobackup/WR_starting2015/mostUpToDateCode/CMSSW_7_4_12_patch4/src/ExoAnalysis/cmsWR/scripts/genAndFullOfflineAnalysisJobs'
 
 ####
 ##NOTE these 6 sed commands are added to maintain functionality of the root macro

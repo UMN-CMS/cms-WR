@@ -1,9 +1,9 @@
 #!/bin/csh
 
 #Setup environment, move and untar needed files and directories, compile everything
-setenv HOME /eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid
+setenv HOME TREEDIR
 setenv PATH /bin:/usr/bin:/usr/local/bin:/usr/krb5/bin:/usr/afsws/bin:/usr/krb5/bin/aklog
-setenv GENEVTS /eos/uscms/store/user/skalafut/WR/13TeV/WRSignal_slimmedGEN
+setenv GENEVTS GENDIR
 
 source /cvmfs/cms.cern.ch/cmsset_default.csh prod
 setenv SCRAM_ARCH slc6_amd64_gcc491
