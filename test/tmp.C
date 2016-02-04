@@ -1,4 +1,5 @@
 #include "TTree.h"
+#include "TChain.h"
 #include "TFile.h"
 #include "TLorentzVector.h"
 #include "RooRealVar.h"
@@ -26,13 +27,22 @@ void tmp(){
   TFile * hfile = new TFile("ttree.root");
   TTree *tree = (TTree*)hfile->Get("MiniTTree/t");  
   
+  TChain * chain_ttbar = new TChain("miniTree_signal/t");
+  chain_ttbar->Add("~/eos/cms/store/user/shervin/ntuples/TTJets_DiLept_v1_SHv2/ttree_100_*.root");
+
+  // TChain * chain_ttbar = new TChain("MiniTTree/t");
+  // chain_ttbar->Add("ttree.root");
+
   // Plotting trees
   TFile f("selected_tree.root","recreate");
   TTree * t1 = new TTree("t1","");
 
   miniTreeEvent myEvent;
+
+  //chain_ttbar->SetBranchAddress("run",&myEvent.run);
   
-  myEvent.SetBranchAddresses(tree, myEvent);
+  //myEvent.SetBranchAddresses(tree);
+  myEvent.SetBranchAddresses(chain_ttbar);
   Selector selEvent;
   selEvent.SetBranches(t1);
   

@@ -114,59 +114,59 @@ void miniTreeEvent::SetBranches(TTree* tree) {
 
 }
 
-void miniTreeEvent::SetBranchAddresses(TTree* tree, miniTreeEvent& event) {
+void miniTreeEvent::SetBranchAddresses(TChain* tree) {
 
-  delete event.electrons_p4;
-  delete event.muons_p4;
-  delete event.jets_p4;
+  delete electrons_p4;
+  delete muons_p4;
+  delete jets_p4;
 
-  delete event.jec_uncertainty;
-  delete event.electron_scale;
-  delete event.electron_smearing;
-  delete event.electron_charge;
-  delete event.muon_charge;
-  delete event.muon_IDSF_central;
-  delete event.muon_IsoSF_central;
-  delete event.muon_IDSF_error;
-  delete event.muon_IsoSF_error;
+  delete jec_uncertainty;
+  delete electron_scale;
+  delete electron_smearing;
+  delete electron_charge;
+  delete muon_charge;
+  delete muon_IDSF_central;
+  delete muon_IsoSF_central;
+  delete muon_IDSF_error;
+  delete muon_IsoSF_error;
 
   _owningMembers=false;
 
-  event.electrons_p4 = 0;
-  event.muons_p4 = 0;
-  event.jets_p4 = 0;
+  electrons_p4 = 0;
+  muons_p4 = 0;
+  jets_p4 = 0;
 
-  event.jec_uncertainty = 0;
-  event.electron_scale = 0;
-  event.electron_smearing = 0;
-  event.electron_charge = 0;
-  event.muon_charge = 0;
-  event.muon_IDSF_central = 0;
-  event.muon_IsoSF_central = 0;
-  event.muon_IDSF_error = 0;
-  event.muon_IsoSF_error = 0;
+  jec_uncertainty = 0;
+  electron_scale = 0;
+  electron_smearing = 0;
+  electron_charge = 0;
+  muon_charge = 0;
+  muon_IDSF_central = 0;
+  muon_IsoSF_central = 0;
+  muon_IDSF_error = 0;
+  muon_IsoSF_error = 0;
 
-  tree->SetBranchAddress("run",&event.run);
-  tree->SetBranchAddress("lumi", &event.lumi);
-  tree->SetBranchAddress("event", &event.event);
+  tree->SetBranchAddress("run",&run);
+  tree->SetBranchAddress("lumi", &lumi);
+  tree->SetBranchAddress("event", &event);
 
-  tree->SetBranchAddress("electrons_p4", &event.electrons_p4);
-  tree->SetBranchAddress("muons_p4", &event.muons_p4);
-  tree->SetBranchAddress("jets_p4", &event.jets_p4);
+  // tree->SetBranchAddress("electrons_p4", &electrons_p4);
+  // tree->SetBranchAddress("muons_p4", &muons_p4);
+  // tree->SetBranchAddress("jets_p4", &jets_p4);
 
-  tree->SetBranchAddress("jec_uncertainty",&event.jec_uncertainty);
-  tree->SetBranchAddress("electron_scale",&event.electron_scale);
-  tree->SetBranchAddress("electron_smearing",&event.electron_smearing);
-  tree->SetBranchAddress("electron_charge",&event.electron_charge);
-  tree->SetBranchAddress("muon_charge",&event.muon_charge);
-  tree->SetBranchAddress("muon_IDSF_central",&event.muon_IDSF_central);
-  tree->SetBranchAddress("muon_IsoSF_central",&event.muon_IsoSF_central);
-  tree->SetBranchAddress("muon_IDSF_error",&event.muon_IDSF_error);
-  tree->SetBranchAddress("muon_IsoSF_error",&event.muon_IsoSF_error);
+  // tree->SetBranchAddress("jec_uncertainty",&jec_uncertainty);
+  // tree->SetBranchAddress("electron_scale",&electron_scale);
+  // tree->SetBranchAddress("electron_smearing",&electron_smearing);
+  // tree->SetBranchAddress("electron_charge",&electron_charge);
+  // tree->SetBranchAddress("muon_charge",&muon_charge);
+  // tree->SetBranchAddress("muon_IDSF_central",&muon_IDSF_central);
+  // tree->SetBranchAddress("muon_IsoSF_central",&muon_IsoSF_central);
+  // tree->SetBranchAddress("muon_IDSF_error",&muon_IDSF_error);
+  // tree->SetBranchAddress("muon_IsoSF_error",&muon_IsoSF_error);
 
-  tree->SetBranchAddress("nPU", &event.nPU);
-  tree->SetBranchAddress("nPV", &event.nPV);
-  tree->SetBranchAddress("weight",&event.weight);
-  tree->SetBranchAddress("PU_reweight",&event.PU_reweight);
+  // tree->SetBranchAddress("nPU", &nPU);
+  // tree->SetBranchAddress("nPV", &nPV);
+  // tree->SetBranchAddress("weight",&weight);
+  // tree->SetBranchAddress("PU_reweight",&PU_reweight);
 
 }

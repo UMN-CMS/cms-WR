@@ -2,6 +2,7 @@
 #define miniTreeEvent_h
 #include <TLorentzVector.h>
 #include <TTree.h>
+#include <TChain.h>
 
 class miniTreeEvent{
  public:
@@ -36,7 +37,7 @@ class miniTreeEvent{
 
   void clear();
   void SetBranches(TTree* tree);
-  void SetBranchAddresses(TTree* tree, miniTreeEvent& event);
+  void SetBranchAddresses(TChain* tree);
 
 
 private:
