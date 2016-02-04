@@ -5,9 +5,12 @@
 #include "RooDataSet.h"
 #include "TRandom3.h"
 #include <iostream>
-#include "ExoAnalysis/cmsWR/interface/FitRooDataSet.h"
-#include "ExoAnalysis/cmsWR/src/Selector.cc"
-#include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
+// #include "ExoAnalysis/cmsWR/interface/FitRooDataSet.h"
+// #include "ExoAnalysis/cmsWR/src/Selector.cc"
+// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
+#include "../interface/FitRooDataSet.h"
+#include "../src/Selector.cc"
+#include "../src/miniTreeEvent.cc"
 #include "rooFitFxns.C"
 //#include "ToyThrower.C"
 
@@ -19,7 +22,8 @@ void tmp(){
 
   using namespace RooFit;
   
-  TFile * hfile = new TFile("/afs/cern.ch/user/j/jchavesb/public/WR/ttree.root");
+  // TFile * hfile = new TFile("/afs/cern.ch/user/j/jchavesb/public/WR/ttree.root");
+  TFile * hfile = new TFile("ttree.root");
   TTree *tree = (TTree*)hfile->Get("MiniTTree/t");  
   
   // Plotting trees
@@ -57,24 +61,43 @@ void tmp(){
       // 2 -- EMuJJ Channel
 
       int tag = 1;
-      
+
       if(selEvent.isPassing(tag) && selEvent.dilepton_mass > 200){
 	//cout<<"PASS"<<endl;       
-	//cout<<selEvent.WR_mass<<endl;
-	
+    	
 	float weight = selEvent.weight * 1.0; // Product of many weights
-	Float_t lead_lepton_pt = (tag == 0 || tag == 2) ? selEvent.electrons[0].p4.Pt() : selEvent.muons[0].p4.Pt();
-	Float_t sublead_lepton_pt = (tag == 0 || tag == 1) ? selEvent.electrons[1].p4.Pt() : selEvent.muons[1].p4.Pt();
-	Float_t lead_lepton_eta;
-	Float_t sublead_lepton_eta;
-	Float_t lead_lepton_phi;
-	Float_t sublead_lepton_phi;
-	Float_t lead_jet_pt;
-	Float_t sublead_jet_pt;
-	Float_t lead_jet_eta;
-	Float_t sublead_jet_eta;
-	Float_t lead_jet_phi;
-	Float_t sublead_jet_phi;
+
+	selEvent.lead_jet_pt = selEvent.jets[0].p4.Pt();
+	selEvent.sublead_jet_pt = selEvent.jets[1].p4.Pt();
+	selEvent.lead_jet_eta = selEvent.jets[0].p4.Eta();
+	selEvent.sublead_jet_eta = selEvent.jets[1].p4.Eta();
+	selEvent.lead_jet_phi = selEvent.jets[0].p4.Phi();
+	selEvent.sublead_jet_phi = selEvent.jets[1].p4.Phi();
+
+	if(tag == 0){
+	  selEvent.lead_lepton_pt = selEvent.electrons[0].p4.Pt();
+	  selEvent.sublead_lepton_pt = selEvent.electrons[1].p4.Pt();
+	  selEvent.lead_lepton_eta = selEvent.electrons[0].p4.Eta();
+	  selEvent.sublead_lepton_eta = selEvent.electrons[1].p4.Eta();
+	  selEvent.lead_lepton_phi = selEvent.electrons[0].p4.Phi();
+	  selEvent.sublead_lepton_phi = selEvent.electrons[1].p4.Phi();
+	}
+	if(tag == 1){
+	  selEvent.lead_lepton_pt = selEvent.muons[0].p4.Pt();
+	  selEvent.sublead_lepton_pt = selEvent.muons[1].p4.Pt();
+	  selEvent.lead_lepton_eta = selEvent.muons[0].p4.Eta();
+	  selEvent.sublead_lepton_eta = selEvent.muons[1].p4.Eta();
+	  selEvent.lead_lepton_phi = selEvent.muons[0].p4.Phi();
+	  selEvent.sublead_lepton_phi = selEvent.muons[1].p4.Phi();
+	}
+	if(tag == 2){
+	  selEvent.lead_lepton_pt = selEvent.electrons[0].p4.Pt();
+	  selEvent.sublead_lepton_pt = selEvent.muons[0].p4.Pt();
+	  selEvent.lead_lepton_eta = selEvent.electrons[0].p4.Eta();
+	  selEvent.sublead_lepton_eta = selEvent.muons[0].p4.Eta();
+	  selEvent.lead_lepton_phi = selEvent.electrons[0].p4.Phi();
+	  selEvent.sublead_lepton_phi = selEvent.muons[0].p4.Phi();
+	}
 
 	massWR.setVal(selEvent.WR_mass);
 	evtWeight.setVal(weight);

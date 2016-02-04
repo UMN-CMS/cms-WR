@@ -1,10 +1,12 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include "ExoAnalysis/cmsWR/interface/Selector.h"
-#include "DataFormats/Math/interface/deltaR.h"
+// #include "ExoAnalysis/cmsWR/interface/Selector.h"
+#include "../interface/Selector.h"
+//#include "DataFormats/Math/interface/deltaR.h"
 
-float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); };
+// float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); };
+float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return 1.0; };
 void goodJets(myJetCollection *evJets, myJetCollection *selJets){
   for(auto j:*evJets){
     if(j.p4.Pt() > 40 && fabs(j.p4.Eta()) < 2.4)
@@ -67,7 +69,6 @@ void Selector::Clear() {
   WR_mass = dilepton_mass = weight = 0.0;
 };
 
-
 bool Selector::isPassing(Int_t tag){
 
   myJetCollection gJets;
@@ -81,15 +82,15 @@ bool Selector::isPassing(Int_t tag){
 
   std::sort(gJets.begin(), gJets.end(),
 	    [](myJet const &a, myJet const &b) {
-	      return a.p4.Pt() < b.p4.Pt(); 
+	      return a.p4.Pt() > b.p4.Pt(); 
 	    });
   std::sort(gEles.begin(), gEles.end(),
 	    [](myElectron const &a, myElectron const &b) {
-	      return a.p4.Pt() < b.p4.Pt(); 
+	      return a.p4.Pt() > b.p4.Pt(); 
 	    });
   std::sort(gMuons.begin(), gMuons.end(),
 	    [](myMuon const &a, myMuon const &b) {
-	      return a.p4.Pt() < b.p4.Pt(); 
+	      return a.p4.Pt() > b.p4.Pt(); 
 	    });
 
   jets = gJets;
@@ -100,17 +101,7 @@ bool Selector::isPassing(Int_t tag){
   if(gJets.size() < 2){
     return false;
   }
-  
-#ifdef DEBUG
-  if(gJets[0].p4.Pt() != (jets_p4)->at(0).p4.Pt()){
-    cout<<"UNSORTED JETS"<<endl;
-    cout<<gJets[0].Pt()<< " " <<(jets->at(0)).p4.Pt()<<endl;
-    cout<<gJets[1].Pt()<< " " <<(jets_p4)->at(1).Pt()<<endl;
-    cout<<gJets[0].Eta()<< " " <<(jets_p4)->at(0).Eta()<<endl;
-    cout<<gJets[1].Eta()<< " " <<(jets_p4)->at(1).Eta()<<endl;
-  }
-#endif
-  
+    
   if(tag == 0) // EEJJ Channel
     {
       // Assert at least 2 good leptons
@@ -140,13 +131,6 @@ bool Selector::isPassing(Int_t tag){
       if(gMuons.size() < 2){
 	return false;
       }
-#ifdef DEBUG
-      if(gMuons[0].Pt() != (muons_p4)->at(0).Pt()){
-	cout<<"UNSORTED MUONS"<<endl;
-	cout<<gMuons[0].p4.Pt()<< " " <<(muons.p4)->at(0).Pt()<<endl;
-	cout<<gMuons[1].p4.Pt()<< " " <<(muons.p4)->at(1).Pt()<<endl;
-      }
-#endif
       // Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
       WR_mass = (gMuons[0].p4 + gMuons[1].p4 + gJets[0].p4 + gJets[1].p4).M();
       dilepton_mass = (gMuons[0].p4 + gMuons[1].p4).M();
@@ -190,21 +174,6 @@ bool Selector::isPassing(Int_t tag){
 
 void Selector::SetBranches(TTree* tree) {
 
-  Float_t lead_lepton_pt;
-  Float_t sublead_lepton_pt;
-  Float_t lead_lepton_eta;
-  Float_t sublead_lepton_eta;
-  Float_t lead_lepton_phi;
-  Float_t sublead_lepton_phi;
-  Float_t lead_jet_pt;
-  Float_t sublead_jet_pt;
-  Float_t lead_jet_eta;
-  Float_t sublead_jet_eta;
-  Float_t lead_jet_phi;
-  Float_t sublead_jet_phi;
-
-  Float_t weight;    
-
   tree->Branch("lead_lepton_pt", &lead_lepton_pt);
   tree->Branch("sublead_lepton_pt", &sublead_lepton_pt);
   tree->Branch("lead_lepton_eta", &lead_lepton_eta);
@@ -222,48 +191,27 @@ void Selector::SetBranches(TTree* tree) {
   tree->Branch("WR_mass", &WR_mass);
   tree->Branch("dilepton_mass", &dilepton_mass);
   
-}
+};
 
 void Selector::SetBranchAddresses(TTree* tree) {
   
-  Float_t lead_lepton_pt;
-  Float_t sublead_lepton_pt;
-  Float_t lead_lepton_eta;
-  Float_t sublead_lepton_eta;
-  Float_t lead_lepton_phi;
-  Float_t sublead_lepton_phi;
-  Float_t lead_jet_pt;
-  Float_t sublead_jet_pt;
-  Float_t lead_jet_eta;
-  Float_t sublead_jet_eta;
-  Float_t lead_jet_phi;
-  Float_t sublead_jet_phi;
+  tree->SetBranchAddress("lead_lepton_pt",&lead_lepton_pt);
+  tree->SetBranchAddress("lead_lepton_eta",&lead_lepton_eta);
+  tree->SetBranchAddress("lead_lepton_phi",&lead_lepton_phi);
+  tree->SetBranchAddress("sublead_lepton_pt",&sublead_lepton_pt);
+  tree->SetBranchAddress("sublead_lepton_eta",&sublead_lepton_eta);
+  tree->SetBranchAddress("sublead_lepton_phi",&sublead_lepton_phi);
 
-  Float_t weight;  
+  tree->SetBranchAddress("lead_jet_pt",&lead_jet_pt);
+  tree->SetBranchAddress("lead_jet_eta",&lead_jet_eta);
+  tree->SetBranchAddress("lead_jet_phi",&lead_jet_phi);
+  tree->SetBranchAddress("sublead_jet_pt",&sublead_jet_pt);
+  tree->SetBranchAddress("sublead_jet_eta",&sublead_jet_eta);
+  tree->SetBranchAddress("sublead_jet_phi",&sublead_jet_phi);
 
-  tree->SetBranchAddress("leading_lepton_pt",&lead_lepton_pt);
-  /*
-tree->SetBranchAddress("lumi", &event.lumi);
-  tree->SetBranchAddress("event", &event.event);
+  tree->SetBranchAddress("weight", &weight);
+  tree->SetBranchAddress("WR_mass", &WR_mass);
+  tree->SetBranchAddress("dilepton_mass", &dilepton_mass);
 
-  tree->SetBranchAddress("electrons_p4", &event.electrons_p4);
-  tree->SetBranchAddress("muons_p4", &event.muons_p4);
-  tree->SetBranchAddress("jets_p4", &event.jets_p4);
-
-  tree->SetBranchAddress("jec_uncertainty",&event.jec_uncertainty);
-  tree->SetBranchAddress("electron_scale",&event.electron_scale);
-  tree->SetBranchAddress("electron_smearing",&event.electron_smearing);
-  tree->SetBranchAddress("electron_charge",&event.electron_charge);
-  tree->SetBranchAddress("muon_charge",&event.muon_charge);
-  tree->SetBranchAddress("muon_IDSF_central",&event.muon_IDSF_central);
-  tree->SetBranchAddress("muon_IsoSF_central",&event.muon_IsoSF_central);
-  tree->SetBranchAddress("muon_IDSF_error",&event.muon_IDSF_error);
-  tree->SetBranchAddress("muon_IsoSF_error",&event.muon_IsoSF_error);
-
-  tree->SetBranchAddress("nPU", &event.nPU);
-  tree->SetBranchAddress("nPV", &event.nPV);
-  tree->SetBranchAddress("weight",&event.weight);
-  tree->SetBranchAddress("PU_reweight",&event.PU_reweight);
-  */
-}
+};
 

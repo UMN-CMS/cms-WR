@@ -1,5 +1,5 @@
-#include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
-
+// #include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
+#include "../interface/miniTreeEvent.h"
 
 miniTreeEvent::miniTreeEvent():
   electrons_p4(new std::vector<TLorentzVector>),
