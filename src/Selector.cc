@@ -3,10 +3,9 @@
 #include <vector>
 // #include "ExoAnalysis/cmsWR/interface/Selector.h"
 #include "../interface/Selector.h"
-//#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
-// float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); };
-float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return 1.0; };
+float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); };
 void goodJets(myJetCollection *evJets, myJetCollection *selJets){
   for(auto j:*evJets){
     if(j.p4.Pt() > 40 && fabs(j.p4.Eta()) < 2.4)

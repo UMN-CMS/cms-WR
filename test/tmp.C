@@ -19,34 +19,34 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
+//#define DEBUG
+
 void tmp(){
 
   using namespace RooFit;
-  
-  // TFile * hfile = new TFile("/afs/cern.ch/user/j/jchavesb/public/WR/ttree.root");
-  TFile * hfile = new TFile("ttree.root");
-  TTree *tree = (TTree*)hfile->Get("MiniTTree/t");  
-  
-  TChain * chain_ttbar = new TChain("miniTree_signal/t");
-  chain_ttbar->Add("~/eos/cms/store/user/shervin/ntuples/TTJets_DiLept_v1_SHv2/ttree_100_*.root");
 
-  // TChain * chain_ttbar = new TChain("MiniTTree/t");
-  // chain_ttbar->Add("ttree.root");
+  TString mode = "ttbar";
+  
+  //TChain * chain = new TChain("MiniTTree/t");
+  TChain * chain = new TChain("miniTree_signal/t");
+
+  if(mode.EqualTo("ttbar")){
+    //chain->Add("ttree.root");   
+    chain->Add("~/eos/cms/store/user/shervin/ntuples/TTJets_DiLept_v1_SHv2/ttree_*.root");
+  }
 
   // Plotting trees
-  TFile f("selected_tree.root","recreate");
+  TFile f("selected_tree_"+mode+".root","recreate");
   TTree * t1 = new TTree("t1","");
 
   miniTreeEvent myEvent;
 
-  //chain_ttbar->SetBranchAddress("run",&myEvent.run);
-  
-  //myEvent.SetBranchAddresses(tree);
-  myEvent.SetBranchAddresses(chain_ttbar);
+  myEvent.SetBranchAddresses(chain);
   Selector selEvent;
   selEvent.SetBranches(t1);
   
-  int nToys = 1;
+  Int_t nToys = 1;
+  Int_t nEntries = chain->GetEntries();
 
   for(int i = 0; i < nToys; i++){
 
@@ -55,12 +55,21 @@ void tmp(){
     RooArgSet vars(massWR,evtWeight);
     RooDataSet * tempDataSet = new RooDataSet("temp","temp",vars);
 
-    for(int ev = 0; ev<tree->GetEntries(); ev++){
-      tree->GetEntry(ev);
+    for(int ev = 0; ev<nEntries; ev++){
+      chain->GetEntry(ev);
     
       Selector tmp_selEvent(myEvent);
-
       selEvent = tmp_selEvent;
+
+#ifdef DEBUG
+      cout<<"RUN="<<myEvent.run<<endl;
+      cout<<"Mu"<<endl;
+      for(auto m:*(myEvent.muons_p4))
+        cout<<m.Pt()<<" "<<m.Eta()<<endl;
+      cout<<"Jet"<<endl;
+      for(auto m:*(myEvent.jets_p4))
+        cout<<m.Pt()<<" "<<m.Eta()<<endl;
+#endif
 
       //ToyThrower(myEvent, ev+1);
 
