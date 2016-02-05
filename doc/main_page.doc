@@ -80,7 +80,23 @@ Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
 \subpar muons
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
 
+\par Making selector plots
+In order to make the selected plots, first the minitree has to pass through the selection module. Edit and run with compilation
+\verbatim
+root -l test/tmp.C+
+\endverbatim
 
+The selection step will produce an output flat tree given for the given parameters (ttbar,DY, EEJJ, MuMuJJ channel, etc.).
+
+Create a directory to store the plots
+\verbatim
+mkdir test/plots
+\endverbatim
+
+The plotting script will take in the background samples and data sample to produced stacked plots for data/MC comparisons. Run
+\verbatim
+root -b test/miniPlotter.C
+\endverbatim
 
 
 \par GIT instructions
