@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 ### \todo add muon ID
 ### \todo check composite candidate cut string for pt ordering: pt_0 >= pt_1
 ### \todo make sure that the miniTree is using objects with looser selection
+from ExoAnalysis.cmsWR.dataMcAnalyzers_cfi import *
 
 
 ###
@@ -12,8 +13,7 @@ leadingPt=60.
 subleadingPt=50.
 miniTreeLeptonPt=40.
 maxEtaLeptons=2.4
-#jetPt = 40.
-jetPt = 35.
+jetPt = 20. # same as preselection
 
 
 ### need the reference for this selection, with link to the presentation and twiki page
@@ -75,6 +75,12 @@ wRHEEPElectron = cms.EDProducer('HEEPIDSelector',
                                 eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
                                 )
 
+#### this is to change the type of the collection for the analyzer
+wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("wRHEEPElectron"),
+		cut = cms.string('')
+		)
+
 ### select leading electron \ingroup electronSkim_Group
 wRleadingElectron = cms.EDFilter("PATElectronSelector",
                                  src = cms.InputTag("wRHEEPElectron"), #wRIsolatedElectrons"),
@@ -92,7 +98,7 @@ wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
                                     )
 
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("slimmedElectrons"), 
+                                    src = cms.InputTag("wRHEEPElectron"), 
                                     cut = cms.string( 
         (("(pt>%f) && (abs(eta)<%f)") % (miniTreeLeptonPt, maxEtaLeptons))
         ),
@@ -114,7 +120,9 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)
+
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)
+
 ############################################################ Muons
 
 tunePMuons = cms.EDProducer("TunePMuonProducer",
@@ -142,6 +150,11 @@ scaleCorrectedMuons = cms.EDProducer("produceScaleCorrectedMuons",
                 OutputCollectionName = cms.string("")
 		)
 
+scaleCorrectedMuonsRefiner = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("scaleCorrectedMuons"),
+		cut = cms.string('')
+		)
+
 ### add here the trigger matching
 
 ### select leading muon \ingroup muonSkim_Group
@@ -154,6 +167,11 @@ wRleadingMuon = cms.EDFilter("PATMuonSelector",
 wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
                                 src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
                                 cut = wRsubleadingElectron.cut,
+                                )
+
+wRminiTreeMuon = cms.EDFilter("PATMuonSelector",
+                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
+                                cut = wRminiTreeElectron.cut,
                                 )
 
 from ExoAnalysis.cmsWR.produceIdIsoSF_cff import *
@@ -177,7 +195,8 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
+muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
+#muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
 ############################################################ E-Mu candidate
 #mixed flavour candidates
 wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
@@ -221,6 +240,17 @@ wRCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
 flavourSidebandSelection='(daughter(0).isElectron && daughter(1).isMuon) || (daughter(1).isElectron && daughter(0).isMuon)'
 diLeptonSelection = '(mass>200)'
 
+
+lowFourObjectSidebandSelector = cms.EDFilter("CandViewSelector",
+                                     src = cms.InputTag("wRCandidate"),
+                                     cut = cms.string('(mass< 600)')
+                                     )
+lowFourObjectSidebandFilter  = cms.EDFilter('CandViewCountFilter',
+                                          src = cms.InputTag('lowFourObjectSidebandSelector'),
+                                          minNumber = cms.uint32(1)
+)
+
+
 flavourSidebandSelector = cms.EDFilter("CandViewSelector",
                                      src = cms.InputTag("wRdiLeptonCandidate"),
                                      cut = cms.string(flavourSidebandSelection+" && " + diLeptonSelection),
@@ -255,10 +285,18 @@ signalRegionFilter =  cms.EDFilter('CandViewCountFilter',
 
 signalRegionFilterSeq = cms.Sequence(~flavourSidebandFilter * ~lowDiLeptonSidebandSelector)
 
+#### 
+# lowMassSidebandSelector = signalRegionSelector.clone(
+#     cut = signalRegionSelector.cut + " && 
+# lowMassSidebandFilter = signalRegionFilter
 
 selectionSequence = cms.Sequence(
-    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector
+    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle * mixedFlavorSignalRegionAnalyzerLeadEleSubleadMu * lowDiLeptonSidebandSelector * lowDileptonMassAnalyzerMuMu * lowDileptonMassAnalyzerEE * signalRegionSelector * sameFlavorSignalRegionAnalyzerEE * sameFlavorSignalRegionAnalyzerMuMu
         )
+
+#selectionSequence = cms.Sequence(
+#    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector 
+#        )
 
 filterSequence = cms.Sequence(
         wRJetFilter * wRdiLeptonCandidateFilter

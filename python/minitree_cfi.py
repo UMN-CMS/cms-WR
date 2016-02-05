@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 MiniTTree = cms.EDAnalyzer('miniTTree',
-                            muons_src = cms.InputTag('wRsubleadingMuon'),
+                            muons_src = cms.InputTag('wRminiTreeMuon'),
                             electrons_src = cms.InputTag('wRminiTreeElectron'),
                             jets_src = cms.InputTag('wRJets'),
                             jec_unc_src = cms.InputTag('wRJECUncert','JECUncertainty'),

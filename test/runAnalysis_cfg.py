@@ -37,8 +37,9 @@ if(options.test==3):
     #options.maxEvents=100
     options.isMC=1
 elif(options.test==2):
-    options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
-    options.maxEvents=100
+    #options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
+    options.files='root://cms-xrd-global.cern.ch//store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
+    options.maxEvents=200
     options.isMC=1
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
@@ -78,7 +79,7 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(
 #    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(True),
-    #SkipEvent = cms.untracked.vstring('ProductNotFound'),
+    SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 process.source = cms.Source("PoolSource",
@@ -130,11 +131,13 @@ process.load('ExoAnalysis.cmsWR.heepSelector_cfi')
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
 
+process.load('ExoAnalysis.cmsWR.dataMcAnalyzers_cfi')
+
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
-process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.filterSequence)
+process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
 
 process.miniTree_signal = process.MiniTTree.clone()
 process.miniTree_flavoursideband = process.MiniTTree.clone()
@@ -143,10 +146,11 @@ process.miniTree_dytagandprobe = process.MiniTTree.clone()
 
 ############################################################ PATHs definition
 process.SignalRegion    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
+process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 process.FlavourSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTree_flavoursideband)
-process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
+#process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -160,6 +164,7 @@ if (options.isMC==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
+<<<<<<< HEAD
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe) #, process.microAODoutput_step)
 
 
@@ -171,3 +176,6 @@ pathPrefix=CMSSW_BASE+'/src/ExoAnalysis/cmsWR/'
 process.PUWeights.PileupMCFilename = cms.string(pathPrefix + "data/MCPileup.root")
 process.PUWeights.PileupDataFilename = cms.string(pathPrefix + "data/DataPileup.root")
 
+=======
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe, process.microAODoutput_step)
+>>>>>>> origin/runNewAnalysis
