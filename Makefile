@@ -33,16 +33,17 @@ OBJ_DIR=./lib
 EoPDir:=../EOverPCalibration
 
 #################
-INCLUDE=-I$(INCLUDEDIR) -I$(INCLUDEEPDIR) -isystem$(ROOT_INCLUDE)   -I$(ROOFIT_INCLUDE) -I$(BOOST)/include
+INCLUDE=-I$(INCLUDEDIR) -I$(INCLUDEEPDIR) -isystem$(ROOT_INCLUDE)   -I$(ROOFIT_INCLUDE) -I$(BOOST)/include -I$(CMSSW_BASE)/src/ -I$(CMSSW_RELEASE_BASE)/src/
 LIB=-L$(BOOST)/lib -L/usr/lib64 # -L/usr/lib 
 
 
+#$(info $$var is [${INCLUDE}])
+
 #### Make the list of modules from the list of .cc files in the SRC directory
 MODULES=$(shell ls $(SRCDIR)/*.cc | sed "s|.cc|.o|;s|$(SRCDIR)|$(OBJ_DIR)|g")
-MODULESEoP=$(shell ls $(EoPDir)/$(SRCDIR)/*.cc | sed "s|.cc|.o|;s|$(SRCDIR)|$(OBJ_DIR)|g")
 #### Make the list of dependencies for a particular module
 
-default: $(MODULES)  signalPdf.exe
+default: $(MODULES)  signalPdf.exe $(BUILDDIR)/analysis
 
 #------------------------------ MODULES (static libraries)
 
@@ -68,6 +69,11 @@ ZFitter.exe: $(BUILDDIR)/ZFitter.exe
 $(BUILDDIR)/ZFitter.exe:  $(BUILDDIR)/ZFitter.cpp 
 	cd $(EoPDir) && make
 	@echo "---> Making ZFitter $(COMPILE.exe)"
+	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
+	-lboost_program_options -lTreePlayer 
+
+$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp
+	@echo "---> Making analysis $(COMPILE)"
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 
 
