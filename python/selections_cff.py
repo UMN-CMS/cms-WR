@@ -281,12 +281,29 @@ signalRegionFilter =  cms.EDFilter('CandViewCountFilter',
                                      minNumber = cms.uint32(1),
 )
 
+signalRegionEESelector = cms.EDFilter("CandViewSelector",
+                                      src = cms.InputTag('signalRegionSelector')
+                                      cut = cms.string('(daughter(0).isElectron && daughter(1).isElectron)'),
+                                      )
+signalRegionMuMuSelector = cms.EDFilter("CandViewSelector",
+                                      src = cms.InputTag('signalRegionSelector')
+                                      cut = cms.string('(daughter(0).isMuon && daughter(1).isMuon)'),
+                                      )
+signalRegionEEFilter = cms.EDFilter("CandViewCountFilter",
+                                    src = cms.InputTag("signalRegionEESelector"),
+                                    minNumber = cms.uint32(1),
+                                    )
+signalRegionMuMuFilter = cms.EDFilter("CandViewCountFilter",
+                                    src = cms.InputTag("signalRegionMuMuSelector"),
+                                    minNumber = cms.uint32(1),
+                                    )
 
 signalRegionFilterSeq = cms.Sequence(~flavourSidebandFilter * ~lowDiLeptonSidebandSelector)
 
 
+
 selectionSequence = cms.Sequence(
-    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector
+    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector * signalRegionEESelector * signalRegionMuMuSelector
         )
 
 filterSequence = cms.Sequence(

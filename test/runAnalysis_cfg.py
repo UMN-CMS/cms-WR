@@ -139,13 +139,15 @@ process.blindSeq = cms.Sequence()
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
 
-process.miniTree_signal = process.MiniTTree.clone()
+process.miniTree_signal_ee   = process.MiniTTree.clone()
+process.miniTree_signal_mumu = process.MiniTTree.clone()
 process.miniTree_flavoursideband = process.MiniTTree.clone()
 process.miniTree_lowdileptonsideband = process.MiniTTree.clone()
 process.miniTree_dytagandprobe = process.MiniTTree.clone()
 
 ############################################################ PATHs definition
-process.SignalRegion        = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
+process.SignalRegionEE      = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.signalRegionEEFilter   * process.miniTree_signal_ee)
+process.SignalRegionMuMu    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.signalRegionMuMuFilter * process.miniTree_signal_mumu)
 process.FlavourSideband     = cms.Path(process.signalHltSequence * process.fullSeq                   * ~process.signalRegionFilter * process.flavourSidebandFilter * process.miniTree_flavoursideband)
 process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq                   * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
