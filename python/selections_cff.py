@@ -4,7 +4,6 @@ import FWCore.ParameterSet.Config as cms
 ### \todo add muon ID
 ### \todo check composite candidate cut string for pt ordering: pt_0 >= pt_1
 ### \todo make sure that the miniTree is using objects with looser selection
-from ExoAnalysis.cmsWR.dataMcAnalyzers_cfi import *
 
 
 ###
@@ -285,18 +284,10 @@ signalRegionFilter =  cms.EDFilter('CandViewCountFilter',
 
 signalRegionFilterSeq = cms.Sequence(~flavourSidebandFilter * ~lowDiLeptonSidebandSelector)
 
-#### 
-# lowMassSidebandSelector = signalRegionSelector.clone(
-#     cut = signalRegionSelector.cut + " && 
-# lowMassSidebandFilter = signalRegionFilter
 
 selectionSequence = cms.Sequence(
-    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * mixedFlavorSignalRegionAnalyzerLeadMuSubleadEle * mixedFlavorSignalRegionAnalyzerLeadEleSubleadMu * lowDiLeptonSidebandSelector * lowDileptonMassAnalyzerMuMu * lowDileptonMassAnalyzerEE * signalRegionSelector * sameFlavorSignalRegionAnalyzerEE * sameFlavorSignalRegionAnalyzerMuMu
+    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector
         )
-
-#selectionSequence = cms.Sequence(
-#    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector 
-#        )
 
 filterSequence = cms.Sequence(
         wRJetFilter * wRdiLeptonCandidateFilter
