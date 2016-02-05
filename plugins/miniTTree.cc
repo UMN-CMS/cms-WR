@@ -33,33 +33,35 @@ private:
   edm::EDGetToken pileUpReweightToken_;
   edm::EDGetToken primaryVertexToken_;
   edm::EDGetToken evinfoToken_;
-
+	
   edm::EDGetToken  jec_unc_src;
   edm::EDGetToken  muon_IDSF_central_src;
   edm::EDGetToken  muon_IsoSF_central_src;
   edm::EDGetToken  muon_IDSF_error_src;
   edm::EDGetToken  muon_IsoSF_error_src;
 
+	edm::EDGetToken datasetNameToken_;
   TTree* tree;
   miniTreeEvent myEvent;
 
 };
 
-miniTTree::miniTTree(const edm::ParameterSet& cfg)
-{
-  electronsMiniAODToken_   = consumes<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"));
-  muonsMiniAODToken_ = consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"));
-  jetsMiniAODToken_ = consumes<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"));
-  pileUpInfoToken_ = consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
-  pileUpReweightToken_ = consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"));
-  primaryVertexToken_ = consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"));
-  evinfoToken_ = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
-  jec_unc_src = consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"));
-  muon_IDSF_central_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"));
-  muon_IsoSF_central_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"));
-  muon_IDSF_error_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_error_src"));
-  muon_IsoSF_error_src = consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_error_src"));
+miniTTree::miniTTree(const edm::ParameterSet& cfg):
 
+	electronsMiniAODToken_   ( consumes<edm::View<pat::Electron> >(cfg.getParameter<edm::InputTag>("electrons_src"))),
+	muonsMiniAODToken_ ( consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"))),
+	jetsMiniAODToken_ ( consumes<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"))),
+	pileUpInfoToken_ ( consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"))),
+  pileUpReweightToken_ ( consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"))),
+  primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
+  evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
+  jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
+  muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
+  muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
+  muon_IDSF_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_error_src"))),
+  muon_IsoSF_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_error_src"))),
+	datasetNameToken_ ( consumes<std::string>(cfg.getParameter<edm::InputTag>("datasetName")))
+  {
   edm::Service<TFileService> fs;
   tree = fs->make<TTree>("t", "");
 
@@ -98,6 +100,11 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&) {
 
   edm::Handle<edm::View<reco::Vertex> > primary_vertex;
   event.getByToken(primaryVertexToken_,primary_vertex);
+
+  edm::Handle<std::string> datasetName;
+  event.getByToken(datasetNameToken_, datasetName);
+
+  sprintf(myEvent.datasetName, "%s", datasetName->c_str());
 
   if(primary_vertex->size() > 0) {
     for(auto pv: *primary_vertex)

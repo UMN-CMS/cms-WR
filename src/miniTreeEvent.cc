@@ -94,6 +94,7 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("run", &run);
 	tree->Branch("lumi", &lumi);
 	tree->Branch("event", &event);
+	tree->Branch("datasetName", datasetName, "datasetName/C");
 
 	tree->Branch("electrons_p4", electrons_p4, 32000, -1);
 	tree->Branch("muons_p4", muons_p4, 32000, -1);
@@ -152,6 +153,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("run", &run);
 	tree->SetBranchAddress("lumi", &lumi);
 	tree->SetBranchAddress("event", &event);
+	tree->SetBranchAddress("datasetName", datasetName);
 
 	tree->SetBranchAddress("electrons_p4", &electrons_p4);
 	tree->SetBranchAddress("muons_p4", &muons_p4);

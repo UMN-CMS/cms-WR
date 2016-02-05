@@ -10,6 +10,7 @@ public:
 	Int_t run;
 	Int_t lumi;
 	Long64_t event;
+	char datasetName[30];
 
 	// RunTime
 	// UInt_t run_time;
