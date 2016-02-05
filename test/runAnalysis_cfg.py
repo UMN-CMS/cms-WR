@@ -98,7 +98,7 @@ process.TFileService = cms.Service('TFileService', fileName = cms.string('ttree.
 process.load('ExoAnalysis.cmsWR.microAOD_Output_cff')
 
 SelectEventsPSet = cms.untracked.PSet(
-    SelectEvents = cms.vstring( [ 'FlavourSideband', 'SignalRegion', 'LowDiLeptonSideband' ] )
+    SelectEvents = cms.vstring( [ 'FlavourSideband', 'SignalRegionEE', 'SignalRegionMuMu', 'LowDiLeptonSideband', 'DYtagAndProbe' ] )
     )
 
 
@@ -166,7 +166,7 @@ if (options.isMC==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegion, process.DYtagAndProbe) #, process.microAODoutput_step)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe) #, process.microAODoutput_step)
 
 
 CMSSW_VERSION=os.getenv("CMSSW_VERSION")

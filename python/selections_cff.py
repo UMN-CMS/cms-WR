@@ -194,7 +194,7 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
+muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRleadingMuon * wRsubleadingMuon * wRminiTreeMuon *  muonIdIsoSF * wRdiMuonCandidate)
 #muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
 ############################################################ E-Mu candidate
 #mixed flavour candidates
@@ -282,11 +282,11 @@ signalRegionFilter =  cms.EDFilter('CandViewCountFilter',
 )
 
 signalRegionEESelector = cms.EDFilter("CandViewSelector",
-                                      src = cms.InputTag('signalRegionSelector')
+                                      src = cms.InputTag('signalRegionSelector'),
                                       cut = cms.string('(daughter(0).isElectron && daughter(1).isElectron)'),
                                       )
 signalRegionMuMuSelector = cms.EDFilter("CandViewSelector",
-                                      src = cms.InputTag('signalRegionSelector')
+                                      src = cms.InputTag('signalRegionSelector'),
                                       cut = cms.string('(daughter(0).isMuon && daughter(1).isMuon)'),
                                       )
 signalRegionEEFilter = cms.EDFilter("CandViewCountFilter",

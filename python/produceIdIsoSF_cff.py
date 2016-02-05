@@ -36,7 +36,7 @@ for key, result in sorted(results["tkRelIsoID_EtaBins_Pt53"]["eta_ratio"].iterit
 
 # make a collection of TuneP muons which pass isHighPt ID
 muonIdIsoSF = cms.EDProducer("produceLepIdIsoScaleFactors",
-		src = cms.InputTag("wRsubleadingMuon"),
+		src = cms.InputTag("wRminiTreeMuon"),
                 OutputCollectionName1 = cms.string("MuonSFIdCentral"),
                 OutputCollectionName2 = cms.string("MuonSFIdError"),
                 OutputCollectionName3 = cms.string("MuonSFIsoCentral"),
