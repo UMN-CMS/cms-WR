@@ -36,4 +36,4 @@ std::istream& operator >>(std::istream& os, configLine& line)
 {
 	os >> line.primaryDatasetPath >> line.crossSection >> line.crossSection_error >> line.primaryDatasetEvents >> line.skimmedDatasetPath >> line.skimmedDatasetEvents;
 	return os;
-};
+}
