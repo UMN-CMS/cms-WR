@@ -1,5 +1,5 @@
 //#include "__utils__/muresolution_v3.h"
-#include "muresolution_run2.h"
+#include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
 
 const double muresolution::mtrk[12][13]={
   {0.000000,0.000308,0.001004,0.001708,0.004664,0.028834,0.158624,0.504206,1.000000,1.000000,1.000000,1.000000,1.000000},

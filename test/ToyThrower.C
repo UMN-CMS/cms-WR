@@ -14,7 +14,7 @@
 #include "../plugins/rochcor2015.C"
 #include "../plugins/muresolution_run2.C"
 
-void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vector<string> list, int isData){
+void ToyThrower(miniTreeEvent myEvent, TRandom3& rand, int random_seed, std::vector<string> list, int isData){
 
       int DEBUG = 0;
       float qter = 1.0;
@@ -35,11 +35,11 @@ void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vec
           if(DEBUG) cout<<endl<<" Muon number= "<<Iterator<<" Muon Pt Before = "<<(*(myEvent.muons_p4))[Iterator].Pt()<<" Muon Eta Before = "<<(*(myEvent.muons_p4))[Iterator].Eta()<<endl;
 
           if(Flag_Smear_Muon_ID_Iso && !isData ){
-             Smear=rand->Gaus(0.0,1);
+             Smear=rand.Gaus(0.0,1);
              if(Smear >= 0.) (*(myEvent.muon_IDSF_central))[Iterator] += Smear*(*(myEvent.muon_IDSF_error))[Iterator];  
              else            (*(myEvent.muon_IDSF_central))[Iterator] -= Smear*(*(myEvent.muon_IDSF_error))[Iterator];
 
-             Smear=rand->Gaus(0.0,1);
+             Smear=rand.Gaus(0.0,1);
              if(Smear >= 0.) (*(myEvent.muon_IsoSF_central))[Iterator] += Smear*(*(myEvent.muon_IsoSF_error))[Iterator];                            
              else            (*(myEvent.muon_IsoSF_central))[Iterator] -= Smear*(*(myEvent.muon_IsoSF_error))[Iterator];
             }
@@ -58,7 +58,7 @@ void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vec
       Iterator = 0;
 
       for(auto electrons:*(myEvent.electrons_p4)){
-          Smear=rand->Gaus(0.0,1);
+          Smear=rand.Gaus(0.0,1);
           if(DEBUG) cout<<endl<<" Electron number= "<<Iterator<<" Electron Pt Before = "<<(*(myEvent.electrons_p4))[Iterator].Pt()<<" Electron Eta Before = "<<(*(myEvent.electrons_p4))[Iterator].Eta()<<endl;
 
           if(Flag_Smear_Electron_Scale){
@@ -75,7 +75,7 @@ void ToyThrower(miniTreeEvent myEvent, TRandom3* rand, int random_seed, std::vec
       Iterator = 0;
 
       for(auto jets:*(myEvent.jets_p4)){
-          Smear=rand->Gaus(0.0,1);
+          Smear=rand.Gaus(0.0,1);
           if(DEBUG) cout<<endl<<" Jet number= "<<Iterator<<" Jet Pt Before = "<<(*(myEvent.jets_p4))[Iterator].Pt()<<" Jet Eta Before = "<<(*(myEvent.jets_p4))[Iterator].Eta()<<endl;
 
           if(Flag_Smear_Jet_Scale)

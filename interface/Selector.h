@@ -4,11 +4,8 @@
 /* #include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h" */
 /* #include "ExoAnalysis/cmsWR/interface/Objects.h" */
 #include "../interface/miniTreeEvent.h"
-#include "../interface/Objects.h"
+#include "ExoAnalysis/cmsWR/interface/Objects.h"
 
-typedef std::vector<myElectron> myElectronCollection;
-typedef std::vector<myMuon> myMuonCollection;
-typedef std::vector<myJet> myJetCollection;
 
 class Selector{
 public:

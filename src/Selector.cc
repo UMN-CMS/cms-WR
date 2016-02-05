@@ -5,25 +5,29 @@
 #include "../interface/Selector.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
-float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); };
+float dR_TLV(TLorentzVector t1,TLorentzVector t2) {return deltaR(t1.Eta(),t1.Phi(),t2.Eta(),t2.Phi()); }
+
 void goodJets(myJetCollection *evJets, myJetCollection *selJets){
   for(auto j:*evJets){
     if(j.p4.Pt() > 40 && fabs(j.p4.Eta()) < 2.4)
       selJets->push_back(j);
   }
-};
+}
+
 void goodEles(myElectronCollection *evEles, myElectronCollection *selEles){
   for(auto e:*evEles){
     if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && fabs(e.p4.Eta()) < 1.4222 && fabs(e.p4.Eta()) > 1.566)
       selEles->push_back(e);
   }
-};
+}
+
 void goodMuons(myMuonCollection *evMuons, myMuonCollection *selMuons){
   for(auto m:*evMuons){
     if(m.p4.Pt() > 40 && fabs(m.p4.Eta()) < 2.4)
       selMuons->push_back(m);
   }
-};
+}
+
 
 Selector::Selector(const miniTreeEvent& myEvent) : 
 	WR_mass(-1),
@@ -58,15 +62,15 @@ Selector::Selector(const miniTreeEvent& myEvent) :
   }
 
   Clear();
-};
+}
 
 Selector::Selector(){
   Clear();
-};
+}
 
 void Selector::Clear() {
   WR_mass = dilepton_mass = weight = 0.0;
-};
+}
 
 bool Selector::isPassing(Int_t tag){
 
@@ -190,7 +194,7 @@ void Selector::SetBranches(TTree* tree) {
   tree->Branch("WR_mass", &WR_mass);
   tree->Branch("dilepton_mass", &dilepton_mass);
   
-};
+}
 
 void Selector::SetBranchAddresses(TTree* tree) {
   
@@ -212,5 +216,5 @@ void Selector::SetBranchAddresses(TTree* tree) {
   tree->SetBranchAddress("WR_mass", &WR_mass);
   tree->SetBranchAddress("dilepton_mass", &dilepton_mass);
 
-};
+}
 

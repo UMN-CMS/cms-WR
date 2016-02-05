@@ -1,6 +1,8 @@
 #define rochcor2015_cxx
-#include "rochcor2015.h"
+#include "ExoAnalysis/cmsWR/interface/rochcor2015.h"
 #include "TLorentzVector.h"
+
+#include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
 
 
 const double rochcor2015::netabin[25] = {-2.4,-2.25,-2.1,-1.85,-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,

@@ -1,3 +1,6 @@
+#ifndef myobjects_h
+#define myobjects_h
+
 class myElectron{
  public:
   TLorentzVector p4;
@@ -5,12 +8,12 @@ class myElectron{
   Float_t smearing;
   Int_t charge;
   
-  myElectron(); ///< default contructor (empty)
+  myElectron(){}; ///< default contructor (empty)
 
 };
 
-myElectron::myElectron(){
-}
+/* myElectron::myElectron(){ */
+/* } */
 
 class myMuon{
  public:
@@ -21,21 +24,24 @@ class myMuon{
   Float_t IsoSF_error;
   Int_t charge;
   
-  myMuon(); ///< default contructor (empty)
+  myMuon(){}; ///< default contructor (empty)
 
 };
-
-myMuon::myMuon(){
-}
 
 class myJet{
  public:
   TLorentzVector p4;
   Float_t jec_uncertainty;
 
-  myJet(); ///< default contructor (empty)
+  myJet(){}; ///< default contructor (empty)
 
 };
 
-myJet::myJet(){
-}
+
+
+typedef std::vector<myElectron> myElectronCollection;
+typedef std::vector<myMuon> myMuonCollection;
+typedef std::vector<myJet> myJetCollection;
+
+
+#endif
