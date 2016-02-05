@@ -64,12 +64,37 @@ int main(void)
 	std::vector<std::string> List_Systematics;
 	std::string word;
 	std::ifstream Syst_File;
-	Syst_File.open("Systematics_To_Be_Evaluated.txt");
-	while(!Syst_File.eof()) {
-		Syst_File >> word;
-		List_Systematics.push_back(word);
+
+	std::cout << "[INFO] Reading systematics to be evaluated" << std::endl;
+	std::string systFileName="Systematics_To_Be_Evaluated.txt";
+	Syst_File.open(systFileName);
+	if(Syst_File.is_open()==false){
+		std::cerr << "[ERROR] File " << systFileName << " not opened. Check if the file exists" << std::endl;
+		return 1;
 	}
 
+	while(Syst_File.peek()!=EOF && Syst_File.good()) {
+		if(Syst_File.peek()==10){ // 10 = \n
+			Syst_File.get(); 
+			continue;
+		}
+
+		if(Syst_File.peek() == 35){ // 35 = #
+			Syst_File.ignore(1000,10); // ignore the rest of the line until \n
+			continue;
+		}
+
+		Syst_File >> word;
+		std::cout << word << std::endl;
+		List_Systematics.push_back(word);
+	}
+	std::cout << "[INFO] nSyst = " << List_Systematics.size() << std::endl;
+	if(List_Systematics.size()==0){
+		std::cerr << "[ERROR] No systematics defined!" << std::endl;
+		return 1;
+
+	}
+	std::cout << "[INFO] Running nToys = " << nToys << std::endl;
 	for(int i = 0; i < nToys; i++) {
 		Rand.SetSeed(i + 1);
 		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
