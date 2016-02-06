@@ -7,7 +7,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include <string>
-#include "TLorentzVector.h"
+//#include "TLorentzVector.h"
 #include <vector>
 using namespace std;
 
@@ -25,7 +25,7 @@ class produceLepIdIsoScaleFactors : public edm::EDProducer
 public:
 	produceLepIdIsoScaleFactors(const edm::ParameterSet&);
 	virtual void produce(edm::Event&, const edm::EventSetup&);
-	TLorentzVector Mu_Original;
+
 private:
 	const edm::InputTag src;	///<input particle objects
 	std::string outputCollName1;     ///<label name of collection made by this producer
@@ -75,7 +75,6 @@ void produceLepIdIsoScaleFactors::produce(edm::Event& event, const edm::EventSet
 	std::auto_ptr<scale_factors_Map> scale_factor_ISO_errorMap(new scale_factors_Map());
 
 	for(auto mu : *muons) {
-		Mu_Original.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());
 		if(!event.isRealData()) {
 			if(FindBin(Grid, mu.eta(), Bins) != -1) {
 				scale_factor_ID_central.push_back(Scale_Factor_ID_Central[FindBin(Grid, mu.eta(), Bins)]);
@@ -89,6 +88,11 @@ void produceLepIdIsoScaleFactors::produce(edm::Event& event, const edm::EventSet
 				scale_factor_ISO_central.push_back(-1);
 				scale_factor_ISO_error.push_back(-1);
 			}
+		} else{
+				scale_factor_ID_central.push_back(1);
+				scale_factor_ID_error.push_back(1);
+				scale_factor_ISO_central.push_back(1);
+				scale_factor_ISO_error.push_back(1);
 		}
 	}
 
