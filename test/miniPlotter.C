@@ -28,7 +28,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
 void miniPlotter(){
 
   TChain * chain_DY = new TChain("t1");
-  chain_DY->Add("selected_tree_DY.root");
+  chain_DY->Add("selected_tree_DYToMuMu.root");
   TChain * chain_ttbar = new TChain("t1");
   chain_ttbar->Add("selected_tree_ttbar.root");
 
@@ -85,6 +85,31 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,6000);
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,0,2000);
 
+  Long64_t nEntries = chain->GetEntries();
+
+  cout<< nEntries << endl;
+
+  for(int ev = 0; ev<nEntries; ++ev){
+    chain->GetEntry(ev);
+
+    h_lepton_pt0->Fill(myEvent->lead_lepton_pt,myEvent->weight);
+    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,myEvent->weight);
+    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,myEvent->weight);
+    h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,myEvent->weight);
+    h_lepton_phi0->Fill(myEvent->lead_lepton_phi,myEvent->weight);
+    h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,myEvent->weight);
+
+    h_jet_pt0->Fill(myEvent->lead_jet_pt,myEvent->weight);
+    h_jet_pt1->Fill(myEvent->sublead_jet_pt,myEvent->weight);
+    h_jet_eta0->Fill(myEvent->lead_jet_eta,myEvent->weight);
+    h_jet_eta1->Fill(myEvent->sublead_jet_eta,myEvent->weight);
+    h_jet_phi0->Fill(myEvent->lead_jet_phi,myEvent->weight);
+    h_jet_phi1->Fill(myEvent->sublead_jet_phi,myEvent->weight);
+      
+    h_WR_mass->Fill(myEvent->WR_mass,myEvent->weight);
+    h_dilepton_mass->Fill(myEvent->dilepton_mass,myEvent->weight);
+  }
+
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
   hs->push_back(h_jet_pt0);
@@ -100,30 +125,6 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
 
-  Long64_t nEntries = chain->GetEntries();
-
-  cout<< nEntries << endl;
-
-  for(int ev = 0; ev<nEntries; ++ev){
-    chain->GetEntry(ev);
-
-    h_lepton_pt0->Fill(myEvent->lead_lepton_pt);
-    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt);
-    h_lepton_eta0->Fill(myEvent->lead_lepton_eta);
-    h_lepton_eta1->Fill(myEvent->sublead_lepton_eta);
-    h_lepton_phi0->Fill(myEvent->lead_lepton_phi);
-    h_lepton_phi1->Fill(myEvent->sublead_lepton_phi);
-
-    h_jet_pt0->Fill(myEvent->lead_jet_pt);
-    h_jet_pt1->Fill(myEvent->sublead_jet_pt);
-    h_jet_eta0->Fill(myEvent->lead_jet_eta);
-    h_jet_eta1->Fill(myEvent->sublead_jet_eta);
-    h_jet_phi0->Fill(myEvent->lead_jet_phi);
-    h_jet_phi1->Fill(myEvent->sublead_jet_phi);
-      
-    h_WR_mass->Fill(myEvent->WR_mass);
-    h_dilepton_mass->Fill(myEvent->dilepton_mass);
-  }
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString fname){
@@ -135,6 +136,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
   //leg->AddEntry( histos[3][0], "WZ" ) ; 
   //leg->AddEntry( histos[4][0], "ZZ" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
+  leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
 
 
@@ -166,10 +168,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
 
-
-
-
-
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   //ths[icanvas]->GetXaxis()->SetTickSize(1.0);
   //ths[icanvas]->GetXaxis()->SetTitleSize(0.1);
@@ -187,12 +185,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  //hs_data->Draw("p");
   ratio->Draw("p");
   mycanvas->cd();
 
 
-  TString fn = "plots/"+fname;
+  //TString fn = "plots/"+fname;
+  TString fn = "~/www/plots/WR/miniTTree/Selected/"+fname;
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
