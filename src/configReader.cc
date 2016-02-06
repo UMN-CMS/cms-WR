@@ -1,7 +1,66 @@
 #include "ExoAnalysis/cmsWR/interface/configReader.h"
 #include <iostream>
 
+
+
 configReader::configReader(std::string filename)
+{
+	std::ifstream f_in(filename);
+	char  var[100], varValue[100];
+
+	if(!f_in.good()) {
+		std::cerr << "[ERROR] file " << filename << " not readable" << std::endl;
+		exit(1);
+		return;
+	}
+	
+	while(f_in.peek() != EOF && f_in.good()) {
+
+		if(f_in.peek() == 10) { // 10 = \n
+			f_in.get();
+			continue;
+		}
+
+		if(f_in.peek() == 35) { // 35 = #
+			f_in.ignore(1000, 10); // ignore the rest of the line until \n
+			continue;
+		}
+
+		f_in.get(var, 100, '='); f_in.get(); //reading the delim char
+		f_in.get(varValue, 100);
+		//sscanf(line, "%s=%s", var, varValue);
+		configFile[var]=varValue;
+		if(std::string(var)=="datasetFile"){
+			std::cout << var << "\t" << varValue << std::endl;
+			datasetsFileReader(varValue);
+		}
+	}
+	
+}
+
+// datasetFile=configs/datasets.dat
+// jsonFile=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt
+// jsonName=246908-260627-Prompt_25ns-golden_silver-v1
+// productionTAG=_SHv3
+
+// KEY: TDirectoryFile   miniTree_flavoursideband;1      miniTree_flavoursideband
+// KEY: TDirectoryFile   miniTree_lowdileptonsideband;1  miniTree_lowdileptonsideband
+// KEY: TDirectoryFile   miniTree_signal_ee;1    miniTree_signal_ee
+// KEY: TDirectoryFile   miniTree_signal_mumu;1  miniTree_signal_mumu
+// KEY: TDirectoryFile   miniTree_dytagandprobe;1        miniTree_dytagandprobe
+// KEY: TDirectoryFile   zToEEAnalyzer;1 zToEEAnalyzer
+// KEY: TDirectoryFile   zToMuMuAnalyzer;1       zToMuMuAnalyzer
+
+TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag){
+	
+	TChain *chain = new TChain((tag+"/t").c_str(), "");
+	chain->Add(("root://eoscms//eos/cms/store//user/shervin/ntuples/"+datasetName+configFile["productionTAG"]+"/unmerged-allRange.root").c_str());
+	chain->GetEntries();
+
+	return chain;
+}
+
+void configReader::datasetsFileReader(std::string filename)
 {
 	std::ifstream f_in(filename);
 	std::string datasetName;
@@ -12,8 +71,9 @@ configReader::configReader(std::string filename)
 		exit(1);
 		return;
 	}
-
+	
 	while(f_in.peek() != EOF && f_in.good()) {
+
 		if(f_in.peek() == 10) { // 10 = \n
 			f_in.get();
 			continue;
@@ -25,6 +85,7 @@ configReader::configReader(std::string filename)
 		}
 
 		f_in >> datasetName >> line;
+		configMap[datasetName]=line;
 	}
 
 
@@ -32,8 +93,34 @@ configReader::configReader(std::string filename)
 
 
 
+	
+std::ostream& operator<<(std::ostream& os, configReader& r)
+{
+	os << r.configMap.size() << std::endl;
+	for(auto line : r.configMap){
+		os << line.first << "\t" << line.second << std::endl;
+	}
+	return os;
+}
+
 std::istream& operator >>(std::istream& os, configLine& line)
 {
-	os >> line.primaryDatasetPath >> line.crossSection >> line.crossSection_error >> line.primaryDatasetEvents >> line.skimmedDatasetPath >> line.skimmedDatasetEvents;
+	char tmp[100];
+	os >> line.primaryDatasetPath;
+	os >> tmp;
+	if(tmp[0]!='-') sscanf(tmp, "%lf", &line.crossSection);
+	else line.crossSection=0.;
+
+	os >> tmp;
+	if(tmp[0]!='-') sscanf(tmp, "%lf", &line.crossSection_error);
+	else line.crossSection_error=0.;
+
+	os >> line.primaryDatasetEvents >> line.skimmedDatasetPath >> line.skimmedDatasetEvents;
+	return os;
+}
+
+std::ostream& operator <<(std::ostream& os, configLine& line)
+{
+	os << line.primaryDatasetPath << "\t" <<  line.crossSection << "\t" <<  line.crossSection_error << "\t" <<  line.primaryDatasetEvents << "\t" <<  line.skimmedDatasetPath << "\t" <<  line.skimmedDatasetEvents;
 	return os;
 }

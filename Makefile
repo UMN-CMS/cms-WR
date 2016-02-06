@@ -30,8 +30,6 @@ SRCDIR=./src
 BUILDDIR=./bin
 OBJ_DIR=./lib
 
-EoPDir:=../EOverPCalibration
-
 #################
 INCLUDE=-I$(INCLUDEDIR) -I$(INCLUDEEPDIR) -isystem$(ROOT_INCLUDE)   -I$(ROOFIT_INCLUDE) -I$(BOOST)/include -I$(CMSSW_BASE)/src/ -I$(CMSSW_RELEASE_BASE)/src/
 LIB=-L$(BOOST)/lib -L/usr/lib64 # -L/usr/lib 
@@ -58,7 +56,7 @@ lib/%.o: $(SRCDIR)/%.cc
 
 
 -include $(MODULES:.o=.d)
-
+-include $(BUILDDIR)/analysis.d
 
 # $(OBJ_DIR)/setTDRStyle.o: $(SRC)/setTDRStyle.C $(INCLUDEDIR)/setTDRStyle.h
 # 	@g++ $(OPT) $(INCLUDE) -c -o $(OBJ_DIR)/setTDRStyle.o $(SRC)/setTDRStyle.C 
@@ -72,7 +70,7 @@ $(BUILDDIR)/ZFitter.exe:  $(BUILDDIR)/ZFitter.cpp
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 
 
-$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp
+$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp $(BUILDDIR)/analysis.d lib/*.o
 	@echo "---> Making analysis $(COMPILE)"
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 

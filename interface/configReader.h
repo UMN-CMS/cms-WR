@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cassert>
 
+#include <TChain.h> 
+
 class configLine
 {
 public:
@@ -21,20 +23,41 @@ public:
 	numEvents_t skimmedDatasetEvents;
 
 	friend std::istream& operator >>(std::istream& os, configLine& line);
+	friend std::ostream& operator <<(std::ostream&os, configLine& line);
 };
 
 
+	
 class configReader
 {
-
+public:
 	configReader(std::string filename);
+	
+	friend std::ostream& operator <<(std::ostream& os, configReader& r);
 
+	inline configLine::norm_t getNorm1fb(std::string datasetName) const
+	{
+		if(checkCategory(datasetName) == true) {
+			const configLine& c = getConfigLine(datasetName);
+			return c.crossSection / c.primaryDatasetEvents;
+		}
+		return -1;
+	}
+
+	TChain *getMiniTreeChain(std::string datasetName, std::string tag);
+
+		
+private:
 	std::map<std::string, configLine> configMap;
+	std::map<std::string, std::string> configFile;
+
+	void datasetsFileReader(std::string filename);
 
 	inline bool checkCategory(std::string datasetName) const
 	{
 		if(configMap.count(datasetName) == 0) {
-			std::cerr << "[WARNING] datasetName not found" << std::endl;
+			std::cerr << "[WARNING] datasetName " << datasetName << " not found" << std::endl;
+			exit(1);
 			return false;
 		}
 		return true;
@@ -53,13 +76,10 @@ class configReader
 		else return configLine::datasetName_t();
 	};
 
-	inline configLine::norm_t getNorm1fb(std::string datasetName) const
+	inline configLine::datasetName_t getSkimmedDatasetPath(std::string datasetName) const
 	{
-		if(checkCategory(datasetName) == true) {
-			const configLine& c = getConfigLine(datasetName);
-			return c.crossSection / c.primaryDatasetEvents;
-		}
-		return -1;
+		if(checkCategory(datasetName) == true) return getConfigLine(datasetName).skimmedDatasetPath;
+		else return configLine::datasetName_t();
 	}
 
 };

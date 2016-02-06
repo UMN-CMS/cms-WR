@@ -25,6 +25,7 @@
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
 #include "ToyThrower.h"
+#include "ExoAnalysis/cmsWR/interface/configReader.h"
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -35,6 +36,24 @@ int main(void)
 	using namespace RooFit;
 	std::cout << "******************************* Analysis ******************************" << std::endl;
 
+	configReader myReader("configs/2015-v1.conf");
+	myReader.getNorm1fb("TTJets_DiLept_v2");
+
+// KEY: TDirectoryFile   miniTree_flavoursideband;1      miniTree_flavoursideband
+// KEY: TDirectoryFile   miniTree_lowdileptonsideband;1  miniTree_lowdileptonsideband
+// KEY: TDirectoryFile   miniTree_signal_ee;1    miniTree_signal_ee
+// KEY: TDirectoryFile   miniTree_signal_mumu;1  miniTree_signal_mumu
+// KEY: TDirectoryFile   miniTree_dytagandprobe;1        miniTree_dytagandprobe
+// KEY: TDirectoryFile   zToEEAnalyzer;1 zToEEAnalyzer
+// KEY: TDirectoryFile   zToMuMuAnalyzer;1       zToMuMuAnalyzer
+
+	TChain *c = myReader.getMiniTreeChain("TTJets_DiLept_v2", "miniTree_dytagandprobe");
+	c->Print();
+    
+    // if you want to check if the config file is read correctly:
+#ifdef DEBUG
+	std::cout << myReader << std::endl;
+#endif
 
 	TString mode = "ttbar";
 
@@ -61,7 +80,9 @@ int main(void)
 
 	int isData = 1; // Fill in with 1 or 0 based on information from the trees
 	TRandom3 Rand;
+
 	std::vector<std::string> List_Systematics;
+	List_Systematics.push_back("smear");
 	std::string word;
 	std::ifstream Syst_File;
 
