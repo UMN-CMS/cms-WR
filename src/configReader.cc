@@ -60,6 +60,18 @@ TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 	return chain;
 }
 
+TChain *configReader::getMiniTreeChain(std::vector<std::string> datasetNames, std::string tag){
+
+	TChain *chain = new TChain((tag+"/t").c_str(), "");
+	for(auto s : datasetNames){
+		TChain *c = getMiniTreeChain(s, tag);
+		chain->Add(c);
+		delete c;
+	}
+	
+	return chain;
+}
+
 void configReader::datasetsFileReader(std::string filename)
 {
 	std::ifstream f_in(filename);

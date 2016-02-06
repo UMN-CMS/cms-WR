@@ -45,7 +45,8 @@ public:
 	}
 
 	TChain *getMiniTreeChain(std::string datasetName, std::string tag);
-
+	TChain *getMiniTreeChain(std::vector<std::string> datasetNames, std::string tag);
+	
 		
 private:
 	std::map<std::string, configLine> configMap;

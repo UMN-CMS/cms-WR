@@ -47,8 +47,11 @@ int main(void)
 // KEY: TDirectoryFile   zToEEAnalyzer;1 zToEEAnalyzer
 // KEY: TDirectoryFile   zToMuMuAnalyzer;1       zToMuMuAnalyzer
 
-	TChain *c = myReader.getMiniTreeChain("TTJets_DiLept_v2", "miniTree_dytagandprobe");
-	c->Print();
+	std::vector<std::string> TTchainNames; 
+	TTchainNames.push_back("TTJets_DiLept_v1");
+	TTchainNames.push_back("TTJets_DiLept_v2");
+	TChain *c = (myReader.getMiniTreeChain(TTchainNames, "miniTree_dytagandprobe"));
+	std::cout << c->GetEntries() << std::endl;
     
     // if you want to check if the config file is read correctly:
 #ifdef DEBUG
