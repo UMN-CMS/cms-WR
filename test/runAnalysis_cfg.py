@@ -90,7 +90,7 @@ process.source = cms.Source("PoolSource",
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 
-process.TFileService = cms.Service('TFileService', fileName = cms.string('ttree.root'))
+process.TFileService = cms.Service('TFileService', fileName = cms.string(options.output))
 
 
 ############################################################ OUTPUT MODULES
@@ -103,21 +103,21 @@ SelectEventsPSet = cms.untracked.PSet(
 
 
 #define a process attribute for outputting a file which will be changed in a clone() call below
-process.microAOD_output = cms.OutputModule("PoolOutputModule",
-		compressionAlgorithm = cms.untracked.string('LZMA'),
-		compressionLevel = cms.untracked.int32(4),
-		dataset = cms.untracked.PSet(
-			dataTier = cms.untracked.string('MINIAODSIM'),
-			filterName = cms.untracked.string('')
-			),
-		dropMetaData = cms.untracked.string('ALL'),
-		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
-		fastCloning = cms.untracked.bool(False),
-		fileName = cms.untracked.string(options.output),
-		outputCommands = process.MICROAODSIMEventContent.outputCommands + [ 'keep *_*_*_SELECTION' ],
-		overrideInputFileSplitLevels = cms.untracked.bool(True),
-		SelectEvents = SelectEventsPSet
-		)
+# process.microAOD_output = cms.OutputModule("PoolOutputModule",
+# 		compressionAlgorithm = cms.untracked.string('LZMA'),
+# 		compressionLevel = cms.untracked.int32(4),
+# 		dataset = cms.untracked.PSet(
+# 			dataTier = cms.untracked.string('MINIAODSIM'),
+# 			filterName = cms.untracked.string('')
+# 			),
+# 		dropMetaData = cms.untracked.string('ALL'),
+# 		eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
+# 		fastCloning = cms.untracked.bool(False),
+# 		fileName = cms.untracked.string(options.output),
+# 		outputCommands = process.MICROAODSIMEventContent.outputCommands + [ 'keep *_*_*_SELECTION' ],
+# 		overrideInputFileSplitLevels = cms.untracked.bool(True),
+# 		SelectEvents = SelectEventsPSet
+# 		)
 
 
 # here the full set of sequences and hlt paths used to make the first step
@@ -154,7 +154,7 @@ process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullS
 
 process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
-process.microAODoutput_step = cms.EndPath(process.microAOD_output)
+#process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
 ############################################################ SCHEDULE
 if (options.isMC==0):
@@ -167,6 +167,7 @@ if (options.isMC==0):
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe) #, process.microAODoutput_step)
+#    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe, process.microAODoutput_step)
 
 
 CMSSW_VERSION=os.getenv("CMSSW_VERSION")
