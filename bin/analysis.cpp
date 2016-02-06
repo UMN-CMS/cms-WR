@@ -83,6 +83,11 @@ int main(void)
 
 	int isData = 1; // Fill in with 1 or 0 based on information from the trees
 	TRandom3 Rand;
+	const int Total_Number_of_Systematics_Smear = 1;// electron scale(MC)
+	const int Total_Number_of_Systematics_Up_Down = 4;// muon id, muon iso, electron scale(data) and jet energy scale
+	float Random_Numbers_for_Systematics_Smear[Total_Number_of_Systematics_Smear] = {0.};
+	float Random_Numbers_for_Systematics_Up_Down[Total_Number_of_Systematics_Up_Down] = {0.};
+
 
 	std::vector<std::string> List_Systematics;
 	List_Systematics.push_back("smear");
@@ -141,8 +146,13 @@ int main(void)
 			for(auto m : * (myEvent.jets_p4))
 				cout << m.Pt() << " " << m.Eta() << endl;
 #endif
-			ToyThrower(myEvent, Rand, i + 1, List_Systematics, isData);
 
+			for(int Rand_Smear_Iter=0;Rand_Smear_Iter<Total_Number_of_Systematics_Smear;Rand_Smear_Iter++)
+				Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0,1.);
+			
+			ToyThrower(myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+
+			
 
 			// Select events with one good WR candidate
 			// Tags:

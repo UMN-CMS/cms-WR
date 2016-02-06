@@ -16,9 +16,8 @@
 #include <iostream>
 #endif
 
-void ToyThrower(miniTreeEvent myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<string> list, int isData){
+void ToyThrower(miniTreeEvent myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<std::string> list, int isData){
 
-      int DEBUG = 0;
       float qter = 1.0;
       double Smear = 0.0;
       int Iterator = 0;
@@ -36,8 +35,10 @@ void ToyThrower(miniTreeEvent myEvent,  float rand_smear[], float rand_up_down[]
       rochcor2015 *rmcor = new rochcor2015(random_seed);
 
       for(auto muons:*(myEvent.muons_p4)){
-          if(DEBUG) cout<<endl<<" Muon number= "<<Iterator<<" Muon Pt Before = "<<(*(myEvent.muons_p4))[Iterator].Pt()<<" Muon Eta Before = "<<(*(myEvent.muons_p4))[Iterator].Eta()<<endl;
-          
+#ifdef DEBUG
+		  std::cout<<std::endl<<" Muon number= "<<Iterator<<" Muon Pt Before = "<<(*(myEvent.muons_p4))[Iterator].Pt()<<" Muon Eta Before = "<<(*(myEvent.muons_p4))[Iterator].Eta()<<std::endl;
+#endif
+
           if(Flag_Smear_Muon_ID_Iso && !isData ){
              Smear = rand_up_down[Iterator_Up_Down++];
              if(Smear >= 0.) (*(myEvent.muon_IDSF_central))[Iterator] += Smear*(*(myEvent.muon_IDSF_error))[Iterator];  
@@ -56,15 +57,18 @@ void ToyThrower(miniTreeEvent myEvent,  float rand_smear[], float rand_up_down[]
             
             }
 
-          if(DEBUG) cout<<endl<<" Muon number= "<<Iterator<<" Muon Pt After = "<<(*(myEvent.muons_p4))[Iterator].Pt()<<" Muon Eta After = "<<(*(myEvent.muons_p4))[Iterator].Eta()<<endl;
-
+#ifdef DEBUG
+		  std::cout<<std::endl<<" Muon number= "<<Iterator<<" Muon Pt After = "<<(*(myEvent.muons_p4))[Iterator].Pt()<<" Muon Eta After = "<<(*(myEvent.muons_p4))[Iterator].Eta()<<std::endl;
+#endif
           Iterator++;
         }
 
       Iterator = 0;
 
       for(auto electrons:*(myEvent.electrons_p4)){
-          if(DEBUG) cout<<endl<<" Electron number= "<<Iterator<<" Electron Pt Before = "<<(*(myEvent.electrons_p4))[Iterator].Pt()<<" Electron Eta Before = "<<(*(myEvent.electrons_p4))[Iterator].Eta()<<endl;
+#ifdef DEBUG
+		  std::cout<<std::endl<<" Electron number= "<<Iterator<<" Electron Pt Before = "<<(*(myEvent.electrons_p4))[Iterator].Pt()<<" Electron Eta Before = "<<(*(myEvent.electrons_p4))[Iterator].Eta()<<std::endl;
+#endif
 
           if(Flag_Smear_Electron_Scale){
             if(isData){
@@ -76,9 +80,9 @@ void ToyThrower(miniTreeEvent myEvent,  float rand_smear[], float rand_up_down[]
                  (*(myEvent.electrons_p4))[Iterator] = (1 + (Smear)*(*(myEvent.electron_smearing))[Iterator])*(*(myEvent.electrons_p4))[Iterator];
                   } 
       }
-
-          if(DEBUG) cout<<endl<<" Electron number= "<<Iterator<<" Electron Pt After = "<<(*(myEvent.electrons_p4))[Iterator].Pt()<<" Electron Eta After = "<<(*(myEvent.electrons_p4))[Iterator].Eta()<<endl;
-
+#ifdef DEBuG
+		  std::cout << std::endl<<" Electron number= "<<Iterator<<" Electron Pt After = "<<(*(myEvent.electrons_p4))[Iterator].Pt()<<" Electron Eta After = "<<(*(myEvent.electrons_p4))[Iterator].Eta()<<std::endl;
+#endif
           Iterator++;  
         }
 
@@ -86,12 +90,14 @@ void ToyThrower(miniTreeEvent myEvent,  float rand_smear[], float rand_up_down[]
 
       for(auto jets:*(myEvent.jets_p4)){
           Smear = rand_smear[Iterator_Up_Down++];
-          if(DEBUG) cout<<endl<<" Jet number= "<<Iterator<<" Jet Pt Before = "<<(*(myEvent.jets_p4))[Iterator].Pt()<<" Jet Eta Before = "<<(*(myEvent.jets_p4))[Iterator].Eta()<<endl;
-
+#ifdef DEBUG
+		  std::cout<<std::endl<<" Jet number= "<<Iterator<<" Jet Pt Before = "<<(*(myEvent.jets_p4))[Iterator].Pt()<<" Jet Eta Before = "<<(*(myEvent.jets_p4))[Iterator].Eta()<<std::endl;
+#endif
           if(Flag_Smear_Jet_Scale)
             (*(myEvent.jets_p4))[Iterator] = (1 + (Smear)*(*(myEvent.jec_uncertainty))[Iterator])*(*(myEvent.jets_p4))[Iterator];
-
-          if(DEBUG) cout<<endl<<" Jet number= "<<Iterator<<" Jet Pt Before = "<<(*(myEvent.jets_p4))[Iterator].Pt()<<" Jet Eta After = "<<(*(myEvent.jets_p4))[Iterator].Eta()<<endl;
+#ifdef DEBUG
+		  std::cout<<std::endl<<" Jet number= "<<Iterator<<" Jet Pt Before = "<<(*(myEvent.jets_p4))[Iterator].Pt()<<" Jet Eta After = "<<(*(myEvent.jets_p4))[Iterator].Eta()<<std::endl;
+#endif
 
           Iterator++;
         }
