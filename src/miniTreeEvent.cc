@@ -18,7 +18,7 @@ miniTreeEvent::miniTreeEvent():
 {
 
 	clear();
-};
+}
 
 
 miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
@@ -61,7 +61,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	PU_reweight = otherEvent.PU_reweight;
 
 
-};
+}
 
 
 void miniTreeEvent::clear()
