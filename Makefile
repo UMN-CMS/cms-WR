@@ -71,7 +71,7 @@ $(BUILDDIR)/ZFitter.exe:  $(BUILDDIR)/ZFitter.cpp
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 
 
-$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp $(BUILDDIR)/analysis.d lib/*.o
+$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp  lib/*.o
 	@echo "---> Making analysis $(COMPILE)"
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 
