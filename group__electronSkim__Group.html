@@ -124,7 +124,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;PATElectronSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                 src = cms.InputTag(<span class="stringliteral">&quot;slimmedElectrons&quot;</span>), <span class="comment">#wRIsolatedElectrons&quot;),                                 cut = cms.string(         ((&quot;(pt&gt;%f) &amp;&amp; (abs(eta)&lt;%f)&quot;) % (leadingPt, maxEtaLeptons))        ),                                 )### select subleading electronwRsubleadingElectron = cms.EDFilter(&quot;PATElectronSelector&quot;,                                    src = cms.InputTag(&quot;slimmedElectrons&quot;), #wRIsolatedElectrons&quot;)</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                 src = cms.InputTag(<span class="stringliteral">&quot;wRHEEPElectron&quot;</span>), <span class="comment">#wRIsolatedElectrons&quot;),                                 cut = cms.string(         ((&quot;(pt&gt;%f) &amp;&amp; (abs(eta)&lt;%f)&quot;) % (leadingPt, maxEtaLeptons))        ),                                 )### select subleading electronwRsubleadingElectron = cms.EDFilter(&quot;PATElectronSelector&quot;,                                    src = cms.InputTag(&quot;wRHEEPElectron&quot;), #wRIsolatedElectrons&quot;)</span></div>
 </div><!-- fragment -->
 <p>select leading electron </p>
 
@@ -151,7 +151,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 14:43:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Feb 7 2016 09:16:19 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

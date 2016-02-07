@@ -100,16 +100,8 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:abd903571aab94d682ef639f673f64da7"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1heepSelector__cfi.html#abd903571aab94d682ef639f673f64da7">HEEPIDSelector</a></td></tr>
-<tr class="separator:abd903571aab94d682ef639f673f64da7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4987952380290a435a79e9ec838f4872"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1heepSelector__cfi.html#a4987952380290a435a79e9ec838f4872">HEEPIDFilter</a></td></tr>
 <tr class="separator:a4987952380290a435a79e9ec838f4872"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4546474f231d825ec60a0c2fe1aa5eea"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1heepSelector__cfi.html#a4546474f231d825ec60a0c2fe1aa5eea">HEEPIDSequence</a> = cms.Sequence(<a class="el" href="namespacepython_1_1heepSelector__cfi.html#abd903571aab94d682ef639f673f64da7">HEEPIDSelector</a> * <a class="el" href="namespacepython_1_1heepSelector__cfi.html#a4987952380290a435a79e9ec838f4872">HEEPIDFilter</a>)</td></tr>
-<tr class="separator:a4546474f231d825ec60a0c2fe1aa5eea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a504e7683d0ba518bc3b99d84ee21d91a"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1heepSelector__cfi.html#a504e7683d0ba518bc3b99d84ee21d91a">HEEPIDSidebandFilter</a> = HEEPIDFilter.clone(minNumber = cms.uint32(1) )</td></tr>
-<tr class="separator:a504e7683d0ba518bc3b99d84ee21d91a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade355202259a64e065a6b7c98101b9e7"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1heepSelector__cfi.html#ade355202259a64e065a6b7c98101b9e7">HEEPIDSidebandSequence</a> = cms.Sequence(<a class="el" href="namespacepython_1_1heepSelector__cfi.html#abd903571aab94d682ef639f673f64da7">HEEPIDSelector</a> * <a class="el" href="namespacepython_1_1heepSelector__cfi.html#a504e7683d0ba518bc3b99d84ee21d91a">HEEPIDSidebandFilter</a>)</td></tr>
-<tr class="separator:ade355202259a64e065a6b7c98101b9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a21d8385aa0b5b313d777e234da6040b5"></a>
@@ -145,62 +137,10 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="abd903571aab94d682ef639f673f64da7"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.heepSelector_cfi.HEEPIDSelector</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1heepSelector__cfi.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&#39;HEEPIDSelector&#39;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;      electrons= cms.InputTag(<span class="stringliteral">&quot;slimmedElectrons&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;      eleHEEPIdMap = cms.InputTag(<span class="stringliteral">&quot;egmGsfElectronIDs:heepElectronID-HEEPV60&quot;</span>)</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;      )</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a4546474f231d825ec60a0c2fe1aa5eea"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.heepSelector_cfi.HEEPIDSequence = cms.Sequence(<a class="el" href="namespacepython_1_1heepSelector__cfi.html#abd903571aab94d682ef639f673f64da7">HEEPIDSelector</a> * <a class="el" href="namespacepython_1_1heepSelector__cfi.html#a4987952380290a435a79e9ec838f4872">HEEPIDFilter</a>)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a504e7683d0ba518bc3b99d84ee21d91a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.heepSelector_cfi.HEEPIDSidebandFilter = HEEPIDFilter.clone(minNumber = cms.uint32(1) )</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="ade355202259a64e065a6b7c98101b9e7"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.heepSelector_cfi.HEEPIDSidebandSequence = cms.Sequence(<a class="el" href="namespacepython_1_1heepSelector__cfi.html#abd903571aab94d682ef639f673f64da7">HEEPIDSelector</a> * <a class="el" href="namespacepython_1_1heepSelector__cfi.html#a504e7683d0ba518bc3b99d84ee21d91a">HEEPIDSidebandFilter</a>)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 14:43:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Feb 7 2016 09:16:20 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -102,12 +102,12 @@ Variables</h2></td></tr>
 <tr class="separator:ad12333092d8a97a16601784e0464bace"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0910dadd7fd92e22246c10b22be03316"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a0910dadd7fd92e22246c10b22be03316">maxEtaLeptons</a> = 2.4</td></tr>
 <tr class="separator:a0910dadd7fd92e22246c10b22be03316"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29357c2eaf46b813bb03ea78436bf48f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a29357c2eaf46b813bb03ea78436bf48f">jetPt</a> = 40</td></tr>
+<tr class="memitem:a29357c2eaf46b813bb03ea78436bf48f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a29357c2eaf46b813bb03ea78436bf48f">jetPt</a> = 20</td></tr>
 <tr class="separator:a29357c2eaf46b813bb03ea78436bf48f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace3340b57135cae7dc0606c6acfb7327"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ace3340b57135cae7dc0606c6acfb7327">jetID</a> = &quot; (neutralHadronEnergyFraction&lt;0.90 &amp;&amp; neutralEmEnergyFraction&lt;0.9 &amp;&amp; (chargedMultiplicity+neutralMultiplicity)&gt;1 &amp;&amp; muonEnergyFraction&lt;0.8) &amp;&amp; ((abs(eta)&lt;=2.4 &amp;&amp; chargedHadronEnergyFraction&gt;0 &amp;&amp; chargedMultiplicity&gt;0 &amp;&amp; chargedEmEnergyFraction&lt;0.90) || abs(eta)&gt;2.4)&quot;</td></tr>
 <tr class="memdesc:ace3340b57135cae7dc0606c6acfb7327"><td class="mdescLeft">&#160;</td><td class="mdescRight">need the reference for this selection, with link to the presentation and twiki page  <a href="#ace3340b57135cae7dc0606c6acfb7327">More...</a><br/></td></tr>
 <tr class="separator:ace3340b57135cae7dc0606c6acfb7327"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad7d2aca7256a2a33d1072998de8d0d7"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aad7d2aca7256a2a33d1072998de8d0d7">muonIDIso</a> = &quot; isolationR03().sumPt/pt &lt; 0.1&quot;</td></tr>
+<tr class="memitem:aad7d2aca7256a2a33d1072998de8d0d7"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aad7d2aca7256a2a33d1072998de8d0d7">muonIDIso</a> = ' isolationR03().sumPt/pt &lt; 0.1 &amp;&amp; userInt(&quot;highPtID&quot;) == 1'</td></tr>
 <tr class="separator:aad7d2aca7256a2a33d1072998de8d0d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9dec4201ace5486ad62041e7c931d6f8"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9dec4201ace5486ad62041e7c931d6f8">wRtightJets</a></td></tr>
 <tr class="memdesc:a9dec4201ace5486ad62041e7c931d6f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">select tight-ID jets  <a href="#a9dec4201ace5486ad62041e7c931d6f8">More...</a><br/></td></tr>
@@ -125,6 +125,11 @@ Variables</h2></td></tr>
 <tr class="memitem:a2a22004cc23959365756623e2e3fba3a"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a2a22004cc23959365756623e2e3fba3a">wRIsolatedElectrons</a></td></tr>
 <tr class="memdesc:a2a22004cc23959365756623e2e3fba3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Electrons.  <a href="#a2a22004cc23959365756623e2e3fba3a">More...</a><br/></td></tr>
 <tr class="separator:a2a22004cc23959365756623e2e3fba3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf1c8426572d1d2ac50e5243aa0f38bb"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#abf1c8426572d1d2ac50e5243aa0f38bb">wRHEEPElectron</a></td></tr>
+<tr class="separator:abf1c8426572d1d2ac50e5243aa0f38bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bcf3cba8bbe0c34a51d3d4fc62e8197"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a6bcf3cba8bbe0c34a51d3d4fc62e8197">wRHEEPElectronRefiner</a></td></tr>
+<tr class="memdesc:a6bcf3cba8bbe0c34a51d3d4fc62e8197"><td class="mdescLeft">&#160;</td><td class="mdescRight">this is to change the type of the collection for the analyzer  <a href="#a6bcf3cba8bbe0c34a51d3d4fc62e8197">More...</a><br/></td></tr>
+<tr class="separator:a6bcf3cba8bbe0c34a51d3d4fc62e8197"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga953f3995f199ad28600a5061b0b8db62"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">wRleadingElectron</a></td></tr>
 <tr class="memdesc:ga953f3995f199ad28600a5061b0b8db62"><td class="mdescLeft">&#160;</td><td class="mdescRight">select leading electron  <a href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">More...</a><br/></td></tr>
 <tr class="separator:ga953f3995f199ad28600a5061b0b8db62"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,7 +143,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a3ca36346f0c71fff39317c30f1faf818"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a3ca36346f0c71fff39317c30f1faf818">wRdiElectronCandidateFilter</a></td></tr>
 <tr class="memdesc:a3ca36346f0c71fff39317c30f1faf818"><td class="mdescLeft">&#160;</td><td class="mdescRight">filter: at least one di-electron candidate in signal region  <a href="#a3ca36346f0c71fff39317c30f1faf818">More...</a><br/></td></tr>
 <tr class="separator:a3ca36346f0c71fff39317c30f1faf818"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab587204b5679ea0e348ae4b2a7d4bc1d">electronSelectionSeq</a> = cms.Sequence(<a class="el" href="namespacepython_1_1selections__cff.html#a2a22004cc23959365756623e2e3fba3a">wRIsolatedElectrons</a> * (<a class="el" href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">wRleadingElectron</a> + wRsubleadingElectron + <a class="el" href="namespacepython_1_1selections__cff.html#a0eca09ba84fb56616b6dff5263092499">wRminiTreeElectron</a>) * <a class="el" href="namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e">wRdiElectronCandidate</a>)</td></tr>
+<tr class="memitem:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab587204b5679ea0e348ae4b2a7d4bc1d">electronSelectionSeq</a> = cms.Sequence(<a class="el" href="namespacepython_1_1selections__cff.html#a2a22004cc23959365756623e2e3fba3a">wRIsolatedElectrons</a> * <a class="el" href="namespacepython_1_1selections__cff.html#abf1c8426572d1d2ac50e5243aa0f38bb">wRHEEPElectron</a> * <a class="el" href="namespacepython_1_1selections__cff.html#a6bcf3cba8bbe0c34a51d3d4fc62e8197">wRHEEPElectronRefiner</a> * (<a class="el" href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">wRleadingElectron</a> + wRsubleadingElectron + <a class="el" href="namespacepython_1_1selections__cff.html#a0eca09ba84fb56616b6dff5263092499">wRminiTreeElectron</a>) * <a class="el" href="namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e">wRdiElectronCandidate</a>)</td></tr>
 <tr class="separator:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a801db56aec438a2f54a6757f411722dc"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a801db56aec438a2f54a6757f411722dc">tunePMuons</a></td></tr>
 <tr class="memdesc:a801db56aec438a2f54a6757f411722dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Muons.  <a href="#a801db56aec438a2f54a6757f411722dc">More...</a><br/></td></tr>
@@ -148,53 +153,13 @@ Variables</h2></td></tr>
 <tr class="memitem:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a23df2a272fe1abd409ca3a50e4efc8a8">tunePIDIsoMuons</a></td></tr>
 <tr class="memdesc:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">add here the rochester corrections  <a href="#a23df2a272fe1abd409ca3a50e4efc8a8">More...</a><br/></td></tr>
 <tr class="separator:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a1f7247a4588955431f44bfc6eb6e1c"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a2a1f7247a4588955431f44bfc6eb6e1c">scaleCorrectedMuons</a></td></tr>
+<tr class="separator:a2a1f7247a4588955431f44bfc6eb6e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ea0563f7e5eea5f86a3a0bdaaab95bf"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a8ea0563f7e5eea5f86a3a0bdaaab95bf">scaleCorrectedMuonsRefiner</a></td></tr>
+<tr class="separator:a8ea0563f7e5eea5f86a3a0bdaaab95bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9a1d92604f1ca05def5ab50db8ab1f08">wRleadingMuon</a></td></tr>
 <tr class="memdesc:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="mdescLeft">&#160;</td><td class="mdescRight">add here the trigger matching  <a href="#a9a1d92604f1ca05def5ab50db8ab1f08">More...</a><br/></td></tr>
 <tr class="separator:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ab229680e1770d10323d8f0075df14d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9ab229680e1770d10323d8f0075df14d">wRdiMuonCandidate</a></td></tr>
-<tr class="memdesc:a9ab229680e1770d10323d8f0075df14d"><td class="mdescLeft">&#160;</td><td class="mdescRight">create di-muon pair in signal region  <a href="#a9ab229680e1770d10323d8f0075df14d">More...</a><br/></td></tr>
-<tr class="separator:a9ab229680e1770d10323d8f0075df14d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade942be3cf0e8f18e981df2781b2a1d9"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ade942be3cf0e8f18e981df2781b2a1d9">wRdiMuonCandidateFilter</a></td></tr>
-<tr class="memdesc:ade942be3cf0e8f18e981df2781b2a1d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">filter: at least one di-muon candidate in signal region  <a href="#ade942be3cf0e8f18e981df2781b2a1d9">More...</a><br/></td></tr>
-<tr class="separator:ade942be3cf0e8f18e981df2781b2a1d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab161ea555afdc036f91dd614fb4fac59"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab161ea555afdc036f91dd614fb4fac59">muonSelectionSeq</a> = cms.Sequence(<a class="el" href="namespacepython_1_1selections__cff.html#a801db56aec438a2f54a6757f411722dc">tunePMuons</a> * <a class="el" href="namespacepython_1_1selections__cff.html#a23df2a272fe1abd409ca3a50e4efc8a8">tunePIDIsoMuons</a> * <a class="el" href="namespacepython_1_1selections__cff.html#a9a1d92604f1ca05def5ab50db8ab1f08">wRleadingMuon</a> * wRsubleadingMuon * <a class="el" href="namespacepython_1_1selections__cff.html#a9ab229680e1770d10323d8f0075df14d">wRdiMuonCandidate</a>)</td></tr>
-<tr class="separator:ab161ea555afdc036f91dd614fb4fac59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b17d33d8037cedf6be8a70f16965a82"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a6b17d33d8037cedf6be8a70f16965a82">wReleMuCandidate</a></td></tr>
-<tr class="memdesc:a6b17d33d8037cedf6be8a70f16965a82"><td class="mdescLeft">&#160;</td><td class="mdescRight">E-Mu candidate mixed flavour candidates.  <a href="#a6b17d33d8037cedf6be8a70f16965a82">More...</a><br/></td></tr>
-<tr class="separator:a6b17d33d8037cedf6be8a70f16965a82"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0bb18db2b07b0b3dafa66ff12ea6e23"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aa0bb18db2b07b0b3dafa66ff12ea6e23">wRmuEleCandidate</a></td></tr>
-<tr class="separator:aa0bb18db2b07b0b3dafa66ff12ea6e23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a975cc52b3c25e97bcecca1bf021b44aa"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a975cc52b3c25e97bcecca1bf021b44aa">wRdiLeptonCandidate</a></td></tr>
-<tr class="memdesc:a975cc52b3c25e97bcecca1bf021b44aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">di lepton candidate  <a href="#a975cc52b3c25e97bcecca1bf021b44aa">More...</a><br/></td></tr>
-<tr class="separator:a975cc52b3c25e97bcecca1bf021b44aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad826b302c6f1a9a0e9ecff3beb9870ca"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ad826b302c6f1a9a0e9ecff3beb9870ca">wRdiLeptonCandidateFilter</a></td></tr>
-<tr class="separator:ad826b302c6f1a9a0e9ecff3beb9870ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a970febb69c0492f68b2347ad8f60d65b"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a970febb69c0492f68b2347ad8f60d65b">wRCandidate</a></td></tr>
-<tr class="separator:a970febb69c0492f68b2347ad8f60d65b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45044b972e598f9230efbd586f617b75"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a45044b972e598f9230efbd586f617b75">flavourSidebandSelection</a> = '(daughter(0).isElectron &amp;&amp; daughter(1).isMuon) || (daughter(1).isElectron &amp;&amp; daughter(0).isMuon)'</td></tr>
-<tr class="memdesc:a45044b972e598f9230efbd586f617b75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flavour sideband filter.  <a href="#a45044b972e598f9230efbd586f617b75">More...</a><br/></td></tr>
-<tr class="separator:a45044b972e598f9230efbd586f617b75"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a688d9beaa35afbc3786702cc9f95af49"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a688d9beaa35afbc3786702cc9f95af49">diLeptonSelection</a> = '(mass&gt;200)'</td></tr>
-<tr class="separator:a688d9beaa35afbc3786702cc9f95af49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62c874e40232fee670f5855732d863eb"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a62c874e40232fee670f5855732d863eb">flavourSidebandSelector</a></td></tr>
-<tr class="separator:a62c874e40232fee670f5855732d863eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01e87b27fbcd0617844c68b168aeb3ac"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a01e87b27fbcd0617844c68b168aeb3ac">flavourSidebandFilter</a></td></tr>
-<tr class="separator:a01e87b27fbcd0617844c68b168aeb3ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a635ba570cb7634683547ee182d919c65"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a635ba570cb7634683547ee182d919c65">lowDiLeptonSidebandSelector</a></td></tr>
-<tr class="memdesc:a635ba570cb7634683547ee182d919c65"><td class="mdescLeft">&#160;</td><td class="mdescRight">to be fixed  <a href="#a635ba570cb7634683547ee182d919c65">More...</a><br/></td></tr>
-<tr class="separator:a635ba570cb7634683547ee182d919c65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85213ce6d35cc5cd57032f911610889f"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a85213ce6d35cc5cd57032f911610889f">lowDiLeptonSidebandFilter</a></td></tr>
-<tr class="separator:a85213ce6d35cc5cd57032f911610889f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a958f3f66f6b010c04acd35966efe3000"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a958f3f66f6b010c04acd35966efe3000">signalRegionSelector</a></td></tr>
-<tr class="separator:a958f3f66f6b010c04acd35966efe3000"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a743e23f7a0e113a6df6700c04e5b2940"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a743e23f7a0e113a6df6700c04e5b2940">signalRegionFilter</a></td></tr>
-<tr class="separator:a743e23f7a0e113a6df6700c04e5b2940"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaef057a63bd8b14472fac8b7de1290f3"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#aaef057a63bd8b14472fac8b7de1290f3">signalRegionFilterSeq</a> = cms.Sequence(~<a class="el" href="namespacepython_1_1selections__cff.html#a01e87b27fbcd0617844c68b168aeb3ac">flavourSidebandFilter</a> * ~<a class="el" href="namespacepython_1_1selections__cff.html#a635ba570cb7634683547ee182d919c65">lowDiLeptonSidebandSelector</a>)</td></tr>
-<tr class="separator:aaef057a63bd8b14472fac8b7de1290f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9946726e4b227993295ff6216394635f"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9946726e4b227993295ff6216394635f">selectionSequence</a></td></tr>
-<tr class="separator:a9946726e4b227993295ff6216394635f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54ca1307224ef8f2bf61ebb9db4d529d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a54ca1307224ef8f2bf61ebb9db4d529d">filterSequence</a></td></tr>
-<tr class="separator:a54ca1307224ef8f2bf61ebb9db4d529d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Variable Documentation</h2>
 <a class="anchor" id="a922c93111d254c47f65bb22f2ae5efd2"></a>
@@ -212,89 +177,16 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a688d9beaa35afbc3786702cc9f95af49"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">string python.selections_cff.diLeptonSelection = '(mass&gt;200)'</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="ab587204b5679ea0e348ae4b2a7d4bc1d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.selections_cff.electronSelectionSeq = cms.Sequence(<a class="el" href="namespacepython_1_1selections__cff.html#a2a22004cc23959365756623e2e3fba3a">wRIsolatedElectrons</a> * (<a class="el" href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">wRleadingElectron</a> + wRsubleadingElectron + <a class="el" href="namespacepython_1_1selections__cff.html#a0eca09ba84fb56616b6dff5263092499">wRminiTreeElectron</a>) * <a class="el" href="namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e">wRdiElectronCandidate</a>)</td>
+          <td class="memname">tuple python.selections_cff.electronSelectionSeq = cms.Sequence(<a class="el" href="namespacepython_1_1selections__cff.html#a2a22004cc23959365756623e2e3fba3a">wRIsolatedElectrons</a> * <a class="el" href="namespacepython_1_1selections__cff.html#abf1c8426572d1d2ac50e5243aa0f38bb">wRHEEPElectron</a> * <a class="el" href="namespacepython_1_1selections__cff.html#a6bcf3cba8bbe0c34a51d3d4fc62e8197">wRHEEPElectronRefiner</a> * (<a class="el" href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">wRleadingElectron</a> + wRsubleadingElectron + <a class="el" href="namespacepython_1_1selections__cff.html#a0eca09ba84fb56616b6dff5263092499">wRminiTreeElectron</a>) * <a class="el" href="namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e">wRdiElectronCandidate</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a class="anchor" id="a54ca1307224ef8f2bf61ebb9db4d529d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.filterSequence</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.Sequence(</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        wRJetFilter * wRdiLeptonCandidateFilter</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        )</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a01e87b27fbcd0617844c68b168aeb3ac"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.flavourSidebandFilter</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&#39;CandViewCountFilter&#39;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.InputTag(<span class="stringliteral">&#39;flavourSidebandSelector&#39;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                     minNumber = cms.uint32(1)</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;)</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a45044b972e598f9230efbd586f617b75"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">string python.selections_cff.flavourSidebandSelection = '(daughter(0).isElectron &amp;&amp; daughter(1).isMuon) || (daughter(1).isElectron &amp;&amp; daughter(0).isMuon)'</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Flavour sideband filter. </p>
-
-</div>
-</div>
-<a class="anchor" id="a62c874e40232fee670f5855732d863eb"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.flavourSidebandSelector</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.InputTag(<span class="stringliteral">&quot;wRdiLeptonCandidate&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                     cut = cms.string(flavourSidebandSelection+<span class="stringliteral">&quot; &amp;&amp; &quot;</span> + diLeptonSelection),</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                     )</div>
-</div><!-- fragment -->
 </div>
 </div>
 <a class="anchor" id="ace3340b57135cae7dc0606c6acfb7327"></a>
@@ -316,7 +208,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int python.selections_cff.jetPt = 40</td>
+          <td class="memname">int python.selections_cff.jetPt = 20</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -353,40 +245,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a85213ce6d35cc5cd57032f911610889f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.lowDiLeptonSidebandFilter</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&#39;CandViewCountFilter&#39;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                          src = cms.InputTag(<span class="stringliteral">&#39;lowDiLeptonSidebandSelector&#39;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                          minNumber = cms.uint32(1)</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;)</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a635ba570cb7634683547ee182d919c65"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.lowDiLeptonSidebandSelector</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.InputTag(<span class="stringliteral">&quot;wRdiLeptonCandidate&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                     cut = cms.string(<span class="stringliteral">&#39;(!&#39;</span>+diLeptonSelection + <span class="stringliteral">&#39;) &amp;&amp; (!&#39;</span>+flavourSidebandSelection+<span class="stringliteral">&#39;)&#39;</span> )</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                     )</div>
-</div><!-- fragment -->
-<p>to be fixed </p>
-
-</div>
-</div>
 <a class="anchor" id="a0910dadd7fd92e22246c10b22be03316"></a>
 <div class="memitem">
 <div class="memproto">
@@ -416,80 +274,42 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">string python.selections_cff.muonIDIso = &quot; isolationR03().sumPt/pt &lt; 0.1&quot;</td>
+          <td class="memname">string python.selections_cff.muonIDIso = ' isolationR03().sumPt/pt &lt; 0.1 &amp;&amp; userInt(&quot;highPtID&quot;) == 1'</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a class="anchor" id="ab161ea555afdc036f91dd614fb4fac59"></a>
+<a class="anchor" id="a2a1f7247a4588955431f44bfc6eb6e1c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.selections_cff.muonSelectionSeq = cms.Sequence(<a class="el" href="namespacepython_1_1selections__cff.html#a801db56aec438a2f54a6757f411722dc">tunePMuons</a> * <a class="el" href="namespacepython_1_1selections__cff.html#a23df2a272fe1abd409ca3a50e4efc8a8">tunePIDIsoMuons</a> * <a class="el" href="namespacepython_1_1selections__cff.html#a9a1d92604f1ca05def5ab50db8ab1f08">wRleadingMuon</a> * wRsubleadingMuon * <a class="el" href="namespacepython_1_1selections__cff.html#a9ab229680e1770d10323d8f0075df14d">wRdiMuonCandidate</a>)</td>
+          <td class="memname">tuple python.selections_cff.scaleCorrectedMuons</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a9946726e4b227993295ff6216394635f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.selectionSequence</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.Sequence(</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;    ( jetSelectionSeq + electronSelectionSeq + muonSelectionSeq ) * wRIsolatedElectrons * wReleMuCandidate * wRmuEleCandidate * wRdiLeptonCandidate *  flavourSidebandSelector * lowDiLeptonSidebandSelector * signalRegionSelector</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        )</div>
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;produceScaleCorrectedMuons&quot;</span>,</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        src = cms.InputTag(<span class="stringliteral">&quot;tunePIDIsoMuons&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                OutputCollectionName = cms.string(<span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;        )</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a743e23f7a0e113a6df6700c04e5b2940"></a>
+<a class="anchor" id="a8ea0563f7e5eea5f86a3a0bdaaab95bf"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.selections_cff.signalRegionFilter</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&#39;CandViewCountFilter&#39;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.InputTag(<span class="stringliteral">&#39;signalRegionSelector&#39;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                     minNumber = cms.uint32(1),</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;)</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="aaef057a63bd8b14472fac8b7de1290f3"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.signalRegionFilterSeq = cms.Sequence(~<a class="el" href="namespacepython_1_1selections__cff.html#a01e87b27fbcd0617844c68b168aeb3ac">flavourSidebandFilter</a> * ~<a class="el" href="namespacepython_1_1selections__cff.html#a635ba570cb7634683547ee182d919c65">lowDiLeptonSidebandSelector</a>)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a958f3f66f6b010c04acd35966efe3000"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.signalRegionSelector</td>
+          <td class="memname">tuple python.selections_cff.scaleCorrectedMuonsRefiner</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.InputTag(<span class="stringliteral">&quot;wRdiLeptonCandidate&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                     cut = cms.string(<span class="stringliteral">&quot;(! &quot;</span>+flavourSidebandSelection+<span class="stringliteral">&#39;) &amp;&amp; &#39;</span>+diLeptonSelection)</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        src = cms.InputTag(<span class="stringliteral">&quot;scaleCorrectedMuons&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        cut = cms.string(<span class="stringliteral">&#39;&#39;</span>)</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;        )</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -558,26 +378,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a970febb69c0492f68b2347ad8f60d65b"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.wRCandidate</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewShallowCloneCombiner&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRdiLeptonCandidate wRdiJetCandidate&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                             <span class="comment"># role = cms.string(&quot;leading subleading&quot;),</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                  checkCharge = cms.bool(<span class="keyword">False</span>),</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                                  <span class="comment"># the cut on the pt of the daughter is to respect the order of leading and subleading:</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                                  <span class="comment"># if both electrons have pt&gt;60 GeV there will be two di-electron candidates with inversed order</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                                  cut = cms.string(<span class="stringliteral">&quot;mass &gt; 0&quot;</span>),</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;)</div>
-</div><!-- fragment -->
-</div>
-</div>
 <a class="anchor" id="a518fbc1be29b5c3b887c980fe7aec20e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -638,100 +438,37 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a975cc52b3c25e97bcecca1bf021b44aa"></a>
+<a class="anchor" id="abf1c8426572d1d2ac50e5243aa0f38bb"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.selections_cff.wRdiLeptonCandidate</td>
+          <td class="memname">tuple python.selections_cff.wRHEEPElectron</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewMerger&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                     src = cms.VInputTag(<span class="stringliteral">&quot;wRdiElectronCandidate&quot;</span>, <span class="stringliteral">&quot;wRdiMuonCandidate&quot;</span>, <span class="stringliteral">&quot;wReleMuCandidate&quot;</span>, <span class="stringliteral">&quot;wRmuEleCandidate&quot;</span>)</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                     )</div>
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&#39;HEEPIDSelector&#39;</span>,</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                electrons= cms.InputTag(<span class="stringliteral">&quot;slimmedElectrons&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                eleHEEPIdMap = cms.InputTag(<span class="stringliteral">&quot;egmGsfElectronIDs:heepElectronID-HEEPV60&quot;</span>),</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                )</div>
 </div><!-- fragment -->
-<p>di lepton candidate </p>
-
 </div>
 </div>
-<a class="anchor" id="ad826b302c6f1a9a0e9ecff3beb9870ca"></a>
+<a class="anchor" id="a6bcf3cba8bbe0c34a51d3d4fc62e8197"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">tuple python.selections_cff.wRdiLeptonCandidateFilter</td>
+          <td class="memname">tuple python.selections_cff.wRHEEPElectronRefiner</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewCountFilter&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                           src = cms.InputTag(<span class="stringliteral">&quot;wRdiLeptonCandidate&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                           minNumber = cms.uint32(1)</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                           )</div>
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewSelector&quot;</span>,</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        src = cms.InputTag(<span class="stringliteral">&quot;wRHEEPElectron&quot;</span>),</div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        cut = cms.string(<span class="stringliteral">&#39;&#39;</span>)</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;        )</div>
 </div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a9ab229680e1770d10323d8f0075df14d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.wRdiMuonCandidate</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewShallowCloneCombiner&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                   decay = cms.string(<span class="stringliteral">&quot;wRleadingMuon wRsubleadingMuon&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                   role = cms.string(<span class="stringliteral">&quot;leading subleading&quot;</span>),</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                   checkCharge = cms.bool(<span class="keyword">False</span>),</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                                   <span class="comment"># the cut on the pt of the daughter is to respect the order of leading and subleading:</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                                   <span class="comment"># if both muons have pt&gt;60 GeV there will be two di-muon candidates with inversed order</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                                   <span class="comment">#cut = cms.string(&quot;mass &gt; 200 &amp;&amp; daughter(0).pt&gt;daughter(1).pt&quot;),</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;                                   cut = cms.string(<span class="stringliteral">&quot;mass &gt; 0  &amp;&amp; daughter(0).pt&gt;daughter(1).pt&quot;</span>),</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;                                   </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;                                       )</div>
-</div><!-- fragment -->
-<p>create di-muon pair in signal region </p>
-
-</div>
-</div>
-<a class="anchor" id="ade942be3cf0e8f18e981df2781b2a1d9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.wRdiMuonCandidateFilter</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewCountFilter&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                           src = cms.InputTag(<span class="stringliteral">&quot;wRdiMuonCandidate&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                           minNumber = cms.uint32(1)</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                           )</div>
-</div><!-- fragment -->
-<p>filter: at least one di-muon candidate in signal region </p>
-
-</div>
-</div>
-<a class="anchor" id="a6b17d33d8037cedf6be8a70f16965a82"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.wReleMuCandidate</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewShallowCloneCombiner&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRleadingElectron wRsubleadingMuon&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                  role = cms.string(<span class="stringliteral">&quot;leading subleading&quot;</span>),</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                  checkCharge = cms.bool(<span class="keyword">False</span>),</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                                  <span class="comment"># the cut on the pt of the daughter is to respect the order of leading and subleading:</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                                  <span class="comment"># if both electrons have pt&gt;60 GeV there will be two di-electron candidates with inversed order</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                                  cut = cms.string(<span class="stringliteral">&quot;mass &gt; 0 &amp;&amp; daughter(0).pt&gt;daughter(1).pt&quot;</span>),</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;)</div>
-</div><!-- fragment -->
-<p>E-Mu candidate mixed flavour candidates. </p>
+<p>this is to change the type of the collection for the analyzer </p>
 
 </div>
 </div>
@@ -811,7 +548,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;PATMuonSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                             src = cms.InputTag(<span class="stringliteral">&quot;tunePIDIsoMuons&quot;</span>), <span class="comment">#tunePIsolatedMuons&quot;),                             cut = wRleadingElectron.cut,                         )### select subleading muonwRsubleadingMuon = cms.EDFilter(&quot;PATMuonSelector&quot;,                                src = cms.InputTag(&quot;tunePIDIsoMuons&quot;), #tunePIsolatedMuons&quot;)</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                             src = cms.InputTag(<span class="stringliteral">&quot;scaleCorrectedMuons&quot;</span>), <span class="comment">#tunePIsolatedMuons&quot;),                             cut = wRleadingElectron.cut,                         )### select subleading muonwRsubleadingMuon = cms.EDFilter(&quot;PATMuonSelector&quot;,                                src = cms.InputTag(&quot;scaleCorrectedMuons&quot;), #tunePIsolatedMuons&quot;)</span></div>
 </div><!-- fragment -->
 <p>add here the trigger matching </p>
 <p>select leading muon </p>
@@ -828,31 +565,11 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;PATElectronSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                    src = cms.InputTag(<span class="stringliteral">&quot;slimmedElectrons&quot;</span>), </div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                    src = cms.InputTag(<span class="stringliteral">&quot;wRHEEPElectron&quot;</span>), </div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                    cut = cms.string( </div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;        ((<span class="stringliteral">&quot;(pt&gt;%f) &amp;&amp; (abs(eta)&lt;%f)&quot;</span>) % (miniTreeLeptonPt, maxEtaLeptons))</div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;        ),</div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                                  )</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="aa0bb18db2b07b0b3dafa66ff12ea6e23"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">tuple python.selections_cff.wRmuEleCandidate</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1selections__cff.html">    1</a></span>&#160;= cms.EDProducer(<span class="stringliteral">&quot;CandViewShallowCloneCombiner&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                  decay = cms.string(<span class="stringliteral">&quot;wRleadingMuon wRsubleadingElectron&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                  role = cms.string(<span class="stringliteral">&quot;leading subleading&quot;</span>),</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                                  checkCharge = cms.bool(<span class="keyword">False</span>),</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                                  <span class="comment"># the cut on the pt of the daughter is to respect the order of leading and subleading:</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                                  <span class="comment"># if both electrons have pt&gt;60 GeV there will be two di-electron candidates with inversed order</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                                  cut = cms.string(<span class="stringliteral">&quot;mass &gt; 0 &amp;&amp; daughter(0).pt&gt;daughter(1).pt&quot;</span>),</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;)</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -877,7 +594,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 14:43:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Feb 7 2016 09:16:21 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

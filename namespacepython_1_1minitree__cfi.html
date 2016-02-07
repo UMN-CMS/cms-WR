@@ -108,19 +108,24 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1minitree__cfi.html">    1</a></span>&#160;= cms.EDAnalyzer(<span class="stringliteral">&#39;miniTTree&#39;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                            muons_src = cms.InputTag(<span class="stringliteral">&#39;wRsubleadingMuon&#39;</span>),</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                            muons_src = cms.InputTag(<span class="stringliteral">&#39;wRminiTreeMuon&#39;</span>),</div>
 <div class="line"><a name="l00003"></a><span class="lineno"><a class="line" href="namespacepython_1_1minitree__cfi.html#ade3a94902f8397493d06ce7a99170511">    3</a></span>&#160;                            electrons_src = cms.InputTag(<span class="stringliteral">&#39;wRminiTreeElectron&#39;</span>),</div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;                            jets_src = cms.InputTag(<span class="stringliteral">&#39;wRJets&#39;</span>),</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                            jec_unc_src = cms.string(<span class="stringliteral">&#39;wRJECUncert&#39;</span>),</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                            is_mc = cms.bool(<span class="keyword">False</span>),</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                            )</div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;                            jec_unc_src = cms.InputTag(<span class="stringliteral">&#39;wRJECUncert&#39;</span>,<span class="stringliteral">&#39;JECUncertainty&#39;</span>),</div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;                            muon_IDSF_central_src = cms.InputTag(<span class="stringliteral">&#39;muonIdIsoSF&#39;</span>,<span class="stringliteral">&#39;MuonSFIdCentral&#39;</span>),</div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;                            muon_IsoSF_central_src = cms.InputTag(<span class="stringliteral">&#39;muonIdIsoSF&#39;</span>, <span class="stringliteral">&#39;MuonSFIsoCentral&#39;</span>),</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;                            muon_IDSF_error_src = cms.InputTag(<span class="stringliteral">&#39;muonIdIsoSF&#39;</span>,<span class="stringliteral">&#39;MuonSFIdError&#39;</span>),</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;                            muon_IsoSF_error_src = cms.InputTag(<span class="stringliteral">&#39;muonIdIsoSF&#39;</span>,<span class="stringliteral">&#39;MuonSFIsoError&#39;</span>),</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;                            PUWeights_src = cms.InputTag(<span class="stringliteral">&#39;PUWeights&#39;</span>,<span class="stringliteral">&#39;PileupWeights&#39;</span>),</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;                           datasetName = cms.InputTag(<span class="stringliteral">&quot;addStringIdentifier&quot;</span>, <span class="stringliteral">&quot;datasetIdentifier&quot;</span>),</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;                            )</div>
 </div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 14:43:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Feb 7 2016 09:16:20 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

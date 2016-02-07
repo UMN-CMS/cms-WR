@@ -114,7 +114,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Electrons: <a href="https://cds.cern.ch/record/2118397/export/hx?ln=en">https://cds.cern.ch/record/2118397/export/hx?ln=en</a></p>
 <p>Muons: <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2">https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2</a></p>
 <dl class="section user"><dt>Energy corrections</dt><dd>muons <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon">https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon</a></dd></dl>
-<dl class="section user"><dt>GIT instructions</dt><dd>The main branch is downloaded by default the first time you download the code. It is <b>shervinWorking</b> </dd></dl>
+<dl class="section user"><dt>Making selector plots</dt><dd>In order to make the selected plots, first the minitree has to pass through the selection module. Edit and run with compilation <pre class="fragment">root -l test/tmp.C+
+</pre></dd></dl>
+<p>The selection step will produce an output flat tree given for the given parameters (ttbar,DY, EEJJ, MuMuJJ channel, etc.).</p>
+<p>Create a directory to store the plots </p>
+<pre class="fragment">mkdir test/plots
+</pre><p>The plotting script will take in the background samples and data sample to produced stacked plots for data/MC comparisons. Run </p>
+<pre class="fragment">root -b test/miniPlotter.C
+</pre><dl class="section user"><dt>GIT instructions</dt><dd>The main branch is downloaded by default the first time you download the code. It is <b>shervinWorking</b> </dd></dl>
 <p>Developers have to: </p>
 <pre class="fragment">git checkout shervinWorking
 git pull
@@ -132,10 +139,13 @@ git commit -m "another commit"
 scram b -j16 &amp;&amp; cmsRun test/runAnalysis_cfg.py test=3
 git push origin myWorkingBranch:myWorkingBranch
 git checkout shervinWorking
-</pre> </div></div><!-- contents -->
+</pre><dl class="section user"><dt>miniTree production</dt><dd><pre class="fragment">./scripts/makeLSFTTreeScripts.sh
+for file in tmp/analysis_WRto*.cfg tmp/analysis_TTJets_DiLept_v*.cfg tmp/analysis_DY*powheg*.cfg ; do crab -create -submit -cfg $file; done
+</pre> </dd></dl>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jan 30 2016 14:43:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Feb 7 2016 09:16:21 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

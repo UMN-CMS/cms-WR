@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['additionalvarparsing_5fcff',['additionalVarParsing_cff',['../namespacepython_1_1additionalVarParsing__cff.html',1,'python']]],
   ['backgroundfits',['backgroundFits',['../namespacepython_1_1backgroundFits.html',1,'python']]],
   ['checkparticledecaytree_5fcfg',['checkParticleDecayTree_cfg',['../namespacepython_1_1checkParticleDecayTree__cfg.html',1,'python']]],
   ['combinetools',['combineTools',['../namespacepython_1_1combineTools.html',1,'python']]],
+  ['datamcanalyzers_5fcfi',['dataMcAnalyzers_cfi',['../namespacepython_1_1dataMcAnalyzers__cfi.html',1,'python']]],
   ['gendyjetselectronchannelmodules_5fcff',['genDYJetsElectronChannelModules_cff',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html',1,'python']]],
   ['genelechnlcutseqfortwodimlimits_5fcff',['genEleChnlCutSeqForTwoDimLimits_cff',['../namespacepython_1_1genEleChnlCutSeqForTwoDimLimits__cff.html',1,'python']]],
   ['genelectronchannelmodules_5fcff',['genElectronChannelModules_cff',['../namespacepython_1_1genElectronChannelModules__cff.html',1,'python']]],
@@ -18,8 +18,12 @@ var searchData=
   ['microaod_5fcff',['microAOD_cff',['../namespacepython_1_1microAOD__cff.html',1,'python']]],
   ['microaod_5foutput_5fcff',['microAOD_Output_cff',['../namespacepython_1_1microAOD__Output__cff.html',1,'python']]],
   ['minitree_5fcfi',['minitree_cfi',['../namespacepython_1_1minitree__cfi.html',1,'python']]],
+  ['pileupweight_5fcff',['pileupWeight_cff',['../namespacepython_1_1pileupWeight__cff.html',1,'python']]],
+  ['pileupweight_5fcfi',['pileupWeight_cfi',['../namespacepython_1_1pileupWeight__cfi.html',1,'python']]],
   ['plotutils',['PlotUtils',['../namespacepython_1_1PlotUtils.html',1,'python']]],
   ['produceidisosf_5fcff',['produceIdIsoSF_cff',['../namespacepython_1_1produceIdIsoSF__cff.html',1,'python']]],
+  ['producescalecorrectedmuons_5fcfi',['produceScaleCorrectedMuons_cfi',['../namespacepython_1_1produceScaleCorrectedMuons__cfi.html',1,'python']]],
+  ['producestringtag_5fcfi',['produceStringTag_cfi',['../namespacepython_1_1produceStringTag__cfi.html',1,'python']]],
   ['python',['python',['../namespacepython.html',1,'']]],
   ['recoelectronchannelmodules_5fcff',['recoElectronChannelModules_cff',['../namespacepython_1_1recoElectronChannelModules__cff.html',1,'python']]],
   ['recoelectronchannelsidebandunmatchedmodules_5fcff',['recoElectronChannelSidebandUnmatchedModules_cff',['../namespacepython_1_1recoElectronChannelSidebandUnmatchedModules__cff.html',1,'python']]],
