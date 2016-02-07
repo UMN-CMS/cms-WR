@@ -21,7 +21,7 @@ void goodJets(myJetCollection *evJets, myJetCollection *selJets)
 void goodEles(myElectronCollection *evEles, myElectronCollection *selEles)
 {
 	for(auto e : *evEles) {
-		if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && fabs(e.p4.Eta()) < 1.4222 && fabs(e.p4.Eta()) > 1.566)
+		if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
 			selEles->push_back(e);
 	}
 }
@@ -46,6 +46,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.scale = myEvent.electron_scale->at(i);
 		ele.smearing = myEvent.electron_smearing->at(i);
 		ele.charge = myEvent.electron_charge->at(i);
+		ele.weight =1.;
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -57,6 +58,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
 		mu.charge = myEvent.muon_charge->at(i);
+		mu.weight = mu.IDSF * mu.IsoSF;
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
@@ -64,8 +66,11 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		myJet jet;
 		jet.p4 = myEvent.jets_p4->at(i);
 		jet.jec_uncertainty = myEvent.jec_uncertainty->at(i);
+		jet.weight =1.;
 		jets.push_back(jet);
 	}
+
+	global_event_weight = myEvent.weight * myEvent.PU_reweight;
 
 	Clear();
 }
@@ -80,9 +85,13 @@ void Selector::Clear()
 	WR_mass = dilepton_mass = weight = 0.0;
 }
 
-bool Selector::isPassing(Int_t tag)
+bool Selector::isPassing(tag_t tag)
 {
 
+	_isPassing=false;
+	WR_mass=-1;
+	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
+	
 	myJetCollection gJets;
 	myElectronCollection gEles;
 	myMuonCollection gMuons;
@@ -110,75 +119,95 @@ bool Selector::isPassing(Int_t tag)
 	muons = gMuons;
 
 	// Assert at least 2 good jets
-	if(gJets.size() < 2) {
+	if(jets.size() < 2) {
 		return false;
 	}
 
+	lead_jet_pt = jets[0].p4.Pt();
+	lead_jet_eta = jets[0].p4.Eta();
+	lead_jet_phi = jets[0].p4.Phi();
+	lead_jet_weight = 1.0;
+
+	sublead_jet_pt = jets[1].p4.Pt();
+	sublead_jet_eta = jets[1].p4.Eta();
+	sublead_jet_phi = jets[1].p4.Phi();
+	lead_jet_weight = 1.0;
+
 	if(tag == 0) { // EEJJ Channel
 		// Assert at least 2 good leptons
-		if(gEles.size() < 2) {
+		if(electrons.size() < 2) {
 			return false;
 		}
-		// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
-		WR_mass = (gEles[0].p4 + gEles[1].p4 + gJets[0].p4 + gJets[1].p4).M();
-		dilepton_mass = (gEles[0].p4 + gEles[1].p4).M();
-		// Apply dR cuts and leading lepton cut
-		if(gEles[0].p4.Pt() < 60)
+		
+		lead_lepton_p4 = electrons[0].p4;
+		sublead_lepton_p4 = electrons[1].p4;
+
+		lead_lepton_weight = electrons[0].weight;
+		sublead_lepton_weight = electrons[1].weight;
+
+	}else if(tag == 1) { // MuMuJJ Channel
+		// Assert at least 2 good leptons
+		if(muons.size() < 2) {
 			return false;
-		if(dR_TLV(gEles[0].p4, gJets[0].p4) < 0.4)
+		}
+
+		lead_lepton_p4 = muons[0].p4;
+		sublead_lepton_p4 = muons[1].p4;
+
+		lead_lepton_weight = muons[0].weight;
+		sublead_lepton_weight = muons[1].weight;
+
+	}else if(tag == 2) { // EMuJJ Channel
+		// Assert at least 2 good leptons
+		if(electrons.size() < 1 || electrons.size() < 1) {
 			return false;
-		if(dR_TLV(gEles[0].p4, gJets[1].p4) < 0.4)
-			return false;
-		if(dR_TLV(gEles[1].p4, gJets[0].p4) < 0.4)
-			return false;
-		if(dR_TLV(gEles[1].p4, gJets[1].p4) < 0.4)
-			return false;
-		return true;
+		}
+
+		// check which is the leading, which the subleading
+		if(electrons[0].p4.Pt() > muons[0].p4.Pt()){ // e > mu
+			lead_lepton_p4 = electrons[0].p4;
+			sublead_lepton_p4 = muons[0].p4;
+			
+			lead_lepton_weight = electrons[0].weight;
+			sublead_lepton_weight = muons[0].weight;
+			
+		} else{
+
+			sublead_lepton_p4 = electrons[0].p4;
+			sublead_lepton_weight = electrons[0].weight;
+
+			lead_lepton_p4 = muons[0].p4;			
+			lead_lepton_weight = muons[0].weight;
+		}
 	}
 
-	if(tag == 1) { // MuMuJJ Channel
-		// Assert at least 2 good leptons
-		if(gMuons.size() < 2) {
-			return false;
-		}
-		// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
-		WR_mass = (gMuons[0].p4 + gMuons[1].p4 + gJets[0].p4 + gJets[1].p4).M();
-		dilepton_mass = (gMuons[0].p4 + gMuons[1].p4).M();
-		// Apply dR cuts and leading lepton cut
-		if(gMuons[0].p4.Pt() < 60)
-			return false;
-		if(dR_TLV(gMuons[0].p4, gJets[0].p4) < 0.4)
-			return false;
-		if(dR_TLV(gMuons[0].p4, gJets[1].p4) < 0.4)
-			return false;
-		if(dR_TLV(gMuons[1].p4, gJets[0].p4) < 0.4)
-			return false;
-		if(dR_TLV(gMuons[1].p4, gJets[1].p4) < 0.4)
-			return false;
-		return true;
-	}
-	if(tag == 2) { // EMuJJ Channel
-		// Assert at least 2 good leptons
-		if(gEles.size() < 1 || gMuons.size() < 1) {
-			return false;
-		}
-		// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
-		WR_mass = (gEles[0].p4 + gMuons[0].p4 + gJets[0].p4 + gJets[1].p4).M();
-		dilepton_mass = (gEles[0].p4 + gMuons[0].p4).M();
-		// Apply dR cuts and leading lepton cut
-		if(gEles[0].p4.Pt() < 60 && gMuons[0].p4.Pt() < 60)
-			return false;
-		if(dR_TLV(gEles[0].p4, gJets[0].p4) < 0.4)
-			return false;
-		if(dR_TLV(gEles[0].p4, gJets[1].p4) < 0.4)
-			return false;
-		if(dR_TLV(gMuons[0].p4, gJets[0].p4) < 0.4)
-			return false;
-		if(dR_TLV(gMuons[0].p4, gJets[1].p4) < 0.4)
-			return false;
-		return true;
-	}
-	return false;
+   // check eta and pt cuts
+	if(lead_lepton_p4.Pt() < 60) return false;
+	if(sublead_lepton_p4.Pt() < 50) return false;
+
+	if(dR_TLV(lead_lepton_p4, gJets[0].p4) < 0.4) return false;
+	if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
+	if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
+	if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
+	
+	lead_lepton_pt = lead_lepton_p4.Pt();
+	lead_lepton_eta = lead_lepton_p4.Eta();
+	lead_lepton_phi = lead_lepton_p4.Phi();
+
+	sublead_lepton_pt = sublead_lepton_p4.Pt();
+	sublead_lepton_eta = sublead_lepton_p4.Eta();
+	sublead_lepton_phi = sublead_lepton_p4.Phi();
+	
+
+	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
+	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
+	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
+
+	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
+	
+	_isPassing=true;
+	return _isPassing;
+
 }
 
 void Selector::SetBranches(TTree* tree)

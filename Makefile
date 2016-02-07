@@ -1,3 +1,4 @@
+$(shell if [ ! -d "lib" ];then mkdir lib/; fi )
 
 CXXFLAGS=-Wall -pedantic -std=c++11
 

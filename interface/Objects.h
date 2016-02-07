@@ -9,6 +9,8 @@ public:
 	Float_t smearing;
 	Int_t charge;
 
+	Float_t weight;
+
 	myElectron() {}; ///< default contructor (empty)
 
 };
@@ -25,6 +27,7 @@ public:
 	Float_t IDSF_error;
 	Float_t IsoSF_error;
 	Int_t charge;
+	Float_t weight;
 
 	myMuon() {}; ///< default contructor (empty)
 
@@ -35,6 +38,7 @@ class myJet
 public:
 	TLorentzVector p4;
 	Float_t jec_uncertainty;
+	Float_t weight;
 
 	myJet() {}; ///< default contructor (empty)
 

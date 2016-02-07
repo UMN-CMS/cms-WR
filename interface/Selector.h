@@ -10,10 +10,11 @@
 class Selector
 {
 public:
-
-	myElectronCollection electrons;
-	myMuonCollection muons;
-	myJetCollection jets;
+	enum tag_t {
+		EE,
+		MuMu,
+		EMu
+	};
 
 	Float_t WR_mass; // this is of Float_t because want to save it into a tree
 	Float_t dilepton_mass;
@@ -30,10 +31,14 @@ public:
 	Float_t sublead_jet_eta;
 	Float_t lead_jet_phi;
 	Float_t sublead_jet_phi;
+	Float_t lead_lepton_weight;
+	Float_t sublead_lepton_weight;
+	Float_t lead_jet_weight;
+	Float_t sublead_jet_weight; 
 
-	Float_t weight;
+	Float_t weight; ///< this variable takes into accont the product of the global_event_weight and the single object weights
 
-	bool isPassing(Int_t tag);
+	bool isPassing(tag_t tag);
 
 	Selector(const miniTreeEvent& myEvent);
 	Selector();
@@ -43,9 +48,16 @@ public:
 
 
 private:
+	myElectronCollection electrons;
+	myMuonCollection muons;
+	myJetCollection jets;
+
+
+	Float_t global_event_weight; ///< this weight is mcGenWeight * PU_reweight
+
 
 	void Clear();
-
+	bool _isPassing;
 };
 
 

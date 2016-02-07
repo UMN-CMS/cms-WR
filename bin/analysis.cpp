@@ -35,6 +35,7 @@ int main(void)
 {
 	using namespace RooFit;
 	std::cout << "******************************* Analysis ******************************" << std::endl;
+	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
 
 	configReader myReader("configs/2015-v1.conf");
 	myReader.getNorm1fb("TTJets_DiLept_v2");
@@ -150,7 +151,7 @@ int main(void)
 			for(int Rand_Smear_Iter=0;Rand_Smear_Iter<Total_Number_of_Systematics_Smear;Rand_Smear_Iter++)
 				Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0,1.);
 			
-			ToyThrower(myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+			//ToyThrower(myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
 
 			
 
@@ -160,44 +161,10 @@ int main(void)
 			// 1 -- MuMuJJ Channel
 			// 2 -- EMuJJ Channel
 
-			int tag = 1;
+			
 
-			if(selEvent.isPassing(tag) && selEvent.dilepton_mass > 200) {
-				//cout<<"PASS"<<endl;
-
-				float weight = selEvent.weight * 1.0; // Product of many weights
-
-				selEvent.lead_jet_pt = selEvent.jets[0].p4.Pt();
-				selEvent.sublead_jet_pt = selEvent.jets[1].p4.Pt();
-				selEvent.lead_jet_eta = selEvent.jets[0].p4.Eta();
-				selEvent.sublead_jet_eta = selEvent.jets[1].p4.Eta();
-				selEvent.lead_jet_phi = selEvent.jets[0].p4.Phi();
-				selEvent.sublead_jet_phi = selEvent.jets[1].p4.Phi();
-
-				if(tag == 0) {
-					selEvent.lead_lepton_pt = selEvent.electrons[0].p4.Pt();
-					selEvent.sublead_lepton_pt = selEvent.electrons[1].p4.Pt();
-					selEvent.lead_lepton_eta = selEvent.electrons[0].p4.Eta();
-					selEvent.sublead_lepton_eta = selEvent.electrons[1].p4.Eta();
-					selEvent.lead_lepton_phi = selEvent.electrons[0].p4.Phi();
-					selEvent.sublead_lepton_phi = selEvent.electrons[1].p4.Phi();
-				}
-				if(tag == 1) {
-					selEvent.lead_lepton_pt = selEvent.muons[0].p4.Pt();
-					selEvent.sublead_lepton_pt = selEvent.muons[1].p4.Pt();
-					selEvent.lead_lepton_eta = selEvent.muons[0].p4.Eta();
-					selEvent.sublead_lepton_eta = selEvent.muons[1].p4.Eta();
-					selEvent.lead_lepton_phi = selEvent.muons[0].p4.Phi();
-					selEvent.sublead_lepton_phi = selEvent.muons[1].p4.Phi();
-				}
-				if(tag == 2) {
-					selEvent.lead_lepton_pt = selEvent.electrons[0].p4.Pt();
-					selEvent.sublead_lepton_pt = selEvent.muons[0].p4.Pt();
-					selEvent.lead_lepton_eta = selEvent.electrons[0].p4.Eta();
-					selEvent.sublead_lepton_eta = selEvent.muons[0].p4.Eta();
-					selEvent.lead_lepton_phi = selEvent.electrons[0].p4.Phi();
-					selEvent.sublead_lepton_phi = selEvent.muons[0].p4.Phi();
-				}
+			if(selEvent.isPassing(Selector::EMu) && selEvent.dilepton_mass > 200) {
+				float weight = selEvent.weight; // the weight is the event weight * single object weights
 
 				massWR.setVal(selEvent.WR_mass);
 				evtWeight.setVal(weight);
@@ -207,16 +174,10 @@ int main(void)
 
 			}
 
-			// cout<<"Mu"<<endl;
-			// for(auto m:*(myEvent.muons_p4))
-			//   cout<<m.Pt()<<endl;
-			// cout<<"NuMu"<<endl;
-			// for(auto m:(selEvent.muons))
-			//   cout<<m.p4.Pt()<<endl;
-
 		}
+		assert(tempDataSet->sumEntries()>0);
 
-		t1->Write();
+//		t1->Write();
 
 		tempDataSet->Print();
 

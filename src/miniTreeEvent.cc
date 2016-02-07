@@ -3,17 +3,17 @@
 
 miniTreeEvent::miniTreeEvent():
 	electrons_p4(new std::vector<TLorentzVector>),
-	muons_p4(new std::vector<TLorentzVector>),
-	jets_p4(new std::vector<TLorentzVector>),
-	jec_uncertainty(new std::vector<Float_t>),
 	electron_scale(new std::vector<Float_t>),
 	electron_smearing(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
+	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
 	muon_IDSF_central(new std::vector<Float_t>),
 	muon_IsoSF_central(new std::vector<Float_t>),
 	muon_IDSF_error(new std::vector<Float_t>),
 	muon_IsoSF_error(new std::vector<Float_t>),
+	jets_p4(new std::vector<TLorentzVector>),
+	jec_uncertainty(new std::vector<Float_t>),
 	_owningMembers(true)
 {
 
@@ -23,17 +23,17 @@ miniTreeEvent::miniTreeEvent():
 
 miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	electrons_p4(new std::vector<TLorentzVector>),
-	muons_p4(new std::vector<TLorentzVector>),
-	jets_p4(new std::vector<TLorentzVector>),
-	jec_uncertainty(new std::vector<Float_t>),
 	electron_scale(new std::vector<Float_t>),
 	electron_smearing(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
+	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
 	muon_IDSF_central(new std::vector<Float_t>),
 	muon_IsoSF_central(new std::vector<Float_t>),
 	muon_IDSF_error(new std::vector<Float_t>),
 	muon_IsoSF_error(new std::vector<Float_t>),
+	jets_p4(new std::vector<TLorentzVector>),
+	jec_uncertainty(new std::vector<Float_t>),
 	_owningMembers(true)
 {
 	clear();
