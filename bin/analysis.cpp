@@ -33,6 +33,8 @@
 
 int main(void)
 {
+
+	float integratedLumi = 2.4; ///\todo should not be hard-coded!!!
 	using namespace RooFit;
 	std::cout << "******************************* Analysis ******************************" << std::endl;
 	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
@@ -164,7 +166,7 @@ int main(void)
 			
 
 			if(selEvent.isPassing(Selector::EMu) && selEvent.dilepton_mass > 200) {
-				float weight = selEvent.weight; // the weight is the event weight * single object weights
+				float weight = selEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 
 				massWR.setVal(selEvent.WR_mass);
 				evtWeight.setVal(weight);

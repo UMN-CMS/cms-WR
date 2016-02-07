@@ -39,6 +39,8 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	WR_mass(-1),
 	dilepton_mass(-1)
 {
+	datasetName = myEvent.datasetName;
+
 	int nele = myEvent.electrons_p4->size();
 	for(int i = 0; i < nele; i++) {
 		myElectron ele;

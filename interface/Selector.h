@@ -16,6 +16,8 @@ public:
 		EMu
 	};
 
+	std::string datasetName;
+
 	Float_t WR_mass; // this is of Float_t because want to save it into a tree
 	Float_t dilepton_mass;
 
