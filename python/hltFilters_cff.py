@@ -48,8 +48,8 @@ wRemujjHLTFilter =  HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
 tagAndProbeDoubleEleHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = [
-        'HLT_Ele30WP60_Ele8_Mass55_v*',  ## \ingroup hlt_Group electron tagAndProbe trigger
-        'HLT_Ele30WP60_SC4_Mass55_v*',
+        'HLT_Ele*WP60_Ele8_Mass55_v*',  ## \ingroup hlt_Group electron tagAndProbe trigger
+        'HLT_Ele*WP60_SC4_Mass55_v*',
     ]
 )
 
