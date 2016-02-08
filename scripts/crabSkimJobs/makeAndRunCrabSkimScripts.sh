@@ -34,7 +34,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.General.requestName = "$datasetName"
-config.General.workArea = 'crab_skim_'+"$datasetName"
+config.General.workArea = 'crab/skim/crab_skim_'+"$datasetName"
 config.General.transferOutputs = True
 config.General.transferLogs = False
 
@@ -87,7 +87,7 @@ config.Data.ignoreLocality = True
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True 
 #config.Data.publishDataName = 'realData_FNLST_13TeV_CHNL_UNIQUE'
-config.Data.outputDatasetTag =  config.General.requestName + '_SHv2'
+config.Data.outputDatasetTag =  config.General.requestName + "${skimProductionTAG}"
 config.Data.lumiMask = "$jsonFile"
 
 

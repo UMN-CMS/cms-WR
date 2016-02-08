@@ -20,6 +20,7 @@ TTJets_DiLept_v1	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpri
 TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2_ext1-v1/MINIAODSIM	5.672e+01	2.215e-01	24521141	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/shervin-TTJets_DiLept_v2_SHv2-268f42a0545bb6ce2052dd5a41d331a8/USER	4827971
 #	##################
 DYToEE_powheg	/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	0.000e+00	0.000e+00	49921782	/DYToEE_NNPDF30_13TeV-powheg-pythia8/shervin-DYToEE_powheg_SHv2-e73ab3558da1b418bca464e13b669858/USER	6276010
+###
 DYToMuMu_powheg_50to120	/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	2836876	/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/shervin-DYToMuMu_powheg_50to120_SHv2-e73ab3558da1b418bca464e13b669858/USER	244724
 DYToMuMu_powheg_120to200	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/shervin-DYToMuMu_powheg_120to200_SHv2-e73ab3558da1b418bca464e13b669858/USER	39691
 DYToMuMu_powheg_200to400	/ZToMuMu_NNPDF30_13TeV-powheg_M_200_400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	100000	/ZToMuMu_NNPDF30_13TeV-powheg_M_200_400/shervin-DYToMuMu_powheg_200to400_SHv2-e73ab3558da1b418bca464e13b669858/USER	56232
