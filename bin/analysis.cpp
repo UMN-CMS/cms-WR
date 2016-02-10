@@ -53,24 +53,14 @@ int main(void)
 	std::vector<std::string> TTchainNames; 
 	TTchainNames.push_back("TTJets_DiLept_v1");
 	TTchainNames.push_back("TTJets_DiLept_v2");
-	TChain *c = (myReader.getMiniTreeChain(TTchainNames, "miniTree_dytagandprobe"));
-	std::cout << c->GetEntries() << std::endl;
-    
+	TChain *chain = (myReader.getMiniTreeChain(TTchainNames, "miniTree_dytagandprobe"));
+	std::cout << chain->GetEntries() << std::endl;
     // if you want to check if the config file is read correctly:
 #ifdef DEBUG
 	std::cout << myReader << std::endl;
 #endif
 
-	TString mode = "ttbar";
-
-	//TChain * chain = new TChain("MiniTTree/t");
-	TChain * chain = new TChain("miniTree_signal/t");
-
-	if(mode.EqualTo("ttbar")) {
-		//chain->Add("ttree.root");
-		chain->Add("~/eos/cms/store/user/shervin/ntuples/TTJets_DiLept_v1_SHv2/ttree_*.root");
-	}
-
+	TString mode = "test";
 	// Plotting trees
 	TFile f("selected_tree_" + mode + ".root", "recreate");
 	TTree * t1 = new TTree("t1", "");
