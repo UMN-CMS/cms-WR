@@ -54,7 +54,7 @@ case $datasetName in
 		LUMI=1000
 		;;
 	MuEG*)
-		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+		params="$params, 'saveTnP=0', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
 	DY*)
