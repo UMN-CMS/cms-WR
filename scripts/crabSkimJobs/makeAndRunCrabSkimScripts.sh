@@ -44,16 +44,16 @@ EOF
 
 LUMI=2000
 #### if the dataset is DATA or DY save the TagAndProbe triggers
-case $dataset in 
-	/DoubleEG/*)
+case $datasetName in 
+	DoubleEG*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
-	/SingleMu/*)
+	SingleMu*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
-	/MuonEG/*)
+	MuEG*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
