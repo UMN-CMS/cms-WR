@@ -182,7 +182,7 @@ int main(void)
                 tempDataSet->Write();
 		tempDataSet->Print();
 		RooFitResult * tempFitRslt = NULL;
-		fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf, massWR);
+		fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
 
 		std::cout << "Res=" << std::endl;
 		expPdfRooAbsPdf->Print();
