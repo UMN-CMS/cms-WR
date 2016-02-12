@@ -31,16 +31,18 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
+using namespace std;
+
 int main(void)
 {
-
+        char name[100];// to name the tree per iteration of the Toy  
 	float integratedLumi = 2.4; ///\todo should not be hard-coded!!!
 	using namespace RooFit;
 	std::cout << "******************************* Analysis ******************************" << std::endl;
 	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
 
 	configReader myReader("configs/2015-v1.conf");
-	myReader.getNorm1fb("TTJets_DiLept_v2");
+	myReader.getNorm1fb("TTJets_DiLept_v1");
 
 // KEY: TDirectoryFile   miniTree_flavoursideband;1      miniTree_flavoursideband
 // KEY: TDirectoryFile   miniTree_lowdileptonsideband;1  miniTree_lowdileptonsideband
@@ -50,38 +52,29 @@ int main(void)
 // KEY: TDirectoryFile   zToEEAnalyzer;1 zToEEAnalyzer
 // KEY: TDirectoryFile   zToMuMuAnalyzer;1       zToMuMuAnalyzer
 
-	std::vector<std::string> TTchainNames; 
+	std::vector<std::string> TTchainNames;
 	TTchainNames.push_back("TTJets_DiLept_v1");
-	TTchainNames.push_back("TTJets_DiLept_v2");
-	TChain *c = (myReader.getMiniTreeChain(TTchainNames, "miniTree_dytagandprobe"));
-	std::cout << c->GetEntries() << std::endl;
+	TChain *chain = (myReader.getMiniTreeChain(TTchainNames, "miniTree_dytagandprobe"));
+	std::cout << chain->GetEntries() << std::endl;
     
     // if you want to check if the config file is read correctly:
 #ifdef DEBUG
 	std::cout << myReader << std::endl;
 #endif
 
+
+
 	TString mode = "ttbar";
-
-	//TChain * chain = new TChain("MiniTTree/t");
-	TChain * chain = new TChain("miniTree_signal/t");
-
-	if(mode.EqualTo("ttbar")) {
-		//chain->Add("ttree.root");
-		chain->Add("~/eos/cms/store/user/shervin/ntuples/TTJets_DiLept_v1_SHv2/ttree_*.root");
-	}
-
 	// Plotting trees
 	TFile f("selected_tree_" + mode + ".root", "recreate");
-	TTree * t1 = new TTree("t1", "");
 
 	miniTreeEvent myEvent;
 
 	myEvent.SetBranchAddresses(chain);
 	Selector selEvent;
-	selEvent.SetBranches(t1);
 
-	Int_t nToys = 1;
+	const Int_t nToys = 1;
+        TTree * t1[nToys];
 	Int_t nEntries = chain->GetEntries();
 
 	int isData = 1; // Fill in with 1 or 0 based on information from the trees
@@ -129,16 +122,19 @@ int main(void)
 	std::cout << "[INFO] Running nToys = " << nToys << std::endl;
 	for(int i = 0; i < nToys; i++) {
 		Rand.SetSeed(i + 1);
+                for(int Rand_Up_Down_Iter=0;Rand_Up_Down_Iter<Total_Number_of_Systematics_Up_Down;Rand_Up_Down_Iter++)
+                    Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0,1.);
 		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
 		RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
 		RooArgSet vars(massWR, evtWeight);
-		RooDataSet * tempDataSet = new RooDataSet("temp", "temp", vars);
+		RooDataSet *tempDataSet = new RooDataSet("temp", "temp", vars);
+                sprintf(name,"Tree_Iter%i",i);            
+                t1[i] = new TTree(name,"");
+                selEvent.SetBranches(t1[i]); 
+		for(int ev = 0; ev < nEntries/10; ev++) {
 
-		for(int ev = 0; ev < nEntries; ev++) {
+                        if(ev % 50000 == 1) cout<<endl<<100*ev/nEntries<<" % ..."<<endl;
 			chain->GetEntry(ev);
-
-			Selector tmp_selEvent(myEvent);
-			selEvent = tmp_selEvent;
 
 #ifdef DEBUG
 			cout << "RUN=" << myEvent.run << endl;
@@ -152,9 +148,12 @@ int main(void)
 
 			for(int Rand_Smear_Iter=0;Rand_Smear_Iter<Total_Number_of_Systematics_Smear;Rand_Smear_Iter++)
 				Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0,1.);
-			
-			//ToyThrower(myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+		
 
+	
+			ToyThrower(myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+                        Selector tmp_selEvent(myEvent);
+                        selEvent = tmp_selEvent;
 			
 
 			// Select events with one good WR candidate
@@ -163,32 +162,30 @@ int main(void)
 			// 1 -- MuMuJJ Channel
 			// 2 -- EMuJJ Channel
 
-			
 
 			if(selEvent.isPassing(Selector::EMu) && selEvent.dilepton_mass > 200) {
 				float weight = selEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
-
+//                                float weight = selEvent.weight * integratedLumi; // the weight is the event weight * single object weights
+//                                float weight = 1.;
 				massWR.setVal(selEvent.WR_mass);
 				evtWeight.setVal(weight);
 				tempDataSet->add(vars);
 
-				t1->Fill();
+				t1[i]->Fill();
 
 			}
 
 		}
 		assert(tempDataSet->sumEntries()>0);
 
-//		t1->Write();
-
+		t1[i]->Write();
+                tempDataSet->Write();
 		tempDataSet->Print();
-
 		RooFitResult * tempFitRslt = NULL;
-		fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+		fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf, massWR);
 
 		std::cout << "Res=" << std::endl;
 		expPdfRooAbsPdf->Print();
-
 	}
 
 	return 0;
