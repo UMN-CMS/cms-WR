@@ -13,7 +13,7 @@ configReader::configReader(std::string filename)
 		exit(1);
 		return;
 	}
-	
+
 	while(f_in.peek() != EOF && f_in.good()) {
 
 		if(f_in.peek() == 10) { // 10 = \n
@@ -26,16 +26,17 @@ configReader::configReader(std::string filename)
 			continue;
 		}
 
-		f_in.get(var, 100, '='); f_in.get(); //reading the delim char
+		f_in.get(var, 100, '=');
+		f_in.get(); //reading the delim char
 		f_in.get(varValue, 100);
 		//sscanf(line, "%s=%s", var, varValue);
-		configFile[var]=varValue;
-		if(std::string(var)=="datasetFile"){
+		configFile[var] = varValue;
+		if(std::string(var) == "datasetFile") {
 			std::cout << var << "\t" << varValue << std::endl;
 			datasetsFileReader(varValue);
 		}
 	}
-	
+
 }
 
 // datasetFile=configs/datasets.dat
@@ -51,24 +52,26 @@ configReader::configReader(std::string filename)
 // KEY: TDirectoryFile   zToEEAnalyzer;1 zToEEAnalyzer
 // KEY: TDirectoryFile   zToMuMuAnalyzer;1       zToMuMuAnalyzer
 
-TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag){
-	
-	TChain *chain = new TChain((tag+"/t").c_str(), "");
-	chain->Add(("root://eoscms//eos/cms/store//user/shervin/ntuples/"+datasetName+configFile["productionTAG"]+"/unmerged-allRange.root").c_str());
+TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
+{
+
+	TChain *chain = new TChain((tag + "/t").c_str(), "");
+	chain->Add(("root://eoscms//eos/cms/store//user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + "/unmerged-allRange.root").c_str());
 	chain->GetEntries();
 
 	return chain;
 }
 
-TChain *configReader::getMiniTreeChain(std::vector<std::string> datasetNames, std::string tag){
+TChain *configReader::getMiniTreeChain(std::vector<std::string> datasetNames, std::string tag)
+{
 
-	TChain *chain = new TChain((tag+"/t").c_str(), "");
-	for(auto s : datasetNames){
+	TChain *chain = new TChain((tag + "/t").c_str(), "");
+	for(auto s : datasetNames) {
 		TChain *c = getMiniTreeChain(s, tag);
 		chain->Add(c);
 		delete c;
 	}
-	
+
 	return chain;
 }
 
@@ -83,7 +86,7 @@ void configReader::datasetsFileReader(std::string filename)
 		exit(1);
 		return;
 	}
-	
+
 	while(f_in.peek() != EOF && f_in.good()) {
 
 		if(f_in.peek() == 10) { // 10 = \n
@@ -97,7 +100,7 @@ void configReader::datasetsFileReader(std::string filename)
 		}
 
 		f_in >> datasetName >> line;
-		configMap[datasetName]=line;
+		configMap[datasetName] = line;
 	}
 
 
@@ -105,11 +108,11 @@ void configReader::datasetsFileReader(std::string filename)
 
 
 
-	
+
 std::ostream& operator<<(std::ostream& os, configReader& r)
 {
 	os << r.configMap.size() << std::endl;
-	for(auto line : r.configMap){
+	for(auto line : r.configMap) {
 		os << line.first << "\t" << line.second << std::endl;
 	}
 	return os;
@@ -120,12 +123,12 @@ std::istream& operator >>(std::istream& os, configLine& line)
 	char tmp[100];
 	os >> line.primaryDatasetPath;
 	os >> tmp;
-	if(tmp[0]!='-') sscanf(tmp, "%lf", &line.crossSection);
-	else line.crossSection=0.;
+	if(tmp[0] != '-') sscanf(tmp, "%lf", &line.crossSection);
+	else line.crossSection = 0.;
 
 	os >> tmp;
-	if(tmp[0]!='-') sscanf(tmp, "%lf", &line.crossSection_error);
-	else line.crossSection_error=0.;
+	if(tmp[0] != '-') sscanf(tmp, "%lf", &line.crossSection_error);
+	else line.crossSection_error = 0.;
 
 	os >> line.primaryDatasetEvents >> line.skimmedDatasetPath >> line.skimmedDatasetEvents;
 	return os;
