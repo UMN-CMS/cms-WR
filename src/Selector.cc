@@ -161,7 +161,7 @@ bool Selector::isPassing(tag_t tag)
 
 	}else if(tag == 2) { // EMuJJ Channel
 		// Assert at least 2 good leptons
-		if(electrons.size() < 1 || electrons.size() < 1) {
+		if(electrons.size() < 1 || muons.size() < 1) {
 			return false;
 		}
 
