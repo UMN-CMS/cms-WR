@@ -1,8 +1,8 @@
 #name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 # Data	##################################################
 DoubleEG_RunC	/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1854782	/DoubleEG/shervin-DoubleEG_RunC_SHv4-3f7cc53b59c777be631a3583316b5338/USER	11866
-DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	34267038	/DoubleEG/shervin-DoubleEG_RunD_v3_SHv2-b46d272cf4e7c0864fee95a1bc6f9861/USER	621677
-DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	49401569	/DoubleEG/shervin-DoubleEG_RunD_v4_SHv2-b46d272cf4e7c0864fee95a1bc6f9861/USER	1099588
+DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	34267038	/DoubleEG/shervin-DoubleEG_RunD_v3_SHv4-3f7cc53b59c777be631a3583316b5338/USER	621364
+DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	49401569	/DoubleEG/shervin-DoubleEG_RunD_v4_SHv4-3f7cc53b59c777be631a3583316b5338/USER	1099153
 #
 SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	767121	/SingleMuon/shervin-SingleMu_RunC_SHv4-3f7cc53b59c777be631a3583316b5338/USER	8952
 SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	28350244	/SingleMuon/shervin-SingleMu_RunD_v3_SHv4-3f7cc53b59c777be631a3583316b5338/USER	482019
