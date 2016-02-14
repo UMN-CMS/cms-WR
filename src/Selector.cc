@@ -55,16 +55,16 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	for(int i = 0; i < nmu; i++) {
 		myMuon mu;
 		mu.p4 = myEvent.muons_p4->at(i);
-/*
 		mu.IDSF = myEvent.muon_IDSF_central->at(i);
 		mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
-*/
+/*
                 mu.IDSF = 1;
                 mu.IsoSF = 1;
                 mu.IDSF_error = 0.01;
                 mu.IsoSF_error = 0.01;
+*/
 
 		mu.charge = myEvent.muon_charge->at(i);
 		mu.weight = mu.IDSF * mu.IsoSF;
