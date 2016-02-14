@@ -76,7 +76,7 @@ void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[
           if(Flag_Smear_Electron_Scale){
             if(isData){
 //              (*(myEvent->electrons_p4))[Iterator] = (1 + (Smear_Ele_Data_Scale)*(*(myEvent->electron_scale))[Iterator])*(*(myEvent->electrons_p4))[Iterator];
-              (*(myEvent->electrons_p4))[Iterator] = (*(myEvent->electron_scale))[Iterator]*(*(myEvent->electrons_p4))[Iterator];              
+              (*(myEvent->electrons_p4))[Iterator] = (Smear_Ele_Data_Scale/Smear_Ele_Data_Scale)*(*(myEvent->electron_scale))[Iterator]*(*(myEvent->electrons_p4))[Iterator];              
              }
             else{
                  (*(myEvent->electrons_p4))[Iterator] = (1 + (Smear_Ele_MC_Scale)*(*(myEvent->electron_smearing))[Iterator])*(*(myEvent->electrons_p4))[Iterator];
