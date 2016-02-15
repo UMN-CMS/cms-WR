@@ -81,7 +81,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 
 	global_event_weight = myEvent.weight * myEvent.PU_reweight;
 
-	Clear();
+//	Clear();
 }
 
 Selector::Selector()

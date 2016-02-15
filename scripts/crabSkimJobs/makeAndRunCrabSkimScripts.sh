@@ -34,7 +34,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.General.requestName = "$datasetName"
-config.General.workArea = 'crab/skim/crab_skim_'+"$datasetName"
+config.General.workArea = 'crab/skim/crab_skim_'+"$datasetName${productionTAG}"
 config.General.transferOutputs = True
 config.General.transferLogs = False
 
@@ -44,17 +44,17 @@ EOF
 
 LUMI=2000
 #### if the dataset is DATA or DY save the TagAndProbe triggers
-case $dataset in 
-	/DoubleEG/*)
+case $datasetName in 
+	DoubleEG*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
-	/SingleMu/*)
+	SingleMu*)
 		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
-	/MuonEG/*)
-		params="$params, 'saveTnP=1', 'GT=74X_dataRun2_Prompt_v4'"
+	MuEG*)
+		params="$params, 'saveTnP=0', 'GT=74X_dataRun2_Prompt_v4'"
 		LUMI=1000
 		;;
 	DY*)

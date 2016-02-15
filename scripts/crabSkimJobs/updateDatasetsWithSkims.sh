@@ -17,7 +17,7 @@ do
 	dataset=${datasets[${i}]}
 	datasetName=${datasetNames[${i}]}
 	if [ -z "${datasetName}" ];then continue; fi # there is an empty line to be removed from the list
-	crabDir=crab_skim_$datasetName/crab_$datasetName
+	crabDir=crab/skim/crab_skim_$datasetName/crab_$datasetName
 
 	#check if the skim of the sample have been submitted
 	ls -d $crabDir > /dev/null || continue
@@ -30,6 +30,9 @@ do
 	fi
 
 	if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
+		if [ ! -e "$crabDir/results/job_out.1.0.txt" ];then
+			crab getlog --short --jobids=1-1000 --dir=$crabDir
+		fi
 		readEvents=`grep "events have been read" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
 		writtenEvents=`grep "events have been written" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
 		outputDataset=`grep "Output dataset:" $crabDir/crab.log | tail -1| cut -d ':' -f 2 | sed 's|[[:space:]]*||'`
