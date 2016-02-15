@@ -17,7 +17,7 @@ WZ	/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v
 ZZ	/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.015e+01	2.284e-02	996944	/ZZ_TuneCUETP8M1_13TeV-pythia8/shervin-ZZ_SHv4-5384a7e33c033d9b40a8b8a80eeacaa1/USER	34322
 #	##########
 TTJets_DiLept_v1	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	5.667e+01	2.215e-01	5977821	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/shervin-TTJets_DiLept_v1_SHv4-5384a7e33c033d9b40a8b8a80eeacaa1/USER	1140631
-TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2_ext1-v1/MINIAODSIM	5.672e+01	2.215e-01	24521141	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/shervin-TTJets_DiLept_v2_SHv2-268f42a0545bb6ce2052dd5a41d331a8/USER	4827971
+TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2_ext1-v1/MINIAODSIM	5.672e+01	2.215e-01	24129454	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/shervin-TTJets_DiLept_v2_SHv4-5384a7e33c033d9b40a8b8a80eeacaa1/USER	4598162
 #	##################
 DYToEE_powheg	/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	0.000e+00	0.000e+00	49921782	/DYToEE_NNPDF30_13TeV-powheg-pythia8/shervin-DYToEE_powheg_SHv3-5384a7e33c033d9b40a8b8a80eeacaa1/USER	6276010
 ###

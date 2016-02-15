@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ "$1" == "--force" ];then 
+	FORCE=y
+fi
 
 ###### the following variables are defined in a separate config file
 # datasetFile=configs/datasets.dat
@@ -24,12 +27,12 @@ do
 
 	if [ ! "$(ls -A $crabDir/results)" ]; then 
 		crab status -d $crabDir
-		if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
+		if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" -o "${FORCE}" == "y" ];then
 			crab report -d $crabDir
 		fi
 	fi
 
-	if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
+	if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" -o "${FORCE}" == "y" ];then
 		if [ ! -e "$crabDir/results/job_out.1.0.txt" ];then
 			crab getlog --short --jobids=1-1000 --dir=$crabDir
 		fi
