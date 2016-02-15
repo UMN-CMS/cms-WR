@@ -64,14 +64,15 @@ int main(void)
   //modes.push_back("WJets");
   modes.push_back("WZ");
   modes.push_back("ZZ");
-  modes.push_back("data_EMu");
+  //modes.push_back("data_EMu");
   channel = Selector::EMu;
 
-  for(auto m: modes){
+  for(auto m: modes) {
     TString tree_channel = "";
     int isData = 0; // Fill in with 1 or 0 based on information from the trees
     std::vector<std::string> TTchainNames; 
     TString mode = m;
+    bool run_toys = true;
 
     // Select the dataset to run over //
     if(mode.EqualTo("ttbar")){
@@ -90,12 +91,15 @@ int main(void)
     }
     else if(mode.EqualTo("WJets")){
       TTchainNames.push_back("WJetsLNu");
+      run_toys = false;
     }
     else if(mode.EqualTo("WZ")){
       TTchainNames.push_back("WZ");
+      run_toys = false;
     }
     else if(mode.EqualTo("ZZ")){
       TTchainNames.push_back("ZZ");
+      run_toys = false;
     }
     else if(mode.EqualTo("data_EMu")){
       isData = 1;
@@ -125,7 +129,13 @@ int main(void)
 
     // Plotting trees
     TFile f("selected_tree_" + mode + tree_channel + ".root", "recreate");
-    //TTree * t1 = new TTree("t1", "");
+    // store the fitted results for every toy in a tree
+    TTree * tf1 = new TTree("tf1", "");
+    Float_t normalization;
+    std::vector<Float_t> fit_parameters, fit_parameter_errors;
+    tf1->Branch("Normalization", &normalization);
+    tf1->Branch("FitParameters", &fit_parameters);
+    tf1->Branch("FitParameterErrors", &fit_parameter_errors);
 
     miniTreeEvent myEvent;
 
@@ -234,7 +244,7 @@ int main(void)
 	}
 #endif		
 
-	if(selEvent.isPassing(channel) && selEvent.dilepton_mass > 200) {			  
+	if(selEvent.isPassing(channel) && selEvent.dilepton_mass > 200) {
 	  if(isData == 0)
 	    selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 	  else
@@ -255,15 +265,50 @@ int main(void)
 	tempDataSet->Write();
       }
       tempDataSet->Print();
-      //tempDataSet->Print();
 
-      //RooFitResult * tempFitRslt = NULL;
-      //fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+      if(mode.EqualTo("ttbar")){
 
-      //std::cout << "Res=" << std::endl;
-      //expPdfRooAbsPdf->Print();
+	expPower.setVal(-0.004);
 
+	RooFitResult * tempFitRslt = NULL;
+	// fit dataset to given PDF
+	fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+
+	// std::cout << "Res=" << std::endl;
+	// expPdfRooAbsPdf->Print();
+
+	// dataset normalization is the number of entries in the dataset
+	normalization = tempDataSet->sumEntries();
+	// set of variables in the PDF
+	RooArgSet *vset = expPdfRooAbsPdf->getVariables();
+	// these variables are stored in vectors
+	// clear these vector for each iteration
+	fit_parameters.clear();
+	fit_parameter_errors.clear();
+
+	// loop over RooRealVars in the set
+	TIterator * iter = vset->createIterator();
+	TObject * var = iter->Next();
+	RooRealVar *var_pdf;
+	while (var){
+	  // ignore the M_WR variable
+	  if(strcmp(var->GetName(), "fourObjectMass") != 0){
+	    var_pdf = (RooRealVar*)vset->find(var->GetName());
+	    // store the value of the fitted parameters and the corresponding errors
+	    fit_parameters.push_back(var_pdf->getVal());
+	    fit_parameter_errors.push_back(var_pdf->getError());
+	  }
+	  var = iter->Next();
+	}
+	// fill the tree with the normalization, parameters, and errors
+	tf1->Fill();
+      }
+      if(!run_toys)
+	break;
     }
+    // only write the fitted branch for the modes that make sense (ttbar, DY, and data)
+    if(mode.EqualTo("ttbar")) // add the other modes later
+      tf1->Write();
   }
   return 0;
 
