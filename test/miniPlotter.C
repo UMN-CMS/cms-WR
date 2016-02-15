@@ -24,35 +24,50 @@
 
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
-void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString fname);
+void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
 void miniPlotter(){
 
   TChain * chain_DY = new TChain("t1");
-  chain_DY->Add("selected_tree_DYToMuMu.root");
+  chain_DY->Add("../selected_tree_DY_flavoursideband.root");
   TChain * chain_ttbar = new TChain("t1");
-  chain_ttbar->Add("selected_tree_ttbar.root");
+  chain_ttbar->Add("../selected_tree_ttbar_flavoursideband.root");
+  TChain * chain_WZ = new TChain("t1");
+  chain_DY->Add("../selected_tree_WZ_flavoursideband.root");
+  TChain * chain_ZZ = new TChain("t1");
+  chain_DY->Add("../selected_tree_ZZ_flavoursideband.root");
 
   TChain * chain_data = new TChain("t1");
-  chain_data->Add("selected_tree_data.root");
+  chain_data->Add("../selected_tree_data_EMu_flavoursideband.root");
 
   Selector myEvent_DY;
   Selector myEvent_ttbar;
+  Selector myEvent_WZ;
+  Selector myEvent_ZZ;
   Selector myEvent_data;
 
   myEvent_DY.SetBranchAddresses(chain_DY);
   myEvent_ttbar.SetBranchAddresses(chain_ttbar);
+  myEvent_WZ.SetBranchAddresses(chain_WZ);
+  myEvent_ZZ.SetBranchAddresses(chain_ZZ);
   myEvent_data.SetBranchAddresses(chain_data);
 
   std::vector<TH1F*> hs_DY;
   MakeHistos(chain_DY, &myEvent_DY, &hs_DY);
   std::vector<TH1F*> hs_ttbar;
   MakeHistos(chain_ttbar, &myEvent_ttbar, &hs_ttbar);
+  std::vector<TH1F*> hs_WZ;
+  MakeHistos(chain_WZ, &myEvent_WZ, &hs_WZ);
+  std::vector<TH1F*> hs_ZZ;
+  MakeHistos(chain_ZZ, &myEvent_ZZ, &hs_ZZ);
+
   std::vector<TH1F*> hs_data;
   MakeHistos(chain_data, &myEvent_data, &hs_data);
 
   //std::vector<TH1F*> hs_ttbar = MakeHistos(chain_ttbar, &myEvent_ttbar);
 
   unsigned int nPlots = hs_DY.size();
+
+  //hs_ttbar[0]->Draw();
   
   TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass"};
 
@@ -61,7 +76,7 @@ void miniPlotter(){
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
     std::string s = std::to_string(i);
-    drawPlots(hs_DY[i],hs_ttbar[i],hs_data[i],xtitles[i],fnames[i]);
+    drawPlots(hs_DY[i],hs_ttbar[i],hs_WZ[i],hs_ZZ[i],hs_data[i],xtitles[i],fnames[i]);
   }
   
 }
@@ -127,14 +142,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 }
 
-void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString fname){
+void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ; 
   leg->AddEntry( hs_DY, "DY" ) ; 
   leg->AddEntry( hs_ttbar, "ttbar" ) ;
+  leg->AddEntry( hs_WZ, "WZ" ) ; 
+  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
   //leg->AddEntry( histos[5][0], "WJets" ) ;  
-  //leg->AddEntry( histos[3][0], "WZ" ) ; 
-  //leg->AddEntry( histos[4][0], "ZZ" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -144,8 +159,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
   THStack* th = new THStack();
   hs_DY->SetFillColor(kYellow);
   hs_ttbar->SetFillColor(kGreen);
+  hs_WZ->SetFillColor(kCyan);
+  hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_DY);
   th->Add(hs_ttbar);
+  th->Add(hs_WZ);
+  th->Add(hs_ZZ);
   hs_data->SetMarkerStyle(20);
 
   Double_t eps = 0.001;
@@ -158,10 +177,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Preliminary");
   hs_data->SetTitle("CMS Preliminary");
-  th->Draw();
+  //th->Draw("histo");
+  //hs_data->Draw("epsame");
+  hs_data->Draw("ep");
+  th->Draw("histo same");
   hs_data->Draw("epsame");
-  //hs_data->Draw("ep");
-  //th->Draw("histo same");
   TString ytitle = "Events/(";
   ytitle += (th->GetXaxis()->GetNbins());
   ytitle += ")";
@@ -181,18 +201,32 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_data, TString xtitle, TString
   ratio->SetStats(0);
 
   hs_DY->Add(hs_ttbar);
+  hs_DY->Add(hs_WZ);
+  hs_DY->Add(hs_ZZ);
 
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
+  ratio->GetYaxis()->SetRangeUser(0.5,2.5);
+  ratio->GetYaxis()->SetNdivisions(505);
   ratio->Draw("p");
+  float xmax = ratio->GetXaxis()->GetXmax();
+  float xmin = ratio->GetXaxis()->GetXmin();
+  TF1 *f1 = new TF1("f1","1",xmin,xmax);
+  ratio->Draw("p");
+  f1->Draw("same");
   mycanvas->cd();
 
 
   //TString fn = "plots/"+fname;
-  TString fn = "~/www/plots/WR/miniTTree/Selected/"+fname;
+  //TString fn = "~/www/plots/WR/miniTTree/Selected/Flavor/"+fname;
+  TString fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
+  p1->SetLogy();
+  mycanvas->Print((fn+"_log.pdf").Data());
+  mycanvas->Print((fn+"_log.png").Data());
+
   mycanvas->Close();
 }
