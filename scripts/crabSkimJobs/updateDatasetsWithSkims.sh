@@ -30,6 +30,9 @@ do
 	fi
 
 	if [ "`grep -c COMPLETED $crabDir/crab.log`" != "0" ];then
+		if [ ! -e "$crabDir/results/job_out.1.0.txt" ];then
+			crab getlog --short --jobids=1-1000 --dir=$crabDir
+		fi
 		readEvents=`grep "events have been read" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
 		writtenEvents=`grep "events have been written" $crabDir/crab.log | cut -d ':' -f 4 | awk '{print $1}'`
 		outputDataset=`grep "Output dataset:" $crabDir/crab.log | tail -1| cut -d ':' -f 2 | sed 's|[[:space:]]*||'`

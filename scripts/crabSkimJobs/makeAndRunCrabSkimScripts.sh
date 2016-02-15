@@ -34,7 +34,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.General.requestName = "$datasetName"
-config.General.workArea = 'crab/skim/crab_skim_'+"$datasetName"
+config.General.workArea = 'crab/skim/crab_skim_'+"$datasetName${productionTAG}"
 config.General.transferOutputs = True
 config.General.transferLogs = False
 
