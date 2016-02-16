@@ -20,7 +20,9 @@ do
 	dataset=${datasets[${i}]}
 	datasetName=${datasetNames[${i}]}
 	if [ -z "${datasetName}" ];then continue; fi # there is an empty line to be removed from the list
-	crabDir=crab/skim/crab_skim_$datasetName/crab_$datasetName
+	crabDir=crab/skim/crab_skim_${datasetName}${productionTAG}/crab_$datasetName
+
+	ls -d $crabDir &> /dev/null || 	crabDir=crab/skim/crab_skim_${datasetName}/crab_$datasetName
 
 	#check if the skim of the sample have been submitted
 	ls -d $crabDir > /dev/null || continue
