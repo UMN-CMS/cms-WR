@@ -2,7 +2,7 @@
 //
 // Package:    doubleElectronTracklessTrigger/genAnalyzer
 // Class:      genAnalyzer
-// 
+//
 /**\class genAnalyzer genAnalyzer.cc doubleElectronTracklessTrigger/genAnalyzer/plugins/genAnalyzer.cc
 
  Description: [one line class summary]
@@ -84,44 +84,45 @@
 // class declaration
 //
 
-class genAnalyzer : public edm::EDAnalyzer {
-   public:
-      explicit genAnalyzer(const edm::ParameterSet&);
-      ~genAnalyzer();
+class genAnalyzer : public edm::EDAnalyzer
+{
+public:
+	explicit genAnalyzer(const edm::ParameterSet&);
+	~genAnalyzer();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection){
-
-#ifdef DEBUG
-		  std::cout<<"checking pt of all gen particles in findLeadingAndSubleading fxn"<<std::endl;
-#endif
-
-		  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
-#ifdef DEBUG
-			  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
-#endif
-			  if(first==collection->end()) first=genIt;
-			  else{
-				  if(genIt->pt() > first->pt()){
-					  second = first;
-					  first = genIt;
-				  }
-				  else if(second==collection->end() || genIt->pt() > second->pt()) second = genIt;
-			  }
-		  }//end loop over reco::Candidate collection
+	void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection)
+	{
 
 #ifdef DEBUG
-		  std::cout<<"leaving findLeadingAndSubleading fxn"<<std::endl;
+		std::cout << "checking pt of all gen particles in findLeadingAndSubleading fxn" << std::endl;
 #endif
 
-	  }///end findLeadingAndSubleading()
-    
+		for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++) {
+#ifdef DEBUG
+			std::cout << "pT = \t" << genIt->pt() << std::endl;
+#endif
+			if(first == collection->end()) first = genIt;
+			else {
+				if(genIt->pt() > first->pt()) {
+					second = first;
+					first = genIt;
+				} else if(second == collection->end() || genIt->pt() > second->pt()) second = genIt;
+			}
+		}//end loop over reco::Candidate collection
+
+#ifdef DEBUG
+		std::cout << "leaving findLeadingAndSubleading fxn" << std::endl;
+#endif
+
+	}///end findLeadingAndSubleading()
+
 
 private:
-virtual void beginJob() override;
-virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-virtual void endJob() override;
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
 
 
 //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
@@ -131,42 +132,42 @@ virtual void endJob() override;
 
 // ----------member data ---------------------------
 
-std::string tName;
+	std::string tName;
 
-edm::InputTag genLeptonCollTag;
-edm::InputTag genJetCollTag;
+	edm::InputTag genLeptonCollTag;
+	edm::InputTag genJetCollTag;
 
 //Handles to GEN object collections
-edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > leptons;
-edm::Handle<edm::OwnVector<reco::Candidate,edm::ClonePolicy<reco::Candidate> > > jets;
+	edm::Handle<edm::OwnVector<reco::Candidate, edm::ClonePolicy<reco::Candidate> > > leptons;
+	edm::Handle<edm::OwnVector<reco::Candidate, edm::ClonePolicy<reco::Candidate> > > jets;
 
-TTree * tree;
+	TTree * tree;
 
-Int_t runNumber;
-ULong64_t evtNumber;
+	Int_t runNumber;
+	ULong64_t evtNumber;
 
 //first element is leading (highest pT) electron
 //second element is subleading electron
-Float_t etaGenEle[2];
-Float_t ptGenEle[2];
-Float_t phiGenEle[2];
-Float_t dileptonMassGen;
+	Float_t etaGenEle[2];
+	Float_t ptGenEle[2];
+	Float_t phiGenEle[2];
+	Float_t dileptonMassGen;
 
-Float_t etaGenJet[2];
-Float_t ptGenJet[2];
-Float_t phiGenJet[2];
-Float_t dijetMassGen;
+	Float_t etaGenJet[2];
+	Float_t ptGenJet[2];
+	Float_t phiGenJet[2];
+	Float_t dijetMassGen;
 
 ///three and four object masses
-Float_t fourObjectMassGen;
-Float_t leadLeptonThreeObjMassGen;
-Float_t subleadingLeptonThreeObjMassGen;
+	Float_t fourObjectMassGen;
+	Float_t leadLeptonThreeObjMassGen;
+	Float_t subleadingLeptonThreeObjMassGen;
 
 ///deltaR between each lepton and both jets
-Float_t dR_leadingLeptonLeadingJetGen;
-Float_t dR_leadingLeptonSubleadingJetGen;
-Float_t dR_subleadingLeptonLeadingJetGen;
-Float_t dR_subleadingLeptonSubleadingJetGen;
+	Float_t dR_leadingLeptonLeadingJetGen;
+	Float_t dR_leadingLeptonSubleadingJetGen;
+	Float_t dR_subleadingLeptonLeadingJetGen;
+	Float_t dR_subleadingLeptonSubleadingJetGen;
 
 };
 
@@ -188,41 +189,41 @@ genAnalyzer::genAnalyzer(const edm::ParameterSet& iConfig):
 	genJetCollTag(iConfig.getParameter<edm::InputTag>("genJetCollection"))
 
 {
-   //now do what ever initialization is needed
-   edm::Service<TFileService> fs;
-   
-   tree=fs->make<TTree>(tName.c_str(),"GEN electron kinematic info");
+	//now do what ever initialization is needed
+	edm::Service<TFileService> fs;
 
-   tree->Branch("etaGenEle",etaGenEle,"etaGenEle[2]/F");
-   tree->Branch("ptGenEle",ptGenEle,"ptGenEle[2]/F");
-   tree->Branch("phiGenEle",phiGenEle,"phiGenEle[2]/F");
-   tree->Branch("dileptonMassGen",&dileptonMassGen,"dileptonMassGen/F");
+	tree = fs->make<TTree>(tName.c_str(), "GEN electron kinematic info");
 
-   tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
-   tree->Branch("runNumber",&runNumber,"runNumber/I");
+	tree->Branch("etaGenEle", etaGenEle, "etaGenEle[2]/F");
+	tree->Branch("ptGenEle", ptGenEle, "ptGenEle[2]/F");
+	tree->Branch("phiGenEle", phiGenEle, "phiGenEle[2]/F");
+	tree->Branch("dileptonMassGen", &dileptonMassGen, "dileptonMassGen/F");
 
-   tree->Branch("etaGenJet",etaGenJet,"etaGenJet[2]/F");
-   tree->Branch("ptGenJet",ptGenJet,"ptGenJet[2]/F");
-   tree->Branch("phiGenJet",phiGenJet,"phiGenJet[2]/F");
-   tree->Branch("dijetMassGen",&dijetMassGen,"dijetMassGen/F");
+	tree->Branch("evtNumber", &evtNumber, "evtNumber/l");
+	tree->Branch("runNumber", &runNumber, "runNumber/I");
 
-   tree->Branch("fourObjectMassGen",&fourObjectMassGen,"fourObjectMassGen/F");
-   tree->Branch("leadLeptonThreeObjMassGen",&leadLeptonThreeObjMassGen,"leadLeptonThreeObjMassGen/F");
-   tree->Branch("subleadingLeptonThreeObjMassGen",&subleadingLeptonThreeObjMassGen,"subleadingLeptonThreeObjMassGen/F");
+	tree->Branch("etaGenJet", etaGenJet, "etaGenJet[2]/F");
+	tree->Branch("ptGenJet", ptGenJet, "ptGenJet[2]/F");
+	tree->Branch("phiGenJet", phiGenJet, "phiGenJet[2]/F");
+	tree->Branch("dijetMassGen", &dijetMassGen, "dijetMassGen/F");
 
-   tree->Branch("dR_leadingLeptonLeadingJetGen",&dR_leadingLeptonLeadingJetGen,"dR_leadingLeptonLeadingJetGen/F");
-   tree->Branch("dR_leadingLeptonSubleadingJetGen",&dR_leadingLeptonSubleadingJetGen,"dR_leadingLeptonSubleadingJetGen/F");
-   tree->Branch("dR_subleadingLeptonLeadingJetGen",&dR_subleadingLeptonLeadingJetGen,"dR_subleadingLeptonLeadingJetGen/F");
-   tree->Branch("dR_subleadingLeptonSubleadingJetGen",&dR_subleadingLeptonSubleadingJetGen,"dR_subleadingLeptonSubleadingJetGen/F");
+	tree->Branch("fourObjectMassGen", &fourObjectMassGen, "fourObjectMassGen/F");
+	tree->Branch("leadLeptonThreeObjMassGen", &leadLeptonThreeObjMassGen, "leadLeptonThreeObjMassGen/F");
+	tree->Branch("subleadingLeptonThreeObjMassGen", &subleadingLeptonThreeObjMassGen, "subleadingLeptonThreeObjMassGen/F");
+
+	tree->Branch("dR_leadingLeptonLeadingJetGen", &dR_leadingLeptonLeadingJetGen, "dR_leadingLeptonLeadingJetGen/F");
+	tree->Branch("dR_leadingLeptonSubleadingJetGen", &dR_leadingLeptonSubleadingJetGen, "dR_leadingLeptonSubleadingJetGen/F");
+	tree->Branch("dR_subleadingLeptonLeadingJetGen", &dR_subleadingLeptonLeadingJetGen, "dR_subleadingLeptonLeadingJetGen/F");
+	tree->Branch("dR_subleadingLeptonSubleadingJetGen", &dR_subleadingLeptonSubleadingJetGen, "dR_subleadingLeptonSubleadingJetGen/F");
 
 }
 
 
 genAnalyzer::~genAnalyzer()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -252,8 +253,8 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	///now that the leading and subleading leptons and jets have been found, fill all of the arrays and single Float_ values
 	///which will be saved into the tree
 #ifdef DEBUG
-	std::cout<<"leading lepton pt: \t"<<leadingLepton->pt()<<std::endl;
-	std::cout<<"subleading lepton pt: \t"<<subleadingLepton->pt()<<std::endl;
+	std::cout << "leading lepton pt: \t" << leadingLepton->pt() << std::endl;
+	std::cout << "subleading lepton pt: \t" << subleadingLepton->pt() << std::endl;
 #endif
 
 	etaGenEle[0] = leadingLepton->eta();
@@ -264,8 +265,8 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	phiGenEle[1] = subleadingLepton->phi();
 
 #ifdef DEBUG
-	std::cout<<"leading jet pt: \t"<<leadingJet->pt()<<std::endl;
-	std::cout<<"subleading jet pt: \t"<<subleadingJet->pt()<<std::endl;
+	std::cout << "leading jet pt: \t" << leadingJet->pt() << std::endl;
+	std::cout << "subleading jet pt: \t" << subleadingJet->pt() << std::endl;
 #endif
 
 	etaGenJet[0] = leadingJet->eta();
@@ -277,93 +278,93 @@ genAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	///make TLorentzVector objects for the four GEN objects.  Then use these LorentzVectors to calculate three and four object
 	///invariant mass values.
-	TLorentzVector l1(ptGenEle[0]*TMath::Cos(phiGenEle[0]),ptGenEle[0]*TMath::Sin(phiGenEle[0]),ptGenEle[0]*TMath::SinH(etaGenEle[0]),ptGenEle[0]*TMath::CosH(etaGenEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
-	TLorentzVector l2(ptGenEle[1]*TMath::Cos(phiGenEle[1]),ptGenEle[1]*TMath::Sin(phiGenEle[1]),ptGenEle[1]*TMath::SinH(etaGenEle[1]),ptGenEle[1]*TMath::CosH(etaGenEle[1]));
-	TLorentzVector j1(ptGenJet[0]*TMath::Cos(phiGenJet[0]),ptGenJet[0]*TMath::Sin(phiGenJet[0]),ptGenJet[0]*TMath::SinH(etaGenJet[0]),ptGenJet[0]*TMath::CosH(etaGenJet[0]));	///leading jet lorentz vector (px, py, pz, E)
-	TLorentzVector j2(ptGenJet[1]*TMath::Cos(phiGenJet[1]),ptGenJet[1]*TMath::Sin(phiGenJet[1]),ptGenJet[1]*TMath::SinH(etaGenJet[1]),ptGenJet[1]*TMath::CosH(etaGenJet[1]));
+	TLorentzVector l1(ptGenEle[0]*TMath::Cos(phiGenEle[0]), ptGenEle[0]*TMath::Sin(phiGenEle[0]), ptGenEle[0]*TMath::SinH(etaGenEle[0]), ptGenEle[0]*TMath::CosH(etaGenEle[0]));	///leading lepton lorentz vector (px, py, pz, E)
+	TLorentzVector l2(ptGenEle[1]*TMath::Cos(phiGenEle[1]), ptGenEle[1]*TMath::Sin(phiGenEle[1]), ptGenEle[1]*TMath::SinH(etaGenEle[1]), ptGenEle[1]*TMath::CosH(etaGenEle[1]));
+	TLorentzVector j1(ptGenJet[0]*TMath::Cos(phiGenJet[0]), ptGenJet[0]*TMath::Sin(phiGenJet[0]), ptGenJet[0]*TMath::SinH(etaGenJet[0]), ptGenJet[0]*TMath::CosH(etaGenJet[0]));	///leading jet lorentz vector (px, py, pz, E)
+	TLorentzVector j2(ptGenJet[1]*TMath::Cos(phiGenJet[1]), ptGenJet[1]*TMath::Sin(phiGenJet[1]), ptGenJet[1]*TMath::SinH(etaGenJet[1]), ptGenJet[1]*TMath::CosH(etaGenJet[1]));
 
-	dileptonMassGen = (l1+l2).M();
-	dijetMassGen = (j1+j2).M();
-	fourObjectMassGen = (l1+l2+j1+j2).M();
-	leadLeptonThreeObjMassGen = (l1+j1+j2).M();
-	subleadingLeptonThreeObjMassGen = (l2+j1+j2).M();
+	dileptonMassGen = (l1 + l2).M();
+	dijetMassGen = (j1 + j2).M();
+	fourObjectMassGen = (l1 + l2 + j1 + j2).M();
+	leadLeptonThreeObjMassGen = (l1 + j1 + j2).M();
+	subleadingLeptonThreeObjMassGen = (l2 + j1 + j2).M();
 
 	///now use the individual GEN object eta and phi values to calculate dR between different (lepton, jet) pairs
-	dR_leadingLeptonLeadingJetGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenJet[0],phiGenJet[0]);
-	dR_leadingLeptonSubleadingJetGen = deltaR(etaGenEle[0],phiGenEle[0],etaGenJet[1],phiGenJet[1]);
-	dR_subleadingLeptonLeadingJetGen = deltaR(etaGenEle[1],phiGenEle[1],etaGenJet[0],phiGenJet[0]);
-	dR_subleadingLeptonSubleadingJetGen = deltaR(etaGenEle[1],phiGenEle[1],etaGenJet[1],phiGenJet[1]);
-	
+	dR_leadingLeptonLeadingJetGen = deltaR(etaGenEle[0], phiGenEle[0], etaGenJet[0], phiGenJet[0]);
+	dR_leadingLeptonSubleadingJetGen = deltaR(etaGenEle[0], phiGenEle[0], etaGenJet[1], phiGenJet[1]);
+	dR_subleadingLeptonLeadingJetGen = deltaR(etaGenEle[1], phiGenEle[1], etaGenJet[0], phiGenJet[0]);
+	dR_subleadingLeptonSubleadingJetGen = deltaR(etaGenEle[1], phiGenEle[1], etaGenJet[1], phiGenJet[1]);
+
 	tree->Fill();
 
 
 #ifdef THIS_IS_AN_EVENT_EXAMPLE
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
+	Handle<ExampleData> pIn;
+	iEvent.getByLabel("example", pIn);
 #endif
-   
+
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
+	ESHandle<SetupData> pSetup;
+	iSetup.get<SetupRecord>().get(pSetup);
 #endif
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 genAnalyzer::beginJob()
 {
-/*
-  tree_file = new TFile(foutName.c_str(), "recreate");
-  if(tree_file->IsZombie()){
-    throw cms::Exception("OutputError") <<  "Output tree not created (Zombie): " << foutName;
-    return;
-  }
-  tree_file->cd();
-  
-  //now do what ever initialization is needed
-  tree = new TTree("selected","selected");
-  tree->SetDirectory(tree_file);
+	/*
+	  tree_file = new TFile(foutName.c_str(), "recreate");
+	  if(tree_file->IsZombie()){
+	    throw cms::Exception("OutputError") <<  "Output tree not created (Zombie): " << foutName;
+	    return;
+	  }
+	  tree_file->cd();
 
-  //InitNewTree();
-*/
+	  //now do what ever initialization is needed
+	  tree = new TTree("selected","selected");
+	  tree->SetDirectory(tree_file);
+
+	  //InitNewTree();
+	*/
 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-genAnalyzer::endJob() 
+void
+genAnalyzer::endJob()
 {
 	//loop over bins of "EventFraction", divide each bin content by totalNumEvents, then reset the bin content to the old content divided by totalNumEvents
 
 	/*
 	for(int i=1; i<=getXBins("EventFraction"); i++){
 		if( getXBins("EventFraction") < 3) break;	//shouldn't need this, but just in case
-	
+
 		std::cout<<"bin # "<< i <<" content equals "<< get1DBinContents("EventFraction",i) <<std::endl;
 		set1DBinContents("EventFraction",i, (get1DBinContents("EventFraction",i)/getTotalNumEvents() ) );
 		std::cout<<"bin # "<< i <<" content equals "<< get1DBinContents("EventFraction",i) <<std::endl;
-	
+
 	}
 
-   std::cout<< "the trackless leg of trigger fired on "<< getNumTriggeredEvents() << " events out of "<< getEfficiencyDenominator() << " total events which should have fired trackless leg of trigger" <<std::endl;
-   set1DBinContents("HLTRecoEff",1, getNumTriggeredEvents()/getEfficiencyDenominator());
+	std::cout<< "the trackless leg of trigger fired on "<< getNumTriggeredEvents() << " events out of "<< getEfficiencyDenominator() << " total events which should have fired trackless leg of trigger" <<std::endl;
+	set1DBinContents("HLTRecoEff",1, getNumTriggeredEvents()/getEfficiencyDenominator());
 
-   */
+	*/
 
 
 	/*
-  //save the tree into the file
-  tree_file->cd();
-  tree->Write();
-  tree_file->Close();
-*/
+	//save the tree into the file
+	tree_file->cd();
+	tree->Write();
+	tree_file->Close();
+	*/
 
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
-void 
+void
 genAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
@@ -371,7 +372,7 @@ genAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
 
 // ------------ method called when ending the processing of a run  ------------
 /*
-void 
+void
 genAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
@@ -379,7 +380,7 @@ genAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
 
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
-void 
+void
 genAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
@@ -387,7 +388,7 @@ genAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup c
 
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
-void 
+void
 genAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
@@ -395,12 +396,13 @@ genAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup con
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-genAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+genAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 
 /*
@@ -414,7 +416,7 @@ void genAnalyzer::InitNewTree(void){
   tree->Branch("eventNumber",   &eventNumber, "eventNumber/l");
   tree->Branch("lumiBlock",     &lumiBlock,     "lumiBlock/I");
   tree->Branch("runTime",       &runTime,         "runTime/i");
-  
+
   tree->Branch("mcGenWeight",   &mcGenWeight, "mcGenWeight/F");
 
   tree->Branch("nPU", nPU, "nPU[1]/I");
@@ -465,16 +467,16 @@ void genAnalyzer::InitNewTree(void){
 void genAnalyzer::TreeSetSingleElectronVar(const pat::Electron& electron1, int index){
 
   if(index<0){
-    PtEle[-index] 	  = 0;  
+    PtEle[-index] 	  = 0;
     chargeEle[-index] = 0;
-    etaEle[-index]    = 0; 
+    etaEle[-index]    = 0;
     phiEle[-index]    = 0;
     return;
-  }   
+  }
 
-  PtEle[index]     = electron1.et();  
+  PtEle[index]     = electron1.et();
   chargeEle[index] = electron1.charge();
-  etaEle[index]    = electron1.eta(); 
+  etaEle[index]    = electron1.eta();
   phiEle[index]    = electron1.phi();
 }
 
@@ -497,7 +499,7 @@ void genAnalyzer::TreeSetSingleElectronVar(const reco::SuperCluster& electron1, 
 }
 
 void genAnalyzer::TreeSetDiElectronVar(const pat::Electron& electron1, const reco::SuperCluster& electron2){
-  
+
   TreeSetSingleElectronVar(electron1, 0);
   TreeSetSingleElectronVar(electron2, 1);
 

@@ -2,7 +2,7 @@
 //
 // Package:    doubleElectronTracklessTrigger/triggerAnalyzer
 // Class:      triggerAnalyzer
-// 
+//
 /**\class triggerAnalyzer triggerAnalyzer.cc doubleElectronTracklessTrigger/triggerAnalyzer/plugins/triggerAnalyzer.cc
 
  Description: [one line class summary]
@@ -12,7 +12,7 @@
 */
 //
 // Original Author:  Sean Kalafut
-//         Created:  Wed, 15 April 2015 
+//         Created:  Wed, 15 April 2015
 //
 //
 
@@ -89,23 +89,24 @@
 #include "TCollection.h"
 
 //#define DEBUG
-#define NPATHS 30 
+#define NPATHS 30
 
 //
 // class declaration
 //
 
-class triggerAnalyzer : public edm::EDAnalyzer {
-   public:
-      explicit triggerAnalyzer(const edm::ParameterSet&);
-      ~triggerAnalyzer();
+class triggerAnalyzer : public edm::EDAnalyzer
+{
+public:
+	explicit triggerAnalyzer(const edm::ParameterSet&);
+	~triggerAnalyzer();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-virtual void beginJob() override;
-virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-virtual void endJob() override;
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
 
 
 //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
@@ -116,26 +117,26 @@ virtual void endJob() override;
 // ----------member data ---------------------------
 
 ///Handles to RECO object collections
-edm::Handle<edm::TriggerResults> trigResultsHandl;
-edm::Handle<pat::TriggerObjectStandAlone> trigObjsHandl;
+	edm::Handle<edm::TriggerResults> trigResultsHandl;
+	edm::Handle<pat::TriggerObjectStandAlone> trigObjsHandl;
 
 ///tokens to input collections
-edm::EDGetTokenT<edm::TriggerResults> trigResultsToken;
-edm::EDGetTokenT<pat::TriggerObjectStandAlone> trigObjsToken;
+	edm::EDGetTokenT<edm::TriggerResults> trigResultsToken;
+	edm::EDGetTokenT<pat::TriggerObjectStandAlone> trigObjsToken;
 
 ///input the tree name, and the names of all HLT paths which should be investigated
-std::string tName;
-std::string listOfHltPaths;
+	std::string tName;
+	std::string listOfHltPaths;
 
-TTree * tree;
+	TTree * tree;
 
 ///save these variables to the TTree
-Int_t runNumber;
-ULong64_t evtNumber;
+	Int_t runNumber;
+	ULong64_t evtNumber;
 
-Int_t numInterestingPaths;
-Float_t numPassingInterestingPaths[NPATHS];
-TString namesOfInterestingPaths[NPATHS];
+	Int_t numInterestingPaths;
+	Float_t numPassingInterestingPaths[NPATHS];
+	TString namesOfInterestingPaths[NPATHS];
 
 
 };
@@ -157,31 +158,31 @@ triggerAnalyzer::triggerAnalyzer(const edm::ParameterSet& iConfig):
 	listOfHltPaths(iConfig.getParameter<std::string>("commaSeparatedHltPaths"))
 
 {
-   //now do what ever initialization is needed
-   edm::Service<TFileService> fs;
-  
-   tree=fs->make<TTree>(tName.c_str(),"HLT path summary");
+	//now do what ever initialization is needed
+	edm::Service<TFileService> fs;
 
-   tree->Branch("evtNumber",&evtNumber,"evtNumber/l");
-   tree->Branch("runNumber",&runNumber,"runNumber/I");
+	tree = fs->make<TTree>(tName.c_str(), "HLT path summary");
 
-   tree->Branch("numInterestingPaths",&numInterestingPaths,"numInterestingPaths/I");
-   tree->Branch("numPassingInterestingPaths",numPassingInterestingPaths,"numPassingInterestingPaths[numInterestingPaths]/F");
-   tree->Branch("namesOfInterestingPaths",namesOfInterestingPaths,"namesOfInterestingPaths[numInterestingPaths]/C");
+	tree->Branch("evtNumber", &evtNumber, "evtNumber/l");
+	tree->Branch("runNumber", &runNumber, "runNumber/I");
+
+	tree->Branch("numInterestingPaths", &numInterestingPaths, "numInterestingPaths/I");
+	tree->Branch("numPassingInterestingPaths", numPassingInterestingPaths, "numPassingInterestingPaths[numInterestingPaths]/F");
+	tree->Branch("namesOfInterestingPaths", namesOfInterestingPaths, "namesOfInterestingPaths[numInterestingPaths]/C");
 
 
-   ///get the tokens
-   trigResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("trigResultsColl"));
-   trigObjsToken = consumes<pat::TriggerObjectStandAlone>(iConfig.getParameter<edm::InputTag>("trigObjectStandAloneColl"));
- 
+	///get the tokens
+	trigResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("trigResultsColl"));
+	trigObjsToken = consumes<pat::TriggerObjectStandAlone>(iConfig.getParameter<edm::InputTag>("trigObjectStandAloneColl"));
+
 }
 
 
 triggerAnalyzer::~triggerAnalyzer()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -199,52 +200,52 @@ triggerAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	iEvent.getByToken(trigResultsToken, trigResultsHandl);
 
 #ifdef DEBUG
-	std::cout<<"in analyze method of triggerAnalyzer class"<<std::endl;
+	std::cout << "in analyze method of triggerAnalyzer class" << std::endl;
 #endif
 
 	if(!trigResultsHandl.isValid()) return;
 	const TriggerNames & triggerNames = iEvent.triggerNames(*trigResultsHandl);
 
 #ifdef DEBUG
-	std::cout<<"trigResultsHandl is valid, and successfully returned a list of trigger names"<<std::endl;
+	std::cout << "trigResultsHandl is valid, and successfully returned a list of trigger names" << std::endl;
 #endif
 
 	///now triggerNames has the list of all HLT path names which were run in the event (independent of these paths firing or not)
 	unsigned int numNames = triggerNames.size();
-	for(unsigned int i=0; i<numNames; i++){
-		std::cout<<"trigger number \t"<< i <<"\t is named \t"<< triggerNames.triggerName(i) << std::endl;
+	for(unsigned int i = 0; i < numNames; i++) {
+		std::cout << "trigger number \t" << i << "\t is named \t" << triggerNames.triggerName(i) << std::endl;
 
 	}
 
 #ifdef THIS_IS_AN_EVENT_EXAMPLE
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
+	Handle<ExampleData> pIn;
+	iEvent.getByLabel("example", pIn);
 #endif
-   
+
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
+	ESHandle<SetupData> pSetup;
+	iSetup.get<SetupRecord>().get(pSetup);
 #endif
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 triggerAnalyzer::beginJob()
 {
 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-triggerAnalyzer::endJob() 
+void
+triggerAnalyzer::endJob()
 {
 
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
-void 
+void
 triggerAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
@@ -252,7 +253,7 @@ triggerAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
 
 // ------------ method called when ending the processing of a run  ------------
 /*
-void 
+void
 triggerAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
@@ -260,7 +261,7 @@ triggerAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
 
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
-void 
+void
 triggerAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
@@ -268,7 +269,7 @@ triggerAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSet
 
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
-void 
+void
 triggerAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
@@ -276,12 +277,13 @@ triggerAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-triggerAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+triggerAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 
 

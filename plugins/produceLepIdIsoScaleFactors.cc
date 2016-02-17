@@ -88,11 +88,11 @@ void produceLepIdIsoScaleFactors::produce(edm::Event& event, const edm::EventSet
 				scale_factor_ISO_central.push_back(-1);
 				scale_factor_ISO_error.push_back(-1);
 			}
-		} else{
-				scale_factor_ID_central.push_back(1);
-				scale_factor_ID_error.push_back(1);
-				scale_factor_ISO_central.push_back(1);
-				scale_factor_ISO_error.push_back(1);
+		} else {
+			scale_factor_ID_central.push_back(1);
+			scale_factor_ID_error.push_back(1);
+			scale_factor_ISO_central.push_back(1);
+			scale_factor_ISO_error.push_back(1);
 		}
 	}
 

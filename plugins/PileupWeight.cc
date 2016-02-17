@@ -97,7 +97,7 @@ producePileupWeight::producePileupWeight(const edm::ParameterSet& cfg):
 	for (int i = 0; i < nBins; i++) {
 		double binContent = puMC_hist->GetBinContent(i + 1);
 		if(binContent == 0 && puData_hist->GetBinContent(i + 1) != 0) {
-			if(puData_hist->GetBinContent(i + 1) < 1e-4 || i<4) {
+			if(puData_hist->GetBinContent(i + 1) < 1e-4 || i < 4) {
 				std::cerr << "[WARNING] mc bin empty while data not: iBin = " << i + 1 << std::endl;
 				std::cerr << "          data bin = " << puData_hist->GetBinContent(i + 1) << std::endl;
 			} else {

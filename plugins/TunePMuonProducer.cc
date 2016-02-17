@@ -31,9 +31,9 @@ TunePMuonProducer::TunePMuonProducer(const edm::ParameterSet& cfg)
 void TunePMuonProducer::produce(edm::Event& event, const edm::EventSetup&)
 {
 	edm::Handle<edm::View<pat::Muon> > muons;
-	event.getByToken(srcToken_,muons);
+	event.getByToken(srcToken_, muons);
 	edm::Handle<edm::View<reco::Vertex> > primary_vertex;
-	event.getByToken(primaryVertexToken_,primary_vertex);
+	event.getByToken(primaryVertexToken_, primary_vertex);
 
 	std::auto_ptr<pat::MuonCollection> mus(new pat::MuonCollection);
 	reco::Candidate::PolarLorentzVector tmp_muon;
@@ -44,9 +44,9 @@ void TunePMuonProducer::produce(edm::Event& event, const edm::EventSetup&)
 		else
 			tmp_muon.SetCoordinates(0.0, 0.0, 0.0, 0.0);
 		if(mu.isHighPtMuon(primary_vertex->at(0)))
-			mu.addUserInt("highPtID",1);
+			mu.addUserInt("highPtID", 1);
 		else
-			mu.addUserInt("highPtID",0);
+			mu.addUserInt("highPtID", 0);
 
 		mu.setP4(tmp_muon);
 		mus->push_back(mu);

@@ -2,7 +2,7 @@
 //
 // Package:    cmsWR/determineCutEfficiency
 // Class:      determineCutEfficiency
-// 
+//
 /**\class determineCutEfficiency determineCutEfficiency.cc
 
  Description: [one line class summary]
@@ -80,40 +80,41 @@
 // class declaration
 //
 
-class determineCutEfficiency : public edm::EDAnalyzer {
-   public:
-      explicit determineCutEfficiency(const edm::ParameterSet&);
-      ~determineCutEfficiency();
+class determineCutEfficiency : public edm::EDAnalyzer
+{
+public:
+	explicit determineCutEfficiency(const edm::ParameterSet&);
+	~determineCutEfficiency();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-virtual void beginJob() override;
-virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-virtual void endJob() override;
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
 
 
 
 // ----------member data ---------------------------
 
-std::string tName_;	///< tree name, input by user
-double tmpWrMass_, tmpNuMass_;	///<placeholders for the values stored in wrMass and nuMass
-Float_t totalNumEvtsBeforeCuts = 0, totalNumEvtsAfterCuts = 0;
-	
+	std::string tName_;	///< tree name, input by user
+	double tmpWrMass_, tmpNuMass_;	///<placeholders for the values stored in wrMass and nuMass
+	Float_t totalNumEvtsBeforeCuts = 0, totalNumEvtsAfterCuts = 0;
+
 ///Handles to evt count collections
-edm::Handle<Float_t> evtCountBeforeCuts;
-edm::Handle<Float_t> evtCountAfterCuts;
+	edm::Handle<Float_t> evtCountBeforeCuts;
+	edm::Handle<Float_t> evtCountAfterCuts;
 
 ///tokens to input collections
-edm::EDGetTokenT<Float_t> evtCountBeforeCutsToken;
-edm::EDGetTokenT<Float_t> evtCountAfterCutsToken;
+	edm::EDGetTokenT<Float_t> evtCountBeforeCutsToken;
+	edm::EDGetTokenT<Float_t> evtCountAfterCutsToken;
 
 ///TTree and its branches
 ///the branches will be filled in the analyze() method
-///and parsed in the endJob() method 
-TTree * tree;
-Float_t wrMass, nuMass;	///< these will be input by the user, and saved as TTree branches
-Float_t cutEfficiency;	///< fraction of evts which pass all cuts
+///and parsed in the endJob() method
+	TTree * tree;
+	Float_t wrMass, nuMass;	///< these will be input by the user, and saved as TTree branches
+	Float_t cutEfficiency;	///< fraction of evts which pass all cuts
 
 };
 
@@ -135,27 +136,27 @@ determineCutEfficiency::determineCutEfficiency(const edm::ParameterSet& iConfig)
 	tmpNuMass_(iConfig.getParameter<double>("massOfNu"))
 
 {
-   edm::Service<TFileService> fs;
-   
-   tree=fs->make<TTree>(tName_.c_str(),"wr and nu mass, and num events before and after all cuts");
+	edm::Service<TFileService> fs;
 
-   tree->Branch("wrMass",&wrMass,"wrMass/F");
-   tree->Branch("nuMass",&nuMass,"nuMass/F");
-   //tree->Branch("evtsBeforeCuts",&evtsBeforeCuts,"evtsBeforeCuts/F");
-   //tree->Branch("evtsAfterCuts",&evtsAfterCuts,"evtsAfterCuts/F");
-   tree->Branch("cutEfficiency",&cutEfficiency,"cutEfficiency/F");
- 
-   evtCountBeforeCutsToken = consumes<Float_t>(iConfig.getParameter<edm::InputTag>("evtCountBeforeCutsCollection"));
-   evtCountAfterCutsToken = consumes<Float_t>(iConfig.getParameter<edm::InputTag>("evtCountAfterCutsCollection"));
+	tree = fs->make<TTree>(tName_.c_str(), "wr and nu mass, and num events before and after all cuts");
+
+	tree->Branch("wrMass", &wrMass, "wrMass/F");
+	tree->Branch("nuMass", &nuMass, "nuMass/F");
+	//tree->Branch("evtsBeforeCuts",&evtsBeforeCuts,"evtsBeforeCuts/F");
+	//tree->Branch("evtsAfterCuts",&evtsAfterCuts,"evtsAfterCuts/F");
+	tree->Branch("cutEfficiency", &cutEfficiency, "cutEfficiency/F");
+
+	evtCountBeforeCutsToken = consumes<Float_t>(iConfig.getParameter<edm::InputTag>("evtCountBeforeCutsCollection"));
+	evtCountAfterCutsToken = consumes<Float_t>(iConfig.getParameter<edm::InputTag>("evtCountAfterCutsCollection"));
 
 }
 
 
 determineCutEfficiency::~determineCutEfficiency()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -172,43 +173,44 @@ determineCutEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 	iEvent.getByToken(evtCountBeforeCutsToken, evtCountBeforeCuts);
 	iEvent.getByToken(evtCountAfterCutsToken, evtCountAfterCuts);
-	if(evtCountBeforeCuts.isValid() ) totalNumEvtsBeforeCuts+=1.0;
-	if(evtCountAfterCuts.isValid() ) totalNumEvtsAfterCuts+=1.0;
+	if(evtCountBeforeCuts.isValid() ) totalNumEvtsBeforeCuts += 1.0;
+	if(evtCountAfterCuts.isValid() ) totalNumEvtsAfterCuts += 1.0;
 
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 determineCutEfficiency::beginJob()
 {
 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-determineCutEfficiency::endJob() 
+void
+determineCutEfficiency::endJob()
 {
 #ifdef DEBUG
-	std::cout<<"in endJob method"<<std::endl;
+	std::cout << "in endJob method" << std::endl;
 #endif
 
 	///now the efficiency can be computed with totalNumEvts before/after all cuts
 	wrMass = tmpWrMass_, nuMass = tmpNuMass_;
 	cutEfficiency = 0.0;
-	if(totalNumEvtsBeforeCuts > 0) cutEfficiency = totalNumEvtsAfterCuts/totalNumEvtsBeforeCuts;
+	if(totalNumEvtsBeforeCuts > 0) cutEfficiency = totalNumEvtsAfterCuts / totalNumEvtsBeforeCuts;
 	tree->Fill();	///< this may not work
 
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-determineCutEfficiency::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+determineCutEfficiency::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 
 

@@ -2,7 +2,7 @@
 //
 // Package:    testFilter/triggerFilter
 // Class:      triggerFilter
-// 
+//
 /**\class triggerFilter triggerFilter.cc testFilter/triggerFilter/plugins/triggerFilter.cc
 
  Description: [one line class summary]
@@ -46,26 +46,27 @@
 // class declaration
 //
 
-class triggerFilter : public edm::EDFilter {
-   public:
-      explicit triggerFilter(const edm::ParameterSet&);
-      ~triggerFilter();
+class triggerFilter : public edm::EDFilter
+{
+public:
+	explicit triggerFilter(const edm::ParameterSet&);
+	~triggerFilter();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-   private:
-      virtual void beginJob() override;
-      virtual bool filter(edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
-      
-      //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-      //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+private:
+	virtual void beginJob() override;
+	virtual bool filter(edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
 
-      // ----------member data ---------------------------
-std::string targetHltPathName;	///< check that this HLT path fired in the evt
-std::string targetHltPathNameTwo;	///< check that this HLT path fired in the evt
+	//virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+
+	// ----------member data ---------------------------
+	std::string targetHltPathName;	///< check that this HLT path fired in the evt
+	std::string targetHltPathNameTwo;	///< check that this HLT path fired in the evt
 
 
 };
@@ -86,16 +87,16 @@ triggerFilter::triggerFilter(const edm::ParameterSet& iConfig):
 	targetHltPathNameTwo(iConfig.getParameter<std::string>("alsoCheckThisHltPath"))
 
 {
-   //now do what ever initialization is needed
+	//now do what ever initialization is needed
 
 }
 
 
 triggerFilter::~triggerFilter()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -111,7 +112,7 @@ triggerFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	using namespace edm;
 
 #ifdef DEBUG
-	std::cout<<"in filter method of triggerFilter class"<<std::endl;
+	std::cout << "in filter method of triggerFilter class" << std::endl;
 #endif
 
 	edm::TriggerResultsByName resultsByName = iEvent.triggerResultsByName("HLT");
@@ -123,24 +124,25 @@ triggerFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 }
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 triggerFilter::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-triggerFilter::endJob() {
+void
+triggerFilter::endJob()
+{
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void
 triggerFilter::beginRun(edm::Run const&, edm::EventSetup const&)
-{ 
+{
 }
 */
- 
+
 // ------------ method called when ending the processing of a run  ------------
 /*
 void
@@ -148,7 +150,7 @@ triggerFilter::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
- 
+
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void
@@ -156,7 +158,7 @@ triggerFilter::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup
 {
 }
 */
- 
+
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void
@@ -164,15 +166,16 @@ triggerFilter::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup c
 {
 }
 */
- 
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-triggerFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+triggerFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 //define this as a plug-in
 DEFINE_FWK_MODULE(triggerFilter);
