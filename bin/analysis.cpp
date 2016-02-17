@@ -36,7 +36,7 @@
 int main(void)
 {
   char name[100];// to name the tree per iteration of the Toy  
-  float integratedLumi = 2.52e3; ///\todo should not be hard-coded!!!
+  float integratedLumi = 2.4e3; ///\todo should not be hard-coded!!!
   using namespace RooFit;
   std::cout << "******************************* Analysis ******************************" << std::endl;
   std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
@@ -60,12 +60,15 @@ int main(void)
   std::vector<TString> modes; 
   
   modes.push_back("ttbar");
-  //modes.push_back("DYMuMu");
-  //modes.push_back("WJets");
+  modes.push_back("DYMuMu");
+  modes.push_back("DYEE");
+  modes.push_back("WJets");
   modes.push_back("WZ");
   modes.push_back("ZZ");
-  //modes.push_back("data_EMu");
-  channel = Selector::EMu;
+  modes.push_back("data_EMu");
+  modes.push_back("data_EE");
+  modes.push_back("data_MuMu");
+  channel = Selector::MuMu;
 
   for(auto m: modes) {
     TString tree_channel = "";
@@ -77,8 +80,10 @@ int main(void)
     // Select the dataset to run over //
     if(mode.EqualTo("ttbar")){
       TTchainNames.push_back("TTJets_DiLept_v1");
+      TTchainNames.push_back("TTJets_DiLept_v2");
     }
     else if(mode.EqualTo("DYMuMu")){
+      TTchainNames.push_back("DYToMuMu_powheg_50to120");
       TTchainNames.push_back("DYToMuMu_powheg_120to200");
       TTchainNames.push_back("DYToMuMu_powheg_200to400");
       TTchainNames.push_back("DYToMuMu_powheg_400to800");
@@ -88,6 +93,22 @@ int main(void)
       TTchainNames.push_back("DYToMuMu_powheg_3500to4500");
       TTchainNames.push_back("DYToMuMu_powheg_4500to6000");
       TTchainNames.push_back("DYToMuMu_powheg_6000toInf");
+      if(channel == Selector::EMu)
+	run_toys = false;
+    }
+    else if(mode.EqualTo("DYEE")){
+      TTchainNames.push_back("DYToEE_powheg_50to120");
+      TTchainNames.push_back("DYToEE_powheg_120to200");
+      TTchainNames.push_back("DYToEE_powheg_200to400");
+      TTchainNames.push_back("DYToEE_powheg_400to800");
+      TTchainNames.push_back("DYToEE_powheg_800to1400");
+      TTchainNames.push_back("DYToEE_powheg_1400to2300");
+      TTchainNames.push_back("DYToEE_powheg_2300to3500");
+      TTchainNames.push_back("DYToEE_powheg_3500to4500");
+      TTchainNames.push_back("DYToEE_powheg_4500to6000");
+      TTchainNames.push_back("DYToEE_powheg_6000toInf");
+      if(channel == Selector::EMu)
+	run_toys = false;
     }
     else if(mode.EqualTo("WJets")){
       TTchainNames.push_back("WJetsLNu");
@@ -107,6 +128,18 @@ int main(void)
       TTchainNames.push_back("MuEG_RunD_v3");
       TTchainNames.push_back("MuEG_RunD_v4");
     }
+    else if(mode.EqualTo("data_EE")){
+      isData = 1;
+      TTchainNames.push_back("DoubleEG_RunC");
+      TTchainNames.push_back("DoubleEG_RunD_v3");
+      TTchainNames.push_back("DoubleEG_RunD_v4");
+    }
+    else if(mode.EqualTo("data_MuMu")){
+      isData = 1;
+      TTchainNames.push_back("SingleMu_RunC");
+      TTchainNames.push_back("SingleMu_RunD_v3");
+      TTchainNames.push_back("SingleMu_RunD_v4");
+    }
     // Select the channel to be studied //
     if(channel == 0)
       tree_channel = "_signal_ee";
@@ -118,8 +151,6 @@ int main(void)
       tree_channel = "";
 
     TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
-    //TChain *c = new TChain("miniTree_signal_mumu/t");
-    //c->Add("root://xrootd-cms.infn.it//store/user/shervin/ntuples/TTJets_DiLept_v1_SHv4/unmerged/TTJets_DiLept_v1_24_1_We7.root");
     std::cout << c->GetEntries() << std::endl;
     
     // if you want to check if the config file is read correctly:
@@ -142,7 +173,7 @@ int main(void)
     myEvent.SetBranchAddresses(c);
     Selector selEvent;    
 
-    const Int_t nToys = 2;
+    const Int_t nToys = 1;
     TTree * t1[nToys];
     Int_t nEntries = c->GetEntries();
 
@@ -244,7 +275,7 @@ int main(void)
 	}
 #endif		
 
-	if(selEvent.isPassing(channel) && selEvent.dilepton_mass > 200) {
+	if(selEvent.isPassing(channel) && selEvent.dilepton_mass < 200) {
 	  if(isData == 0)
 	    selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 	  else
@@ -258,16 +289,19 @@ int main(void)
 	}
 
       }
-      assert(tempDataSet->sumEntries()>0);
+
 
       if(i == 0) {
 	t1[i]->Write();
 	tempDataSet->Write();
       }
+
+
       tempDataSet->Print();
 
       if(mode.EqualTo("ttbar")){
 
+	assert(tempDataSet->sumEntries()>0);
 	expPower.setVal(-0.004);
 
 	RooFitResult * tempFitRslt = NULL;
