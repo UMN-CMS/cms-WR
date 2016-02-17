@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// 
+//
 
 /**\class applyFourObjMassCutTwoInputLeptonColls applyFourObjMassCutTwoInputLeptonColls.cc doubleElectronTracklessTrigger/applyFourObjMassCutTwoInputLeptonColls/plugins/applyFourObjMassCutTwoInputLeptonColls.cc
  Description: [one line class summary]
@@ -81,188 +81,191 @@
 // class declaration
 //
 
-class applyFourObjMassCutTwoInputLeptonColls : public edm::EDProducer {
-   public:
-      explicit applyFourObjMassCutTwoInputLeptonColls(const edm::ParameterSet&);
-      ~applyFourObjMassCutTwoInputLeptonColls();
+class applyFourObjMassCutTwoInputLeptonColls : public edm::EDProducer
+{
+public:
+	explicit applyFourObjMassCutTwoInputLeptonColls(const edm::ParameterSet&);
+	~applyFourObjMassCutTwoInputLeptonColls();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-	  ///calculate the dilepton mass using two const_iterators to reco::Candidate objects
-	  double getDileptonMass(edm::OwnVector<reco::Candidate>::const_iterator& one, edm::OwnVector<reco::Candidate>::const_iterator& two){
-		  double mass = TMath::Sqrt( 2*(one->pt())*(two->pt())*( TMath::CosH( (one->eta())-(two->eta()) ) - TMath::Cos( (one->phi())-(two->phi()) ) ) );
-		  return mass;
-	  }///end getDileptonMass()
+	///calculate the dilepton mass using two const_iterators to reco::Candidate objects
+	double getDileptonMass(edm::OwnVector<reco::Candidate>::const_iterator& one, edm::OwnVector<reco::Candidate>::const_iterator& two)
+	{
+		double mass = TMath::Sqrt( 2 * (one->pt()) * (two->pt()) * ( TMath::CosH( (one->eta()) - (two->eta()) ) - TMath::Cos( (one->phi()) - (two->phi()) ) ) );
+		return mass;
+	}///end getDileptonMass()
 
-	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::Handle<edm::OwnVector<reco::Candidate> > collectionOne, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collectionTwo,bool doDileptonMassCut){
-
-#ifdef DEBUG
-		  std::cout<<"checking pt of particles in two handled findLeadingAndSubleading fxn"<<std::endl;
-#endif
-
-		  ///find the highest pT object in collectionOne by looping over all contents in collectionOne
-		  for(edm::OwnVector<reco::Candidate>::const_iterator genItOne = collectionOne->begin(); genItOne != collectionOne->end(); genItOne++){
-#ifdef DEBUG
-			  std::cout<<"a particle from collectionOne has pT = \t"<< genItOne->pt() << std::endl;
-#endif
-
-			  if(first==collectionOne->end()) first=genItOne;
-			  else if(genItOne->pt() > first->pt() ) first = genItOne;
-		  }//end loop over reco::Candidate objects in collectionOne
+	void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::Handle<edm::OwnVector<reco::Candidate> > collectionOne, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collectionTwo, bool doDileptonMassCut)
+	{
 
 #ifdef DEBUG
-		  std::cout<<"first has pT = \t"<< first->pt() <<std::endl;
+		std::cout << "checking pt of particles in two handled findLeadingAndSubleading fxn" << std::endl;
 #endif
 
-		  if(!doDileptonMassCut){
-			  ///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++){
+		///find the highest pT object in collectionOne by looping over all contents in collectionOne
+		for(edm::OwnVector<reco::Candidate>::const_iterator genItOne = collectionOne->begin(); genItOne != collectionOne->end(); genItOne++) {
 #ifdef DEBUG
-				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
+			std::cout << "a particle from collectionOne has pT = \t" << genItOne->pt() << std::endl;
 #endif
 
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ ) second = genItTwo;
-
-				  else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_) second = genItTwo;
-			  }///end loop over objects in collectionTwo
-
-		  }///end if(!doDileptonMassCut)
-
-		  if(doDileptonMassCut){
-			  ///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
-			  ///and whose dilepton mass, when combined with the object chosen from collectionOne, is above the dileptonMass threshold value
-#ifdef DEBUG
-			  std::cout<<"inside if(doDileptonMassCut) of two handled findLeadingAndSubleading() fxn"<<std::endl;
-#endif
-
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++){
-#ifdef DEBUG
-				  std::cout<<"a particle from collectionTwo has pT = \t"<< genItTwo->pt() << std::endl;
-#endif
-			  
-				  if(second==collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ && getDileptonMass(first,genItTwo) > minDileptonMass_ ){
-#ifdef DEBUG
-					  std::cout<<"found a candidate for the iterator named second"<<std::endl;
-#endif
-					  second = genItTwo;
-				  }
+			if(first == collectionOne->end()) first = genItOne;
+			else if(genItOne->pt() > first->pt() ) first = genItOne;
+		}//end loop over reco::Candidate objects in collectionOne
 
 #ifdef DEBUG
-				  std::cout<<"didn't meet the criteria for second==end of collection and dR separation"<<std::endl;
+		std::cout << "first has pT = \t" << first->pt() << std::endl;
 #endif
 
-				  if(second!=collectionTwo->end()){
-					  if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ && getDileptonMass(first,genItTwo) > minDileptonMass_ ){
+		if(!doDileptonMassCut) {
+			///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
+			for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++) {
 #ifdef DEBUG
-						  std::cout<<"found a better candidate for the iterator named second"<<std::endl;
+				std::cout << "a particle from collectionTwo has pT = \t" << genItTwo->pt() << std::endl;
 #endif
-						  second = genItTwo;
-					  }
 
-				  }///end if(second has been reassigned)
+				if(second == collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ ) second = genItTwo;
 
-			  }///end loop over objects in collectionTwo with dilepton mass cut applied
+				else if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_) second = genItTwo;
+			}///end loop over objects in collectionTwo
 
-		  }///end if(doDileptonMassCut)
+		}///end if(!doDileptonMassCut)
 
+		if(doDileptonMassCut) {
+			///now find the highest pT object in collectionTwo which is separated from the highest pT object chosen from collectionOne
+			///and whose dilepton mass, when combined with the object chosen from collectionOne, is above the dileptonMass threshold value
 #ifdef DEBUG
-		  std::cout<<"leaving two handled findLeadingAndSubleading fxn"<<std::endl;
+			std::cout << "inside if(doDileptonMassCut) of two handled findLeadingAndSubleading() fxn" << std::endl;
 #endif
 
-	  }///end two handled findLeadingAndSubleading()
-
-
-
-	  void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection,bool doDileptonMassCut){
-
+			for(edm::OwnVector<reco::Candidate>::const_iterator genItTwo = collectionTwo->begin(); genItTwo != collectionTwo->end(); genItTwo++) {
 #ifdef DEBUG
-		  std::cout<<"checking pt of particles in findLeadingAndSubleading fxn"<<std::endl;
+				std::cout << "a particle from collectionTwo has pT = \t" << genItTwo->pt() << std::endl;
 #endif
 
-		  if(!doDileptonMassCut){
-
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
+				if(second == collectionTwo->end() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ && getDileptonMass(first, genItTwo) > minDileptonMass_ ) {
 #ifdef DEBUG
-				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
+					std::cout << "found a candidate for the iterator named second" << std::endl;
 #endif
-				  if(first==collection->end()) first=genIt;
-				  else{
-					  if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ){
-						  second = first;
-						  first = genIt;
-					  }
-					  else if( ( second==collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) second = genIt;
-				  }
-			  }//end loop over reco::Candidate collection
-
-		  }///end if(!doDileptonMassCut)
-
-		  if(doDileptonMassCut){
-
-			  for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++){
-#ifdef DEBUG
-				  std::cout<<"pT = \t"<< genIt->pt() << std::endl;
-#endif
-				  if(first==collection->end()) first=genIt;
-				  else{
-					  if(genIt->pt() > first->pt() && getDileptonMass(first,genIt) > minDileptonMass_ && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ){
-						  second = first;
-						  first = genIt;
-					  }
-					  else if( (second==collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first,genIt) > minDileptonMass_ && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) second = genIt;
-				  }
-			  }//end loop over reco::Candidate collection
-
-		  }///end if(doDileptonMassCut)
+					second = genItTwo;
+				}
 
 #ifdef DEBUG
-		  std::cout<<"leaving findLeadingAndSubleading fxn"<<std::endl;
+				std::cout << "didn't meet the criteria for second==end of collection and dR separation" << std::endl;
 #endif
 
-	  }///end findLeadingAndSubleading()
-
-
-	  /**this fxn checks that the object pointed to by objIt does not already exist
-	   * in the collection pointed at by ptrToObjColl
-	   * returns false if objIt already exists in the collection pointed to by ptrToObjColl
-	   */
-	  bool isNotDuplicate(edm::OwnVector<reco::Candidate>::const_iterator & objIt,
-			  std::auto_ptr<edm::OwnVector<reco::Candidate> >& ptrToObjColl){
-		  if(ptrToObjColl->size()==0) return true;
-		  for(unsigned int i=0; i<ptrToObjColl->size(); i++){
+				if(second != collectionTwo->end()) {
+					if(genItTwo->pt() > second->pt() && deltaR(first->eta(), first->phi(), genItTwo->eta(), genItTwo->phi()) > minLeptonDrSeparation_ && getDileptonMass(first, genItTwo) > minDileptonMass_ ) {
 #ifdef DEBUG
-			  std::cout<<"about to check if reco::Candidate object has already been added to another collection"<<std::endl;
-			  std::cout<<"size of other collection = \t"<< ptrToObjColl->size() <<std::endl;
+						std::cout << "found a better candidate for the iterator named second" << std::endl;
 #endif
-			  if(objIt->pt()==(*ptrToObjColl)[i].pt() && objIt->eta()==(*ptrToObjColl)[i].eta() 
-					  && objIt->phi()==(*ptrToObjColl)[i].phi()) return false;
+						second = genItTwo;
+					}
 
-		  }///end loop over objects in collection pointed to by ptrToObjColl
-		  return true;
-	  }///end isNotDuplicate()
+				}///end if(second has been reassigned)
+
+			}///end loop over objects in collectionTwo with dilepton mass cut applied
+
+		}///end if(doDileptonMassCut)
+
+#ifdef DEBUG
+		std::cout << "leaving two handled findLeadingAndSubleading fxn" << std::endl;
+#endif
+
+	}///end two handled findLeadingAndSubleading()
 
 
-   private:
-      virtual void beginJob() override;
-      virtual void produce(edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
-      
-      //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-      //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
- 
-      // ----------member data ---------------------------
-	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputJetsToken_;
-	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsOneToken_;	///< leptons which have passed dilepton mass and earlier cuts
-	  edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsTwoToken_;	///< leptons which have passed dilepton mass and earlier cuts
 
-	  std::string outputJetsCollName_;
-	  std::string outputLeptonsOneCollName_;
-	  std::string outputLeptonsTwoCollName_;
-	  double minFourObjMass_;	///< minimum four obj mass
-	  double minDileptonMass_;	///< min dilepton mass
-	  double minLeptonDrSeparation_;	///< min separation btwn two leptons, or two jets
+	void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection, bool doDileptonMassCut)
+	{
+
+#ifdef DEBUG
+		std::cout << "checking pt of particles in findLeadingAndSubleading fxn" << std::endl;
+#endif
+
+		if(!doDileptonMassCut) {
+
+			for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++) {
+#ifdef DEBUG
+				std::cout << "pT = \t" << genIt->pt() << std::endl;
+#endif
+				if(first == collection->end()) first = genIt;
+				else {
+					if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) {
+						second = first;
+						first = genIt;
+					} else if( ( second == collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) second = genIt;
+				}
+			}//end loop over reco::Candidate collection
+
+		}///end if(!doDileptonMassCut)
+
+		if(doDileptonMassCut) {
+
+			for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++) {
+#ifdef DEBUG
+				std::cout << "pT = \t" << genIt->pt() << std::endl;
+#endif
+				if(first == collection->end()) first = genIt;
+				else {
+					if(genIt->pt() > first->pt() && getDileptonMass(first, genIt) > minDileptonMass_ && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) {
+						second = first;
+						first = genIt;
+					} else if( (second == collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first, genIt) > minDileptonMass_ && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > minLeptonDrSeparation_ ) second = genIt;
+				}
+			}//end loop over reco::Candidate collection
+
+		}///end if(doDileptonMassCut)
+
+#ifdef DEBUG
+		std::cout << "leaving findLeadingAndSubleading fxn" << std::endl;
+#endif
+
+	}///end findLeadingAndSubleading()
+
+
+	/**this fxn checks that the object pointed to by objIt does not already exist
+	 * in the collection pointed at by ptrToObjColl
+	 * returns false if objIt already exists in the collection pointed to by ptrToObjColl
+	 */
+	bool isNotDuplicate(edm::OwnVector<reco::Candidate>::const_iterator & objIt,
+	                    std::auto_ptr<edm::OwnVector<reco::Candidate> >& ptrToObjColl)
+	{
+		if(ptrToObjColl->size() == 0) return true;
+		for(unsigned int i = 0; i < ptrToObjColl->size(); i++) {
+#ifdef DEBUG
+			std::cout << "about to check if reco::Candidate object has already been added to another collection" << std::endl;
+			std::cout << "size of other collection = \t" << ptrToObjColl->size() << std::endl;
+#endif
+			if(objIt->pt() == (*ptrToObjColl)[i].pt() && objIt->eta() == (*ptrToObjColl)[i].eta()
+			        && objIt->phi() == (*ptrToObjColl)[i].phi()) return false;
+
+		}///end loop over objects in collection pointed to by ptrToObjColl
+		return true;
+	}///end isNotDuplicate()
+
+
+private:
+	virtual void beginJob() override;
+	virtual void produce(edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
+
+	//virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+
+	// ----------member data ---------------------------
+	edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputJetsToken_;
+	edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsOneToken_;	///< leptons which have passed dilepton mass and earlier cuts
+	edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputLeptonsTwoToken_;	///< leptons which have passed dilepton mass and earlier cuts
+
+	std::string outputJetsCollName_;
+	std::string outputLeptonsOneCollName_;
+	std::string outputLeptonsTwoCollName_;
+	double minFourObjMass_;	///< minimum four obj mass
+	double minDileptonMass_;	///< min dilepton mass
+	double minLeptonDrSeparation_;	///< min separation btwn two leptons, or two jets
 
 };
 
@@ -287,26 +290,26 @@ applyFourObjMassCutTwoInputLeptonColls::applyFourObjMassCutTwoInputLeptonColls(c
 	minLeptonDrSeparation_(iConfig.getParameter<double>("minLeptonDrSeparation"))
 
 {
-   
-   ///register the input collections
-   inputJetsToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputJetsCollTag"));
-   inputLeptonsOneToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsOneCollTag"));
-   inputLeptonsTwoToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsTwoCollTag"));
+
+	///register the input collections
+	inputJetsToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputJetsCollTag"));
+	inputLeptonsOneToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsOneCollTag"));
+	inputLeptonsTwoToken_ = consumes<edm::OwnVector<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("inputLeptonsTwoCollTag"));
 
 
-   ///register the collections which are added to the event
-   produces<edm::OwnVector<reco::Candidate> >(outputJetsCollName_);
-   produces<edm::OwnVector<reco::Candidate> >(outputLeptonsOneCollName_);
-   produces<edm::OwnVector<reco::Candidate> >(outputLeptonsTwoCollName_);
+	///register the collections which are added to the event
+	produces<edm::OwnVector<reco::Candidate> >(outputJetsCollName_);
+	produces<edm::OwnVector<reco::Candidate> >(outputLeptonsOneCollName_);
+	produces<edm::OwnVector<reco::Candidate> >(outputLeptonsTwoCollName_);
 
 }
 
 
 applyFourObjMassCutTwoInputLeptonColls::~applyFourObjMassCutTwoInputLeptonColls()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -319,77 +322,78 @@ applyFourObjMassCutTwoInputLeptonColls::~applyFourObjMassCutTwoInputLeptonColls(
 void
 applyFourObjMassCutTwoInputLeptonColls::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   using namespace edm;
+	using namespace edm;
 
 #ifdef DEBUG
-   std::cout<<"entered applyFourObjMassCutTwoInputLeptonColls produce method"<<std::endl;
+	std::cout << "entered applyFourObjMassCutTwoInputLeptonColls produce method" << std::endl;
 #endif
 
-   Handle<edm::OwnVector<reco::Candidate> > inputJetsColl;
-   iEvent.getByToken(inputJetsToken_, inputJetsColl);
+	Handle<edm::OwnVector<reco::Candidate> > inputJetsColl;
+	iEvent.getByToken(inputJetsToken_, inputJetsColl);
 
-   Handle<edm::OwnVector<reco::Candidate> > inputLeptonsOneColl;
-   iEvent.getByToken(inputLeptonsOneToken_, inputLeptonsOneColl);
+	Handle<edm::OwnVector<reco::Candidate> > inputLeptonsOneColl;
+	iEvent.getByToken(inputLeptonsOneToken_, inputLeptonsOneColl);
 
-   Handle<edm::OwnVector<reco::Candidate> > inputLeptonsTwoColl;
-   iEvent.getByToken(inputLeptonsTwoToken_, inputLeptonsTwoColl);
+	Handle<edm::OwnVector<reco::Candidate> > inputLeptonsTwoColl;
+	iEvent.getByToken(inputLeptonsTwoToken_, inputLeptonsTwoColl);
 
 
 #ifdef DEBUG
-   std::cout<<"made handles to input collections"<<std::endl;
+	std::cout << "made handles to input collections" << std::endl;
 #endif
 
-   ///make two empty output collection to eventually hold the two hardest jets and leptons, and a pointer to both collections
-   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputLeptonOneObjsColl(new edm::OwnVector<reco::Candidate>());
-   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputLeptonTwoObjsColl(new edm::OwnVector<reco::Candidate>());
-   std::auto_ptr<edm::OwnVector<reco::Candidate> > outputJetObjsColl(new edm::OwnVector<reco::Candidate>());
+	///make two empty output collection to eventually hold the two hardest jets and leptons, and a pointer to both collections
+	std::auto_ptr<edm::OwnVector<reco::Candidate> > outputLeptonOneObjsColl(new edm::OwnVector<reco::Candidate>());
+	std::auto_ptr<edm::OwnVector<reco::Candidate> > outputLeptonTwoObjsColl(new edm::OwnVector<reco::Candidate>());
+	std::auto_ptr<edm::OwnVector<reco::Candidate> > outputJetObjsColl(new edm::OwnVector<reco::Candidate>());
 
-  
-   ///find the two highest pT leptons whose dilepton mass is > 200 GeV, and assign const_iterators to these two leptons
-   edm::OwnVector<reco::Candidate>::const_iterator leadLepton=inputLeptonsOneColl->end(), subleadLepton=inputLeptonsTwoColl->end();
-   findLeadingAndSubleading(leadLepton, inputLeptonsOneColl, subleadLepton, inputLeptonsTwoColl, true);
 
-   ///find the two highest pT jets in inputJetsColl
-   edm::OwnVector<reco::Candidate>::const_iterator leadJet=inputJetsColl->end(), subleadJet=inputJetsColl->end();
-   findLeadingAndSubleading(leadJet, subleadJet, inputJetsColl, false);
+	///find the two highest pT leptons whose dilepton mass is > 200 GeV, and assign const_iterators to these two leptons
+	edm::OwnVector<reco::Candidate>::const_iterator leadLepton = inputLeptonsOneColl->end(), subleadLepton = inputLeptonsTwoColl->end();
+	findLeadingAndSubleading(leadLepton, inputLeptonsOneColl, subleadLepton, inputLeptonsTwoColl, true);
 
-   if(leadJet==inputJetsColl->end() || subleadJet==inputJetsColl->end() || leadLepton==inputLeptonsOneColl->end() || subleadLepton==inputLeptonsTwoColl->end() ){
-	   iEvent.put(outputJetObjsColl, outputJetsCollName_);
-	   iEvent.put(outputLeptonOneObjsColl, outputLeptonsOneCollName_);
-	   iEvent.put(outputLeptonTwoObjsColl, outputLeptonsTwoCollName_);
-	   return;
-   }
+	///find the two highest pT jets in inputJetsColl
+	edm::OwnVector<reco::Candidate>::const_iterator leadJet = inputJetsColl->end(), subleadJet = inputJetsColl->end();
+	findLeadingAndSubleading(leadJet, subleadJet, inputJetsColl, false);
 
-   ///check if the four object mass (using the selected leptons and jets) is greater than the threshold value
-   ///if the four obj mass exceeds the threshold, add the two highest pT leptons and jets to the output collections
-   double fourObjMass = (leadJet->p4() + subleadJet->p4() + leadLepton->p4() + subleadLepton->p4()).M();
-   if(fourObjMass > minFourObjMass_){
-	   outputLeptonOneObjsColl->push_back(*leadLepton);
-	   outputLeptonTwoObjsColl->push_back(*subleadLepton);
-	   outputJetObjsColl->push_back(*leadJet);
-	   outputJetObjsColl->push_back(*subleadJet);
-   }///end filter to check that four obj mass is high enough
+	if(leadJet == inputJetsColl->end() || subleadJet == inputJetsColl->end() || leadLepton == inputLeptonsOneColl->end() || subleadLepton == inputLeptonsTwoColl->end() ) {
+		iEvent.put(outputJetObjsColl, outputJetsCollName_);
+		iEvent.put(outputLeptonOneObjsColl, outputLeptonsOneCollName_);
+		iEvent.put(outputLeptonTwoObjsColl, outputLeptonsTwoCollName_);
+		return;
+	}
+
+	///check if the four object mass (using the selected leptons and jets) is greater than the threshold value
+	///if the four obj mass exceeds the threshold, add the two highest pT leptons and jets to the output collections
+	double fourObjMass = (leadJet->p4() + subleadJet->p4() + leadLepton->p4() + subleadLepton->p4()).M();
+	if(fourObjMass > minFourObjMass_) {
+		outputLeptonOneObjsColl->push_back(*leadLepton);
+		outputLeptonTwoObjsColl->push_back(*subleadLepton);
+		outputJetObjsColl->push_back(*leadJet);
+		outputJetObjsColl->push_back(*subleadJet);
+	}///end filter to check that four obj mass is high enough
 
 #ifdef DEBUG
-   std::cout<<"about to put collection of matched reco::Candidate objects into root file"<<std::endl;
+	std::cout << "about to put collection of matched reco::Candidate objects into root file" << std::endl;
 #endif
-  
-   ///now put the collection of matched higher level reco::Candidate objects into the event
-   iEvent.put(outputJetObjsColl, outputJetsCollName_);
-   iEvent.put(outputLeptonOneObjsColl, outputLeptonsOneCollName_);
-   iEvent.put(outputLeptonTwoObjsColl, outputLeptonsTwoCollName_);
- 
+
+	///now put the collection of matched higher level reco::Candidate objects into the event
+	iEvent.put(outputJetObjsColl, outputJetsCollName_);
+	iEvent.put(outputLeptonOneObjsColl, outputLeptonsOneCollName_);
+	iEvent.put(outputLeptonTwoObjsColl, outputLeptonsTwoCollName_);
+
 }
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 applyFourObjMassCutTwoInputLeptonColls::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-applyFourObjMassCutTwoInputLeptonColls::endJob() {
+void
+applyFourObjMassCutTwoInputLeptonColls::endJob()
+{
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -399,7 +403,7 @@ applyFourObjMassCutTwoInputLeptonColls::beginRun(edm::Run const&, edm::EventSetu
 {
 }
 */
- 
+
 // ------------ method called when ending the processing of a run  ------------
 /*
 void
@@ -407,7 +411,7 @@ applyFourObjMassCutTwoInputLeptonColls::endRun(edm::Run const&, edm::EventSetup 
 {
 }
 */
- 
+
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void
@@ -415,7 +419,7 @@ applyFourObjMassCutTwoInputLeptonColls::beginLuminosityBlock(edm::LuminosityBloc
 {
 }
 */
- 
+
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void
@@ -423,15 +427,16 @@ applyFourObjMassCutTwoInputLeptonColls::endLuminosityBlock(edm::LuminosityBlock 
 {
 }
 */
- 
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-applyFourObjMassCutTwoInputLeptonColls::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+applyFourObjMassCutTwoInputLeptonColls::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 
 //define this as a plug-in

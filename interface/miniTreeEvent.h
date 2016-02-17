@@ -6,7 +6,7 @@
 
 /** \class miniTreeEvent miniTreeEvent.h miniTreeEvent.cc
  * This class defines the content of one event in the miniTree produced from microAOD
- * There are also methods to read and to write from a TTree the event 
+ * There are also methods to read and to write from a TTree the event
  */
 class miniTreeEvent
 {

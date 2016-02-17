@@ -48,7 +48,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.scale = myEvent.electron_scale->at(i);
 		ele.smearing = myEvent.electron_smearing->at(i);
 		ele.charge = myEvent.electron_charge->at(i);
-		ele.weight =1.;
+		ele.weight = 1.;
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -59,12 +59,12 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
-/*
-                mu.IDSF = 1;
-                mu.IsoSF = 1;
-                mu.IDSF_error = 0.01;
-                mu.IsoSF_error = 0.01;
-*/
+		/*
+		                mu.IDSF = 1;
+		                mu.IsoSF = 1;
+		                mu.IDSF_error = 0.01;
+		                mu.IsoSF_error = 0.01;
+		*/
 
 		mu.charge = myEvent.muon_charge->at(i);
 		mu.weight = mu.IDSF * mu.IsoSF;
@@ -75,7 +75,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		myJet jet;
 		jet.p4 = myEvent.jets_p4->at(i);
 		jet.jec_uncertainty = myEvent.jec_uncertainty->at(i);
-		jet.weight =1.;
+		jet.weight = 1.;
 		jets.push_back(jet);
 	}
 
@@ -97,10 +97,10 @@ void Selector::Clear()
 bool Selector::isPassing(tag_t tag)
 {
 
-	_isPassing=false;
-	WR_mass=-1;
+	_isPassing = false;
+	WR_mass = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
-	
+
 	myJetCollection gJets;
 	myElectronCollection gEles;
 	myMuonCollection gMuons;
@@ -147,14 +147,14 @@ bool Selector::isPassing(tag_t tag)
 		if(electrons.size() < 2) {
 			return false;
 		}
-		
+
 		lead_lepton_p4 = electrons[0].p4;
 		sublead_lepton_p4 = electrons[1].p4;
 
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
-	}else if(tag == 1) { // MuMuJJ Channel
+	} else if(tag == 1) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
 			return false;
@@ -166,7 +166,7 @@ bool Selector::isPassing(tag_t tag)
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
 
-	}else if(tag == 2) { // EMuJJ Channel
+	} else if(tag == 2) { // EMuJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 1 || muons.size() < 1) {
 			return false;
@@ -176,23 +176,23 @@ bool Selector::isPassing(tag_t tag)
 
 //////////////////////////////////////////////////////
 		// check which is the leading, which the subleading
-		if(electrons[0].p4.Pt() > muons[0].p4.Pt()){ // e > mu
+		if(electrons[0].p4.Pt() > muons[0].p4.Pt()) { // e > mu
 			lead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_p4 = muons[0].p4;
 
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
-		} else{
+		} else {
 
 			sublead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_weight = electrons[0].weight;
 
-			lead_lepton_p4 = muons[0].p4;			
+			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
 		}
 	}
 
-   // check eta and pt cuts
+	// check eta and pt cuts
 	if(lead_lepton_p4.Pt() < 60) return false;
 	if(sublead_lepton_p4.Pt() < 50) return false;
 
@@ -200,7 +200,7 @@ bool Selector::isPassing(tag_t tag)
 	if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
 	if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
 	if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
-	
+
 	lead_lepton_pt = lead_lepton_p4.Pt();
 	lead_lepton_eta = lead_lepton_p4.Eta();
 	lead_lepton_phi = lead_lepton_p4.Phi();
@@ -208,15 +208,15 @@ bool Selector::isPassing(tag_t tag)
 	sublead_lepton_pt = sublead_lepton_p4.Pt();
 	sublead_lepton_eta = sublead_lepton_p4.Eta();
 	sublead_lepton_phi = sublead_lepton_p4.Phi();
-	
+
 
 	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
 	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
 	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
-	
-	_isPassing=true;
+
+	_isPassing = true;
 	return _isPassing;
 
 }

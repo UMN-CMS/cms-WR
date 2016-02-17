@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cassert>
 
-#include <TChain.h> 
+#include <TChain.h>
 
 class configLine
 {
@@ -27,12 +27,12 @@ public:
 };
 
 
-	
+
 class configReader
 {
 public:
 	configReader(std::string filename);
-	
+
 	friend std::ostream& operator <<(std::ostream& os, configReader& r);
 
 	inline configLine::norm_t getNorm1fb(std::string datasetName) const
@@ -46,8 +46,8 @@ public:
 
 	TChain *getMiniTreeChain(std::string datasetName, std::string tag);
 	TChain *getMiniTreeChain(std::vector<std::string> datasetNames, std::string tag);
-	
-		
+
+
 private:
 	std::map<std::string, configLine> configMap;
 	std::map<std::string, std::string> configFile;

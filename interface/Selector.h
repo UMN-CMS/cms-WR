@@ -36,7 +36,7 @@ public:
 	Float_t lead_lepton_weight;
 	Float_t sublead_lepton_weight;
 	Float_t lead_jet_weight;
-	Float_t sublead_jet_weight; 
+	Float_t sublead_jet_weight;
 
 	Float_t weight; ///< this variable takes into accont the product of the global_event_weight and the single object weights
 
