@@ -50,12 +50,12 @@ int main(void)
 // KEY: TDirectoryFile   zToEEAnalyzer;1 zToEEAnalyzer
 // KEY: TDirectoryFile   zToMuMuAnalyzer;1       zToMuMuAnalyzer
 
-	std::vector<std::string> TTchainNames; 
+	std::vector<std::string> TTchainNames;
 	TTchainNames.push_back("TTJets_DiLept_v1");
 	TTchainNames.push_back("TTJets_DiLept_v2");
 	TChain *chain = (myReader.getMiniTreeChain(TTchainNames, "miniTree_dytagandprobe"));
 	std::cout << chain->GetEntries() << std::endl;
-    // if you want to check if the config file is read correctly:
+	// if you want to check if the config file is read correctly:
 #ifdef DEBUG
 	std::cout << myReader << std::endl;
 #endif
@@ -88,21 +88,21 @@ int main(void)
 	std::ifstream Syst_File;
 
 	std::cout << "[INFO] Reading systematics to be evaluated" << std::endl;
-	std::string systFileName="Systematics_To_Be_Evaluated.txt";
+	std::string systFileName = "Systematics_To_Be_Evaluated.txt";
 	Syst_File.open(systFileName);
-	if(Syst_File.is_open()==false){
+	if(Syst_File.is_open() == false) {
 		std::cerr << "[ERROR] File " << systFileName << " not opened. Check if the file exists" << std::endl;
 		return 1;
 	}
 
-	while(Syst_File.peek()!=EOF && Syst_File.good()) {
-		if(Syst_File.peek()==10){ // 10 = \n
-			Syst_File.get(); 
+	while(Syst_File.peek() != EOF && Syst_File.good()) {
+		if(Syst_File.peek() == 10) { // 10 = \n
+			Syst_File.get();
 			continue;
 		}
 
-		if(Syst_File.peek() == 35){ // 35 = #
-			Syst_File.ignore(1000,10); // ignore the rest of the line until \n
+		if(Syst_File.peek() == 35) { // 35 = #
+			Syst_File.ignore(1000, 10); // ignore the rest of the line until \n
 			continue;
 		}
 
@@ -111,7 +111,7 @@ int main(void)
 		List_Systematics.push_back(word);
 	}
 	std::cout << "[INFO] nSyst = " << List_Systematics.size() << std::endl;
-	if(List_Systematics.size()==0){
+	if(List_Systematics.size() == 0) {
 		std::cerr << "[ERROR] No systematics defined!" << std::endl;
 		return 1;
 
@@ -140,12 +140,12 @@ int main(void)
 				cout << m.Pt() << " " << m.Eta() << endl;
 #endif
 
-			for(int Rand_Smear_Iter=0;Rand_Smear_Iter<Total_Number_of_Systematics_Smear;Rand_Smear_Iter++)
-				Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0,1.);
-			
+			for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
+				Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
+
 			//ToyThrower(myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
 
-			
+
 
 			// Select events with one good WR candidate
 			// Tags:
@@ -153,7 +153,7 @@ int main(void)
 			// 1 -- MuMuJJ Channel
 			// 2 -- EMuJJ Channel
 
-			
+
 
 			if(selEvent.isPassing(Selector::EMu) && selEvent.dilepton_mass > 200) {
 				float weight = selEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
@@ -167,7 +167,7 @@ int main(void)
 			}
 
 		}
-		assert(tempDataSet->sumEntries()>0);
+		assert(tempDataSet->sumEntries() > 0);
 
 //		t1->Write();
 
