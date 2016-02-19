@@ -8,6 +8,6 @@
 #include <string>
 #include <vector>
 
-void ToyThrower(miniTreeEvent myEvent,  float *rand_smear, float *rand_up_down, int random_seed, std::vector<std::string> list, int isData);
+void ToyThrower(miniTreeEvent* myEvent,  float *rand_smear, float *rand_up_down, int random_seed, std::vector<std::string> list, int isData);
 
 #endif

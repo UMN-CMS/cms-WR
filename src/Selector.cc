@@ -59,6 +59,13 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
+		/*
+		                mu.IDSF = 1;
+		                mu.IsoSF = 1;
+		                mu.IDSF_error = 0.01;
+		                mu.IsoSF_error = 0.01;
+		*/
+
 		mu.charge = myEvent.muon_charge->at(i);
 		mu.weight = mu.IDSF * mu.IsoSF;
 		muons.push_back(mu);
@@ -165,6 +172,9 @@ bool Selector::isPassing(tag_t tag)
 			return false;
 		}
 
+//////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
 		// check which is the leading, which the subleading
 		if(electrons[0].p4.Pt() > muons[0].p4.Pt()) { // e > mu
 			lead_lepton_p4 = electrons[0].p4;
@@ -172,7 +182,6 @@ bool Selector::isPassing(tag_t tag)
 
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
-
 		} else {
 
 			sublead_lepton_p4 = electrons[0].p4;
