@@ -36,7 +36,7 @@
 int main(void)
 {
   char name[100];// to name the tree per iteration of the Toy  
-  float integratedLumi = 2.4e3; ///\todo should not be hard-coded!!!
+  float integratedLumi = 2.52e3; ///\todo should not be hard-coded!!!
   using namespace RooFit;
   std::cout << "******************************* Analysis ******************************" << std::endl;
   std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
@@ -68,7 +68,7 @@ int main(void)
   modes.push_back("data_EMu");
   modes.push_back("data_EE");
   modes.push_back("data_MuMu");
-  channel = Selector::MuMu;
+  channel = Selector::EE;
 
   for(auto m: modes) {
     TString tree_channel = "";
@@ -79,7 +79,7 @@ int main(void)
 
     // Select the dataset to run over //
     if(mode.EqualTo("ttbar")){
-      TTchainNames.push_back("TTJets_DiLept_v1");
+      //TTchainNames.push_back("TTJets_DiLept_v1");
       TTchainNames.push_back("TTJets_DiLept_v2");
     }
     else if(mode.EqualTo("DYMuMu")){
@@ -142,9 +142,9 @@ int main(void)
     }
     // Select the channel to be studied //
     if(channel == 0)
-      tree_channel = "_signal_ee";
+      tree_channel = "_lowdileptonsideband";//"_signal_ee";
     else if(channel == 1)
-      tree_channel = "_signal_mumu";
+      tree_channel = "_lowdileptonsideband";//"_signal_mumu";
     else if(channel == 2)
       tree_channel = "_flavoursideband";
     else
@@ -159,7 +159,7 @@ int main(void)
 #endif	
 
     // Plotting trees
-    TFile f("selected_tree_" + mode + tree_channel + ".root", "recreate");
+    TFile f("selected_tree_" + mode + tree_channel + std::to_string(channel) + ".root", "recreate");
     // store the fitted results for every toy in a tree
     TTree * tf1 = new TTree("tf1", "");
     Float_t normalization;
@@ -275,7 +275,15 @@ int main(void)
 	}
 #endif		
 
-	if(selEvent.isPassing(channel) && selEvent.dilepton_mass < 200) {
+	if(selEvent.isPassing(channel)) {
+
+	  bool dilepton_cut = (channel == Selector::EMu) ? (selEvent.dilepton_mass > 200):(selEvent.dilepton_mass < 200);
+
+	  if(!dilepton_cut)
+	    continue;
+
+	  //std::cout<<myEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
+
 	  if(isData == 0)
 	    selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 	  else
