@@ -44,11 +44,15 @@ int main(void)
 	std::vector<TString> modes;
 
 	modes.push_back("ttbar");
-	//modes.push_back("DYMuMu");
-	//modes.push_back("WJets");
-	modes.push_back("WZ");
-	modes.push_back("ZZ");
-	modes.push_back("data_EMu");
+  modes.push_back("DYMuMu");
+  modes.push_back("DYEE");
+  modes.push_back("WJets");
+  modes.push_back("WZ");
+  modes.push_back("ZZ");
+  modes.push_back("data_EMu");
+  modes.push_back("data_EE");
+  modes.push_back("data_MuMu");
+  channel = Selector::EE;
 
 	TString tree_channel = "";
 	// Select the channel to be studied //
@@ -70,11 +74,15 @@ int main(void)
 		int isData = 0; // Fill in with 1 or 0 based on information from the trees
 		std::vector<std::string> TTchainNames;
 		TString mode = m;
+    bool run_toys = true;
 
 		// Select the dataset to run over //
-		if(mode.EqualTo("ttbar")) {
-			TTchainNames.push_back("TTJets_DiLept_v1");
-		} else if(mode.EqualTo("DYMuMu")) {
+    if(mode.EqualTo("ttbar")){
+      //TTchainNames.push_back("TTJets_DiLept_v1");
+      TTchainNames.push_back("TTJets_DiLept_v2");
+    }
+    else if(mode.EqualTo("DYMuMu")){
+      TTchainNames.push_back("DYToMuMu_powheg_50to120");
 			TTchainNames.push_back("DYToMuMu_powheg_120to200");
 			TTchainNames.push_back("DYToMuMu_powheg_200to400");
 			TTchainNames.push_back("DYToMuMu_powheg_400to800");
@@ -84,20 +92,64 @@ int main(void)
 			TTchainNames.push_back("DYToMuMu_powheg_3500to4500");
 			TTchainNames.push_back("DYToMuMu_powheg_4500to6000");
 			TTchainNames.push_back("DYToMuMu_powheg_6000toInf");
-		} else if(mode.EqualTo("WJets")) {
-			TTchainNames.push_back("WJetsLNu");
-		} else if(mode.EqualTo("WZ")) {
-			TTchainNames.push_back("WZ");
-		} else if(mode.EqualTo("ZZ")) {
-			TTchainNames.push_back("ZZ");
-		} else if(mode.EqualTo("data_EMu")) {
+      if(channel == Selector::EMu)
+	run_toys = false;
+    }
+    else if(mode.EqualTo("DYEE")){
+      TTchainNames.push_back("DYToEE_powheg_50to120");
+      TTchainNames.push_back("DYToEE_powheg_120to200");
+      TTchainNames.push_back("DYToEE_powheg_200to400");
+      TTchainNames.push_back("DYToEE_powheg_400to800");
+      TTchainNames.push_back("DYToEE_powheg_800to1400");
+      TTchainNames.push_back("DYToEE_powheg_1400to2300");
+      TTchainNames.push_back("DYToEE_powheg_2300to3500");
+      TTchainNames.push_back("DYToEE_powheg_3500to4500");
+      TTchainNames.push_back("DYToEE_powheg_4500to6000");
+      TTchainNames.push_back("DYToEE_powheg_6000toInf");
+      if(channel == Selector::EMu)
+	run_toys = false;
+    }
+    else if(mode.EqualTo("WJets")){
+      TTchainNames.push_back("WJetsLNu");
+      run_toys = false;
+    }
+    else if(mode.EqualTo("WZ")){
+      TTchainNames.push_back("WZ");
+      run_toys = false;
+    }
+    else if(mode.EqualTo("ZZ")){
+      TTchainNames.push_back("ZZ");
+      run_toys = false;
+    }
+    else if(mode.EqualTo("data_EMu")){
 			isData = 1;
 			TTchainNames.push_back("MuEG_RunC");
 			TTchainNames.push_back("MuEG_RunD_v3");
 			TTchainNames.push_back("MuEG_RunD_v4");
 		}
+    else if(mode.EqualTo("data_EE")){
+      isData = 1;
+      TTchainNames.push_back("DoubleEG_RunC");
+      TTchainNames.push_back("DoubleEG_RunD_v3");
+      TTchainNames.push_back("DoubleEG_RunD_v4");
+    }
+    else if(mode.EqualTo("data_MuMu")){
+      isData = 1;
+      TTchainNames.push_back("SingleMu_RunC");
+      TTchainNames.push_back("SingleMu_RunD_v3");
+      TTchainNames.push_back("SingleMu_RunD_v4");
+    }
+    // Select the channel to be studied //
+    if(channel == 0)
+      tree_channel = "_lowdileptonsideband";//"_signal_ee";
+    else if(channel == 1)
+      tree_channel = "_lowdileptonsideband";//"_signal_mumu";
+    else if(channel == 2)
+      tree_channel = "_flavoursideband";
+    else
+      tree_channel = "";
 
-		TChain *c = myReader.getMiniTreeChain(TTchainNames, treeName);
+    TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
 		std::cout << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
@@ -106,14 +158,21 @@ int main(void)
 #endif
 
 		// Plotting trees
-		TFile f("selected_tree_" + mode + tree_channel + ".root", "recreate");
+    TFile f("selected_tree_" + mode + tree_channel + std::to_string(channel) + ".root", "recreate");
+    // store the fitted results for every toy in a tree
+    TTree * tf1 = new TTree("tf1", "");
+    Float_t normalization;
+    std::vector<Float_t> fit_parameters, fit_parameter_errors;
+    tf1->Branch("Normalization", &normalization);
+    tf1->Branch("FitParameters", &fit_parameters);
+    tf1->Branch("FitParameterErrors", &fit_parameter_errors);
 
 		miniTreeEvent myEvent;
 
 		myEvent.SetBranchAddresses(c);
 		Selector selEvent;
 
-		const Int_t nToys = 2;
+    const Int_t nToys = 1;
 		TTree * t1[nToys];
 		Int_t nEntries = c->GetEntries();
 
@@ -215,7 +274,15 @@ int main(void)
 				}
 #endif
 
-				if(selEvent.isPassing(channel) && selEvent.dilepton_mass > 200) {
+	if(selEvent.isPassing(channel)) {
+
+	  bool dilepton_cut = (channel == Selector::EMu) ? (selEvent.dilepton_mass > 200):(selEvent.dilepton_mass < 200);
+
+	  if(!dilepton_cut)
+	    continue;
+
+	  //std::cout<<myEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
+
 					if(isData == 0)
 						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 					else
@@ -229,22 +296,59 @@ int main(void)
 				}
 
 			}
-			assert(tempDataSet->sumEntries() > 0);
 
 			if(i == 0) {
 				t1[i]->Write();
 				tempDataSet->Write();
 			}
-			tempDataSet->Print();
-			//tempDataSet->Print();
 
-			//RooFitResult * tempFitRslt = NULL;
-			//fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
 
-			//std::cout << "Res=" << std::endl;
-			//expPdfRooAbsPdf->Print();
+      tempDataSet->Print();
 
+      if(mode.EqualTo("ttbar")){
+
+	assert(tempDataSet->sumEntries()>0);
+	expPower.setVal(-0.004);
+
+	RooFitResult * tempFitRslt = NULL;
+	// fit dataset to given PDF
+	fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+
+	// std::cout << "Res=" << std::endl;
+	// expPdfRooAbsPdf->Print();
+
+	// dataset normalization is the number of entries in the dataset
+	normalization = tempDataSet->sumEntries();
+	// set of variables in the PDF
+	RooArgSet *vset = expPdfRooAbsPdf->getVariables();
+	// these variables are stored in vectors
+	// clear these vector for each iteration
+	fit_parameters.clear();
+	fit_parameter_errors.clear();
+
+	// loop over RooRealVars in the set
+	TIterator * iter = vset->createIterator();
+	TObject * var = iter->Next();
+	RooRealVar *var_pdf;
+	while (var){
+	  // ignore the M_WR variable
+	  if(strcmp(var->GetName(), "fourObjectMass") != 0){
+	    var_pdf = (RooRealVar*)vset->find(var->GetName());
+	    // store the value of the fitted parameters and the corresponding errors
+	    fit_parameters.push_back(var_pdf->getVal());
+	    fit_parameter_errors.push_back(var_pdf->getError());
+	  }
+	  var = iter->Next();
+	}
+	// fill the tree with the normalization, parameters, and errors
+	tf1->Fill();
+      }
+      if(!run_toys)
+	break;
 		}
+    // only write the fitted branch for the modes that make sense (ttbar, DY, and data)
+    if(mode.EqualTo("ttbar")) // add the other modes later
+      tf1->Write();
 	}
 	return 0;
 
