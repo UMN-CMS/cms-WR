@@ -282,12 +282,15 @@ int main(void)
 	  if(!dilepton_cut)
 	    continue;
 
-	  //std::cout<<myEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
+	  //std::cout<<selEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
 
 	  if(isData == 0)
-	    selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+	    selEvent.weight = selEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 	  else
-	    selEvent.weight = 1.0;
+	    selEvent.weight = 1.0;//selEvent.weight;
+
+	  selEvent.nPV = myEvent.nPV;
+
 	  massWR.setVal(selEvent.WR_mass);
 	  evtWeight.setVal(selEvent.weight);
 	  tempDataSet->add(vars);
