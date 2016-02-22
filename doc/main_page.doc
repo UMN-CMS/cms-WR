@@ -80,24 +80,28 @@ Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
 \subpar muons
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
 
-\par Making selector plots
-In order to make the selected plots, first the minitree has to pass through the selection module. Edit and run with compilation
+\par Making data/MC comparison plots
+To make the data/MC plots for the flavor and low dilepton mass
+sidebands, first run the analysis code with only 1 toy. 
+For flavor sideband:
+Edit the analysis.cpp file for nToys=1 and channel=Selector::EMu. The script
+will loop over all the datasets and produce root files called
+selected_tree_*_flavoursideband2.root.
 \verbatim
-root -l test/tmp.C+
+make;./bin/analysis
+\endverbatim
+These files are the input to the plotting script. To make the plots,
+edit the plotting script so that the channel matches the one chosen in
+the analysis script. Make channel = Selector::EMu
+\verbatim
+cd test
+mkdir test/plots/Flavor
+mkdir test/plots/EELowDilepton
+mkdir test/plots/MuMuLowDilepton
+root -b miniPlotter.C
 \endverbatim
 
-The selection step will produce an output flat tree given for the given parameters (ttbar,DY, EEJJ, MuMuJJ channel, etc.).
-
-Create a directory to store the plots
-\verbatim
-mkdir test/plots
-\endverbatim
-
-The plotting script will take in the background samples and data sample to produced stacked plots for data/MC comparisons. Run
-\verbatim
-root -b test/miniPlotter.C
-\endverbatim
-
+Repeat the previous steps with the different channel options(EE or MuMu).
 
 \par GIT instructions
 The main branch is downloaded by default the first time you download the code. It is \b shervinWorking

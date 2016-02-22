@@ -194,7 +194,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
   THStack* th = new THStack();
   hs_DY->SetFillColor(kYellow);
-  hs_DY->Scale(2079.4/1.975e+03);
   hs_ttbar->SetFillColor(kGreen);
   hs_WJets->SetFillColor(kBlue);
   hs_WZ->SetFillColor(kCyan);
@@ -260,12 +259,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
 
   if(channel == Selector::EMu)
-    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
+    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
+    fn = "plots/Flavor/"+fname;
   if(channel == Selector::EE)
-    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
+    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
+    fn = "plots/EELowDilepton/"+fname;
   if(channel == Selector::MuMu)
-    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
-
+    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
+    fn = "plots/MuMuLowDilepton/"+fname;
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
