@@ -4,37 +4,37 @@ from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
 import ROOT 
 
 class limit1d:
-	plus1sig = []
-	min1sig = []
-	plus2sig = []
-	min2sig = []
-	means = []
-	medians = []
-	errors = []
-	masses = []
 	def __init__(self,xs=None):
+		self.plus1sig = []
+		self.min1sig = []
+		self.plus2sig = []
+		self.min2sig = []
+		self.medians = []
+		self.errors = []
+		self.masses = []
+		self.observed = []
 		self.theory = None
 		if xs is None:
 			xs = 1
 		self.xs = xs
 	def add(self, mass, point):
-		median, (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = point
-		self.masses.append(mass)
-		self.means.append(mean)
-		self.medians.append(median)
-		self.errors.append(meanError)
-		self.plus1sig.append(onesig_plus)
-		self.min1sig.append(onesig_minus)
-		self.plus2sig.append(twosig_plus)
-		self.min2sig.append(twosig_minus)
+		median, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = point
+		self.masses.append(float(mass))
+		self.medians.append(float(median))
+		self.plus1sig.append(float(onesig_plus))
+		self.min1sig.append(float(onesig_minus))
+		self.plus2sig.append(float(twosig_plus))
+		self.min2sig.append(float(twosig_minus))
+	def addObserved(self, mass, point):
+		self.observed.append(float(point))
 	def addTheory(self, theory):
 		self.theory = theory
 
 	def plot(self, filename, x_title="", y_title="",
 			x_limits=(600,6000), y_limits=(1e-3, 1e-1), 
-			leg_x = .55, leg_y=.66):
-		#customROOTstyle()
-		ROOT.gROOT.LoadMacro("scripts/tdrStyle.C")
+			leg_x = .55, leg_y=.66, SetLogx=False):
+		customROOTstyle()
+		#ROOT.gROOT.LoadMacro("scripts/tdrStyle.C")
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 		c1.SetTopMargin(0.05);
 		c1.SetLeftMargin(0.15);
@@ -42,13 +42,23 @@ class limit1d:
 		c1.SetBottomMargin(0.13);
 		c1.SetTicks(1,1);
 		c1.SetLogy();
+		if SetLogx:
+			c1.SetLogx()
 
 		mass_array = np.array(self.masses, dtype=float)
-		expected_limit_array = np.array(self.medians, dtype=float)*self.xs
-		expected_limit_error_array = np.array(self.errors, dtype=float)*self.xs
-		onesig_array = np.array(self.plus1sig + self.min1sig[::-1] + [self.plus1sig[0]], dtype=float)*self.xs
-		twosig_array = np.array(self.plus2sig + self.min2sig[::-1] + [self.plus2sig[0]], dtype=float)*self.xs
+		expected_limit_array = np.array(self.medians, dtype=float)
+		expected_limit_error_array = np.array(self.errors, dtype=float)
+		onesig_array = np.array(self.plus1sig + self.min1sig[::-1] + [self.plus1sig[0]], dtype=float)
+		twosig_array = np.array(self.plus2sig + self.min2sig[::-1] + [self.plus2sig[0]], dtype=float)
 		mass_band_array = np.array(self.masses + self.masses[::-1] + [self.masses[0]], dtype=float)
+
+		if self.theory:
+			#expected_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, expected_limit_array)], dtype=float)
+			#onesig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, onesig_array)   ], dtype=float) 
+			#twosig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, twosig_array)   ], dtype=float) 
+			expected_limit_array *= self.xs
+			onesig_array *= self.xs
+			twosig_array *= self.xs
 
 		dummy = ROOT.TH1F("dummy","",30,x_limits[0], x_limits[1])
 		dummy.SetMinimum(y_limits[0])
@@ -75,6 +85,7 @@ class limit1d:
 		leg.SetBorderSize(0);
 
 		n = len(self.masses)
+
 		g_twosig = ROOT.TGraph(n*2+1, mass_band_array, twosig_array)
 		g_twosig.SetFillColor(ROOT.kYellow)
 		g_twosig.SetLineWidth(0)
@@ -85,8 +96,10 @@ class limit1d:
 		g_onesig.SetLineWidth(0)
 		g_onesig.Draw("F SAME")
 
-		print self.min2sig, self.plus2sig
-		print twosig_array
+		g_exp = ROOT.TGraph(n,mass_array, expected_limit_array);
+		g_exp.SetLineWidth(2);
+		g_exp.SetLineColor(ROOT.kBlue); g_exp.SetLineStyle(2);
+		g_exp.Draw("L SAME");
 
 		if self.theory:
 			ntheory = len(self.theory)
@@ -100,11 +113,22 @@ class limit1d:
 			g_theory.SetFillColor(ROOT.kRed);
 			g_theory.Draw("L SAME")
 
-		g_exp = ROOT.TGraph(n,mass_array, expected_limit_array);
-		g_exp.SetLineWidth(2);
-		g_exp.SetLineColor(ROOT.kBlue); g_exp.SetLineStyle(2);
-		g_exp.Draw("L SAME");
+		if self.observed:
+			nobs = len(self.observed)
+			observed_limit_array = np.array( self.observed, dtype=float)
+			if self.theory:
+				#observed_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, observed_limit_array)], dtype=float)
+				observed_limit_array *= self.xs
+			g_obs = ROOT.TGraph(nobs, mass_array, observed_limit_array)
+			g_obs.SetLineWidth(3);
+			g_obs.SetLineColor(ROOT.kBlue+2);
+			g_obs.SetLineStyle(0);
+			g_obs.SetFillStyle(3002);
+			g_obs.SetFillColor(ROOT.kBlue+2);
+			g_obs.Draw("L SAME")
 		
+		if self.observed:
+			leg.AddEntry(g_obs,"Observed limit","L")
 		leg.AddEntry(g_exp, "Expected limit","L")
 		leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
 		leg.AddEntry(g_twosig, "Expected #pm 2 #sigma", "F")
@@ -122,4 +146,5 @@ class limit1d:
 		c1.RedrawAxis()
 		c1.SaveAs(filename + ".png")
 		c1.SaveAs(filename + ".pdf")
+		c1.SaveAs(filename + ".C")
 

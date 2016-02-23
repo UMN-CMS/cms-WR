@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import ROOT as r
 import re
 import numpy as np
@@ -6,7 +8,10 @@ from random import gauss
 import ExoAnalysis.cmsWR.backgroundFits as bgfits
 import ExoAnalysis.cmsWR.cross_sections as xs
 import math
+import datetime
+from os import environ
 
+datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data"
 ##
 # @brief creates a datacard for combine for signal and background
 #
@@ -40,7 +45,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		if systematics:
 			out.write("kmax %d  number of nuisance parameters\n" % nSystematics)
 		out.write("bin " + bin_name + "\n")
-		out.write("observation %.4g\n" % nObs)
+		out.write("observation %d\n" % round(nObs))
 		out.write("------------\n")
 		out.write("bin" + ("    " + bin_name)* (nBGs + 1) + "\n")
 		out.write("process  " + names + "\n")
@@ -63,7 +68,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 #
 # @return TH1F of fourobjectmass
 def getEEJJMassHisto(MWR, binsize=100):
-	filename = "data/all_analyzed_tree_hltAndAllRecoOfflineCuts_eejjSignalRegion_WR_M-%d_Nu_M-%d.root" % (MWR, MWR/2)
+	filename = datafolder + "/all_analyzed_tree_hltAndAllRecoOfflineCuts_eejjSignalRegion_WR_M-%d_Nu_M-%d.root" % (MWR, MWR/2)
 	dirname =  "unmatchedSignalRecoAnalyzerFive"
 	treename = "signalRecoObjectsWithAllCuts"
 	histname = "WR_eejj_" + str(MWR)
@@ -78,7 +83,7 @@ def getEEJJMassHisto(MWR, binsize=100):
 	return h
 
 def getMuMuJJMassHisto(MWR, binsize=100):
-	filename = "data/mumu_histos.root"
+	filename = datafolder + "/mumu_histos.root"
 	infile = r.TFile.Open(filename)
 	r.gROOT.cd()
 	h = infile.Get("h_" + str(MWR)).Clone()
@@ -94,11 +99,11 @@ def getSignalMassHisto(MWR, channel, binsize=100):
 
 def getTTBarNEvents(MWR, channel, lumi):
 	if "ee" in channel or "EE" in channel:
-		filename = "data/ttBarBkgndEleEstimate.root"
+		filename = datafolder + "/ttBarBkgndEleEstimate.root"
 		workname = "ttBarElectronEstimate"
 		corr_name = "EEtoEMuCorrection"
 	else:
-		filename = "data/ttBarBkgndMuonEstimate.root"
+		filename = datafolder + "/ttBarBkgndMuonEstimate.root"
 		workname = "ttBarMuonEstimate"
 		corr_name = "MuMutoEMuCorrection"
 	f = r.TFile.Open(filename)
@@ -121,11 +126,11 @@ def getTTBarNEvents(MWR, channel, lumi):
 
 def getDYNEvents(MWR, channel, lumi):
 	if "ee" in channel or "EE" in channel:
-		filename = "data/DYElectronFits.root"
+		filename = datafolder + "/DYElectronFits.root"
 		workname = "DYElectronFits"
 		dataname = "DY_EEDataSet_120to200"
 	else:
-		filename = "data/DYMuonFits.root"
+		filename = datafolder + "/DYMuonFits.root"
 		workname = "DYMuonFits"
 		dataname = "DY_MuMuDataSet_120to200"
 
@@ -167,20 +172,49 @@ def getNEvents(MWR, channel, process, lumi):
 #
 # @return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
 def runCombine(command):
+	name  = "combine" + datetime.datetime.now().time().isoformat()
+	out_file = open(name + ".out", "w+")
+	err_file = open(name + ".err", "w")
+	command = "unbuffer " + command
+	command = command.split(' ')
 	try:
-		output = subprocess.check_output(command)
-		p = re.compile(r'median expected limit: r < ([0-9.]*)')
-		median = p.search(output).group(1)
-		p = re.compile(r'mean   expected limit: r < ([0-9.]*) \+/- ([0-9.]*)')
-		mean,meanError = p.search(output).groups()
-		p = re.compile(r'68% expected band : ([0-9.]*) < r < ([0-9.]*)')
-		onesig_minus,onesig_plus = p.search(output).groups()
-		p = re.compile(r'95% expected band : ([0-9.]*) < r < ([0-9.]*)')
-		twosig_minus,twosig_plus = p.search(output).groups()
-		return median, (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
-	except:
-		errfile = open("_".join(command) + ".err","w")
-		errfile.write(output)
+		if "HybridNew" in command:
+			rs = []
+			for q in [.025, .16, 0.5, .84, .975]:
+				#print q
+				run_command = command + ["--expectedFromGrid=%f" % q]
+				#print " ".join(run_command)
+				subprocess.call(run_command, stdout=out_file, stderr=err_file)
+				out_file.seek(0)
+				output = out_file.read()
+				p = re.compile(r'Limit: r < ([0-9.]*)')
+ 				matches  = p.findall(output)
+				rs.append(matches[-1])
+			twosig_minus, onesig_minus, median, onesig_plus, twosig_plus = tuple(rs)
+		else:
+			#print " ".join(command)
+			subprocess.call(command, stdout=out_file, stderr=err_file)
+			out_file.seek(0)
+			output = out_file.read()
+			if not "--toys" in command:
+				p = re.compile(r'Limit: r < ([0-9.]*)')
+ 				matches  = p.findall(output)
+ 				if not matches: raise RuntimeError
+				return matches[-1]
+			p = re.compile(r'median expected limit: r < ([0-9.]*)')
+			median = p.search(output).group(1)
+			p = re.compile(r'68% expected band : ([0-9.]*) < r < ([0-9.]*)')
+			onesig_minus,onesig_plus = p.search(output).groups()
+			p = re.compile(r'95% expected band : ([0-9.]*) < r < ([0-9.]*)')
+			twosig_minus,twosig_plus = p.search(output).groups()
+
+		if not all([median, onesig_minus, onesig_plus, twosig_minus, twosig_plus]):
+			print "combine parse failed"
+			print median, onesig_minus, onesig_plus, twosig_minus, twosig_plus
+			raise TypeError
+		return median, (onesig_minus, onesig_plus), (twosig_minus, twosig_plus)
+	except Exception as e:
+		raise e
 		return None
 
 mass_cut = {
@@ -207,3 +241,11 @@ mass_cut = {
 		5800:(3000, 6650),
 		6000:(3000, 6900),
 		}
+
+import sys
+if __name__ == '__main__':
+	ID = sys.argv[1]
+	command = " ".join(sys.argv[2:])
+	print command
+	result = runCombine(command)
+	print ("COMBINE", ID, result)
