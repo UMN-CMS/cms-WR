@@ -130,7 +130,7 @@ void producePileupWeight::produce(edm::Event& event, const edm::EventSetup&)
 			if(BX == 0)
 				nPU = p.getTrueNumInteractions();
 		}
-		PU_weight = pu_weights[nPU];
+		PU_weight = pu_weights[int(nPU)];
 	}
 	std::auto_ptr<float> PU_weight_ptr(new float(PU_weight));
 	event.put(PU_weight_ptr, outputCollName);
