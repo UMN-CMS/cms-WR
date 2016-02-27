@@ -1,4 +1,6 @@
 #!/bin/bash
+### Instructions found here:
+### https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer
 
 myPWD=$PWD
 logDir=$myPWD/logs/

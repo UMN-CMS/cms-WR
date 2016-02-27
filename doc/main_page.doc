@@ -26,6 +26,11 @@ Once the dataset is entered in the datasets.dat config file putting dashes for c
  ./scripts/getXsec.sh
 \endverbatim
 to update the file with the estimated cross sections
+Cross sections for SM processes can be found here:
+ttps://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
+
+Instructions on how to get the cross sections of a MC sample: https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer
+
 
 \par Skims
 \ref skim_page
