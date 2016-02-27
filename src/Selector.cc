@@ -79,7 +79,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		jets.push_back(jet);
 	}
 
-	global_event_weight = myEvent.weight * myEvent.PU_reweight;
+	global_event_weight = myEvent.weight * myEvent.PU_reweight;	
 
 //	Clear();
 }
@@ -136,6 +136,7 @@ bool Selector::isPassing(tag_t tag)
 	lead_jet_eta = jets[0].p4.Eta();
 	lead_jet_phi = jets[0].p4.Phi();
 	lead_jet_weight = 1.0;
+	sublead_jet_weight = 1.0;
 
 	sublead_jet_pt = jets[1].p4.Pt();
 	sublead_jet_eta = jets[1].p4.Eta();
@@ -212,7 +213,7 @@ bool Selector::isPassing(tag_t tag)
 
 	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
 	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
-	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
+	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;	
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 
@@ -236,6 +237,7 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("sublead_jet_eta", &sublead_jet_eta);
 	tree->Branch("lead_jet_phi", &lead_jet_phi);
 	tree->Branch("sublead_jet_phi", &sublead_jet_phi);
+	tree->Branch("nPV", &nPV);
 
 	tree->Branch("weight", &weight);
 	tree->Branch("WR_mass", &WR_mass);
@@ -259,6 +261,7 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("sublead_jet_pt", &sublead_jet_pt);
 	tree->SetBranchAddress("sublead_jet_eta", &sublead_jet_eta);
 	tree->SetBranchAddress("sublead_jet_phi", &sublead_jet_phi);
+	tree->SetBranchAddress("nPV", &nPV);
 
 	tree->SetBranchAddress("weight", &weight);
 	tree->SetBranchAddress("WR_mass", &WR_mass);

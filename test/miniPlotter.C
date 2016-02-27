@@ -22,7 +22,7 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
@@ -95,11 +95,13 @@ void miniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  //hs_ttbar[0]->Draw();
+  // hs_data[13]->SetLineColor(kRed);
+  // hs_data[13]->Draw();
+  // hs_ttbar[13]->Draw("same");
   
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -130,6 +132,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   if(channel == Selector::EMu)
     dilepton_max = 1000;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
+  TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -154,6 +157,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
       
     h_WR_mass->Fill(myEvent->WR_mass,myEvent->weight);
     h_dilepton_mass->Fill(myEvent->dilepton_mass,myEvent->weight);
+    h_nPV->Fill(myEvent->nPV,myEvent->weight);
   }
 
   hs->push_back(h_lepton_pt0);
@@ -170,6 +174,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_jet_phi1);
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
+  hs->push_back(h_nPV);
 
 }
 
@@ -181,7 +186,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
-  //leg->AddEntry( histos[5][0], "WJets" ) ;  
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -255,12 +259,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
 
   if(channel == Selector::EMu)
-    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
+    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
+    fn = "plots/Flavor/"+fname;
   if(channel == Selector::EE)
-    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
+    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
+    fn = "plots/EELowDilepton/"+fname;
   if(channel == Selector::MuMu)
-    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
-
+    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
+    fn = "plots/MuMuLowDilepton/"+fname;
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
