@@ -177,8 +177,19 @@ def runCombine(command):
 	err_file = open(name + ".err", "w")
 	command = "unbuffer " + command
 	command = command.split(' ')
+	jobname = command[command.index('-n') + 1]
+	method = command[command.index('-M') + 1]
 	try:
-		if "HybridNew" in command:
+		seed = command[command.index('-s') + 1]
+	except ValueError:
+		seed = "123456"
+	try:
+		mass = command[command.index('-m') + 1]
+	except ValueError:
+		mass = "120"
+		
+	try:
+		if method is "HybridNew":
 			rs = []
 			for q in [.025, .16, 0.5, .84, .975]:
 				#print q
@@ -196,17 +207,23 @@ def runCombine(command):
 			subprocess.call(command, stdout=out_file, stderr=err_file)
 			out_file.seek(0)
 			output = out_file.read()
-			if not "--toys" in command:
+			if not "--toys" in command and not "-t" in command:
 				p = re.compile(r'Limit: r < ([0-9.]*)')
  				matches  = p.findall(output)
  				if not matches: raise RuntimeError
 				return matches[-1]
-			p = re.compile(r'median expected limit: r < ([0-9.]*)')
-			median = p.search(output).group(1)
-			p = re.compile(r'68% expected band : ([0-9.]*) < r < ([0-9.]*)')
-			onesig_minus,onesig_plus = p.search(output).groups()
-			p = re.compile(r'95% expected band : ([0-9.]*) < r < ([0-9.]*)')
-			twosig_minus,twosig_plus = p.search(output).groups()
+			
+			
+			outfile = r.TFile.Open("higgsCombine" + jobname + "." + method + ".mH" + mass + "." + seed + ".root")
+			limitTree = outfile.Get("limit")
+			limits = np.zeros(limitTree.GetEntries())
+			for i in range(limitTree.GetEntries()):
+				limitTree.GetEntry(i)
+				limits[i] = limitTree.limit 
+			#limitTree.Draw("limit>>tmphist")
+			#h = r.gDirectory.Get("tmphist")
+			q = [2.5, 16, 50, 84, 97.5]
+			twosig_minus, onesig_minus, median, onesig_plus, twosig_plus = np.percentile(limits, q)
 
 		if not all([median, onesig_minus, onesig_plus, twosig_minus, twosig_plus]):
 			print "combine parse failed"

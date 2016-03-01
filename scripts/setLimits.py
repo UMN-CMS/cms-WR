@@ -58,7 +58,7 @@ for i in range(len(MWR)):
 	prefix  = thisdir + "/python/combineTools.py " + jobname
 	job.addJob( prefix + " " + command, jobname)
 	jobname = "%s_EXPECTED" % MWR[i]
-	command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys 500" %(systematics, datacard_file, datacard)
+	command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys 100" %(systematics, datacard_file, datacard)
 	prefix  = thisdir + "/python/combineTools.py " + jobname
 	job.addJob( prefix + " " + command, jobname)
 	#ret = combineTools.runCombine(command)
