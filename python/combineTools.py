@@ -1,100 +1,268 @@
+#!/usr/bin/env python
+
 import ROOT as r
+import re
 import numpy as np
 import subprocess
 from random import gauss
 import ExoAnalysis.cmsWR.backgroundFits as bgfits
+import ExoAnalysis.cmsWR.cross_sections as xs
+import math
+import datetime
+from os import environ
 
-#def getRates(histos, norms, lumi, mass_range):
-#	if len(histos) != len(norms):
-#		print "LENGTH MISMATCH"
-#		return
-#	low,hi = mass_range
-#	ret = []
-#	for i in range(len(histos)):
-#		lowbin = histos[i].FindBin(low)
-#		hibin = histos[i].FindBin(hi)
-#		ret.append( (histos[i].GetName(), histos[i].Integrate(lowbin,hibin)*norms[i]*lumi) )
-#	return [ (histos[i].GetName(), histos[i].GetEntries()*norms[i]*lumi) for i in range(len(histos))]
+datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data"
+##
+# @brief creates a datacard for combine for signal and background
 #
-#def sumRateTuple(rates):
-#	return sum([r[1] for r in rates])
-
-def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples):
+# @param outfile String of filename
+# @param bin_name Name for bin
+# @param nObs number of observed
+# @param signal_tuple (sig_name, signal_rate)
+# @param background_tuples list of (name, rate) for backgrounds
+#
+# @return signal_rate, tuple of bg rates
+def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples, systematics = []):
 
 	nBGs = len(background_tuples)
+	nSystematics = len(systematics)
 	ns = "  ".join([str(i) for i in range(nBGs+1)])
 	sig_name = signal_tuple[0]
-	signal_rate = "%.2f" % (signal_tuple[1])
+	signal_rate = "%.4g" % (signal_tuple[1])
 
 	bg_names = ""
 	bg_rates = ""
-	for bg_name, bg_rate in background_tuples:
+	name_lookup = {sig_name:0}
+	for i,(bg_name, bg_rate) in enumerate(background_tuples):
+		name_lookup[bg_name] = i+1
 		bg_names += bg_name + "  "
-		bg_rates   += "%.2e" % bg_rate + "  "
+		bg_rates   += "%.4g" % bg_rate + "  "
 	names = sig_name + "  " + bg_names
 	rates = signal_rate + '  ' + bg_rates
 	with open(outfile, "w") as out:
 		out.write("imax 1  number of channels\n")
 		out.write("jmax %d  number of backgrounds\n" % nBGs)
+		if systematics:
+			out.write("kmax %d  number of nuisance parameters\n" % nSystematics)
 		out.write("bin " + bin_name + "\n")
-		out.write("observation %d\n" % nObs)
+		out.write("observation %d\n" % round(nObs))
 		out.write("------------\n")
 		out.write("bin" + ("    " + bin_name)* (nBGs + 1) + "\n")
 		out.write("process  " + names + "\n")
 		out.write("process  " + ns + "\n")
 		out.write("rate  " + rates + "\n")
 		out.write("------------\n")
+		if systematics:
+			for name, syst_type, channels in systematics:
+				channel_list = ['-']*(nBGs + 1)
+				for chan_name, err in channels:
+					channel_list[name_lookup[chan_name]] = str(err)
+				out.write(name + ' ' + syst_type + ' ' + ' '.join(channel_list) + '\n')
 	return signal_rate, tuple(bg_rates.split())
 
-def getMassHisto(dirname, treename, process, binsize=100):
-	histname, filename = process
+##
+# @brief gets fourObjectMass histogram from tree in root file
+#
+# @param MWR Mass of WR
+# @param binsize
+#
+# @return TH1F of fourobjectmass
+def getEEJJMassHisto(MWR, binsize=100):
+	filename = datafolder + "/all_analyzed_tree_hltAndAllRecoOfflineCuts_eejjSignalRegion_WR_M-%d_Nu_M-%d.root" % (MWR, MWR/2)
+	dirname =  "unmatchedSignalRecoAnalyzerFive"
+	treename = "signalRecoObjectsWithAllCuts"
+	histname = "WR_eejj_" + str(MWR)
 	infile = r.TFile.Open(filename)
 	tree = infile.Get(dirname + '/' + treename)
 	r.gROOT.cd()
-	h = r.TH1F(histname, histname, 10000/binsize, 0, 10000)
+	nbins = 10000/int(binsize)
+	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
 	tree.Draw("fourObjectMass>>" + histname, "" ,"goff")
+	nevents = 50000.
+	h.Scale( xs.WR_eejj[MWR]/nevents )
 	return h
 
-#def getHists(dirname, treename, processes):
-#	 return [getMassHisto(dirname,  treename,  p) for p in processes]
+def getMuMuJJMassHisto(MWR, binsize=100):
+	filename = datafolder + "/mumu_histos.root"
+	infile = r.TFile.Open(filename)
+	r.gROOT.cd()
+	h = infile.Get("h_" + str(MWR)).Clone()
+	orig_lumi = 2460.
+	h.Scale((xs.WR_mumujj[MWR]/0.01)*(1./orig_lumi))
+	return h
 
-WR_eejj_norm = 0.0707/50000
-#DYJets_eejj_norm = 6025.2/9052671
-#TTonly_eejj_norm = 831.76/96834559
-#WZ_eejj_norm = 66.1/991232
-#ZZ_eejj_norm = 15.4/996168
-#bg_norms = [DYJets_eejj_norm, TTonly_eejj_norm, WZ_eejj_norm, ZZ_eejj_norm]
+def getSignalMassHisto(MWR, channel, binsize=100):
+	if "ee" in channel or "EE" in channel:
+		return getEEJJMassHisto(MWR,binsize=binsize)
+	else:
+		return getMuMuJJMassHisto(MWR,binsize=binsize)
 
-#processes = [("DYJets_eejj", "data/analyzed_DYJets_Madgraph_M_50_25ns_eejj_signal_region.root"),
-#		("TTOnly_eejj", "data/analyzed_TTOnly_PowhegPythia_25ns_eejj_signal_region_reMiniAOD.root"),
-#		("WZ_eejj", "data/analyzed_WZ_25ns_eejj_signal_region.root"),
-#		("ZZ_eejj", "data/analyzed_ZZ_25ns_eejj_signal_region.root")
-#		]
+def getTTBarNEvents(MWR, channel, lumi):
+	if "ee" in channel or "EE" in channel:
+		filename = datafolder + "/ttBarBkgndEleEstimate.root"
+		workname = "ttBarElectronEstimate"
+		corr_name = "EEtoEMuCorrection"
+	else:
+		filename = datafolder + "/ttBarBkgndMuonEstimate.root"
+		workname = "ttBarMuonEstimate"
+		corr_name = "MuMutoEMuCorrection"
+	f = r.TFile.Open(filename)
+	work = f.Get(workname)
+	pdf = work.pdf("rescaledExpPdf")
+	mass = work.var("fourObjectMass")
+	data = work.data("eMuRealDataSet")
 
-#backgrounds = getHists(dirname, treename, processes)
+	mass.setRange(str(MWR), mass_cut[MWR][0], mass_cut[MWR][1])
+	argset = r.RooArgSet(mass)
+	integral = pdf.createIntegral(argset, r.RooFit.NormSet(argset), r.RooFit.Range(str(MWR)))
 
+	real_norm = work.var("realEMuDataNormalization").getVal()
+	corr = work.var(corr_name).getVal()
+	orig_lumi = 2488.245
+	scale = real_norm*corr*lumi/orig_lumi
+	nevents = integral.getVal()*scale
+	f.Close()
+	return  nevents
 
+def getDYNEvents(MWR, channel, lumi):
+	if "ee" in channel or "EE" in channel:
+		filename = datafolder + "/DYElectronFits.root"
+		workname = "DYElectronFits"
+		dataname = "DY_EEDataSet_120to200"
+	else:
+		filename = datafolder + "/DYMuonFits.root"
+		workname = "DYMuonFits"
+		dataname = "DY_MuMuDataSet_120to200"
 
-#lumi = 1900
-#print "#lumi\tbg\tsig\tobs\tobs/bg\tMethod\tr(sig/expect sig)"
-#bg_tuples = getRates(backgrounds, bg_norms, lumi)
-#signal_tuple = getRates([signal], [WR_eejj_norm], lumi)[0]
-#total_bg = sumRateTuple(bg_tuples)
-#for obs in np.linspace(total_bg, (total_bg + signal_tuple[1])*1.2, 10, dtype=int):
-#	data = r.TH1F("data_eejj","data_eejj",100,600,4600)
-#	[data.Fill(gauss(2000, 500)) for i in range(obs)]
+	f = r.TFile.Open(filename)
+	work = f.Get(workname)
+	pdf = work.pdf("rescaledExpPdf")
+	mass = work.var("fourObjectMass")
+	data = work.data(dataname)
+
+	mass.setRange(str(MWR), mass_cut[MWR][0], mass_cut[MWR][1])
+	argset = r.RooArgSet(mass)
+	integral = pdf.createIntegral(argset, r.RooFit.NormSet(argset), r.RooFit.Range(str(MWR)))
+
+	norm = data.sumEntries()
+	orig_lumi = 2488.245
+	scale = norm*lumi/orig_lumi
+	nevents = integral.getVal()*scale
+	f.Close()
+	return nevents
+
+def getNEvents(MWR, channel, process, lumi):
+	if process == "signal":
+		h = getSignalMassHisto(MWR, channel)
+		low,hi = mass_cut[int(MWR)]
+		lowbin = h.FindBin(low)
+		hibin = h.FindBin(hi) - 1
+		nevents = h.Integral(lowbin, hibin)*lumi
+		return nevents
+	elif process == "TTBar":
+		return getTTBarNEvents(MWR, channel, lumi)
+	elif process == "DY":
+		return getDYNEvents(MWR, channel, lumi)
+	else:
+		return None
+##
+# @brief calls and parses command for `combine'
 #
-#	datacard = "WReejj_LUMI%d_OBS%d" % (lumi, obs)
-#	datacard_file = "data/" + datacard + ".txt"
-#	makeDataCardSingleBin(datacard_file, "eejj", data, signal_tuple, bg_tuples)
-#	#for method in ["BayesianSimple", "HybridNew"]:
-#	for method in ["BayesianSimple"]:
-#		output = subprocess.check_output(["combine","-M",method,"-S","0",datacard_file,"-n", datacard])
-#		combinefile = r.TFile.Open("higgsCombine" + datacard + "." + method + ".mH120.root")
-#		tree = combinefile.Get("limit")
-#		tree.GetEntry(0)
-#		print "%d\t%d\t%d\t%d\t%.3f\t%s\t%.4f" %(lumi, int(total_bg), signal_tuple[1],
-#				obs, obs/float(total_bg), method, tree.limit)
-#		subprocess.check_output(["mv", "higgsCombine" + datacard + "." + method + ".mH120.root", "data/"])
-	
+# @param command a list to pass to subprocess.check_output
+#
+# @return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
+def runCombine(command):
+	name  = "combine" + datetime.datetime.now().time().isoformat()
+	out_file = open(name + ".out", "w+")
+	err_file = open(name + ".err", "w")
+	command = "unbuffer " + command
+	command = command.split(' ')
+	jobname = command[command.index('-n') + 1]
+	method = command[command.index('-M') + 1]
+	try:
+		seed = command[command.index('-s') + 1]
+	except ValueError:
+		seed = "123456"
+	try:
+		mass = command[command.index('-m') + 1]
+	except ValueError:
+		mass = "120"
+		
+	try:
+		if method is "HybridNew":
+			rs = []
+			for q in [.025, .16, 0.5, .84, .975]:
+				#print q
+				run_command = command + ["--expectedFromGrid=%f" % q]
+				#print " ".join(run_command)
+				subprocess.call(run_command, stdout=out_file, stderr=err_file)
+				out_file.seek(0)
+				output = out_file.read()
+				p = re.compile(r'Limit: r < ([0-9.]*)')
+ 				matches  = p.findall(output)
+				rs.append(matches[-1])
+			twosig_minus, onesig_minus, median, onesig_plus, twosig_plus = tuple(rs)
+		else:
+			#print " ".join(command)
+			subprocess.call(command, stdout=out_file, stderr=err_file)
+			out_file.seek(0)
+			output = out_file.read()
+			if not "--toys" in command and not "-t" in command:
+				p = re.compile(r'Limit: r < ([0-9.]*)')
+ 				matches  = p.findall(output)
+ 				if not matches: raise RuntimeError
+				return matches[-1]
+			
+			
+			outfile = r.TFile.Open("higgsCombine" + jobname + "." + method + ".mH" + mass + "." + seed + ".root")
+			limitTree = outfile.Get("limit")
+			limits = np.zeros(limitTree.GetEntries())
+			for i in range(limitTree.GetEntries()):
+				limitTree.GetEntry(i)
+				limits[i] = limitTree.limit 
+			#limitTree.Draw("limit>>tmphist")
+			#h = r.gDirectory.Get("tmphist")
+			q = [2.5, 16, 50, 84, 97.5]
+			twosig_minus, onesig_minus, median, onesig_plus, twosig_plus = np.percentile(limits, q)
 
+		if not all([median, onesig_minus, onesig_plus, twosig_minus, twosig_plus]):
+			print "combine parse failed"
+			print median, onesig_minus, onesig_plus, twosig_minus, twosig_plus
+			raise TypeError
+		return median, (onesig_minus, onesig_plus), (twosig_minus, twosig_plus)
+	except Exception as e:
+		raise e
+		return None
+
+mass_cut = {
+		800 :( 700,  900),
+		1200:(1000, 1400),
+		1400:(1200, 1600),
+		1600:(1350, 1850),
+		2000:(1700, 2300),
+		2400:(2050, 2750),
+		2600:(2200, 3000),
+		2800:(2400, 3200),
+		3000:(2550, 3450),
+		3200:(2700, 3700),
+		3600:(3000, 4150),
+		3800:(3000, 4350),
+		4000:(3000, 4600),
+		4200:(3000, 4850),
+		4400:(3000, 5050),
+		4600:(3000, 5300),
+		4800:(3000, 5500),
+		5000:(3000, 5750),
+		5200:(3000, 6000),
+		5600:(3000, 6450),
+		5800:(3000, 6650),
+		6000:(3000, 6900),
+		}
+
+import sys
+if __name__ == '__main__':
+	ID = sys.argv[1]
+	command = " ".join(sys.argv[2:])
+	print command
+	result = runCombine(command)
+	print ("COMBINE", ID, result)

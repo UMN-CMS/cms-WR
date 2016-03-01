@@ -1,0 +1,26 @@
+#!/bin/sh
+
+RELSPACE=$1
+WORKSPACE=$2
+NAME=$3
+
+shift 3
+COMMAND="$@"
+
+echo ${COMMAND}
+
+LOG=${NAME}.log
+ELOG=${NAME}.elog
+
+mkdir -p ${WORKSPACE} 
+cd ${WORKSPACE}
+/bin/rm -f ${LOG} ${ELOG} ${LOG}.gz ${ELOG}.gz
+/bin/hostname > ${LOG}
+echo ${RELSPACE} >> ${LOG}
+source /local/grid/cmssoft/cms/cmsset_default.sh >> ${LOG} 2>> ${ELOG}
+
+cd ${RELSPACE}
+eval `scramv1 runtime -sh` >> ${LOG} 2>> ${ELOG}
+
+cd ${WORKSPACE}
+${COMMAND} >> ${LOG} 2>> ${ELOG}
