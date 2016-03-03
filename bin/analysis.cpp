@@ -194,7 +194,7 @@ int main(int ac, char* av[])
 		TTree * tf1 = new TTree("tf1", "");
 		Float_t normalization;
 		std::vector<Float_t> fit_parameters, fit_parameter_errors;
-		std::vector<Float_t> events_in_range(0,mass_vec.size());
+		std::vector<Float_t> events_in_range(mass_vec.size(), 0.0f);
 		tf1->Branch("Normalization", &normalization);
 		tf1->Branch("FitParameters", &fit_parameters);
 		tf1->Branch("FitParameterErrors", &fit_parameter_errors);
@@ -328,12 +328,14 @@ int main(int ac, char* av[])
 				}
 
 			}
-			TH1F * WR_mass = new TH1F("WR_mass","WR_mass",140,0,7000);
-			t1[i]->Draw("WR_mass>>WR_mass","weight");
+
+			// Count number of events in each mass range to store in tree. 
+			TH1F * hWR_mass = new TH1F("hWR_mass","hWR_mass",140,0,7000);
+			t1[i]->Draw("WR_mass>>hWR_mass","weight","goff");
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++)
 			{
-				auto range = mass_cut[mass_vec[i]];
-				events_in_range[i] = WR_mass->Integral(WR_mass->FindBin(range.first), WR_mass->FindBin(range.second));
+				auto range = mass_cut[mass_vec.at(mass_i)];
+				events_in_range.at(mass_i) = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
 			if(i == 0) {
