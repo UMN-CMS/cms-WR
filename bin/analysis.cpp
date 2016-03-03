@@ -3,6 +3,7 @@
  * please document it here
  */
 
+#include "TH1F.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "RooRealVar.h"
@@ -17,18 +18,70 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <boost/program_options.hpp>
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
 #include "ToyThrower.h"
-#include "ExoAnalysis/cmsWR/interface/configReader.h"
+#include "analysisTools.h"
+#include "configReader.h"
 
+namespace po = boost::program_options;
 
-//#define DEBUG
-
-int main(void)
+int main(int ac, char* av[])
 {
+	std::vector<std::string> modes;
+	std::string channel_str;
+	float integratedLumi; 
+	Int_t nToys;
+	bool debug;
+	int seed;
+	// Declare the supported options.
+	po::options_description desc("Allowed options");
+	desc.add_options()
+    	("help", "produce help message")
+    	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
+    	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
+    	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
+    	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
+    	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
+    	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
+		;
+
+	po::variables_map vm;
+	po::store(po::parse_command_line(ac, av, desc), vm);
+	po::notify(vm);    
+
+	if (vm.count("help")) {
+		std::cout << desc << "\n";
+    	return 1;
+	}
+
+	if (vm.count("mode")) {
+		std::cout << "Modes: ";
+		for(auto s : modes )
+			std::cout << s << ' ';
+		std::cout << std::endl;
+	}
+	else {
+		//modes.push_back("ttbar");
+		//modes.push_back("DYMuMu");
+		//modes.push_back("DYEE");
+		//modes.push_back("WJets");
+		//modes.push_back("WZ");
+		//modes.push_back("ZZ");
+		//modes.push_back("data_EMu");
+		//modes.push_back("data_EE");
+		//modes.push_back("data_MuMu");
+	}
+	Selector::tag_t channel;
+	if(channel_str == "EE")
+		channel = Selector::EE;
+	else if(channel_str == "MuMu")
+		channel = Selector::MuMu;
+	else if(channel_str == "EMu")
+		channel = Selector::EMu;
+
 	char name[100];// to name the tree per iteration of the Toy
-	float integratedLumi = 2.52e3; ///\todo should not be hard-coded!!!
 	using namespace RooFit;
 	std::cout << "******************************* Analysis ******************************" << std::endl;
 	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
@@ -36,23 +89,7 @@ int main(void)
 	configReader myReader("configs/2015-v1.conf");
 
 
-#ifdef DEBUG
-	std::cout << myReader << std::endl;
-#endif
-
-	Selector::tag_t channel = Selector::EMu;
-	std::vector<TString> modes;
-
-	modes.push_back("ttbar");
-	modes.push_back("DYMuMu");
-	modes.push_back("DYEE");
-	modes.push_back("WJets");
-	modes.push_back("WZ");
-	modes.push_back("ZZ");
-	modes.push_back("data_EMu");
-	modes.push_back("data_EE");
-	modes.push_back("data_MuMu");
-	channel = Selector::EE;
+	if(debug) std::cout << myReader << std::endl;
 
 	TString tree_channel = "";
 	// Select the channel to be studied //
@@ -60,7 +97,7 @@ int main(void)
 		tree_channel = "_signal_ee";
 	else if(channel == Selector::MuMu)
 		tree_channel = "_signal_mumu";
-	else if(channel == Selector: EMu)
+	else if(channel == Selector::EMu)
 		tree_channel = "_flavoursideband";
 	else {
 		tree_channel = "";
@@ -69,6 +106,9 @@ int main(void)
 	}
 
 	TString treeName = "miniTree" + tree_channel;
+
+	std::map<int, std::pair<int,int> > mass_cut = getMassCutMap();
+	std::vector<int> mass_vec = getMassVec();
 
 	for(auto m : modes) {
 		int isData = 0; // Fill in with 1 or 0 based on information from the trees
@@ -145,27 +185,27 @@ int main(void)
 		std::cout << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
-#ifdef DEBUG
-		std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
-#endif
+		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
 		TFile f("selected_tree_" + mode + tree_channel + std::to_string(channel) + ".root", "recreate");
+		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
 		Float_t normalization;
 		std::vector<Float_t> fit_parameters, fit_parameter_errors;
+		std::vector<Float_t> events_in_range(0,mass_vec.size());
 		tf1->Branch("Normalization", &normalization);
 		tf1->Branch("FitParameters", &fit_parameters);
 		tf1->Branch("FitParameterErrors", &fit_parameter_errors);
+		tf1->Branch("NEventsInRange", &events_in_range);
 
 		miniTreeEvent myEvent;
 
 		myEvent.SetBranchAddresses(c);
 		Selector selEvent;
 
-		const Int_t nToys = 1;
-		TTree * t1[nToys];
+		std::vector<TTree *> t1(nToys,NULL);
 		Int_t nEntries = c->GetEntries();
 
 		TRandom3 Rand;
@@ -210,7 +250,7 @@ int main(void)
 
 		}
 		std::cout << "[INFO] Running nToys = " << nToys << std::endl;
-		for(int i = 0; i < nToys; i++) {
+		for(int i = seed; i < nToys + seed; i++) {
 			Rand.SetSeed(i + 1);
 			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
@@ -227,15 +267,15 @@ int main(void)
 				if(ev % 50000 == 1) std::cout << std::endl << 100 * ev / nEntries << " % ..." << std::endl;
 				c->GetEntry(ev);
 
-#ifdef DEBUG
-				std::cout << "RUN=" << myEvent.run << std::endl;
-				std::cout << "Mu" << std::endl;
-				for(auto m : * (myEvent.muons_p4))
-					std::cout << m.Pt() << " " << m.Eta() << std::endl;
-				std::cout << "Jet" << std::endl;
-				for(auto m : * (myEvent.jets_p4))
-					std::cout << m.Pt() << " " << m.Eta() << std::endl;
-#endif
+				if (debug){
+					std::cout << "RUN=" << myEvent.run << std::endl;
+					std::cout << "Mu" << std::endl;
+					for(auto m : * (myEvent.muons_p4))
+						std::cout << m.Pt() << " " << m.Eta() << std::endl;
+					std::cout << "Jet" << std::endl;
+					for(auto m : * (myEvent.jets_p4))
+						std::cout << m.Pt() << " " << m.Eta() << std::endl;
+				}
 
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
@@ -251,8 +291,7 @@ int main(void)
 				// 1 -- MuMuJJ Channel
 				// 2 -- EMuJJ Channel
 
-#ifdef DEBUG
-				if(selEvent.isPassing(channel)) {
+				if(debug && selEvent.isPassing(channel)) {
 					std::cout << std::endl << selEvent.dilepton_mass << std::endl;
 					std::cout << "Mu " << ev  << std::endl;
 					for(auto m : * (myEvent.muons_p4))
@@ -264,7 +303,6 @@ int main(void)
 					for(auto m : * (myEvent.jets_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				}
-#endif
 
 				if(selEvent.isPassing(channel)) {
 
@@ -289,6 +327,13 @@ int main(void)
 
 				}
 
+			}
+			TH1F * WR_mass = new TH1F("WR_mass","WR_mass",140,0,7000);
+			t1[i]->Draw("WR_mass>>WR_mass","weight");
+			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++)
+			{
+				auto range = mass_cut[mass_vec[i]];
+				events_in_range[i] = WR_mass->Integral(WR_mass->FindBin(range.first), WR_mass->FindBin(range.second));
 			}
 
 			if(i == 0) {
