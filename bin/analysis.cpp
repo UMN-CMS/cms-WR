@@ -45,29 +45,25 @@ int main(void)
 
 	modes.push_back("ttbar");
 	modes.push_back("DYMuMu");
-	modes.push_back("DYEE");
+	// modes.push_back("DYEE");
 	modes.push_back("WJets");
 	modes.push_back("WZ");
 	modes.push_back("ZZ");
-	modes.push_back("data_EMu");
-	modes.push_back("data_EE");
+	// Signal samples
+	// for(int i=0; i<28;i++){
+	//   modes.push_back("Signal_MuMu_"+std::to_string(800+200*i));
+	//   modes.push_back("Signal_EE_"+std::to_string(800+200*i));
+	// }
+
+	// Data samples
+	// modes.push_back("data_EMu");
+	// modes.push_back("data_EE");
 	modes.push_back("data_MuMu");
-	channel = Selector::EE;
+
+	// Select Channel HERE
+	channel = Selector::MuMu_tagandprobe;
 
 	TString tree_channel = "";
-	// Select the channel to be studied //
-	if(channel == Selector::EE)
-		tree_channel = "_signal_ee";
-	else if(channel == Selector::MuMu)
-		tree_channel = "_signal_mumu";
-	else if(channel == Selector: EMu)
-		tree_channel = "_flavoursideband";
-	else {
-		tree_channel = "";
-		std::cerr << "[ERROR] No channel defined" << std::endl;
-		return 1;
-	}
-
 	TString treeName = "miniTree" + tree_channel;
 
 	for(auto m : modes) {
@@ -131,13 +127,29 @@ int main(void)
 			TTchainNames.push_back("SingleMu_RunD_v3");
 			TTchainNames.push_back("SingleMu_RunD_v4");
 		}
+
+		for(int i=0;i<28;i++){
+		  if(mode.EqualTo("Signal_MuMu_"+std::to_string(800+200*i)))
+		    TTchainNames.push_back("WRtoMuMuJJ_"+std::to_string(800+200*i)+"_"+std::to_string(400+100*i));
+		  if(mode.EqualTo("Signal_EE_"+std::to_string(800+200*i)))
+		    TTchainNames.push_back("WRtoEEJJ_"+std::to_string(800+200*i)+"_"+std::to_string(400+100*i));		  
+		}
+
 		// Select the channel to be studied //
 		if(channel == 0)
-			tree_channel = "_lowdileptonsideband";//"_signal_ee";
+			tree_channel = "_lowdileptonsideband";
 		else if(channel == 1)
-			tree_channel = "_lowdileptonsideband";//"_signal_mumu";
+			tree_channel = "_lowdileptonsideband";
 		else if(channel == 2)
 			tree_channel = "_flavoursideband";
+		else if(channel == 3)
+			tree_channel = "_signal_ee";
+		else if(channel == 4)
+			tree_channel = "_signal_mumu";
+		else if(channel == 5)
+			tree_channel = "_dytagandprobe";
+		else if(channel == 6)
+			tree_channel = "_dytagandprobe";
 		else
 			tree_channel = "";
 
@@ -247,9 +259,12 @@ int main(void)
 
 				// Select events with one good WR candidate
 				// Tags:
-				// 0 -- EEJJ Channel
-				// 1 -- MuMuJJ Channel
+				// 0 -- EEJJ low dilepton Channel
+				// 1 -- MuMuJJ low dilepton  Channel
 				// 2 -- EMuJJ Channel
+				// 3 -- EEJJ signal Channel
+				// 4 -- MuMuJJ signal  Channel
+
 
 #ifdef DEBUG
 				if(selEvent.isPassing(channel)) {
@@ -268,7 +283,7 @@ int main(void)
 
 				if(selEvent.isPassing(channel)) {
 
-					bool dilepton_cut = (channel == Selector::EMu) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
+					bool dilepton_cut = (channel == 2 || channel == 3 || channel == 4) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
 
 					if(!dilepton_cut)
 						continue;
@@ -276,7 +291,7 @@ int main(void)
 					//std::cout<<selEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
 
 					if(isData == 0)
-						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						selEvent.weight = selEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 					else
 						selEvent.weight = 1.0;
 					massWR.setVal(selEvent.WR_mass);

@@ -79,7 +79,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		jets.push_back(jet);
 	}
 
-	global_event_weight = myEvent.weight * myEvent.PU_reweight;	
+	global_event_weight = myEvent.weight * myEvent.PU_reweight;
 
 //	Clear();
 }
@@ -143,7 +143,7 @@ bool Selector::isPassing(tag_t tag)
 	sublead_jet_phi = jets[1].p4.Phi();
 	lead_jet_weight = 1.0;
 
-	if(tag == 0) { // EEJJ Channel
+	if(tag == 0 || tag == 3 || tag == 5) { // EEJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 2) {
 			return false;
@@ -155,7 +155,7 @@ bool Selector::isPassing(tag_t tag)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
-	} else if(tag == 1) { // MuMuJJ Channel
+	} else if(tag == 1 || tag == 4 || tag == 6) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
 			return false;
@@ -193,15 +193,6 @@ bool Selector::isPassing(tag_t tag)
 		}
 	}
 
-	// check eta and pt cuts
-	if(lead_lepton_p4.Pt() < 60) return false;
-	if(sublead_lepton_p4.Pt() < 50) return false;
-
-	if(dR_TLV(lead_lepton_p4, gJets[0].p4) < 0.4) return false;
-	if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
-	if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
-	if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
-
 	lead_lepton_pt = lead_lepton_p4.Pt();
 	lead_lepton_eta = lead_lepton_p4.Eta();
 	lead_lepton_phi = lead_lepton_p4.Phi();
@@ -218,6 +209,17 @@ bool Selector::isPassing(tag_t tag)
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 
 	_isPassing = true;
+
+	if(tag != 5 && tag != 6){
+	  // check eta and pt cuts
+	  if(lead_lepton_p4.Pt() < 60) return false;
+	  if(sublead_lepton_p4.Pt() < 50) return false;
+
+	  if(dR_TLV(lead_lepton_p4, gJets[0].p4) < 0.4) return false;
+	  if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
+	  if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
+	  if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
+	}
 	return _isPassing;
 
 }

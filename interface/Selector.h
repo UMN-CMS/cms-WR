@@ -13,7 +13,12 @@ public:
 	enum tag_t {
 		EE,
 		MuMu,
-		EMu
+		EMu,
+		EE_signal,
+		MuMu_signal,
+		EE_tagandprobe,
+		MuMu_tagandprobe
+
 	};
 
 	std::string datasetName;

@@ -22,7 +22,7 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::MuMu_tagandprobe;
 
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
@@ -61,6 +61,23 @@ void miniPlotter(){
     chain_ZZ->Add("../selected_tree_ZZ_flavoursideband2.root");
     chain_data->Add("../selected_tree_data_EMu_flavoursideband2.root");
     break;
+  case Selector::MuMu_tagandprobe:
+    chain_DY->Add("../selected_tree_DYMuMu_dytagandprobe6.root");
+    chain_ttbar->Add("../selected_tree_ttbar_dytagandprobe6.root"); // 1 - Muons
+    chain_WJets->Add("../selected_tree_WJets_dytagandprobe6.root");
+    chain_WZ->Add("../selected_tree_WZ_dytagandprobe6.root");
+    chain_ZZ->Add("../selected_tree_ZZ_dytagandprobe6.root");
+    chain_data->Add("../selected_tree_data_MuMu_dytagandprobe6.root");
+    break;
+  case Selector::EE_tagandprobe:
+    chain_DY->Add("../selected_tree_DYEE_dytagandprobe5.root");
+    chain_ttbar->Add("../selected_tree_ttbar_dytagandprobe5.root"); // 1 - Muons
+    chain_WJets->Add("../selected_tree_WJets_dytagandprobe5.root");
+    chain_WZ->Add("../selected_tree_WZ_dytagandprobe5.root");
+    chain_ZZ->Add("../selected_tree_ZZ_dytagandprobe5.root");
+    chain_data->Add("../selected_tree_data_EE_dytagandprobe5.root");
+    break;
+  
   default:
     std::cout << "Unknown tag" << std::endl;
   }
@@ -94,6 +111,8 @@ void miniPlotter(){
   MakeHistos(chain_data, &myEvent_data, &hs_data);
 
   unsigned int nPlots = hs_DY.size();
+  for(auto h:hs_DY)
+    h->Scale(1.0);
 
   // hs_data[13]->SetLineColor(kRed);
   // hs_data[13]->Draw();
@@ -127,12 +146,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,6000);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,4000);
   float dilepton_max = 200.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
-  TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
+  TH1F *h_nPV = new TH1F("h_nPV","",30,0,30);
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -259,14 +278,20 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
 
   if(channel == Selector::EMu)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
-    fn = "plots/Flavor/"+fname;
+    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
+  //fn = "plots/Flavor/"+fname;
   if(channel == Selector::EE)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
-    fn = "plots/EELowDilepton/"+fname;
+    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
+  //fn = "plots/EELowDilepton/"+fname;
   if(channel == Selector::MuMu)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
-    fn = "plots/MuMuLowDilepton/"+fname;
+    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
+  //fn = "plots/MuMuLowDilepton/"+fname;
+  if(channel == Selector::EE_tagandprobe)
+    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EETagAndProbe/"+fname;
+  //fn = "plots/EETagAndProbe/"+fname;
+  if(channel == Selector::MuMu_tagandprobe)
+    fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuTagAndProbe/"+fname;
+  //fn = "plots/MuMuTagAndProbe/"+fname;
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
