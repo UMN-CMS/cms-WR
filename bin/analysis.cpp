@@ -121,9 +121,7 @@ int main(int ac, char* av[])
 			TTchainNames.push_back("TTJets_DiLept_v2");
 		} else if(mode.Contains("DY")) {
 			std::string tagName = "";
-			if(channel == Selector::EE) {
-				tagName = "EE";
-			}
+			if(channel == Selector::EE) tagName = "EE";
 			if(channel == Selector::MuMu) tagName = "MuMu";
 			if(channel == Selector::EMu) {
 				std::cout << "ERROR looking for DY in EMu channel" << std::endl;
@@ -210,6 +208,7 @@ int main(int ac, char* av[])
 		Selector selEvent;
 
 		std::vector<TTree *> t1(nToys, NULL);
+		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		Int_t nEntries = c->GetEntries();
 
 		TRandom3 Rand;
@@ -265,6 +264,7 @@ int main(int ac, char* av[])
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
 			selEvent.SetBranches(t1[i]);
+			selEvent.SetBranches(tDyCheck);
 
 			for(int ev = 0; ev < nEntries; ev++) {
 
@@ -306,6 +306,17 @@ int main(int ac, char* av[])
 					std::cout << "Jet" << std::endl;
 					for(auto m : * (myEvent.jets_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
+				}
+
+				if(selEvent.isPassingLooseCuts(channel)) {
+
+					if(isData == 0)
+						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+					else
+						selEvent.weight = 1.0;
+					selEvent.nPV = myEvent.nPV;
+
+					tDyCheck->Fill();
 				}
 
 				if(selEvent.isPassing(channel)) {
