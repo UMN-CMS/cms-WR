@@ -35,8 +35,9 @@ wRtightJets = cms.EDFilter("PATJetSelector",
 
 wRJets = cms.EDFilter("PATJetSelector",
                       src = cms.InputTag("wRtightJets"),
-                      cut = cms.string( ("pt>%f") % (jetPt)),
+                      cut = cms.string(''),
 		)
+
 
 wRJECUncert = JECUnc.clone(
     src = cms.InputTag('wRJets')
@@ -96,12 +97,12 @@ wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
         ),
                                     )
 
+
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
                                     src = cms.InputTag("wRHEEPElectron"), 
-                                    cut = cms.string( 
-        (("(pt>%f) && (abs(eta)<%f)") % (miniTreeLeptonPt, maxEtaLeptons))
-        ),
+                                    cut = cms.string(''),
                                   )
+
 
 ### create di-electron pair in signal region
 wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",

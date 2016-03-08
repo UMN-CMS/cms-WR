@@ -31,29 +31,29 @@ int main(int ac, char* av[])
 {
 	std::vector<std::string> modes;
 	std::string channel_str;
-	float integratedLumi; 
+	float integratedLumi;
 	Int_t nToys;
 	bool debug;
 	int seed;
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
 	desc.add_options()
-    	("help", "produce help message")
-    	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
-    	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
-    	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
-    	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
-    	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
-    	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
-		;
+	("help", "produce help message")
+	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
+	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
+	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
+	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
+	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
+	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
+	;
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(ac, av, desc), vm);
-	po::notify(vm);    
+	po::notify(vm);
 
 	if (vm.count("help")) {
 		std::cout << desc << "\n";
-    	return 1;
+		return 1;
 	}
 
 	if (vm.count("mode")) {
@@ -61,8 +61,7 @@ int main(int ac, char* av[])
 		for(auto s : modes )
 			std::cout << s << ' ';
 		std::cout << std::endl;
-	}
-	else {
+	} else {
 		//modes.push_back("ttbar");
 		//modes.push_back("DYMuMu");
 		//modes.push_back("DYEE");
@@ -107,7 +106,7 @@ int main(int ac, char* av[])
 
 	TString treeName = "miniTree" + tree_channel;
 
-	std::map<int, std::pair<int,int> > mass_cut = getMassCutMap();
+	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
 	for(auto m : modes) {
@@ -120,32 +119,34 @@ int main(int ac, char* av[])
 		if(mode.EqualTo("ttbar")) {
 			//TTchainNames.push_back("TTJets_DiLept_v1");
 			TTchainNames.push_back("TTJets_DiLept_v2");
-		} else if(mode.EqualTo("DYMuMu")) {
-			TTchainNames.push_back("DYToMuMu_powheg_50to120");
-			TTchainNames.push_back("DYToMuMu_powheg_120to200");
-			TTchainNames.push_back("DYToMuMu_powheg_200to400");
-			TTchainNames.push_back("DYToMuMu_powheg_400to800");
-			TTchainNames.push_back("DYToMuMu_powheg_800to1400");
-			TTchainNames.push_back("DYToMuMu_powheg_1400to2300");
-			TTchainNames.push_back("DYToMuMu_powheg_2300to3500");
-			TTchainNames.push_back("DYToMuMu_powheg_3500to4500");
-			TTchainNames.push_back("DYToMuMu_powheg_4500to6000");
-			TTchainNames.push_back("DYToMuMu_powheg_6000toInf");
-			if(channel == Selector::EMu)
-				run_toys = false;
-		} else if(mode.EqualTo("DYEE")) {
-			TTchainNames.push_back("DYToEE_powheg_50to120");
-			TTchainNames.push_back("DYToEE_powheg_120to200");
-			TTchainNames.push_back("DYToEE_powheg_200to400");
-			TTchainNames.push_back("DYToEE_powheg_400to800");
-			TTchainNames.push_back("DYToEE_powheg_800to1400");
-			TTchainNames.push_back("DYToEE_powheg_1400to2300");
-			TTchainNames.push_back("DYToEE_powheg_2300to3500");
-			TTchainNames.push_back("DYToEE_powheg_3500to4500");
-			TTchainNames.push_back("DYToEE_powheg_4500to6000");
-			TTchainNames.push_back("DYToEE_powheg_6000toInf");
-			if(channel == Selector::EMu)
-				run_toys = false;
+		} else if(mode.Contains("DY")) {
+			std::string tagName = "";
+			if(channel == Selector::EE) {
+				tagName = "EE";
+			}
+			if(channel == Selector::MuMu) tagName = "MuMu";
+			if(channel == Selector::EMu) {
+				std::cout << "ERROR looking for DY in EMu channel" << std::endl;
+				return 1;
+			}
+			if(mode.Contains("POWHEG")) {
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
+			} else if(mode.Contains("AMCINCL")) {
+				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
+				TTchainNames.push_back("DYJets_amctnlo");
+			} else if(mode.Contains("MADINCL")) {
+				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
+				TTchainNames.push_back("DYJets_madgraph");
+			}
 		} else if(mode.EqualTo("WJets")) {
 			TTchainNames.push_back("WJetsLNu");
 			run_toys = false;
@@ -171,6 +172,7 @@ int main(int ac, char* av[])
 			TTchainNames.push_back("SingleMu_RunD_v3");
 			TTchainNames.push_back("SingleMu_RunD_v4");
 		}
+		/*
 		// Select the channel to be studied //
 		if(channel == 0)
 			tree_channel = "_lowdileptonsideband";//"_signal_ee";
@@ -180,6 +182,8 @@ int main(int ac, char* av[])
 			tree_channel = "_flavoursideband";
 		else
 			tree_channel = "";
+
+			*/
 
 		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
 		std::cout << c->GetEntries() << std::endl;
@@ -205,7 +209,7 @@ int main(int ac, char* av[])
 		myEvent.SetBranchAddresses(c);
 		Selector selEvent;
 
-		std::vector<TTree *> t1(nToys,NULL);
+		std::vector<TTree *> t1(nToys, NULL);
 		Int_t nEntries = c->GetEntries();
 
 		TRandom3 Rand;
@@ -267,7 +271,7 @@ int main(int ac, char* av[])
 				if(ev % 50000 == 1) std::cout << std::endl << 100 * ev / nEntries << " % ..." << std::endl;
 				c->GetEntry(ev);
 
-				if (debug){
+				if (debug) {
 					std::cout << "RUN=" << myEvent.run << std::endl;
 					std::cout << "Mu" << std::endl;
 					for(auto m : * (myEvent.muons_p4))
@@ -329,11 +333,10 @@ int main(int ac, char* av[])
 
 			}
 
-			// Count number of events in each mass range to store in tree. 
-			TH1F * hWR_mass = new TH1F("hWR_mass","hWR_mass",140,0,7000);
-			t1[i]->Draw("WR_mass>>hWR_mass","weight","goff");
-			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++)
-			{
+			// Count number of events in each mass range to store in tree.
+			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
+			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
+			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 				auto range = mass_cut[mass_vec.at(mass_i)];
 				events_in_range.at(mass_i) = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
