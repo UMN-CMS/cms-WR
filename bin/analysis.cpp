@@ -484,6 +484,17 @@ int main(int ac, char* av[])
 					}
 					var = iter->Next();
 				}
+
+				for(int mass : mass_vec)
+				{
+					auto range = mass_cut[mass];
+					TString srange = TString::Format("%04d",mass);
+					massWR.setRange(srange, range.first, range.second);
+					RooAbsReal * integral = expPdfRooAbsPdf->createIntegral(RooArgSet(massWR), Range(srange)); 
+					std::cout << mass << ' ' << integral->getVal() << std::endl;
+				}
+
+
 				// fill the tree with the normalization, parameters, and errors
 				tf1->Fill();
 			}
