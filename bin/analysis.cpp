@@ -120,6 +120,7 @@ int main(int ac, char* av[])
 			//TTchainNames.push_back("TTJets_DiLept_v1");
 			TTchainNames.push_back("TTJets_DiLept_v2");
 		} else if(mode.Contains("DY")) {
+			if(mode.Contains("TANDP") ) tree_channel = "_dytagandprobe";
 			std::string tagName = "";
 			if(channel == Selector::EE) tagName = "EE";
 			if(channel == Selector::MuMu) tagName = "MuMu";
@@ -309,7 +310,6 @@ int main(int ac, char* av[])
 				}
 
 				if(selEvent.isPassingLooseCuts(channel)) {
-
 					if(isData == 0)
 						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 					else
@@ -342,7 +342,7 @@ int main(int ac, char* av[])
 
 				}
 
-			}
+			}//end loop over entries in input TChain
 
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
@@ -354,6 +354,7 @@ int main(int ac, char* av[])
 
 			if(i == 0) {
 				t1[i]->Write();
+				tDyCheck->Write();
 				tempDataSet->Write();
 			}
 
