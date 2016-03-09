@@ -63,6 +63,7 @@ private:
 
 	void Clear();
 	bool _isPassing;
+	bool _isPassingLooseCuts;
 };
 
 
