@@ -340,6 +340,12 @@ int main(int ac, char* av[])
 			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
 			RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
+			for(auto mass : mass_vec)
+			{
+				auto range = mass_cut[mass];
+				TString srange = TString::Format("%04d",mass);
+				massWR.setRange(srange, range.first, range.second);
+			}
 			RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
 			RooArgSet vars(massWR, evtWeight);
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", vars);
@@ -487,10 +493,8 @@ int main(int ac, char* av[])
 
 				for(int mass : mass_vec)
 				{
-					auto range = mass_cut[mass];
 					TString srange = TString::Format("%04d",mass);
-					massWR.setRange(srange, range.first, range.second);
-					RooAbsReal * integral = expPdfRooAbsPdf->createIntegral(RooArgSet(massWR), Range(srange)); 
+					RooAbsReal * integral = expPdfRooAbsPdf->createIntegral( RooArgSet(massWR),  NormSet(RooArgSet(massWR)), Range(srange)); 
 					std::cout << mass << ' ' << integral->getVal() << std::endl;
 				}
 
