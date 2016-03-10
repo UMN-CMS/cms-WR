@@ -31,6 +31,7 @@ int main(int ac, char* av[])
 {
 	std::vector<std::string> modes;
 	std::string channel_str;
+	bool sideband;
 	float integratedLumi; 
 	Int_t nToys;
 	bool debug;
@@ -41,6 +42,7 @@ int main(int ac, char* av[])
     	("help", "produce help message")
     	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
     	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
+    	("do-sideband", po::bool_switch(&sideband)->default_value(false), "Do sideband")
     	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
     	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
     	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
@@ -80,6 +82,8 @@ int main(int ac, char* av[])
 		channel = Selector::MuMu;
 	else if(channel_str == "EMu")
 		channel = Selector::EMu;
+	else if(channel_str == "LowDilepton")
+		channel = Selector::LowDilepton;
 
 	char name[100];// to name the tree per iteration of the Toy
 	using namespace RooFit;
@@ -93,16 +97,23 @@ int main(int ac, char* av[])
 
 	TString tree_channel = "";
 	// Select the channel to be studied //
-	if(channel == Selector::EE)
-		tree_channel = "_signal_ee";
-	else if(channel == Selector::MuMu)
-		tree_channel = "_signal_mumu";
-	else if(channel == Selector::EMu)
-		tree_channel = "_flavoursideband";
-	else {
-		tree_channel = "";
-		std::cerr << "[ERROR] No channel defined" << std::endl;
-		return 1;
+	switch (channel)
+	{
+		case Selector::EE:
+			tree_channel = "_signal_ee";
+			break;
+		case Selector::MuMu:
+			tree_channel = "_signal_mumu";
+			break;
+		case Selector::EMu:
+			tree_channel = "_flavoursideband";
+			break;
+		case Selector::LowDilepton:
+			tree_channel = "_lowdileptonsideband";
+		default:
+			tree_channel = "";
+			std::cerr << "[ERROR] No channel defined" << std::endl;
+			return 1;
 	}
 
 	TString treeName = "miniTree" + tree_channel;
@@ -171,24 +182,24 @@ int main(int ac, char* av[])
 			TTchainNames.push_back("SingleMu_RunD_v3");
 			TTchainNames.push_back("SingleMu_RunD_v4");
 		}
-		// Select the channel to be studied //
+
 		if(channel == 0)
-			tree_channel = "_lowdileptonsideband";//"_signal_ee";
+			tree_channel = (sideband) ? "_lowdileptonsideband" : "_signal_ee";
 		else if(channel == 1)
-			tree_channel = "_lowdileptonsideband";//"_signal_mumu";
+			tree_channel = (sideband) ? "_lowdileptonsideband" : "_signal_mumu";
 		else if(channel == 2)
 			tree_channel = "_flavoursideband";
 		else
 			tree_channel = "";
 
-		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
+		TChain *c = (myReader.getMiniTreeChain(TTchainNames, (treeName).Data()));
 		std::cout << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		TFile f("selected_tree_" + mode + tree_channel + std::to_string(channel) + ".root", "recreate");
+		TFile f("selected_tree_" + mode + tree_channel + ".root", "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
@@ -269,7 +280,7 @@ int main(int ac, char* av[])
 
 			for(int ev = 0; ev < nEntries; ev++) {
 
-				if(ev % 50000 == 1) std::cout << std::endl << 100 * ev / nEntries << " % ..." << std::endl;
+				if(ev % 50000 == 1) std::cout << std::endl <<  ev << '/' << nEntries << " ..." << std::endl;
 				c->GetEntry(ev);
 
 				if (debug){
@@ -311,7 +322,7 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassing(channel)) {
 
-					bool dilepton_cut = (channel == Selector::EMu) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
+					bool dilepton_cut = (channel == Selector::EMu || !sideband) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
 
 					if(!dilepton_cut)
 						continue;
