@@ -130,15 +130,15 @@ int main(int ac, char* av[])
 			}
 			if(mode.Contains("POWHEG")) {
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
 			} else if(mode.Contains("AMCINCL")) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
@@ -155,21 +155,16 @@ int main(int ac, char* av[])
 		} else if(mode.EqualTo("ZZ")) {
 			TTchainNames.push_back("ZZ");
 			run_toys = false;
-		} else if(mode.EqualTo("data_EMu")) {
+		} else if(mode.Contains("data")) {
 			isData = 1;
-			TTchainNames.push_back("MuEG_RunC");
-			TTchainNames.push_back("MuEG_RunD_v3");
-			TTchainNames.push_back("MuEG_RunD_v4");
-		} else if(mode.EqualTo("data_EE")) {
-			isData = 1;
-			TTchainNames.push_back("DoubleEG_RunC");
-			TTchainNames.push_back("DoubleEG_RunD_v3");
-			TTchainNames.push_back("DoubleEG_RunD_v4");
-		} else if(mode.EqualTo("data_MuMu")) {
-			isData = 1;
-			TTchainNames.push_back("SingleMu_RunC");
-			TTchainNames.push_back("SingleMu_RunD_v3");
-			TTchainNames.push_back("SingleMu_RunD_v4");
+			std::string dataTag = "";
+			if(mode.Contains("EMu")) dataTag = "MuEG";
+			if(mode.Contains("EE")) dataTag = "DoubleEG";
+			if(mode.Contains("MuMu")) dataTag = "SingleMu";
+			TTchainNames.push_back(dataTag + "_RunC");
+			TTchainNames.push_back(dataTag + "_RunD_v3");
+			TTchainNames.push_back(dataTag + "_RunD_v4");
+			if(mode.Contains("TANDP")) tree_channel = "_dytagandprobe";
 		}
 		/*
 		// Select the channel to be studied //
@@ -191,7 +186,11 @@ int main(int ac, char* av[])
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		TFile f("selected_tree_" + mode + tree_channel + std::to_string(channel) + ".root", "recreate");
+		std::string chnlName = "";
+		if(channel == Selector::EE) chnlName = "EE";
+		if(channel == Selector::MuMu) chnlName = "MuMu";
+		if(channel == Selector::EMu) chnlName = "EMu";
+		TFile f("selected_tree_" + mode + tree_channel + chnlName + ".root", "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
