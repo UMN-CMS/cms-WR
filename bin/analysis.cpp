@@ -277,14 +277,18 @@ int main(int ac, char* av[])
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
 		Float_t normalization;
-		std::vector<Float_t> fit_parameters, fit_parameter_errors;
-		std::vector<Float_t> events_in_range(mass_vec.size(), 0.0f);
-		std::vector<Float_t> fit_integral_in_range(mass_vec.size(), 0.0f);
+		UInt_t nparam;
+		UInt_t nmasses = mass_vec.size();
+		Float_t fit_parameters[16], fit_parameter_errors[16];
+		Float_t events_in_range[128];
+		Float_t fit_integral_in_range[128];
 		tf1->Branch("Normalization", &normalization);
-		tf1->Branch("FitParameters", &fit_parameters);
-		tf1->Branch("FitParameterErrors", &fit_parameter_errors);
-		tf1->Branch("NEventsInRange", &events_in_range);
-		tf1->Branch("FitIntegralInRange", &fit_integral_in_range);
+		tf1->Branch("nparam",&nparam);
+		tf1->Branch("FitParameters", &fit_parameters, "FitParameters[nparam]/F");
+		tf1->Branch("FitParameterErrors", &fit_parameter_errors, "FitParameterErrors[nparam]/F");
+		tf1->Branch("nmasses",&nmasses);
+		tf1->Branch("NEventsInRange", &events_in_range, "NEventsInRange[nmasses]/F");
+		tf1->Branch("FitIntegralInRange", &fit_integral_in_range, "FitIntegralInRange[nmasses]/F");
 
 		miniTreeEvent myEvent;
 
@@ -438,7 +442,7 @@ int main(int ac, char* av[])
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 				auto range = mass_cut[mass_vec.at(mass_i)];
-				events_in_range.at(mass_i) = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
 			if(i == 0) {
@@ -465,22 +469,19 @@ int main(int ac, char* av[])
 				normalization = permanentWeightedDataSet->sumEntries();
 				// set of variables in the PDF
 				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
-				// these variables are stored in vectors
-				// clear these vector for each iteration
-				fit_parameters.clear();
-				fit_parameter_errors.clear();
 
 				// loop over RooRealVars in the set
 				TIterator * iter = vset->createIterator();
 				TObject * var = iter->Next();
 				RooRealVar *var_pdf;
+				nparam = 0;
 				while (var) {
 					// ignore the M_WR variable
 					if(strcmp(var->GetName(), "fourObjectMass") != 0) {
 						var_pdf = (RooRealVar*)vset->find(var->GetName());
 						// store the value of the fitted parameters and the corresponding errors
-						fit_parameters.push_back(var_pdf->getVal());
-						fit_parameter_errors.push_back(var_pdf->getError());
+						fit_parameters[nparam] = var_pdf->getVal();
+						fit_parameter_errors[nparam++] = var_pdf->getError();
 					}
 					var = iter->Next();
 				}
@@ -489,7 +490,7 @@ int main(int ac, char* av[])
 				{
 					auto range = mass_cut[mass_vec.at(mass_i)];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
-					fit_integral_in_range.at(mass_i) = integral;
+					fit_integral_in_range[mass_i] = integral;
 				}
 
 
