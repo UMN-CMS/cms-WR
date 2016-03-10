@@ -193,6 +193,8 @@ int main(int ac, char* av[])
 			tree_channel = "";
 
 		TChain *c = (myReader.getMiniTreeChain(TTchainNames, (treeName).Data()));
+		std::cout << (treeName).Data() << ' ';
+		for(auto n: TTchainNames) std::cout << n << ' ';
 		std::cout << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
