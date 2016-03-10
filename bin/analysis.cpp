@@ -197,10 +197,12 @@ int main(int ac, char* av[])
 		Float_t normalization;
 		std::vector<Float_t> fit_parameters, fit_parameter_errors;
 		std::vector<Float_t> events_in_range(mass_vec.size(), 0.0f);
+		std::vector<Float_t> fit_integral_in_range(mass_vec.size(), 0.0f);
 		tf1->Branch("Normalization", &normalization);
 		tf1->Branch("FitParameters", &fit_parameters);
 		tf1->Branch("FitParameterErrors", &fit_parameter_errors);
 		tf1->Branch("NEventsInRange", &events_in_range);
+		tf1->Branch("FitIntegralInRange", &fit_integral_in_range);
 
 		miniTreeEvent myEvent;
 
@@ -257,15 +259,8 @@ int main(int ac, char* av[])
 			Rand.SetSeed(i + 1);
 			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
-			RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
-			for(auto mass : mass_vec)
-			{
-				auto range = mass_cut[mass];
-				TString srange = TString::Format("%04d",mass);
-				massWR.setRange(srange, range.first, range.second);
-			}
 			RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
-			RooArgSet vars(massWR, evtWeight);
+			RooArgSet vars(Fits::massWR, evtWeight);
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
@@ -337,7 +332,7 @@ int main(int ac, char* av[])
 						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 					else
 						selEvent.weight = 1.0;
-					massWR.setVal(selEvent.WR_mass);
+					Fits::massWR.setVal(selEvent.WR_mass);
 					evtWeight.setVal(selEvent.weight);
 					tempDataSet->add(vars);
 					selEvent.nPV = myEvent.nPV;
@@ -368,14 +363,13 @@ int main(int ac, char* av[])
 
 			permanentWeightedDataSet->Print();
 
-			if(mode.EqualTo("ttbar")) {
+			if(mode.EqualTo("ttbar") || mode.EqualTo("DYEE") || mode.EqualTo("DYMuMu") ) {
 
 				assert(permanentWeightedDataSet->sumEntries() > 0);
-				expPower.setVal(-0.004);
-
+				Fits::expPower.setVal(-0.004);
 				RooFitResult * tempFitRslt = NULL;
 				// fit dataset to given PDF
-				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, expPdfRooAbsPdf);
+				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, Fits::expPdfRooAbsPdf);
 
 				// std::cout << "Res=" << std::endl;
 				// expPdfRooAbsPdf->Print();
@@ -383,7 +377,7 @@ int main(int ac, char* av[])
 				// dataset normalization is the number of entries in the dataset
 				normalization = permanentWeightedDataSet->sumEntries();
 				// set of variables in the PDF
-				RooArgSet *vset = expPdfRooAbsPdf->getVariables();
+				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
 				// these variables are stored in vectors
 				// clear these vector for each iteration
 				fit_parameters.clear();
@@ -404,11 +398,11 @@ int main(int ac, char* av[])
 					var = iter->Next();
 				}
 
-				for(int mass : mass_vec)
+				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++)
 				{
-					TString srange = TString::Format("%04d",mass);
-					RooAbsReal * integral = expPdfRooAbsPdf->createIntegral( RooArgSet(massWR),  NormSet(RooArgSet(massWR)), Range(srange)); 
-					std::cout << mass << ' ' << integral->getVal() << std::endl;
+					auto range = mass_cut[mass_vec.at(mass_i)];
+					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
+					fit_integral_in_range.at(mass_i) = integral;
 				}
 
 
@@ -419,7 +413,7 @@ int main(int ac, char* av[])
 				break;
 		}
 		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode.EqualTo("ttbar")) // add the other modes later
+		if(mode.EqualTo("ttbar") || mode.EqualTo("DYEE") || mode.EqualTo("DYMuMu") ) // add the other modes later
 			tf1->Write();
 	}
 	return 0;
