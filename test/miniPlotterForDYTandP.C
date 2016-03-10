@@ -66,15 +66,16 @@ void miniPlotterForDYTandP(){
   myEvent_DYAmcIncl.SetBranchAddresses(chain_DYAmcIncl);
   myEvent_data.SetBranchAddresses(chain_data);
 
+  Float_t minJetPt = 20;
   std::vector<TH1F*> hs_DYPowheg;
-  MakeHistos(chain_DYPowheg, &myEvent_DYPowheg, &hs_DYPowheg, 0, 32, 20, 120, 60);
+  MakeHistos(chain_DYPowheg, &myEvent_DYPowheg, &hs_DYPowheg, minJetPt, 32, 20, 120, 60);
   std::vector<TH1F*> hs_DYMadIncl;
-  MakeHistos(chain_DYMadIncl, &myEvent_DYMadIncl, &hs_DYMadIncl, 0, 32, 20, 120, 60);
+  MakeHistos(chain_DYMadIncl, &myEvent_DYMadIncl, &hs_DYMadIncl, minJetPt, 32, 20, 120, 60);
   std::vector<TH1F*> hs_DYAmcIncl;
-  MakeHistos(chain_DYAmcIncl, &myEvent_DYAmcIncl, &hs_DYAmcIncl, 0, 32, 20, 120, 60);
+  MakeHistos(chain_DYAmcIncl, &myEvent_DYAmcIncl, &hs_DYAmcIncl, minJetPt, 32, 20, 120, 60);
 
   std::vector<TH1F*> hs_data;
-  MakeHistos(chain_data, &myEvent_data, &hs_data, 0, 32, 20, 120, 60);
+  MakeHistos(chain_data, &myEvent_data, &hs_data, minJetPt, 32, 20, 120, 60);
 
   unsigned int nPlots = hs_DYPowheg.size();
 
@@ -82,14 +83,16 @@ void miniPlotterForDYTandP(){
   // hs_data[13]->Draw();
   // hs_DYMadIncl[13]->Draw("same");
   
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z #phi","Z rapidity","Z p_{T}"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_phi","Z_rapidity","Z_pt"};
 
+  TString jetCutString = "_minJetPt_";
+  jetCutString += minJetPt;
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
     std::string s = std::to_string(i);
-    drawPlots(hs_DYPowheg[i],hs_DYMadIncl[i],hs_DYAmcIncl[i],hs_data[i],xtitles[i],fnames[i]);
+    drawPlots(hs_DYPowheg[i],hs_DYMadIncl[i],hs_DYAmcIncl[i],hs_data[i],xtitles[i],fnames[i]+jetCutString);
   }
   
 }//end miniPlotterForDYTandP()
@@ -110,17 +113,17 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  TH1F *h_Z_phi = new TH1F("h_Z_phi","",50,-3.15,3.15);
-  TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity","",50,-5.,5.);
-  TH1F *h_Z_pt = new TH1F("h_Z_pt","",50,0.,200.);
-
-
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2000);
   float dilepton_max = 150.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
+
+  TH1F *h_Z_phi = new TH1F("h_Z_phi","",50,-3.15,3.15);
+  TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity","",50,-5.,5.);
+  TH1F *h_Z_pt = new TH1F("h_Z_pt","",50,0.,200.);
+
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -132,6 +135,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut) continue;
 	if(myEvent->lead_jet_pt < leadJetPtCut) continue;
 
+	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
+	leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
+	subleadLeptonFourMom.SetPtEtaPhiE(myEvent->sublead_lepton_pt, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi, myEvent->sublead_lepton_pt);
+	zFourMom = leadLeptonFourMom + subleadLeptonFourMom;
+
+	h_Z_pt->Fill(zFourMom.Pt(), myEvent->weight);
+	h_Z_phi->Fill(zFourMom.Phi(), myEvent->weight);
+	h_Z_rapidity->Fill(zFourMom.Rapidity(), myEvent->weight);
 
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,myEvent->weight);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,myEvent->weight);
@@ -167,10 +178,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
+  hs->push_back(h_Z_phi);
+  hs->push_back(h_Z_rapidity);
+  hs->push_back(h_Z_pt);
 
-  //h_lepton_pt0->Delete(), h_lepton_eta0->Delete(), h_lepton_phi0->Delete(), h_lepton_pt1->Delete(), h_lepton_eta1->Delete(), h_lepton_phi1->Delete();
-  //h_jet_pt0->Delete(), h_jet_eta0->Delete(), h_jet_phi0->Delete(), h_jet_pt1->Delete(), h_jet_eta1->Delete(), h_jet_phi1->Delete();
-  //h_WR_mass->Delete(), h_dilepton_mass->Delete(), h_nPV->Delete();
 
 }
 
@@ -187,9 +198,13 @@ void drawPlots(TH1F* hs_DYPowheg,TH1F* hs_DYMadIncl,TH1F* hs_DYAmcIncl,TH1F* hs_
 
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
   hs_DYPowheg->SetLineColor(kRed);
+  hs_DYPowheg->SetLineWidth(3);
   hs_DYMadIncl->SetLineColor(kBlack);
+  hs_DYMadIncl->SetLineWidth(3);
   hs_DYAmcIncl->SetLineColor(kBlue);
+  hs_DYAmcIncl->SetLineWidth(3);
   hs_data->SetMarkerStyle(20);
+  hs_data->SetMarkerSize(1);
   hs_data->SetMarkerColor(kGreen);
 
 
