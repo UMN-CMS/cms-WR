@@ -13,8 +13,7 @@ public:
 	enum tag_t {
 		EE,
 		MuMu,
-		EMu,
-		LowDilepton,
+		EMu
 	};
 
 	std::string datasetName;

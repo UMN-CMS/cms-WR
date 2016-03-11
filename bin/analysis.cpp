@@ -29,9 +29,11 @@ namespace po = boost::program_options;
 
 int main(int ac, char* av[])
 {
+	const float dilepton_mass_cut = 210.0f;
+	const float WR_mass_cut = 600.0f;
 	std::vector<std::string> modes;
 	std::string channel_str;
-	bool sideband;
+	std::string sideband_str;
 	float integratedLumi; 
 	Int_t nToys;
 	bool debug;
@@ -40,15 +42,15 @@ int main(int ac, char* av[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
     	("help", "produce help message")
-    	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
-    	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
-    	("do-sideband", po::bool_switch(&sideband)->default_value(false), "Do sideband")
+    	("mode,m", po::value<std::vector<std::string> >(&modes), 
+		 "Set mode to use. Can specify more than once.\n(ttbar,DYMuMu,DYEE,WJets,WZ,ZZ,\ndata_EMu,data_EE,data_MuMu)")
+    	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel for Selection (ee, mumu, emu)")
+	  ("sideband", po::value<std::string>(&sideband_str)->default_value("signal"), "Possible values: signal lowdilepton lowmass")
     	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
     	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
     	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
     	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 		;
-
 	po::variables_map vm;
 	po::store(po::parse_command_line(ac, av, desc), vm);
 	po::notify(vm);    
@@ -60,30 +62,38 @@ int main(int ac, char* av[])
 
 	if (vm.count("mode")) {
 		std::cout << "Modes: ";
-		for(auto s : modes )
+		for(auto s : modes ){
 			std::cout << s << ' ';
+		}
 		std::cout << std::endl;
+	} else {
+	  std::cerr << "[ERROR] Please select at least one mode" << std::endl;
+	  return 1;
 	}
-	else {
-		//modes.push_back("ttbar");
-		//modes.push_back("DYMuMu");
-		//modes.push_back("DYEE");
-		//modes.push_back("WJets");
-		//modes.push_back("WZ");
-		//modes.push_back("ZZ");
-		//modes.push_back("data_EMu");
-		//modes.push_back("data_EE");
-		//modes.push_back("data_MuMu");
-	}
+
+	// Set Selection
 	Selector::tag_t channel;
-	if(channel_str == "EE")
-		channel = Selector::EE;
-	else if(channel_str == "MuMu")
+	TString selection_str;
+	if(channel_str == "ee") {
+	  	channel = Selector::EE;
+	  	selection_str = "signal_ee";
+	} else if(channel_str == "mumu") {
 		channel = Selector::MuMu;
-	else if(channel_str == "EMu")
+	  	selection_str = "signal_mumu";
+	} else if(channel_str == "emu") {
 		channel = Selector::EMu;
-	else if(channel_str == "LowDilepton")
-		channel = Selector::LowDilepton;
+	  	selection_str = "flavoursideband";
+	} else {
+	  	std::cerr << "[ERROR] Unknown channel option: " << channel_str << std::endl;
+	  	return 1;
+	}
+	// Set minitree channel
+	TString tree_channel;
+	if(sideband_str == "lowdilepton")
+		tree_channel = "lowdileptonsideband";
+	else {
+		tree_channel = selection_str;
+	}
 
 	char name[100];// to name the tree per iteration of the Toy
 	using namespace RooFit;
@@ -95,29 +105,8 @@ int main(int ac, char* av[])
 
 	if(debug) std::cout << myReader << std::endl;
 
-	TString tree_channel = "";
 	// Select the channel to be studied //
-	switch (channel)
-	{
-		case Selector::EE:
-			tree_channel = "_signal_ee";
-			break;
-		case Selector::MuMu:
-			tree_channel = "_signal_mumu";
-			break;
-		case Selector::EMu:
-			tree_channel = "_flavoursideband";
-			break;
-		case Selector::LowDilepton:
-			tree_channel = "_lowdileptonsideband";
-		default:
-			tree_channel = "";
-			std::cerr << "[ERROR] No channel defined" << std::endl;
-			return 1;
-	}
-
-	TString treeName = "miniTree" + tree_channel;
-
+     
 	std::map<int, std::pair<int,int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
@@ -183,25 +172,14 @@ int main(int ac, char* av[])
 			TTchainNames.push_back("SingleMu_RunD_v4");
 		}
 
-		if(channel == 0)
-			tree_channel = (sideband) ? "_lowdileptonsideband" : "_signal_ee";
-		else if(channel == 1)
-			tree_channel = (sideband) ? "_lowdileptonsideband" : "_signal_mumu";
-		else if(channel == 2)
-			tree_channel = "_flavoursideband";
-		else
-			tree_channel = "";
-
-		TChain *c = (myReader.getMiniTreeChain(TTchainNames, (treeName).Data()));
-		std::cout << (treeName).Data() << ' ';
-		for(auto n: TTchainNames) std::cout << n << ' ';
-		std::cout << c->GetEntries() << std::endl;
+		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree_" + tree_channel).Data()));
+		std::cout << "Number of entries in MiniTree " << tree_channel << ": " << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		TFile f("selected_tree_" + mode + tree_channel + ".root", "recreate");
+		TFile f("selected_tree_" + mode + "_" + sideband_str + "_" + channel_str + ".root", "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
@@ -324,9 +302,14 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassing(channel)) {
 
-					bool dilepton_cut = (channel == Selector::EMu || !sideband) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
+					bool dilepton_cut = (sideband_str != "lowdilepton") 
+						? (selEvent.dilepton_mass > dilepton_mass_cut) 
+						: (selEvent.dilepton_mass < dilepton_mass_cut);
+					bool WR_cut = (sideband_str != "lowmass") 
+						? (selEvent.WR_mass > WR_mass_cut) 
+						: (selEvent.WR_mass < WR_mass_cut);
 
-					if(!dilepton_cut)
+					if( !(dilepton_cut && WR_cut) )
 						continue;
 
 					//std::cout<<selEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
@@ -401,7 +384,8 @@ int main(int ac, char* av[])
 				{
 					auto range = mass_cut[mass_vec.at(mass_i)];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
-					fit_integral_in_range[mass_i] = integral;
+					//events_in_range[0] is normalization (integral on full range)
+					fit_integral_in_range[mass_i] = integral * events_in_range[0];
 				}
 
 
