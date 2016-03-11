@@ -5,7 +5,6 @@
 
 #include "RooAbsPdf.h"
 #include "RooRealVar.h"
-using namespace RooFit;
 
 std::map<int, std::pair<int,int> >  getMassCutMap()
 {
@@ -34,11 +33,11 @@ std::vector<int> getMassVec()
 	std::string line;
 	std::string m;
 	while (std::getline(ifs, line)) {
-			if (line[0] == '#' || line.size() == 0) continue;
-			std::stringstream ss(line);
-			std::getline(ss, m, ' ');
-			mass.push_back(std::stoi(m));
-		}
+		if (line[0] == '#' || line.size() == 0) continue;
+		std::stringstream ss(line);
+		std::getline(ss, m, ' ');
+		mass.push_back(std::stoi(m));
+	}
 
 	return mass;
 }
@@ -46,7 +45,7 @@ std::vector<int> getMassVec()
 double NormalizedIntegral(RooAbsPdf * function, RooRealVar& integrationVar, double lowerLimit, double upperLimit)
 {
 	integrationVar.setRange("integralRange", lowerLimit, upperLimit) ;
-	RooAbsReal* integral = (*function).createIntegral(integrationVar, NormSet(integrationVar), Range("integralRange")) ;
+	RooAbsReal* integral = (*function).createIntegral(integrationVar, RooFit::NormSet(integrationVar), RooFit::Range("integralRange")) ;
 	double normalizedIntegralValue = integral->getVal();
 	return normalizedIntegralValue;
 }
