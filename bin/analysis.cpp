@@ -219,7 +219,7 @@ int main(int ac, char* av[])
 
 
 		std::vector<std::string> List_Systematics;
-		List_Systematics.push_back("smear");
+		//List_Systematics.push_back("smear");
 		std::string word;
 		std::ifstream Syst_File;
 
