@@ -29,57 +29,71 @@ namespace po = boost::program_options;
 
 int main(int ac, char* av[])
 {
+	const float dilepton_mass_cut = 210.0f;
+	const float WR_mass_cut = 600.0f;
 	std::vector<std::string> modes;
 	std::string channel_str;
-	float integratedLumi; 
+	std::string sideband_str;
+	float integratedLumi;
 	Int_t nToys;
 	bool debug;
 	int seed;
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
 	desc.add_options()
-    	("help", "produce help message")
-    	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
-    	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
-    	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
-    	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
-    	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
-    	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
-		;
-
+	("help", "produce help message")
+	("mode,m", po::value<std::vector<std::string> >(&modes),
+	 "Set mode to use. Can specify more than once.\n(ttbar,DYMuMu,DYEE,WJets,WZ,ZZ,\ndata_EMu,data_EE,data_MuMu)")
+	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel for Selection (ee, mumu, emu)")
+	("sideband", po::value<std::string>(&sideband_str)->default_value("signal"), "Possible values: signal lowdilepton lowmass")
+	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
+	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
+	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
+	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
+	;
 	po::variables_map vm;
 	po::store(po::parse_command_line(ac, av, desc), vm);
-	po::notify(vm);    
+	po::notify(vm);
 
 	if (vm.count("help")) {
 		std::cout << desc << "\n";
-    	return 1;
+		return 1;
 	}
 
 	if (vm.count("mode")) {
 		std::cout << "Modes: ";
-		for(auto s : modes )
+		for(auto s : modes ) {
 			std::cout << s << ' ';
+		}
 		std::cout << std::endl;
+	} else {
+		std::cerr << "[ERROR] Please select at least one mode" << std::endl;
+		return 1;
 	}
-	else {
-		//modes.push_back("ttbar");
-		//modes.push_back("DYMuMu");
-		//modes.push_back("DYEE");
-		//modes.push_back("WJets");
-		//modes.push_back("WZ");
-		//modes.push_back("ZZ");
-		//modes.push_back("data_EMu");
-		//modes.push_back("data_EE");
-		//modes.push_back("data_MuMu");
-	}
+
+	// Set Selection
 	Selector::tag_t channel;
-	if(channel_str == "EE")
+	TString selection_str;
+	if(channel_str == "ee") {
 		channel = Selector::EE;
-	else if(channel_str == "MuMu")
+		selection_str = "signal_ee";
+	} else if(channel_str == "mumu") {
 		channel = Selector::MuMu;
-	else if(channel_str == "EMu")
+		selection_str = "signal_mumu";
+	} else if(channel_str == "emu") {
 		channel = Selector::EMu;
+		selection_str = "flavoursideband";
+	} else {
+		std::cerr << "[ERROR] Unknown channel option: " << channel_str << std::endl;
+		return 1;
+	}
+	// Set minitree channel
+	TString tree_channel;
+	if(sideband_str == "lowdilepton")
+		tree_channel = "lowdileptonsideband";
+	else {
+		tree_channel = selection_str;
+	}
 
 	char name[100];// to name the tree per iteration of the Toy
 	using namespace RooFit;
@@ -91,23 +105,9 @@ int main(int ac, char* av[])
 
 	if(debug) std::cout << myReader << std::endl;
 
-	TString tree_channel = "";
 	// Select the channel to be studied //
-	if(channel == Selector::EE)
-		tree_channel = "_signal_ee";
-	else if(channel == Selector::MuMu)
-		tree_channel = "_signal_mumu";
-	else if(channel == Selector::EMu)
-		tree_channel = "_flavoursideband";
-	else {
-		tree_channel = "";
-		std::cerr << "[ERROR] No channel defined" << std::endl;
-		return 1;
-	}
 
-	TString treeName = "miniTree" + tree_channel;
-
-	std::map<int, std::pair<int,int> > mass_cut = getMassCutMap();
+	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
 	for(auto m : modes) {
@@ -171,41 +171,38 @@ int main(int ac, char* av[])
 			TTchainNames.push_back("SingleMu_RunD_v3");
 			TTchainNames.push_back("SingleMu_RunD_v4");
 		}
-		// Select the channel to be studied //
-		if(channel == 0)
-			tree_channel = "_lowdileptonsideband";//"_signal_ee";
-		else if(channel == 1)
-			tree_channel = "_lowdileptonsideband";//"_signal_mumu";
-		else if(channel == 2)
-			tree_channel = "_flavoursideband";
-		else
-			tree_channel = "";
 
-		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
-		std::cout << c->GetEntries() << std::endl;
+		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree_" + tree_channel).Data()));
+		std::cout << "Number of entries in MiniTree " << tree_channel << ": " << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		TFile f("selected_tree_" + mode + tree_channel + std::to_string(channel) + ".root", "recreate");
+		TFile f("selected_tree_" + mode + "_" + sideband_str + "_" + channel_str + ".root", "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
 		Float_t normalization;
-		std::vector<Float_t> fit_parameters, fit_parameter_errors;
-		std::vector<Float_t> events_in_range(mass_vec.size(), 0.0f);
+		UInt_t nparam;
+		UInt_t nmasses = mass_vec.size();
+		Float_t fit_parameters[16], fit_parameter_errors[16];
+		Float_t events_in_range[128];
+		Float_t fit_integral_in_range[128];
 		tf1->Branch("Normalization", &normalization);
-		tf1->Branch("FitParameters", &fit_parameters);
-		tf1->Branch("FitParameterErrors", &fit_parameter_errors);
-		tf1->Branch("NEventsInRange", &events_in_range);
+		tf1->Branch("nparam", &nparam);
+		tf1->Branch("FitParameters", &fit_parameters, "FitParameters[nparam]/F");
+		tf1->Branch("FitParameterErrors", &fit_parameter_errors, "FitParameterErrors[nparam]/F");
+		tf1->Branch("nmasses", &nmasses);
+		tf1->Branch("NEventsInRange", &events_in_range, "NEventsInRange[nmasses]/F");
+		tf1->Branch("FitIntegralInRange", &fit_integral_in_range, "FitIntegralInRange[nmasses]/F");
 
 		miniTreeEvent myEvent;
 
 		myEvent.SetBranchAddresses(c);
 		Selector selEvent;
 
-		std::vector<TTree *> t1(nToys,NULL);
+		std::vector<TTree *> t1(nToys, NULL);
 		Int_t nEntries = c->GetEntries();
 
 		TRandom3 Rand;
@@ -254,20 +251,17 @@ int main(int ac, char* av[])
 			Rand.SetSeed(i + 1);
 			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
-			RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
-			RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
-			RooArgSet vars(massWR, evtWeight);
-			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", vars);
+			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fit::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
 			selEvent.SetBranches(t1[i]);
 
 			for(int ev = 0; ev < nEntries; ev++) {
 
-				if(ev % 50000 == 1) std::cout << std::endl << 100 * ev / nEntries << " % ..." << std::endl;
+				if(ev % 50000 == 1) std::cout << std::endl <<  ev << '/' << nEntries << " ..." << std::endl;
 				c->GetEntry(ev);
 
-				if (debug){
+				if (debug) {
 					std::cout << "RUN=" << myEvent.run << std::endl;
 					std::cout << "Mu" << std::endl;
 					for(auto m : * (myEvent.muons_p4))
@@ -306,9 +300,14 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassing(channel)) {
 
-					bool dilepton_cut = (channel == Selector::EMu) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
+					bool dilepton_cut = (sideband_str != "lowdilepton")
+					                    ? (selEvent.dilepton_mass > dilepton_mass_cut)
+					                    : (selEvent.dilepton_mass < dilepton_mass_cut);
+					bool WR_cut = (sideband_str != "lowmass")
+					              ? (selEvent.WR_mass > WR_mass_cut)
+					              : (selEvent.WR_mass < WR_mass_cut);
 
-					if(!dilepton_cut)
+					if( !(dilepton_cut && WR_cut) )
 						continue;
 
 					//std::cout<<selEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
@@ -317,7 +316,7 @@ int main(int ac, char* av[])
 						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 					else
 						selEvent.weight = 1.0;
-					massWR.setVal(selEvent.WR_mass);
+					Fits::massWR.setVal(selEvent.WR_mass);
 					evtWeight.setVal(selEvent.weight);
 					tempDataSet->add(vars);
 					selEvent.nPV = myEvent.nPV;
@@ -329,13 +328,12 @@ int main(int ac, char* av[])
 
 			}
 
-			// Count number of events in each mass range to store in tree. 
-			TH1F * hWR_mass = new TH1F("hWR_mass","hWR_mass",140,0,7000);
-			t1[i]->Draw("WR_mass>>hWR_mass","weight","goff");
-			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++)
-			{
+			// Count number of events in each mass range to store in tree.
+			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
+			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
+			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 				auto range = mass_cut[mass_vec.at(mass_i)];
-				events_in_range.at(mass_i) = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
 			if(i == 0) {
@@ -346,14 +344,14 @@ int main(int ac, char* av[])
 
 			tempDataSet->Print();
 
-			if(mode.EqualTo("ttbar")) {
+			if(mode.EqualTo("ttbar") || mode.EqualTo("DYEE") || mode.EqualTo("DYMuMu") ) {
 
 				assert(tempDataSet->sumEntries() > 0);
-				expPower.setVal(-0.004);
+				Fits::expPower.setVal(-0.004);
 
 				RooFitResult * tempFitRslt = NULL;
 				// fit dataset to given PDF
-				fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+				fitRooDataSet(tempFitRslt, tempDataSet, Fits::expPdfRooAbsPdf);
 
 				// std::cout << "Res=" << std::endl;
 				// expPdfRooAbsPdf->Print();
@@ -361,26 +359,32 @@ int main(int ac, char* av[])
 				// dataset normalization is the number of entries in the dataset
 				normalization = tempDataSet->sumEntries();
 				// set of variables in the PDF
-				RooArgSet *vset = expPdfRooAbsPdf->getVariables();
-				// these variables are stored in vectors
-				// clear these vector for each iteration
-				fit_parameters.clear();
-				fit_parameter_errors.clear();
+				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
 
 				// loop over RooRealVars in the set
 				TIterator * iter = vset->createIterator();
 				TObject * var = iter->Next();
 				RooRealVar *var_pdf;
+				nparam = 0;
 				while (var) {
 					// ignore the M_WR variable
 					if(strcmp(var->GetName(), "fourObjectMass") != 0) {
 						var_pdf = (RooRealVar*)vset->find(var->GetName());
 						// store the value of the fitted parameters and the corresponding errors
-						fit_parameters.push_back(var_pdf->getVal());
-						fit_parameter_errors.push_back(var_pdf->getError());
+						fit_parameters[nparam] = var_pdf->getVal();
+						fit_parameter_errors[nparam++] = var_pdf->getError();
 					}
 					var = iter->Next();
 				}
+
+				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
+					auto range = mass_cut[mass_vec.at(mass_i)];
+					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
+					//events_in_range[0] is normalization (integral on full range)
+					fit_integral_in_range[mass_i] = integral * events_in_range[0];
+				}
+
+
 				// fill the tree with the normalization, parameters, and errors
 				tf1->Fill();
 			}
@@ -388,7 +392,7 @@ int main(int ac, char* av[])
 				break;
 		}
 		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode.EqualTo("ttbar")) // add the other modes later
+		if(mode.EqualTo("ttbar") || mode.EqualTo("DYEE") || mode.EqualTo("DYMuMu") ) // add the other modes later
 			tf1->Write();
 	}
 	return 0;

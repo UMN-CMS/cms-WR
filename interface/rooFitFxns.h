@@ -6,6 +6,8 @@
 #include "RooPolynomial.h"
 
 
+namespace Fits
+{
 ///consts needed for TTBar or MuonEG fit rescaling
 Float_t nEMuDataEvts = 464.;
 Float_t intLumi = 2488.245, ttBarXsxn = 56.7, nTTBarEvts = 24521141.f, emuInter = 1.165;
@@ -15,8 +17,8 @@ Float_t ttBarMcEEtoEMuRatioIntercept = 0.42, ttBarMcMuMutoEMuRatioIntercept = 0.
 
 ///RooFit functions, and prerequisite RooRealVars and RooFormulaVars, used in bkgndFitRooMacro.C and other RooFit macros
 RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
-RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2, 2);
-RooArgSet vars(massWR, genEvtWeights);
+RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
+RooArgSet vars(massWR, evtWeight);
 
 RooRealVar expPowerForLinearExp("expPowerForLinearExp", "", -1., -0.00005);
 
@@ -121,6 +123,4 @@ RooAbsPdf * sumTwoExpRooAbsPdf = &dataFitSumTwoExp;
 //RooProdPdf rescaledMuMuQuadExp("rescaledQuadExpPdf","", dataFitQuadraticExp, mumuSystLinearPdf);
 //RooAbsPdf * rescaledMuMuQuadExpPdf = &rescaledMuMuQuadExp;
 
-
-
-
+}
