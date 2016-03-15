@@ -1,7 +1,7 @@
 #name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 # Data	##################################################
 DoubleEG_RunC	/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	2127090	/eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv11/	-
-DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	34267038	/DoubleEG/shervin-DoubleEG_RunD_v3_SHv4-3f7cc53b59c777be631a3583316b5338/USER	621364
+DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	37909900	/eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv11/	-
 DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	55019948	/eos/cms/store//user/shervin/skims/DoubleEG_RunD_v4_SHv11/	-
 #
 SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1341179	/eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv11/	-
