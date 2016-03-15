@@ -331,8 +331,10 @@ int main(int ac, char* av[])
 
 				}
 
-			}
+			}//end loop which adds events to the RooDataSet pointer named tempDataSet
 
+			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
+			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, vars, "", evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
@@ -343,26 +345,26 @@ int main(int ac, char* av[])
 
 			if(i == 0) {
 				t1[i]->Write();
-				tempDataSet->Write();
+				permanentWeightedDataSet->Write();
 			}
 
 
-			tempDataSet->Print();
+			permanentWeightedDataSet->Print();
 
 			if(mode.EqualTo("ttbar")) {
 
-				assert(tempDataSet->sumEntries() > 0);
+				assert(permanentWeightedDataSet->sumEntries() > 0);
 				expPower.setVal(-0.004);
 
 				RooFitResult * tempFitRslt = NULL;
 				// fit dataset to given PDF
-				fitRooDataSet(tempFitRslt, tempDataSet, expPdfRooAbsPdf);
+				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, expPdfRooAbsPdf);
 
 				// std::cout << "Res=" << std::endl;
 				// expPdfRooAbsPdf->Print();
 
 				// dataset normalization is the number of entries in the dataset
-				normalization = tempDataSet->sumEntries();
+				normalization = permanentWeightedDataSet->sumEntries();
 				// set of variables in the PDF
 				RooArgSet *vset = expPdfRooAbsPdf->getVariables();
 				// these variables are stored in vectors
