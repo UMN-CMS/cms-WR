@@ -66,7 +66,7 @@ void miniPlotterForDYTandP(){
   myEvent_DYAmcIncl.SetBranchAddresses(chain_DYAmcIncl);
   myEvent_data.SetBranchAddresses(chain_data);
 
-  Float_t minJetPt = 20;
+  Float_t minJetPt = 0;
   std::vector<TH1F*> hs_DYPowheg;
   MakeHistos(chain_DYPowheg, &myEvent_DYPowheg, &hs_DYPowheg, minJetPt, 32, 20, 120, 60);
   std::vector<TH1F*> hs_DYMadIncl;
@@ -283,10 +283,9 @@ void drawPlots(TH1F* hs_DYPowheg,TH1F* hs_DYMadIncl,TH1F* hs_DYAmcIncl,TH1F* hs_
   TString fn = "";
 
   if(channel == Selector::EE)
-    fn = "tempPlots/dyTagAndProbeEE/"+fname;
+    fn = fname+"_eeChannel";
   if(channel == Selector::MuMu)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
-    fn = "tempPlots/dyTagAndProbeMuMu/"+fname;
+    fn = fname+"_mumuChannel";
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
