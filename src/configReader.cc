@@ -128,7 +128,12 @@ std::istream& operator >>(std::istream& os, configLine& line)
 	if(tmp[0] != '-') sscanf(tmp, "%lf", &line.crossSection_error);
 	else line.crossSection_error = 0.;
 
-	os >> line.primaryDatasetEvents >> line.skimmedDatasetPath >> line.skimmedDatasetEvents;
+	os >> line.primaryDatasetEvents >> line.skimmedDatasetPath;
+
+	os>> tmp;
+	if(tmp[0] != '-') sscanf(tmp, "%lld", &line.skimmedDatasetEvents);
+	else line.skimmedDatasetEvents = 0.;
+
 	return os;
 }
 
