@@ -43,6 +43,7 @@ public:
 	Float_t weight; ///< this variable takes into accont the product of the global_event_weight and the single object weights
 
 	bool isPassing(tag_t tag);
+	bool isPassingLooseCuts(tag_t tag);
 
 	Selector(const miniTreeEvent& myEvent);
 	Selector();
@@ -62,6 +63,7 @@ private:
 
 	void Clear();
 	bool _isPassing;
+	bool _isPassingLooseCuts;
 };
 
 

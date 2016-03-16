@@ -18,10 +18,25 @@ void goodJets(myJetCollection *evJets, myJetCollection *selJets)
 	}
 }
 
+void goodJetsLooseCuts(myJetCollection *evJets, myJetCollection *selJets)
+{
+	for(auto j : *evJets) {
+		if(fabs(j.p4.Eta()) < 2.4 ) selJets->push_back(j);
+	}
+}
+
 void goodEles(myElectronCollection *evEles, myElectronCollection *selEles)
 {
 	for(auto e : *evEles) {
 		if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
+			selEles->push_back(e);
+	}
+}
+
+void goodElesLooseCuts(myElectronCollection *evEles, myElectronCollection *selEles)
+{
+	for(auto e : *evEles) {
+		if(fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
 			selEles->push_back(e);
 	}
 }
@@ -34,6 +49,13 @@ void goodMuons(myMuonCollection *evMuons, myMuonCollection *selMuons)
 	}
 }
 
+void goodMuonsLooseCuts(myMuonCollection *evMuons, myMuonCollection *selMuons)
+{
+	for(auto m : *evMuons) {
+		if(fabs(m.p4.Eta()) < 2.4)
+			selMuons->push_back(m);
+	}
+}
 
 Selector::Selector(const miniTreeEvent& myEvent) :
 	WR_mass(-1),
@@ -79,7 +101,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		jets.push_back(jet);
 	}
 
-	global_event_weight = myEvent.weight * myEvent.PU_reweight;	
+	global_event_weight = myEvent.weight * myEvent.PU_reweight;
 
 //	Clear();
 }
@@ -92,6 +114,130 @@ Selector::Selector()
 void Selector::Clear()
 {
 	WR_mass = dilepton_mass = weight = 0.0;
+}
+
+bool Selector::isPassingLooseCuts(tag_t tag)
+{
+	_isPassingLooseCuts = false;
+	WR_mass = -1;
+	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
+
+	myJetCollection gJets;
+	myElectronCollection gEles;
+	myMuonCollection gMuons;
+
+	// Basic Kinematic cuts
+	goodJetsLooseCuts(&jets, &gJets);
+	goodElesLooseCuts(&electrons, &gEles);
+	goodMuonsLooseCuts(&muons, &gMuons);
+
+	std::sort(gJets.begin(), gJets.end(),
+	[](myJet const & a, myJet const & b) {
+		return a.p4.Pt() > b.p4.Pt();
+	});
+	std::sort(gEles.begin(), gEles.end(),
+	[](myElectron const & a, myElectron const & b) {
+		return a.p4.Pt() > b.p4.Pt();
+	});
+	std::sort(gMuons.begin(), gMuons.end(),
+	[](myMuon const & a, myMuon const & b) {
+		return a.p4.Pt() > b.p4.Pt();
+	});
+
+	jets = gJets;
+	electrons = gEles;
+	muons = gMuons;
+
+	// Assert at least 2 good jets
+	if(jets.size() < 2) {
+		return false;
+	}
+
+	lead_jet_pt = jets[0].p4.Pt();
+	lead_jet_eta = jets[0].p4.Eta();
+	lead_jet_phi = jets[0].p4.Phi();
+	lead_jet_weight = 1.0;
+	sublead_jet_weight = 1.0;
+
+	sublead_jet_pt = jets[1].p4.Pt();
+	sublead_jet_eta = jets[1].p4.Eta();
+	sublead_jet_phi = jets[1].p4.Phi();
+	lead_jet_weight = 1.0;
+
+	if(tag == 0) { // EEJJ Channel
+		// Assert at least 2 good leptons
+		if(electrons.size() < 2) {
+			return false;
+		}
+
+		lead_lepton_p4 = electrons[0].p4;
+		sublead_lepton_p4 = electrons[1].p4;
+
+		lead_lepton_weight = electrons[0].weight;
+		sublead_lepton_weight = electrons[1].weight;
+
+	} else if(tag == 1) { // MuMuJJ Channel
+		// Assert at least 2 good leptons
+		if(muons.size() < 2) {
+			return false;
+		}
+
+		lead_lepton_p4 = muons[0].p4;
+		sublead_lepton_p4 = muons[1].p4;
+
+		lead_lepton_weight = muons[0].weight;
+		sublead_lepton_weight = muons[1].weight;
+
+	} else if(tag == 2) { // EMuJJ Channel
+		// Assert at least 2 good leptons
+		if(electrons.size() < 1 || muons.size() < 1) {
+			return false;
+		}
+
+//////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
+		// check which is the leading, which the subleading
+		if(electrons[0].p4.Pt() > muons[0].p4.Pt()) { // e > mu
+			lead_lepton_p4 = electrons[0].p4;
+			sublead_lepton_p4 = muons[0].p4;
+
+			lead_lepton_weight = electrons[0].weight;
+			sublead_lepton_weight = muons[0].weight;
+		} else {
+
+			sublead_lepton_p4 = electrons[0].p4;
+			sublead_lepton_weight = electrons[0].weight;
+
+			lead_lepton_p4 = muons[0].p4;
+			lead_lepton_weight = muons[0].weight;
+		}
+	}
+
+	// check eta and pt cuts
+	//if(dR_TLV(lead_lepton_p4, gJets[0].p4) < 0.4) return false;
+	//if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
+	//if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
+	//if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
+
+	lead_lepton_pt = lead_lepton_p4.Pt();
+	lead_lepton_eta = lead_lepton_p4.Eta();
+	lead_lepton_phi = lead_lepton_p4.Phi();
+
+	sublead_lepton_pt = sublead_lepton_p4.Pt();
+	sublead_lepton_eta = sublead_lepton_p4.Eta();
+	sublead_lepton_phi = sublead_lepton_p4.Phi();
+
+
+	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
+	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
+	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
+
+	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
+
+	_isPassingLooseCuts = true;
+	return _isPassingLooseCuts;
+
 }
 
 bool Selector::isPassing(tag_t tag)
@@ -213,7 +359,7 @@ bool Selector::isPassing(tag_t tag)
 
 	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
 	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
-	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;	
+	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 
