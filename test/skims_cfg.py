@@ -59,7 +59,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 ############################################################ OUTPUT MODULES
 process.load('ExoAnalysis.cmsWR.microAOD_Output_cff')
-if (options.saveTnP=="1"):
+if (options.saveTnP==1):
                 SelectEventsPSet = cms.untracked.PSet(
                     SelectEvents = cms.vstring( [ 'skimPreselected', 'tagAndProbe' ] )
                 )
