@@ -9,4 +9,5 @@ crab.history
 *.so
 *.png
 *.pdf
-crab_skim*
+tmp
+crab

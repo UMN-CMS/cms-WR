@@ -80,11 +80,11 @@ config.Data.lumiMask = 'LUMI'
 config.Data.unitsPerJob = ${LUMI}
 
 #True allows the jobs to run anywhere, regardless of where the input data is located
-config.Data.ignoreLocality = True
+config.Data.ignoreLocality = False
 
 #totalUnits only needs to be specified for GEN-SIM jobs
 #config.Data.totalUnits = 200000
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/WRskims/' % (getUsernameFromSiteDB())
 config.Data.publication = True 
 #config.Data.publishDataName = 'realData_FNLST_13TeV_CHNL_UNIQUE'
 config.Data.outputDatasetTag =  config.General.requestName + "${skimProductionTAG}"
