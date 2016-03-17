@@ -3,7 +3,7 @@
 #source /cvmfs/cms.cern.ch/crab3/crab.sh
 CREATE=y
 SUBMIT=y
-FILE_PER_JOB=1
+FILE_PER_JOB=10
 
 ###### the following variables are defined in a separate config file
 # datasetFile=configs/datasets.dat
@@ -77,7 +77,7 @@ do
 
 	OUTFILES=${datasetName}.root
 
-	if [ -n "${CREATE}" ];then
+	if [ -n "${CREATE}" -a ! -d "${UI_WORKING_DIR}" ];then
 #		echo $dataset $datasetName
 #		echo $i $datasetName
 	#echo $dataset
@@ -99,7 +99,7 @@ do
 				params="$params, 'isMC=0'"
 				isMC=0
 				;;
-			DY*)
+			/DY*)
 				params="$params, 'isMC=1'"
 				jsonFile=""
 				isMC=1
@@ -141,10 +141,29 @@ get_edm_output=0
 check_user_remote_dir=1
 EOF
 		case ${dataset} in
-			/eos/*)
+			*/eos/*)
+				echo ${datasetName} $dataset
 				makefilelist.sh "${datasetName}"  ${dataset}  || exit 1
+
 				FILELIST=filelist/${datasetName}.list
-				NJOBS=`cat $FILELIST | wc -l`
+				if [ -n "$FILELIST" ]; then
+					nFiles=`cat $FILELIST | wc -l`
+					if [ -n "$NJOBS" ];then
+						let FILE_PER_JOB=$nFiles/$NJOBS
+						if [ "`echo \"$nFiles%$NJOBS\" | bc`" != "0" ];then
+							let FILE_PER_JOB=$FILE_PER_JOB+1
+						fi
+					elif [ -n "$FILE_PER_JOB" ];then
+						NJOBS=`perl -w -e "use POSIX; print ceil($nFiles/${FILE_PER_JOB}), qq{\n}"`
+						if [ "`echo \"${nFiles}%${FILE_PER_JOB}\" | bc -l`" != "0" ];then
+							let NJOBS=$NJOBS+1
+						fi
+					else
+						NJOBS=$nFiles
+						FILE_PER_JOB=1
+					fi
+				fi
+
 				cat >> $crab2File <<EOF
 datasetpath=None
 total_number_of_events=${NJOBS}
@@ -249,12 +268,13 @@ EOF
 #echo "done: $crab2File created"
 crab -cfg ${crab2File} -create #|| exit 1
 if [ -n "$FILELIST" ];then
-    makeArguments.sh -f $FILELIST -u $UI_WORKING_DIR -n 1 || exit 1
+    makeArguments.sh -f $FILELIST -u $UI_WORKING_DIR -n ${FILE_PER_JOB} || exit 1
 fi
 
 
 fi
-if [ -n "${SUBMIT}" ];then
+if [ -n "${SUBMIT}" -a "`grep  DEBUG ${UI_WORKING_DIR}/log/crab.log | grep -c submit`" == "0" ];then
+	echo ${UI_WORKING_DIR}
 	crab -c ${UI_WORKING_DIR} -submit #|| exit 1
 fi
 

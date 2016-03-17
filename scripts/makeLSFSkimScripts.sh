@@ -3,6 +3,8 @@
 #source /cvmfs/cms.cern.ch/crab3/crab.sh
 CREATE=y
 SUBMIT=y
+SCHEDULER=caf
+#SCHEDULER=remoteGlidein
 
 ###### the following variables are defined in a separate config file
 # datasetFile=configs/datasets.dat
@@ -48,7 +50,7 @@ setStoragePath(){
 #------------------------------ parsing
 
 # options may be followed by one colon to indicate they have a required argument
-if ! options=$(getopt -u -o h -l help,ui_working_dir:,createOnly,submitOnly,check -- "$@")
+if ! options=$(getopt -u -o h -l help,ui_working_dir:,createOnly,submitOnly,check,scheduler:,datasetName: -- "$@")
 then
     # something went wrong, getopt will put out an error message for us
     exit 1
@@ -64,6 +66,8 @@ do
 		-h|--help) usage; exit 0;;
 		--createOnly) echo "[OPTION] createOnly"; unset SUBMIT;;
 		--submitOnly) echo "[OPTION] submitOnly"; unset CREATE;;
+		--scheduler)  echo "[OPTION] scheduler = $2"; SCHEDULER=$2; shift;;
+		--datasetName) echo "[OPTION] dataset = $2"; DATASETNAME=$2; shift;;
 		--check) CHECK=y; EXTRAOPTION="--check"; unset CREATE; unset SUBMIT;;
 		(--) shift; break;;
 		(-*) usage; echo "$0: error - unrecognized option $1" 1>&2; usage >> /dev/stderr; exit 1;;
@@ -94,11 +98,10 @@ do
 
 
 	if [ -z "${datasetName}" -o "${dataset}" == "-" ];then continue; fi
+	if [ -n "${DATASETNAME}" -a "${datasetName}" != "${DATASETNAME}" ];then continue; fi
 
 	UI_WORKING_DIR=crab/skims/crab_skims_${datasetName}${skimProductionTAG}
 
-	SCHEDULER=caf
-	SCHEDULER=remoteGlidein
 	setStoragePath caf $SCHEDULER
 
 #	STORAGE_ELEMENT=caf.cern.ch
@@ -246,7 +249,11 @@ EOF
 
 
 
-crab -cfg ${crab2File} -create #|| exit 1
+crab -cfg ${crab2File} -create || {
+	rm ${UI_WORKING_DIR} -Rf
+	$0 --scheduler=remoteGlidein --datasetName=${datasetName}
+}	
+#exit 1
 fi
 if [ -n "${SUBMIT}" ];then
 	crab -c ${UI_WORKING_DIR} -submit #|| exit 1
