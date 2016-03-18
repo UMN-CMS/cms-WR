@@ -122,7 +122,7 @@ HEEPIDSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
 	edm::ParameterSetDescription desc;
 	desc.add<edm::InputTag>("electrons", edm::InputTag("slimmedElectrons"));
-	desc.add<edm::InputTag>("eleHEEPIdMap", edm::InputTag("egmGsfElectronIDs:heepElectronID-HEEPV51"));
+	desc.add<edm::InputTag>("eleHEEPIdMap", edm::InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"));
 	descriptions.addDefault(desc);
 }
 

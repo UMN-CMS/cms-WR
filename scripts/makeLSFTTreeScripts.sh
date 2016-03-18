@@ -3,7 +3,7 @@
 #source /cvmfs/cms.cern.ch/crab3/crab.sh
 CREATE=y
 SUBMIT=y
-FILE_PER_JOB=10
+FILE_PER_JOB=2
 
 ###### the following variables are defined in a separate config file
 # datasetFile=configs/datasets.dat
