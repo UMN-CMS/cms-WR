@@ -16,7 +16,7 @@ source configs/2015-v1.conf
 #------------------------------ parsing
 
 # options may be followed by one colon to indicate they have a required argument
-if ! options=$(getopt -u -o h -l help,ui_working_dir:,createOnly,submitOnly,check -- "$@")
+if ! options=$(getopt -u -o h -l help,ui_working_dir:,createOnly,submitOnly,check,datasetName: -- "$@")
 then
     # something went wrong, getopt will put out an error message for us
     exit 1
@@ -33,6 +33,7 @@ do
 		--createOnly) echo "[OPTION] createOnly"; unset SUBMIT;;
 		--submitOnly) echo "[OPTION] submitOnly"; unset CREATE;;
 		--check) CHECK=y; EXTRAOPTION="--check"; unset CREATE; unset SUBMIT;;
+		--datasetName) echo "[OPTION] dataset = $2"; DATASETNAME=$2; shift;;
 		(--) shift; break;;
 		(-*) usage; echo "$0: error - unrecognized option $1" 1>&2; usage >> /dev/stderr; exit 1;;
 		(*) break;;
@@ -59,6 +60,7 @@ do
 	params=""
 	dataset=${datasets[${i}]}
 	datasetName=${datasetNames[${i}]}
+	if [ -n "${DATASETNAME}" -a "${datasetName}" != "${DATASETNAME}" ];then continue; fi
 
 
 
