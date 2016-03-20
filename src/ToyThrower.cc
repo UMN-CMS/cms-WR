@@ -16,7 +16,7 @@
 #include <iostream>
 #endif
 
-void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<std::string> list, int isData)
+void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<std::string> list, bool isData)
 {
 
 	float qter = 1.0;
