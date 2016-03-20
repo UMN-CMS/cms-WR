@@ -20,7 +20,7 @@ TTJets_DiLept_v1	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpri
 TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2_ext1-v1/MINIAODSIM	5.672e+01	2.215e-01	24521141	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v2_SHv12/	-
 #	##################
 DYJets_amctnlo	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	5.915e+03	3.414e+01	28747969	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_amctnlo_SHv12/	-
-DYJets_madgraph	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	4.978e+03	1.796e+01	9042031	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_madgraph_SHv12/	-
+DYJets_madgraph	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	5.991e+03	1.796e+01	9042031	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_madgraph_SHv12/	-
 #	##################
 DYToEE_powheg	/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	0.000e+00	0.000e+00	49921782	root://eoscms//eos/cms/store/caf/user/shervin/DYToEE_powheg_SHv12/	-
 ###
