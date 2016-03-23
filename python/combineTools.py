@@ -11,7 +11,8 @@ import math
 import datetime
 from os import environ
 
-datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data"
+datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data/"
+configfolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/configs/"
 ##
 # @brief creates a datacard for combine for signal and background
 #
@@ -111,8 +112,10 @@ class miniTreeInterface:
 			num = np.array([event.NEventsInRange[mass_i] for event in tree])
 
 		if "TT" in process:
-			self.tt_emu_ratio[channel]*num
-		return (np.mean(num), np.std(num))
+			scale = self.tt_emu_ratio[channel]
+			return (scale*np.mean(num), scale*np.std(num))
+		else:
+			return (np.mean(num), np.std(num))
 
 ##
 # @brief calls and parses command for `combine'
@@ -128,6 +131,7 @@ def runCombine(command):
 	command = command.split(' ')
 	jobname = command[command.index('-n') + 1]
 	method = command[command.index('-M') + 1]
+	print method, "HybridNew" in method, jobname
 	try:
 		seed = command[command.index('-s') + 1]
 	except ValueError:
@@ -138,8 +142,9 @@ def runCombine(command):
 		mass = "120"
 		
 	try:
-		if method is "HybridNew":
+		if "HybridNew" in method:
 			rs = []
+			print "do different quantiles"
 			for q in [.025, .16, 0.5, .84, .975]:
 				#print q
 				run_command = command + ["--expectedFromGrid=%f" % q]
@@ -182,7 +187,6 @@ def runCombine(command):
 	except Exception as e:
 		raise e
 		return None
-
 
 mass_cut =  {mass:(low,hi) for mass,low,hi in [ map(int,s.split()) for s in open("configs/mass_cuts.txt",'r').read().split('\n') if s and s[0] != "#"]}
 
