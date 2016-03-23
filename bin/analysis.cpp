@@ -181,7 +181,7 @@ int main(int ac, char* av[])
 
 		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
 		std::cout << ("miniTree" + tree_channel).Data() << ' ';
-		for(auto n: TTchainNames) std::cout << n << ' ';
+		for(auto n : TTchainNames) std::cout << n << ' ';
 		std::cout << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
@@ -203,10 +203,10 @@ int main(int ac, char* av[])
 		Float_t events_in_range[128];
 		Float_t fit_integral_in_range[128];
 		tf1->Branch("Normalization", &normalization);
-		tf1->Branch("nparam",&nparam);
+		tf1->Branch("nparam", &nparam);
 		tf1->Branch("FitParameters", &fit_parameters, "FitParameters[nparam]/F");
 		tf1->Branch("FitParameterErrors", &fit_parameter_errors, "FitParameterErrors[nparam]/F");
-		tf1->Branch("nmasses",&nmasses);
+		tf1->Branch("nmasses", &nmasses);
 		tf1->Branch("NEventsInRange", &events_in_range, "NEventsInRange[nmasses]/F");
 		tf1->Branch("FitIntegralInRange", &fit_integral_in_range, "FitIntegralInRange[nmasses]/F");
 
@@ -265,9 +265,7 @@ int main(int ac, char* av[])
 			Rand.SetSeed(i + 1);
 			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
-			RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
-			RooArgSet vars(Fits::massWR, evtWeight);
-			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", vars);
+			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
 			selEvent.SetBranches(t1[i]);
@@ -339,8 +337,8 @@ int main(int ac, char* av[])
 					else
 						selEvent.weight = 1.0;
 					Fits::massWR.setVal(selEvent.WR_mass);
-					evtWeight.setVal(selEvent.weight);
-					tempDataSet->add(vars);
+					Fits::evtWeight.setVal(selEvent.weight);
+					tempDataSet->add(Fits::vars);
 					selEvent.nPV = myEvent.nPV;
 
 
@@ -351,7 +349,7 @@ int main(int ac, char* av[])
 			}//end loop which adds events to the RooDataSet pointer named tempDataSet
 
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
-			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, vars, "", evtWeight.GetName());
+			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
@@ -401,8 +399,7 @@ int main(int ac, char* av[])
 					var = iter->Next();
 				}
 
-				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++)
-				{
+				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 					auto range = mass_cut[mass_vec.at(mass_i)];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					fit_integral_in_range[mass_i] = integral;
