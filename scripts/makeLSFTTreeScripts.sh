@@ -88,16 +88,16 @@ do
 
 		LUMI=2000
 #### if the dataset is DATA or DY save the TagAndProbe triggers
-		case $dataset in 
-			/DoubleEG/*)
+		case $datasetName in 
+			DoubleEG*)
 				params="$params, 'isMC=0'"
 				isMC=0
 				;;
-			/SingleMuon/*)
+			SingleMu*)
 				params="$params, 'isMC=0'"
 				isMC=0
 				;;
-			/MuonEG/*)
+			MuEG*)
 				params="$params, 'isMC=0'"
 				isMC=0
 				;;
