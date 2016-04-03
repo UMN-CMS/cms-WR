@@ -54,6 +54,8 @@ private:
 
 	void datasetsFileReader(std::string filename);
 
+	std::string unblindTag(void);
+
 	inline bool checkCategory(std::string datasetName) const
 	{
 		if(configMap.count(datasetName) == 0) {

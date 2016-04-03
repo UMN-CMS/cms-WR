@@ -1,6 +1,10 @@
 #include "ExoAnalysis/cmsWR/interface/configReader.h"
 #include <iostream>
 
+std::string unblindTag(void){
+	if(configFile["unblind"]=="true") return "_unblind";
+	return "";
+}
 
 
 configReader::configReader(std::string filename)
@@ -55,7 +59,7 @@ configReader::configReader(std::string filename)
 TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
-	chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + "/unmerged-allRange.root").c_str());
+	chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
 	chain->GetEntries();
 	return chain;
 }

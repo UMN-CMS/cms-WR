@@ -23,6 +23,11 @@ options.register('datasetTag',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "unique dataset identifier")
+options.register('unblind',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "0=blinded, 1=unblinded")
 
 
 #default options
@@ -157,7 +162,7 @@ process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfEl
 #process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
 ############################################################ SCHEDULE
-if (options.isMC==0):
+if (options.isMC==0 and options.unblind==0):
     process.blindSeq += ~process.signalRegionFilter
     print "########################################################################"
     print "# WARNING!!! You are running on DATA, but the analysis is still BLIND! #"

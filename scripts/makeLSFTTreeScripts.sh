@@ -4,14 +4,16 @@
 CREATE=y
 SUBMIT=y
 FILE_PER_JOB=2
-
 ###### the following variables are defined in a separate config file
 # datasetFile=configs/datasets.dat
 # jsonFile=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt
 # jsonName=246908-260627-Prompt_25ns-golden_silver-v1
 source configs/2015-v1.conf
 
-
+if [ "${unblind}" == "true" ];then
+	UNBLIND=1
+	UNBLINDTAG="_unblind"
+fi
 
 #------------------------------ parsing
 
@@ -70,11 +72,11 @@ do
 		continue 
 	fi
 
-	UI_WORKING_DIR=crab/analysis/crab_analysis_${datasetName}${productionTAG}
+	UI_WORKING_DIR=crab/analysis/crab_analysis_${datasetName}${productionTAG}${UNBLINDTAG}
 	
 	STORAGE_ELEMENT=caf.cern.ch
 	STORAGE_PATH=root://eoscms//eos/cms/store
-	USER_REMOTE_DIR=/user/shervin/ntuples/${datasetName}${productionTAG}/unmerged
+	USER_REMOTE_DIR=/user/shervin/ntuples/${datasetName}${productionTAG}${UNBLINDTAG}/unmerged
 	SCHEDULER=caf
 
 	OUTFILES=${datasetName}.root
@@ -90,16 +92,17 @@ do
 #### if the dataset is DATA or DY save the TagAndProbe triggers
 		case $datasetName in 
 			DoubleEG*)
-				params="$params, 'isMC=0'"
+				params="$params, 'isMC=0', 'unblind=${unblind}'"
 				isMC=0
 				;;
 			SingleMu*)
-				params="$params, 'isMC=0'"
+				params="$params, 'isMC=0', 'unblind=${unblind}'"
 				isMC=0
 				LUMI=1000
+				FILE_PER_JOB=2
 				;;
 			MuEG*)
-				params="$params, 'isMC=0'"
+				params="$params, 'isMC=0', 'unblind=${unblind}'"
 				isMC=0
 				;;
 			DY*)
@@ -107,6 +110,7 @@ do
 				jsonFile=""
 				isMC=1
 				LUMI=1000
+				FILE_PER_JOB=1
 				;;
 			*)
 				params="$params, 'isMC=1'"
@@ -116,7 +120,8 @@ do
 		esac
 		params=`echo $params | sed -r 's|^,||;s|[,]+|,|g'`
 
-
+		#skip MC samples when unblinding: only data are reproduced
+		if [ "${isMC}" == "1" -a "${unblind}" == "true" ];then continue; fi
 
 		cat > $crab2File <<EOF
 [CRAB]
