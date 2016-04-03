@@ -96,17 +96,18 @@ do
 			SingleMu*)
 				params="$params, 'isMC=0'"
 				isMC=0
+				LUMI=1000
 				;;
 			MuEG*)
 				params="$params, 'isMC=0'"
 				isMC=0
 				;;
-			/DY*)
+			DY*)
 				params="$params, 'isMC=1'"
 				jsonFile=""
 				isMC=1
+				LUMI=1000
 				;;
-			
 			*)
 				params="$params, 'isMC=1'"
 				isMC=1
