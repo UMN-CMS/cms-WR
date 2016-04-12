@@ -188,7 +188,7 @@ def runCombine(command):
 		raise e
 		return None
 
-mass_cut =  {mass:(low,hi) for mass,low,hi in [ map(int,s.split()) for s in open("configs/mass_cuts.txt",'r').read().split('\n') if s and s[0] != "#"]}
+mass_cut =  {mass:(low,hi) for mass,low,hi in [ map(int,s.split()) for s in open(configfolder + "mass_cuts.txt",'r').read().split('\n') if s and s[0] != "#"]}
 
 import sys
 if __name__ == '__main__':

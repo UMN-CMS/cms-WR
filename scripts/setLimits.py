@@ -27,13 +27,12 @@ for mass in sorted(combineTools.mass_cut):
 		MWR.append(mass)
 		signal.append(signalNevents)
 		bg.append([TTBar, DY])
-		systematics.append( ("Signal_unc", "lnN", [ (sig_name,syst_unc )]))
+		systematics.append( ("Signal_unc", "lnN", [ (sig_name, 1.01 )]))
 		systematics.append( ("TTBar_unc", "lnN", [ ("TTBar", syst_unc)] ))
 		systematics.append( ("DY_unc", "lnN", [ ("DY", syst_unc)] ))
 		systematics_list.append(systematics)
 	except IOError:
 		print mass, "not found"
-
 
 bg_names = ["TTBar", "DY"]
 
@@ -51,32 +50,29 @@ for i in range(len(MWR)):
 
 	datacard = "WR%sjj_MASS%s_%s" % (channel,MWR[i], name)
 	datacard_file = thisdir + "/data/" + datacard + ".txt"
-	#systematics =  [ ("Signal_unc", "lnN", [ (sig_name, XX)])]
-	#systematics.append( "TTBar_unc", "lnN", [ ("TTBar", XX)] )
-	#systematics.append( "DY_unc", "lnN", [ ("DY", XX)] )
 	sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
 			signal_tuple, bg_tuples, systematics=systematics_list[i])
 
 	systematics = True
-	jobname = "%s_EXPECTED" % MWR[i]
-	command = "combine -M HybridNew --frequentist --testStat LHC -H ProfileLikelihood -S%d %s -n %s -T 5000 " %(systematics, datacard_file, datacard)
-	prefix  = thisdir + "/python/combineTools.py " + jobname
-	job.addJob( prefix + " " + command, jobname)
-	#jobname = "%s_OBSERVED" % MWR[i]
-	#command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s " %(systematics, datacard_file, datacard)
-	#prefix  = thisdir + "/python/combineTools.py " + jobname
-	#job.addJob( prefix + " " + command, jobname)
-	#jobname = "%s_EXPECTED" % MWR[i]
-	#command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys 100" %(systematics, datacard_file, datacard)
-	#prefix  = thisdir + "/python/combineTools.py " + jobname
-	#job.addJob( prefix + " " + command, jobname)
-	#ret = combineTools.runCombine(command)
-	#print ret
-	#plotter.add(MWR[i], ret)
-	#median, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = ret
-	#print MWR[i], median, onesig_minus, onesig_plus, twosig_minus,twosig_plus, xs.WR_jj[channel][MWR[i]]
+	if "Hybrid" in mode:
+		jobname = "%s_EXPECTED" % MWR[i]
+		command = "combine -M HybridNew --frequentist --testStat LHC -H ProfileLikelihood -S%d %s -n %s -T 5000 " %(systematics, datacard_file, datacard)
+		prefix  = thisdir + "/python/combineTools.py " + jobname
+		job.addJob( prefix + " " + command, jobname)
+	elif "Bayes" in mode:
+		jobname = "%s_OBSERVED" % MWR[i]
+		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s " %(systematics, datacard_file, datacard)
+		prefix  = thisdir + "/python/combineTools.py " + jobname
+		job.addJob( prefix + " " + command, jobname)
+		jobname = "%s_EXPECTED" % MWR[i]
+		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys 100" %(systematics, datacard_file, datacard)
+		prefix  = thisdir + "/python/combineTools.py " + jobname
+		job.addJob( prefix + " " + command, jobname)
 
-#job.submit()
+#TODO make interactive mode
+job.submit()
+
+#TODO enable plotting for interactive mode
 
 #plotter.plot("plots/limWR" + channel + "jj_" + name, x_title = "M_{W_{R}} [GeV]",
 		#y_title="Limit/Expected ", y_limits = (1e-3,10), leg_y = .18 )
