@@ -1,8 +1,9 @@
 #include "ExoAnalysis/cmsWR/interface/configReader.h"
 #include <iostream>
 
-std::string unblindTag(void){
-	if(configFile["unblind"]=="true") return "_unblind";
+std::string configReader::unblindTag(void)
+{
+	if(configFile["unblind"] == "true") return "_unblind";
 	return "";
 }
 
@@ -105,7 +106,7 @@ void configReader::datasetsFileReader(std::string filename)
 		f_in >> datasetName >> line;
 		configMap[datasetName] = line;
 #ifdef DEBUG
-		std::cout << "##"<<datasetName <<"##"<< "\t" << configMap.size() << std::endl;
+		std::cout << "##" << datasetName << "##" << "\t" << configMap.size() << std::endl;
 		std::cout << configMap.begin()->first << "\t" << configMap.count(datasetName) << std::endl;
 		//assert(checkCategory(datasetName)==false);
 #endif
@@ -140,7 +141,7 @@ std::istream& operator >>(std::istream& os, configLine& line)
 
 	os >> line.primaryDatasetEvents >> line.skimmedDatasetPath;
 
-	os>> tmp;
+	os >> tmp;
 	if(tmp[0] != '-') sscanf(tmp, "%lld", &line.skimmedDatasetEvents);
 	else line.skimmedDatasetEvents = 0.;
 
