@@ -2,9 +2,9 @@
 #include <utility>
 #include <fstream>
 #include <string>
-std::map<int, std::pair<int,int> >  getMassCutMap()
+std::map<int, std::pair<int, int> >  getMassCutMap()
 {
-	std::map<int, std::pair<int,int> > mass_cut;
+	std::map<int, std::pair<int, int> > mass_cut;
 	std::ifstream ifs;
 	ifs.open("configs/mass_cuts.txt", std::ifstream::in);
 	std::string line;
@@ -29,11 +29,11 @@ std::vector<int> getMassVec()
 	std::string line;
 	std::string m;
 	while (std::getline(ifs, line)) {
-			if (line[0] == '#' || line.size() == 0) continue;
-			std::stringstream ss(line);
-			std::getline(ss, m, ' ');
-			mass.push_back(std::stoi(m));
-		}
+		if (line[0] == '#' || line.size() == 0) continue;
+		std::stringstream ss(line);
+		std::getline(ss, m, ' ');
+		mass.push_back(std::stoi(m));
+	}
 
 	return mass;
 }
