@@ -12,6 +12,7 @@ git cms-init
 mkdir ExoAnalysis/
 cd ExoAnalysis/
 git clone git@github.com:UMN-CMS/cms-WR.git cmsWR
+git clone https://github.com/ECALELFS/Utilities.git Utilities/scripts/
 scram b
 cd cmsWR/
 mkdir data/
