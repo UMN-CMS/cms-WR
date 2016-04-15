@@ -170,7 +170,8 @@ wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
                                 )
 
 wRminiTreeMuon = cms.EDFilter("PATMuonSelector",
-                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
+#                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
+                              src = cms.InputTag("tunePIDIsoMuons"),
                                 cut = wRminiTreeElectron.cut,
                                 )
 
