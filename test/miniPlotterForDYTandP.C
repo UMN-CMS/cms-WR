@@ -42,16 +42,16 @@ void miniPlotterForDYTandP()
 
 	switch (channel) {
 	case Selector::EE:
-		chain_DYPowheg->Add("../selected_tree_DYPOWHEGTANDP_dytagandprobeEE.root");
-		chain_DYMadIncl->Add("../selected_tree_DYMADINCLTANDP_dytagandprobeEE.root"); // 0 - Electrons
-		chain_DYAmcIncl->Add("../selected_tree_DYAMCINCLTANDP_dytagandprobeEE.root");
-		chain_data->Add("../selected_tree_dataEETANDP_dytagandprobeEE.root");
+		chain_DYPowheg->Add("../selected_tree_DYPOWHEGTANDP_dytagandprobeEE_v15noRoch.root");
+		chain_DYMadIncl->Add("../selected_tree_DYMADINCLTANDP_dytagandprobeEE_v15noRoch.root"); // 0 - Electrons
+		chain_DYAmcIncl->Add("../selected_tree_DYAMCINCLTANDP_dytagandprobeEE_v15noRoch.root");
+		chain_data->Add("../selected_tree_dataEETANDP_dytagandprobeEE_v14.root");
 		break;
 	case Selector::MuMu:
-		chain_DYPowheg->Add("../selected_tree_DYPOWHEGTANDP_dytagandprobeMuMu.root");
-		chain_DYMadIncl->Add("../selected_tree_DYMADINCLTANDP_dytagandprobeMuMu.root"); // 1 - Muons
-		chain_DYAmcIncl->Add("../selected_tree_DYAMCINCLTANDP_dytagandprobeMuMu.root");
-		chain_data->Add("../selected_tree_dataMuMuTANDP_dytagandprobeMuMu.root");
+		chain_DYPowheg->Add("../selected_tree_DYPOWHEGTANDP_dytagandprobeMuMu_v15noRoch.root");
+		chain_DYMadIncl->Add("../selected_tree_DYMADINCLTANDP_dytagandprobeMuMu_v15noRoch.root"); // 1 - Muons
+		chain_DYAmcIncl->Add("../selected_tree_DYAMCINCLTANDP_dytagandprobeMuMu_v15noRoch.root");
+		chain_data->Add("../selected_tree_dataMuMuTANDP_dytagandprobeMuMu_v14.root");
 		break;
 	default:
 		std::cout << "Unknown tag" << std::endl;
