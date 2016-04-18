@@ -1,6 +1,8 @@
 var searchData=
 [
   ['genanalyzer_2ecc',['genAnalyzer.cc',['../genAnalyzer_8cc.html',1,'']]],
+  ['genandrecoformatterseq',['genAndRecoFormatterSeq',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#afa16ef2345a83b872679f02f7534e26c',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genandrecowranalyzer_2ecc',['genAndRecoWrAnalyzer.cc',['../genAndRecoWrAnalyzer_8cc.html',1,'']]],
   ['gendielectroncandidate',['genDiElectronCandidate',['../namespacepython_1_1genElectronChannelModules__cff.html#a58f59c7fdf612aa706719ed2bf3ce67d',1,'python.genElectronChannelModules_cff.genDiElectronCandidate()'],['../namespacepython_1_1genMuonChannelModules__cff.html#a0fae48f9772b710a76db1a85dcc0d0bd',1,'python.genMuonChannelModules_cff.genDiElectronCandidate()']]],
   ['gendielectroncandidatefilter',['genDiElectronCandidateFilter',['../namespacepython_1_1genElectronChannelModules__cff.html#a01ae43f305dbb3238a17af42e4a2fd96',1,'python.genElectronChannelModules_cff.genDiElectronCandidateFilter()'],['../namespacepython_1_1genMuonChannelModules__cff.html#a2fc7501bc77bc5667606501e9556d8d5',1,'python.genMuonChannelModules_cff.genDiElectronCandidateFilter()']]],
   ['gendielectroncandidateseq',['genDiElectronCandidateSeq',['../namespacepython_1_1genElectronChannelModules__cff.html#a8660eda87a1c5eaf23bad29d07d1bc11',1,'python.genElectronChannelModules_cff.genDiElectronCandidateSeq()'],['../namespacepython_1_1genMuonChannelModules__cff.html#aabddf38fc3096b909a5389f2b720c8e4',1,'python.genMuonChannelModules_cff.genDiElectronCandidateSeq()']]],
@@ -27,8 +29,20 @@ var searchData=
   ['genmatchedsubleadingeledrseparationfilter',['genMatchedSubleadingEleDrSeparationFilter',['../namespacepython_1_1genElectronChannelModules__cff.html#a3b1b0c8fe68edd813686966fd8ec2702',1,'python::genElectronChannelModules_cff']]],
   ['genmumuchnlcutseqfortwodimlimits_5fcff_2epy',['genMuMuChnlCutSeqForTwoDimLimits_cff.py',['../genMuMuChnlCutSeqForTwoDimLimits__cff_8py.html',1,'']]],
   ['genmuonchannelmodules_5fcff_2epy',['genMuonChannelModules_cff.py',['../genMuonChannelModules__cff_8py.html',1,'']]],
+  ['genparticlesformatter',['genParticlesFormatter',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#aba9d958182f5e640d10662d11f98d1c7',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genparticlesformatterfilter',['genParticlesFormatterFilter',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#a0d7b9f699ce64cfbf0013a7a8d12772e',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genparticlesptetaconstrainedleptons',['genParticlesPtEtaConstrainedLeptons',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#a55682cf9dfe7da4afb1fb9677f74f6d1',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genparticlesptetaconstrainedleptonsfilter',['genParticlesPtEtaConstrainedLeptonsFilter',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#a36551274e053cb9da55c3d391d65baef',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genparticlesptetaconstrainedquarks',['genParticlesPtEtaConstrainedQuarks',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#acb47fdbb4715f53e8f40eba1da2204be',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genparticlesptetaconstrainedquarksfilter',['genParticlesPtEtaConstrainedQuarksFilter',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#a146c377d42bd647e90577bf1fdb58be1',1,'python::reformatGenAndRecoCollections_cff']]],
+  ['genparticlesptetaconstrainedseq',['genParticlesPtEtaConstrainedSeq',['../namespacepython_1_1reformatGenAndRecoCollections__cff.html#abed347c2a398c981d67d14324d130568',1,'python::reformatGenAndRecoCollections_cff']]],
   ['genttbarelectronchannelmodules_5fcff_2epy',['genTTBarElectronChannelModules_cff.py',['../genTTBarElectronChannelModules__cff_8py.html',1,'']]],
   ['genzeeseq',['genZeeSeq',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#af9606090fdf22288c049c86203f3acaf',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
-  ['getmasshisto',['getMassHisto',['../namespacepython_1_1combineTools.html#a32335419d6ce017a6e181dc80a60965d',1,'python::combineTools']]],
+  ['getdynevents',['getDYNEvents',['../namespacepython_1_1combineTools.html#ad931609c8bd23b154187cb5f14b94112',1,'python::combineTools']]],
+  ['geteejjmasshisto',['getEEJJMassHisto',['../namespacepython_1_1combineTools.html#a8441072e7719d107b800facbe3dad110',1,'python::combineTools']]],
+  ['getmumujjmasshisto',['getMuMuJJMassHisto',['../namespacepython_1_1combineTools.html#a00ce1cfd06b7a72745ccfca3b2b02858',1,'python::combineTools']]],
+  ['getnevents',['getNEvents',['../namespacepython_1_1combineTools.html#a0d12382ab6ba27cbfd8c315bd05f67e2',1,'python::combineTools']]],
+  ['getsignalmasshisto',['getSignalMassHisto',['../namespacepython_1_1combineTools.html#a8a0864cc410865e6d57c7c1d7b403cb6',1,'python::combineTools']]],
+  ['getttbarnevents',['getTTBarNEvents',['../namespacepython_1_1combineTools.html#a2cd6154889cb2f1ada5598edffd92e8b',1,'python::combineTools']]],
   ['grid',['Grid',['../produceLepIdIsoScaleFactors_8cc.html#a0bb9bfec0eb566ec58dc4c6cb37afd8f',1,'produceLepIdIsoScaleFactors.cc']]]
 ];

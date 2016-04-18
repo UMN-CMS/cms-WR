@@ -5,6 +5,8 @@ var searchData=
   ['pickgenmatchedeleseq',['pickGenMatchedEleSeq',['../namespacepython_1_1genElectronChannelModules__cff.html#afdeb23808b47da9683331947c9e99fcb',1,'python::genElectronChannelModules_cff']]],
   ['pickgenmatchedleadingele',['pickGenMatchedLeadingEle',['../namespacepython_1_1genElectronChannelModules__cff.html#a92e85ee0b4d1dc8ddce8d50bb1f765ad',1,'python::genElectronChannelModules_cff']]],
   ['pickgenmatchedsubleadingele',['pickGenMatchedSubleadingEle',['../namespacepython_1_1genElectronChannelModules__cff.html#a2d7a80372dc1189bea701ec24ce868d6',1,'python::genElectronChannelModules_cff']]],
+  ['plus1sig',['plus1sig',['../classpython_1_1plot_1_1limit1d.html#a3522e4bba100eba7f0ce549ae32b7688',1,'python::plot::limit1d']]],
+  ['plus2sig',['plus2sig',['../classpython_1_1plot_1_1limit1d.html#a81be057f0568b5b377d3b16c5cb96b81',1,'python::plot::limit1d']]],
   ['printdyjetsparticletree',['printDYJetsParticleTree',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a22c8e8268bd5fee00643db833b8bd27b',1,'python::genDYJetsElectronChannelModules_cff']]],
   ['printparticletree',['printParticleTree',['../namespacepython_1_1genElectronChannelModules__cff.html#a96399a06d1c7db23f56cdc50f2254dbd',1,'python.genElectronChannelModules_cff.printParticleTree()'],['../namespacepython_1_1genMuonChannelModules__cff.html#af75b9d54d1c42ba0858d0a0e19e0ece9',1,'python.genMuonChannelModules_cff.printParticleTree()']]],
   ['printttbarparticletree',['printTTBarParticleTree',['../namespacepython_1_1genTTBarElectronChannelModules__cff.html#a7f3f9ab74c1ae7fb034b0082bda92e38',1,'python::genTTBarElectronChannelModules_cff']]],

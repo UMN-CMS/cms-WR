@@ -1,7 +1,9 @@
 var searchData=
 [
+  ['datafolder',['datafolder',['../namespacepython_1_1combineTools.html#a1446f631b25cd3800b3803eaf05d7b14',1,'python::combineTools']]],
   ['dataset',['dataset',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#a09b3c884be62a1a78b7c96d34f709ecf',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
-  ['dyfit',['DYFit',['../namespacepython_1_1backgroundFits.html#a07cc0e368953482b17ecfc2adc65ac68',1,'python::backgroundFits']]],
+  ['datasetsfile',['datasetsfile',['../namespacepython_1_1cross__sections.html#a18654ad6e4f4b45bf401b6e4fffb30db',1,'python::cross_sections']]],
+  ['dyfit_5fmumu',['DYFit_mumu',['../namespacepython_1_1backgroundFits.html#aa12c645fb7b37f1de55c5141642e6be2',1,'python::backgroundFits']]],
   ['dyjetsbaregenjets',['dyJetsBareGenJets',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a1561a97a7cca4eb285a6613ffbc5cad6',1,'python::genDYJetsElectronChannelModules_cff']]],
   ['dyjetsbaregenjetsfilter',['dyJetsBareGenJetsFilter',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#ab22b3528ba6496fa119c871598c5225c',1,'python::genDYJetsElectronChannelModules_cff']]],
   ['dyjetsbarematchedgenele',['dyJetsBareMatchedGenEle',['../namespacepython_1_1genDYJetsElectronChannelModules__cff.html#a9ef0ee731b1792a8033b6cdac207fdda',1,'python::genDYJetsElectronChannelModules_cff']]],

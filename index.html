@@ -40,6 +40,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -65,7 +66,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,7 +91,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </pre></dd></dl>
 <p><a class="el" href="triggers.html">Triggers</a> List of triggers used to filter events at preselection level</p>
 <dl class="section user"><dt>How to estimate cross sections</dt><dd>Once the dataset is entered in the datasets.dat config file putting dashes for cross section, cross section uncetainty, then you can use the script <pre class="fragment"> ./scripts/getXsec.sh
-</pre> to update the file with the estimated cross sections</dd></dl>
+</pre> to update the file with the estimated cross sections Cross sections for SM processes can be found here: ttps://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV</dd></dl>
+<p>Instructions on how to get the cross sections of a MC sample: <a href="https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer">https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer</a></p>
 <dl class="section user"><dt>Skims</dt><dd><a class="el" href="skim_page.html">Skim</a> </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>microAOD_cff</dd></dl>
 <p>In order to make the skims: </p>
@@ -114,14 +116,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Electrons: <a href="https://cds.cern.ch/record/2118397/export/hx?ln=en">https://cds.cern.ch/record/2118397/export/hx?ln=en</a></p>
 <p>Muons: <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2">https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2</a></p>
 <dl class="section user"><dt>Energy corrections</dt><dd>muons <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon">https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon</a></dd></dl>
-<dl class="section user"><dt>Making selector plots</dt><dd>In order to make the selected plots, first the minitree has to pass through the selection module. Edit and run with compilation <pre class="fragment">root -l test/tmp.C+
+<dl class="section user"><dt>Making data/MC comparison plots</dt><dd>To make the data/MC plots for the flavor and low dilepton mass sidebands, first run the analysis code with only 1 toy. For flavor sideband: Edit the analysis.cpp file for nToys=1 and channel=Selector::EMu. The script will loop over all the datasets and produce root files called selected_tree_*_flavoursideband2.root. <pre class="fragment">make;./bin/analysis
+</pre> These files are the input to the plotting script. To make the plots, edit the plotting script so that the channel matches the one chosen in the analysis script. Make channel = Selector::EMu <pre class="fragment">cd test
+mkdir test/plots/Flavor
+mkdir test/plots/EELowDilepton
+mkdir test/plots/MuMuLowDilepton
+root -b miniPlotter.C
 </pre></dd></dl>
-<p>The selection step will produce an output flat tree given for the given parameters (ttbar,DY, EEJJ, MuMuJJ channel, etc.).</p>
-<p>Create a directory to store the plots </p>
-<pre class="fragment">mkdir test/plots
-</pre><p>The plotting script will take in the background samples and data sample to produced stacked plots for data/MC comparisons. Run </p>
-<pre class="fragment">root -b test/miniPlotter.C
-</pre><dl class="section user"><dt>GIT instructions</dt><dd>The main branch is downloaded by default the first time you download the code. It is <b>shervinWorking</b> </dd></dl>
+<p>Repeat the previous steps with the different channel options(EE or MuMu).</p>
+<dl class="section user"><dt>GIT instructions</dt><dd>The main branch is downloaded by default the first time you download the code. It is <b>shervinWorking</b> </dd></dl>
 <p>Developers have to: </p>
 <pre class="fragment">git checkout shervinWorking
 git pull
@@ -145,7 +148,7 @@ for file in tmp/analysis_WRto*.cfg tmp/analysis_TTJets_DiLept_v*.cfg tmp/analysi
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Feb 7 2016 09:16:21 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Apr 18 2016 22:12:42 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
