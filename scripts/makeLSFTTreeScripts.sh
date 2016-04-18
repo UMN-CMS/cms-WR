@@ -4,6 +4,41 @@
 CREATE=y
 SUBMIT=y
 FILE_PER_JOB=2
+SCHEDULER=caf
+
+setStoragePath(){
+    #$1 = storage_element
+    #$2 = scheduler
+    #echo "[DEBUG] Setting storage path for $1 with scheduler $2"
+    case $1 in
+        caf* | T2_CH_CERN)
+            case $2 in
+                caf|lsf)
+                    STORAGE_ELEMENT=caf.cern.ch
+                    STORAGE_PATH=root://eoscms//eos/cms/store
+                    ;;
+            #glite | glidein)
+                remoteGlidein|condor)
+                    STORAGE_ELEMENT=srm-eoscms.cern.ch
+                    STORAGE_PATH=/srm/v2/server?SFN=/eos/cms/store
+                #STORAGE_ELEMENT=caf.cern.ch
+                #STORAGE_PATH=root://eoscms//eos/cms/store
+                    ;;
+            *)
+                    echo "[ERROR] Scheduler $2 for storage_element $1 not implemented" >> /dev/stderr
+                    exit 1
+                    ;;
+            esac
+            ;;
+        T2_IT_Rome)
+            STORAGE_PATH=/srm/managerv2?SFN=/castor/cern.ch
+            ;;
+        clusterCERN)
+            STORAGE_PATH=root://pccmsrm27.cern.ch:1094//cms/local
+            ;;
+    esac
+}
+
 ###### the following variables are defined in a separate config file
 # datasetFile=configs/datasets.dat
 # jsonFile=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt
@@ -18,7 +53,7 @@ fi
 #------------------------------ parsing
 
 # options may be followed by one colon to indicate they have a required argument
-if ! options=$(getopt -u -o h -l help,ui_working_dir:,createOnly,submitOnly,check,datasetName: -- "$@")
+if ! options=$(getopt -u -o h -l help,ui_working_dir:,createOnly,submitOnly,check,datasetName:,scheduler: -- "$@")
 then
     # something went wrong, getopt will put out an error message for us
     exit 1
@@ -36,6 +71,7 @@ do
 		--submitOnly) echo "[OPTION] submitOnly"; unset CREATE;;
 		--check) CHECK=y; EXTRAOPTION="--check"; unset CREATE; unset SUBMIT;;
 		--datasetName) echo "[OPTION] dataset = $2"; DATASETNAME=$2; shift;;
+		--scheduler)  echo "[OPTION] scheduler = $2"; SCHEDULER=$2; shift;;
 		(--) shift; break;;
 		(-*) usage; echo "$0: error - unrecognized option $1" 1>&2; usage >> /dev/stderr; exit 1;;
 		(*) break;;
@@ -73,11 +109,9 @@ do
 	fi
 
 	UI_WORKING_DIR=crab/analysis/crab_analysis_${datasetName}${productionTAG}${UNBLINDTAG}
-	
-	STORAGE_ELEMENT=caf.cern.ch
-	STORAGE_PATH=root://eoscms//eos/cms/store
+
+	setStoragePath caf $SCHEDULER
 	USER_REMOTE_DIR=/user/shervin/ntuples/${datasetName}${productionTAG}${UNBLINDTAG}/unmerged
-	SCHEDULER=caf
 
 	OUTFILES=${datasetName}.root
 

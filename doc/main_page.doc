@@ -52,6 +52,31 @@ To update the list of datasets with the published skims:
 scripts/crabSkimJobs/updateDatasetsWithSkims.sh
 \endverbatim
 
+
+\section _MINITREE_ MiniTree production
+The actual code to produce miniTree works only on LXPLUS at CERN on the batch system using CRAB2.
+
+To load CRAB2 environment in bash:
+\verbatim
+source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
+cmsenv
+source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh
+voms-proxy-init -voms cms -out $HOME/gpi.out
+\endverbatim
+
+If the USER is not Shervin, the SCHEDULER should be set to LSF like:
+\verbatim
+./script/makeLSFTTreeScripts.sh --scheduler=lsf
+\endverbatim
+
+To check the status of the jobs and merge the jobs:
+\verbatim
+./script/makeLSFTTreeScripts.sh --scheduler=lsf --check
+\endverbatim
+
+\b CAVEAT: the script is set to save the ntuples in Shervin's area on EOS. It has not been yet generalized. So it is not supposed to work for other users in other storage elements on-the-fly.
+On can also use --scheduler=remoteGlidein to run over the GRID. The storage element is still CERN. LSF has not been tested. 
+
 \par JEC
 The twiki page is:
 \url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
