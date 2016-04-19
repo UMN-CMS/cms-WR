@@ -9,6 +9,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TLorentzVector.h"
+#include "TStyle.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -29,8 +30,8 @@
 //#define DBG
 
 bool isReweighted = false;
-//Selector::tag_t channel = Selector::MuMu;
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
+//Selector::tag_t channel = Selector::EE;
 
 void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Float_t minLeadJetPt, Int_t minNJets, Float_t minSubleadJetPt);
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs, Float_t leadJetPtCut, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Int_t minNJets, Float_t subleadJetPtCut);
@@ -192,7 +193,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 
 	TH1F *h_Z_phi = new TH1F("h_Z_phi", "", 50, -3.15, 3.15);
 	TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity", "", 50, -5., 5.);
-	TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 50, 0., 200.);
+	TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 80, 0., 400.);
 
 	TH1F *h_nJets = new TH1F("h_nJets", "", 30, 0, 30);
 	
@@ -292,7 +293,9 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 
 	if(fname.EqualTo("Mll") == true) writeIntegralsToTxtFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,minMll,maxMll,minSubleadLeptonPt,minLeadLeptonPt,maxLeptonEta, minLeadJetPt, minNJets, minSubleadJetPt);
 
-	TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ;
+	gStyle->SetOptStat("neou");
+	//TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ;
+	TLegend *leg = new TLegend( 0.42, 0.60, 0.78, 0.80 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
 	//leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
@@ -309,7 +312,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	//hs_DYAmcIncl->SetLineWidth(3);
 	hs_data->SetMarkerStyle(20);
 	hs_data->SetMarkerSize(1);
-	hs_data->SetMarkerColor(kGreen);
+	hs_data->SetMarkerColor(kBlack);
 
 
 	Double_t eps = 0.001;
@@ -320,7 +323,8 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	p1->SetBottomMargin(0);
 	p2->SetTopMargin(0);
 	p1->cd();
-	hs_data->SetStats(0);
+	hs_data->SetStats(1);
+	hs_DYPowheg->SetStats(1);
 	TH1F *ratio_Powheg = (TH1F*)hs_data->Clone();
 	TH1F *ratio_Mad = (TH1F*)hs_data->Clone();
 	TH1F *ratio_Amc = (TH1F*)hs_data->Clone();
