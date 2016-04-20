@@ -29,6 +29,7 @@
 #endif
 //#define DBG
 
+bool useJorgeMinitrees = false;
 bool isReweighted = false;
 Selector::tag_t channel = Selector::MuMu;
 //Selector::tag_t channel = Selector::EE;
@@ -53,9 +54,12 @@ void miniPlotterForDYTandP()
 		chain_data->Add("../selected_tree_data_dytagandprobeEE_v14.root");
 		break;
 	case Selector::MuMu:
-		chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_v15noRoch.root");
-		chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_v15noRoch.root"); // 1 - Muons
-		chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_v15noRoch.root");
+		if(!useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_v15noRoch.root");
+		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_v15noRoch.root"); // 1 - Muons
+		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_v15noRoch.root");
+		if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitree.root");
+		if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitree.root"); // 1 - Muons
+		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitree.root");
 		chain_data->Add("../selected_tree_data_dytagandprobeMuMu_v14.root");
 		break;
 	default:
@@ -165,23 +169,23 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	if(isReweighted){
 		TString chTitle = chain->GetTitle();
 		if( !(chTitle.Contains("Data")) ){
-			reweight = (channel == Selector::EE) ? (0.976) : (1.118);
+			reweight = (channel == Selector::EE) ? (1) : (1);
 		}
 		std::cout<<"reweight =\t"<< reweight << std::endl;
 	}//end if(isReweighted)
-	TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0", "", 50, 0, 200);
-	TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0", "", 50, -3, 3);
-	TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0", "", 50, -3.15, 3.15);
-	TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1", "", 50, 0, 200);
+	TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0", "", 100, -20, 1000);
+	TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0", "", 50, -3.2, 3.2);
+	TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0", "", 50, -3.2, 3.2);
+	TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1", "", 120, -15, 500);
 	TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1", "", 50, -3, 3);
 	TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1", "", 50, -3.15, 3.15);
 
-	TH1F *h_jet_pt0 = new TH1F("h_jet_pt0", "", 50, 0, 300);
-	TH1F *h_jet_eta0 = new TH1F("h_jet_eta0", "", 50, -3, 3);
-	TH1F *h_jet_phi0 = new TH1F("h_jet_phi0", "", 50, -3.15, 3.15);
-	TH1F *h_jet_pt1 = new TH1F("h_jet_pt1", "", 50, 0, 300);
-	TH1F *h_jet_eta1 = new TH1F("h_jet_eta1", "", 50, -3, 3);
-	TH1F *h_jet_phi1 = new TH1F("h_jet_phi1", "", 50, -3.15, 3.15);
+	TH1F *h_jet_pt0 = new TH1F("h_jet_pt0", "", 50, -5, 300);
+	TH1F *h_jet_eta0 = new TH1F("h_jet_eta0", "", 50, -3.2, 3.2);
+	TH1F *h_jet_phi0 = new TH1F("h_jet_phi0", "", 50, -3.2, 3.2);
+	TH1F *h_jet_pt1 = new TH1F("h_jet_pt1", "", 50, -5, 300);
+	TH1F *h_jet_eta1 = new TH1F("h_jet_eta1", "", 50, -3.2, 3.2);
+	TH1F *h_jet_phi1 = new TH1F("h_jet_phi1", "", 50, -3.2, 3.2);
 
 	//TH1F *h_WR_mass = new TH1F("h_WR_mass", "", 50, 0, 2000);
 	float dilepton_max = 125.;
@@ -191,11 +195,11 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	TH1F *h_nPV = new TH1F("h_nPV", "", 100, 0, 100);
 	TH1F *h_nPV_noPUWeight = new TH1F("h_nPV_noPUWeight", "", 100, 0, 100);
 
-	TH1F *h_Z_phi = new TH1F("h_Z_phi", "", 50, -3.15, 3.15);
-	TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity", "", 50, -5., 5.);
-	TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 80, 0., 400.);
+	TH1F *h_Z_phi = new TH1F("h_Z_phi", "", 50, -3.2, 3.2);
+	TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity", "", 70, -5., 8.);
+	TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 80, -10., 400.);
 
-	TH1F *h_nJets = new TH1F("h_nJets", "", 30, 0, 30);
+	TH1F *h_nJets = new TH1F("h_nJets", "", 26, -1, 25);
 	
 	Long64_t nEntries = chain->GetEntries();
 
@@ -293,9 +297,8 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 
 	if(fname.EqualTo("Mll") == true) writeIntegralsToTxtFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,minMll,maxMll,minSubleadLeptonPt,minLeadLeptonPt,maxLeptonEta, minLeadJetPt, minNJets, minSubleadJetPt);
 
-	gStyle->SetOptStat("neou");
-	//TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ;
-	TLegend *leg = new TLegend( 0.42, 0.60, 0.78, 0.80 ) ;
+	gStyle->SetOptStat("eou");
+	TLegend *leg = new TLegend( 0.80, 0.50, 0.98, 0.70 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
 	//leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
