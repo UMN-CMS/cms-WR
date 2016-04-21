@@ -29,7 +29,7 @@
 #endif
 //#define DBG
 
-bool useJorgeMinitrees = false;
+bool useJorgeMinitrees = true;
 bool isReweighted = false;
 Selector::tag_t channel = Selector::MuMu;
 //Selector::tag_t channel = Selector::EE;
@@ -57,9 +57,12 @@ void miniPlotterForDYTandP()
 		if(!useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_v15noRoch.root");
 		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_v15noRoch.root"); // 1 - Muons
 		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_v15noRoch.root");
-		if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitree.root");
-		if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitree.root"); // 1 - Muons
-		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitree.root");
+		//if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root");
+		//if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root"); // 1 - Muons
+		//if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root");
+		if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root");
+		if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root"); // 1 - Muons
+		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root");
 		chain_data->Add("../selected_tree_data_dytagandprobeMuMu_v14.root");
 		break;
 	default:
@@ -120,40 +123,36 @@ void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	zMassRanges.push_back(30);
 	unsigned int num = zMassRanges.size();
 
+//useJorgeMinitrees
 	//write the integral of each dilepton_mass histo over a certain range into a txt file
 	std::string zPeakEvtCountFile = "ZPeakRegionIntegralsFromSean.txt";
 	ofstream writeToZpeakFile(zPeakEvtCountFile.c_str(), ofstream::app);
 	writeToZpeakFile << "\t" << std::endl;
 	std::string weightString = "Mll normalization IS NOT applied";
 	if(isReweighted) weightString = "Mll normalization IS applied";
+	if(useJorgeMinitrees) weightString += "  used Jorges minitrees with Roch corrections for MC, V14 minitrees with roch corrs for data";
+	if(!useJorgeMinitrees) weightString += "  used Shervins V15NoRoch minitrees for MC, V14 minitrees with roch corrs for data";
 	writeToZpeakFile << weightString << std::endl;
 	writeToZpeakFile << "min dilepton mass =\t"<< minMll <<"\tmax dilepton mass =\t"<< maxMll <<"\tmin lead jet pt =\t"<< minLeadJetPt <<"\tmin sublead jet pt =\t"<< minSubleadJetPt << "\tmin num jets =\t"<< minNJets << std::endl;
 	writeToZpeakFile << "min sublead lepton pt =\t"<< minSubleadLeptonPt <<"\tmin lead lepton pt =\t"<< minLeadLeptonPt << "\tmax lepton |eta| =\t"<< maxLeptonEta << std::endl;
 	std::string channelHeader = (channel == Selector::EE) ? "ELECTRON" : "MUON";
 	writeToZpeakFile << channelHeader << std::endl;
 	writeToZpeakFile << "\t"<< "DATA\t"<<"AMCNLO\t"<<"MADGRAPH\t"<<"POWHEGM50to120"<< std::endl;
-	for(unsigned int i=0; i<num; i++){
-		Int_t lowBin = 1, highBin = 2;
-		Float_t lowDiff = 1, highDiff = 1;
-		Float_t lowTarget = (zCentr-zMassRanges[i]), highTarget = (zCentr+zMassRanges[i]);
-		for(Int_t bin=1; bin<= hs_data->GetNbinsX(); bin++){
-			if(std::fabs(hs_data->GetXaxis()->GetBinCenter(bin) - lowTarget) < lowDiff){
-				lowDiff = std::fabs(hs_data->GetXaxis()->GetBinCenter(bin) - lowTarget);
-				lowBin = bin;
-			}
-			if(std::fabs(hs_data->GetXaxis()->GetBinCenter(bin) - highTarget) < highDiff){
-				highDiff = std::fabs(hs_data->GetXaxis()->GetBinCenter(bin) - highTarget);
-				highBin = bin;
-			}
 
-		}//end loop over hs_data histo bins to find the min and max bin corresponding to zCentr +/- zMassRanges[i]
+	for(unsigned int i=0; i<num; i++){
+		Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - zMassRanges[i]);
+		Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + zMassRanges[i]);
+	
+		/*	
 
 #ifdef DBG
 		std::cout<<"scanning through histo named\t"<< hs_data->GetName() << std::endl;
 		std::cout<<"looking for values =\t" << zCentr-zMassRanges[i] << "\tand =\t"<< zCentr+zMassRanges[i] << std::endl;
 		std::cout<<"max bin=\t"<< hs_data->GetNbinsX() << "\thas central value =\t"<< hs_data->GetXaxis()->GetBinCenter(hs_data->GetNbinsX()) << std::endl;
 		std::cout<<"lowBin center = "<< hs_data->GetXaxis()->GetBinCenter(lowBin) <<"\thighBin center = "<< hs_data->GetXaxis()->GetBinCenter(highBin) << std::endl;
-#endif	
+#endif
+*/
+
 		writeToZpeakFile <<"Z peak +/- "<<zMassRanges[i]<<" GeV\t"<< hs_data->Integral(lowBin, highBin) <<"\t"<< hs_DYAmcIncl->Integral(lowBin, highBin) <<"\t"<< hs_DYMadIncl->Integral(lowBin, highBin) <<"\t"<< hs_DYPowheg->Integral(lowBin, highBin) << std::endl;
 
 	}//end loop over Z mass ranges
@@ -410,4 +409,12 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	mycanvas->Print((fn + "_log.png").Data());
 
 	mycanvas->Close();
+	if(fname.EqualTo("Mll") == true){
+		TFile f("seanHistos.root","RECREATE");
+		hs_data->SetName("h_Mll_DATA"), hs_DYAmcIncl->SetName("h_Mll_DY"), hs_DYPowheg->SetName("h_Mll_DY_pow"), hs_DYMadIncl->SetName("h_Mll_DY_mad");
+		hs_data->Write();
+		hs_DYAmcIncl->Write();
+		hs_DYPowheg->Write();
+		hs_DYMadIncl->Write();
+	}
 }
