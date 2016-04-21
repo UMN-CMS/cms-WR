@@ -29,7 +29,7 @@
 #endif
 //#define DBG
 
-bool useJorgeMinitrees = true;
+bool useJorgeMinitrees = false;
 bool isReweighted = false;
 Selector::tag_t channel = Selector::MuMu;
 //Selector::tag_t channel = Selector::EE;
@@ -54,16 +54,16 @@ void miniPlotterForDYTandP()
 		chain_data->Add("../selected_tree_data_dytagandprobeEE_v14.root");
 		break;
 	case Selector::MuMu:
-		if(!useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_v15noRoch.root");
-		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_v15noRoch.root"); // 1 - Muons
-		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_v15noRoch.root");
-		//if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root");
-		//if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root"); // 1 - Muons
-		//if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root"); // 1 - Muons
+		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_data->Add("../selected_tree_data_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root");
+		
 		if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root");
 		if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root"); // 1 - Muons
-		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithToysInAnalysisCpp.root");
-		chain_data->Add("../selected_tree_data_dytagandprobeMuMu_v14.root");
+		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root");
+		if(useJorgeMinitrees) chain_data->Add("../selected_tree_data_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root");
+		
 		break;
 	default:
 		std::cout << "Unknown tag" << std::endl;
@@ -123,15 +123,16 @@ void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	zMassRanges.push_back(30);
 	unsigned int num = zMassRanges.size();
 
-//useJorgeMinitrees
 	//write the integral of each dilepton_mass histo over a certain range into a txt file
 	std::string zPeakEvtCountFile = "ZPeakRegionIntegralsFromSean.txt";
 	ofstream writeToZpeakFile(zPeakEvtCountFile.c_str(), ofstream::app);
 	writeToZpeakFile << "\t" << std::endl;
+	writeToZpeakFile << "\t" << std::endl;
 	std::string weightString = "Mll normalization IS NOT applied";
 	if(isReweighted) weightString = "Mll normalization IS applied";
-	if(useJorgeMinitrees) weightString += "  used Jorges minitrees with Roch corrections for MC, V14 minitrees with roch corrs for data";
-	if(!useJorgeMinitrees) weightString += "  used Shervins V15NoRoch minitrees for MC, V14 minitrees with roch corrs for data";
+	if(useJorgeMinitrees) weightString += "  used Jorges minitrees with Roch corrections for MC and data";
+	if(!useJorgeMinitrees) weightString += "  used Shervins V15 minitrees for MC and data";
+	writeToZpeakFile << "MC processed WITHOUT systematics re-evaluation in analysis.cpp" <<std::endl;
 	writeToZpeakFile << weightString << std::endl;
 	writeToZpeakFile << "min dilepton mass =\t"<< minMll <<"\tmax dilepton mass =\t"<< maxMll <<"\tmin lead jet pt =\t"<< minLeadJetPt <<"\tmin sublead jet pt =\t"<< minSubleadJetPt << "\tmin num jets =\t"<< minNJets << std::endl;
 	writeToZpeakFile << "min sublead lepton pt =\t"<< minSubleadLeptonPt <<"\tmin lead lepton pt =\t"<< minLeadLeptonPt << "\tmax lepton |eta| =\t"<< maxLeptonEta << std::endl;
