@@ -405,7 +405,9 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassingLooseCuts(channel)) {
 					if(isData == 0) {
-						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						//selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						selEvent.weight *= 1; // the weight is the event weight * single object weights
+					
 					} else {
 						selEvent.weight = 1;
 #ifdef DEBUGG
