@@ -181,7 +181,7 @@ int main(int ac, char* av[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help", "produce help message")
-	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.64e3), "Integrated luminosity")
+	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
@@ -407,7 +407,7 @@ int main(int ac, char* av[])
 					if(isData == 0) {
 						//selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 						selEvent.weight *= 1; // the weight is the event weight * single object weights
-					
+
 					} else {
 						selEvent.weight = 1;
 #ifdef DEBUGG
