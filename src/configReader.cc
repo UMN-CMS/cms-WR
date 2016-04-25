@@ -61,6 +61,9 @@ TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
 	chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
+	//JORGEchain->Add(("root://cmsxrootd.fnal.gov//store/user/jchaves/ntuples/" + datasetName + configFile["productionTAG"] + "/unmerged-allRange.root").c_str());
+	//chain->Add(("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/minitrees/" + datasetName + configFile["productionTAG"] + "/unmerged-allRange.root").c_str());
+
 	chain->GetEntries();
 	return chain;
 }
