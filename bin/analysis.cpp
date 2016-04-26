@@ -84,15 +84,15 @@ public:
 			}
 			if(mode.find("POWHEG") != _ENDSTRING) {
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
 			} else if(mode.find("AMCINCL") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
