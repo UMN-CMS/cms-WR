@@ -60,6 +60,7 @@ void goodMuonsLooseCuts(myMuonCollection *evMuons, myMuonCollection *selMuons)
 Selector::Selector(const miniTreeEvent& myEvent) :
 	WR_mass(-1),
 	dilepton_mass(-1)
+	//dijet_mass(-1)
 {
 	datasetName = myEvent.datasetName;
 
@@ -101,7 +102,11 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		jets.push_back(jet);
 	}
 
-	global_event_weight = myEvent.weight * myEvent.PU_reweight;
+	nPV = myEvent.nPV;
+	global_event_weight = (myEvent.weight > 0 ? 1 : -1) * myEvent.PU_reweight;
+#ifdef DEBUGG
+	std::cout << "global_event_weight=\t" << global_event_weight << std::endl;
+#endif
 
 //	Clear();
 }

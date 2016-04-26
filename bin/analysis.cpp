@@ -180,7 +180,7 @@ int main(int ac, char* av[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help", "produce help message")
-	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
+	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
@@ -251,6 +251,12 @@ int main(int ac, char* av[])
 	std::vector<int> mass_vec = getMassVec();
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
+	long zMass60to120EvtCount = 0;	///<count the number of evts from each dataset with 60 < dilepton_mass < 120 which pass loose selector cuts
+	long zMass65to115EvtCount = 0;
+	long zMass70to110EvtCount = 0;
+	long zMass75to105EvtCount = 0;
+	long zMass80to100EvtCount = 0;
+	long zMass85to95EvtCount = 0;
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
@@ -298,6 +304,9 @@ int main(int ac, char* av[])
 		std::vector<TTree *> t1(nToys, NULL);
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
+#ifdef DEBUGG
+		nEntries = 1000;
+#endif
 
 		TRandom3 Rand;
 		const int Total_Number_of_Systematics_Smear = 1;// electron scale(MC)
