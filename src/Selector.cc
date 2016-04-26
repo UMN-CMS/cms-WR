@@ -4,6 +4,7 @@
 // #include "ExoAnalysis/cmsWR/interface/Selector.h"
 #include "../interface/Selector.h"
 #include "DataFormats/Math/interface/deltaR.h"
+//#define DEBUGG
 
 float dR_TLV(TLorentzVector t1, TLorentzVector t2)
 {
@@ -36,8 +37,7 @@ void goodEles(myElectronCollection *evEles, myElectronCollection *selEles)
 void goodElesLooseCuts(myElectronCollection *evEles, myElectronCollection *selEles)
 {
 	for(auto e : *evEles) {
-		if(fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
-			selEles->push_back(e);
+		if(fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566)) selEles->push_back(e);
 	}
 }
 
@@ -52,15 +52,13 @@ void goodMuons(myMuonCollection *evMuons, myMuonCollection *selMuons)
 void goodMuonsLooseCuts(myMuonCollection *evMuons, myMuonCollection *selMuons)
 {
 	for(auto m : *evMuons) {
-		if(fabs(m.p4.Eta()) < 2.4)
-			selMuons->push_back(m);
+		if(fabs(m.p4.Eta()) < 2.4) selMuons->push_back(m);
 	}
 }
 
 Selector::Selector(const miniTreeEvent& myEvent) :
 	WR_mass(-1),
 	dilepton_mass(-1)
-	//dijet_mass(-1)
 {
 	datasetName = myEvent.datasetName;
 
@@ -153,23 +151,38 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	electrons = gEles;
 	muons = gMuons;
 
-	// Assert at least 2 good jets
-	if(jets.size() < 2) {
-		return false;
-	}
-
-	lead_jet_pt = jets[0].p4.Pt();
-	lead_jet_eta = jets[0].p4.Eta();
-	lead_jet_phi = jets[0].p4.Phi();
+	//defaults if no jets are found in the event
+	lead_jet_pt = -1;
+	lead_jet_eta = -6;
+	lead_jet_phi = -6;
 	lead_jet_weight = 1.0;
 	sublead_jet_weight = 1.0;
+	sublead_jet_pt = -1;
+	sublead_jet_eta = -6;
+	sublead_jet_phi = -6;
 
-	sublead_jet_pt = jets[1].p4.Pt();
-	sublead_jet_eta = jets[1].p4.Eta();
-	sublead_jet_phi = jets[1].p4.Phi();
-	lead_jet_weight = 1.0;
+	njets = jets.size();
 
-	if(tag == 0) { // EEJJ Channel
+	if(jets.size() == 1) {
+		lead_jet_pt = jets[0].p4.Pt();
+		lead_jet_eta = jets[0].p4.Eta();
+		lead_jet_phi = jets[0].p4.Phi();
+		lead_jet_weight = 1.0;
+	}//one jet in event
+
+	if(jets.size() > 1) {
+		lead_jet_pt = jets[0].p4.Pt();
+		lead_jet_eta = jets[0].p4.Eta();
+		lead_jet_phi = jets[0].p4.Phi();
+		lead_jet_weight = 1.0;
+		sublead_jet_weight = 1.0;
+
+		sublead_jet_pt = jets[1].p4.Pt();
+		sublead_jet_eta = jets[1].p4.Eta();
+		sublead_jet_phi = jets[1].p4.Phi();
+	}//two or more jets in the event
+
+	if(tag == EE) { // EEJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 2) {
 			return false;
@@ -181,7 +194,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
-	} else if(tag == 1) { // MuMuJJ Channel
+	} else if(tag == MuMu) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
 			return false;
@@ -193,7 +206,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
 
-	} else if(tag == 2) { // EMuJJ Channel
+	} else if(tag == EMu) { // EMuJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 1 || muons.size() < 1) {
 			return false;
@@ -235,8 +248,16 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 
 	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
-	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
-	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
+	//WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
+	//weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
+	WR_mass = -1;
+	weight = lead_lepton_weight * sublead_lepton_weight * global_event_weight;
+	pu_weight = fabs(global_event_weight);
+
+
+#ifdef DEBUGG
+	std::cout << "weight (global_event_weight times single object weights)=\t" << weight << std::endl;
+#endif
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 
@@ -283,6 +304,8 @@ bool Selector::isPassing(tag_t tag)
 		return false;
 	}
 
+	njets = jets.size();
+
 	lead_jet_pt = jets[0].p4.Pt();
 	lead_jet_eta = jets[0].p4.Eta();
 	lead_jet_phi = jets[0].p4.Phi();
@@ -294,7 +317,7 @@ bool Selector::isPassing(tag_t tag)
 	sublead_jet_phi = jets[1].p4.Phi();
 	lead_jet_weight = 1.0;
 
-	if(tag == 0) { // EEJJ Channel
+	if(tag == EE) { // EEJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 2) {
 			return false;
@@ -306,7 +329,7 @@ bool Selector::isPassing(tag_t tag)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
-	} else if(tag == 1) { // MuMuJJ Channel
+	} else if(tag == MuMu) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
 			return false;
@@ -318,7 +341,7 @@ bool Selector::isPassing(tag_t tag)
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
 
-	} else if(tag == 2) { // EMuJJ Channel
+	} else if(tag == EMu) { // EMuJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 1 || muons.size() < 1) {
 			return false;
@@ -365,6 +388,11 @@ bool Selector::isPassing(tag_t tag)
 	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
 	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
 	weight = lead_lepton_weight * sublead_lepton_weight * lead_jet_weight * sublead_jet_weight * global_event_weight;
+#ifdef DEBUGG
+	std::cout << "weight (global_event_weight times single object weights)=\t" << weight << std::endl;
+#endif
+
+	pu_weight = fabs(global_event_weight);
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 
@@ -372,6 +400,8 @@ bool Selector::isPassing(tag_t tag)
 	return _isPassing;
 
 }
+
+
 
 void Selector::SetBranches(TTree* tree)
 {
@@ -393,6 +423,8 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("weight", &weight);
 	tree->Branch("WR_mass", &WR_mass);
 	tree->Branch("dilepton_mass", &dilepton_mass);
+	tree->Branch("pu_weight", &pu_weight);
+	tree->Branch("njets", &njets);
 
 }
 
@@ -417,6 +449,8 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("weight", &weight);
 	tree->SetBranchAddress("WR_mass", &WR_mass);
 	tree->SetBranchAddress("dilepton_mass", &dilepton_mass);
+	tree->SetBranchAddress("pu_weight", &pu_weight);
+	tree->SetBranchAddress("njets", &njets);
 
 }
 
