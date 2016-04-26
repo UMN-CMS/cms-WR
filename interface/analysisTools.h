@@ -2,7 +2,12 @@
 #include <utility>
 #include <fstream>
 #include <string>
-std::map<int, std::pair<int, int> >  getMassCutMap()
+
+#include "RooAbsPdf.h"
+#include "RooRealVar.h"
+using namespace RooFit;
+
+std::map<int, std::pair<int,int> >  getMassCutMap()
 {
 	std::map<int, std::pair<int, int> > mass_cut;
 	std::ifstream ifs;
@@ -36,4 +41,12 @@ std::vector<int> getMassVec()
 	}
 
 	return mass;
+}
+
+double NormalizedIntegral(RooAbsPdf * function, RooRealVar& integrationVar, double lowerLimit, double upperLimit)
+{
+	integrationVar.setRange("integralRange", lowerLimit, upperLimit) ;
+	RooAbsReal* integral = (*function).createIntegral(integrationVar, NormSet(integrationVar), Range("integralRange")) ;
+	double normalizedIntegralValue = integral->getVal();
+	return normalizedIntegralValue;
 }
