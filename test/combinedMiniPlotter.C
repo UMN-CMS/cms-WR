@@ -22,14 +22,12 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
-Selector::tag_t channel = Selector::MuMu;
-//Selector::tag_t channel = Selector::EE;
-//Selector::tag_t channel = Selector::EMu;
+//Selector::tag_t channel = Selector::MuMu;
 
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
-void miniPlotter(){
+void combinedMiniPlotter(){
 
   TChain * chain_DY = new TChain("Tree_Iter0");
   TChain * chain_ttbar = new TChain("Tree_Iter0");

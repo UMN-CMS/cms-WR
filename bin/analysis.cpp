@@ -30,6 +30,7 @@
 
 #define _ENDSTRING std::string::npos
 #define DEBUG
+#define DEBUGG
 
 /**
 TT
@@ -93,10 +94,10 @@ public:
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
-			} else if(mode.find("AMCINCL") != _ENDSTRING) {
+			} else if(mode.find("AMC") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
-			} else if(mode.find("MADINCL") != _ENDSTRING) {
+			} else if(mode.find("MAD") != _ENDSTRING) {
 				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_madgraph");
 			}
@@ -443,7 +444,7 @@ int main(int ac, char* av[])
 					}
 
 					Fits::massWR.setVal(selEvent.WR_mass);
-					Fits::evtWeight.setVal(selEvent.weight);
+					Fits::genEvtWeights.setVal(selEvent.weight);
 					tempDataSet->add(Fits::vars);
 
 					t1[i]->Fill();
@@ -458,12 +459,9 @@ int main(int ac, char* av[])
 			if(i == seed) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
 			if(i == seed) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
 
-			std::endl;
-
-			std::endl;
 
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
-			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
+			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::genEvtWeights.GetName());
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");

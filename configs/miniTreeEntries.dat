@@ -1,0 +1,26 @@
+commitNumber
+f6522d9dad349d300d565f2ed23f0ec325c960a2
+# Dataset miniTree_flavoursideband miniTree_lowdileptonsideband miniTree_signal_ee miniTree_signal_mumu miniTree_dytagandprobe 
+DYJets_amctnlo_SHv15noRochester 196 157499 5172 6964 9996946
+DYJets_madgraph_SHv15noRochester 34 27751 1177 1518 3041984
+DYToEE_powheg_120to200_SHv15noRochester 0 13139 48 0 32418
+DYToEE_powheg_1400to2300_SHv15noRochester 8 10 55947 0 50594
+DYToEE_powheg_200to400_SHv15noRochester 0 195 29142 0 34865
+DYToEE_powheg_2300to3500_SHv15noRochester 7 9 59250 0 47985
+DYToEE_powheg_3500to4500_SHv15noRochester 16 5 60767 0 44948
+DYToEE_powheg_400to800_SHv15noRochester 2 23 41592 0 48318
+DYToEE_powheg_4500to6000_SHv15noRochester 14 10 59381 0 41905
+DYToEE_powheg_50to120_SHv15noRochester 6 8942 3 0 1250963
+DYToEE_powheg_6000toInf_SHv15noRochester 14 3 50407 0 39798
+DYToEE_powheg_800to1400_SHv15noRochester 2 25 50731 0 51549
+DYToEE_powheg_SHv15noRochester 33 208811 22396 0 20598344
+DYToMuMu_powheg_120to200_SHv15noRochester 2 17536 0 137 74462
+DYToMuMu_powheg_1400to2300_SHv15noRochester 10 8 1 59718 95741
+DYToMuMu_powheg_200to400_SHv15noRochester 8 523 0 38538 87023
+DYToMuMu_powheg_2300to3500_SHv15noRochester 6 4 0 58958 95812
+DYToMuMu_powheg_3500to4500_SHv15noRochester 8 3 0 58218 95189
+DYToMuMu_powheg_400to800_SHv15noRochester 13 26 0 56216 94066
+DYToMuMu_powheg_4500to6000_SHv15noRochester 6 8 0 56450 94687
+DYToMuMu_powheg_50to120_SHv15noRochester 4 11714 0 2 1622657
+DYToMuMu_powheg_6000toInf_SHv15noRochester 17 12 2 51856 93227
+DYToMuMu_powheg_800to1400_SHv15noRochester 7 17 0 65799 96024
