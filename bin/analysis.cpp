@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <iomanip>
 #include <boost/program_options.hpp>
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
@@ -25,53 +26,203 @@
 #include "analysisTools.h"
 #include "configReader.h"
 
-namespace po = boost::program_options;
+#include <unordered_set>
+
+#define _ENDSTRING std::string::npos
+#define DEBUG
+
+/**
+TT
+DY TANDP POWHEG AMC MAD
+W
+WZ
+ZZ
+data TANDP
+*/
+
+/** \class chainNames
+	\brief this class helps in finding the right tree name based on the sample, sideband and channel one wants to analyze
+*/
+
+class chainNames
+{
+
+public:
+	chainNames(): ///< default constructor
+		all_modes(  // list of all possible modes
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD"
+	}
+	)
+	{
+	};
+
+	bool isData(std::string mode)
+	{
+		if(mode == "data") return true;
+		return false;
+	}
+
+	std::vector<std::string> getChainNames(std::string mode, Selector::tag_t channel, bool isTagAndProbe)
+	{
+
+		std::vector<std::string> TTchainNames;
+		if(checkValidMode(mode) == false) {
+			std::cerr << "[ERROR]" << std::endl;
+			return TTchainNames;
+		}
+		if(mode == "TT") {
+			//TTchainNames.push_back("TTJets_DiLept_v1");
+			TTchainNames.push_back("TTJets_DiLept_v2");
+		} else if(mode.find("DY") != _ENDSTRING) {
+			//if(mode.Contains("TANDP") ) tree_channel = "_dytagandprobe";
+			std::string tagName = "";
+			if(channel == Selector::EE) tagName = "EE";
+			if(channel == Selector::MuMu) tagName = "MuMu";
+			if(channel == Selector::EMu) { ///\todo to be fixes, it should be possible
+				std::cout << "ERROR looking for DY in EMu channel" << std::endl;
+				return TTchainNames;
+			}
+			if(mode.find("POWHEG") != _ENDSTRING) {
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
+				//TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
+			} else if(mode.find("AMCINCL") != _ENDSTRING) {
+				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
+				TTchainNames.push_back("DYJets_amctnlo");
+			} else if(mode.find("MADINCL") != _ENDSTRING) {
+				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
+				TTchainNames.push_back("DYJets_madgraph");
+			}
+		} else if(mode == "W") {
+			TTchainNames.push_back("WJetsLNu");
+		} else if(mode == "WZ") {
+			TTchainNames.push_back("WZ");
+		} else if(mode == "ZZ") {
+			TTchainNames.push_back("ZZ");
+		} else if(mode == "data") {
+			std::string dataTag = "";
+			if(channel == Selector::EMu)  dataTag = "MuEG";
+			if(channel == Selector::EE)   dataTag = "DoubleEG";
+			if(channel == Selector::MuMu) dataTag = "SingleMu";
+			TTchainNames.push_back(dataTag + "_RunC");
+			TTchainNames.push_back(dataTag + "_RunD_v3");
+			TTchainNames.push_back(dataTag + "_RunD_v4");
+		}
+		return TTchainNames;
+	};
+
+
+	std::string getTreeName(Selector::tag_t channel, bool isTagAndProbe, bool isLowDiLepton)
+	{
+		std::string tree_channel = "";
+
+		// Select the channel to be studied //
+		if(isLowDiLepton && channel != Selector::EMu)
+			tree_channel = "_lowdileptonsideband";
+		else if(isTagAndProbe)
+			tree_channel = "_dytagandprobe";
+		else if(channel == Selector::EE)
+			tree_channel = "_signal_ee";
+		else if(channel == Selector::MuMu)
+			tree_channel = "_signal_mumu";
+		else if(channel == Selector::EMu)
+			tree_channel = "_flavoursideband";
+		else {
+			tree_channel = "";
+			std::cerr << "[ERROR] No channel defined" << std::endl;
+		}
+
+		return  tree_channel;
+	};
+
+	bool checkValidMode(std::string mode)
+	{
+		if(all_modes.count(mode) == 0) {
+			std::cerr << "[ERROR] Mode " << mode << " not part of the standard modes:" << std::endl;
+			for(auto allowed_mode : all_modes) std::cerr << "        " << allowed_mode << std::endl;
+			return false;
+		}
+		return true;
+	};
+
+private:
+	std::unordered_set<std::string> all_modes;
+
+};
 
 int main(int ac, char* av[])
 {
+	namespace po = boost::program_options;
+
 	std::vector<std::string> modes;
+	chainNames chainNames_;
+
 	std::string channel_str;
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
+	bool isTagAndProbe, isLowDiLepton;
 	int seed;
 	// Declare the supported options.
+	po::options_description required("Mandatory command line options");
+	required.add_options()
+	("mode,m", po::value<std::vector<std::string> >(&modes)->required(), "Set mode to use:\n")
+	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
+	;
+
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help", "produce help message")
-	("mode,m", po::value<std::vector<std::string> >(&modes), "Set mode to use")
-	("channel,c", po::value<std::string>(&channel_str)->required(), "Set Channel (EE, MuMu, EMu)")
 	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
+	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
+	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
 	;
 
 	po::variables_map vm;
-	po::store(po::parse_command_line(ac, av, desc), vm);
+	po::options_description all("all");
+	all.add(desc).add(required);
+	po::store(po::parse_command_line(ac, av, all), vm);
+
 
 	if (vm.count("help")) {
+		std::cout << required << "\n";
 		std::cout << desc << "\n";
 		return 1;
 	}
-	po::notify(vm);
 
-	if (vm.count("mode")) {
-		std::cout << "Modes: ";
-		for(auto s : modes )
-			std::cout << s << ' ';
-		std::cout << std::endl;
-	} else {
-		//modes.push_back("ttbar");
-		//modes.push_back("DYMuMu");
-		//modes.push_back("DYEE");
-		//modes.push_back("WJets");
-		//modes.push_back("WZ");
-		//modes.push_back("ZZ");
-		//modes.push_back("data_EMu");
-		//modes.push_back("data_EE");
-		//modes.push_back("data_MuMu");
+	try {
+		po::notify(vm);
+	} catch(const po::required_option & e) {
+		std::cerr << "[ERROR] "  << e.what() << std::endl;
+		std::cerr << desc << std::endl;
+		return 1;
 	}
+
+
+	//------------------------------ check if modes given in the command line are allowed
+	for(auto s : modes ) {
+		if(chainNames_.checkValidMode(s) == false) return 1;
+	}
+
+
+	std::cout << "[INFO] Selected modes: \n";
+	for(auto s : modes) {
+		std::cout << "       - " << s << "\n";
+	}
+	std::cout << std::endl;
+
+
+	//------------------------------ translate the channel option into the selector type
 	Selector::tag_t channel;
 	if(channel_str == "EE")
 		channel = Selector::EE;
@@ -79,6 +230,11 @@ int main(int ac, char* av[])
 		channel = Selector::MuMu;
 	else if(channel_str == "EMu")
 		channel = Selector::EMu;
+	else {
+		std::cerr << "[ERROR] Channel " << channel_str << " not recognized" << std::endl;
+		std::cerr << desc << std::endl;
+		return 1;
+	}
 
 	char name[100];// to name the tree per iteration of the Toy
 	using namespace RooFit;
@@ -90,107 +246,33 @@ int main(int ac, char* av[])
 
 	if(debug) std::cout << myReader << std::endl;
 
-	TString tree_channel = "";
-	// Select the channel to be studied //
-	if(channel == Selector::EE)
-		tree_channel = "_signal_ee";
-	else if(channel == Selector::MuMu)
-		tree_channel = "_signal_mumu";
-	else if(channel == Selector::EMu)
-		tree_channel = "_flavoursideband";
-	else {
-		tree_channel = "";
-		std::cerr << "[ERROR] No channel defined" << std::endl;
-		return 1;
-	}
-
-	TString treeName = "miniTree" + tree_channel;
 
 	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
-	for(auto m : modes) {
-		int isData = 0; // Fill in with 1 or 0 based on information from the trees
-		std::vector<std::string> TTchainNames;
-		TString mode = m;
+	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
+
+	for(auto mode : modes) {
+		bool isData = chainNames_.isData(mode);
 		bool run_toys = true;
 
-		// Select the dataset to run over //
-		if(mode.EqualTo("ttbar")) {
-			//TTchainNames.push_back("TTJets_DiLept_v1");
-			TTchainNames.push_back("TTJets_DiLept_v2");
-		} else if(mode.Contains("DY")) {
-			if(mode.Contains("TANDP") ) tree_channel = "_dytagandprobe";
-			std::string tagName = "";
-			if(channel == Selector::EE) tagName = "EE";
-			if(channel == Selector::MuMu) tagName = "MuMu";
-			if(channel == Selector::EMu) {
-				std::cout << "ERROR looking for DY in EMu channel" << std::endl;
-				return 1;
-			}
-			if(mode.Contains("POWHEG")) {
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
-			} else if(mode.Contains("AMCINCL")) {
-				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
-				TTchainNames.push_back("DYJets_amctnlo");
-			} else if(mode.Contains("MADINCL")) {
-				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
-				TTchainNames.push_back("DYJets_madgraph");
-			}
-		} else if(mode.EqualTo("WJets")) {
-			TTchainNames.push_back("WJetsLNu");
-			run_toys = false;
-		} else if(mode.EqualTo("WZ")) {
-			TTchainNames.push_back("WZ");
-			run_toys = false;
-		} else if(mode.EqualTo("ZZ")) {
-			TTchainNames.push_back("ZZ");
-			run_toys = false;
-		} else if(mode.Contains("data")) {
-			isData = 1;
-			std::string dataTag = "";
-			if(mode.Contains("EMu")) dataTag = "MuEG";
-			if(mode.Contains("EE")) dataTag = "DoubleEG";
-			if(mode.Contains("MuMu")) dataTag = "SingleMu";
-			TTchainNames.push_back(dataTag + "_RunC");
-			TTchainNames.push_back(dataTag + "_RunD_v3");
-			TTchainNames.push_back(dataTag + "_RunD_v4");
-			if(mode.Contains("TANDP")) tree_channel = "_dytagandprobe";
+
+		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
+#ifdef DEBUG
+		c->Print();
+#endif
+		std::cout << "[INFO] Entries: " <<  c->GetEntries() << std::endl;
+		if(c->GetEntries() == 0) {
+			std::cerr << "[ERROR] No entries in chain... something went wrong" << std::endl;
+			return 1;
 		}
-		/*
-		// Select the channel to be studied //
-		if(channel == 0)
-			tree_channel = "_lowdileptonsideband";//"_signal_ee";
-		else if(channel == 1)
-			tree_channel = "_lowdileptonsideband";//"_signal_mumu";
-		else if(channel == 2)
-			tree_channel = "_flavoursideband";
-		else
-			tree_channel = "";
-
-			*/
-
-		TChain *c = (myReader.getMiniTreeChain(TTchainNames, ("miniTree" + tree_channel).Data()));
-		std::cout << c->GetEntries() << std::endl;
 
 		// if you want to check if the config file is read correctly:
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		std::string chnlName = "";
-		if(channel == Selector::EE) chnlName = "EE";
-		if(channel == Selector::MuMu) chnlName = "MuMu";
-		if(channel == Selector::EMu) chnlName = "EMu";
-		TFile f("selected_tree_" + mode + tree_channel + chnlName + ".root", "recreate");
+		std::string chnlName = channel_str;
+		TFile f(("selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
@@ -209,7 +291,7 @@ int main(int ac, char* av[])
 
 		std::vector<TTree *> t1(nToys, NULL);
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
-		Int_t nEntries = c->GetEntries();
+		ULong64_t nEntries = c->GetEntries();
 
 		TRandom3 Rand;
 		const int Total_Number_of_Systematics_Smear = 1;// electron scale(MC)
@@ -266,9 +348,12 @@ int main(int ac, char* av[])
 			selEvent.SetBranches(t1[i]);
 			selEvent.SetBranches(tDyCheck);
 
-			for(int ev = 0; ev < nEntries; ev++) {
+			unsigned long long int nEntries_100 = nEntries / 100;
+			std::cout << "Processing events: [0%]" << std::flush;
+			for(unsigned long long int ev = 0; ev < nEntries; ev++) {
 
-				if(ev % 50000 == 1) std::cout << std::endl << 100 * ev / nEntries << " % ..." << std::endl;
+				if(nEntries > 100 && ev % nEntries_100 == 1) std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
+				//std::cout << "\b\b\b\b" << (int)( ev/nEntries_100) << " %" << std::endl;
 				c->GetEntry(ev);
 
 				if (debug) {
@@ -343,6 +428,8 @@ int main(int ac, char* av[])
 
 			}//end loop which adds events to the RooDataSet pointer named tempDataSet
 
+			std::endl;
+
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
 			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, vars, "", evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
@@ -362,7 +449,7 @@ int main(int ac, char* av[])
 
 			permanentWeightedDataSet->Print();
 
-			if(mode.EqualTo("ttbar")) {
+			if(mode == "TT") {
 
 				assert(permanentWeightedDataSet->sumEntries() > 0);
 				expPower.setVal(-0.004);
@@ -404,7 +491,7 @@ int main(int ac, char* av[])
 				break;
 		}
 		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode.EqualTo("ttbar")) // add the other modes later
+		if(mode == "TT") // add the other modes later
 			tf1->Write();
 	}
 	return 0;
