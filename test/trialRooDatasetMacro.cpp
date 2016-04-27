@@ -65,10 +65,10 @@ int main(void){
 	Float_t maxMassWR = 13000;	///< use this for the RooRealVar massWR, and the fit range near the end
 	/*
 	RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
-	RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
+	RooRealVar evtWeight("evWeightSign", "evWeightSign", -2,2);
 
 	
-	RooArgSet vars(massWR,genEvtWeights);
+	RooArgSet vars(massWR,evtWeight);
 	*/
 
 	///declare TChains used to construct RooDataSet objects for each bkgnd source
@@ -122,9 +122,9 @@ int main(void){
 	for(Int_t i=0; i<max; i++){
 		///fit a function to each M_EEJJ distribution, save the image, then move on to a different input file
 		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
-		RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
+		RooRealVar evtWeight("evWeightSign", "evWeightSign", -2,2);
 
-		RooArgSet vars(massWR,genEvtWeights);
+		RooArgSet vars(massWR,evtWeight);
 
 		TString genWrMass = wrMass[i];	///<gen WR mass shown in plot titles and names of saved images
 		TString genNuMass = nuMass[i];
@@ -136,7 +136,7 @@ int main(void){
 
 		///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
 		Float_t intLumi = 1500.;	///< integrated lumi
-		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
+		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, evtWeight);	///<overall normalization won't affect shape of M_EEJJ distribution
 
 #ifdef countEvts
 		Float_t normalizedEvtsPassing = (Float_t) ((WRToEEJJTree->GetEntries())*intLumi*xSxn[i]/50000);
@@ -258,16 +258,16 @@ int main(void){
 
 	///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
 	Float_t intLumi = 1000.;	///< integrated lumi
-	RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",0.5, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
+	RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",0.5, vars, massWR, evtWeight);	///<overall normalization won't affect shape of M_EEJJ distribution
 
 
 
-	//RooDataSet dyJets = applyNormalization(dyJetsTree, "dyJets",(6025.2*intLumi/9052671), vars, massWR, genEvtWeights);
-	//RooDataSet ttBar = applyNormalization(ttBarTree, "ttBar",(831.76*intLumi/19899500), vars, massWR, genEvtWeights);
-	//RooDataSet singleTopW = applyNormalization(singleTopWTree, "singleTopW",(35.6*intLumi/995600), vars, massWR, genEvtWeights);
-	////RooDataSet wJets = applyNormalization(wJetsTree, "wJets",(61500*intLumi/72121586), vars, massWR, genEvtWeights);
-	//RooDataSet wz = applyNormalization(wzTree, "wz",(66.1*intLumi/991232), vars, massWR, genEvtWeights);
-	//RooDataSet zz = applyNormalization(zzTree, "zz",(15.4*intLumi/996168), vars, massWR, genEvtWeights);
+	//RooDataSet dyJets = applyNormalization(dyJetsTree, "dyJets",(6025.2*intLumi/9052671), vars, massWR, evtWeight);
+	//RooDataSet ttBar = applyNormalization(ttBarTree, "ttBar",(831.76*intLumi/19899500), vars, massWR, evtWeight);
+	//RooDataSet singleTopW = applyNormalization(singleTopWTree, "singleTopW",(35.6*intLumi/995600), vars, massWR, evtWeight);
+	////RooDataSet wJets = applyNormalization(wJetsTree, "wJets",(61500*intLumi/72121586), vars, massWR, evtWeight);
+	//RooDataSet wz = applyNormalization(wzTree, "wz",(66.1*intLumi/991232), vars, massWR, evtWeight);
+	//RooDataSet zz = applyNormalization(zzTree, "zz",(15.4*intLumi/996168), vars, massWR, evtWeight);
 
 	//ttBar.append(dyJets);
 	//ttBar.append(singleTopW);
