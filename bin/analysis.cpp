@@ -84,15 +84,15 @@ public:
 			}
 			if(mode.find("POWHEG") != _ENDSTRING) {
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
-				//TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
+				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
 			} else if(mode.find("AMCINCL") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
@@ -180,7 +180,7 @@ int main(int ac, char* av[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help", "produce help message")
-	("lumi,l", po::value<float>(&integratedLumi)->default_value(2.52e3), "Integrated luminosity")
+	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
@@ -251,6 +251,12 @@ int main(int ac, char* av[])
 	std::vector<int> mass_vec = getMassVec();
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
+	unsigned long long zMass60to120EvtCount = 0;	///<count the number of evts from each dataset with 60 < dilepton_mass < 120 which pass loose selector cuts
+	unsigned long long zMass65to115EvtCount = 0;
+	unsigned long long zMass70to110EvtCount = 0;
+	unsigned long long zMass75to105EvtCount = 0;
+	unsigned long long zMass80to100EvtCount = 0;
+	unsigned long long zMass85to95EvtCount = 0;
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
@@ -298,6 +304,9 @@ int main(int ac, char* av[])
 		std::vector<TTree *> t1(nToys, NULL);
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
+#ifdef DEBUGG
+		nEntries = 1000;
+#endif
 
 		TRandom3 Rand;
 		const int Total_Number_of_Systematics_Smear = 1;// electron scale(MC)
@@ -372,7 +381,7 @@ int main(int ac, char* av[])
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 
-				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+				//ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
 
 				Selector tmp_selEvent(myEvent);
 				selEvent = tmp_selEvent;
@@ -397,39 +406,59 @@ int main(int ac, char* av[])
 				}
 
 				if(selEvent.isPassingLooseCuts(channel)) {
-					if(isData == 0)
-						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
-					else
-						selEvent.weight = 1.0;
-					selEvent.nPV = myEvent.nPV;
+					if(isData == false) {
+						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+					} else {
+						selEvent.weight = 1;
+#ifdef DEBUGG
+						std::cout << "selEvent.weight=\t" << selEvent.weight << std::endl;
+#endif
+						assert(selEvent.weight == 1);
+					}
+#ifdef DEBUGG
+					std::cout << "selEvent.weight=\t" << selEvent.weight << std::endl;
+					std::cout << "integratedLumi=\t" << integratedLumi << std::endl;
+					std::cout << "myReader.getNorm1fb(selEvent.datasetName)=\t" << myReader.getNorm1fb(selEvent.datasetName) << std::endl;
+					std::cout << "myEvent.weight=\t" << myEvent.weight << std::endl;
+#endif
 
+					if(selEvent.dilepton_mass > 61.2 && selEvent.dilepton_mass < 121.2 && i == seed) ++zMass60to120EvtCount;
+					if(selEvent.dilepton_mass > 66.2 && selEvent.dilepton_mass < 116.2 && i == seed) ++zMass65to115EvtCount;
+					if(selEvent.dilepton_mass > 71.2 && selEvent.dilepton_mass < 111.2 && i == seed) ++zMass70to110EvtCount;
+					if(selEvent.dilepton_mass > 76.2 && selEvent.dilepton_mass < 106.2 && i == seed) ++zMass75to105EvtCount;
+					if(selEvent.dilepton_mass > 81.2 && selEvent.dilepton_mass < 101.2 && i == seed) ++zMass80to100EvtCount;
+					if(selEvent.dilepton_mass > 86.2 && selEvent.dilepton_mass < 96.2 && i == seed)  ++zMass85to95EvtCount ;
 					tDyCheck->Fill();
 				}
 
 				if(selEvent.isPassing(channel)) {
 
-					bool dilepton_cut = (channel == Selector::EMu) ? (selEvent.dilepton_mass > 200) : (selEvent.dilepton_mass < 200);
+					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
 
-					if(!dilepton_cut)
-						continue;
+					if(isData == false) {
+						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+					} else {
+						selEvent.weight = 1;
+						assert(selEvent.weight == 1);
+					}
 
-					//std::cout<<selEvent.weight << " " <<myReader.getNorm1fb(selEvent.datasetName) << std::endl;
-
-					if(isData == 0)
-						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
-					else
-						selEvent.weight = 1.0;
 					Fits::massWR.setVal(selEvent.WR_mass);
 					Fits::evtWeight.setVal(selEvent.weight);
 					tempDataSet->add(Fits::vars);
-					selEvent.nPV = myEvent.nPV;
-
 
 					t1[i]->Fill();
 
 				}
 
-			}//end loop which adds events to the RooDataSet pointer named tempDataSet
+			}//end loop over all input evts, and adding events to the RooDataSet pointer named tempDataSet
+			if(i == seed) std::cout << zMass60to120EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 61.2 < dilepton_mass < 121.2" << std::endl;
+			if(i == seed) std::cout << zMass65to115EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 66.2 < dilepton_mass < 116.2" << std::endl;
+			if(i == seed) std::cout << zMass70to110EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 71.2 < dilepton_mass < 111.2" << std::endl;
+			if(i == seed) std::cout << zMass75to105EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 76.2 < dilepton_mass < 106.2" << std::endl;
+			if(i == seed) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
+			if(i == seed) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
+
+			std::endl;
 
 			std::endl;
 

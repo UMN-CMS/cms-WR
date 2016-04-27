@@ -217,21 +217,21 @@ void commonRooFitBkgndEstimation(){
 #endif
 
 	RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,6500);
-	RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
-	RooArgSet vars(massWR,genEvtWeights);
+	RooRealVar evtWeight("evWeightSign", "evWeightSign", -2,2);
+	RooArgSet vars(massWR,evtWeight);
 	
 #ifdef DOTTBAR
-	RooDataSet eMuMCDataSet = applyNormalization(eMuMCChain,"eMuMCDataSet",intLumi*ttBarXsxn/nTTBarEvts, vars, massWR, genEvtWeights, true, emuInter, 0.);
-	RooDataSet eMuRealDataSet = applyNormalization(dataChain,"eMuRealDataSet",1, vars, massWR, genEvtWeights, false, 0., 0.);
-	RooDataSet eEMCDataSet = applyNormalization(eEMCChain,"eEMCDataSet",intLumi*ttBarXsxn/nTTBarEvts, vars, massWR, genEvtWeights, true, emuInter, 0.);
-	RooDataSet muMuMCDataSet = applyNormalization(muMuMCChain,"muMuMCDataSet",intLumi*ttBarXsxn/nTTBarEvts, vars, massWR, genEvtWeights, true, emuInter, 0.);
+	RooDataSet eMuMCDataSet = applyNormalization(eMuMCChain,"eMuMCDataSet",intLumi*ttBarXsxn/nTTBarEvts, vars, massWR, evtWeight, true, emuInter, 0.);
+	RooDataSet eMuRealDataSet = applyNormalization(dataChain,"eMuRealDataSet",1, vars, massWR, evtWeight, false, 0., 0.);
+	RooDataSet eEMCDataSet = applyNormalization(eEMCChain,"eEMCDataSet",intLumi*ttBarXsxn/nTTBarEvts, vars, massWR, evtWeight, true, emuInter, 0.);
+	RooDataSet muMuMCDataSet = applyNormalization(muMuMCChain,"muMuMCDataSet",intLumi*ttBarXsxn/nTTBarEvts, vars, massWR, evtWeight, true, emuInter, 0.);
 #endif
 
 	/// Drell-Yan ///	
 	std::vector<RooDataSet> DY_MuMuDataSet;
 #ifndef DOTTBAR	
 	for(int i=0;i<9;i++){
-	  RooDataSet DY = applyNormalization(DY_MuMuChain[i],DY_MuMu_names[i],intLumi*xsecs[i]/100000., vars, massWR, genEvtWeights, false, 0, 0.);
+	  RooDataSet DY = applyNormalization(DY_MuMuChain[i],DY_MuMu_names[i],intLumi*xsecs[i]/100000., vars, massWR, evtWeight, false, 0, 0.);
 	  DY_MuMuDataSet.push_back(DY);
 	}
 
