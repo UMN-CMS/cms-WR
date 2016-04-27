@@ -75,14 +75,14 @@ void sidebandFitRooMacro(){
 	Float_t maxMassWR = 2100;	///< use this for the RooRealVar massWR, and the fit range near the end
 	Float_t intLumi = 1570.674;
 	RooRealVar massWR("fourObjectMass", "fourObjectMass", 0,maxMassWR);
-	RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
-	RooArgSet vars(massWR,genEvtWeights);
+	RooRealVar evtWeight("evWeightSign", "evWeightSign", -2,2);
+	RooArgSet vars(massWR,evtWeight);
 
-	RooDataSet realData = applyNormalization(realDataTree,"realData",1, vars, massWR, genEvtWeights);
-	RooDataSet ttBar = applyNormalization(ttBarTree,"ttBar",intLumi*xSxnBkgnds[1]/numEvtsBkgnds[1], vars, massWR, genEvtWeights);
-	RooDataSet dyJets = applyNormalization(dyJetsTree,"dyJets",intLumi*xSxnBkgnds[0]/numEvtsBkgnds[0], vars, massWR, genEvtWeights);
-	RooDataSet wz = applyNormalization(wzTree,"wz",intLumi*xSxnBkgnds[2]/numEvtsBkgnds[2], vars, massWR, genEvtWeights);
-	RooDataSet zz = applyNormalization(zzTree,"zz",intLumi*xSxnBkgnds[3]/numEvtsBkgnds[3], vars, massWR, genEvtWeights);
+	RooDataSet realData = applyNormalization(realDataTree,"realData",1, vars, massWR, evtWeight);
+	RooDataSet ttBar = applyNormalization(ttBarTree,"ttBar",intLumi*xSxnBkgnds[1]/numEvtsBkgnds[1], vars, massWR, evtWeight);
+	RooDataSet dyJets = applyNormalization(dyJetsTree,"dyJets",intLumi*xSxnBkgnds[0]/numEvtsBkgnds[0], vars, massWR, evtWeight);
+	RooDataSet wz = applyNormalization(wzTree,"wz",intLumi*xSxnBkgnds[2]/numEvtsBkgnds[2], vars, massWR, evtWeight);
+	RooDataSet zz = applyNormalization(zzTree,"zz",intLumi*xSxnBkgnds[3]/numEvtsBkgnds[3], vars, massWR, evtWeight);
 
 	ttBar.append(dyJets);
 	ttBar.append(wz);
@@ -188,15 +188,15 @@ void sidebandFitRooMacro(){
 	for(Int_t i=0; i<max; i++){
 		///fit a function to each M_EEJJ distribution, save the image, then move on to a different input file
 		RooRealVar massWR("fourObjectMass", "fourObjectMass", 600,maxMassWR);
-		RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2,2);
+		RooRealVar evtWeight("evWeightSign", "evWeightSign", -2,2);
 
-		RooArgSet vars(massWR,genEvtWeights);
+		RooArgSet vars(massWR,evtWeight);
 
 		TChain * WRToEEJJTree = new TChain(treeName,"");
 		WRToEEJJTree->Add(dirName+"wr" + genWrMass + "nu" + genNuMass + "Tree.root");	///< WR signal TChain
 
 		///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
-		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
+		RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",intLumi*xSxn[i]/50000, vars, massWR, evtWeight);	///<overall normalization won't affect shape of M_EEJJ distribution
 
 		RooRealVar meanPeak("meanPeak", "", 1000, 600, maxMassWR);
 		//mean of the two other gaussians must be less than the mean of the peak gaussian
@@ -273,16 +273,16 @@ void sidebandFitRooMacro(){
 
 	///declare RooDataSet objects, and add all of them into a single RooDataSet using append()
 	Float_t intLumi = 1000.;	///< integrated lumi
-	RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",0.5, vars, massWR, genEvtWeights);	///<overall normalization won't affect shape of M_EEJJ distribution
+	RooDataSet WR = applyNormalization(WRToEEJJTree, "WR",0.5, vars, massWR, evtWeight);	///<overall normalization won't affect shape of M_EEJJ distribution
 
 
 
-	//RooDataSet dyJets = applyNormalization(dyJetsTree, "dyJets",(6025.2*intLumi/9052671), vars, massWR, genEvtWeights);
-	//RooDataSet ttBar = applyNormalization(ttBarTree, "ttBar",(831.76*intLumi/19899500), vars, massWR, genEvtWeights);
-	//RooDataSet singleTopW = applyNormalization(singleTopWTree, "singleTopW",(35.6*intLumi/995600), vars, massWR, genEvtWeights);
-	////RooDataSet wJets = applyNormalization(wJetsTree, "wJets",(61500*intLumi/72121586), vars, massWR, genEvtWeights);
-	//RooDataSet wz = applyNormalization(wzTree, "wz",(66.1*intLumi/991232), vars, massWR, genEvtWeights);
-	//RooDataSet zz = applyNormalization(zzTree, "zz",(15.4*intLumi/996168), vars, massWR, genEvtWeights);
+	//RooDataSet dyJets = applyNormalization(dyJetsTree, "dyJets",(6025.2*intLumi/9052671), vars, massWR, evtWeight);
+	//RooDataSet ttBar = applyNormalization(ttBarTree, "ttBar",(831.76*intLumi/19899500), vars, massWR, evtWeight);
+	//RooDataSet singleTopW = applyNormalization(singleTopWTree, "singleTopW",(35.6*intLumi/995600), vars, massWR, evtWeight);
+	////RooDataSet wJets = applyNormalization(wJetsTree, "wJets",(61500*intLumi/72121586), vars, massWR, evtWeight);
+	//RooDataSet wz = applyNormalization(wzTree, "wz",(66.1*intLumi/991232), vars, massWR, evtWeight);
+	//RooDataSet zz = applyNormalization(zzTree, "zz",(15.4*intLumi/996168), vars, massWR, evtWeight);
 
 	//ttBar.append(dyJets);
 	//ttBar.append(singleTopW);

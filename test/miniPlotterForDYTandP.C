@@ -48,21 +48,21 @@ void miniPlotterForDYTandP()
 
 	switch (channel) {
 	case Selector::EE:
-		chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeEE_v15noRoch.root");
-		chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeEE_v15noRoch.root"); // 0 - Electrons
-		chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeEE_v15noRoch.root");
-		chain_data->Add("../selected_tree_data_dytagandprobeEE_v14.root");
+		chain_DYPowheg->Add("../rootFiles/selected_tree_DYPOWHEG_dytagandprobeEE_v15noRoch.root");
+		chain_DYMadIncl->Add("../rootFiles/selected_tree_DYMAD_dytagandprobeEE_v15noRoch.root"); // 0 - Electrons
+		chain_DYAmcIncl->Add("../rootFiles/selected_tree_DYAMC_dytagandprobeEE_v15noRoch.root");
+		chain_data->Add("../rootFiles/selected_tree_data_dytagandprobeEE_v14.root");
 		break;
 	case Selector::MuMu:
-		if(!useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root");
-		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root"); // 1 - Muons
-		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root");
-		if(!useJorgeMinitrees) chain_data->Add("../selected_tree_data_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_DYPowheg->Add("../rootFiles/selected_tree_DYPOWHEG_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../rootFiles/selected_tree_DYMAD_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root"); // 1 - Muons
+		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../rootFiles/selected_tree_DYAMC_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_data->Add("../rootFiles/selected_tree_data_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root");
 		
-		if(useJorgeMinitrees) chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root");
-		if(useJorgeMinitrees) chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root"); // 1 - Muons
-		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root");
-		if(useJorgeMinitrees) chain_data->Add("../selected_tree_data_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root");
+		if(useJorgeMinitrees) chain_DYPowheg->Add("../rootFiles/selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root");
+		if(useJorgeMinitrees) chain_DYMadIncl->Add("../rootFiles/selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root"); // 1 - Muons
+		if(useJorgeMinitrees) chain_DYAmcIncl->Add("../rootFiles/selected_tree_DYAMC_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root");
+		if(useJorgeMinitrees) chain_data->Add("../rootFiles/selected_tree_data_dytagandprobeMuMu_jorgeMinitreeWithoutToysInAnalysisCpp.root");
 		
 		break;
 	default:

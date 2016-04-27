@@ -30,7 +30,7 @@
 
 #define _ENDSTRING std::string::npos
 #define DEBUG
-#define DEBUGG
+//#define DEBUGG
 
 /**
 TT

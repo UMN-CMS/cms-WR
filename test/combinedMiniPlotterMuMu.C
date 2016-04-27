@@ -7,6 +7,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TLorentzVector.h"
+#include "TF1.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -22,12 +23,11 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
-//Selector::tag_t channel = Selector::MuMu;
-
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
-void combinedMiniPlotter(){
+void combinedMiniPlotterMuMu(){
 
   TChain * chain_DY = new TChain("Tree_Iter0");
   TChain * chain_ttbar = new TChain("Tree_Iter0");
@@ -35,35 +35,23 @@ void combinedMiniPlotter(){
   TChain * chain_WZ = new TChain("Tree_Iter0");
   TChain * chain_ZZ = new TChain("Tree_Iter0");
   TChain * chain_data = new TChain("Tree_Iter0");
-  
+ 
+  Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
-  case Selector::EE:
-    chain_DY->Add("../selected_tree_DYEE_lowdileptonsideband0.root");
-    chain_ttbar->Add("../selected_tree_ttbar_lowdileptonsideband0.root"); // 0 - Electrons
-    chain_WJets->Add("../selected_tree_WJets_lowdileptonsideband0.root");
-    chain_WZ->Add("../selected_tree_WZ_lowdileptonsideband0.root");
-    chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsideband0.root");
-    chain_data->Add("../selected_tree_data_EE_lowdileptonsideband0.root");
-    break;
   case Selector::MuMu:
-    chain_DY->Add("../selected_tree_DYMuMu_lowdileptonsideband1.root");
-    chain_ttbar->Add("../selected_tree_ttbar_lowdileptonsideband1.root"); // 1 - Muons
-    chain_WJets->Add("../selected_tree_WJets_lowdileptonsideband1.root");
-    chain_WZ->Add("../selected_tree_WZ_lowdileptonsideband1.root");
-    chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsideband1.root");
-    chain_data->Add("../selected_tree_data_MuMu_lowdileptonsideband1.root");
-    break;
-  case Selector::EMu:
-    chain_DY->Add("../selected_tree_DYMuMu_flavoursideband2.root");
-    chain_ttbar->Add("../selected_tree_ttbar_flavoursideband2.root");
-    chain_WJets->Add("../selected_tree_WJets_flavoursideband2.root");
-    chain_WZ->Add("../selected_tree_WZ_flavoursideband2.root");
-    chain_ZZ->Add("../selected_tree_ZZ_flavoursideband2.root");
-    chain_data->Add("../selected_tree_data_EMu_flavoursideband2.root");
+    dy = chain_DY->Add("../selected_tree_DYMAD_lowdileptonsidebandMuMu.root");
+    tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
+    wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
+    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
+    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandMuMu.root");
+    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
   }
+
+  std::cout<<"data = "<< data <<"\tdy = "<< dy << std::endl;
+  if(data==0 || dy==0 || tt==0 || wjets==0 || wz==0 || zz==0) exit(-1);
 
   Selector myEvent_DY;
   Selector myEvent_ttbar;
@@ -95,10 +83,6 @@ void combinedMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  // hs_data[13]->SetLineColor(kRed);
-  // hs_data[13]->Draw();
-  // hs_ttbar[13]->Draw("same");
-  
   TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
 
   TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
@@ -258,15 +242,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TString fn = "";
 
-  if(channel == Selector::EMu)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/Flavor/"+fname;
-    fn = "plots/Flavor/"+fname;
-  if(channel == Selector::EE)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/EELowDilepton/"+fname;
-    fn = "plots/EELowDilepton/"+fname;
   if(channel == Selector::MuMu)
-    //fn = "/publicweb/j/jchaves/WR/plots/miniTree/Selected/MuMuLowDilepton/"+fname;
-    fn = "plots/MuMuLowDilepton/"+fname;
+    fn = "validationPlots/"+fname + "_lowdileptonMuMuChannel";
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
