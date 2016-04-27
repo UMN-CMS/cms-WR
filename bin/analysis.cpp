@@ -277,12 +277,18 @@ int main(int ac, char* av[])
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
 		Float_t normalization;
-		std::vector<Float_t> fit_parameters, fit_parameter_errors;
-		std::vector<Float_t> events_in_range(mass_vec.size(), 0.0f);
+		UInt_t nparam;
+		UInt_t nmasses = mass_vec.size();
+		Float_t fit_parameters[16], fit_parameter_errors[16];
+		Float_t events_in_range[128];
+		Float_t fit_integral_in_range[128];
 		tf1->Branch("Normalization", &normalization);
-		tf1->Branch("FitParameters", &fit_parameters);
-		tf1->Branch("FitParameterErrors", &fit_parameter_errors);
-		tf1->Branch("NEventsInRange", &events_in_range);
+		tf1->Branch("nparam", &nparam);
+		tf1->Branch("FitParameters", &fit_parameters, "FitParameters[nparam]/F");
+		tf1->Branch("FitParameterErrors", &fit_parameter_errors, "FitParameterErrors[nparam]/F");
+		tf1->Branch("nmasses", &nmasses);
+		tf1->Branch("NEventsInRange", &events_in_range, "NEventsInRange[nmasses]/F");
+		tf1->Branch("FitIntegralInRange", &fit_integral_in_range, "FitIntegralInRange[nmasses]/F");
 
 		miniTreeEvent myEvent;
 
@@ -339,10 +345,7 @@ int main(int ac, char* av[])
 			Rand.SetSeed(i + 1);
 			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
-			RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
-			RooRealVar evtWeight("evtWeight", "evtWeight", -2, 2);
-			RooArgSet vars(massWR, evtWeight);
-			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", vars);
+			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
 			selEvent.SetBranches(t1[i]);
@@ -416,9 +419,9 @@ int main(int ac, char* av[])
 						selEvent.weight = myEvent.weight * myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 					else
 						selEvent.weight = 1.0;
-					massWR.setVal(selEvent.WR_mass);
-					evtWeight.setVal(selEvent.weight);
-					tempDataSet->add(vars);
+					Fits::massWR.setVal(selEvent.WR_mass);
+					Fits::evtWeight.setVal(selEvent.weight);
+					tempDataSet->add(Fits::vars);
 					selEvent.nPV = myEvent.nPV;
 
 
@@ -431,13 +434,13 @@ int main(int ac, char* av[])
 			std::endl;
 
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
-			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, vars, "", evtWeight.GetName());
+			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 				auto range = mass_cut[mass_vec.at(mass_i)];
-				events_in_range.at(mass_i) = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
 			if(i == 0) {
@@ -449,14 +452,13 @@ int main(int ac, char* av[])
 
 			permanentWeightedDataSet->Print();
 
-			if(mode == "TT") {
+			if(mode == "TT" || mode == "DY") {
 
 				assert(permanentWeightedDataSet->sumEntries() > 0);
-				expPower.setVal(-0.004);
-
+				Fits::expPower.setVal(-0.004);
 				RooFitResult * tempFitRslt = NULL;
 				// fit dataset to given PDF
-				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, expPdfRooAbsPdf);
+				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, Fits::expPdfRooAbsPdf);
 
 				// std::cout << "Res=" << std::endl;
 				// expPdfRooAbsPdf->Print();
@@ -464,26 +466,31 @@ int main(int ac, char* av[])
 				// dataset normalization is the number of entries in the dataset
 				normalization = permanentWeightedDataSet->sumEntries();
 				// set of variables in the PDF
-				RooArgSet *vset = expPdfRooAbsPdf->getVariables();
-				// these variables are stored in vectors
-				// clear these vector for each iteration
-				fit_parameters.clear();
-				fit_parameter_errors.clear();
+				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
 
 				// loop over RooRealVars in the set
 				TIterator * iter = vset->createIterator();
 				TObject * var = iter->Next();
 				RooRealVar *var_pdf;
+				nparam = 0;
 				while (var) {
 					// ignore the M_WR variable
 					if(strcmp(var->GetName(), "fourObjectMass") != 0) {
 						var_pdf = (RooRealVar*)vset->find(var->GetName());
 						// store the value of the fitted parameters and the corresponding errors
-						fit_parameters.push_back(var_pdf->getVal());
-						fit_parameter_errors.push_back(var_pdf->getError());
+						fit_parameters[nparam] = var_pdf->getVal();
+						fit_parameter_errors[nparam++] = var_pdf->getError();
 					}
 					var = iter->Next();
 				}
+
+				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
+					auto range = mass_cut[mass_vec.at(mass_i)];
+					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
+					fit_integral_in_range[mass_i] = integral;
+				}
+
+
 				// fill the tree with the normalization, parameters, and errors
 				tf1->Fill();
 			}
@@ -491,7 +498,7 @@ int main(int ac, char* av[])
 				break;
 		}
 		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode == "TT") // add the other modes later
+		if(mode == "TT" || mode == "DY") // add the other modes later
 			tf1->Write();
 	}
 	return 0;

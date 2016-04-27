@@ -6,6 +6,8 @@
 #include "RooPolynomial.h"
 
 
+namespace Fits
+{
 ///consts needed for TTBar or MuonEG fit rescaling
 Float_t nEMuDataEvts = 464.;
 Float_t intLumi = 2488.245, ttBarXsxn = 56.7, nTTBarEvts = 24521141.f, emuInter = 1.165;
@@ -121,6 +123,4 @@ RooAbsPdf * sumTwoExpRooAbsPdf = &dataFitSumTwoExp;
 //RooProdPdf rescaledMuMuQuadExp("rescaledQuadExpPdf","", dataFitQuadraticExp, mumuSystLinearPdf);
 //RooAbsPdf * rescaledMuMuQuadExpPdf = &rescaledMuMuQuadExp;
 
-
-
-
+}
