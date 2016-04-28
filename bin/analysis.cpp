@@ -170,6 +170,7 @@ int main(int ac, char* av[])
 	Int_t nToys;
 	bool debug;
 	bool isTagAndProbe, isLowDiLepton;
+	bool runSyst;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -185,6 +186,7 @@ int main(int ac, char* av[])
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
+	("runSystematics", po::value<bool>(&runSyst)->default_value(false), "run systematics")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
 	;
@@ -208,6 +210,12 @@ int main(int ac, char* av[])
 		std::cerr << desc << std::endl;
 		return 1;
 	}
+
+#ifdef DEBUGG
+	std::cout << "default runSyst value is set to\t" << false << std::endl;
+	std::cout << "current runSyst value is set to\t" << runSyst << std::endl;
+#endif
+
 
 
 	//------------------------------ check if modes given in the command line are allowed
@@ -382,7 +390,10 @@ int main(int ac, char* av[])
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 
-				//ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+				if(runSyst) {
+					ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+				}
+
 
 				Selector tmp_selEvent(myEvent);
 				selEvent = tmp_selEvent;
@@ -458,7 +469,6 @@ int main(int ac, char* av[])
 			if(i == seed) std::cout << zMass75to105EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 76.2 < dilepton_mass < 106.2" << std::endl;
 			if(i == seed) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
 			if(i == seed) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
-
 
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
 			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
