@@ -444,7 +444,7 @@ int main(int ac, char* av[])
 					}
 
 					Fits::massWR.setVal(selEvent.WR_mass);
-					Fits::genEvtWeights.setVal(selEvent.weight);
+					Fits::evtWeight.setVal(selEvent.weight);
 					tempDataSet->add(Fits::vars);
 
 					t1[i]->Fill();
@@ -461,7 +461,7 @@ int main(int ac, char* av[])
 
 
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
-			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::genEvtWeights.GetName());
+			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");

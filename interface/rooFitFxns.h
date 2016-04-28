@@ -17,8 +17,8 @@ Float_t ttBarMcEEtoEMuRatioIntercept = 0.42, ttBarMcMuMutoEMuRatioIntercept = 0.
 
 ///RooFit functions, and prerequisite RooRealVars and RooFormulaVars, used in bkgndFitRooMacro.C and other RooFit macros
 RooRealVar massWR("fourObjectMass", "fourObjectMass", 600, 6500);
-RooRealVar genEvtWeights("evWeightSign", "evWeightSign", -2, 2);
-RooArgSet vars(massWR, genEvtWeights);
+RooRealVar evtWeight("evtWeight", "evtWeight", -2e10, 2e10);
+RooArgSet vars(massWR, evtWeight);
 
 RooRealVar expPowerForLinearExp("expPowerForLinearExp", "", -1., -0.00005);
 

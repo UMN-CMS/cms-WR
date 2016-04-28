@@ -32,6 +32,13 @@
 bool isReweighted = false;
 Selector::tag_t channel = Selector::MuMu;
 
+/*
+ * this macro is designed to read several TChains, representing data and MC, apply lepton and jet kinematic cuts, and plot
+ * data and MC as separate curves or data points
+ * the curves representing MC should not be stacked
+ *
+ */
+
 void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Float_t minLeadJetPt, Int_t minNJets, Float_t minSubleadJetPt);
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs, Float_t leadJetPtCut, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Int_t minNJets, Float_t subleadJetPtCut, Float_t normRescale);
 void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Float_t minLeadJetPt, Int_t minNJets, Float_t minSubleadJetPt);

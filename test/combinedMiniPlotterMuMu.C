@@ -25,6 +25,12 @@
 
 Selector::tag_t channel = Selector::MuMu;
 
+/*
+ * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
+ * data as points and all MC as one stacked histogram with several fill colors
+ *
+ */
+
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
 void combinedMiniPlotterMuMu(){

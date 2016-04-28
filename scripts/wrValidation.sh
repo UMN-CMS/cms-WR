@@ -1,8 +1,14 @@
 #!/bin/bash
 
-###cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
-eval "echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >& configs/miniTreeEntries.dat"
+##cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
+echo -n '#' > configs/miniTreeEntries.dat
+echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> configs/miniTreeEntries.dat
+echo -n '#' >> configs/miniTreeEntries.dat
 eval "git log -1 | grep commit | cut -d ' ' -f 2 >> configs/miniTreeEntries.dat"
+
+#this next line removes the bizarre ^[[?1034h code which is written to the first line of a file
+#when bash is used to redirect the output of a python script to a file
+eval "infocmp xterm | sed 's/, smm=[^,]\+//' > xterm"
 eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
 
 #now make and run analysis.cpp #make lib and outputFromAnalysis directories if they don't already exist
@@ -42,6 +48,8 @@ echo "all analysis processes are finished"
 
 #now make duplicates of the plotting macros to make MuMu, EE, and EMu plots
 #and run the plotting macros
+#one plotting macro is used for DYTagAndProbe, which makes plots with data overlaid onto multiple curves from different DY MC samples
+#the other plotting macro is used for the flavor and low dilepton mass sidebands, which show data overlaid on STACKED backgrounds
 eval "cd test"
 eval "sed 's@MuMu@EE@g' combinedMiniPlotterForDYTandPMuMu.C > combinedMiniPlotterForDYTandPEE.C"
 eval "sed 's@MuMu@EE@g' runCombinedMiniPlotterForDYTandPMuMu.C > runCombinedMiniPlotterForDYTandPEE.C"
@@ -53,7 +61,9 @@ eval "sed 's@MuMu@EMu@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEM
 eval 'mkdir -p validationPlots'
 
 #overwrite ZPeakRegionIntegrals.txt if it already exists
-eval "echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >& validationPlots/ZPeakRegionIntegrals.txt"
+echo -n '#' > validationPlots/ZPeakRegionIntegrals.txt
+echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> validationPlots/ZPeakRegionIntegrals.txt
+echo -n '#' >> validationPlots/ZPeakRegionIntegrals.txt
 eval "git log -1 | grep commit | cut -d ' ' -f 2 >> validationPlots/ZPeakRegionIntegrals.txt"
 
 eval "cp ../configs/miniTreeEntries.dat validationPlots/."
