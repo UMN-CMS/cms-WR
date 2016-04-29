@@ -29,16 +29,40 @@
 #include <unordered_set>
 
 #define _ENDSTRING std::string::npos
-#define DEBUG
+//#define DEBUG
+//#define DEBUGG
 
 /**
 TT
-DY TANDP POWHEG AMC MAD
+DY TANDP POWHEG AMC MAD POWINCL
 W
 WZ
 ZZ
 data TANDP
 */
+
+/// return the dataOverMC dilepton mass correction factor for one DY sample
+double getDyMllScaleFactor(std::string chnl, std::string mode_str, std::string inputFile)
+{
+	std::string ch = "", dataset = "";
+	double scalefactor = 1.0;
+	std::ifstream readScaleFactors;
+	readScaleFactors.open(inputFile);
+	if(readScaleFactors.is_open() == false) {
+		std::cerr << "[ERROR] File " << inputFile << " not opened. Check if the file exists" << std::endl;
+		return 1;
+	}
+
+	while(readScaleFactors.peek() != EOF && readScaleFactors.good()) {
+		readScaleFactors >> ch >> dataset >> scalefactor;
+#ifdef DEBUGG
+		std::cout << "ch=\t" << ch << "\tdataset=\t" << dataset << "\tscalefactor=\t" << scalefactor << std::endl;
+#endif
+		if(ch.compare(chnl) == 0 && mode_str.find(dataset) != _ENDSTRING) return scalefactor;
+	}
+	return scalefactor;	///< for DYPOWINCL
+
+}///end getDyMllScaleFactor()
 
 /** \class chainNames
 	\brief this class helps in finding the right tree name based on the sample, sideband and channel one wants to analyze
@@ -50,7 +74,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD", "DYPOWINCL"
 	}
 	)
 	{
@@ -93,12 +117,14 @@ public:
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
-			} else if(mode.find("AMCINCL") != _ENDSTRING) {
+			} else if(mode.find("AMC") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
-			} else if(mode.find("MADINCL") != _ENDSTRING) {
+			} else if(mode.find("MAD") != _ENDSTRING) {
 				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_madgraph");
+			} else if(mode.find("POWINCL") != _ENDSTRING && channel == Selector::EE) {
+				TTchainNames.push_back("DYToEE_powheg");
 			}
 		} else if(mode == "W") {
 			TTchainNames.push_back("WJetsLNu");
@@ -168,7 +194,7 @@ int main(int ac, char* av[])
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
-	bool isTagAndProbe, isLowDiLepton;
+	bool isTagAndProbe, isLowDiLepton, ignoreDyScaleFactors;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -183,6 +209,7 @@ int main(int ac, char* av[])
 	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
+	("ignoreDyScaleFactors", po::value<bool>(&ignoreDyScaleFactors)->default_value(true), "Ignore DyScaleFactors defined in configs directory")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
@@ -277,8 +304,9 @@ int main(int ac, char* av[])
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		std::string chnlName = channel_str;
-		TFile f(("selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + ".root").c_str(), "recreate");
+		std::string chnlName = channel_str, usingWeights = "";
+		if(!ignoreDyScaleFactors) usingWeights = "_withMllWeight";
+		TFile f(("selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + usingWeights + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
@@ -381,7 +409,7 @@ int main(int ac, char* av[])
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 
-				//ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
 
 				Selector tmp_selEvent(myEvent);
 				selEvent = tmp_selEvent;
@@ -408,6 +436,11 @@ int main(int ac, char* av[])
 				if(selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+
+						//multiply by an additional weight when processing DY samples
+						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
+							selEvent.weight *= getDyMllScaleFactor(channel_str, mode, "configs/dyScaleFactors.txt");
+						}
 					} else {
 						selEvent.weight = 1;
 #ifdef DEBUGG
@@ -437,6 +470,11 @@ int main(int ac, char* av[])
 
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+
+						//multiply by an additional weight when processing DY samples
+						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
+							selEvent.weight *= getDyMllScaleFactor(channel_str, mode, "configs/dyScaleFactors.txt");
+						}
 					} else {
 						selEvent.weight = 1;
 						assert(selEvent.weight == 1);
@@ -458,10 +496,6 @@ int main(int ac, char* av[])
 			if(i == seed) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
 			if(i == seed) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
 
-			std::endl;
-
-			std::endl;
-
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
 			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
@@ -472,16 +506,12 @@ int main(int ac, char* av[])
 				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
-			if(i == 0) {
-				t1[i]->Write();
-				permanentWeightedDataSet->Write();
-				tDyCheck->Write();
-			}
-
+			t1[i]->Write();
+			if(i == 0) permanentWeightedDataSet->Write(), tDyCheck->Write();
 
 			permanentWeightedDataSet->Print();
 
-			if(mode == "TT" || mode == "DY") {
+			if(mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) {
 
 				assert(permanentWeightedDataSet->sumEntries() > 0);
 				Fits::expPower.setVal(-0.004);
@@ -526,9 +556,7 @@ int main(int ac, char* av[])
 			if(!run_toys)
 				break;
 		}
-		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode == "TT" || mode == "DY") // add the other modes later
-			tf1->Write();
+		tf1->Write();
 	}
 	return 0;
 
