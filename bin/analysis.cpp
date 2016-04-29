@@ -32,6 +32,9 @@
 #define DEBUG
 //#define DEBUGG
 
+//process only 1000 events when DEBUGG is defined
+//#define DEBUGG
+
 /**
 TT
 DY TANDP POWHEG AMC MAD
@@ -382,7 +385,7 @@ int main(int ac, char* av[])
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 
-				//ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
 
 				Selector tmp_selEvent(myEvent);
 				selEvent = tmp_selEvent;
@@ -459,7 +462,6 @@ int main(int ac, char* av[])
 			if(i == seed) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
 			if(i == seed) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
 
-
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
 			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
@@ -470,12 +472,11 @@ int main(int ac, char* av[])
 				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
-			if(i == 0) {
-				t1[i]->Write();
+			t1[i]->Write();
+			if(i == 0){
 				permanentWeightedDataSet->Write();
 				tDyCheck->Write();
 			}
-
 
 			permanentWeightedDataSet->Print();
 
