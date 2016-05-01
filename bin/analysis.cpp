@@ -529,17 +529,16 @@ int main(int ac, char* av[])
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					fit_integral_in_range[mass_i] = integral;
 				}
-
-
-				// fill the tree with the normalization, parameters, and errors
-				tf1->Fill();
 			}
+
+			// fill the tree with the normalization, parameters, and errors
+			tf1->Fill();
+
 			if(!run_toys)
 				break;
 		}
-		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode == "TT" || mode == "DY") // add the other modes later
-			tf1->Write();
+		// always write the fitted branch
+		tf1->Write();
 	}
 	return 0;
 
