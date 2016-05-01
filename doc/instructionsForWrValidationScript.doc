@@ -1,0 +1,20 @@
+/**
+\page VALIDATIONSCRIPTS_ Validation scripts 
+
+The file cmsWR/scripts/wrValidation.sh processes all minitrees whose versions correspond to the version
+listed in configs/2015-v1.conf using 
+ - bin/analysis.cpp
+ - test/miniTreeDumpCheck.py
+ - several plotting macros in test/.  To use this script:
+
+-# excute voms-proxy-init --voms cms to make a GRID certificate proxy (by default minitrees are accessed through xrootd)
+-# execute 
+\verbatim
+./scripts/wrValidation.sh >& runningWrValidation.txt &
+\endverbatim   
+   to start the validation script, run it in the background, and pipe any text sent to stdout by
+   wrValidation.sh to a txt file.
+
+when the script is finished the directory cmsWR/test/validationPlots/ will be filled with plots.
+
+*/

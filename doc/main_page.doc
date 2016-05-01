@@ -53,7 +53,7 @@ scripts/crabSkimJobs/updateDatasetsWithSkims.sh
 \endverbatim
 
 
-\section _MINITREE_ MiniTree production
+\section MINITREE_ MiniTree production
 The actual code to produce miniTree works only on LXPLUS at CERN on the batch system using CRAB2.
 
 To load CRAB2 environment in bash:
@@ -76,6 +76,8 @@ To check the status of the jobs and merge the jobs:
 
 \b CAVEAT: the script is set to save the ntuples in Shervin's area on EOS. It has not been yet generalized. So it is not supposed to work for other users in other storage elements on-the-fly.
 On can also use --scheduler=remoteGlidein to run over the GRID. The storage element is still CERN. LSF has not been tested. 
+
+\ref VALIDATIONSCRIPTS_
 
 \par JEC
 The twiki page is:
