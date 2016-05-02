@@ -54,7 +54,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD", "signal"
 	}
 	)
 	{
@@ -119,6 +119,9 @@ public:
 			TTchainNames.push_back(dataTag + "_RunD_v3");
 			TTchainNames.push_back(dataTag + "_RunD_v4");
 		}
+		if(mode.find("WRto") != _ENDSTRING) {
+			TTchainNames.push_back(mode);
+		}
 		return TTchainNames;
 	};
 
@@ -148,6 +151,10 @@ public:
 
 	bool checkValidMode(std::string mode)
 	{
+		if(mode.find("WRto") != _ENDSTRING) {
+			return true;
+		}
+
 		if(all_modes.count(mode) == 0) {
 			std::cerr << "[ERROR] Mode " << mode << " not part of the standard modes:" << std::endl;
 			for(auto allowed_mode : all_modes) std::cerr << "        " << allowed_mode << std::endl;
@@ -219,13 +226,6 @@ int main(int ac, char* av[])
 	}
 
 
-	std::cout << "[INFO] Selected modes: \n";
-	for(auto s : modes) {
-		std::cout << "       - " << s << "\n";
-	}
-	std::cout << std::endl;
-
-
 	//------------------------------ translate the channel option into the selector type
 	Selector::tag_t channel;
 	if(channel_str == "EE")
@@ -239,6 +239,20 @@ int main(int ac, char* av[])
 		std::cerr << desc << std::endl;
 		return 1;
 	}
+
+
+	std::cout << "[INFO] Selected modes: \n";
+	unsigned int msize = modes.size();
+	modes.erase( std::remove( modes.begin(), modes.end(), "signal" ), modes.end() );
+	if(modes.size() != msize) {
+		for(int i = 0; i < 27; i++) {
+			modes.push_back("WRto" + channel_str + "JJ_" + std::to_string(800 + 200 * i) + "_" + std::to_string(400 + 100 * i));
+		}
+	}
+	for(auto s : modes) {
+		std::cout << "       - " << s << "\n";
+	}
+	std::cout << std::endl;
 
 	char name[100];// to name the tree per iteration of the Toy
 	using namespace RooFit;
@@ -517,17 +531,16 @@ int main(int ac, char* av[])
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					fit_integral_in_range[mass_i] = integral;
 				}
-
-
-				// fill the tree with the normalization, parameters, and errors
-				tf1->Fill();
 			}
+
+			// fill the tree with the normalization, parameters, and errors
+			tf1->Fill();
+
 			if(!run_toys)
 				break;
 		}
-		// only write the fitted branch for the modes that make sense (ttbar, DY, and data)
-		if(mode == "TT" || mode == "DY") // add the other modes later
-			tf1->Write();
+		// always write the fitted branch
+		tf1->Write();
 	}
 	return 0;
 
