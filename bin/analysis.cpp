@@ -473,7 +473,7 @@ int main(int ac, char* av[])
 			}
 
 			t1[i]->Write();
-			if(i == 0){
+			if(i == 0) {
 				permanentWeightedDataSet->Write();
 				tDyCheck->Write();
 			}

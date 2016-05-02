@@ -133,11 +133,11 @@ public:
 				int     D = getBin(v, NTRK, dtrk[H]);
 				double RD = kDat[H] * Sigma(pt, H, D);
 				double RM = kRes[H] * Sigma(pt, H, F);
-				if(RD>RM){
-				  double rn = cb[H][F].invcdf(u);
-				  if(fabs(rn)>5.0) rn = 0.0;
-				  x = sqrt(RD*RD-RM*RM)*rn;
-				}else      x = 0;
+				if(RD > RM) {
+					double rn = cb[H][F].invcdf(u);
+					if(fabs(rn) > 5.0) rn = 0.0;
+					x = sqrt(RD * RD - RM * RM) * rn;
+				} else      x = 0;
 			} else if(type == Data) x = kDat[H] * Sigma(pt, H, F) * cb[H][F].invcdf(u);
 			else		  x = kRes[H] * Sigma(pt, H, F) * cb[H][F].invcdf(u);
 		}

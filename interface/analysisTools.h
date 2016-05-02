@@ -7,7 +7,7 @@
 #include "RooRealVar.h"
 using namespace RooFit;
 
-std::map<int, std::pair<int,int> >  getMassCutMap()
+std::map<int, std::pair<int, int> >  getMassCutMap()
 {
 	std::map<int, std::pair<int, int> > mass_cut;
 	std::ifstream ifs;
