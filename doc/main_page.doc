@@ -2,8 +2,11 @@
 \mainpage 
 \tableofcontents
 
-Download instructions: \ref instructions_
+--------------------
+\section _INSTRUCTIONS Download instructions: 
+Follow the link \ref instructions_
 
+\section _CONF Configuration files
 \par Main configuration file
 Trying to collect all possible configurable things in a configuration file in configs/.
 The file is \b configs/2015-v1.conf
@@ -20,6 +23,7 @@ configs/datasets.dat
 
 \ref triggers List of triggers used to filter events at preselection level
 
+\section _UTILS Utilities
 \par How to estimate cross sections
 Once the dataset is entered in the datasets.dat config file putting dashes for cross section, cross section uncetainty, then you can use the script
 \verbatim
@@ -31,9 +35,10 @@ ttps://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
 
 Instructions on how to get the cross sections of a MC sample: https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer
 
+\section _ANALYSISSEQ Analysis sequence
 
-\par Skims
-\ref skim_page
+\subsection _SKIMS Skims
+Follow the link \ref skim_page
 \note microAOD_cff
 
 In order to make the skims:
@@ -53,7 +58,7 @@ scripts/crabSkimJobs/updateDatasetsWithSkims.sh
 \endverbatim
 
 
-\section MINITREE_ MiniTree production
+\subsection MINITREE_ MiniTree production
 The actual code to produce miniTree works only on LXPLUS at CERN on the batch system using CRAB2.
 
 To load CRAB2 environment in bash:
@@ -77,18 +82,7 @@ To check the status of the jobs and merge the jobs:
 \b CAVEAT: the script is set to save the ntuples in Shervin's area on EOS. It has not been yet generalized. So it is not supposed to work for other users in other storage elements on-the-fly.
 On can also use --scheduler=remoteGlidein to run over the GRID. The storage element is still CERN. LSF has not been tested. 
 
-\ref VALIDATIONSCRIPTS_
 
-\par JEC
-The twiki page is:
-\url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
-
-74X_mcRun2_asymptotic_v4
-
-
-
-
-\par Running the analysis
 the cfg to be used is 
 \verbatim 
 test/runAnalysis_cfg.py
@@ -101,16 +95,9 @@ There are three paths defined:
 
 A simple blinding filter is used if option isMC is set to 0 (so for data). This can be improved
 
-\par selection ID scale factors
 
-Electrons: https://cds.cern.ch/record/2118397/export/hx?ln=en
-
-Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
-
-
-\par Energy corrections
-\subpar muons
-https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
+\subsection _PRODVALIDATION Validation of the production
+\ref VALIDATIONSCRIPTS_
 
 \par Making data/MC comparison plots
 To make the data/MC plots for the flavor and low dilepton mass
@@ -135,12 +122,36 @@ root -b miniPlotter.C
 
 Repeat the previous steps with the different channel options(EE or MuMu).
 
+\subsection _TTBAR TTBar from data
+Follow the link \ref _TTBARBKG
+
+\section _AOB AOB
+\par JEC
+The twiki page is:
+\url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
+
+74X_mcRun2_asymptotic_v4
+
+
+
+\par selection ID scale factors
+
+Electrons: https://cds.cern.ch/record/2118397/export/hx?ln=en
+
+Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
+
+
+\par Energy corrections
+\subpar muons
+https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
+
+
 \par GIT instructions
-The main branch is downloaded by default the first time you download the code. It is \b shervinWorking
+The main branch is downloaded by default the first time you download the code. It is \b master
 
 Developers have to:
 \verbatim
-git checkout shervinWorking
+git checkout master
 git pull
 git branch myWorkingBranch
 git checkout myWorkingBranch
@@ -155,15 +166,10 @@ git commit -m "another commit"
 # to make sure what you did works
 scram b -j16 && cmsRun test/runAnalysis_cfg.py test=3
 git push origin myWorkingBranch:myWorkingBranch
-git checkout shervinWorking
+git checkout master
 \endverbatim
 
 
-\par miniTree production
-\verbatim
-./scripts/makeLSFTTreeScripts.sh
-for file in tmp/analysis_WRto*.cfg tmp/analysis_TTJets_DiLept_v*.cfg tmp/analysis_DY*powheg*.cfg ; do crab -create -submit -cfg $file; done
-\endverbatim
 */
 
 
