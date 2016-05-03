@@ -8,9 +8,10 @@ eval "git log -1 | grep commit | cut -d ' ' -f 2 >> configs/miniTreeEntries.dat"
 
 #this next line removes the bizarre ^[[?1034h code which is written to the first line of a file
 #when bash is used to redirect the output of a python script to a file
-eval "infocmp xterm | sed 's/, smm=[^,]\+//' > xterm"
+eval "TERM=linux"
 eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
 
+exit
 #now make and run analysis.cpp #make lib and outputFromAnalysis directories if they don't already exist
 eval "mkdir -p lib"
 eval "mkdir -p outputFromAnalysis"
