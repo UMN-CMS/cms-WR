@@ -36,7 +36,7 @@ for channel in ["ee","mumu"]:
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
 
-		datacard = "WR%sjj_MASS%s" % (channel,MWR[i])
+		datacard = "WR%sjj_MASS%04d" % (channel,MWR[i])
 		datacard_file = thisdir + "/datacards/" + datacard + ".txt"
 		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])
