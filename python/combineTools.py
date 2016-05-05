@@ -85,8 +85,9 @@ class miniTreeInterface:
 					}
 
 	def getNEvents(self, MWR, channel, process):
+		MWR = int(MWR)
 		if process == "signal":
-			mode = "WRto" + schnlName + "JJ_" + MWR + "_" + str(int(MWR)/2)
+			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
 		elif "TT" in process or "DY" in process:
 			mode = process
 		else:
@@ -111,11 +112,15 @@ class miniTreeInterface:
 		else:
 			num = np.array([event.NEventsInRange[mass_i] for event in tree])
 
+		mean = np.mean(num)
+		std = np.std(num)
 		if "TT" in process:
 			scale = self.tt_emu_ratio[channel]
-			return (scale*np.mean(num), scale*np.std(num))
-		else:
-			return (np.mean(num), np.std(num))
+			mean *= scale
+			std *= scale
+
+		syst = 1 + std/mean
+		return mean, syst
 
 ##
 # @brief calls and parses command for `combine'
