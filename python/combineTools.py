@@ -11,7 +11,8 @@ import math
 import datetime
 from os import environ
 
-datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data"
+datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data/"
+configfolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/configs/"
 ##
 # @brief creates a datacard for combine for signal and background
 #
@@ -60,111 +61,67 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 				out.write(name + ' ' + syst_type + ' ' + ' '.join(channel_list) + '\n')
 	return signal_rate, tuple(bg_rates.split())
 
-##
-# @brief gets fourObjectMass histogram from tree in root file
-#
-# @param MWR Mass of WR
-# @param binsize
-#
-# @return TH1F of fourobjectmass
-def getEEJJMassHisto(MWR, binsize=100):
-	filename = datafolder + "/all_analyzed_tree_hltAndAllRecoOfflineCuts_eejjSignalRegion_WR_M-%d_Nu_M-%d.root" % (MWR, MWR/2)
-	dirname =  "unmatchedSignalRecoAnalyzerFive"
-	treename = "signalRecoObjectsWithAllCuts"
-	histname = "WR_eejj_" + str(MWR)
-	infile = r.TFile.Open(filename)
-	tree = infile.Get(dirname + '/' + treename)
-	r.gROOT.cd()
-	nbins = 10000/int(binsize)
-	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
-	tree.Draw("fourObjectMass>>" + histname, "" ,"goff")
-	nevents = 50000.
-	h.Scale( xs.WR_eejj[MWR]/nevents )
-	return h
+class miniTreeInterface:
+	chnlName = {"ee":"EE","mumu":"MuMu"}
+	def __init__(self,
+			base="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/forPeterRootFiles/",
+			tag = "noMllAndZptWeights", ):
 
-def getMuMuJJMassHisto(MWR, binsize=100):
-	filename = datafolder + "/mumu_histos.root"
-	infile = r.TFile.Open(filename)
-	r.gROOT.cd()
-	h = infile.Get("h_" + str(MWR)).Clone()
-	orig_lumi = 2460.
-	h.Scale((xs.WR_mumujj[MWR]/0.01)*(1./orig_lumi))
-	return h
+		if tag: tag = "_" + tag
+		self.filefmt_dict = {"base":base, "tag":tag}
+		self.filefmt = "{base}/selected_tree_{mode}_signal_{channel}{chnlName}{tag}.root"
 
-def getSignalMassHisto(MWR, channel, binsize=100):
-	if "ee" in channel or "EE" in channel:
-		return getEEJJMassHisto(MWR,binsize=binsize)
-	else:
-		return getMuMuJJMassHisto(MWR,binsize=binsize)
+		emufile = r.TFile.Open("flavor_fits.root")
+		if emufile:
+			f_EE = emufile.Get("f_EE")
+			f_MuMu = emufile.Get("f_MuMu")
+			self.tt_emu_ratio = {
+					"ee": f_EE.GetParameter(1),
+					"mumu": f_MuMu.GetParameter(1),
+					}
+			self.tt_emu_error = {
+					"ee": f_EE.GetParError(1),
+					"mumu": f_MuMu.GetParError(1),
+					}
 
-def getTTBarNEvents(MWR, channel, lumi):
-	if "ee" in channel or "EE" in channel:
-		filename = datafolder + "/ttBarBkgndEleEstimate.root"
-		workname = "ttBarElectronEstimate"
-		corr_name = "EEtoEMuCorrection"
-	else:
-		filename = datafolder + "/ttBarBkgndMuonEstimate.root"
-		workname = "ttBarMuonEstimate"
-		corr_name = "MuMutoEMuCorrection"
-	f = r.TFile.Open(filename)
-	work = f.Get(workname)
-	pdf = work.pdf("rescaledExpPdf")
-	mass = work.var("fourObjectMass")
-	data = work.data("eMuRealDataSet")
+	def getNEvents(self, MWR, channel, process):
+		MWR = int(MWR)
+		if process == "signal":
+			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
+		elif "TT" in process or "DY" in process:
+			mode = process
+		else:
+			return None
 
-	mass.setRange(str(MWR), mass_cut[MWR][0], mass_cut[MWR][1])
-	argset = r.RooArgSet(mass)
-	integral = pdf.createIntegral(argset, r.RooFit.NormSet(argset), r.RooFit.Range(str(MWR)))
+		self.filefmt_dict["channel"] = channel
+		self.filefmt_dict["chnlName"] = self.chnlName[channel]
+		self.filefmt_dict["mode"] = mode
 
-	real_norm = work.var("realEMuDataNormalization").getVal()
-	corr = work.var(corr_name).getVal()
-	orig_lumi = 2488.245
-	scale = real_norm*corr*lumi/orig_lumi
-	nevents = integral.getVal()*scale
-	f.Close()
-	return  nevents
+		filename = self.filefmt.format(**self.filefmt_dict)
+		f = r.TFile.Open(filename)
+		if not f: raise IOError
 
-def getDYNEvents(MWR, channel, lumi):
-	if "ee" in channel or "EE" in channel:
-		filename = datafolder + "/DYElectronFits.root"
-		workname = "DYElectronFits"
-		dataname = "DY_EEDataSet_120to200"
-	else:
-		filename = datafolder + "/DYMuonFits.root"
-		workname = "DYMuonFits"
-		dataname = "DY_MuMuDataSet_120to200"
 
-	f = r.TFile.Open(filename)
-	work = f.Get(workname)
-	pdf = work.pdf("rescaledExpPdf")
-	mass = work.var("fourObjectMass")
-	data = work.data(dataname)
+		masses = r.std.vector(int)()
+		f.GetObject("signal_mass",masses)
+		masses = [m for m in masses]
+		mass_i = masses.index(int(MWR))
+		tree = f.Get("tf1")
+		if "TT" in process or "DY" in process:
+			num = np.array([event.FitIntegralInRange[mass_i]*event.Normalization for event in tree])
+		else:
+			num = np.array([event.NEventsInRange[mass_i] for event in tree])
 
-	mass.setRange(str(MWR), mass_cut[MWR][0], mass_cut[MWR][1])
-	argset = r.RooArgSet(mass)
-	integral = pdf.createIntegral(argset, r.RooFit.NormSet(argset), r.RooFit.Range(str(MWR)))
+		mean = np.mean(num)
+		std = np.std(num)
+		if "TT" in process:
+			scale = self.tt_emu_ratio[channel]
+			mean *= scale
+			std *= scale
 
-	norm = data.sumEntries()
-	orig_lumi = 2488.245
-	scale = norm*lumi/orig_lumi
-	nevents = integral.getVal()*scale
-	f.Close()
-	return nevents
+		syst = 1 + std/mean
+		return mean, syst
 
-def getNEvents(MWR, channel, process, lumi):
-	if process == "signal":
-		h = getSignalMassHisto(MWR, channel)
-		low,hi = mass_cut[int(MWR)]
-		lowbin = h.FindBin(low)
-		hibin = h.FindBin(hi) - 1
-		nevents = h.Integral(lowbin, hibin)*lumi
-		return nevents
-	elif process == "TTBar":
-		return getTTBarNEvents(MWR, channel, lumi)
-	elif process == "DY":
-		return getDYNEvents(MWR, channel, lumi)
-	else:
-		return None
 ##
 # @brief calls and parses command for `combine'
 #
@@ -179,6 +136,7 @@ def runCombine(command):
 	command = command.split(' ')
 	jobname = command[command.index('-n') + 1]
 	method = command[command.index('-M') + 1]
+	print method, "HybridNew" in method, jobname
 	try:
 		seed = command[command.index('-s') + 1]
 	except ValueError:
@@ -189,8 +147,9 @@ def runCombine(command):
 		mass = "120"
 		
 	try:
-		if method is "HybridNew":
+		if "HybridNew" in method:
 			rs = []
+			print "do different quantiles"
 			for q in [.025, .16, 0.5, .84, .975]:
 				#print q
 				run_command = command + ["--expectedFromGrid=%f" % q]
@@ -234,8 +193,7 @@ def runCombine(command):
 		raise e
 		return None
 
-
-mass_cut =  {mass:(low,hi) for mass,low,hi in [ map(int,s.split()) for s in open("configs/mass_cuts.txt",'r').read().split('\n') if s and s[0] != "#"]}
+mass_cut =  {mass:(low,hi) for mass,low,hi in [ map(int,s.split()) for s in open(configfolder + "mass_cuts.txt",'r').read().split('\n') if s and s[0] != "#"]}
 
 import sys
 if __name__ == '__main__':
