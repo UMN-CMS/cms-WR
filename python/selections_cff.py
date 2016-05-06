@@ -238,7 +238,7 @@ wRCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0"),
 )
 ############################################################# Flavour sideband filter
-flavourSidebandSelection='(daughter(0).isElectron && daughter(1).isMuon) || (daughter(1).isElectron && daughter(0).isMuon)'
+flavourSidebandSelection='((daughter(0).isElectron && daughter(1).isMuon) || (daughter(1).isElectron && daughter(0).isMuon))'
 diLeptonSelection = '(mass>200)'
 
 
