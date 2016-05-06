@@ -179,7 +179,7 @@ int main(int ac, char* av[])
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
-	bool isTagAndProbe, isLowDiLepton;
+	bool isTagAndProbe, isLowDiLepton, saveToys;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -194,6 +194,7 @@ int main(int ac, char* av[])
 	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
+	("saveToys", po::value<bool>(&saveToys)->default_value(false), "Save t1 tree vector for every toy iteration")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
@@ -486,27 +487,25 @@ int main(int ac, char* av[])
 				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
 
-			t1[i]->Write();
+			if(saveToys) t1[i]->Write();
 			if(i == 0) {
+				if(!saveToys) t1[i]->Write();
 				permanentWeightedDataSet->Write();
 				tDyCheck->Write();
 			}
 
 			permanentWeightedDataSet->Print();
 
-			if(mode == "TT" || mode == "DY") {
+			if(mode == "TT" || mode.find("DY") != _ENDSTRING ) {
 
 				assert(permanentWeightedDataSet->sumEntries() > 0);
 				Fits::expPower.setVal(-0.004);
 				RooFitResult * tempFitRslt = NULL;
 				// fit dataset to given PDF
-				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, Fits::expPdfRooAbsPdf);
+				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, Fits::expPdfRooAbsPdf);	///< expPdfRooAbsPdf defined over massWR 600 to 6500
 
-				// std::cout << "Res=" << std::endl;
-				// expPdfRooAbsPdf->Print();
-
-				// dataset normalization is the number of entries in the dataset
-				normalization = permanentWeightedDataSet->sumEntries();
+				// dataset normalization is the number of entries in the dataset with fourObjectMass (name of Fits::massWR) above 600
+				normalization = permanentWeightedDataSet->sumEntries("fourObjectMass > 600");
 				// set of variables in the PDF
 				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
 
