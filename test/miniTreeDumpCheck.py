@@ -19,13 +19,13 @@ tree_channels = [
 		"miniTree_dytagandprobe",
 		]
 
-
+print "# productionTag", config["productionTAG"]
 print "# Dataset", "%s "*len(tree_channels) % tuple(tree_channels)
 for dataset in datasets.split():
 	if config["productionTAG"] in dataset:
 		f = ROOT.TFile.Open(prefix + dataset + '/unmerged-allRange.root')
 		if f:
-			print dataset,
+			print dataset[:dataset.find(config["productionTAG"])],
 			for tree_channel in tree_channels:
 				t = f.Get(tree_channel + "/t")
 				if t:
