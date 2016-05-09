@@ -398,8 +398,17 @@ int main(int ac, char* av[])
 		std::cout << "[INFO] Running nToys = " << nToys << std::endl;
 		for(int i = seed; i < nToys + seed; i++) {
 			Rand.SetSeed(i + 1);
-			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
-				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
+			//for central values, we take the central value of Mu ID/ISO efficiencies and dont smear for JES systematics
+			// Roch and Electron scales are smeared with a pre-defined seed(1), to give conistent results.
+			if(nToys == 1) {
+				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
+				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
+				Random_Numbers_for_Systematics_Up_Down[2] = Rand.Gaus(0.0, 1.);// Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
+			} else {
+				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
+					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
+			}
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
