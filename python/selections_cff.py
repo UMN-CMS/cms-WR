@@ -81,22 +81,6 @@ wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
 		cut = cms.string('')
 		)
 
-### select leading electron \ingroup electronSkim_Group
-wRleadingElectron = cms.EDFilter("PATElectronSelector",
-                                 src = cms.InputTag("wRHEEPElectron"), #wRIsolatedElectrons"),
-                                 cut = cms.string( 
-        (("(pt>%f) && (abs(eta)<%f)") % (leadingPt, maxEtaLeptons))
-        ),
-                                 )
-
-### select subleading electron
-wRsubleadingElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("wRHEEPElectron"), #wRIsolatedElectrons"),
-                                    cut = cms.string( 
-        (("(pt>%f) && (abs(eta)<%f)") % (subleadingPt, maxEtaLeptons))
-        ),
-                                    )
-
 
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
                                     src = cms.InputTag("wRHEEPElectron"), 
@@ -106,7 +90,7 @@ wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
 
 ### create di-electron pair in signal region
 wRdiElectronCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                       decay = cms.string("wRleadingElectron wRsubleadingElectron"),
+                                       decay = cms.string("wRminiTreeElectron wRminiTreeElectron"),
                                        role = cms.string("leading subleading"),
                                        checkCharge = cms.bool(False),
                         # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -121,7 +105,7 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            )
 
 
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
 
 ############################################################ Muons
 
@@ -136,15 +120,16 @@ tunePIsolatedMuons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    maxDeltaR = cms.double(0.04),
                                    )
 
-### add here the rochester corrections
+
 
 ### muon ID and isolation
+# make a collection of TuneP muons which pass isHighPt ID
 tunePIDIsoMuons = cms.EDFilter("PATMuonSelector",
                                src = cms.InputTag("tunePMuons"),
                                cut = cms.string(muonIDIso),
                                )
 
-# make a collection of TuneP muons which pass isHighPt ID
+### Rochester corrections
 scaleCorrectedMuons = cms.EDProducer("produceScaleCorrectedMuons",
 		src = cms.InputTag("tunePIDIsoMuons"),
                 OutputCollectionName = cms.string("")
@@ -157,17 +142,6 @@ scaleCorrectedMuonsRefiner = cms.EDFilter("CandViewSelector",
 
 ### add here the trigger matching
 
-### select leading muon \ingroup muonSkim_Group
-wRleadingMuon = cms.EDFilter("PATMuonSelector",
-                             src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
-                             cut = wRleadingElectron.cut,
-                         )
-
-### select subleading muon
-wRsubleadingMuon = cms.EDFilter("PATMuonSelector",
-                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
-                                cut = wRsubleadingElectron.cut,
-                                )
 
 wRminiTreeMuon = cms.EDFilter("PATMuonSelector",
 #                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
@@ -180,7 +154,7 @@ from ExoAnalysis.cmsWR.produceIdIsoSF_cff import *
 
 ### create di-muon pair in signal region
 wRdiMuonCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string("wRleadingMuon wRsubleadingMuon"),
+                                   decay = cms.string("wRminiTreeMuon wRminiTreeMuon"),
                                    role = cms.string("leading subleading"),
                                    checkCharge = cms.bool(False),
                                    # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -196,12 +170,12 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRleadingMuon * wRsubleadingMuon * wRminiTreeMuon *  muonIdIsoSF * wRdiMuonCandidate)
+muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRminiTreeMuon *  muonIdIsoSF * wRdiMuonCandidate)
 #muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
 ############################################################ E-Mu candidate
 #mixed flavour candidates
 wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                  decay = cms.string("wRleadingElectron wRsubleadingMuon"),
+                                  decay = cms.string("wRminiTreeElectron wRminiTreeMuon"),
                                   role = cms.string("leading subleading"),
                                   checkCharge = cms.bool(False),
                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
@@ -210,7 +184,7 @@ wReleMuCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
 )
 
 wRmuEleCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
-                                  decay = cms.string("wRleadingMuon wRsubleadingElectron"),
+                                  decay = cms.string("wRminiTreeMuon wRminiTreeElectron"),
                                   role = cms.string("leading subleading"),
                                   checkCharge = cms.bool(False),
                                   # the cut on the pt of the daughter is to respect the order of leading and subleading:
