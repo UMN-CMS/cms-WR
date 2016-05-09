@@ -203,6 +203,7 @@ int main(int ac, char* av[])
 	Int_t nToys;
 	bool debug;
 	bool isTagAndProbe, isLowDiLepton, saveToys, ignoreDyScaleFactors;
+	int nStatToys;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -224,6 +225,7 @@ int main(int ac, char* av[])
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
+	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
 	;
 
 	po::variables_map vm;
@@ -245,7 +247,6 @@ int main(int ac, char* av[])
 		std::cerr << desc << std::endl;
 		return 1;
 	}
-
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -554,7 +555,6 @@ int main(int ac, char* av[])
 				normalization = permanentWeightedDataSet->sumEntries("fourObjectMass > 600");
 				// set of variables in the PDF
 				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
-
 				// loop over RooRealVars in the set
 				TIterator * iter = vset->createIterator();
 				TObject * var = iter->Next();
@@ -575,6 +575,47 @@ int main(int ac, char* av[])
 					auto range = mass_cut[mass_vec.at(mass_i)];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					fit_integral_in_range[mass_i] = integral;
+				}
+
+				//TODO: run this only on central values. both trees in output
+				if(nStatToys && i == seed) {
+					std::cout << "Doing " << nStatToys << " stat Toys" << std::endl;
+					TTree * statToys = new TTree("statToys", "");
+					// normalization is that same
+					Float_t normalization_stat = normalization;
+					UInt_t nparam_stat;
+					UInt_t nmasses_stat = mass_vec.size();
+					Float_t fit_parameters_stat[16];
+					Float_t fit_integral_in_range_stat[128];
+					statToys->Branch("Normalization", &normalization_stat);
+					statToys->Branch("nparam", &nparam_stat);
+					statToys->Branch("FitParameters", &fit_parameters_stat, "FitParameters[nparam]/F");
+					statToys->Branch("nmasses", &nmasses_stat);
+					statToys->Branch("FitIntegralInRange", &fit_integral_in_range_stat, "FitIntegralInRange[nmasses]/F");
+					for(int stat_i = 0; stat_i < nStatToys; stat_i++) {
+						// loop over RooRealVars in the set, vary them and store
+						TIterator * iter = vset->createIterator();
+						TObject * var = iter->Next();
+						RooRealVar *var_pdf;
+						nparam_stat = 0;
+						while (var) {
+							// ignore the M_WR variable
+							if(strcmp(var->GetName(), "fourObjectMass") != 0) {
+								var_pdf = (RooRealVar*)vset->find(var->GetName());
+								var_pdf->setVal(Rand.Gaus(var_pdf->getVal(), var_pdf->getError()));
+								fit_parameters_stat[nparam_stat++] = var_pdf->getVal();
+							}
+							var = iter->Next();
+						}
+						//Calculate integrals for each fit
+						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
+							auto range = mass_cut[mass_vec.at(mass_i)];
+							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
+							fit_integral_in_range_stat[mass_i] = integral;
+						}
+						statToys->Fill();
+					}
+					statToys->Write();
 				}
 			}
 
