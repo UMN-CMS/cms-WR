@@ -29,11 +29,9 @@
 #include <unordered_set>
 
 #define _ENDSTRING std::string::npos
-#define DEBUG
+//#define DEBUG
 //#define DEBUGG
-
 //process only 1000 events when DEBUGG is defined
-//#define DEBUGG
 
 /**
 TT
@@ -175,7 +173,7 @@ int main(int ac, char* av[])
 	std::vector<std::string> modes;
 	chainNames chainNames_;
 
-	std::string channel_str;
+	std::string channel_str, outDir, outFileTag;
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
@@ -195,6 +193,8 @@ int main(int ac, char* av[])
 	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
 	("saveToys", po::value<bool>(&saveToys)->default_value(false), "Save t1 tree vector for every toy iteration")
+	("outputDir,d", po::value<std::string>(&outDir)->default_value(""), "output dir for file with plotting trees")
+	("outputFileTag,f", po::value<std::string>(&outFileTag)->default_value(""), "tag name added to output file with plotting trees")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
@@ -297,7 +297,7 @@ int main(int ac, char* av[])
 
 		// Plotting trees
 		std::string chnlName = channel_str;
-		TFile f(("selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + ".root").c_str(), "recreate");
+		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + "_" + outFileTag + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
