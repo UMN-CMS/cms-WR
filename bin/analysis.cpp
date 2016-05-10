@@ -322,8 +322,9 @@ int main(int ac, char* av[])
 		if(debug) std::cout << myReader.getNorm1fb("TTJets_DiLept_v1") << std::endl;
 
 		// Plotting trees
-		std::string chnlName = channel_str;
-		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + "_" + outFileTag + ".root").c_str(), "recreate");
+		std::string chnlName = channel_str, usingWeights = "";
+		if(!ignoreDyScaleFactors) usingWeights = "_withMllWeight";
+		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName +  usingWeights + "_" + outFileTag + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		TTree * tf1 = new TTree("tf1", "");
