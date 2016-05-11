@@ -30,7 +30,7 @@
 //#define DBG
 
 bool useJorgeMinitrees = false;
-bool isReweighted = false;
+bool isReweighted = true;
 //Selector::tag_t channel = Selector::MuMu;
 Selector::tag_t channel = Selector::EE;
 
@@ -46,18 +46,19 @@ void miniPlotterForDYTandP()
 	TChain * chain_DYAmcIncl = new TChain(treeName,"DYAMCInclusive");
 	TChain * chain_data = new TChain(treeName,"Data");
 
+	TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/";
 	switch (channel) {
 	case Selector::EE:
-		chain_DYPowheg->Add("../rootFiles/selected_tree_DYPOWHEG_dytagandprobeEE_v15noRoch.root");
-		chain_DYMadIncl->Add("../rootFiles/selected_tree_DYMAD_dytagandprobeEE_v15noRoch.root"); // 0 - Electrons
-		chain_DYAmcIncl->Add("../rootFiles/selected_tree_DYAMC_dytagandprobeEE_v15noRoch.root");
-		chain_data->Add("../rootFiles/selected_tree_data_dytagandprobeEE_v14.root");
+		chain_DYPowheg->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE.root");
+		chain_DYMadIncl->Add(dir+"selected_tree_DYMAD_dytagandprobeEE.root"); // 0 - Electrons
+		chain_DYAmcIncl->Add(dir+"selected_tree_DYAMC_dytagandprobeEE.root");
+		chain_data->Add(dir+"selected_tree_data_dytagandprobeEE.root");
 		break;
 	case Selector::MuMu:
-		if(!useJorgeMinitrees) chain_DYPowheg->Add("../rootFiles/selected_tree_DYPOWHEG_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root");
-		if(!useJorgeMinitrees) chain_DYMadIncl->Add("../rootFiles/selected_tree_DYMAD_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root"); // 1 - Muons
-		if(!useJorgeMinitrees) chain_DYAmcIncl->Add("../rootFiles/selected_tree_DYAMC_dytagandprobeMuMu_v15NoToysOrXsxnWeightInAnalysisCpp.root");
-		if(!useJorgeMinitrees) chain_data->Add("../rootFiles/selected_tree_data_dytagandprobeMuMu_v15NoToysInAnalysisCpp.root");
+		if(!useJorgeMinitrees) chain_DYPowheg->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu.root");
+		if(!useJorgeMinitrees) chain_DYMadIncl->Add(dir+"selected_tree_DYMAD_dytagandprobeMuMu.root"); // 1 - Muons
+		if(!useJorgeMinitrees) chain_DYAmcIncl->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu.root");
+		if(!useJorgeMinitrees) chain_data->Add(dir+"selected_tree_data_dytagandprobeMuMu.root");
 		
 		if(useJorgeMinitrees) chain_DYPowheg->Add("../rootFiles/selected_tree_DYPOWHEG_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root");
 		if(useJorgeMinitrees) chain_DYMadIncl->Add("../rootFiles/selected_tree_DYMAD_dytagandprobeMuMu_jorgeMinitreeWithoutToysOrXsxnWeightInAnalysisCpp.root"); // 1 - Muons
@@ -79,19 +80,19 @@ void miniPlotterForDYTandP()
 	myEvent_DYAmcIncl.SetBranchAddresses(chain_DYAmcIncl);
 	myEvent_data.SetBranchAddresses(chain_data);
 
-	Float_t intLumi = 2640.523267;
-	Float_t dyPowZMassBin = (1975./2836876.);
-	Float_t dyMad = (5991./9042031.);
-	Float_t dyAmc = (5915./19548618.);
-	if(channel == Selector::EE) dyPowZMassBin = (1997./49921782.);
+	//Float_t intLumi = 2640.523267;
+	//Float_t dyPowZMassBin = (1975./2836876.);
+	//Float_t dyMad = (5991./9042031.);
+	//Float_t dyAmc = (5915./19548618.);
+	//if(channel == Selector::EE) dyPowZMassBin = (1997./49921782.);
 	Float_t minLeadJetPt = -10, minLeadLeptonPt = 33, minSubleadLeptonPt = 20, maxMll = 123, minMll = 57, maxLeptonEta = 2.4, minSubleadJetPt = -10;
 	Int_t minNumJets = -1;
 	std::vector<TH1F*> hs_DYPowheg;
-	MakeHistos(chain_DYPowheg, &myEvent_DYPowheg, &hs_DYPowheg, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, intLumi*dyPowZMassBin);
+	MakeHistos(chain_DYPowheg, &myEvent_DYPowheg, &hs_DYPowheg, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, 1.0);
 	std::vector<TH1F*> hs_DYMadIncl;
-	MakeHistos(chain_DYMadIncl, &myEvent_DYMadIncl, &hs_DYMadIncl, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, intLumi*dyMad);
+	MakeHistos(chain_DYMadIncl, &myEvent_DYMadIncl, &hs_DYMadIncl, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, 1.0);
 	std::vector<TH1F*> hs_DYAmcIncl;
-	MakeHistos(chain_DYAmcIncl, &myEvent_DYAmcIncl, &hs_DYAmcIncl, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, intLumi*dyAmc);
+	MakeHistos(chain_DYAmcIncl, &myEvent_DYAmcIncl, &hs_DYAmcIncl, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, 1.0);
 
 	std::vector<TH1F*> hs_data;
 	MakeHistos(chain_data, &myEvent_data, &hs_data, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, 1.0);
@@ -137,7 +138,7 @@ void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	if(isReweighted) weightString = "Mll normalization IS applied";
 	if(useJorgeMinitrees) weightString += "  used Jorges minitrees with Roch corrections for MC and data";
 	if(!useJorgeMinitrees) weightString += "  used Shervins V15 minitrees for MC and data";
-	writeToZpeakFile << "MC processed WITHOUT systematics re-evaluation or Xsxn normalization in analysis.cpp" <<std::endl;
+	writeToZpeakFile << "MC processed WITHOUT systematics re-evaluation but with Xsxn normalization in analysis.cpp" <<std::endl;
 	writeToZpeakFile << weightString << std::endl;
 	writeToZpeakFile << "min dilepton mass =\t"<< minMll <<"\tmax dilepton mass =\t"<< maxMll <<"\tmin lead jet pt =\t"<< minLeadJetPt <<"\tmin sublead jet pt =\t"<< minSubleadJetPt << "\tmin num jets =\t"<< minNJets << std::endl;
 	writeToZpeakFile << "min sublead lepton pt =\t"<< minSubleadLeptonPt <<"\tmin lead lepton pt =\t"<< minLeadLeptonPt << "\tmax lepton |eta| =\t"<< maxLeptonEta << std::endl;
@@ -174,7 +175,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	if(isReweighted){
 		TString chTitle = chain->GetTitle();
 		if( !(chTitle.Contains("Data")) ){
-			reweight = (channel == Selector::EE) ? (1) : (1);
+			reweight = (channel == Selector::EE) ? (0.962719) : (1.11271);
 		}
 		std::cout<<"reweight =\t"<< reweight << std::endl;
 	}//end if(isReweighted)
@@ -210,18 +211,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 
 	cout << nEntries << endl;
 	
-	//TString chTitle = chain->GetTitle();
-	
 	for(int ev = 0; ev < nEntries; ++ev) {
 		chain->GetEntry(ev);
 		if(myEvent->dilepton_mass > upperMllCut || myEvent->dilepton_mass < lowerMllCut) continue;
 		if(myEvent->njets < minNJets) continue;
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subleadJetPtCut) continue;
-
-		//if( !(chTitle.Contains("Data")) ){
-		//	(myEvent->weight) *= (2640.523267/2640.);
-		//}
 
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
@@ -312,7 +307,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	TLegend *leg = new TLegend( 0.80, 0.50, 0.98, 0.70 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-	//leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -322,8 +317,8 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	hs_DYPowheg->SetLineWidth(3);
 	hs_DYMadIncl->SetLineColor(kBlack);
 	hs_DYMadIncl->SetLineWidth(3);
-	//hs_DYAmcIncl->SetLineColor(kBlue);
-	//hs_DYAmcIncl->SetLineWidth(3);
+	hs_DYAmcIncl->SetLineColor(kBlue);
+	hs_DYAmcIncl->SetLineWidth(3);
 	hs_data->SetMarkerStyle(20);
 	hs_data->SetMarkerSize(1);
 	hs_data->SetMarkerColor(kBlack);
@@ -349,13 +344,13 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	hs_data->Draw("ep");
 	hs_DYPowheg->Draw("histo same");
 	hs_DYMadIncl->Draw("histo same");
-	//hs_DYAmcIncl->Draw("histo same");
+	hs_DYAmcIncl->Draw("histo same");
 	hs_data->Draw("epsame");
 	TString ytitle = "Events/(";
 	ytitle += (hs_data->GetXaxis()->GetNbins());
 	ytitle += ")";
-	//hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
-	//hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
+	hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
+	hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
 
 	ratio_Powheg->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Powheg->GetXaxis()->SetTickSize(0.40);
@@ -368,8 +363,8 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	ratio_Powheg->SetStats(0);
 	ratio_Mad->Sumw2();
 	ratio_Mad->SetStats(0);
-	//ratio_Amc->Sumw2();
-	//ratio_Amc->SetStats(0);
+	ratio_Amc->Sumw2();
+	ratio_Amc->SetStats(0);
 
 	ratio_Powheg->Divide(hs_DYPowheg);
 	ratio_Powheg->SetMarkerStyle(20);
@@ -385,22 +380,22 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	ratio_Mad->GetYaxis()->SetRangeUser(0.5, 1.5);
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
 
-	//ratio_Amc->Divide(hs_DYAmcIncl);
-	//ratio_Amc->SetMarkerStyle(22);
-	//ratio_Amc->SetMarkerColor(kBlue);
-	//ratio_Amc->SetLabelSize(0.1, "y");
-	//ratio_Amc->GetYaxis()->SetRangeUser(0.5, 1.5);
-	//ratio_Amc->GetYaxis()->SetNdivisions(505);
+	ratio_Amc->Divide(hs_DYAmcIncl);
+	ratio_Amc->SetMarkerStyle(22);
+	ratio_Amc->SetMarkerColor(kBlue);
+	ratio_Amc->SetLabelSize(0.1, "y");
+	ratio_Amc->GetYaxis()->SetRangeUser(0.5, 1.5);
+	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
 	ratio_Mad->Draw("p");
-	//ratio_Amc->Draw("p");
+	ratio_Amc->Draw("p");
 	ratio_Powheg->Draw("p");
 	float xmax = ratio_Powheg->GetXaxis()->GetXmax();
 	float xmin = ratio_Powheg->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
 	ratio_Powheg->Draw("p");
 	ratio_Mad->Draw("psame");
-	//ratio_Amc->Draw("psame");
+	ratio_Amc->Draw("psame");
 	f1->Draw("same");
 	mycanvas->cd();
 
@@ -419,14 +414,31 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	p1->SetLogy();
 	mycanvas->Print((fn + "_log.pdf").Data());
 	mycanvas->Print((fn + "_log.png").Data());
-
+ 
 	mycanvas->Close();
+	TFile f("seanHistos.root","RECREATE");
 	if(fname.EqualTo("Mll") == true){
-		TFile f("seanHistos.root","RECREATE");
 		hs_data->SetName("h_Mll_DATA"), hs_DYAmcIncl->SetName("h_Mll_DY"), hs_DYPowheg->SetName("h_Mll_DY_pow"), hs_DYMadIncl->SetName("h_Mll_DY_mad");
 		hs_data->Write();
 		hs_DYAmcIncl->Write();
 		hs_DYPowheg->Write();
 		hs_DYMadIncl->Write();
 	}
+	if(fname.EqualTo("Z_pt") == true){
+	
+		Float_t dataDyAmcRatio = hs_data->Integral()/hs_DYAmcIncl->Integral();
+		if(isReweighted){
+			std::cout<<"\t"<<std::endl;
+			std::cout<<"\t"<<std::endl;
+			std::cout<<"Z_pt SF after M_LL weight is applied is =\t"<< dataDyAmcRatio << std::endl;
+			std::cout<<"\t"<<std::endl;
+		}
+
+		hs_data->SetName("h_Z_pt_DATA"), hs_DYAmcIncl->SetName("h_Z_pt_DY"), hs_DYPowheg->SetName("h_Z_pt_DY_pow"), hs_DYMadIncl->SetName("h_Z_pt_DY_mad");
+		hs_data->Write();
+		hs_DYAmcIncl->Write();
+		hs_DYPowheg->Write();
+		hs_DYMadIncl->Write();
+	}
+
 }
