@@ -1,0 +1,42 @@
+/**
+\page dyInstructions_ Instructions to calculate DY scale factors
+run these commands to calculate the DY scale factors for the mass binned DY Powheg dataset, inclusive DY Madgraph dataset, and inclusive DY AMCNLO dataset
+starting from minitrees:
+\verbatim
+make
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c MuMu -m DYAMC >& DYAMCMuMuTandP.txt &
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c MuMu -m DYMAD >& DYMADMuMuTandP.txt &
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c MuMu -m DYPOWHEG >& DYPOWHEGMuMuTandP.txt &
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c MuMu -m data >& dataMuMuTandP.txt &
+
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c EE -m DYAMC >& DYAMCEETandP.txt &
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c EE -m DYMAD >& DYMADEETandP.txt &
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c EE -m DYPOWHEG >& DYPOWHEGEETandP.txt &
+./bin/analysis --ignoreDyScaleFactors true --isTagAndProbe true -c EE -m data >& dataEETandP.txt &
+mkdir noDyScaleFactors
+mv *.root noDyScaleFactors
+\endverbatim
+
+once these are finished run a macro in the test directory to calculate and save the scale factors
+\verbatim
+cd test
+root -l -b runCalculateDyScaleFactors.C
+\endverbatim
+
+now re-run analysis.cpp with the scale factors applied (they are applied by default, but have no effect on real data)
+\verbatim
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c MuMu -m DYAMC >& DYAMCMuMuTandP.txt &
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c MuMu -m DYMAD >& DYMADMuMuTandP.txt &
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c MuMu -m DYPOWHEG >& DYPOWHEGMuMuTandP.txt &
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c MuMu -m data >& dataMuMuTandP.txt &
+
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c EE -m DYAMC >& DYAMCEETandP.txt &
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c EE -m DYMAD >& DYMADEETandP.txt &
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c EE -m DYPOWHEG >& DYPOWHEGEETandP.txt &
+./bin/analysis --ignoreDyScaleFactors false --isTagAndProbe true -c EE -m data >& dataEETandP.txt &
+mkdir withDyScaleFactors
+mv *.root withDyScaleFactors
+\endverbatim
+
+
+*/

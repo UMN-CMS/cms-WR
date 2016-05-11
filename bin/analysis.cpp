@@ -35,12 +35,35 @@
 
 /**
 TT
-DY TANDP POWHEG AMC MAD
+DY TANDP POWHEG AMC MAD POWINCL
 W
 WZ
 ZZ
 data TANDP
 */
+
+/// return the dataOverMC dilepton mass correction factor for one DY sample
+double getDyMllScaleFactor(std::string chnl, std::string mode_str, std::string inputFile)
+{
+	std::string ch = "", dataset = "";
+	double scalefactor = 1.0;
+	std::ifstream readScaleFactors;
+	readScaleFactors.open(inputFile);
+	if(readScaleFactors.is_open() == false) {
+		std::cerr << "[ERROR] File " << inputFile << " not opened. Check if the file exists" << std::endl;
+		return 1;
+	}
+
+	while(readScaleFactors.peek() != EOF && readScaleFactors.good()) {
+		readScaleFactors >> ch >> dataset >> scalefactor;
+#ifdef DEBUGG
+		std::cout << "ch=\t" << ch << "\tdataset=\t" << dataset << "\tscalefactor=\t" << scalefactor << std::endl;
+#endif
+		if(ch.compare(chnl) == 0 && mode_str.find(dataset) != _ENDSTRING) return scalefactor;
+	}
+	return scalefactor;	///< for DYPOWINCL
+
+}///end getDyMllScaleFactor()
 
 /** \class chainNames
 	\brief this class helps in finding the right tree name based on the sample, sideband and channel one wants to analyze
@@ -52,7 +75,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD", "signal"
+			{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
 	}
 	)
 	{
@@ -101,6 +124,8 @@ public:
 			} else if(mode.find("MAD") != _ENDSTRING) {
 				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_madgraph");
+			} else if(mode.find("POWINCL") != _ENDSTRING && channel == Selector::EE) {
+				TTchainNames.push_back("DYToEE_powheg");
 			}
 		} else if(mode == "W") {
 			TTchainNames.push_back("WJetsLNu");
@@ -177,7 +202,7 @@ int main(int ac, char* av[])
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
-	bool isTagAndProbe, isLowDiLepton, saveToys;
+	bool isTagAndProbe, isLowDiLepton, saveToys, ignoreDyScaleFactors;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -195,6 +220,7 @@ int main(int ac, char* av[])
 	("saveToys", po::value<bool>(&saveToys)->default_value(false), "Save t1 tree vector for every toy iteration")
 	("outputDir,d", po::value<std::string>(&outDir)->default_value(""), "output dir for file with plotting trees")
 	("outputFileTag,f", po::value<std::string>(&outFileTag)->default_value(""), "tag name added to output file with plotting trees")
+	("ignoreDyScaleFactors", po::value<bool>(&ignoreDyScaleFactors)->default_value(true), "Ignore DyScaleFactors defined in configs directory")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
@@ -427,6 +453,11 @@ int main(int ac, char* av[])
 				if(selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+
+						//multiply by an additional weight when processing DY samples
+						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
+							selEvent.weight *= getDyMllScaleFactor(channel_str, mode, "configs/dyScaleFactors.txt");
+						}
 					} else {
 						selEvent.weight = 1;
 #ifdef DEBUGG
@@ -456,6 +487,11 @@ int main(int ac, char* av[])
 
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+
+						//multiply by an additional weight when processing DY samples
+						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
+							selEvent.weight *= getDyMllScaleFactor(channel_str, mode, "configs/dyScaleFactors.txt");
+						}
 					} else {
 						selEvent.weight = 1;
 						assert(selEvent.weight == 1);
@@ -496,7 +532,7 @@ int main(int ac, char* av[])
 
 			permanentWeightedDataSet->Print();
 
-			if(mode == "TT" || mode.find("DY") != _ENDSTRING ) {
+			if(mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) {
 
 				assert(permanentWeightedDataSet->sumEntries() > 0);
 				Fits::expPower.setVal(-0.004);
