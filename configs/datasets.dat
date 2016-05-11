@@ -35,7 +35,7 @@ DYToMuMu_powheg_3500to4500	/ZToMuMu_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring
 DYToMuMu_powheg_4500to6000	/ZToMuMu_NNPDF30_13TeV-powheg_M_4500_6000/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM	4.560e-07	2.574e-10	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_4500to6000_SHv12/	-
 DYToMuMu_powheg_6000toInf	/ZToMuMu_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	2.066e-08	2.020e-11	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_6000toInf_SHv12/	-
 ##
-DYToEE_powheg_50to120	/ZToEE_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.997e+03	9.957e-01	2997600	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_50to120_SHv12/	-
+DYToEE_powheg_50to120	/ZToEE_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.975e+03	9.957e-01	2997600	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_50to120_SHv12/	-
 DYToEE_powheg_120to200	/ZToEE_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.932e+01	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_120to200_SHv12/	-
 DYToEE_powheg_200to400	/ZToEE_NNPDF30_13TeV-powheg_M_200_400/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	2.731e+00	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_200to400_SHv12/	-
 DYToEE_powheg_400to800	/ZToEE_NNPDF30_13TeV-powheg_M_400_800/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	2.410e-01	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_400to800_SHv12/	-
