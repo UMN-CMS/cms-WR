@@ -13,6 +13,9 @@ mkdir ExoAnalysis/
 cd ExoAnalysis/
 git clone git@github.com:UMN-CMS/cms-WR.git cmsWR
 git clone https://github.com/ECALELFS/Utilities.git Utilities/scripts/
+cd ../
+git cms-addpkg RecoEgamma/ElectronIdentification
+git apply ExoAnalysis/cmsWR/test/HEEP_Et.patch
 scram b
 cd cmsWR/
 mkdir data/
