@@ -42,7 +42,7 @@ LIB=-L$(BOOST)/lib -L/usr/lib64 # -L/usr/lib
 MODULES=$(shell ls $(SRCDIR)/*.cc | sed "s|.cc|.o|;s|$(SRCDIR)|$(OBJ_DIR)|g")
 #### Make the list of dependencies for a particular module
 
-default: $(MODULES)  signalPdf.exe $(BUILDDIR)/analysis
+default: signalPdf.exe $(BUILDDIR)/analysis
 
 #------------------------------ MODULES (static libraries)
 
@@ -71,7 +71,7 @@ $(BUILDDIR)/ZFitter.exe:  $(BUILDDIR)/ZFitter.cpp
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 
 
-$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp  lib/*.o
+$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp  $(MODULES)
 	@echo "---> Making analysis $(COMPILE)"
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 
@@ -80,11 +80,13 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(OBJ_DIR)/*.d
 	rm -f $(BUILDDIR)/*.exe
+	rm -f $(BUILDDIR)/analysis
+	rm -f $(BUILDDIR)/analysis.d
 	rm -f *.exe
 	rm -f *.d
 
 
 
-signalPdf.exe: test/trialRooDatasetMacro.cpp
+signalPdf.exe: test/trialRooDatasetMacro.cpp $(MODULES)
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
 	-lboost_program_options -lTreePlayer 

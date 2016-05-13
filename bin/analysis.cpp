@@ -13,6 +13,7 @@
 // // #include "ExoAnalysis/cmsWR/interface/FitRooDataSet.h"
 
 #include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
+#include "ExoAnalysis/cmsWR/interface/AnalysisResult.h"
 #include "ExoAnalysis/cmsWR/interface/Selector.h"
 
 #include <vector>
@@ -191,6 +192,9 @@ private:
 
 };
 
+
+
+
 int main(int ac, char* av[])
 {
 	namespace po = boost::program_options;
@@ -203,6 +207,7 @@ int main(int ac, char* av[])
 	Int_t nToys;
 	bool debug;
 	bool isTagAndProbe, isLowDiLepton, saveToys, ignoreDyScaleFactors;
+	int nStatToys;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -215,15 +220,16 @@ int main(int ac, char* av[])
 	desc.add_options()
 	("help", "produce help message")
 	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
-	("toys,t", po::value<int>(&nToys)->default_value(1), "Number of Toys")
-	("seed,s", po::value<int>(&seed)->default_value(0), "Starting seed")
-	("saveToys", po::value<bool>(&saveToys)->default_value(false), "Save t1 tree vector for every toy iteration")
+	("toys,t", po::value<int>(&nToys)->default_value(0), "Number of Toys")
+	("seed,s", po::value<int>(&seed)->default_value(123456), "Starting seed")
+	("saveToys", po::bool_switch(&saveToys)->default_value(false), "Save t1 tree vector for every toy iteration")
 	("outputDir,d", po::value<std::string>(&outDir)->default_value(""), "output dir for file with plotting trees")
 	("outputFileTag,f", po::value<std::string>(&outFileTag)->default_value(""), "tag name added to output file with plotting trees")
 	("ignoreDyScaleFactors", po::value<bool>(&ignoreDyScaleFactors)->default_value(true), "Ignore DyScaleFactors defined in configs directory")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
+	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
 	;
 
 	po::variables_map vm;
@@ -245,7 +251,6 @@ int main(int ac, char* av[])
 		std::cerr << desc << std::endl;
 		return 1;
 	}
-
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -305,7 +310,6 @@ int main(int ac, char* av[])
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
-		bool run_toys = true;
 
 
 		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
@@ -327,27 +331,22 @@ int main(int ac, char* av[])
 		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName +  usingWeights + "_" + outFileTag + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
-		TTree * tf1 = new TTree("tf1", "");
-		Float_t normalization;
-		UInt_t nparam;
-		UInt_t nmasses = mass_vec.size();
-		Float_t fit_parameters[16], fit_parameter_errors[16];
-		Float_t events_in_range[128];
-		Float_t fit_integral_in_range[128];
-		tf1->Branch("Normalization", &normalization);
-		tf1->Branch("nparam", &nparam);
-		tf1->Branch("FitParameters", &fit_parameters, "FitParameters[nparam]/F");
-		tf1->Branch("FitParameterErrors", &fit_parameter_errors, "FitParameterErrors[nparam]/F");
-		tf1->Branch("nmasses", &nmasses);
-		tf1->Branch("NEventsInRange", &events_in_range, "NEventsInRange[nmasses]/F");
-		tf1->Branch("FitIntegralInRange", &fit_integral_in_range, "FitIntegralInRange[nmasses]/F");
+		AnalysisResult result;
+		result.nmasses = mass_vec.size();
+
+		TTree * syst_tree = new TTree("syst_tree", "");
+		TTree * central_value_tree = new TTree("central_value_tree", "");
+
+		//First loop will always be central value
+		result.SetBranches(syst_tree);
+		result.SetBranches(central_value_tree);
 
 		miniTreeEvent myEvent;
 
 		myEvent.SetBranchAddresses(c);
 		Selector selEvent;
 
-		std::vector<TTree *> t1(nToys, NULL);
+		std::vector<TTree *> t1(nToys + 1, NULL);
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
@@ -396,10 +395,21 @@ int main(int ac, char* av[])
 
 		}
 		std::cout << "[INFO] Running nToys = " << nToys << std::endl;
-		for(int i = seed; i < nToys + seed; i++) {
-			Rand.SetSeed(i + 1);
-			for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
-				Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
+		bool loop_one = true;
+		for(int i = 0; i < nToys + 1; i++) {
+			int seed_i = seed + i + 1;
+			Rand.SetSeed(seed_i);
+			//for central values, we take the central value of Mu ID/ISO efficiencies and dont smear for JES systematics
+			// Roch and Electron scales are smeared with a pre-defined seed(1), to give conistent results.
+			if(loop_one) {
+				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
+				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
+				Random_Numbers_for_Systematics_Up_Down[2] = Rand.Gaus(0.0, 1.);// Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
+			} else {
+				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
+					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
+			}
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
@@ -427,7 +437,7 @@ int main(int ac, char* av[])
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 
-				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, i + 1, List_Systematics, isData);
+				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
 				Selector tmp_selEvent(myEvent);
 				selEvent = tmp_selEvent;
@@ -473,12 +483,12 @@ int main(int ac, char* av[])
 					std::cout << "myEvent.weight=\t" << myEvent.weight << std::endl;
 #endif
 
-					if(selEvent.dilepton_mass > 61.2 && selEvent.dilepton_mass < 121.2 && i == seed) ++zMass60to120EvtCount;
-					if(selEvent.dilepton_mass > 66.2 && selEvent.dilepton_mass < 116.2 && i == seed) ++zMass65to115EvtCount;
-					if(selEvent.dilepton_mass > 71.2 && selEvent.dilepton_mass < 111.2 && i == seed) ++zMass70to110EvtCount;
-					if(selEvent.dilepton_mass > 76.2 && selEvent.dilepton_mass < 106.2 && i == seed) ++zMass75to105EvtCount;
-					if(selEvent.dilepton_mass > 81.2 && selEvent.dilepton_mass < 101.2 && i == seed) ++zMass80to100EvtCount;
-					if(selEvent.dilepton_mass > 86.2 && selEvent.dilepton_mass < 96.2 && i == seed)  ++zMass85to95EvtCount ;
+					if(selEvent.dilepton_mass > 61.2 && selEvent.dilepton_mass < 121.2 && loop_one) ++zMass60to120EvtCount;
+					if(selEvent.dilepton_mass > 66.2 && selEvent.dilepton_mass < 116.2 && loop_one) ++zMass65to115EvtCount;
+					if(selEvent.dilepton_mass > 71.2 && selEvent.dilepton_mass < 111.2 && loop_one) ++zMass70to110EvtCount;
+					if(selEvent.dilepton_mass > 76.2 && selEvent.dilepton_mass < 106.2 && loop_one) ++zMass75to105EvtCount;
+					if(selEvent.dilepton_mass > 81.2 && selEvent.dilepton_mass < 101.2 && loop_one) ++zMass80to100EvtCount;
+					if(selEvent.dilepton_mass > 86.2 && selEvent.dilepton_mass < 96.2 && loop_one)  ++zMass85to95EvtCount ;
 					tDyCheck->Fill();
 				}
 
@@ -507,12 +517,12 @@ int main(int ac, char* av[])
 				}
 
 			}//end loop over all input evts, and adding events to the RooDataSet pointer named tempDataSet
-			if(i == seed) std::cout << zMass60to120EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 61.2 < dilepton_mass < 121.2" << std::endl;
-			if(i == seed) std::cout << zMass65to115EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 66.2 < dilepton_mass < 116.2" << std::endl;
-			if(i == seed) std::cout << zMass70to110EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 71.2 < dilepton_mass < 111.2" << std::endl;
-			if(i == seed) std::cout << zMass75to105EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 76.2 < dilepton_mass < 106.2" << std::endl;
-			if(i == seed) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
-			if(i == seed) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
+			if(loop_one) std::cout << zMass60to120EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 61.2 < dilepton_mass < 121.2" << std::endl;
+			if(loop_one) std::cout << zMass65to115EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 66.2 < dilepton_mass < 116.2" << std::endl;
+			if(loop_one) std::cout << zMass70to110EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 71.2 < dilepton_mass < 111.2" << std::endl;
+			if(loop_one) std::cout << zMass75to105EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 76.2 < dilepton_mass < 106.2" << std::endl;
+			if(loop_one) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
+			if(loop_one) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
 
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
 			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
@@ -521,11 +531,12 @@ int main(int ac, char* av[])
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 				auto range = mass_cut[mass_vec.at(mass_i)];
-				events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				result.events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 			}
+			delete hWR_mass;
 
 			if(saveToys) t1[i]->Write();
-			if(i == 0) {
+			if(loop_one) {
 				if(!saveToys) t1[i]->Write();
 				permanentWeightedDataSet->Write();
 				tDyCheck->Write();
@@ -542,22 +553,21 @@ int main(int ac, char* av[])
 				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, Fits::expPdfRooAbsPdf);	///< expPdfRooAbsPdf defined over massWR 600 to 6500
 
 				// dataset normalization is the number of entries in the dataset with fourObjectMass (name of Fits::massWR) above 600
-				normalization = permanentWeightedDataSet->sumEntries("fourObjectMass > 600");
+				result.normalization = permanentWeightedDataSet->sumEntries("fourObjectMass > 600");
 				// set of variables in the PDF
 				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
-
 				// loop over RooRealVars in the set
 				TIterator * iter = vset->createIterator();
 				TObject * var = iter->Next();
 				RooRealVar *var_pdf;
-				nparam = 0;
+				result.nparam = 0;
 				while (var) {
 					// ignore the M_WR variable
 					if(strcmp(var->GetName(), "fourObjectMass") != 0) {
 						var_pdf = (RooRealVar*)vset->find(var->GetName());
 						// store the value of the fitted parameters and the corresponding errors
-						fit_parameters[nparam] = var_pdf->getVal();
-						fit_parameter_errors[nparam++] = var_pdf->getError();
+						result.fit_parameters[result.nparam] = var_pdf->getVal();
+						result.fit_parameter_errors[result.nparam++] = var_pdf->getError();
 					}
 					var = iter->Next();
 				}
@@ -565,18 +575,52 @@ int main(int ac, char* av[])
 				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 					auto range = mass_cut[mass_vec.at(mass_i)];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
-					fit_integral_in_range[mass_i] = integral;
+					result.fit_integral_in_range[mass_i] = integral;
+				}
+
+				if(nStatToys && loop_one) {
+					std::cout << "Doing " << nStatToys << " stat Toys" << std::endl;
+					AnalysisResult stat_result;
+					stat_result.normalization = result.normalization;
+					stat_result.nmasses = mass_vec.size();
+					TTree * stat_tree = new TTree("stat_tree", "");
+					stat_result.SetBranches(stat_tree);
+
+					for(int stat_i = 0; stat_i < nStatToys; stat_i++) {
+						// loop over RooRealVars in the set, vary them and store
+						TIterator * iter = vset->createIterator();
+						TObject * var = iter->Next();
+						RooRealVar *var_pdf;
+						stat_result.nparam = 0;
+						while (var) {
+							// ignore the M_WR variable
+							if(strcmp(var->GetName(), "fourObjectMass") != 0) {
+								var_pdf = (RooRealVar*)vset->find(var->GetName());
+								var_pdf->setVal(Rand.Gaus(var_pdf->getVal(), var_pdf->getError()));
+								stat_result.fit_parameters[stat_result.nparam++] = var_pdf->getVal();
+							}
+							var = iter->Next();
+						}
+						//Calculate integrals for each fit
+						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
+							auto range = mass_cut[mass_vec.at(mass_i)];
+							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
+							stat_result.fit_integral_in_range[mass_i] = integral;
+						}
+						stat_tree->Fill();
+					}
+					stat_tree->Write();
 				}
 			}
 
 			// fill the tree with the normalization, parameters, and errors
-			tf1->Fill();
+			if(loop_one) central_value_tree->Fill();
+			else syst_tree->Fill();
 
-			if(!run_toys)
-				break;
+			loop_one = false;
 		}
-		// always write the fitted branch
-		tf1->Write();
+		syst_tree->Write();
+		central_value_tree->Write();
 	}
 	return 0;
 

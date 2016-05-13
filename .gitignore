@@ -11,3 +11,4 @@ crab.history
 *.pdf
 tmp
 crab
+bin/analysis
