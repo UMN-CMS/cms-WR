@@ -29,7 +29,7 @@
 #endif
 //#define DBG
 
-bool isReweighted = false;
+bool isReweighted = true;
 Selector::tag_t channel = Selector::MuMu;
 
 /*
@@ -54,9 +54,9 @@ void combinedMiniPlotterForDYTandPMuMu()
 	Int_t powheg=1, madgraph=1, amc=1, data=1;
 	switch (channel) {
 		case Selector::MuMu:
-	   	powheg = chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu.root");
-		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu.root"); // 1 - Muons
-		amc = chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu.root");
+	   	powheg = chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_withMllWeight.root");
+		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_withMllWeight.root"); // 1 - Muons
+		amc = chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_withMllWeight.root");
 		data = chain_data->Add("../selected_tree_data_dytagandprobeMuMu.root");
 		break;
 	default:
@@ -284,7 +284,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	TLegend *leg = new TLegend( 0.80, 0.50, 0.98, 0.70 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-	//leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -294,8 +294,8 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	hs_DYPowheg->SetLineWidth(3);
 	hs_DYMadIncl->SetLineColor(kBlack);
 	hs_DYMadIncl->SetLineWidth(3);
-	//hs_DYAmcIncl->SetLineColor(kBlue);
-	//hs_DYAmcIncl->SetLineWidth(3);
+	hs_DYAmcIncl->SetLineColor(kBlue);
+	hs_DYAmcIncl->SetLineWidth(3);
 	hs_data->SetMarkerStyle(20);
 	hs_data->SetMarkerSize(1);
 	hs_data->SetMarkerColor(kBlack);
@@ -321,13 +321,13 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	hs_data->Draw("ep");
 	hs_DYPowheg->Draw("histo same");
 	hs_DYMadIncl->Draw("histo same");
-	//hs_DYAmcIncl->Draw("histo same");
+	hs_DYAmcIncl->Draw("histo same");
 	hs_data->Draw("epsame");
 	TString ytitle = "Events/(";
 	ytitle += (hs_data->GetXaxis()->GetNbins());
 	ytitle += ")";
-	//hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
-	//hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
+	hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
+	hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
 
 	ratio_Powheg->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Powheg->GetXaxis()->SetTickSize(0.40);
@@ -357,22 +357,22 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	ratio_Mad->GetYaxis()->SetRangeUser(0.5, 1.5);
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
 
-	//ratio_Amc->Divide(hs_DYAmcIncl);
-	//ratio_Amc->SetMarkerStyle(22);
-	//ratio_Amc->SetMarkerColor(kBlue);
-	//ratio_Amc->SetLabelSize(0.1, "y");
-	//ratio_Amc->GetYaxis()->SetRangeUser(0.5, 1.5);
-	//ratio_Amc->GetYaxis()->SetNdivisions(505);
+	ratio_Amc->Divide(hs_DYAmcIncl);
+	ratio_Amc->SetMarkerStyle(22);
+	ratio_Amc->SetMarkerColor(kBlue);
+	ratio_Amc->SetLabelSize(0.1, "y");
+	ratio_Amc->GetYaxis()->SetRangeUser(0.5, 1.5);
+	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
 	ratio_Mad->Draw("p");
-	//ratio_Amc->Draw("p");
+	ratio_Amc->Draw("p");
 	ratio_Powheg->Draw("p");
 	float xmax = ratio_Powheg->GetXaxis()->GetXmax();
 	float xmin = ratio_Powheg->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
 	ratio_Powheg->Draw("p");
 	ratio_Mad->Draw("psame");
-	//ratio_Amc->Draw("psame");
+	ratio_Amc->Draw("psame");
 	f1->Draw("same");
 	mycanvas->cd();
 

@@ -45,7 +45,7 @@ void combinedMiniPlotterMuMu(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::MuMu:
-    dy = chain_DY->Add("../selected_tree_DYMAD_lowdileptonsidebandMuMu.root");
+    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
     tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
     wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
     wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
