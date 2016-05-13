@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ##cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
+eval "rm -r test/validationPlots/"
+
 echo -n '#' > configs/miniTreeEntries.dat
 echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> configs/miniTreeEntries.dat
 echo -n '#' >> configs/miniTreeEntries.dat
@@ -11,7 +13,6 @@ eval "git log -1 | grep commit | cut -d ' ' -f 2 >> configs/miniTreeEntries.dat"
 eval "TERM=linux"
 eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
 
-exit
 #now make and run analysis.cpp #make lib and outputFromAnalysis directories if they don't already exist
 eval "mkdir -p lib"
 eval "mkdir -p outputFromAnalysis"
@@ -59,7 +60,7 @@ eval "sed 's@MuMu@EE@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEE.
 eval "sed 's@MuMu@EMu@g' combinedMiniPlotterMuMu.C > tempEMu.C"
 eval "sed 's@lowdilepton@flavour@g' tempEMu.C > combinedMiniPlotterEMu.C"
 eval "sed 's@MuMu@EMu@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEMu.C"
-eval 'mkdir -p validationPlots'
+eval "mkdir -p validationPlots"
 
 #overwrite ZPeakRegionIntegrals.txt if it already exists
 echo -n '#' > validationPlots/ZPeakRegionIntegrals.txt
