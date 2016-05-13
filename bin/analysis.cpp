@@ -43,29 +43,6 @@ ZZ
 data TANDP
 */
 
-/// return the dataOverMC dilepton mass correction factor for one DY sample
-double getDyMllScaleFactor(std::string chnl, std::string mode_str, std::string inputFile)
-{
-	std::string ch = "", dataset = "";
-	double scalefactor = 1.0;
-	std::ifstream readScaleFactors;
-	readScaleFactors.open(inputFile);
-	if(readScaleFactors.is_open() == false) {
-		std::cerr << "[ERROR] File " << inputFile << " not opened. Check if the file exists" << std::endl;
-		return 1;
-	}
-
-	while(readScaleFactors.peek() != EOF && readScaleFactors.good()) {
-		readScaleFactors >> ch >> dataset >> scalefactor;
-#ifdef DEBUGG
-		std::cout << "ch=\t" << ch << "\tdataset=\t" << dataset << "\tscalefactor=\t" << scalefactor << std::endl;
-#endif
-		if(ch.compare(chnl) == 0 && mode_str.find(dataset) != _ENDSTRING) return scalefactor;
-	}
-	return scalefactor;	///< for DYPOWINCL
-
-}///end getDyMllScaleFactor()
-
 /** \class chainNames
 	\brief this class helps in finding the right tree name based on the sample, sideband and channel one wants to analyze
 */
@@ -292,6 +269,7 @@ int main(int ac, char* av[])
 	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
 
 	configReader myReader("configs/2015-v1.conf");
+	myReader.setupDyMllScaleFactor("configs/dyScaleFactors.txt");
 
 
 	if(debug) std::cout << myReader << std::endl;
@@ -467,7 +445,7 @@ int main(int ac, char* av[])
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
-							selEvent.weight *= getDyMllScaleFactor(channel_str, mode, "configs/dyScaleFactors.txt");
+							selEvent.weight *= myReader.getDyMllScaleFactor(channel_str, mode);
 						}
 					} else {
 						selEvent.weight = 1;
@@ -501,7 +479,7 @@ int main(int ac, char* av[])
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
-							selEvent.weight *= getDyMllScaleFactor(channel_str, mode, "configs/dyScaleFactors.txt");
+							selEvent.weight *= myReader.getDyMllScaleFactor(channel_str, mode);
 						}
 					} else {
 						selEvent.weight = 1;
