@@ -37,6 +37,10 @@ public:
 	Float_t sublead_lepton_weight;
 	Float_t lead_jet_weight;
 	Float_t sublead_jet_weight;
+	Float_t dR_leadlepton_leadjet;
+	Float_t dR_leadlepton_subleadjet;
+	Float_t dR_subleadlepton_leadjet;
+	Float_t dR_subleadlepton_subleadjet;
 
 	Int_t nPV;
 	Int_t njets;

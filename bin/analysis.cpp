@@ -32,7 +32,7 @@
 #define _ENDSTRING std::string::npos
 //#define DEBUG
 //#define DEBUGG
-//process only 1000 events when DEBUGG is defined
+//process only 50000 events when DEBUGG is defined
 
 /**
 TT
@@ -327,8 +327,8 @@ int main(int ac, char* av[])
 
 		// Plotting trees
 		std::string chnlName = channel_str, usingWeights = "";
-		if(!ignoreDyScaleFactors) usingWeights = "_withMllWeight";
-		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName +  usingWeights +  outFileTag + ".root").c_str(), "recreate");
+		if(!ignoreDyScaleFactors && mode.find("DY") != _ENDSTRING) usingWeights = "_withMllWeight";
+		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName + usingWeights + outFileTag + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		AnalysisResult result;
@@ -350,7 +350,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 1000;
+		nEntries = 50000;
 #endif
 
 		TRandom3 Rand;

@@ -130,7 +130,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	myElectronCollection gEles;
 	myMuonCollection gMuons;
 
-	// Basic Kinematic cuts
+	// Basic Kinematic cuts (only eta cuts applied in good...LooseCuts() )
 	goodJetsLooseCuts(&jets, &gJets);
 	goodElesLooseCuts(&electrons, &gEles);
 	goodMuonsLooseCuts(&muons, &gMuons);
@@ -151,37 +151,6 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	jets = gJets;
 	electrons = gEles;
 	muons = gMuons;
-
-	//defaults if no jets are found in the event
-	lead_jet_pt = -1;
-	lead_jet_eta = -6;
-	lead_jet_phi = -6;
-	lead_jet_weight = 1.0;
-	sublead_jet_weight = 1.0;
-	sublead_jet_pt = -1;
-	sublead_jet_eta = -6;
-	sublead_jet_phi = -6;
-
-	njets = jets.size();
-
-	if(jets.size() == 1) {
-		lead_jet_pt = jets[0].p4.Pt();
-		lead_jet_eta = jets[0].p4.Eta();
-		lead_jet_phi = jets[0].p4.Phi();
-		lead_jet_weight = 1.0;
-	}//one jet in event
-
-	if(jets.size() > 1) {
-		lead_jet_pt = jets[0].p4.Pt();
-		lead_jet_eta = jets[0].p4.Eta();
-		lead_jet_phi = jets[0].p4.Phi();
-		lead_jet_weight = 1.0;
-		sublead_jet_weight = 1.0;
-
-		sublead_jet_pt = jets[1].p4.Pt();
-		sublead_jet_eta = jets[1].p4.Eta();
-		sublead_jet_phi = jets[1].p4.Phi();
-	}//two or more jets in the event
 
 	if(tag == EE) { // EEJJ Channel
 		// Assert at least 2 good leptons
@@ -233,11 +202,49 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		}
 	}
 
-	// check eta and pt cuts
-	//if(dR_TLV(lead_lepton_p4, gJets[0].p4) < 0.4) return false;
-	//if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
-	//if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
-	//if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
+	//lepton pt cuts necessitated by dytagandprobe triggers
+	if(lead_lepton_p4.Pt() < 33) return false;
+	if(sublead_lepton_p4.Pt() < 20) return false;
+
+	//defaults if no jets are found in the event
+	lead_jet_pt = -9;
+	lead_jet_eta = -6;
+	lead_jet_phi = -6;
+	lead_jet_weight = 1.0;
+	sublead_jet_weight = 1.0;
+	sublead_jet_pt = -9;
+	sublead_jet_eta = -6;
+	sublead_jet_phi = -6;
+	dR_leadlepton_leadjet = 9, dR_leadlepton_subleadjet = 9, dR_subleadlepton_leadjet = 9, dR_subleadlepton_subleadjet = 9;
+
+	njets = jets.size();
+
+	if(jets.size() == 1) {
+		lead_jet_pt = jets[0].p4.Pt();
+		lead_jet_eta = jets[0].p4.Eta();
+		lead_jet_phi = jets[0].p4.Phi();
+		lead_jet_weight = 1.0;
+		dR_leadlepton_leadjet = dR_TLV(lead_lepton_p4, jets[0].p4);
+		dR_subleadlepton_leadjet = dR_TLV(sublead_lepton_p4, jets[0].p4);
+	}//one jet in event
+
+	if(jets.size() > 1) {
+		lead_jet_pt = jets[0].p4.Pt();
+		lead_jet_eta = jets[0].p4.Eta();
+		lead_jet_phi = jets[0].p4.Phi();
+		lead_jet_weight = 1.0;
+		sublead_jet_weight = 1.0;
+
+		sublead_jet_pt = jets[1].p4.Pt();
+		sublead_jet_eta = jets[1].p4.Eta();
+		sublead_jet_phi = jets[1].p4.Phi();
+
+		dR_leadlepton_leadjet = dR_TLV(lead_lepton_p4, jets[0].p4);
+		dR_subleadlepton_leadjet = dR_TLV(sublead_lepton_p4, jets[0].p4);
+		dR_leadlepton_subleadjet = dR_TLV(lead_lepton_p4, jets[1].p4);
+		dR_subleadlepton_subleadjet = dR_TLV(sublead_lepton_p4, jets[1].p4);
+	}//two or more jets in the event
+
 
 	lead_lepton_pt = lead_lepton_p4.Pt();
 	lead_lepton_eta = lead_lepton_p4.Eta();
@@ -377,6 +384,11 @@ bool Selector::isPassing(tag_t tag)
 	if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
 	if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
 
+	dR_leadlepton_leadjet = dR_TLV(lead_lepton_p4, jets[0].p4);
+	dR_subleadlepton_leadjet = dR_TLV(sublead_lepton_p4, jets[0].p4);
+	dR_leadlepton_subleadjet = dR_TLV(lead_lepton_p4, jets[1].p4);
+	dR_subleadlepton_subleadjet = dR_TLV(sublead_lepton_p4, jets[1].p4);
+
 	lead_lepton_pt = lead_lepton_p4.Pt();
 	lead_lepton_eta = lead_lepton_p4.Eta();
 	lead_lepton_phi = lead_lepton_p4.Phi();
@@ -384,7 +396,6 @@ bool Selector::isPassing(tag_t tag)
 	sublead_lepton_pt = sublead_lepton_p4.Pt();
 	sublead_lepton_eta = sublead_lepton_p4.Eta();
 	sublead_lepton_phi = sublead_lepton_p4.Phi();
-
 
 	// Build the WR mass and dilepton mass with the 2 highest pT jets and 2 highest pT leptons
 	WR_mass = (lead_lepton_p4 + sublead_lepton_p4 + gJets[0].p4 + gJets[1].p4).M();
@@ -420,6 +431,10 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("lead_jet_phi", &lead_jet_phi);
 	tree->Branch("sublead_jet_phi", &sublead_jet_phi);
 	tree->Branch("nPV", &nPV);
+	tree->Branch("dR_leadlepton_leadjet", &dR_leadlepton_leadjet);
+	tree->Branch("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
+	tree->Branch("dR_subleadlepton_leadjet", &dR_subleadlepton_leadjet);
+	tree->Branch("dR_subleadlepton_subleadjet", &dR_subleadlepton_subleadjet);
 
 	tree->Branch("weight", &weight);
 	tree->Branch("WR_mass", &WR_mass);
@@ -446,6 +461,11 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("sublead_jet_eta", &sublead_jet_eta);
 	tree->SetBranchAddress("sublead_jet_phi", &sublead_jet_phi);
 	tree->SetBranchAddress("nPV", &nPV);
+
+	tree->SetBranchAddress("dR_leadlepton_leadjet", &dR_leadlepton_leadjet);
+	tree->SetBranchAddress("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
+	tree->SetBranchAddress("dR_subleadlepton_leadjet", &dR_subleadlepton_leadjet);
+	tree->SetBranchAddress("dR_subleadlepton_subleadjet", &dR_subleadlepton_subleadjet);
 
 	tree->SetBranchAddress("weight", &weight);
 	tree->SetBranchAddress("WR_mass", &WR_mass);
