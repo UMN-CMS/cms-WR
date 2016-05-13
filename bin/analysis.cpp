@@ -328,7 +328,7 @@ int main(int ac, char* av[])
 		// Plotting trees
 		std::string chnlName = channel_str, usingWeights = "";
 		if(!ignoreDyScaleFactors) usingWeights = "_withMllWeight";
-		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName +  usingWeights + "_" + outFileTag + ".root").c_str(), "recreate");
+		TFile f((outDir + "selected_tree_" + mode + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton) + chnlName +  usingWeights +  outFileTag + ".root").c_str(), "recreate");
 		f.WriteObject(&mass_vec, "signal_mass");
 		// store the fitted results for every toy in a tree
 		AnalysisResult result;
