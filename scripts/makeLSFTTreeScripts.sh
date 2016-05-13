@@ -325,9 +325,16 @@ if [ -n "${CHECK}" ];then
 		echo "[STATUS] Unfinished ${UI_WORKING_DIR}"
 		resubmitCrab.sh -u ${UI_WORKING_DIR}
     else
+		if [ ! -d "configs/miniTrees/$datasetName/" ];then
+			mkdir -p configs/miniTrees/$datasetName/
+		fi
 		if [ ! -e "${UI_WORKING_DIR}/res/lumiSummary.json" ];then
 			crab -c ${UI_WORKING_DIR} -report
+			if [ -n "$jsonFile" ];then 
+				compareJSON.py --diff ${UI_WORKING_DIR}/res/lumiSummary.json $jsonFile > ${UI_WORKING_DIR}/res/json_diff.json
+			fi
 		fi
+		cp ${UI_WORKING_DIR}/res/*.json configs/miniTrees/$datasetName/
 		for file in $OUTFILES
 		do
 			file=`basename $file .root`

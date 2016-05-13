@@ -28,7 +28,11 @@ options.register('unblind',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "0=blinded, 1=unblinded")
-
+options.register('jsonFile',
+                 "",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "path and name of the json file")
 
 #default options
 options.maxEvents = -1
@@ -97,6 +101,11 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 process.TFileService = cms.Service('TFileService', fileName = cms.string(options.output))
 
+
+if(len(options.jsonFile)>0):
+    print "[INFO] Using json file"
+    import FWCore.PythonUtilities.LumiList as LumiList
+    process.source.lumisToProcess = LumiList.LumiList(filename = options.jsonFile).getVLuminosityBlockRange()
 
 ############################################################ OUTPUT MODULES
 # this module defines the event content of our microAOD
