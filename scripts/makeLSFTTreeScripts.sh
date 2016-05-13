@@ -325,6 +325,9 @@ if [ -n "${CHECK}" ];then
 		echo "[STATUS] Unfinished ${UI_WORKING_DIR}"
 		resubmitCrab.sh -u ${UI_WORKING_DIR}
     else
+		if [ ! -e "${UI_WORKING_DIR}/res/lumiSummary.json" ];then
+			crab -c ${UI_WORKING_DIR} -report
+		fi
 		for file in $OUTFILES
 		do
 			file=`basename $file .root`
