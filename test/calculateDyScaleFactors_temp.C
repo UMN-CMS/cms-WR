@@ -31,26 +31,35 @@
 //#define DONARROWMLL
 Int_t OverwriteDySfFile = 1;
 Int_t AppendToDySfFile = 0;
-Bool_t useMllReweighted = true;
-Float_t leadJetPtCut = -10;
-Float_t subleadJetPtCut = -10;
-TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/", mcFileTag = "", dataFileTag = "";
+Bool_t useMllReweighted = false;
+Bool_t requireSeparatedLeptonsAndJets = true;
+Float_t idealLeadJetPt = 1;
+Float_t idealSubleadJetPt = 1;
+//Float_t leadJetPtCut = 0;
+//Float_t subLeadJetPtCut = 0;
+Float_t leadJetPtCut = LEADJETPT;
+Float_t subLeadJetPtCut = SUBJETPT;
+//TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/", mcFileTag = "", dataFileTag = "";
+TString dir = "../", mcFileTag = "", dataFileTag = "";
 
+
+bool separatedLeptonsAndJets(Float_t leadJetPt, Float_t subleadJetPt, Float_t leadJetEta, Float_t leadJetPhi, Float_t & subleadJetEta, Float_t & subleadJetPhi, Float_t leadLeptonEta, Float_t leadLeptonPhi, Float_t subleadLeptonEta, Float_t subleadLeptonPhi);
 Float_t calculateIntegralRatio(TH1F* hs_data, TH1F* hs_mc);
 void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel);
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Float_t normRescale);
 void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel);
 void calculateDyScaleFactors()
 {
-
+	
+	if(leadJetPtCut != idealLeadJetPt || subLeadJetPtCut != idealSubleadJetPt) OverwriteDySfFile = -1, AppendToDySfFile = -1;
 	if(useMllReweighted == true) mcFileTag = "_withMllWeight", OverwriteDySfFile = -1, AppendToDySfFile = -1;
 	TString treeName = "treeDyCheck";
 	//TChain * chain_DYPowhegInclEE = new TChain(treeName,"DYPowhegInclusiveEE");
-	TChain * chain_DYPowhegEE = new TChain(treeName,"DYPowhegM50to120EE");
+	TChain * chain_DYPowhegEE = new TChain(treeName,"DYPowhegMassBinnedEE");
 	TChain * chain_DYMadInclEE = new TChain(treeName,"DYMadgraphInclusiveEE");
 	TChain * chain_DYAmcInclEE = new TChain(treeName,"DYAMCInclusiveEE");
 	TChain * chain_dataEE = new TChain(treeName,"DataEE");
-	TChain * chain_DYPowhegMuMu = new TChain(treeName,"DYPowhegM50to120MuMu");
+	TChain * chain_DYPowhegMuMu = new TChain(treeName,"DYPowhegMassBinnedMuMu");
 	TChain * chain_DYMadInclMuMu = new TChain(treeName,"DYMadgraphInclusiveMuMu");
 	TChain * chain_DYAmcInclMuMu = new TChain(treeName,"DYAMCInclusiveMuMu");
 	TChain * chain_dataMuMu = new TChain(treeName,"DataMuMu");
@@ -137,9 +146,6 @@ void calculateDyScaleFactors()
 
 	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt"};
 
-	///do not write anything to the dy scale factors txt file if jet pt cuts are applied
-	if(leadJetPtCut > -10 || subleadJetPtCut > -10) OverwriteDySfFile = -1, AppendToDySfFile = -1;
-
 	int i = 0;
 	for(unsigned int i = 0; i < nPlots; i++) {
 		std::string s = std::to_string(i);
@@ -153,6 +159,24 @@ void calculateDyScaleFactors()
 	}
 
 }//end calculateDyScaleFactors()
+
+
+bool separatedLeptonsAndJets(Float_t leadJetPt, Float_t subleadJetPt, Float_t leadJetEta, Float_t leadJetPhi, Float_t & subleadJetEta, Float_t & subleadJetPhi, Float_t leadLeptonEta, Float_t leadLeptonPhi, Float_t subleadLeptonEta, Float_t subleadLeptonPhi)
+{
+	if(leadJetPt < 0 && subleadJetPt < 0) return true;	///<ignore lepton jet separation if no jet pt cuts are applied
+	
+	///<if no sublead jet pt requirement is applied, set the sublead jet eta and phi to high values such that it is always separated from the two leptons
+	if(subleadJetPt < 0) subleadJetEta = 100, subleadJetPhi = 10;
+	Float_t dr_ll_lj = deltaR(leadJetEta, leadJetPhi, leadLeptonEta, leadLeptonPhi);
+	Float_t dr_ll_sj = deltaR(subleadJetEta, subleadJetPhi, leadLeptonEta, leadLeptonPhi);
+	Float_t dr_sl_lj = deltaR(leadJetEta, leadJetPhi, subleadLeptonEta, subleadLeptonPhi);
+	Float_t dr_sl_sj = deltaR(subleadJetEta, subleadJetPhi, subleadLeptonEta, subleadLeptonPhi);
+
+	if(dr_ll_lj < 0.4 || dr_ll_sj < 0.4 || dr_sl_lj < 0.4 || dr_sl_sj < 0.4) return false;
+	return true;
+
+}
+
 
 Float_t calculateIntegralRatio(TH1F* hs_data, TH1F* hs_mc)
 {
@@ -225,7 +249,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		chain->GetEntry(ev);
 		if(myEvent->dilepton_mass > upperMllCut || myEvent->dilepton_mass < lowerMllCut) continue;
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
-		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subleadJetPtCut) continue;
+		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subLeadJetPtCut) continue;
+		if(!separatedLeptonsAndJets(myEvent->lead_jet_pt, myEvent->sublead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi) && requireSeparatedLeptonsAndJets) continue;	///< separatedLeptonsAndJets() returns false if the two leading jets are not separated from the two leading leptons
 
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
@@ -417,7 +442,9 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	f1->Draw("same");
 	mycanvas->cd();
 
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subleadJetPtCut) + channel;
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + channel;
+	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
+	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
 	TString fn = fname + cuts;
 
