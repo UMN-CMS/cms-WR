@@ -46,7 +46,7 @@ void miniPlotterForDYTandP()
 	TChain * chain_DYAmcIncl = new TChain(treeName,"DYAMCInclusive");
 	TChain * chain_data = new TChain(treeName,"Data");
 
-	TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/";
+	TString dir = "../";
 	switch (channel) {
 	case Selector::EE:
 		chain_DYPowheg->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE.root");
