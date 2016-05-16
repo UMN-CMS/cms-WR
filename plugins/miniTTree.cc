@@ -136,6 +136,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		myEvent.electron_scale->push_back(1.0);
 		myEvent.electron_smearing->push_back(0.01);
 		myEvent.electron_charge->push_back(ele->charge());
+		myEvent.electron_r9->push_back(ele->full5x5_r9());
 	}
 
 	for (size_t i = 0; i < muons->size(); ++i) {

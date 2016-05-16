@@ -69,6 +69,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.scale = myEvent.electron_scale->at(i);
 		ele.smearing = myEvent.electron_smearing->at(i);
 		ele.charge = myEvent.electron_charge->at(i);
+		ele.r9 = myEvent.electron_r9->at(i);
 		ele.weight = 1.;
 		electrons.push_back(ele);
 	}

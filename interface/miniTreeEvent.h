@@ -24,6 +24,7 @@ public:
 	std::vector<TLorentzVector> * electrons_p4;
 	std::vector<Float_t> * electron_scale;
 	std::vector<Float_t> * electron_smearing;
+	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
 
 	std::vector<TLorentzVector> * muons_p4;

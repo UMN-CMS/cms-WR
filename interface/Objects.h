@@ -8,7 +8,7 @@ public:
 	Float_t scale;
 	Float_t smearing;
 	Int_t charge;
-
+	Float_t r9;
 	Float_t weight;
 
 	myElectron() {}; ///< default contructor (empty)
