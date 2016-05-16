@@ -153,7 +153,6 @@ do
 				;;
 		esac
 		params=`echo $params | sed -r 's|^,||;s|[,]+|,|g'`
-
 		#skip MC samples when unblinding: only data are reproduced
 		if [ "${isMC}" == "1" -a "${unblind}" == "true" ];then continue; fi
 
@@ -173,7 +172,7 @@ resource = type==SLC6_64
 #allow_NonProductionCMSSW = 1
 
 pset=test/runAnalysis_cfg.py
-pycfg_params=isMC=${isMC} datasetTag=${datasetName}
+pycfg_params=isMC=${isMC} datasetTag=${datasetName} jsonFile=${jsonFile}
 
 #runselection=${RUNRANGE}
 split_by_run=0
@@ -205,7 +204,7 @@ EOF
 						FILE_PER_JOB=1
 					fi
 				fi
-
+				echo $datasetName $NJOBS $FILE_PER_JOB
 				cat >> $crab2File <<EOF
 datasetpath=None
 total_number_of_events=${NJOBS}
@@ -311,6 +310,7 @@ EOF
 crab -cfg ${crab2File} -create #|| exit 1
 if [ -n "$FILELIST" ];then
     makeArguments.sh -f $FILELIST -u $UI_WORKING_DIR -n ${FILE_PER_JOB} || exit 1
+	unset NJOBS
 fi
 
 
