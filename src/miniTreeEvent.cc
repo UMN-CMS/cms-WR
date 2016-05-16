@@ -5,6 +5,7 @@ miniTreeEvent::miniTreeEvent():
 	electrons_p4(new std::vector<TLorentzVector>),
 	electron_scale(new std::vector<Float_t>),
 	electron_smearing(new std::vector<Float_t>),
+	electron_r9(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
 	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
@@ -25,6 +26,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	electrons_p4(new std::vector<TLorentzVector>),
 	electron_scale(new std::vector<Float_t>),
 	electron_smearing(new std::vector<Float_t>),
+	electron_r9(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
 	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
@@ -43,6 +45,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*jec_uncertainty = *(otherEvent.jec_uncertainty);
 	*electron_scale = *(otherEvent.electron_scale);
 	*electron_smearing = *(otherEvent.electron_smearing);
+	*electron_r9 = *(otherEvent.electron_r9);
 	*electron_charge = *(otherEvent.electron_charge);
 	*muon_charge = *(otherEvent.muon_charge);
 	*muon_IDSF_central = *(otherEvent.muon_IDSF_central);
@@ -75,6 +78,7 @@ void miniTreeEvent::clear()
 	jec_uncertainty->clear();
 	electron_scale->clear();
 	electron_smearing->clear();
+	electron_r9->clear();
 	electron_charge->clear();
 	muon_charge->clear();
 	muon_IDSF_central->clear();
@@ -103,6 +107,7 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("jec_uncertainty", jec_uncertainty);
 	tree->Branch("electron_scale", electron_scale);
 	tree->Branch("electron_smearing", electron_smearing);
+	tree->Branch("electron_r9", electron_r9);
 	tree->Branch("electron_charge", electron_charge);
 	tree->Branch("muon_charge", muon_charge);
 	tree->Branch("muon_IDSF_central", muon_IDSF_central);
@@ -127,6 +132,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete jec_uncertainty;
 	delete electron_scale;
 	delete electron_smearing;
+	delete electron_r9;
 	delete electron_charge;
 	delete muon_charge;
 	delete muon_IDSF_central;
@@ -143,6 +149,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	jec_uncertainty = 0;
 	electron_scale = 0;
 	electron_smearing = 0;
+	electron_r9 = 0;
 	electron_charge = 0;
 	muon_charge = 0;
 	muon_IDSF_central = 0;
@@ -162,6 +169,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("jec_uncertainty", &jec_uncertainty);
 	tree->SetBranchAddress("electron_scale", &electron_scale);
 	tree->SetBranchAddress("electron_smearing", &electron_smearing);
+	tree->SetBranchAddress("electron_r9", &electron_r9);
 	tree->SetBranchAddress("electron_charge", &electron_charge);
 	tree->SetBranchAddress("muon_charge", &muon_charge);
 	tree->SetBranchAddress("muon_IDSF_central", &muon_IDSF_central);
