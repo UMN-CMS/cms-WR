@@ -29,6 +29,9 @@
 
 #include <unordered_set>
 
+#include "Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
+
+#include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
 //#define DEBUG
 //#define DEBUGG
@@ -253,7 +256,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015_scales.dat", 44565);
+	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/76X_16DecRereco_2015_Etunc");
 	
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -353,7 +356,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 50000;
+		nEntries = 50000;		
 #endif
 
 		TRandom3 Rand;
@@ -397,10 +400,14 @@ int main(int ac, char* av[])
 			return 1;
 
 		}
+
+		TStopwatch ts;
+
 		std::cout << "[INFO] Running nToys = " << nToys << std::endl;
 		bool loop_one = true;
-		for(int i = 0; i < nToys + 1; i++) {
-			int seed_i = seed + i + 1;
+		int seed_i = seed + 1;
+		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
+
 			Rand.SetSeed(seed_i);
 			//for central values, we take the central value of Mu ID/ISO efficiencies and dont smear for JES systematics
 			// Roch and Electron scales are smeared with a pre-defined seed(1), to give conistent results.
@@ -420,13 +427,22 @@ int main(int ac, char* av[])
 			selEvent.SetBranches(tDyCheck);
 
 			unsigned long long int nEntries_100 = nEntries / 100;
-			std::cout << "Processing events: [0%]" << std::flush;
+			std::cout << "Processing events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
+
 			for(unsigned long long int ev = 0; ev < nEntries; ev++) {
 
-				if(nEntries > 100 && ev % nEntries_100 == 1) std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
+
+				if(nEntries > 100 && ev % nEntries_100 == 1){
+					std::cout << "Processing events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
+					std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
+					ts.Stop();
+					ts.Print();
+					ts.Start();
+				}
 				//std::cout << "\b\b\b\b" << (int)( ev/nEntries_100) << " %" << std::endl;
 				c->GetEntry(ev);
 
+//#ifdef DEBUG
 				if (debug) {
 					std::cout << "RUN=" << myEvent.run << std::endl;
 					std::cout << "Mu" << std::endl;
@@ -436,15 +452,35 @@ int main(int ac, char* av[])
 					for(auto m : * (myEvent.jets_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				}
-
+//#endif
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
-
 				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
+				// // electron systematics!
+				// bool Flag_Smear_Electron_Scale = false;
+				// for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
+				// 	if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
+				// }
+
+				// unsigned int nEle = myEvent.electrons_p4->size();
+				// for(unsigned int iEle = 0; iEle < nEle; ++iEle){
+				// 	TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
+
+				// 	if(isData) { //only scales are corrected
+				// 		(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
+				// 		(*myEvent.electron_smearing)[iEle] = 0.;	
+				// 		p4 *= (*myEvent.electron_scale)[iEle];
+				// 		if(Flag_Smear_Electron_Scale) p4 *= Rand.Gaus(0., 1.) * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
+				// 	} else { // only the smearings are corrected 
+				// 		(*myEvent.electron_scale)[iEle] = 1.;
+				// 		(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 1.);
+				// 		if(Flag_Smear_Electron_Scale) p4 *= Rand.Gaus(0.,1) * (*myEvent.electron_smearing)[iEle];
+				// 	}
+				// }
+					
 				Selector tmp_selEvent(myEvent);
 				selEvent = tmp_selEvent;
-
 				// Select events with one good WR candidate
 				// Tags:
 				// 0 -- EEJJ Channel
@@ -518,7 +554,6 @@ int main(int ac, char* av[])
 					t1[i]->Fill();
 
 				}
-
 			}//end loop over all input evts, and adding events to the RooDataSet pointer named tempDataSet
 			if(loop_one) std::cout << zMass60to120EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 61.2 < dilepton_mass < 121.2" << std::endl;
 			if(loop_one) std::cout << zMass65to115EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 66.2 < dilepton_mass < 116.2" << std::endl;
