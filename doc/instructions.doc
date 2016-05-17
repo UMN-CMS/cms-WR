@@ -93,5 +93,13 @@ Run the comparison script
 root -b dataMC_compare.C
 \endverbatim
 
+\section ttbarXsxn_ TTBar to LL cross section
+the cross section used to normalize events from the ttbar->dilepton dataset should be 85.67 pb, not 56.  56 pb was calculated using genXsecanalyzer, but 85.67 is
+based on the PDG branching fraction of ttbar to leptons.  See page 3 of this pdf.
+
+\verbatim
+http://pdg.arsip.lipi.go.id/2013/reviews/rpp2012-rev-top-quark.pdf
+\endverbatim
+
 Go back to \ref index
 */
