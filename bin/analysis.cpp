@@ -252,12 +252,15 @@ int main(int ac, char* av[])
 		return 1;
 	}
 
+
+	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015_scales.dat", 44565);
+	
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
 		if(chainNames_.checkValidMode(s) == false) return 1;
 	}
 
-
+	
 	//------------------------------ translate the channel option into the selector type
 	Selector::tag_t channel;
 	if(channel_str == "EE")

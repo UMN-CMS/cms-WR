@@ -11,24 +11,23 @@
 #include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
 #include "ExoAnalysis/cmsWR/interface/rochcor2015.h"
 #include "ExoAnalysis/cmsWR/interface/ToyThrower.h"
+#include "Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
 
 #ifdef DEBUG
 #include <iostream>
 #endif
 
-void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<std::string> list, bool isData)
+void ToyThrower(miniTreeEvent *myEvent,  TRandom3 &rand, float rand_up_down[], int random_seed, std::vector<std::string> list, bool isData)
 {
 
 	float qter = 1.0;
 	int Iterator = 0;
 	int Iterator_Up_Down = 0;
-	int Iterator_Smear = 0;
 	int Flag_Smear_Muon_Scale = 0, Flag_Smear_Muon_ID_Iso = 0, Flag_Smear_Electron_Scale = 0, Flag_Smear_Jet_Scale = 0;
 	double Smear_ID = rand_up_down[Iterator_Up_Down++];
 	double Smear_ISO = rand_up_down[Iterator_Up_Down++];
 	double Smear_Ele_Data_Scale = rand_up_down[Iterator_Up_Down++];
 	double Smear_Jet_Scale = rand_up_down[Iterator_Up_Down++];
-	double Smear_Ele_MC_Scale = rand_smear[Iterator_Smear++];
 
 	for(unsigned int iii = 0; iii < list.size(); iii++) {
 		if(list[iii] == "Smear_Muon_Scale")     Flag_Smear_Muon_Scale = 1;
@@ -68,22 +67,26 @@ void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[
 
 	Iterator = 0;
 
-	for(auto electrons : * (myEvent->electrons_p4)) {
-#ifdef DEBUG
-		std::cout << std::endl << " Electron number= " << Iterator << " Electron Pt Before = " << (*(myEvent->electrons_p4))[Iterator].Pt() << " Electron Eta Before = " << (*(myEvent->electrons_p4))[Iterator].Eta() << std::endl;
-#endif
+	unsigned int nEle = myEvent->electrons_p4->size();
+	for(unsigned int iEle = 0; iEle < nEle; ++iEle){
+		TLorentzVector *p4 = &((*(myEvent->electrons_p4))[iEle]);
+// #ifdef DEBUG
+// 		std::cout << std::endl << " Electron number= " << Iterator << " Electron Pt Before = " << electronP4.Pt() << " Electron Eta Before = " << electronP4.Eta() << std::endl;
+// #endif
 
-
+			
 		if(Flag_Smear_Electron_Scale) {
 			if(isData) {
-//              (*(myEvent->electrons_p4))[Iterator] = (1 + (Smear_Ele_Data_Scale)*(*(myEvent->electron_scale))[Iterator])*(*(myEvent->electrons_p4))[Iterator];
-				(*(myEvent->electrons_p4))[Iterator] = (Smear_Ele_Data_Scale / Smear_Ele_Data_Scale) * (*(myEvent->electron_scale))[Iterator] * (*(myEvent->electrons_p4))[Iterator];
+				(*(myEvent->electron_scale))[iEle] = eSmearer.ScaleCorrection(myEvent->run, fabs(p4->Eta())<1.479, 0., p4->Eta(), p4->Et();
+
+//              electronP4 *= rand.Gaus(0., 1.) *  eSmearer.ScaleCorrectionUncertainty(myEvent->run, fabs(p4->Eta())<1.479, 0., p4->Eta(), p4->Et();
+				electronP4 = (Smear_Ele_Data_Scale / Smear_Ele_Data_Scale) * (*(myEvent->electron_scale))[Iterator] * electronP4;
 			} else {
-				(*(myEvent->electrons_p4))[Iterator] = (1 + (Smear_Ele_MC_Scale) * (*(myEvent->electron_smearing))[Iterator]) * (*(myEvent->electrons_p4))[Iterator];
+				electronP4 = (1 + (Smear_Ele_MC_Scale) * (*(myEvent->electron_smearing))[Iterator]) * electronP4;
 			}
 		}
 #ifdef DEBUG
-		std::cout << std::endl << " Electron number= " << Iterator << " Electron Pt After = " << (*(myEvent->electrons_p4))[Iterator].Pt() << " Electron Eta After = " << (*(myEvent->electrons_p4))[Iterator].Eta() << std::endl;
+		std::cout << std::endl << " Electron number= " << Iterator << " Electron Pt After = " << electronP4.Pt() << " Electron Eta After = " << electronP4.Eta() << std::endl;
 #endif
 		Iterator++;
 	}
