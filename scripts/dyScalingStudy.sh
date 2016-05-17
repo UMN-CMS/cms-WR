@@ -2,7 +2,7 @@
 
 #only use this script AFTER the dy scale factors have been calculated and used to reprocess the dytagandprobe minitrees for DY MC and data with analysis.cpp
 initialPtCut=-10
-maxJetPt=11
+maxJetPt=50
 minLeadJetPt=-10
 increment=10
 minSubleadJetPt=-10
@@ -20,7 +20,7 @@ rm tempA.C
 eval "sed 's@requireSeparatedLeptonsAndJets = true@requireSeparatedLeptonsAndJets = false@' <tempOne.C >tempNoDrOne.C"
 eval "sed 's@LEADJETPT@$lowestPositiveCutVal@' <tempNoDrOne.C >tempNoDrTwo.C"
 eval "sed 's@SUBJETPT@$lowestPositiveCutVal@' <tempNoDrTwo.C >calculateDyScaleFactors.C"
-eval "root -l -b runCalculateDyScaleFactors.C"
+eval "root -l -b -q runCalculateDyScaleFactors.C"
 rm tempNoDrOne.C tempNoDrTwo.C calculateDyScaleFactors.C
 
 #now make many sets of plots with various jet pt requirements with jet lepton dR separation required
@@ -31,7 +31,7 @@ while [ $minLeadJetPt -le $maxJetPt ]; do
 		eval "sed 's@SUBJETPT@$minSubleadJetPt@' <tempTwo.C >calculateDyScaleFactors.C"
 		
 		#run the macro calculateDyScaleFactors.C and produce the plots
-		eval "root -l -b runCalculateDyScaleFactors.C"
+		eval "root -l -b -q runCalculateDyScaleFactors.C"
 
 		#remove the files which will be overwritten by the next loop iteration
 		rm tempTwo.C calculateDyScaleFactors.C
