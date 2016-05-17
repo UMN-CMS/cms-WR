@@ -356,7 +356,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 50000;		
+		nEntries = 50000;
 #endif
 
 		TRandom3 Rand;
@@ -403,9 +403,21 @@ int main(int ac, char* av[])
 
 		TStopwatch ts;
 
+		std::vector< miniTreeEvent> myEventVector;
+		ts.Start();
+		for(unsigned long long int ev = 0; ev < nEntries; ev++) {
+			c->GetEntry(ev);
+			myEventVector.push_back(myEvent);
+		}
+		ts.Stop();
+		ts.Print();
+
 		std::cout << "[INFO] Running nToys = " << nToys << std::endl;
 		bool loop_one = true;
 		int seed_i = seed + 1;
+
+
+
 		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
 
 			Rand.SetSeed(seed_i);
@@ -427,20 +439,23 @@ int main(int ac, char* av[])
 			selEvent.SetBranches(tDyCheck);
 
 			unsigned long long int nEntries_100 = nEntries / 100;
+			ts.Stop();
+			ts.Print();
+			ts.Start();
+
 			std::cout << "Processing events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
+			
+			unsigned long long int ev=0;
 
-			for(unsigned long long int ev = 0; ev < nEntries; ev++) {
+			for(auto myEvent : myEventVector){
 
-
+				
 				if(nEntries > 100 && ev % nEntries_100 == 1){
-					std::cout << "Processing events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
+//					std::cout << "Processing events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
 					std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
-					ts.Stop();
-					ts.Print();
-					ts.Start();
 				}
 				//std::cout << "\b\b\b\b" << (int)( ev/nEntries_100) << " %" << std::endl;
-				c->GetEntry(ev);
+//				c->GetEntry(ev);
 
 //#ifdef DEBUG
 				if (debug) {
@@ -554,7 +569,12 @@ int main(int ac, char* av[])
 					t1[i]->Fill();
 
 				}
+				++ev;
 			}//end loop over all input evts, and adding events to the RooDataSet pointer named tempDataSet
+			ts.Stop();
+			ts.Print();
+			ts.Start();
+
 			if(loop_one) std::cout << zMass60to120EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 61.2 < dilepton_mass < 121.2" << std::endl;
 			if(loop_one) std::cout << zMass65to115EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 66.2 < dilepton_mass < 116.2" << std::endl;
 			if(loop_one) std::cout << zMass70to110EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 71.2 < dilepton_mass < 111.2" << std::endl;
@@ -645,9 +665,12 @@ int main(int ac, char* av[])
 							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 							stat_result.fit_integral_in_range[mass_i] = integral;
 						}
+					
 						stat_tree->Fill();
+					
 					}
 					stat_tree->Write();
+				
 				}
 			}
 
