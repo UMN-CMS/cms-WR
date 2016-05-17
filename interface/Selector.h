@@ -50,6 +50,7 @@ public:
 
 	bool isPassing(tag_t tag);
 	bool isPassingLooseCuts(tag_t tag);
+	bool isPassingPreselect();
 
 	Selector(const miniTreeEvent& myEvent);
 	Selector();

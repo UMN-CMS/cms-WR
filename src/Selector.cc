@@ -413,6 +413,28 @@ bool Selector::isPassing(tag_t tag)
 
 }
 
+bool Selector::isPassingPreselect()
+{
+	int l54 = 0;
+	int l44 = 0;
+	int j30 = 0;
+	for(auto ele : electrons) {
+		if(ele.p4.Pt() > 54) l54 += 1;
+		if(ele.p4.Pt() > 44) l44 += 1;
+		if( l54 >= 1 && l44 >= 2) break;
+	}
+	for(auto mu : muons) {
+		if(mu.p4.Pt() > 54) l54 += 1;
+		if(mu.p4.Pt() > 44) l44 += 1;
+		if( l54 >= 1 && l44 >= 2) break;
+	}
+	for(auto jet : jets) {
+		if(jet.p4.Pt() > 30) j30 += 1;
+		if(j30 >= 2) break;
+	}
+	return ( l54 >= 1 && l44 >= 2 && j30 >= 2);
+}
+
 
 
 void Selector::SetBranches(TTree* tree)

@@ -405,10 +405,19 @@ int main(int ac, char* av[])
 
 		std::vector< miniTreeEvent> myEventVector;
 		ts.Start();
+		std::cout << "Loading events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
+		unsigned long long int nEntries_100 = nEntries / 100;
 		for(unsigned long long int ev = 0; ev < nEntries; ev++) {
+			if(nEntries > 100 && ev % nEntries_100 == 1){
+				std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
+			}
 			c->GetEntry(ev);
-			myEventVector.push_back(myEvent);
+			Selector sel(myEvent);
+			if(sel.isPassingPreselect())
+				myEventVector.push_back(myEvent);
 		}
+		nEntries = myEventVector.size();
+		nEntries_100 = nEntries/100;
 		ts.Stop();
 		ts.Print();
 
@@ -438,7 +447,6 @@ int main(int ac, char* av[])
 			selEvent.SetBranches(t1[i]);
 			selEvent.SetBranches(tDyCheck);
 
-			unsigned long long int nEntries_100 = nEntries / 100;
 			ts.Stop();
 			ts.Print();
 			ts.Start();
