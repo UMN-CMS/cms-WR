@@ -64,8 +64,8 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 class miniTreeInterface:
 	chnlName = {"ee":"EE","mumu":"MuMu"}
 	def __init__(self,
-			base="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/forPeterRootFiles/",
-			tag = "noMllAndZptWeights",
+			base="./",
+			tag = "",
 			emufilename = "flavor_fits.root",
 			):
 
@@ -85,14 +85,19 @@ class miniTreeInterface:
 					"ee": f_EE.GetParError(1),
 					"mumu": f_MuMu.GetParError(1),
 					}
+		else:
+			self.tt_emu_ratio = {}
 		self.masses = []
 		self.results = {}
 
 	def getNEvents(self, MWR, channel, process):
 		""" returns mean, syst, stat """
 		key = channel + process
+		if "signal" == process:
+			key += str(MWR)
+
 		MWR = int(MWR)
-		f = self.OpenFile(channel, process)
+		f = self.OpenFile(channel, process, MWR)
 		if not self.masses: self.GetMasses(f)
 
 		mass_i = self.masses.index(int(MWR))
@@ -108,9 +113,9 @@ class miniTreeInterface:
 		means = np.zeros(len(self.masses))
 		stds = np.zeros(len(self.masses))
 		if fromFit:
-			draw_str = "FitIntegralInRange[{%d}]*Normalization"
+			draw_str = "FitIntegralInRange[%d]*Normalization"
 		else:
-			draw_str = "NEventsInRange[{%d}]"
+			draw_str = "NEventsInRange[%d]"
 
 		for mass_i in range(len(self.masses)):
 			tree.Draw(draw_str % mass_i,"","goff")
@@ -122,13 +127,21 @@ class miniTreeInterface:
 	def ProcessFile(self, key, f):
 		if key in self.results: return
 
-		syst_tree = f.Get("syst_tree")
-		syst_means, syst_stds = self.getMeanStd(syst_tree, fromFit = bool("TT" in key or "DY" in key)) 
+		tree = f.Get("syst_tree")
+		if not tree or tree.GetEntries() == 0:
+			tree = f.Get("central_value_tree")
+		syst_means, syst_stds = self.getMeanStd(tree, fromFit = bool("TT" in key or "DY" in key)) 
 
 		stat_tree = f.Get("stat_tree")
-		stat_means, stat_stds = self.getMeanStd(stat_tree, fromFit = bool("TT" in key or "DY" in key)) 
+		if stat_tree and stat_tree.GetEntries() != 0:
+			stat_means, stat_stds = self.getMeanStd(stat_tree, fromFit = bool("TT" in key or "DY" in key)) 
+		else:
+			stat_means = syst_means*0
+			stat_stds = syst_stds*0
 
-		if "TT" in key:
+
+
+		if "TT" in key and self.tt_emu_ratio:
 			scale = self.tt_emu_ratio[channel]
 			syst_means *= scale
 			syst_stds *= scale
@@ -141,7 +154,7 @@ class miniTreeInterface:
 				}
 
 
-	def OpenFile(self, channel, process):
+	def OpenFile(self, channel, process, MWR):
 		if process == "signal":
 			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
 		elif "TT" in process or "DY" in process:
@@ -154,6 +167,7 @@ class miniTreeInterface:
 		self.filefmt_dict["mode"] = mode
 
 		filename = self.filefmt.format(**self.filefmt_dict)
+		print "Opening File ", filename
 		f = r.TFile.Open(filename)
 		if not f: raise IOError
 		return f
