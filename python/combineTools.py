@@ -142,6 +142,8 @@ class miniTreeInterface:
 
 
 		if "TT" in key and self.tt_emu_ratio:
+			if "ee" in key: channel = "ee"
+			if "mumu" in key: channel = "mumu"
 			scale = self.tt_emu_ratio[channel]
 			syst_means *= scale
 			syst_stds *= scale
