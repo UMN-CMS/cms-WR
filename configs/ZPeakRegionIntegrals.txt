@@ -1,2 +1,28 @@
 #priorCommitNumberForWhichTheseEventCountNumbersAreValid
-#ee20259585258d9b4ea5cce24904080ea5f84bc9
+#419562807d4df3a6e6987843190744ce9b526a95
+	
+	
+Mll normalization IS applied
+min dilepton mass =	57	max dilepton mass =	123	min lead jet pt =	-10	min sublead jet pt =	-10	min num jets =	-1
+min sublead lepton pt =	20	min lead lepton pt =	33	max lepton |eta| =	2.4
+MUON
+	DATA	AMCNLO	MADGRAPH	POWHEGAllMassBins
+Z peak +/- 5 GeV	852178	806274	1.56217e+06	2.47651e+06
+Z peak +/- 10 GeV	976590	922983	1.78554e+06	2.83757e+06
+Z peak +/- 15 GeV	1.02404e+06	966136	1.86839e+06	2.97107e+06
+Z peak +/- 20 GeV	1.05035e+06	989829	1.91394e+06	3.04302e+06
+Z peak +/- 25 GeV	1.06776e+06	1.0048e+06	1.94261e+06	3.0887e+06
+Z peak +/- 30 GeV	1.07878e+06	1.01432e+06	1.96057e+06	3.1174e+06
+	
+	
+Mll normalization IS applied
+min dilepton mass =	57	max dilepton mass =	123	min lead jet pt =	-10	min sublead jet pt =	-10	min num jets =	-1
+min sublead lepton pt =	20	min lead lepton pt =	33	max lepton |eta| =	2.4
+ELECTRON
+	DATA	AMCNLO	MADGRAPH	POWHEGAllMassBins
+Z peak +/- 5 GeV	779875	343239	903207	1.34276e+06
+Z peak +/- 10 GeV	918645	395374	1.04015e+06	1.55035e+06
+Z peak +/- 15 GeV	960176	411425	1.08308e+06	1.61499e+06
+Z peak +/- 20 GeV	980958	419715	1.10497e+06	1.64836e+06
+Z peak +/- 25 GeV	993663	425062	1.11899e+06	1.66821e+06
+Z peak +/- 30 GeV	1.00182e+06	428449	1.12752e+06	1.68064e+06
