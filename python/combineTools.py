@@ -62,7 +62,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 	return signal_rate, tuple(bg_rates.split())
 
 class miniTreeInterface:
-	chnlName = {"ee":"EE","mumu":"MuMu"}
+	chnlName = {"ee":"EE","mumu":"MuMu", "emu":"EMu"}
 	def __init__(self,
 			base="./",
 			tag = "",
@@ -71,7 +71,7 @@ class miniTreeInterface:
 
 		if tag: tag = "_" + tag
 		self.filefmt_dict = {"base":base, "tag":tag}
-		self.filefmt = "{base}/selected_tree_{mode}_signal_{channel}{chnlName}{tag}.root"
+		self.filefmt = "{base}/selected_tree_{mode}_{minitreename}{chnlName}{tag}.root"
 
 		emufile = r.TFile.Open(emufilename)
 		if emufile:
@@ -100,7 +100,7 @@ class miniTreeInterface:
 		f = self.OpenFile(channel, process, MWR)
 		if not self.masses: self.GetMasses(f)
 
-		mass_i = self.masses.index(int(MWR))
+		mass_i = self.masses.index(MWR)
 
 		self.ProcessFile(key, f)
 
@@ -159,12 +159,18 @@ class miniTreeInterface:
 	def OpenFile(self, channel, process, MWR):
 		if process == "signal":
 			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
-		elif "TT" in process or "DY" in process:
+			minitreename = "signal_" + channel
+		elif "TT" in process:
+			channel = "emu"
+			mode = "data"
+			minitreename = "flavoursideband"
+		elif "DY" in process:
 			mode = process
+			minitreename = "signal_" + channel
 		else:
 			return None
 
-		self.filefmt_dict["channel"] = channel
+		self.filefmt_dict["minitreename"] = minitreename
 		self.filefmt_dict["chnlName"] = self.chnlName[channel]
 		self.filefmt_dict["mode"] = mode
 

@@ -1,10 +1,10 @@
 imax 1  number of channels
 jmax 2  number of backgrounds
 bin eejj
-observation 0
+observation 1
 ------------
 bin    eejj    eejj    eejj
 process  WR_eejj  TTBar  DY  
 process  0  1  2
-rate  0.9798  0.1801  0.0001673  
+rate  0.9798  0.58  0.0001673  
 ------------

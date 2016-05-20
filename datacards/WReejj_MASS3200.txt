@@ -6,5 +6,5 @@ observation 0
 bin    eejj    eejj    eejj
 process  WR_eejj  TTBar  DY  
 process  0  1  2
-rate  1.123  1.141e-06  9.384e-15  
+rate  1.123  7.629e-06  9.384e-15  
 ------------
