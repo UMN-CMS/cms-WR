@@ -284,6 +284,18 @@ int main(int ac, char* av[])
 	modes.erase( std::remove( modes.begin(), modes.end(), "signal" ), modes.end() );
 	if(modes.size() != msize) {
 		for(int i = 0; i < 27; i++) {
+			if(i>=22){
+				modes.push_back("WRto" + channel_str + "JJ_" + std::to_string(5600 + 200 * (i-22)) + "_" + std::to_string(2800 + 100 * (i-22)));
+				continue;
+			}
+			if(i>=13 && i<=21){
+				modes.push_back("WRto" + channel_str + "JJ_" + std::to_string(3600 + 200 * (i-13)) + "_" + std::to_string(1800 + 100 * (i-13)));
+				continue;
+			}
+			if(i==5){
+				modes.push_back("WRto" + channel_str + "JJ_" + std::to_string(800 + 200 * i) + "_" + std::to_string(1400));
+				continue;
+			}
 			modes.push_back("WRto" + channel_str + "JJ_" + std::to_string(800 + 200 * i) + "_" + std::to_string(400 + 100 * i));
 		}
 	}
@@ -523,7 +535,7 @@ int main(int ac, char* av[])
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				}
 
-				if(selEvent.isPassingLooseCuts(channel)) {
+				if(selEvent.isPassingLooseCuts(channel) && loop_one) {
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 
@@ -607,7 +619,8 @@ int main(int ac, char* av[])
 				permanentWeightedDataSet->Write();
 				tDyCheck->Write();
 			}
-
+			delete t1[i];
+	
 			permanentWeightedDataSet->Print();
 
 			if(mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) {
