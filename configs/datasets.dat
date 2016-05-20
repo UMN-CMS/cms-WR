@@ -22,7 +22,10 @@ TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpri
 DYJets_amctnlo	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	5.915e+03	3.414e+01	19548618	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_amctnlo_SHv12/	-
 DYJets_madgraph	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	5.991e+03	1.796e+01	9042031	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_madgraph_SHv12/	-
 #	##################
-DYToEE_powheg	/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.803e+03	0.000e+00	49921782	root://eoscms//eos/cms/store/caf/user/shervin/DYToEE_powheg_SHv12/	-
+DYJets_madgraph_ht100to200	/DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
+DYJets_madgraph_ht200to400	/DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
+DYJets_madgraph_ht400to600	/DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM	-	-	-	-	-
+DYJets_madgraph_ht600toInf	/DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	-	-	-	-	-
 ###
 DYToMuMu_powheg_50to120	/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.975e+03	9.496e-01	2836876	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_50to120_SHv12/	-
 DYToMuMu_powheg_120to200	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.932e+01	1.269e-02	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_120to200_SHv12/	-
