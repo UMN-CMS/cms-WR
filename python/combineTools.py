@@ -184,7 +184,9 @@ class miniTreeInterface:
 		masses = r.std.vector(int)()
 		f.GetObject("signal_mass",masses)
 		self.masses = [m for m in masses]
-
+	
+	def setTag(self, tag):
+		self.filefmt_dict["tag"] = tag
 
 ##
 # @brief calls and parses command for `combine'

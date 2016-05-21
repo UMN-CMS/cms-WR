@@ -13,7 +13,7 @@ parser.add_argument('-t', '--tag', dest='tag',
 		default="",
 		help='tag name for analysis tree files')
 parser.add_argument('-o', '--outdir', dest='outdir',
-		default="./",
+		default="datacards/",
 		help='where to store the datacards')
 
 
@@ -43,7 +43,9 @@ for channel in ["ee"]:
 				sig_stat *= uns
 
 			TTBar, TTBar_syst, TTBar_stat = minitrees.getNEvents(mass, channel, "TT")
+			minitrees.setTag("_withMllWeight")
 			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYAMC")
+			minitrees.setTag("")
 
 			MWR.append(mass)
 			signal.append(signalNevents)
@@ -52,9 +54,12 @@ for channel in ["ee"]:
 			#TODO: add Lumi uncertainty and others
 			#systematics.append( ("", "", [ (sig_name, sig_syst )]))
 			if not args.nosyst:
-				systematics.append( ("Signal_unc", "lnN", [ (sig_name, sig_syst )]))
-				systematics.append( ("TTBar_unc", "lnN", [ ("TTBar", TTBar_syst)] ))
-				systematics.append( ("DY_unc", "lnN", [ ("DY", DY_syst)] ))
+				systematics.append( ("Signal_syst", "lnN", [ (sig_name, sig_syst )]))
+				systematics.append( ("TTBar_syst", "lnN", [ ("TTBar", TTBar_syst)] ))
+				systematics.append( ("DY_syst", "lnN", [ ("DY", DY_syst)] ))
+				statematics.append( ("Signal_stat", "lnN", [ (sig_name, sig_stat )]))
+				statematics.append( ("TTBar_stat", "lnN", [ ("TTBar", TTBar_stat)] ))
+				statematics.append( ("DY_stat", "lnN", [ ("DY", DY_stat)] ))
 			systematics_list.append(systematics)
 		except IOError:
 			print mass, "not found"
@@ -68,6 +73,6 @@ for channel in ["ee"]:
 		nBG = sum(bg[i])
 
 		datacard = "WR%sjj_MASS%04d" % (channel,MWR[i])
-		datacard_file = args.outdir + "/datacards/" + datacard + ".txt"
+		datacard_file = args.outdir + "/" + datacard + ".txt"
 		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])
