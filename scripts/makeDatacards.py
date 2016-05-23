@@ -4,7 +4,7 @@ import ExoAnalysis.cmsWR.cross_sections as xs
 import argparse
 
 parser = argparse.ArgumentParser(description='Make datacards')
-parser.add_argument('--no-syst', dest='nosyst', action='store_false',
+parser.add_argument('--no-syst', dest='nosyst', action='store_true',
 		help='do not write systematics to datacards')
 parser.add_argument('-d', '--dir', dest='basedir',
 		default="./",
@@ -38,8 +38,6 @@ for channel in ["ee","mumu"]:
 			if unscale_by_xs:
 				uns = .001/xs.WR_jj[channel][mass]
 				signalNevents *= uns
-				sig_syst *= uns
-				sig_stat *= uns
 
 			TTBar, TTBar_syst, TTBar_stat = minitrees.getNEvents(mass, channel, "TT")
 			minitrees.setTag("_withMllWeight")
@@ -52,13 +50,13 @@ for channel in ["ee","mumu"]:
 
 			#TODO: add Lumi uncertainty and others
 			#systematics.append( ("", "", [ (sig_name, sig_syst )]))
+			print "nosyst", args.nosyst
 			if not args.nosyst:
 				systematics.append( ("Signal_syst", "lnN", [ (sig_name, sig_syst )]))
 				systematics.append( ("TTBar_syst", "lnN", [ ("TTBar", TTBar_syst)] ))
 				systematics.append( ("DY_syst", "lnN", [ ("DY", DY_syst)] ))
-				statematics.append( ("Signal_stat", "lnN", [ (sig_name, sig_stat )]))
-				statematics.append( ("TTBar_stat", "lnN", [ ("TTBar", TTBar_stat)] ))
-				statematics.append( ("DY_stat", "lnN", [ ("DY", DY_stat)] ))
+				systematics.append( ("TTBar_stat", "lnN", [ ("TTBar", TTBar_stat)] ))
+				systematics.append( ("DY_stat", "lnN", [ ("DY", DY_stat)] ))
 			systematics_list.append(systematics)
 		except IOError:
 			print mass, "not found"
@@ -67,6 +65,7 @@ for channel in ["ee","mumu"]:
 
 	for i in range(len(MWR)):
 		print MWR[i], signal[i], sum(bg[i])
+		print "syst", len(systematics_list[i])
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
