@@ -211,6 +211,7 @@ int main(int ac, char* av[])
 	bool debug;
 	bool isTagAndProbe, isLowDiLepton, saveToys, ignoreDyScaleFactors;
 	int nStatToys;
+	int signalN;
 	int seed;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
@@ -233,6 +234,7 @@ int main(int ac, char* av[])
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
 	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
+	("signalN", po::value<int>(&signalN)->default_value(0), "throw N toys for stat uncertainty.")
 	;
 
 	po::variables_map vm;
@@ -285,10 +287,15 @@ int main(int ac, char* av[])
 	unsigned int msize = modes.size();
 	modes.erase( std::remove( modes.begin(), modes.end(), "signal" ), modes.end() );
 	if(modes.size() != msize) {
+		int di = 0;
 		for(std::string datasetName : myReader.getDatasetNames())
 		{
 			if(datasetName.find("WRto" + channel_str + "JJ_") != _ENDSTRING) 
-				modes.push_back(datasetName);
+			{
+				di++;
+				if(!signalN || signalN == di)
+					modes.push_back(datasetName);
+			}
 		}
 	}
 	for(auto s : modes) {
