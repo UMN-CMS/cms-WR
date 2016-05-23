@@ -62,16 +62,18 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 	return signal_rate, tuple(bg_rates.split())
 
 class miniTreeInterface:
-	chnlName = {"ee":"EE","mumu":"MuMu"}
+	chnlName = {"ee":"EE","mumu":"MuMu", "emu":"EMu"}
 	def __init__(self,
-			base="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/forPeterRootFiles/",
-			tag = "noMllAndZptWeights", ):
+			base="./",
+			tag = "",
+			emufilename = "flavor_fits.root",
+			):
 
 		if tag: tag = "_" + tag
 		self.filefmt_dict = {"base":base, "tag":tag}
-		self.filefmt = "{base}/selected_tree_{mode}_signal_{channel}{chnlName}{tag}.root"
+		self.filefmt = "{base}/selected_tree_{mode}_{minitreename}{chnlName}{tag}.root"
 
-		emufile = r.TFile.Open("flavor_fits.root")
+		emufile = r.TFile.Open(emufilename)
 		if emufile:
 			f_EE = emufile.Get("f_EE")
 			f_MuMu = emufile.Get("f_MuMu")
@@ -83,44 +85,108 @@ class miniTreeInterface:
 					"ee": f_EE.GetParError(1),
 					"mumu": f_MuMu.GetParError(1),
 					}
+		else:
+			self.tt_emu_ratio = {}
+		self.masses = []
+		self.results = {}
 
 	def getNEvents(self, MWR, channel, process):
+		""" returns mean, syst, stat """
+		key = channel + process
+		if "signal" == process:
+			key += str(MWR)
+
 		MWR = int(MWR)
+		f = self.OpenFile(channel, process, MWR)
+		if not self.masses: self.GetMasses(f)
+
+		mass_i = self.masses.index(MWR)
+
+		self.ProcessFile(key, f)
+
+		mean =     self.results[key]["syst"]["mean"][mass_i]
+		syst = 1 + self.results[key]["syst"]["std"] [mass_i]/mean
+		stat = 1 + self.results[key]["stat"]["std"] [mass_i]/mean
+		return mean, syst, stat
+
+	def getMeanStd(self, tree, fromFit=True):
+		means = np.zeros(len(self.masses))
+		stds = np.zeros(len(self.masses))
+		if fromFit:
+			draw_str = "FitIntegralInRange[%d]*Normalization"
+		else:
+			draw_str = "NEventsInRange[%d]"
+
+		for mass_i in range(len(self.masses)):
+			tree.Draw(draw_str % mass_i,"","goff")
+			h = r.gDirectory.Get("htemp")
+			means[mass_i] = h.GetMean()
+			stds[mass_i] = h.GetStdDev()
+		return means, stds
+
+	def ProcessFile(self, key, f):
+		if key in self.results: return
+
+		tree = f.Get("syst_tree")
+		if not tree or tree.GetEntries() == 0:
+			tree = f.Get("central_value_tree")
+		syst_means, syst_stds = self.getMeanStd(tree, fromFit = bool("TT" in key or "DY" in key)) 
+
+		stat_tree = f.Get("stat_tree")
+		if stat_tree and stat_tree.GetEntries() != 0:
+			stat_means, stat_stds = self.getMeanStd(stat_tree, fromFit = bool("TT" in key or "DY" in key)) 
+		else:
+			stat_means = syst_means*0
+			stat_stds = syst_stds*0
+
+
+
+		if "TT" in key and self.tt_emu_ratio:
+			if "ee" in key: channel = "ee"
+			if "mumu" in key: channel = "mumu"
+			scale = self.tt_emu_ratio[channel]
+			syst_means *= scale
+			syst_stds *= scale
+			stat_means *= scale
+			stat_stds *= scale
+
+		self.results[key] = {
+				"syst": {"mean":syst_means, "std":syst_stds},
+				"stat": {"mean":stat_means, "std":stat_stds},
+				}
+
+
+	def OpenFile(self, channel, process, MWR):
 		if process == "signal":
 			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
-		elif "TT" in process or "DY" in process:
+			minitreename = "signal_" + channel
+		elif "TT" in process:
+			channel = "emu"
+			mode = "data"
+			minitreename = "flavoursideband"
+		elif "DY" in process:
 			mode = process
+			minitreename = "signal_" + channel
 		else:
 			return None
 
-		self.filefmt_dict["channel"] = channel
+		self.filefmt_dict["minitreename"] = minitreename
 		self.filefmt_dict["chnlName"] = self.chnlName[channel]
 		self.filefmt_dict["mode"] = mode
 
 		filename = self.filefmt.format(**self.filefmt_dict)
+		print "Opening File ", filename
 		f = r.TFile.Open(filename)
 		if not f: raise IOError
+		return f
 
-
+	def GetMasses(self,f):
 		masses = r.std.vector(int)()
 		f.GetObject("signal_mass",masses)
-		masses = [m for m in masses]
-		mass_i = masses.index(int(MWR))
-		tree = f.Get("tf1")
-		if "TT" in process or "DY" in process:
-			num = np.array([event.FitIntegralInRange[mass_i]*event.Normalization for event in tree])
-		else:
-			num = np.array([event.NEventsInRange[mass_i] for event in tree])
-
-		mean = np.mean(num)
-		std = np.std(num)
-		if "TT" in process:
-			scale = self.tt_emu_ratio[channel]
-			mean *= scale
-			std *= scale
-
-		syst = 1 + std/mean
-		return mean, syst
+		self.masses = [m for m in masses]
+	
+	def setTag(self, tag):
+		self.filefmt_dict["tag"] = tag
 
 ##
 # @brief calls and parses command for `combine'
