@@ -25,8 +25,7 @@ minitrees = combineTools.miniTreeInterface(
 			)
 
 unscale_by_xs = True
-#for channel in ["ee","mumu"]:
-for channel in ["ee"]:
+for channel in ["ee","mumu"]:
 	sig_name = "WR_" + channel + "jj"
 	MWR = []
 	signal = []
