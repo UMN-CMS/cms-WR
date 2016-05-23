@@ -99,14 +99,15 @@ do
 
 	if [ -z "${datasetName}" -o "${dataset}" == "-" ];then continue; fi
 	if [ -n "${DATASETNAME}" -a "${datasetName}" != "${DATASETNAME}" ];then continue; fi
-
+#	echo $datasetName $DATASETNAME
+#	continue
 	UI_WORKING_DIR=crab/skims/crab_skims_${datasetName}${skimProductionTAG}
 
 	setStoragePath caf $SCHEDULER
 
 #	STORAGE_ELEMENT=caf.cern.ch
 #	STORAGE_PATH=root://eoscms//eos/cms/store
-	USER_REMOTE_DIR=/user/shervin/skims/${datasetName}${skimProductionTAG}/
+	USER_REMOTE_DIR=/caf/user/shervin/skims/${datasetName}${skimProductionTAG}/
 
 	OUTFILES=${datasetName}.root
 
