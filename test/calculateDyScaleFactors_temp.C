@@ -66,11 +66,13 @@ void calculateDyScaleFactors()
 
 	//chain_DYPowhegInclEE->Add(dir+"selected_tree_DYPOWINCL_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMAD_dytagandprobeEE"+mcFileTag+".root");
+	//chain_DYMadInclEE->Add(dir+"selected_tree_DYMAD_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADHT_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
 	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMAD_dytagandprobeMuMu"+mcFileTag+".root");
+	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMAD_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADHT_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_dataMuMu->Add(dir+"selected_tree_data_dytagandprobeMuMu"+dataFileTag+".root");
 
@@ -205,14 +207,16 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);
 		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << std::endl;
 		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << std::endl;
-		writeToDyFile << channel << "\t" << "MAD\t"<< DYMadInclSf << std::endl;
+		//writeToDyFile << channel << "\t" << "MAD\t"<< DYMadInclSf << std::endl;
+		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << std::endl;
 		writeToDyFile.close();
 	}
 	if(writeAction == 0){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::app);
 		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << std::endl;
 		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << std::endl;
-		writeToDyFile << channel << "\t" << "MAD\t"<< DYMadInclSf << std::endl;
+		//writeToDyFile << channel << "\t" << "MAD\t"<< DYMadInclSf << std::endl;
+		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << std::endl;
 		writeToDyFile.close();
 	}
 
@@ -338,7 +342,8 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	gStyle->SetOptStat("eou");
 	TLegend *leg = new TLegend( 0.80, 0.50, 0.98, 0.70 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
+	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
+	leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
 	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
@@ -446,7 +451,9 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
 	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
-	TString fn = fname + cuts;
+	//TString fn = fname + cuts;
+	TString fn = fname + cuts + "_DYMadHTBinned";
+
 
 	mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
 	mycanvas->Print((fn + "_highestZoomRatio.png").Data());

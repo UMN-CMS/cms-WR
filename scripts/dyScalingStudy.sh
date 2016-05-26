@@ -2,7 +2,7 @@
 
 #only use this script AFTER the dy scale factors have been calculated and used to reprocess the dytagandprobe minitrees for DY MC and data with analysis.cpp
 initialPtCut=-10
-maxJetPt=11
+maxJetPt=50
 minLeadJetPt=-10
 increment=10
 minSubleadJetPt=-10
