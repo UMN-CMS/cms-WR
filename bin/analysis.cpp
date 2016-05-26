@@ -32,7 +32,7 @@
 #define _ENDSTRING std::string::npos
 //#define DEBUG
 //#define DEBUGG
-//process only 50000 events when DEBUGG is defined
+//process only 100000 events when DEBUGG is defined
 
 /**
 TT
@@ -350,7 +350,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 50000;
+		nEntries = 100000;
 #endif
 
 		TRandom3 Rand;

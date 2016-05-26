@@ -19,9 +19,11 @@ eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
 
 echo "finished checking num entries in minitrees"
 
-#now make and run analysis.cpp #make lib and outputFromAnalysis directories if they don't already exist
+#now make and run analysis.cpp 
+#make lib and outputFromAnalysis directories if they don't already exist
 eval "mkdir -p lib"
 eval "mkdir -p outputFromAnalysis"
+eval "mkdir -p test/validationPlots"
 eval "make"
 
 echo "about to run analysis.cpp to produce plotting trees without MLL weights from dytagandprobe minitrees"
@@ -52,15 +54,15 @@ eval "sed 's@subLeadJetPtCut = SUBJETPT@subLeadJetPtCut = $sjPtCut@' <tempNoSfOn
 eval "sed 's@idealLeadJetPt = 1@idealLeadJetPt = $ljPtCut@' <tempNoSfTwo.C >tempNoSfThree.C"
 eval "sed 's@idealSubleadJetPt = 1@idealSubleadJetPt = $sjPtCut@' <tempNoSfThree.C >tempNoSfFour.C"
 eval "sed 's@useMllReweighted = true@useMllReweighted = false@' <tempNoSfFour.C >calculateDyScaleFactors.C"
-eval "root -l -b runCalculateDyScaleFactors.C"
+eval "root -l -b -q runCalculateDyScaleFactors.C"
 
 rm calculateDyScaleFactors.C tempNoSfOne.C tempNoSfTwo.C tempNoSfThree.C tempNoSfFour.C
-eval "mkdir -p validationPlots"
 eval "mv *.png *.pdf validationPlots/."
 eval "git add ../configs/dyScaleFactors.txt"
 echo "MLL scale factors have been calculated and written to configs/dyScaleFactors.txt"
 eval "cd ../."
 
+echo "now in cmsWR/ dir"
 echo "about to reprocess the minitrees with dy scaling factors"
 
 #W dataset is WJets
@@ -70,9 +72,10 @@ do
 	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors false --isLowDiLepton true --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
 	eval "./bin/analysis --c EE --ignoreDyScaleFactors false --isLowDiLepton true --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
 	eval "./bin/analysis --c EMu --ignoreDyScaleFactors false --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}.txt &"
+	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors false --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuSignal_${sidebandDatasetNames[$r]}.txt &"
+	eval "./bin/analysis --c EE --ignoreDyScaleFactors false --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEESignal_${sidebandDatasetNames[$r]}.txt &"
 done
 
-tAndPdatasetNames=('data' 'DYMAD' 'DYPOWHEG' 'DYAMC')
 for r in ${!tAndPdatasetNames[*]}
 do
 	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors false --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkMuMuDYTandP_${tAndPdatasetNames[$r]}.txt &"
@@ -93,11 +96,15 @@ done
 
 echo "all analysis processes are finished"
 
+#run validation of fits which were done in analysis.cpp
+eval "./scripts/validateWrFits.sh"
+
 #now make duplicates of the plotting macros to make MuMu, EE, and EMu plots
 #and run the plotting macros
 #one plotting macro is used for DYTagAndProbe, which makes plots with data overlaid onto multiple curves from different DY MC samples
 #the other plotting macro is used for the flavor and low dilepton mass sidebands, which show data overlaid on STACKED backgrounds
 eval "cd test"
+echo "now in cmsWR/test/ dir"
 eval "sed 's@MuMu@EE@g' combinedMiniPlotterForDYTandPMuMu.C > combinedMiniPlotterForDYTandPEE.C"
 eval "sed 's@MuMu@EE@g' runCombinedMiniPlotterForDYTandPMuMu.C > runCombinedMiniPlotterForDYTandPEE.C"
 eval "sed 's@MuMu@EE@g' combinedMiniPlotterMuMu.C > combinedMiniPlotterEE.C"
@@ -114,11 +121,11 @@ eval "git log -1 | grep commit | cut -d ' ' -f 2 >> validationPlots/ZPeakRegionI
 
 eval "cp ../configs/miniTreeEntries.dat validationPlots/."
 eval "cp ../configs/dyScaleFactors.txt validationPlots/."
-eval "root -l -b runCombinedMiniPlotterForDYTandPMuMu.C"
-eval "root -l -b runCombinedMiniPlotterForDYTandPEE.C"
-eval "root -l -b runCombinedMiniPlotterMuMu.C"
-eval "root -l -b runCombinedMiniPlotterEE.C"
-eval "root -l -b runCombinedMiniPlotterEMu.C"
+eval "root -l -b -q runCombinedMiniPlotterForDYTandPMuMu.C"
+eval "root -l -b -q runCombinedMiniPlotterForDYTandPEE.C"
+eval "root -l -b -q runCombinedMiniPlotterMuMu.C"
+eval "root -l -b -q runCombinedMiniPlotterEE.C"
+eval "root -l -b -q runCombinedMiniPlotterEMu.C"
 eval "cp validationPlots/*.txt ../configs/."
 eval "git add ../configs/ZPeakRegionIntegrals.txt ../configs/miniTreeEntries.dat"
 rm runCombinedMiniPlotterForDYTandPEE.C runCombinedMiniPlotterEE.C runCombinedMiniPlotterEMu.C
@@ -127,10 +134,14 @@ rm combinedMiniPlotterForDYTandPEE_C*
 rm combinedMiniPlotterEE_C*
 rm combinedMiniPlotterEMu_C*
 
+
 eval "cd ../."
+echo "now in cmsWR/ dir"
 eval "./scripts/dyScalingStudy.sh"
 eval "cd test/"
+echo "now in cmsWR/test/ dir"
 eval "mv *.png *.pdf validationPlots/."
 eval "cd ../."
+echo "now in cmsWR/ dir"
 eval "git commit -m 'finished running validation and committing ZPeakRegionIntegrals.txt, miniTreeEntries.dat and dyScaleFactors.txt in configs dir' "
 
