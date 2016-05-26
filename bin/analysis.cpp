@@ -530,7 +530,7 @@ int main(int ac, char* av[])
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				}
 
-				if(selEvent.isPassingLooseCuts(channel) && loop_one) {
+				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 
@@ -602,9 +602,11 @@ int main(int ac, char* av[])
 			// Count number of events in each mass range to store in tree.
 			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
+			double error = 0;
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
 				auto range = mass_cut[mass_vec.at(mass_i)];
-				result.events_in_range[mass_i] = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				result.events_in_range[mass_i] = hWR_mass->IntegralAndError(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second), error);
+				result.error_in_range[mass_i] = float(error);
 			}
 			delete hWR_mass;
 

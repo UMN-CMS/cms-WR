@@ -42,7 +42,7 @@ for channel in ["ee","mumu"]:
 
 			TTBar, TTBar_syst, TTBar_stat = minitrees.getNEvents(mass, channel, "TT")
 			minitrees.setTag("_withMllWeight")
-			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYPOWHEG")
+			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYAMC")
 			minitrees.setTag("")
 
 			MWR.append(mass)
