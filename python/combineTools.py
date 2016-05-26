@@ -67,8 +67,10 @@ class miniTreeInterface:
 			base="./",
 			tag = "",
 			emufilename = "flavor_fits.root",
+			makeplots = False,
 			):
 
+		self.makeplots = makeplots
 		if tag: tag = "_" + tag
 		self.filefmt_dict = {"base":base, "tag":tag}
 		self.filefmt = "{base}/selected_tree_{mode}_{minitreename}{chnlName}{tag}.root"
@@ -117,16 +119,28 @@ class miniTreeInterface:
 		else:
 			draw_str = "NEventsInRange[%d]"
 
+		if self.makeplots: c = r.TCanvas("c","c",600,600)
 		for mass_i in range(len(self.masses)):
+			ms = str(self.masses[mass_i])
+			if "signal" in self.currentkey and ms not in self.currentkey: continue
+
 			tree.Draw(draw_str % mass_i,"","goff")
 			h = r.gDirectory.Get("htemp")
 			means[mass_i] = h.GetMean()
 			stds[mass_i] = h.GetStdDev()
+
+			if self.makeplots:
+				c.SetLogy()
+				h.SetTitle(self.currentkey + tree.GetName() + " Mass " + ms)
+				h.Draw()
+				c.SaveAs("plots/" + self.currentkey  + tree.GetName() + "_mass" + ms + ".png")
+
 		return means, stds
 
 	def ProcessFile(self, key, f):
 		if key in self.results: return
 
+		self.currentkey = key
 		tree = f.Get("syst_tree")
 		if not tree or tree.GetEntries() == 0:
 			tree = f.Get("central_value_tree")

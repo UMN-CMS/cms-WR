@@ -22,6 +22,7 @@ args = parser.parse_args()
 minitrees = combineTools.miniTreeInterface(
 			base=args.basedir,
 			tag =args.tag,
+			makeplots=True
 			)
 
 unscale_by_xs = True
@@ -41,7 +42,7 @@ for channel in ["ee","mumu"]:
 
 			TTBar, TTBar_syst, TTBar_stat = minitrees.getNEvents(mass, channel, "TT")
 			minitrees.setTag("_withMllWeight")
-			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYAMC")
+			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYPOWHEG")
 			minitrees.setTag("")
 
 			MWR.append(mass)
