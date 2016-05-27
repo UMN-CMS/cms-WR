@@ -496,6 +496,7 @@ int main(int ac, char* av[])
 
 					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
 
+
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 
@@ -545,7 +546,6 @@ int main(int ac, char* av[])
 			permanentWeightedDataSet->Print();
 
 			if(mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) {
-
 				assert(permanentWeightedDataSet->sumEntries() > 0);
 				Fits::expPower.setVal(-0.004);
 				RooFitResult * tempFitRslt = NULL;
