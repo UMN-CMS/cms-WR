@@ -1,0 +1,27 @@
+/**
+\page _TTBARBKG Estimate of the TTbar background from data
+
+To estimate ttBar in the EE and MuMu signal regions using real data, two scale factors must be computed using TTBar MC.  The two scale factors, EE/EMu and MuMu/EMu, represent
+the ratios M_EEJJ/M_EMuJJ and M_MuMuJJ/M_EMuJJ taken from TTBar MC events which have passed all signal region selection cuts.  To calculate these ratios and save them
+to a root file named flavor_fits.root, run these commands in cmsWR/.:
+
+\verbatim
+make
+./bin/analysis -m TT -c MuMu >& ttMuMuSignalRegion.txt &
+./bin/analysis -m TT -c EE >& ttEESignalRegion.txt &
+./bin/analysis -m TT -c EMu >& ttEMuSignalRegion.txt &
+cd test/
+root -l -b runFlavorSideband.C
+\endverbatim
+
+the scale factors are determined by dividing two M_LLJJ histos (like M_EEJJ/M_EMuJJ), and fitting a linear function [0]*x + [1] to the resulting divided histogram.
+The scale factor is the value [1] after the fit.  To extract these scale factors from the file flavor_fits.root, the file should be opened, and these commands should
+be executed:
+
+\verbatim f_EE->GetParameter(1)\endverbatim returns the EE/EMu scale factor
+\verbatim f_EE->GetParError(1)\endverbatim  returns the error on the EE/EMu scale factor
+analogous calls to obtain the MuMu/EMu scale factor.
+
+The EE/EMu scale factor should be between 0.4 and 0.5, and the MuMu/EMu scale factor should be between 0.5 and 0.65.
+ 
+*/
