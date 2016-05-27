@@ -53,7 +53,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
 	}
 	)
 	{
@@ -104,6 +104,11 @@ public:
 				TTchainNames.push_back("DYJets_madgraph");
 			} else if(mode.find("POWINCL") != _ENDSTRING && channel == Selector::EE) {
 				TTchainNames.push_back("DYToEE_powheg");
+			} else if(mode.find("MADHT") != _ENDSTRING) {
+				TTchainNames.push_back("DYJets_madgraph_ht100to200");
+				TTchainNames.push_back("DYJets_madgraph_ht200to400");
+				TTchainNames.push_back("DYJets_madgraph_ht400to600");
+				TTchainNames.push_back("DYJets_madgraph_ht600toInf");
 			}
 		} else if(mode == "W") {
 			TTchainNames.push_back("WJetsLNu");

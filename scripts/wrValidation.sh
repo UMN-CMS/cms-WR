@@ -26,7 +26,7 @@ eval "make"
 
 echo "about to run analysis.cpp to produce plotting trees without MLL weights from dytagandprobe minitrees"
 
-tAndPdatasetNames=('data' 'DYMAD' 'DYPOWHEG' 'DYAMC')
+tAndPdatasetNames=('data' 'DYPOWHEG' 'DYAMC' 'DYMADHT' 'DYMAD')
 for r in ${!tAndPdatasetNames[*]}
 do
 	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors true --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkMuMuDYTandPNoMllSf_${tAndPdatasetNames[$r]}.txt &"
@@ -64,7 +64,7 @@ eval "cd ../."
 echo "about to reprocess the minitrees with dy scaling factors"
 
 #W dataset is WJets
-sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMAD' 'DYPOWHEG' 'DYAMC')
+sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMADHT' 'DYPOWHEG' 'DYAMC' 'DYMAD')
 for r in ${!sidebandDatasetNames[*]}
 do
 	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors false --isLowDiLepton true --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
@@ -72,7 +72,6 @@ do
 	eval "./bin/analysis --c EMu --ignoreDyScaleFactors false --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}.txt &"
 done
 
-tAndPdatasetNames=('data' 'DYMAD' 'DYPOWHEG' 'DYAMC')
 for r in ${!tAndPdatasetNames[*]}
 do
 	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors false --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkMuMuDYTandP_${tAndPdatasetNames[$r]}.txt &"
