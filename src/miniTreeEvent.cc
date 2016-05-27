@@ -63,7 +63,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	weight = otherEvent.weight;
 	PU_reweight = otherEvent.PU_reweight;
 
-
+	sprintf(datasetName, "%s", otherEvent.datasetName);
 }
 
 

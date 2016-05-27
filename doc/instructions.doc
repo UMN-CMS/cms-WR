@@ -9,17 +9,21 @@ scram project CMSSW_7_4_15_patch1
 cd CMSSW_7_4_15_patch1/src/
 cmsenv 
 git cms-init
+git cms-merge-topic shervin86:WR7415patch1
+git cms-addpkg FWCore/ParameterSet
 mkdir ExoAnalysis/
 cd ExoAnalysis/
 git clone git@github.com:UMN-CMS/cms-WR.git cmsWR
 git clone https://github.com/ECALELFS/Utilities.git Utilities/scripts/
+git clone -b WR7415patch1 https://github.com/ECALELFS/ECALELF.git Calibration
 cd ../
-git cms-addpkg RecoEgamma/ElectronIdentification
-git apply ExoAnalysis/cmsWR/test/HEEP_Et.patch
-scram b
-cd cmsWR/
+#git cms-addpkg RecoEgamma/ElectronIdentification
+#git apply ExoAnalysis/cmsWR/test/HEEP_Et.patch
+scram b -j16
+cd ExoAnalysis/cmsWR/
 mkdir data/
 cp /afs/cern.ch/user/s/shervin/public/WR/*.root data/
+make
 \endverbatim
 
 Check if you have astyle command installed:
