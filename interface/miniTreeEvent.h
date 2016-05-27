@@ -43,6 +43,7 @@ public:
 	Float_t PU_reweight;
 
 	miniTreeEvent(); ///< default contructor (empty)
+	~miniTreeEvent(); ///< default contructor (empty)
 	miniTreeEvent(const miniTreeEvent& otherEvent);
 
 	void clear();

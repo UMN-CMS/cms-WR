@@ -111,7 +111,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
-    if(myEvent->WR_mass > 600 && myEvent->dilepton_mass > 200) 
+    if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
 }
