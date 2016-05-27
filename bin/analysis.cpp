@@ -260,13 +260,17 @@ int main(int ac, char* av[])
 		return 1;
 	}
 
+	configReader myReader("configs/2015-v1.conf");
+	if(debug) std::cout << myReader << std::endl;
 
 	std::cout << "[INFO] Selected modes: \n";
 	unsigned int msize = modes.size();
 	modes.erase( std::remove( modes.begin(), modes.end(), "signal" ), modes.end() );
 	if(modes.size() != msize) {
-		for(int i = 0; i < 27; i++) {
-			modes.push_back("WRto" + channel_str + "JJ_" + std::to_string(800 + 200 * i) + "_" + std::to_string(400 + 100 * i));
+		for(std::string datasetName : myReader.getDatasetNames())
+		{
+			if(datasetName.find("WRto" + channel_str + "JJ_") != _ENDSTRING) 
+				modes.push_back(datasetName);
 		}
 	}
 	for(auto s : modes) {
@@ -279,11 +283,7 @@ int main(int ac, char* av[])
 	std::cout << "******************************* Analysis ******************************" << std::endl;
 	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
 
-	configReader myReader("configs/2015-v1.conf");
 	myReader.setupDyMllScaleFactor("configs/dyScaleFactors.txt");
-
-
-	if(debug) std::cout << myReader << std::endl;
 
 
 	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
