@@ -6,6 +6,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Make datacards')
 parser.add_argument('--no-syst', dest='nosyst', action='store_true',
 		help='do not write systematics to datacards')
+parser.add_argument('--draw-plots', dest='drawplots', action='store_true',
+		help='draw plots')
 parser.add_argument('-d', '--dir', dest='basedir',
 		default="./",
 		help='base dir for analysis tree files')
@@ -22,7 +24,7 @@ args = parser.parse_args()
 minitrees = combineTools.miniTreeInterface(
 			base=args.basedir,
 			tag =args.tag,
-			makeplots=True
+			makeplots=args.drawplots
 			)
 
 unscale_by_xs = True
@@ -49,14 +51,18 @@ for channel in ["ee","mumu"]:
 			signal.append(signalNevents)
 			bg.append([TTBar, DY])
 
-			#TODO: add Lumi uncertainty and others
-			#systematics.append( ("", "", [ (sig_name, sig_syst )]))
-			print "nosyst", args.nosyst
+			# Systematics format: 
+			# (syst_name, syst_type, [ ( channel1, error), (channel2, error), ... ])
 			if not args.nosyst:
+				systematics.append( ("lumi", "lnN", [ (n, 1.027 ) for n in [sig_name, "TTBar","DY"]]))
+				systematics.append( ("TT_ratio", "lnN", [("TTBar", minitrees.getTTBarUncertainty(channel)]))
+				# TODO: NEED DY_SF unc
+				systematics.append( ("DY_SF", "lnN", [("DY", 1.0)]))
 				systematics.append( ("Signal_syst", "lnN", [ (sig_name, sig_syst )]))
+				systematics.append( ("Signal_stat", "lnN", [ (sig_name, sig_stat )]))
 				systematics.append( ("TTBar_syst", "lnN", [ ("TTBar", TTBar_syst)] ))
-				systematics.append( ("DY_syst", "lnN", [ ("DY", DY_syst)] ))
 				systematics.append( ("TTBar_stat", "lnN", [ ("TTBar", TTBar_stat)] ))
+				systematics.append( ("DY_syst", "lnN", [ ("DY", DY_syst)] ))
 				systematics.append( ("DY_stat", "lnN", [ ("DY", DY_stat)] ))
 			systematics_list.append(systematics)
 		except IOError:
@@ -66,7 +72,6 @@ for channel in ["ee","mumu"]:
 
 	for i in range(len(MWR)):
 		print MWR[i], signal[i], sum(bg[i])
-		print "syst", len(systematics_list[i])
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
