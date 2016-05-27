@@ -92,6 +92,9 @@ class miniTreeInterface:
 		self.masses = []
 		self.results = {}
 
+	def getTTBarUncertainty(self, channel):
+		return self.tt_emu_error[channel]
+
 	def getNEvents(self, MWR, channel, process):
 		""" returns mean, syst, stat """
 		key = channel + process
@@ -130,6 +133,7 @@ class miniTreeInterface:
 			stds[mass_i] = h.GetStdDev()
 
 			if self.makeplots:
+				r.gStyle.SetOptStat(1001110)
 				c.SetLogy()
 				h.SetTitle(self.currentkey + tree.GetName() + " Mass " + ms)
 				h.Draw()
