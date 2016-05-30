@@ -4,72 +4,75 @@
 ljPtCut=40
 sjPtCut=40
 
-#cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
-eval "rm -r test/validationPlots/"
+tAndPdatasetNames=('data' 'DYPOWHEG' 'DYAMC' 'DYMADHT')
+sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMADHT' 'DYPOWHEG' 'DYAMC')
 
-echo -n '#' > configs/miniTreeEntries.dat
-echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> configs/miniTreeEntries.dat
-echo -n '#' >> configs/miniTreeEntries.dat
-eval "git log -1 | grep commit | cut -d ' ' -f 2 >> configs/miniTreeEntries.dat"
+# #cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
+# eval "rm -r test/validationPlots/"
 
-#this next line removes the bizarre ^[[?1034h code which is written to the first line of a file
-#when bash is used to redirect the output of a python script to a file
-eval "TERM=linux"
-eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
+# echo -n '#' > configs/miniTreeEntries.dat
+# echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> configs/miniTreeEntries.dat
+# echo -n '#' >> configs/miniTreeEntries.dat
+# eval "git log -1 | grep commit | cut -d ' ' -f 2 >> configs/miniTreeEntries.dat"
 
-echo "finished checking num entries in minitrees"
+# #this next line removes the bizarre ^[[?1034h code which is written to the first line of a file
+# #when bash is used to redirect the output of a python script to a file
+# eval "TERM=linux"
+# eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
 
-#now make and run analysis.cpp #make lib and outputFromAnalysis directories if they don't already exist
+# echo "finished checking num entries in minitrees"
+
+# #now make and run analysis.cpp #make lib and outputFromAnalysis directories if they don't already exist
 eval "mkdir -p lib"
 eval "mkdir -p outputFromAnalysis"
 eval "make"
 
-echo "about to run analysis.cpp to produce plotting trees without MLL weights from dytagandprobe minitrees"
+# echo "about to run analysis.cpp to produce plotting trees without MLL weights from dytagandprobe minitrees"
 
-tAndPdatasetNames=('data' 'DYPOWHEG' 'DYAMC' 'DYMADHT' 'DYMAD')
-for r in ${!tAndPdatasetNames[*]}
-do
-	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors true --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkMuMuDYTandPNoMllSf_${tAndPdatasetNames[$r]}.txt &"
-	eval "./bin/analysis --c EE --ignoreDyScaleFactors true --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkEEDYTandPNoMllSf_${tAndPdatasetNames[$r]}.txt &"
-done
 
-#delay this script until all of the dytagandprobe analysis processes are finished, then calculate the dy scaling factors
-while :
-do
-	x=1
-	if pgrep "[a]nalysis" > /dev/null
-	then
-		y=1
-	else
-		break
-	fi
-done
+# for r in ${!tAndPdatasetNames[*]}
+# do
+# 	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors true --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkMuMuDYTandPNoMllSf_${tAndPdatasetNames[$r]}.txt &"
+# 	eval "./bin/analysis --c EE --ignoreDyScaleFactors true --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkEEDYTandPNoMllSf_${tAndPdatasetNames[$r]}.txt &"
+# done
 
-echo "all dytagandprobe analysis processes are finished   starting to calculate dy scaling factors"
+# wait
+# #delay this script until all of the dytagandprobe analysis processes are finished, then calculate the dy scaling factors
+# while :
+# do
+# 	x=1
+# 	if pgrep "[a]nalysis" > /dev/null
+# 	then
+# 		y=1
+# 	else
+# 		break
+# 	fi
+# done
+
+# echo "all dytagandprobe analysis processes are finished   starting to calculate dy scaling factors"
 eval "cd test"
-eval "sed 's@leadJetPtCut = LEADJETPT@leadJetPtCut = $ljPtCut@' <calculateDyScaleFactors_temp.C >tempNoSfOne.C"
-eval "sed 's@subLeadJetPtCut = SUBJETPT@subLeadJetPtCut = $sjPtCut@' <tempNoSfOne.C >tempNoSfTwo.C"
-eval "sed 's@idealLeadJetPt = 1@idealLeadJetPt = $ljPtCut@' <tempNoSfTwo.C >tempNoSfThree.C"
-eval "sed 's@idealSubleadJetPt = 1@idealSubleadJetPt = $sjPtCut@' <tempNoSfThree.C >tempNoSfFour.C"
-eval "sed 's@useMllReweighted = true@useMllReweighted = false@' <tempNoSfFour.C >calculateDyScaleFactors.C"
-eval "root -l -b runCalculateDyScaleFactors.C"
+# eval "sed 's@leadJetPtCut = LEADJETPT@leadJetPtCut = $ljPtCut@' <calculateDyScaleFactors_temp.C >tempNoSfOne.C"
+# eval "sed 's@subLeadJetPtCut = SUBJETPT@subLeadJetPtCut = $sjPtCut@' <tempNoSfOne.C >tempNoSfTwo.C"
+# eval "sed 's@idealLeadJetPt = 1@idealLeadJetPt = $ljPtCut@' <tempNoSfTwo.C >tempNoSfThree.C"
+# eval "sed 's@idealSubleadJetPt = 1@idealSubleadJetPt = $sjPtCut@' <tempNoSfThree.C >tempNoSfFour.C"
+# eval "sed 's@useMllReweighted = true@useMllReweighted = false@' <tempNoSfFour.C >calculateDyScaleFactors.C"
+# eval "root -l -b runCalculateDyScaleFactors.C"
 
-rm calculateDyScaleFactors.C tempNoSfOne.C tempNoSfTwo.C tempNoSfThree.C tempNoSfFour.C
+# rm calculateDyScaleFactors.C tempNoSfOne.C tempNoSfTwo.C tempNoSfThree.C tempNoSfFour.C
 eval "mkdir -p validationPlots"
-eval "mv *.png *.pdf validationPlots/."
-eval "git add ../configs/dyScaleFactors.txt"
-echo "MLL scale factors have been calculated and written to configs/dyScaleFactors.txt"
+# eval "mv *.png *.pdf validationPlots/."
+# eval "git add ../configs/dyScaleFactors.txt"
+# echo "MLL scale factors have been calculated and written to configs/dyScaleFactors.txt"
 eval "cd ../."
 
 echo "about to reprocess the minitrees with dy scaling factors"
 
 #W dataset is WJets
-sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMADHT' 'DYPOWHEG' 'DYAMC' 'DYMAD')
 for r in ${!sidebandDatasetNames[*]}
 do
-	eval "./bin/analysis --c MuMu --ignoreDyScaleFactors false --isLowDiLepton true --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
-	eval "./bin/analysis --c EE --ignoreDyScaleFactors false --isLowDiLepton true --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
-	eval "./bin/analysis --c EMu --ignoreDyScaleFactors false --m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}.txt &"
+	eval "./bin/analysis -c MuMu --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
+	eval "./bin/analysis -c EE --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
+	eval "./bin/analysis -c EMu --ignoreDyScaleFactors false -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}.txt &"
 done
 
 for r in ${!tAndPdatasetNames[*]}
@@ -78,6 +81,7 @@ do
 	eval "./bin/analysis --c EE --ignoreDyScaleFactors false --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkEEDYTandP_${tAndPdatasetNames[$r]}.txt &"
 done
 
+wait 
 #delay this script until all of the analysis processes are finished
 while :
 do
