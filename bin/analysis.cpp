@@ -403,7 +403,7 @@ int main(int ac, char* av[])
 			}
 			c->GetEntry(ev);
 			Selector sel(myEvent);
-			if((isTagAndProbe==true && (myEvent.electrons_p4->size()>1 || myEvent.muons_p4->size()>1) )|| sel.isPassingPreselect()){
+			if((isTagAndProbe == true && (myEvent.electrons_p4->size() > 1 || myEvent.muons_p4->size() > 1) ) || sel.isPassingPreselect()) {
 				unsigned int nEle = myEvent.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
@@ -500,7 +500,7 @@ int main(int ac, char* av[])
 #endif
 						p4 *= (*myEvent.electron_scale)[iEle];
 						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
-						if(Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
+						if(Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
 #ifdef DEBUG
 						std::cout << p4.Et() << "\t" << (*myEvent.electron_scale)[iEle] << std::endl;
 #endif
