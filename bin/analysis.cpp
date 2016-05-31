@@ -33,8 +33,8 @@
 
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
-//#define DEBUG
-//#define DEBUGG
+#define DEBUG
+#define DEBUGG
 //process only 50000 events when DEBUGG is defined
 
 /**
@@ -427,6 +427,11 @@ int main(int ac, char* av[])
 		bool loop_one = true;
 		int seed_i = seed + 1;
 
+		// electron systematics!
+		bool Flag_Smear_Electron_Scale = false;
+		for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
+			if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
+		}
 
 
 		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
@@ -457,6 +462,9 @@ int main(int ac, char* av[])
 
 			unsigned long long int ev = 0;
 
+			//------------------------------ scale random numbers: one set of numbers per toy, common to all events and electrons
+			// it's the Random_Numbers_for_Systematics_Up_Down[2]
+
 			for(auto myEvent : myEventVector) {
 
 
@@ -481,11 +489,6 @@ int main(int ac, char* av[])
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
-				// electron systematics!
-				bool Flag_Smear_Electron_Scale = false;
-				for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
-					if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
-				}
 
 				unsigned int nEle = myEvent.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
@@ -496,7 +499,8 @@ int main(int ac, char* av[])
 						std::cout << p4.Et() << "\t";
 #endif
 						p4 *= (*myEvent.electron_scale)[iEle];
-//						if(Flag_Smear_Electron_Scale) p4 *= Rand.Gaus(0., 1.) * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
+						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
+						if(Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
 #ifdef DEBUG
 						std::cout << p4.Et() << "\t" << (*myEvent.electron_scale)[iEle] << std::endl;
 #endif
@@ -506,7 +510,7 @@ int main(int ac, char* av[])
 #ifdef DEBUG
 						std::cout << p4.Et() << "\t" << 	(*myEvent.electron_smearing)[iEle] << "\t";
 #endif
-						p4 *= Rand.Gaus(0., 1) * (*myEvent.electron_smearing)[iEle];
+						p4 *= Rand.Gaus(1., (*myEvent.electron_smearing)[iEle]);
 #ifdef DEBUG
 						std::cout << p4.Et() << std::endl;
 #endif
