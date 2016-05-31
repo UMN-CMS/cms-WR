@@ -33,8 +33,8 @@
 
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
-#define DEBUG
-#define DEBUGG
+//#define DEBUG
+//#define DEBUGG
 //process only 50000 events when DEBUGG is defined
 
 /**
