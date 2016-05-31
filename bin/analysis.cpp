@@ -240,7 +240,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/76X_16DecRereco_2015_Etunc");
+	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -345,7 +345,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 50000;
+		nEntries = 500;
 #endif
 
 		TRandom3 Rand;
@@ -403,16 +403,29 @@ int main(int ac, char* av[])
 			}
 			c->GetEntry(ev);
 			Selector sel(myEvent);
-			if((isTagAndProbe==true && (myEvent.electrons_p4->size()>1 || myEvent.muons_p4->size()>1) )|| sel.isPassingPreselect()){
+			if((isTagAndProbe == true && (myEvent.electrons_p4->size() > 1 || myEvent.muons_p4->size() > 1) ) || sel.isPassingPreselect()) {
 				unsigned int nEle = myEvent.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
-					if(isData) { //only scales are corrected
-						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
+					if(isData) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0.
+						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
+						//(*myEvent.electron_scale)[iEle] = 1.0;
 						(*myEvent.electron_smearing)[iEle] = 0.;
+						(*myEvent.electron_IDSF_central)[iEle] = 1.0;
+						(*myEvent.electron_IDSF_error)[iEle] = 0.;
+						(*myEvent.electron_RecoSF_central)[iEle] = 1.0;
+						(*myEvent.electron_RecoSF_error)[iEle] = 0.;
+						(*myEvent.electron_HltSF_central)[iEle] = 1.0;
+						(*myEvent.electron_HltSF_error)[iEle] = 0.;
 					} else { // only the smearings are corrected
 						(*myEvent.electron_scale)[iEle] = 1.;
-						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
+						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
+						(*myEvent.electron_IDSF_central)[iEle] = 0.99401;
+						(*myEvent.electron_IDSF_error)[iEle] = 0.00950;
+						(*myEvent.electron_RecoSF_central)[iEle] = 0.98532;
+						(*myEvent.electron_RecoSF_error)[iEle] = 0.00948;
+						(*myEvent.electron_HltSF_central)[iEle] = 0.94667;
+						(*myEvent.electron_HltSF_error)[iEle] = 0.04929;
 					}
 				}
 				myEventVector.push_back(myEvent);
@@ -427,6 +440,11 @@ int main(int ac, char* av[])
 		bool loop_one = true;
 		int seed_i = seed + 1;
 
+		// electron systematics!
+		bool Flag_Smear_Electron_Scale = false;
+		for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
+			if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
+		}
 
 
 		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
@@ -437,7 +455,7 @@ int main(int ac, char* av[])
 			if(loop_one) {
 				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
-				Random_Numbers_for_Systematics_Up_Down[2] = Rand.Gaus(0.0, 1.);// Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Rand.Gaus(0.0, 1.);// Electron Scale(Data)
 				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
@@ -456,6 +474,9 @@ int main(int ac, char* av[])
 			std::cout << "Processing events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
 
 			unsigned long long int ev = 0;
+
+			//------------------------------ scale random numbers: one set of numbers per toy, common to all events and electrons
+			// it's the Random_Numbers_for_Systematics_Up_Down[2]
 
 			for(auto myEvent : myEventVector) {
 
@@ -481,11 +502,6 @@ int main(int ac, char* av[])
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
-				// electron systematics!
-				bool Flag_Smear_Electron_Scale = false;
-				for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
-					if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
-				}
 
 				unsigned int nEle = myEvent.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
@@ -493,22 +509,23 @@ int main(int ac, char* av[])
 
 					if(isData) { //only scales are corrected
 #ifdef DEBUG
-						std::cout << p4.Et() << "\t";
+						std::cout << p4.Et() << "-->";
 #endif
 						p4 *= (*myEvent.electron_scale)[iEle];
-//						if(Flag_Smear_Electron_Scale) p4 *= Rand.Gaus(0., 1.) * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
+						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
+						if(loop_one == false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
 #ifdef DEBUG
-						std::cout << p4.Et() << "\t" << (*myEvent.electron_scale)[iEle] << std::endl;
+						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEvent.electron_r9)[iEle] << "\t" << (*myEvent.electron_scale)[iEle] << "\t" << (eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et())) << std::endl;
 #endif
 					} else { // only the smearings are corrected
-						double r = (Flag_Smear_Electron_Scale) ? Rand.Gaus(0., 1.) : 0;
+						double r = (loop_one == false && Flag_Smear_Electron_Scale) ? Rand.Gaus(0., 1.) : 0;
 						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r);
 #ifdef DEBUG
-						std::cout << p4.Et() << "\t" << 	(*myEvent.electron_smearing)[iEle] << "\t";
+						std::cout << p4.Et() << "-->";
 #endif
-						p4 *= Rand.Gaus(0., 1) * (*myEvent.electron_smearing)[iEle];
+						p4 *= Rand.Gaus(1., (*myEvent.electron_smearing)[iEle]);
 #ifdef DEBUG
-						std::cout << p4.Et() << std::endl;
+						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEvent.electron_r9)[iEle] << "\t" <<	(*myEvent.electron_smearing)[iEle] << "\t" <<  eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0) << "\t" << eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r) << std::endl;
 #endif
 
 					}
