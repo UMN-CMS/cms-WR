@@ -32,6 +32,9 @@
 //bool isReweighted = false;
 bool isReweighted = true;
 Selector::tag_t channel = Selector::EE;
+Float_t maxEtaVal = ETAMAX;
+Float_t minEtaVal = ETAMIN;
+bool requireHighRNine = BINARYRNINE;
 
 /*
  * this macro is designed to read several TChains, representing data and MC, apply lepton and jet kinematic cuts, and plot
@@ -196,8 +199,15 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		if(myEvent->njets < minNJets) continue;
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subleadJetPtCut) continue;
-		if(std::fabs(myEvent->lead_lepton_eta) < ETAUPPERBND && std::fabs(myEvent->lead_lepton_eta) >= ) continue;
+		if(std::fabs(myEvent->lead_lepton_eta) < maxEtaVal && std::fabs(myEvent->lead_lepton_eta) >= minEtaVal ) continue;
 	
+		//requireHighRNine for both leptons
+		if(requireHighRNine){
+			if(myEvent->lead_lepton_r9 < 0.94 || myEvent->sublead_lepton_r9 < 0.94) continue;
+		}
+		else{
+			if(myEvent->lead_lepton_r9 > 0.94 || myEvent->sublead_lepton_r9 > 0.94) continue;
+		}
 		//if(myEvent->lead_jet_pt > 0 && (myEvent->dR_leadlepton_leadjet < 0.4 || myEvent->dR_subleadlepton_leadjet < 0.4) ) continue;
 		//if(myEvent->sublead_jet_pt > 0 && (myEvent->dR_leadlepton_subleadjet < 0.4 || myEvent->dR_subleadlepton_subleadjet < 0.4) ) continue;
 
@@ -385,9 +395,11 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	mycanvas->cd();
 
 	TString fn = "";
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(minLeadJetPt) + "_minSubleadJetPt_" + to_string(minSubleadJetPt) + "_minNJets_" + to_string(minNJets) + "_eleScaleCorrOff";
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(minLeadJetPt) + "_minSubleadJetPt_" + to_string(minSubleadJetPt) + "_minNJets_" + to_string(minNJets) + "_eleScaleCorrOn" + "_minLeptEta_" + to_string(minEtaVal) + "_maxLeptEta_" + to_string(maxEtaVal);
 	if(isReweighted) cuts += "_isReweighted";
 	else cuts += "_isNotReweighted";
+	if(requireHighRNine) cuts += "_requireHighRNine";
+	else cuts += "_requireLowRNine";
 
 	if(channel == Selector::EE)
 		fn = fname + cuts + "_dyTandPEEChannel";
