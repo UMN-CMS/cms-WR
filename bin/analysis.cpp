@@ -409,6 +409,7 @@ int main(int ac, char* av[])
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
 					if(isData) { //only scales are corrected
 						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
+						//(*myEvent.electron_scale)[iEle] = 1.0;
 						(*myEvent.electron_smearing)[iEle] = 0.;
 					} else { // only the smearings are corrected
 						(*myEvent.electron_scale)[iEle] = 1.;
@@ -500,7 +501,7 @@ int main(int ac, char* av[])
 #endif
 						p4 *= (*myEvent.electron_scale)[iEle];
 						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
-						if(loop_one!=false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
+						if(loop_one==false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
 #ifdef DEBUG
 						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEvent.electron_r9)[iEle] << "\t" << (*myEvent.electron_scale)[iEle] << "\t" << (eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et())) << std::endl;
 #endif
