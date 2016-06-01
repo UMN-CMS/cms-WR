@@ -123,7 +123,7 @@ void Selector::Clear()
 bool Selector::isPassingLooseCuts(tag_t tag)
 {
 	_isPassingLooseCuts = false;
-	WR_mass = -1;
+	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
 
 	myJetCollection gJets;
@@ -164,6 +164,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
+		lead_lepton_r9 = electrons[0].r9;
+		sublead_lepton_r9 = electrons[1].r9;
 	} else if(tag == MuMu) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
@@ -175,7 +177,6 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
-
 	} else if(tag == EMu) { // EMuJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 1 || muons.size() < 1) {
@@ -192,6 +193,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
+			lead_lepton_r9 = electrons[0].r9;
 		} else {
 
 			sublead_lepton_p4 = electrons[0].p4;
@@ -199,6 +201,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
+			sublead_lepton_r9 = electrons[0].r9;
 		}
 	}
 
@@ -278,7 +281,7 @@ bool Selector::isPassing(tag_t tag)
 {
 
 	_isPassing = false;
-	WR_mass = -1;
+	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
 
 	myJetCollection gJets;
@@ -337,6 +340,8 @@ bool Selector::isPassing(tag_t tag)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
+		lead_lepton_r9 = electrons[0].r9;
+		sublead_lepton_r9 = electrons[1].r9;
 	} else if(tag == MuMu) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
@@ -365,6 +370,8 @@ bool Selector::isPassing(tag_t tag)
 
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
+
+			lead_lepton_r9 = electrons[0].r9;
 		} else {
 
 			sublead_lepton_p4 = electrons[0].p4;
@@ -372,6 +379,8 @@ bool Selector::isPassing(tag_t tag)
 
 			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
+
+			sublead_lepton_r9 = electrons[0].r9;
 		}
 	}
 
@@ -457,6 +466,8 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
 	tree->Branch("dR_subleadlepton_leadjet", &dR_subleadlepton_leadjet);
 	tree->Branch("dR_subleadlepton_subleadjet", &dR_subleadlepton_subleadjet);
+	tree->Branch("lead_lepton_r9", &lead_lepton_r9);
+	tree->Branch("sublead_lepton_r9", &sublead_lepton_r9);
 
 	tree->Branch("weight", &weight);
 	tree->Branch("WR_mass", &WR_mass);
@@ -488,6 +499,9 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
 	tree->SetBranchAddress("dR_subleadlepton_leadjet", &dR_subleadlepton_leadjet);
 	tree->SetBranchAddress("dR_subleadlepton_subleadjet", &dR_subleadlepton_subleadjet);
+
+	tree->SetBranchAddress("lead_lepton_r9", &lead_lepton_r9);
+	tree->SetBranchAddress("sublead_lepton_r9", &sublead_lepton_r9);
 
 	tree->SetBranchAddress("weight", &weight);
 	tree->SetBranchAddress("WR_mass", &WR_mass);

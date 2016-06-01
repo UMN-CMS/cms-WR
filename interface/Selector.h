@@ -41,6 +41,8 @@ public:
 	Float_t dR_leadlepton_subleadjet;
 	Float_t dR_subleadlepton_leadjet;
 	Float_t dR_subleadlepton_subleadjet;
+	Float_t lead_lepton_r9;
+	Float_t sublead_lepton_r9;
 
 	Int_t nPV;
 	Int_t njets;
