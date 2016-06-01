@@ -200,6 +200,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subleadJetPtCut) continue;
 		if(std::fabs(myEvent->lead_lepton_eta) < maxEtaVal && std::fabs(myEvent->lead_lepton_eta) >= minEtaVal ) continue;
+		if(std::fabs(myEvent->sublead_lepton_eta) < maxEtaVal && std::fabs(myEvent->sublead_lepton_eta) >= minEtaVal ) continue;
 	
 		//requireHighRNine for both leptons
 		if(requireHighRNine){
@@ -404,12 +405,14 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	if(channel == Selector::EE)
 		fn = fname + cuts + "_dyTandPEEChannel";
 
-	mycanvas->Print((fn + ".pdf").Data());
-	mycanvas->Print((fn + ".png").Data());
-	if(fname.EqualTo("Mll") == true) mycanvas->Print((fn + ".root").Data());
-	p1->SetLogy();
-	mycanvas->Print((fn + "_log.pdf").Data());
-	mycanvas->Print((fn + "_log.png").Data());
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("l1_pt") == true || fname.EqualTo("l2_pt") == true){
+		mycanvas->Print((fn + ".pdf").Data());
+		mycanvas->Print((fn + ".png").Data());
+		mycanvas->Print((fn + ".root").Data());
+		p1->SetLogy();
+		mycanvas->Print((fn + "_log.pdf").Data());
+		mycanvas->Print((fn + "_log.png").Data());
+	}
 
 	mycanvas->Close();
 }
