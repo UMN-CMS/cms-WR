@@ -1,7 +1,7 @@
 // #include "ExoAnalysis/cmsWR/interface/AnalysisResult.h"
 #include "../interface/AnalysisResult.h"
 
-AnalysisResult::AnalysisResult()
+AnalysisResult::AnalysisResult() : nparam(0),nmasses(0)
 {
 }
 
