@@ -199,8 +199,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		if(myEvent->njets < minNJets) continue;
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subleadJetPtCut) continue;
-		if(std::fabs(myEvent->lead_lepton_eta) < maxEtaVal && std::fabs(myEvent->lead_lepton_eta) >= minEtaVal ) continue;
-		if(std::fabs(myEvent->sublead_lepton_eta) < maxEtaVal && std::fabs(myEvent->sublead_lepton_eta) >= minEtaVal ) continue;
+		if(std::fabs(myEvent->lead_lepton_eta) > maxEtaVal || std::fabs(myEvent->lead_lepton_eta) < minEtaVal ) continue;
+		if(std::fabs(myEvent->sublead_lepton_eta) > maxEtaVal || std::fabs(myEvent->sublead_lepton_eta) < minEtaVal ) continue;
 	
 		//requireHighRNine for both leptons
 		if(requireHighRNine){

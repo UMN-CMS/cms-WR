@@ -15,13 +15,11 @@ do
 	eval "sed 's@ETAMAX@${etaMaxVals[$i]}@g' tempHighRNine.C > tempHighRNineHighEta.C"
 	eval "sed 's@ETAMIN@${etaMinVals[$i]}@g' tempHighRNineHighEta.C > checkEleScalesSmearings.C"
 	eval "root -l -b -q runCheckEleScalesSmearings.C"
-	wait
 	rm checkEleScalesSmearings.C tempHighRNineHighEta.C
 
 	eval "sed 's@ETAMAX@${etaMaxVals[$i]}@g' tempLowRNine.C > tempLowRNineHighEta.C"
 	eval "sed 's@ETAMIN@${etaMinVals[$i]}@g' tempLowRNineHighEta.C > checkEleScalesSmearings.C"
 	eval "root -l -b -q runCheckEleScalesSmearings.C"
-	wait
 	rm checkEleScalesSmearings.C tempLowRNineHighEta.C
 
 done
