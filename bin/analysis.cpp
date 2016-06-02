@@ -399,7 +399,6 @@ int main(int ac, char* av[])
 		for(unsigned long long int ev = 0; ev < nEntries; ++ev) {
 			if(nEntries > 100 && ev % nEntries_100 == 1) {
 				std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
-				std::cout << myEventVector.size() << std::endl;
 			}
 			c->GetEntry(ev);
 			Selector sel(myEvent);
