@@ -405,14 +405,22 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	if(channel == Selector::EE)
 		fn = fname + cuts + "_dyTandPEEChannel";
 
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("l1_pt") == true || fname.EqualTo("l2_pt") == true){
+	if(fname.EqualTo("Mll") == true){
 		mycanvas->Print((fn + ".pdf").Data());
 		mycanvas->Print((fn + ".png").Data());
 		mycanvas->Print((fn + ".root").Data());
+		hs_data->GetXaxis()->SetRangeUser(80.0, 100.0);
+		ratio_Mad->GetXaxis()->SetRangeUser(80.0, 100.0);
+		ratio_Amc->GetXaxis()->SetRangeUser(80.0, 100.0);
+		ratio_Powheg->GetXaxis()->SetRangeUser(80.0, 100.0);
+		mycanvas->Update();
+		mycanvas->Print((fn + "_zoom.pdf").Data());
+		mycanvas->Print((fn + "_zoom.png").Data());
+		mycanvas->Print((fn + "_zoom.root").Data());
 		p1->SetLogy();
-		mycanvas->Print((fn + "_log.pdf").Data());
-		mycanvas->Print((fn + "_log.png").Data());
+		mycanvas->Print((fn + "_zoom_log.pdf").Data());
+		mycanvas->Print((fn + "_zoom_log.png").Data());
 	}
-
+	
 	mycanvas->Close();
 }
