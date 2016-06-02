@@ -39,6 +39,8 @@ Float_t idealSubleadJetPt = 1;
 //Float_t subLeadJetPtCut = 0;
 Float_t leadJetPtCut = LEADJETPT;
 Float_t subLeadJetPtCut = SUBJETPT;
+Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
+Float_t globalSubLeadingLeptonPtCut = SUBLEPTPT;
 //TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/", mcFileTag = "", dataFileTag = "";
 TString dir = "../", mcFileTag = "", dataFileTag = "";
 
@@ -52,6 +54,7 @@ void calculateDyScaleFactors()
 {
 	
 	if(leadJetPtCut != idealLeadJetPt || subLeadJetPtCut != idealSubleadJetPt) OverwriteDySfFile = -1, AppendToDySfFile = -1;
+	if(globalLeadingLeptonPtCut != 33 || globalSubLeadingLeptonPtCut != 20) OverwriteDySfFile = -1, AppendToDySfFile = -1;
 	if(useMllReweighted == true) mcFileTag = "_withMllWeight", OverwriteDySfFile = -1, AppendToDySfFile = -1;
 	TString treeName = "treeDyCheck";
 	//TChain * chain_DYPowhegInclEE = new TChain(treeName,"DYPowhegInclusiveEE");
@@ -97,7 +100,8 @@ void calculateDyScaleFactors()
 	myEvent_dataMuMu.SetBranchAddresses(chain_dataMuMu);
 
 
-	Float_t minLeadLeptonPt = 33, minSubleadLeptonPt = 20, maxMll = 122, minMll = 58, maxLeptonEta = 2.4;
+	//Float_t minLeadLeptonPt = 33, minSubleadLeptonPt = 20, maxMll = 122, minMll = 58, maxLeptonEta = 2.4;
+	Float_t minLeadLeptonPt = globalLeadingLeptonPtCut, minSubleadLeptonPt = globalSubLeadingLeptonPtCut, maxMll = 122, minMll = 58, maxLeptonEta = 2.4;
 	//std::vector<TH1F*> hs_DYPowhegInclEE;
 	//MakeHistos(chain_DYPowhegInclEE, &myEvent_DYPowhegInclEE, &hs_DYPowhegInclEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1.0);
 	std::vector<TH1F*> hs_DYPowhegEE;

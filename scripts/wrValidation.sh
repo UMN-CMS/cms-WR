@@ -3,6 +3,8 @@
 #lead and sublead jet pt cuts used to determine dy scaling factors
 ljPtCut=40
 sjPtCut=40
+llPtCut=33
+slPtCut=20
 
 tAndPdatasetNames=('data' 'DYPOWHEG' 'DYAMC' 'DYMADHT')
 sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMADHT' 'DYPOWHEG' 'DYAMC')
@@ -55,10 +57,12 @@ eval "cd test"
 # eval "sed 's@subLeadJetPtCut = SUBJETPT@subLeadJetPtCut = $sjPtCut@' <tempNoSfOne.C >tempNoSfTwo.C"
 # eval "sed 's@idealLeadJetPt = 1@idealLeadJetPt = $ljPtCut@' <tempNoSfTwo.C >tempNoSfThree.C"
 # eval "sed 's@idealSubleadJetPt = 1@idealSubleadJetPt = $sjPtCut@' <tempNoSfThree.C >tempNoSfFour.C"
-# eval "sed 's@useMllReweighted = true@useMllReweighted = false@' <tempNoSfFour.C >calculateDyScaleFactors.C"
+# eval "sed 's@useMllReweighted = true@useMllReweighted = false@' <tempNoSfFour.C >tempNoSfFive.C"
+# eval "sed 's@LEADLEPTPT@$llPtCut@' <tempNoSfFive.C >tempNoSfSix.C"
+# eval "sed 's@SUBLEPTPT@$slPtCut@' <tempNoSfSix.C >calculateDyScaleFactors.C"
 # eval "root -l -b runCalculateDyScaleFactors.C"
 
-# rm calculateDyScaleFactors.C tempNoSfOne.C tempNoSfTwo.C tempNoSfThree.C tempNoSfFour.C
+# rm calculateDyScaleFactors.C tempNoSf*.C
 eval "mkdir -p validationPlots"
 # eval "mv *.png *.pdf validationPlots/."
 # eval "git add ../configs/dyScaleFactors.txt"
