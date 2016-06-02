@@ -76,6 +76,12 @@ public:
 		return 1.0;	///< for DYPOWINCL
 	}///end getDyMllScaleFactor()
 
+	inline configLine::numEvents_t getPrimaryEvents(std::string datasetName) const
+	{
+		if(checkCategory(datasetName) == true) return getConfigLine(datasetName).primaryDatasetEvents;
+		else return -1;
+	}
+
 
 
 private:

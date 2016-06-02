@@ -632,6 +632,22 @@ int main(int ac, char* av[])
 			}
 			delete hWR_mass;
 
+			if(loop_one && mode.find("WRto") != _ENDSTRING) {
+				TH1F * hWR_mass_unweighted = new TH1F("hWR_mass_unweighted", "hWR_mass_unweighted", 140, 0, 7000);
+				t1[i]->Draw("WR_mass>>hWR_mass_unweighted", "", "goff");
+				for(auto mass : mass_vec) {
+					// skip if not the correct mass
+					if (mode.find("JJ_" + std::to_string(mass)) == _ENDSTRING) continue;
+					auto range = mass_cut[mass];
+					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+					range = mass_cut[0];
+					float nEvents_total = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+					std::cout << "global_efficiency\t" << mass << '\t' << nEvents / myReader.getPrimaryEvents(selEvent.datasetName) << std::endl;
+					std::cout << "global_efficiency_minus_mass\t" << mass << '\t' << nEvents_total / myReader.getPrimaryEvents(selEvent.datasetName) << std::endl;
+				}
+				delete hWR_mass_unweighted;
+			}
+
 			if(saveToys) t1[i]->Write();
 			if(loop_one) {
 				if(!saveToys) t1[i]->Write();
