@@ -240,7 +240,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/76X_16DecRereco_2015_Etunc");
+	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
