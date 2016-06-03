@@ -29,8 +29,8 @@
 #endif
 //#define DBG
 
-//bool isReweighted = false;
-bool isReweighted = true;
+bool isReweighted = false;
+//bool isReweighted = true;
 Selector::tag_t channel = Selector::EE;
 
 /*
@@ -58,7 +58,7 @@ void quickZPeakRegionCheckEE()
 	   	powheg = chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeEE.root");
 		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMADHT_dytagandprobeEE.root"); // 1 - Muons
 		amc = chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeEE.root");
-		data = chain_data->Add("../selected_tree_data_dytagandprobeEEwithEleScaleCorrOff.root");
+		data = chain_data->Add("../selected_tree_data_dytagandprobeEEwithEleScaleCorrOn.root");
 		break;
 	default:
 		std::cout << "Unknown tag" << std::endl;
@@ -391,12 +391,14 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	if(channel == Selector::EE)
 		fn = fname + cuts + "_dyTandPEEChannel";
 
-	mycanvas->Print((fn + ".pdf").Data());
-	mycanvas->Print((fn + ".png").Data());
-	if(fname.EqualTo("Mll") == true) mycanvas->Print((fn + ".root").Data());
-	p1->SetLogy();
-	mycanvas->Print((fn + "_log.pdf").Data());
-	mycanvas->Print((fn + "_log.png").Data());
+	if(fname.EqualTo("Mll") == true){
+		mycanvas->Print((fn + ".pdf").Data());
+		mycanvas->Print((fn + ".png").Data());
+		mycanvas->Print((fn + ".root").Data());
+		p1->SetLogy();
+		mycanvas->Print((fn + "_log.pdf").Data());
+		mycanvas->Print((fn + "_log.png").Data());
+	}
 
 	mycanvas->Close();
 }
