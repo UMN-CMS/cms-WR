@@ -47,15 +47,16 @@ TString dir = "../", mcFileTag = "", dataFileTag = "";
 
 bool separatedLeptonsAndJets(Float_t leadJetPt, Float_t subleadJetPt, Float_t leadJetEta, Float_t leadJetPhi, Float_t & subleadJetEta, Float_t & subleadJetPhi, Float_t leadLeptonEta, Float_t leadLeptonPhi, Float_t subleadLeptonEta, Float_t subleadLeptonPhi);
 Float_t calculateIntegralRatio(TH1F* hs_data, TH1F* hs_mc);
-void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel);
+void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Int_t writeAction, std::string channel);
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Float_t normRescale);
 void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel);
 void calculateDyScaleFactors()
 {
 	
-	if(leadJetPtCut != idealLeadJetPt || subLeadJetPtCut != idealSubleadJetPt) OverwriteDySfFile = -1, AppendToDySfFile = -1;
-	if(globalLeadingLeptonPtCut != 33 || globalSubLeadingLeptonPtCut != 20) OverwriteDySfFile = -1, AppendToDySfFile = -1;
+	if(leadJetPtCut != idealLeadJetPt || subLeadJetPtCut != idealSubleadJetPt) OverwriteDySfFile = 959, AppendToDySfFile = 959;
+	if(globalLeadingLeptonPtCut != 33 || globalSubLeadingLeptonPtCut != 20) OverwriteDySfFile = 959, AppendToDySfFile = 959;
 	if(useMllReweighted == true) mcFileTag = "_withMllWeight", OverwriteDySfFile = -1, AppendToDySfFile = -1;
+	
 	TString treeName = "treeDyCheck";
 	//TChain * chain_DYPowhegInclEE = new TChain(treeName,"DYPowhegInclusiveEE");
 	TChain * chain_DYPowhegEE = new TChain(treeName,"DYPowhegMassBinnedEE");
@@ -72,7 +73,7 @@ void calculateDyScaleFactors()
 	//chain_DYMadInclEE->Add(dir+"selected_tree_DYMAD_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADHT_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
-	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
+	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEEwithEleScaleCorrOn"+dataFileTag+".root");
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMAD_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADHT_dytagandprobeMuMu"+mcFileTag+".root");
@@ -192,11 +193,12 @@ Float_t calculateIntegralRatio(TH1F* hs_data, TH1F* hs_mc)
 }//end calculateIntegralRatio()
 
 
-void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
+void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Int_t writeAction, std::string channel)
 {
-	///writeAction = 1 --> overwrite
-	///writeAction = 0 --> append
-	///writeAction != 0 or 1 --> do nothing
+	///writeAction = 1 --> overwrite to primary file and append to secondary file
+	///writeAction = 0 --> append to primary file and append to secondary file
+	///writeAction = 959 --> only append to secondary file
+	///writeAction != 0 or 1 or 959 --> do nothing
 	
 	Double_t zCentr = 91.1876, halfRange = 20.0000;
 	Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
@@ -207,11 +209,11 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 
 	///DO NOT change the hard coded strings AMC, POWHEG, and MAD
 	std::string dyScaleFactorFile = "../configs/dyScaleFactors.txt";
+	std::string secondaryDyScaleFactorFile = "../configs/allDyScaleFactors.txt";
 	if(writeAction == 1){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);
 		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << std::endl;
 		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << std::endl;
-		//writeToDyFile << channel << "\t" << "MAD\t"<< DYMadInclSf << std::endl;
 		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << std::endl;
 		writeToDyFile.close();
 	}
@@ -219,9 +221,15 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::app);
 		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << std::endl;
 		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << std::endl;
-		//writeToDyFile << channel << "\t" << "MAD\t"<< DYMadInclSf << std::endl;
 		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << std::endl;
 		writeToDyFile.close();
+	}
+	if(writeAction == 959 || writeAction == 0 || writeAction == 1){
+		ofstream writeToSecondaryDyFile(secondaryDyScaleFactorFile.c_str(), ofstream::app);
+		writeToSecondaryDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << "\tleadLeptPtCut>\t"<< globalLeadingLeptonPtCut << "\tsubleadLeptPtCut>\t" << globalSubLeadingLeptonPtCut << "\tleadJetPtCut>\t"<< leadJetPtCut << "\tsubleadJetPtCut>\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << "\tleadLeptPtCut>\t"<< globalLeadingLeptonPtCut << "\tsubleadLeptPtCut>\t" << globalSubLeadingLeptonPtCut << "\tleadJetPtCut>\t"<< leadJetPtCut << "\tsubleadJetPtCut>\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << "\tleadLeptPtCut>\t"<< globalLeadingLeptonPtCut << "\tsubleadLeptPtCut>\t" << globalSubLeadingLeptonPtCut << "\tleadJetPtCut>\t"<< leadJetPtCut << "\tsubleadJetPtCut>\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile.close();
 	}
 
 }//end writeScaleFactorsToFile()
@@ -331,13 +339,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 
 }
 
-///writeAction = 1 --> overwrite dy scale factors file
-///writeAction = 0 --> append new content to dy scale factors file
-///writeAction != 1 or 0 --> don't write anything to dy scale factors file
 void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,minMll,maxMll,minSubleadLeptonPt,minLeadLeptonPt,maxLeptonEta,writeAction,channel);
+	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 
 	Float_t dataOvrAmc = calculateIntegralRatio(hs_data, hs_DYAmcIncl);
 	Float_t dataOvrMad = calculateIntegralRatio(hs_data, hs_DYMadIncl);
@@ -459,61 +464,65 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	TString fn = fname + cuts + "_DYMadHTBinned";
 
 
-	mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
-	mycanvas->Print((fn + "_highestZoomRatio.png").Data());
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("l1_pt") == true || fname.EqualTo("l2_pt") == true){
+		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
+		mycanvas->Print((fn + "_highestZoomRatio.png").Data());
 
-	///do the zoomed plots only for Z_pt and M_ll distributions
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true){
+		///do the zoomed plots only for Z_pt and M_ll distributions
+		if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true){
+			//reset the Y axis scale on the ratio plot
+			ratio_Powheg->GetYaxis()->SetRangeUser(0.9, 1.1);
+			ratio_Mad->GetYaxis()->SetRangeUser(0.9, 1.1);
+			ratio_Amc->GetYaxis()->SetRangeUser(0.9, 1.1);
+
+			mycanvas->Update();
+			mycanvas->Print((fn + "_highZoomRatio.pdf").Data());
+			mycanvas->Print((fn + "_highZoomRatio.png").Data());
+
+			//reset the Y axis scale on the ratio plot
+			ratio_Powheg->GetYaxis()->SetRangeUser(0.85, 1.15);
+			ratio_Mad->GetYaxis()->SetRangeUser(0.85, 1.15);
+			ratio_Amc->GetYaxis()->SetRangeUser(0.85, 1.15);
+
+			mycanvas->Update();
+			mycanvas->Print((fn + "_mediumZoomRatio.pdf").Data());
+			mycanvas->Print((fn + "_mediumZoomRatio.png").Data());
+
+			//reset the Y axis scale on the ratio plot
+			ratio_Powheg->GetYaxis()->SetRangeUser(0.8, 1.2);
+			ratio_Mad->GetYaxis()->SetRangeUser(0.8, 1.2);
+			ratio_Amc->GetYaxis()->SetRangeUser(0.8, 1.2);
+
+			mycanvas->Update();
+			mycanvas->Print((fn + "_lowZoomRatio.pdf").Data());
+			mycanvas->Print((fn + "_lowZoomRatio.png").Data());
+
+			//reset the Y axis scale on the ratio plot
+			ratio_Powheg->GetYaxis()->SetRangeUser(0.7, 1.3);
+			ratio_Mad->GetYaxis()->SetRangeUser(0.7, 1.3);
+			ratio_Amc->GetYaxis()->SetRangeUser(0.7, 1.3);
+
+			mycanvas->Update();
+			mycanvas->Print((fn + "_lowestZoomRatio.pdf").Data());
+			mycanvas->Print((fn + "_lowestZoomRatio.png").Data());
+		}///end zoom ratio plots for Mll and Zpt distributions
+
 		//reset the Y axis scale on the ratio plot
-		ratio_Powheg->GetYaxis()->SetRangeUser(0.9, 1.1);
-		ratio_Mad->GetYaxis()->SetRangeUser(0.9, 1.1);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.9, 1.1);
+		ratio_Powheg->GetYaxis()->SetRangeUser(0.6, 1.4);
+		ratio_Mad->GetYaxis()->SetRangeUser(0.6, 1.4);
+		ratio_Amc->GetYaxis()->SetRangeUser(0.6, 1.4);
 
 		mycanvas->Update();
-		mycanvas->Print((fn + "_highZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_highZoomRatio.png").Data());
+		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
+		mycanvas->Print((fn + "_noZoomRatio.png").Data());
+		mycanvas->Print((fn + "_noZoomRatio.root").Data());
 
-		//reset the Y axis scale on the ratio plot
-		ratio_Powheg->GetYaxis()->SetRangeUser(0.85, 1.15);
-		ratio_Mad->GetYaxis()->SetRangeUser(0.85, 1.15);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.85, 1.15);
+		p1->SetLogy();
+		mycanvas->Print((fn + "_log.pdf").Data());
+		mycanvas->Print((fn + "_log.png").Data());
 
-		mycanvas->Update();
-		mycanvas->Print((fn + "_mediumZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_mediumZoomRatio.png").Data());
+	}
 
-		//reset the Y axis scale on the ratio plot
-		ratio_Powheg->GetYaxis()->SetRangeUser(0.8, 1.2);
-		ratio_Mad->GetYaxis()->SetRangeUser(0.8, 1.2);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.8, 1.2);
-
-		mycanvas->Update();
-		mycanvas->Print((fn + "_lowZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_lowZoomRatio.png").Data());
-
-		//reset the Y axis scale on the ratio plot
-		ratio_Powheg->GetYaxis()->SetRangeUser(0.7, 1.3);
-		ratio_Mad->GetYaxis()->SetRangeUser(0.7, 1.3);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.7, 1.3);
-
-		mycanvas->Update();
-		mycanvas->Print((fn + "_lowestZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_lowestZoomRatio.png").Data());
-	}///end zoom ratio plots for Mll and Zpt distributions
-
-	//reset the Y axis scale on the ratio plot
-	ratio_Powheg->GetYaxis()->SetRangeUser(0.6, 1.4);
-	ratio_Mad->GetYaxis()->SetRangeUser(0.6, 1.4);
-	ratio_Amc->GetYaxis()->SetRangeUser(0.6, 1.4);
-
-	mycanvas->Update();
-	mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
-	mycanvas->Print((fn + "_noZoomRatio.png").Data());
-	
-	p1->SetLogy();
-	mycanvas->Print((fn + "_log.pdf").Data());
-	mycanvas->Print((fn + "_log.png").Data());
- 
 	mycanvas->Close();
 
 }
