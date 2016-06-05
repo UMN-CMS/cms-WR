@@ -384,7 +384,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	mycanvas->cd();
 
 	TString fn = "";
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(minLeadJetPt) + "_minSubleadJetPt_" + to_string(minSubleadJetPt) + "_minNJets_" + to_string(minNJets) + "_eleScaleCorrOff";
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(minLeadJetPt) + "_minSubleadJetPt_" + to_string(minSubleadJetPt) + "_minNJets_" + to_string(minNJets) + "_eleScaleCorrOn";
 	if(isReweighted) cuts += "_isReweighted";
 	else cuts += "_isNotReweighted";
 
