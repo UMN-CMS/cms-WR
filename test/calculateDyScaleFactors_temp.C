@@ -203,25 +203,32 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	Double_t zCentr = 91.1876, halfRange = 20.0000;
 	Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
 	Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + halfRange);
-	Double_t DYPowhegSf = hs_data->Integral(lowBin, highBin)/hs_DYPowheg->Integral(lowBin, highBin);
-	Double_t DYMadInclSf = hs_data->Integral(lowBin, highBin)/hs_DYMadIncl->Integral(lowBin, highBin);
-	Double_t DYAmcInclSf = hs_data->Integral(lowBin, highBin)/hs_DYAmcIncl->Integral(lowBin, highBin);
+	Double_t dataIntegral = hs_data->Integral(lowBin, highBin);
+	Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral(lowBin, highBin);
+	Double_t dyPowhegIntegral = hs_DYPowheg->Integral(lowBin, highBin);
+	Double_t dyMadInclIntegral = hs_DYMadIncl->Integral(lowBin, highBin);
+	Double_t DYPowhegSf = dataIntegral/dyPowhegIntegral;
+	Double_t DYMadInclSf = dataIntegral/dyMadInclIntegral;
+	Double_t DYAmcInclSf = dataIntegral/dyAmcInclIntegral;
+	Double_t DYAmcInclSfUncert = DYAmcInclSf*sqrt((1/dataIntegral) + (1/dyAmcInclIntegral));
+	Double_t DYPowhegSfUncert = DYPowhegSf*sqrt((1/dataIntegral) + (1/dyPowhegIntegral));
+	Double_t DYMadInclSfUncert = DYMadInclSf*sqrt((1/dataIntegral) + (1/dyMadInclIntegral));
 
 	///DO NOT change the hard coded strings AMC, POWHEG, and MAD
 	std::string dyScaleFactorFile = "../configs/dyScaleFactors.txt";
 	std::string secondaryDyScaleFactorFile = "../configs/allDyScaleFactors.txt";
 	if(writeAction == 1){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);
-		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << std::endl;
-		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << std::endl;
-		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << std::endl;
+		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << DYPowhegSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
 		writeToDyFile.close();
 	}
 	if(writeAction == 0){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::app);
-		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << std::endl;
-		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << std::endl;
-		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << std::endl;
+		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << DYPowhegSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
 		writeToDyFile.close();
 	}
 	if(writeAction == 959 || writeAction == 0 || writeAction == 1){
