@@ -149,9 +149,9 @@ void calculateDyScaleFactors()
 	//now the vectors of TH1F pointers are filled with pointers to histos with nonzero entries
 	unsigned int nPlots = hs_DYPowhegEE.size();
 
-	TString xtitles[] = {"leading lepton p_{T}", "subleading lepton p_{T}", "leading jet p_{T}", "subleading jet p_{T}", "leading lepton #eta", "subleading lepton #eta", "leading jet #eta", "subleading jet #eta", "leading lepton #phi", "subleading lepton #phi", "leading jet #phi", "subleading jet #phi", "dilepton mass", "nPV", "Z #phi", "Z rapidity", "Z p_{T}"};
+	TString xtitles[] = {"leading lepton p_{T}", "subleading lepton p_{T}", "leading jet p_{T}", "subleading jet p_{T}", "leading lepton #eta", "subleading lepton #eta", "leading jet #eta", "subleading jet #eta", "leading lepton #phi", "subleading lepton #phi", "leading jet #phi", "subleading jet #phi", "dilepton mass", "nPV", "Z #phi", "Z rapidity", "Z p_{T}", "dilepton mass both leptons in barrel", "dilepton mass both leptons in endcap", "dilepton mass one lepton in barrel other lepton in endcap"};
 
-	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt"};
+	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt", "Mll_bothEB","Mll_bothEE","Mll_EBEE"};
 
 	int i = 0;
 	for(unsigned int i = 0; i < nPlots; i++) {
@@ -226,9 +226,10 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	}
 	if(writeAction == 959 || writeAction == 0 || writeAction == 1){
 		ofstream writeToSecondaryDyFile(secondaryDyScaleFactorFile.c_str(), ofstream::app);
-		writeToSecondaryDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << "\tleadLeptPtCut>\t"<< globalLeadingLeptonPtCut << "\tsubleadLeptPtCut>\t" << globalSubLeadingLeptonPtCut << "\tleadJetPtCut>\t"<< leadJetPtCut << "\tsubleadJetPtCut>\t"<< subLeadJetPtCut << std::endl;
-		writeToSecondaryDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << "\tleadLeptPtCut>\t"<< globalLeadingLeptonPtCut << "\tsubleadLeptPtCut>\t" << globalSubLeadingLeptonPtCut << "\tleadJetPtCut>\t"<< leadJetPtCut << "\tsubleadJetPtCut>\t"<< subLeadJetPtCut << std::endl;
-		writeToSecondaryDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << "\tleadLeptPtCut>\t"<< globalLeadingLeptonPtCut << "\tsubleadLeptPtCut>\t" << globalSubLeadingLeptonPtCut << "\tleadJetPtCut>\t"<< leadJetPtCut << "\tsubleadJetPtCut>\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << " " << std::endl;
 		writeToSecondaryDyFile.close();
 	}
 
@@ -257,6 +258,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity", "", 70, -5., 8.);
 	TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 80, -10., 300.);
 
+	TH1F *h_dilepton_massBothEB = new TH1F("h_dilepton_massBothEB", "", 280, 55., 125.);
+	TH1F *h_dilepton_massBothEE = new TH1F("h_dilepton_massBothEE", "", 280, 55., 125.);
+	TH1F *h_dilepton_massEBEE = new TH1F("h_dilepton_massEBEE", "", 280, 55., 125.);
+	
 	Long64_t nEntries = chain->GetEntries();
 
 	cout << nEntries << endl;
@@ -293,6 +298,11 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 
 		h_dilepton_mass->Fill(myEvent->dilepton_mass, (myEvent->weight));
 		h_nPV->Fill(myEvent->nPV, (myEvent->weight));
+
+		//these three ifs are mutually exclusive
+		if(std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) h_dilepton_massBothEB->Fill(myEvent->dilepton_mass, (myEvent->weight));
+		if(std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) h_dilepton_massBothEE->Fill(myEvent->dilepton_mass, (myEvent->weight));
+		if( (std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) || (std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) ) h_dilepton_massEBEE->Fill(myEvent->dilepton_mass, (myEvent->weight));
 	
 	}
 
@@ -317,6 +327,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	h_dilepton_mass->Scale(normRescale);
 	h_nPV->Scale(normRescale);
 
+	h_dilepton_massBothEB->Scale(normRescale);
+	h_dilepton_massBothEE->Scale(normRescale);
+	h_dilepton_massEBEE->Scale(normRescale);
 
 	///this order of push_back calls should not be changed
 	hs->push_back(h_lepton_pt0);
@@ -336,6 +349,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	hs->push_back(h_Z_phi);
 	hs->push_back(h_Z_rapidity);
 	hs->push_back(h_Z_pt);
+	hs->push_back(h_dilepton_massBothEB);
+	hs->push_back(h_dilepton_massBothEE);
+	hs->push_back(h_dilepton_massEBEE);
 
 }
 
@@ -398,7 +414,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	ytitle += (hs_data->GetXaxis()->GetNbins());
 	ytitle += ")";
 	hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true){
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("Mll_bothEE") == true || fname.EqualTo("Mll_bothEB") == true || fname.EqualTo("Mll_EBEE") == true){
 		//show the data over MC ratio on each Mll and Z_pt plot
 		xtitle += " dataOvrAMC = ";
 		xtitle += (to_string(dataOvrAmc)).c_str();
@@ -462,14 +478,13 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
 	//TString fn = fname + cuts;
 	TString fn = fname + cuts + "_DYMadHTBinned";
-
-
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("l1_pt") == true || fname.EqualTo("l2_pt") == true){
+	
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("l1_pt") == true || fname.EqualTo("l2_pt") == true  || fname.EqualTo("Mll_bothEE") == true || fname.EqualTo("Mll_bothEB") == true || fname.EqualTo("Mll_EBEE") == true){
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_highestZoomRatio.png").Data());
 
 		///do the zoomed plots only for Z_pt and M_ll distributions
-		if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true){
+		if(fname.EqualTo("Mll") == true){
 			//reset the Y axis scale on the ratio plot
 			ratio_Powheg->GetYaxis()->SetRangeUser(0.9, 1.1);
 			ratio_Mad->GetYaxis()->SetRangeUser(0.9, 1.1);
