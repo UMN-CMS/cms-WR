@@ -43,9 +43,7 @@ for channel in ["ee","mumu"]:
 				signalNevents *= uns
 
 			TTBar, TTBar_syst, TTBar_stat = minitrees.getNEvents(mass, channel, "TT")
-			minitrees.setTag("_withMllWeight")
 			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYAMC")
-			minitrees.setTag("")
 
 			MWR.append(mass)
 			signal.append(signalNevents)
@@ -71,7 +69,7 @@ for channel in ["ee","mumu"]:
 	bg_names = ["TTBar", "DY"]
 
 	for i in range(len(MWR)):
-		print MWR[i], signal[i], sum(bg[i])
+		print MWR[i], signal[i], bg[i]
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])

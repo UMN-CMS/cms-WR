@@ -93,13 +93,13 @@ class miniTreeInterface:
 		self.results = {}
 
 	def getTTBarUncertainty(self, channel):
-		return self.tt_emu_error[channel]
+		return 1 + abs(self.tt_emu_error[channel]/self.tt_emu_ratio[channel])
 
 	def getNEvents(self, MWR, channel, process):
 		""" returns mean, syst, stat """
-		key = channel + process
+		key = channel + "_" + process
 		if "signal" == process:
-			key += str(MWR)
+			key += "_" + str(MWR)
 
 		MWR = int(MWR)
 		f = self.OpenFile(channel, process, MWR)
@@ -110,8 +110,10 @@ class miniTreeInterface:
 		self.ProcessFile(key, f)
 
 		mean =     self.results[key]["syst"]["mean"][mass_i]
-		syst = 1 + self.results[key]["syst"]["std"] [mass_i]/mean
-		stat = 1 + self.results[key]["stat"]        [mass_i]/mean
+		if mean < .0001:
+			mean = .0001
+		syst = 1 + self.results[key]["syst"]["std"] [mass_i]/abs(mean)
+		stat = 1 + self.results[key]["stat"]        [mass_i]/abs(mean)
 		return mean, syst, stat
 
 	def getMeanStd(self, tree, fromFit=False):
@@ -166,14 +168,16 @@ class miniTreeInterface:
 			central_error *= scale
 
 		self.results[key] = {
-				"syst": {"mean":syst_means, "std":syst_stds},
-				"stat": central_error ,
+				"syst": {"mean":syst_means.tolist(), "std":syst_stds.tolist()},
+				"stat": central_error.tolist() ,
 				}
 
 
 	def OpenFile(self, channel, process, MWR):
 		if process == "signal":
 			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
+			if MWR == 1800: 
+				mode = "WRto" + self.chnlName[channel] + "JJ_1800_1400"
 			minitreename = "signal_" + channel
 		elif "TT" in process:
 			channel = "emu"
