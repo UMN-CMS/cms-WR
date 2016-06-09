@@ -6,6 +6,7 @@
 #include "TH1F.h"
 #include "TChain.h"
 #include "TFile.h"
+#include "TCanvas.h"
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "TRandom3.h"
@@ -15,6 +16,7 @@
 #include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
 #include "ExoAnalysis/cmsWR/interface/AnalysisResult.h"
 #include "ExoAnalysis/cmsWR/interface/Selector.h"
+#include "ExoAnalysis/cmsWR/interface/SelectorHist.h"
 
 #include <vector>
 #include <string>
@@ -195,6 +197,7 @@ int main(int ac, char* av[])
 	int nStatToys;
 	int signalN;
 	int seed;
+	bool makeSelectorPlots;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
 	required.add_options()
@@ -216,7 +219,8 @@ int main(int ac, char* av[])
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
 	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
-	("signalN", po::value<int>(&signalN)->default_value(0), "throw N toys for stat uncertainty.")
+	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
+	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
 	;
 
 	po::variables_map vm;
@@ -402,7 +406,7 @@ int main(int ac, char* av[])
 			}
 			c->GetEntry(ev);
 			Selector sel(myEvent);
-			if((isTagAndProbe == true && (myEvent.electrons_p4->size() > 1 || myEvent.muons_p4->size() > 1) ) || sel.isPassingPreselect()) {
+			if((isTagAndProbe == true && (myEvent.electrons_p4->size() > 1 || myEvent.muons_p4->size() > 1) ) || sel.isPassingPreselect(makeSelectorPlots)) {
 				unsigned int nEle = myEvent.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
@@ -451,6 +455,7 @@ int main(int ac, char* av[])
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
+			t1[i]->SetDirectory(0);
 			selEvent.SetBranches(t1[i]);
 			if(loop_one) selEvent.SetBranches(tDyCheck);
 
@@ -570,7 +575,7 @@ int main(int ac, char* av[])
 					if(loop_one) tDyCheck->Fill();
 				}
 
-				if(selEvent.isPassing(channel)) {
+				if(selEvent.isPassing(channel, makeSelectorPlots && loop_one)) {
 
 					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
 
@@ -621,21 +626,31 @@ int main(int ac, char* av[])
 			delete hWR_mass;
 
 			if(loop_one && mode.find("WRto") != _ENDSTRING) {
-				TH1F * hWR_mass_unweighted = new TH1F("hWR_mass_unweighted", "hWR_mass_unweighted", 140, 0, 7000);
-				t1[i]->Draw("WR_mass>>hWR_mass_unweighted", "", "goff");
+				TString hist_name(mode + "_unweighted");
+				hWR_mass= new TH1F(hist_name,hist_name, 140, 0, 7000);
+				TCanvas * c = new TCanvas("c","c",600,600);
+				t1[i]->Draw("WR_mass>>" + hist_name, "", "");
+				TH1F * integralclone = (TH1F*)hWR_mass->Clone();
+				integralclone->SetFillColor(kRed);
 				for(auto mass : mass_vec) {
 					// skip if not the correct mass
 					if (mode.find("JJ_" + std::to_string(mass)) == _ENDSTRING) continue;
 					auto range = mass_cut[mass];
 					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+					integralclone->GetXaxis()->SetRange(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 					range = mass_cut[0];
 					float nEvents_total = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 					std::cout << "global_efficiency\t" << mass << '\t' << nEvents / myReader.getPrimaryEvents(selEvent.datasetName) << std::endl;
 					std::cout << "global_efficiency_minus_mass\t" << mass << '\t' << nEvents_total / myReader.getPrimaryEvents(selEvent.datasetName) << std::endl;
 				}
-				delete hWR_mass_unweighted;
+				integralclone->Draw("same");
+				c->SaveAs("plots/" + hist_name + ".png");
+				delete c;
+				delete hWR_mass;
+				delete integralclone;
 			}
 
+			f.cd();
 			if(saveToys) t1[i]->Write();
 			if(loop_one) {
 				if(!saveToys) t1[i]->Write();
@@ -720,11 +735,17 @@ int main(int ac, char* av[])
 			}
 
 			// fill the tree with the normalization, parameters, and errors
-			if(loop_one) central_value_tree->Fill();
+			if(loop_one) {
+				central_value_tree->Fill();
+				sel::hists.PrintEntries("plots/", mode);
+				sel::hists.Draw("plots/", mode);
+			}
 			else syst_tree->Fill();
 
 			loop_one = false;
 		}
+
+		syst_tree->SetDirectory(&f);
 		syst_tree->Write();
 		central_value_tree->Write();
 	}
