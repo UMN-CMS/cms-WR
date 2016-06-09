@@ -92,6 +92,9 @@ class miniTreeInterface:
 		self.masses = []
 		self.results = {}
 
+	def getTTBarUncertainty(self, channel):
+		return self.tt_emu_error[channel]
+
 	def getNEvents(self, MWR, channel, process):
 		""" returns mean, syst, stat """
 		key = channel + process
@@ -108,10 +111,10 @@ class miniTreeInterface:
 
 		mean =     self.results[key]["syst"]["mean"][mass_i]
 		syst = 1 + self.results[key]["syst"]["std"] [mass_i]/mean
-		stat = 1 + self.results[key]["stat"]["std"] [mass_i]/mean
+		stat = 1 + self.results[key]["stat"]        [mass_i]/mean
 		return mean, syst, stat
 
-	def getMeanStd(self, tree, fromFit=True):
+	def getMeanStd(self, tree, fromFit=False):
 		means = np.zeros(len(self.masses))
 		stds = np.zeros(len(self.masses))
 		if fromFit:
@@ -130,6 +133,7 @@ class miniTreeInterface:
 			stds[mass_i] = h.GetStdDev()
 
 			if self.makeplots:
+				r.gStyle.SetOptStat(1001110)
 				c.SetLogy()
 				h.SetTitle(self.currentkey + tree.GetName() + " Mass " + ms)
 				h.Draw()
@@ -144,16 +148,14 @@ class miniTreeInterface:
 		tree = f.Get("syst_tree")
 		if not tree or tree.GetEntries() == 0:
 			tree = f.Get("central_value_tree")
-		syst_means, syst_stds = self.getMeanStd(tree, fromFit = bool("TT" in key or "DY" in key)) 
+		syst_means, syst_stds = self.getMeanStd(tree) 
 
-		stat_tree = f.Get("stat_tree")
-		if stat_tree and stat_tree.GetEntries() != 0:
-			stat_means, stat_stds = self.getMeanStd(stat_tree, fromFit = bool("TT" in key or "DY" in key)) 
-		else:
-			stat_means = syst_means*0
-			stat_stds = syst_stds*0
-
-
+		central_tree = f.Get("central_value_tree")
+		central_tree.GetEntry(0)
+		try:
+			central_error = np.array(central_tree.ErrorEventsInRange)
+		except AttributeError:
+			central_error = np.zeros(len(self.masses))
 
 		if "TT" in key and self.tt_emu_ratio:
 			if "ee" in key: channel = "ee"
@@ -161,12 +163,11 @@ class miniTreeInterface:
 			scale = self.tt_emu_ratio[channel]
 			syst_means *= scale
 			syst_stds *= scale
-			stat_means *= scale
-			stat_stds *= scale
+			central_error *= scale
 
 		self.results[key] = {
 				"syst": {"mean":syst_means, "std":syst_stds},
-				"stat": {"mean":stat_means, "std":stat_stds},
+				"stat": central_error ,
 				}
 
 
