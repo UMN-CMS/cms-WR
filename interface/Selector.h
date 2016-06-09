@@ -50,9 +50,9 @@ public:
 	Float_t weight; ///< this variable takes into accont the product of the global_event_weight and the single object weights   the cross sxn normalization is applied in analysis.cpp
 	Float_t pu_weight;	///< the PU weight, equivalent to the absolute value of the global_event_weight
 
-	bool isPassing(tag_t tag);
+	bool isPassing(tag_t tag, bool makeHists = false);
 	bool isPassingLooseCuts(tag_t tag);
-	bool isPassingPreselect();
+	bool isPassingPreselect(bool makeHists = false);
 
 	Selector(const miniTreeEvent& myEvent);
 	Selector();

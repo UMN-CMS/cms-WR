@@ -55,7 +55,7 @@ for channel in ["ee","mumu"]:
 			# (syst_name, syst_type, [ ( channel1, error), (channel2, error), ... ])
 			if not args.nosyst:
 				systematics.append( ("lumi", "lnN", [ (n, 1.027 ) for n in [sig_name, "TTBar","DY"]]))
-				systematics.append( ("TT_ratio", "lnN", [("TTBar", minitrees.getTTBarUncertainty(channel)]))
+				systematics.append( ("TT_ratio", "lnN", [("TTBar", minitrees.getTTBarUncertainty(channel))]))
 				# TODO: NEED DY_SF unc
 				systematics.append( ("DY_SF", "lnN", [("DY", 1.0)]))
 				systematics.append( ("Signal_syst", "lnN", [ (sig_name, sig_syst )]))
