@@ -45,26 +45,13 @@ def calcEffUnc(effNumerator, effDenominator):
 trigResultsHandl, trigResultsLabel = Handle("edm::TriggerResults"), ("TriggerResults","","HLT")
 trigObjsHandl, trigObjsLabel = Handle("std::vector<pat::TriggerObjectStandAlone>"), "selectedPatTrigger"
 wRskimPathHandl, skimPathLabel = Handle("edm::TriggerResults"), ("TriggerResults","","SKIM")
-#the reco object handles (jets, eles, muons) are only needed if I want to apply cuts to the reco objects
-#before counting the number of evts in which each trigger is fired
-recoJetsHandl, recoJetsLabel = Handle("std::vector<pat::Jet>"), "slimmedJets"
-recoMuHandl, recoMuLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
-recoElectronHandl, recoElectronLabel = Handle("std::vector<pat::Electron>"), "slimmedElectrons"
-
-
-#use this for same flavor lepton final states
-#otherwise the default will be mixed flavor lepton (e+mu) final states
-doMixedFlavor = False
-doMuonChannel = False
-recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
-if(doMuonChannel == False): recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Electron>"), "slimmedElectrons"
 
 # open one or more miniAOD .root files, and create an iterator to loop over the Event objects in the file(s)
 doTtBar = False 
 allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/TTJets_TuneCUETP8M1_13TeV_pythia8_1.root")
 if(doTtBar == False):
-	allEvents = Events("root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DoubleEG_RunD_v4_SHv12/DoubleEG_RunD_v4_37_2_vnl.root")
-	#allEvents = Events("root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_amctnlo_SHv12/DYJets_amctnlo_4_1_Alq.root")
+	allEvents = Events("DoubleEG_RunD_v4_24_2_SZ8.root")
+	#allEvents = Events("DYJets_amctnlo_4_1_Alq.root")
 	#allEvents = Events("/eos/uscms/store/user/skalafut/DoubleEG/realData_DoubleEG_13TeV_50ns_eejj_signalAndLowMassRegionSkim_atFNALLPC/150727_142936/0000/realData_electronLowMassRegionSkim_1.root")
 	#allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODBkgndFiles/DYJetsToLL_M-50_TuneCUETP8M1_FlatPU_10_to_50_13TeV_pythia8_1.root")
 
@@ -81,18 +68,19 @@ totalNumEvts = 0
 # in the two tuple is the object of interest
 for evNum, oneEvent in enumerate(allEvents):
 	#evNum points to a simple number, while oneEvent points to an edm::Event object
-	if(evNum > 1000): break
+	if(evNum > 100): break
 	if(evNum > 80000): break
-	
+
 	oneEvent.getByLabel(trigObjsLabel, trigObjsHandl)
 	oneEvent.getByLabel(trigResultsLabel, trigResultsHandl)
-	oneEvent.getByLabel(wRskimPathHandl, skimPathLabel)
+	oneEvent.getByLabel(skimPathLabel, wRskimPathHandl)
 	if((evNum%10000)==0): print "evt number: ", evNum
 
 	#require the tagAndProbe path is passed
 	wrPathNames = oneEvent.object().triggerNames(wRskimPathHandl.product())
 	for r in xrange(wrPathNames.size()):
-		if(wrPathNames[r] == "tagAndProbe"):
+		#print "wrPathNames element is: ", wrPathNames.triggerName(r)
+		if(wrPathNames.triggerName(r) == "tagAndProbe"):
 			wrPathIndex = r
 	if(wRskimPathHandl.product().accept(wrPathIndex) == False): continue
 
