@@ -24,7 +24,6 @@ def useThisPath(hltPathName):
 	#stringsToUse = ["Mu23_TrkIsoVVL_Ele12","Mu8_TrkIsoVVL_Ele23","HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v1","HLT_Ele105_CaloIdVT","HLT_Mu40_TkMu11_v1","HLT_Mu50_v1"]
 	#stringsToUse = ["Mu23_TrkIsoVVL_Ele12","Mu8_TrkIsoVVL_Ele23","HLT_DoubleEle33","HLT_Ele105_CaloIdVT","HLT_Mu40_TkMu11_v1","HLT_Mu50_v1","Mu30_Ele30"]
 	stringsToUse = ["WP60_SC4_Mass55","WP60_Ele8_Mass55"]
-	#stringsToUse = ["tagAndProbe"]
 	
 	for i in xrange(int(len(stringsToUse))):
 		if(hltPathName.find(stringsToUse[i]) != -1):
@@ -60,6 +59,11 @@ if(doTtBar == False):
 #vars and containers which will be filled in loop over events
 trigNamesAndNumPassing = dict()
 totalNumEvts = 0
+eleEightPathIndex = -1
+scFourPathIndex = -1
+evtsPassingOnlySCFourPath = 0
+evtsPassingOnlyEleEightPath = 0
+evtsPassingSCFourAndEleEightPath = 0
 
 # loop over Event objects in input file(s)
 # enumerate returns two-tuple objects (an immutable list where each element in the list is a pair), and thus two different
@@ -68,7 +72,7 @@ totalNumEvts = 0
 # in the two tuple is the object of interest
 for evNum, oneEvent in enumerate(allEvents):
 	#evNum points to a simple number, while oneEvent points to an edm::Event object
-	if(evNum > 100): break
+	#if(evNum > 500): break
 	if(evNum > 80000): break
 
 	oneEvent.getByLabel(trigObjsLabel, trigObjsHandl)
@@ -84,10 +88,25 @@ for evNum, oneEvent in enumerate(allEvents):
 			wrPathIndex = r
 	if(wRskimPathHandl.product().accept(wrPathIndex) == False): continue
 
-	#find and save the indices of the two HLT paths used for tagandprobe
 	totalNumEvts+=1.0
 	
+	#find and save the indices of the two HLT paths used for tagandprobe
 	allPathNames = oneEvent.object().triggerNames(trigResultsHandl.product())
+	if(eleEightPathIndex == -1 or scFourPathIndex == -1):
+		for x in xrange(trigResultsHandl.product().size()):
+			if(allPathNames.triggerName(x).find("WP60_SC4_Mass55") != -1):
+				scFourPathIndex = x
+			if(allPathNames.triggerName(x).find("WP60_Ele8_Mass55") != -1):
+				eleEightPathIndex = x
+
+	if(trigResultsHandl.product().accept(scFourPathIndex) and (trigResultsHandl.product().accept(eleEightPathIndex) == False) ):
+		evtsPassingOnlySCFourPath = evtsPassingOnlySCFourPath + 1
+	if(trigResultsHandl.product().accept(eleEightPathIndex) and (trigResultsHandl.product().accept(scFourPathIndex) == False) ):
+		evtsPassingOnlyEleEightPath = evtsPassingOnlyEleEightPath + 1
+	if(trigResultsHandl.product().accept(eleEightPathIndex) and trigResultsHandl.product().accept(scFourPathIndex) ):
+		evtsPassingSCFourAndEleEightPath = evtsPassingSCFourAndEleEightPath + 1
+
+
 	for i in xrange(trigResultsHandl.product().size()):
 		#loop over all HLT path names and keep track of the paths which are fired, how many times they fire, and the total number of evts
 		#which have been run over
@@ -107,25 +126,19 @@ for evNum, oneEvent in enumerate(allEvents):
 	#end loop over HLT path names
 # end loop over evts in input file(s)
 
-#save the tree with kinematics info to a file
-#fout.cd()
-#outputTuple.Write()
-#fout.Close()
-
 datasetId = "ttbar"
 #if(doTtBar==False): datasetId = "dyPlusJets"
 if(doTtBar==False): datasetId = "DoubleEGdata"
 print "total num evts before any cuts, from the tagAndProbe path = ", totalNumEvts
-#print "total num evts passing GEN cuts = ", totalNumEvtsAfterGenCuts
-#print 'total num evts passing gen and reco cuts = ', totalNumEvtsAfterGenRecoMatchingAndRecoCuts
+print "num evts passing only HLT_Ele*WP60_SC4_Mass55 = ", evtsPassingOnlySCFourPath
+print "num evts passing only HLT_Ele*WP60_Ele8_Mass55 = ", evtsPassingOnlyEleEightPath
+print "num evts passing both WP60_SC4 and WP60_Ele8 = ", evtsPassingSCFourAndEleEightPath
+
 for keyIter in iter(trigNamesAndNumPassing):
 	if( (trigNamesAndNumPassing[keyIter]/totalNumEvts) > 0.0):
 		print "HLT path named: ", keyIter," has trigger efficiency = ", 100*(trigNamesAndNumPassing[keyIter]/totalNumEvts) ,"% +/- ", 100*(calcEffUnc(trigNamesAndNumPassing[keyIter],totalNumEvts)), "% on ", datasetId, ' events'
 	
 #end loop over keys in trigNamesAndNumPassing map
-
-#print 'gen and reco requirements are that the four final state particles at GEN lvl from the WR decay are found, and fall within detector eta acceptance, four reco objects are matched to these four GEN particles, and that the reco lepton matched to the Nu daughter lepton has pT > 25 GeV (not applied in muon channel evts)'
-
 
 
 
