@@ -1,4 +1,4 @@
-//#include "../interface/rooFitFxns.h"
+#include "../interface/rooFitFxns.h"
 #define DOTTBAR	///comment this line out to run over DY datasets
 
 /*
