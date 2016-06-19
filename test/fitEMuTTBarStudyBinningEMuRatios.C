@@ -64,7 +64,7 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 	RooDataSet ttbaremuDataset = applyNormalization(ttbaremuchain, "ttbarEMuDataSet",1, vars, massWR, evtWeight, false, 0.0, 0.0);
 	Fits::expPower.setVal(-0.004);
 	RooFitResult * fitResult = Fits::expPdfRooAbsPdf->fitTo(ttbaremuDataset, RooFit::SumW2Error(kTRUE), RooFit::Save(kTRUE));
-	int nToys=1;
+	int nToys=5;
 	Int_t eventsToGenerate=4000;
 	int nbins[]={10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 	vector<int> nbinsVector(nbins,nbins + sizeof(nbins)/sizeof(int));
@@ -75,19 +75,20 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 	map<int,Double_t> mapNBinsToSlope;
 	Double_t tempIntercepts=0, tempSlopes=0;
 	for(int j=0; j<diffBins; j++){
-		///generate two RooDataHists with a fixed number of events using the exponential fitted to the EMuJJ distribution as a template
-		RooDataHist * rooHistOne = Fits::expPdfRooAbsPdf->generateBinned(testVars, RooFit::NumEvents(eventsToGenerate));
-		RooDataHist * rooHistTwo = Fits::expPdfRooAbsPdf->generateBinned(testVars, RooFit::NumEvents(eventsToGenerate));
 
 		//throw many toys for each value of nbinsVector
 		for(int i=0; i<nToys; i++){
+			///generate two RooDataHists with a fixed number of events using the exponential fitted to the EMuJJ distribution as a template
+			RooDataHist * rooHistOne = Fits::expPdfRooAbsPdf->generateBinned(testVars, RooFit::NumEvents(eventsToGenerate));
+			RooDataHist * rooHistTwo = Fits::expPdfRooAbsPdf->generateBinned(testVars, RooFit::NumEvents(eventsToGenerate));
+
 			///create two histograms from the two RooDataHists
 			TH1* binnedHistOne = rooHistOne->createHistogram("massLLJJOne", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
 			TH1* binnedHistTwo = rooHistTwo->createHistogram("massLLJJTwo", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
 			TH1* ratioHistOneTwo = (TH1*) binnedHistOne->Clone();
 			ratioHistOneTwo->Divide(binnedHistTwo);
 			TF1* ratioFit = new TF1("ratioFit","[0]*x+[1]", lljjMin, lljjMax);
-			ratioHistOneTwo->Fit("ratioFit");
+			ratioHistOneTwo->Fit("ratioFit","Q");
 			
 			if(i==0 && (j==0 || j==2) ){
 				TCanvas* canv = new TCanvas("canv","canv",800,800);
@@ -107,13 +108,13 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 			delete ratioFit;
 			delete binnedHistOne;
 			delete binnedHistTwo;
+			delete rooHistOne;
+			delete rooHistTwo;
 		}///end loop over toys
 		mapNBinsToIntercept[nbinsVector[j]] = (Double_t) (tempIntercepts/nToys);
 		mapNBinsToSlope[nbinsVector[j]] = (Double_t) (tempSlopes/nToys);
 		
 		tempIntercepts=0, tempSlopes=0;
-		delete rooHistOne;
-		delete rooHistTwo;
 	}///end loop over different bin sizes
 	for(int k=0; k<diffBins; k++){
 		std::cout<<"when there are\t"<< nbinsVector[k] <<"\tbins, the average intercept and slope of the ratio plot are\t"<< mapNBinsToIntercept[nbinsVector[k]] <<"\tand\t"<< mapNBinsToSlope[nbinsVector[k]] << std::endl;
