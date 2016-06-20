@@ -55,11 +55,14 @@ RooDataSet applyNormalization(TChain * chain, TString dataSetName, Float_t norma
 void fitEMuTTBarStudyBinningEMuRatios(){
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//adjust these parameters to determine the number of toys thrown, the number of events generated, and the number of bins in the M_LLJJ distributions which are generated
-	int nToys=400;
-	Int_t evtsArr[]={982,2000,4000};	///<there are 982 events in real data from MuonEG in 2015 which pass emu flavor sideband selection
-	int nbins[]={10, 20, 30, 40, 50, 70, 90, 110};
+	int nToys=375;
+	//Int_t evtsArr[]={982,2000,4000};	///<there are 982 events in real data from MuonEG in 2015 which pass emu flavor sideband selection
+	Int_t evtsArr[]={30000};	///<there are 982 events in real data from MuonEG in 2015 which pass emu flavor sideband selection
+	//int nbins[]={10, 20, 30, 40, 50, 70, 90, 110};
+	int nbins[]={30};
 	Float_t lljjMin = 600.;
-	Float_t lljjMaxArr[]={2000.,2350.,2700.,3000.};
+	//Float_t lljjMaxArr[]={2000.,2350.,2700.,3000.};
+	Float_t lljjMaxArr[]={2000.};
 	///////////////////////////////////////////////////////////////////////////////////////////
 	vector<Float_t> lljjMaxVect(lljjMaxArr,lljjMaxArr + sizeof(lljjMaxArr)/sizeof(Float_t));
 	vector<Int_t> evtsVect(evtsArr,evtsArr + sizeof(evtsArr)/sizeof(Int_t));
@@ -82,7 +85,7 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 	vector<int> nbinsVector(nbins,nbins + sizeof(nbins)/sizeof(int));
 	int diffBins = nbinsVector.size();
 	RooArgSet testVars(massWR);
-	
+
 	for(Int_t r=0; r<evtsSize; r++){
 		for(Int_t q=0; q<maxLLJJSize; q++){
 			Float_t lljjMax = lljjMaxVect[q];
@@ -109,14 +112,17 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 
 					///create two histograms from the two RooDataHists
 					TH1* binnedHistOne = rooDataSetOne->createHistogram("massLLJJOne", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
+					binnedHistOne->Sumw2(true);
 					TH1* binnedHistTwo = rooDataSetTwo->createHistogram("massLLJJTwo", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
-
+					binnedHistTwo->Sumw2(true);
+		
 					TH1* ratioHistOneTwo = (TH1*) binnedHistOne->Clone();
+					ratioHistOneTwo->Sumw2(true);
 					ratioHistOneTwo->Divide(binnedHistTwo);
 					TF1* ratioFit = new TF1("ratioFit","[0]*x+[1]", lljjMin, lljjMax);
 					ratioHistOneTwo->Fit("ratioFit","Q");
 
-					if((i==0 || i==50 || i==100) && (j==0 || j==2 || j==4) ){
+					if((i==0 || i==50 || i==100 || i==150 || i==200 || i==250 || i==300) && (j==0 || j==2 || j==4) ){
 						TCanvas* canv = new TCanvas("canv","canv",800,800);
 						canv->cd();
 
@@ -155,6 +161,7 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 			linearFitParamTree->Write();
 		}///end loop over different fit ranges
 	}///end loop over different event counts to be generated
+
 
 }///end fitEMuTTBarStudyBinningEMuRatios()
 
