@@ -53,6 +53,21 @@ RooDataSet applyNormalization(TChain * chain, TString dataSetName, Float_t norma
 
 
 void fitEMuTTBarStudyBinningEMuRatios(){
+	///////////////////////////////////////////////////////////////////////////////////////////
+	//adjust these parameters to determine the number of toys thrown, the number of events generated, and the number of bins in the M_LLJJ distributions which are generated
+	int nToys=400;
+	Int_t evtsArr[]={982,2000,4000};	///<there are 982 events in real data from MuonEG in 2015 which pass emu flavor sideband selection
+	int nbins[]={10, 20, 30, 40, 50, 70, 90, 110};
+	Float_t lljjMin = 600.;
+	Float_t lljjMaxArr[]={2000.,2350.,2700.,3000.};
+	///////////////////////////////////////////////////////////////////////////////////////////
+	vector<Float_t> lljjMaxVect(lljjMaxArr,lljjMaxArr + sizeof(lljjMaxArr)/sizeof(Float_t));
+	vector<Int_t> evtsVect(evtsArr,evtsArr + sizeof(evtsArr)/sizeof(Int_t));
+	Int_t maxLLJJSize = lljjMaxVect.size();
+	Int_t evtsSize = evtsVect.size();
+	gStyle->SetOptStat("oRMe");
+	gStyle->SetOptFit(1111);
+	
 	TChain * ttbaremuchain = new TChain("Tree_Iter0");
 	ttbaremuchain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/forPeterRootFiles/selected_tree_TT_flavoursidebandEMu.root");
 
@@ -60,65 +75,86 @@ void fitEMuTTBarStudyBinningEMuRatios(){
 	RooRealVar massWR("fourObjectMass","fourObjectMass", 600, 6500);
 	RooRealVar evtWeight("evWeightSign", "evWeightSign", -2000000,200000);
 	RooArgSet vars(massWR,evtWeight);
-	
+
 	RooDataSet ttbaremuDataset = applyNormalization(ttbaremuchain, "ttbarEMuDataSet",1, vars, massWR, evtWeight, false, 0.0, 0.0);
 	Fits::expPower.setVal(-0.004);
 	RooFitResult * fitResult = Fits::expPdfRooAbsPdf->fitTo(ttbaremuDataset, RooFit::SumW2Error(kTRUE), RooFit::Save(kTRUE));
-	int nToys=5;
-	Int_t eventsToGenerate=4000;
-	int nbins[]={10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 	vector<int> nbinsVector(nbins,nbins + sizeof(nbins)/sizeof(int));
 	int diffBins = nbinsVector.size();
-	Float_t lljjMin = 600., lljjMax = 2000.;
 	RooArgSet testVars(massWR);
-	map<int,Double_t> mapNBinsToIntercept;
-	map<int,Double_t> mapNBinsToSlope;
-	Double_t tempIntercepts=0, tempSlopes=0;
-	for(int j=0; j<diffBins; j++){
-
-		//throw many toys for each value of nbinsVector
-		for(int i=0; i<nToys; i++){
-			///generate two RooDataHists with a fixed number of events using the exponential fitted to the EMuJJ distribution as a template
-			RooDataHist * rooHistOne = Fits::expPdfRooAbsPdf->generateBinned(testVars, RooFit::NumEvents(eventsToGenerate));
-			RooDataHist * rooHistTwo = Fits::expPdfRooAbsPdf->generateBinned(testVars, RooFit::NumEvents(eventsToGenerate));
-
-			///create two histograms from the two RooDataHists
-			TH1* binnedHistOne = rooHistOne->createHistogram("massLLJJOne", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
-			TH1* binnedHistTwo = rooHistTwo->createHistogram("massLLJJTwo", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
-			TH1* ratioHistOneTwo = (TH1*) binnedHistOne->Clone();
-			ratioHistOneTwo->Divide(binnedHistTwo);
-			TF1* ratioFit = new TF1("ratioFit","[0]*x+[1]", lljjMin, lljjMax);
-			ratioHistOneTwo->Fit("ratioFit","Q");
-			
-			if(i==0 && (j==0 || j==2) ){
-				TCanvas* canv = new TCanvas("canv","canv",800,800);
-				canv->cd();
-				ratioHistOneTwo->Draw();
-				ratioFit->SetLineColor(kRed);
-				ratioFit->Draw("same");
-				canv->SaveAs(("ratioHistoWithFit_nbins_"+to_string(j)+".pdf").c_str(), "recreate");
-				canv->SaveAs(("ratioHistoWithFit_nbins_"+to_string(j)+".png").c_str(), "recreate");
-				delete canv;
-			}
-			tempIntercepts += ratioFit->GetParameter(1);
-			tempSlopes += ratioFit->GetParameter(0);
-
-			///delete the two RooDataHists
-			delete ratioHistOneTwo;
-			delete ratioFit;
-			delete binnedHistOne;
-			delete binnedHistTwo;
-			delete rooHistOne;
-			delete rooHistTwo;
-		}///end loop over toys
-		mapNBinsToIntercept[nbinsVector[j]] = (Double_t) (tempIntercepts/nToys);
-		mapNBinsToSlope[nbinsVector[j]] = (Double_t) (tempSlopes/nToys);
-		
-		tempIntercepts=0, tempSlopes=0;
-	}///end loop over different bin sizes
-	for(int k=0; k<diffBins; k++){
-		std::cout<<"when there are\t"<< nbinsVector[k] <<"\tbins, the average intercept and slope of the ratio plot are\t"<< mapNBinsToIntercept[nbinsVector[k]] <<"\tand\t"<< mapNBinsToSlope[nbinsVector[k]] << std::endl;
-	}//end loop over elements in maps
 	
+	for(Int_t r=0; r<evtsSize; r++){
+		for(Int_t q=0; q<maxLLJJSize; q++){
+			Float_t lljjMax = lljjMaxVect[q];
+			Int_t eventsToGenerate = evtsVect[r];
+
+			TTree * linearFitParamTree = new TTree("t","");
+			Float_t intercept=0, slope=0, interceptUncertainty=0, slopeUncertainty=0;
+			Int_t numbins=0;
+			linearFitParamTree->Branch("intercept",&intercept);
+			linearFitParamTree->Branch("interceptUncertainty",&interceptUncertainty);
+			linearFitParamTree->Branch("slope",&slope);
+			linearFitParamTree->Branch("slopeUncertainty",&slopeUncertainty);
+			linearFitParamTree->Branch("numbins",&numbins);
+			TFile outputFile(("outputFileWithTTBarTree"+to_string(nToys)+"toys"+"_"+to_string((int) lljjMax)+"maxFitRange_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".root").c_str(), "recreate");
+
+			for(int i=0; i<nToys; i++){
+
+				for(int j=0; j<diffBins; j++){
+					intercept=-1, slope=-1, interceptUncertainty=-1, slopeUncertainty=-1, numbins=-1;
+
+					///generate two RooDataSets with a fixed number of events using the exponential fitted to the EMuJJ distribution as a template
+					RooDataSet * rooDataSetOne = Fits::expPdfRooAbsPdf->generate(testVars, RooFit::NumEvents(eventsToGenerate));
+					RooDataSet * rooDataSetTwo = Fits::expPdfRooAbsPdf->generate(testVars, RooFit::NumEvents(eventsToGenerate));
+
+					///create two histograms from the two RooDataHists
+					TH1* binnedHistOne = rooDataSetOne->createHistogram("massLLJJOne", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
+					TH1* binnedHistTwo = rooDataSetTwo->createHistogram("massLLJJTwo", massWR, RooFit::Binning(nbinsVector[j], lljjMin, lljjMax));
+
+					TH1* ratioHistOneTwo = (TH1*) binnedHistOne->Clone();
+					ratioHistOneTwo->Divide(binnedHistTwo);
+					TF1* ratioFit = new TF1("ratioFit","[0]*x+[1]", lljjMin, lljjMax);
+					ratioHistOneTwo->Fit("ratioFit","Q");
+
+					if((i==0 || i==50 || i==100) && (j==0 || j==2 || j==4) ){
+						TCanvas* canv = new TCanvas("canv","canv",800,800);
+						canv->cd();
+
+						binnedHistOne->Draw();
+						canv->SaveAs(("binnedHistOne_nbins_"+to_string(nbinsVector[j])+"_toy_"+to_string(i)+"_maxMLLJJ_"+to_string((int) lljjMax)+"_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".pdf").c_str(),"recreate");
+						canv->SaveAs(("binnedHistOne_nbins_"+to_string(nbinsVector[j])+"_toy_"+to_string(i)+"_maxMLLJJ_"+to_string((int) lljjMax)+"_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".png").c_str(),"recreate");
+						canv->Clear();
+						binnedHistTwo->Draw();
+						canv->SaveAs(("binnedHistTwo_nbins_"+to_string(nbinsVector[j])+"_toy_"+to_string(i)+"_maxMLLJJ_"+to_string((int) lljjMax)+"_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".pdf").c_str(),"recreate");
+						canv->SaveAs(("binnedHistTwo_nbins_"+to_string(nbinsVector[j])+"_toy_"+to_string(i)+"_maxMLLJJ_"+to_string((int) lljjMax)+"_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".png").c_str(),"recreate");
+
+						canv->Clear();
+						ratioHistOneTwo->Draw();
+						ratioFit->SetLineColor(kRed);
+						ratioFit->Draw("same");
+						canv->SaveAs(("ratioHistoWithFit_nbins_"+to_string(nbinsVector[j])+"_toy_"+to_string(i)+"_maxMLLJJ_"+to_string((int) lljjMax)+"_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".pdf").c_str(), "recreate");
+						canv->SaveAs(("ratioHistoWithFit_nbins_"+to_string(nbinsVector[j])+"_toy_"+to_string(i)+"_maxMLLJJ_"+to_string((int) lljjMax)+"_"+to_string((int) eventsToGenerate)+"eventsGenerated"+".png").c_str(), "recreate");
+						delete canv;
+					}
+
+					numbins=nbinsVector[j];
+					intercept=ratioFit->GetParameter(1), slope=ratioFit->GetParameter(0), interceptUncertainty=ratioFit->GetParError(1), slopeUncertainty=ratioFit->GetParError(0);
+					linearFitParamTree->Fill();
+
+					///delete the two RooDataHists
+					delete ratioHistOneTwo;
+					delete ratioFit;
+					delete binnedHistOne;
+					delete binnedHistTwo;
+					delete rooDataSetOne;
+					delete rooDataSetTwo;
+				}///end loop over different bin sizes
+
+			}///end loop over toys
+
+			linearFitParamTree->Write();
+		}///end loop over different fit ranges
+	}///end loop over different event counts to be generated
+
 }///end fitEMuTTBarStudyBinningEMuRatios()
 
