@@ -62,7 +62,7 @@ void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[
 		Iterator++;
 	}
 
-	Iterator=0;
+	Iterator = 0;
 	for(auto jets : * (myEvent->jets_p4)) {
 #ifdef DEBUG
 		std::cout << std::endl << " Jet number= " << Iterator << " " << (*(myEvent->jec_uncertainty))[Iterator] << " " << Smear << " Jet Pt Before = " << (*(myEvent->jets_p4))[Iterator].Pt() << " Jet Eta Before = " << (*(myEvent->jets_p4))[Iterator].Eta() << std::endl;
