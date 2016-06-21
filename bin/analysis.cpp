@@ -625,29 +625,20 @@ int main(int ac, char* av[])
 			}
 			delete hWR_mass;
 
-			if(loop_one && mode.find("WRto") != _ENDSTRING) {
+			if(loop_one) {
 				TString hist_name(mode + "_unweighted");
 				hWR_mass= new TH1F(hist_name,hist_name, 140, 0, 7000);
-				TCanvas * c = new TCanvas("c","c",600,600);
-				t1[i]->Draw("WR_mass>>" + hist_name, "", "");
-				TH1F * integralclone = (TH1F*)hWR_mass->Clone();
-				integralclone->SetFillColor(kRed);
-				for(auto mass : mass_vec) {
-					// skip if not the correct mass
-					if (mode.find("JJ_" + std::to_string(mass)) == _ENDSTRING) continue;
+
+				//Draw unweighted histogram
+				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
+				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
+					auto mass = mass_vec[massi];
 					auto range = mass_cut[mass];
 					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
-					integralclone->GetXaxis()->SetRange(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
-					range = mass_cut[0];
-					float nEvents_total = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
-					std::cout << "global_efficiency\t" << mass << '\t' << nEvents / myReader.getPrimaryEvents(selEvent.datasetName) << std::endl;
-					std::cout << "global_efficiency_minus_mass\t" << mass << '\t' << nEvents_total / myReader.getPrimaryEvents(selEvent.datasetName) << std::endl;
+					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
+					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
 				}
-				integralclone->Draw("same");
-				c->SaveAs("plots/" + hist_name + ".png");
-				delete c;
 				delete hWR_mass;
-				delete integralclone;
 			}
 
 			f.cd();
@@ -739,6 +730,7 @@ int main(int ac, char* av[])
 				central_value_tree->Fill();
 				sel::hists.PrintEntries("plots/", mode);
 				sel::hists.Draw("plots/", mode);
+				sel::hists.Clear();
 			}
 			else syst_tree->Fill();
 

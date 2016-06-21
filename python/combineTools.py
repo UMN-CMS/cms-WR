@@ -110,10 +110,17 @@ class miniTreeInterface:
 		self.ProcessFile(key, f)
 
 		mean =     self.results[key]["syst"]["mean"][mass_i]
+		tmp_syst = self.results[key]["syst"]["std"] [mass_i]
+		tmp_stat = self.results[key]["stat"]        [mass_i]
+		central_value = self.results[key]["central"]["weighted"][mass_i]
+		central_unweighted = self.results[key]["central"]["unweighted"][mass_i]
+
+		print "raw", key,MWR, mean,central_value, tmp_syst, tmp_stat, central_unweighted
+
 		if mean < .0001:
 			mean = .0001
-		syst = 1 + self.results[key]["syst"]["std"] [mass_i]/abs(mean)
-		stat = 1 + self.results[key]["stat"]        [mass_i]/abs(mean)
+		syst = 1 + tmp_syst/abs(mean)
+		stat = 1 + tmp_stat/abs(mean)
 		return mean, syst, stat
 
 	def getMeanStd(self, tree, fromFit=False):
@@ -127,7 +134,8 @@ class miniTreeInterface:
 		if self.makeplots: c = r.TCanvas("c","c",600,600)
 		for mass_i in range(len(self.masses)):
 			ms = str(self.masses[mass_i])
-			if "signal" in self.currentkey and ms not in self.currentkey: continue
+			if "signal" in self.currentkey and self.currentkey.split("_")[2] != ms: continue
+			if ms == "0": continue
 
 			tree.Draw(draw_str % mass_i,"","goff")
 			h = r.gDirectory.Get("htemp")
@@ -155,9 +163,17 @@ class miniTreeInterface:
 		central_tree = f.Get("central_value_tree")
 		central_tree.GetEntry(0)
 		try:
+			central_value = np.array(central_tree.NEventsInRange)
+		except AttributeError:
+			central_value = np.zeros(len(self.masses))
+		try:
 			central_error = np.array(central_tree.ErrorEventsInRange)
 		except AttributeError:
 			central_error = np.zeros(len(self.masses))
+		try:
+			central_unweighted = np.array(central_tree.UnweightedNEventsInRange)
+		except AttributeError:
+			central_unweighted = np.zeros(len(self.masses))
 
 		if "TT" in key and self.tt_emu_ratio:
 			if "ee" in key: channel = "ee"
@@ -165,11 +181,19 @@ class miniTreeInterface:
 			scale = self.tt_emu_ratio[channel]
 			syst_means *= scale
 			syst_stds *= scale
+			central_value *= scale
 			central_error *= scale
 
 		self.results[key] = {
-				"syst": {"mean":syst_means.tolist(), "std":syst_stds.tolist()},
-				"stat": central_error.tolist() ,
+				"syst": {
+					"mean":syst_means.tolist(),
+					"std":syst_stds.tolist()
+					},
+				"stat": central_error.tolist(),
+				"central": {
+					"weighted": central_value.tolist(),
+					"unweighted": central_unweighted.tolist(),
+					}
 				}
 
 

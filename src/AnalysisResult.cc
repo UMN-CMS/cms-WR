@@ -14,6 +14,7 @@ void AnalysisResult::SetBranches(TTree* tree)
 	tree->Branch("FitParameterErrors", &fit_parameter_errors, "FitParameterErrors[nparam]/F");
 	tree->Branch("nmasses", &nmasses);
 	tree->Branch("NEventsInRange", &events_in_range, "NEventsInRange[nmasses]/F");
+	tree->Branch("UnweightedNEventsInRange", &unweighted_events_in_range, "UnweightedNEventsInRange[nmasses]/i");
 	tree->Branch("ErrorEventsInRange", &error_in_range, "ErrorEventsInRange[nmasses]/F");
 	tree->Branch("FitIntegralInRange", &fit_integral_in_range, "FitIntegralInRange[nmasses]/F");
 }
