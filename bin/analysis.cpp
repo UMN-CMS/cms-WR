@@ -627,7 +627,7 @@ int main(int ac, char* av[])
 
 			if(loop_one) {
 				TString hist_name(mode + "_unweighted");
-				hWR_mass= new TH1F(hist_name,hist_name, 140, 0, 7000);
+				hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
 
 				//Draw unweighted histogram
 				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
@@ -731,8 +731,7 @@ int main(int ac, char* av[])
 				sel::hists.PrintEntries("plots/", mode);
 				sel::hists.Draw("plots/", mode);
 				sel::hists.Clear();
-			}
-			else syst_tree->Fill();
+			} else syst_tree->Fill();
 
 			loop_one = false;
 		}
