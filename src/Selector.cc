@@ -281,6 +281,19 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 bool Selector::isPassing(tag_t tag, bool makeHists)
 {
 
+	enum det_t {
+		DET_ENDCAP,
+		DET_BARREL,
+		DET_GAP,
+	} lead_det, sublead_det;
+
+	enum pair_t {
+		P_EE,
+		P_BB,
+		P_EB,
+		P_GAP,
+	} pair;
+
 	_isPassing = false;
 	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
@@ -450,7 +463,13 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	pu_weight = fabs(global_event_weight);
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
-
+	if (makeHists) {
+		sel::hists("global", 4, 0, 4)->Fill(int(pair));
+		if(pair == P_EE) sel::hists("global_EE", 1, 0, 1)->Fill(0);
+		if(pair == P_BB) sel::hists("global_BB", 1, 0, 1)->Fill(0);
+		if(pair == P_EB) sel::hists("global_EB", 1, 0, 1)->Fill(0);
+		if(pair == P_GAP)  sel::hists("global_GAP", 1, 0, 1)->Fill(0);
+	}
 	_isPassing = true;
 	return _isPassing;
 
