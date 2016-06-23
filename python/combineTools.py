@@ -23,10 +23,9 @@ configfolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/configs/"
 # @param background_tuples list of (name, rate) for backgrounds
 #
 # @return signal_rate, tuple of bg rates
-def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples, systematics = []):
+def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tuples, systematics):
 
 	nBGs = len(background_tuples)
-	nSystematics = len(systematics)
 	ns = "  ".join([str(i) for i in range(nBGs+1)])
 	sig_name = signal_tuple[0]
 	signal_rate = "%.4g" % (signal_tuple[1])
@@ -34,7 +33,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 	bg_names = ""
 	bg_rates = ""
 	name_lookup = {sig_name:0}
-	for i,(bg_name, bg_rate) in enumerate(background_tuples):
+	for i, (bg_name, bg_rate) in enumerate(background_tuples):
 		name_lookup[bg_name] = i+1
 		bg_names += bg_name + "  "
 		bg_rates   += "%.4g" % bg_rate + "  "
@@ -44,7 +43,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		out.write("imax 1  number of channels\n")
 		out.write("jmax %d  number of backgrounds\n" % nBGs)
 		if systematics:
-			out.write("kmax %d  number of nuisance parameters\n" % nSystematics)
+			out.write("kmax %d  number of nuisance parameters\n" % systematics.n_nuisance)
 		out.write("bin " + bin_name + "\n")
 		out.write("observation %d\n" % round(nObs))
 		out.write("------------\n")
@@ -54,15 +53,11 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		out.write("rate  " + rates + "\n")
 		out.write("------------\n")
 		if systematics:
-			for name, syst_type, channels in systematics:
-				channel_list = ['-']*(nBGs + 1)
-				for chan_name, err in channels:
-					channel_list[name_lookup[chan_name]] = str(err)
-				out.write(name + ' ' + syst_type + ' ' + ' '.join(channel_list) + '\n')
+			out.write(str(systematics))
 	return signal_rate, tuple(bg_rates.split())
 
 class miniTreeInterface:
-	chnlName = {"ee":"EE","mumu":"MuMu", "emu":"EMu"}
+	chnlName = {"ee":"EE", "mumu":"MuMu", "emu":"EMu"}
 	def __init__(self,
 			base="./",
 			tag = "",
@@ -95,7 +90,7 @@ class miniTreeInterface:
 	def getTTBarUncertainty(self, channel):
 		return 1 + abs(self.tt_emu_error[channel]/self.tt_emu_ratio[channel])
 
-	def getNEvents(self, MWR, channel, process):
+	def getNEvents(self, MWR, channel, process, systematics):
 		""" returns mean, syst, stat """
 		key = channel + "_" + process
 		if "signal" == process:
@@ -115,12 +110,39 @@ class miniTreeInterface:
 		central_value = self.results[key]["central"]["weighted"][mass_i]
 		central_unweighted = self.results[key]["central"]["unweighted"][mass_i]
 
-		print "raw", key,MWR, mean,central_value, tmp_syst, tmp_stat, central_unweighted
 
 		if mean < .0001:
 			mean = .0001
 		syst = 1 + tmp_syst/abs(mean)
 		stat = 1 + tmp_stat/abs(mean)
+
+		if "_800" == key[-4:]:
+			key = key[:-3] + "0800"
+			
+		raw = [ mean, central_value, tmp_syst, tmp_stat, central_unweighted, ]
+		systematics.add(process, "lumi", 1.027)
+		raw += [1.027]
+		systematics.add(process, process + "_syst", syst)
+		raw += [syst]
+		if(central_unweighted):
+			systematics.add(process, process + "_stat", (central_unweighted, mean/central_unweighted))
+		else:
+			systematics.add(process, process + "_stat", (0, 0))
+		if "TT" in process: 
+			systematics.add(process, "TT_ratio", self.getTTBarUncertainty(channel))
+			raw += [ self.getTTBarUncertainty(channel)]
+		elif "DY" in process: 
+			#TODO get this number
+			systematics.add(process, "DY_SF", 1.0)
+			raw += [1.0]
+		else:
+			raw += [0.0]
+		raw = ["%0.4f" % x for x in raw]
+		raw = ["raw", key, "%04d" % MWR] + raw
+		print " ".join(raw)
+
+
+
 		return mean, syst, stat
 
 	def getMeanStd(self, tree, fromFit=False):
@@ -131,13 +153,13 @@ class miniTreeInterface:
 		else:
 			draw_str = "NEventsInRange[%d]"
 
-		if self.makeplots: c = r.TCanvas("c","c",600,600)
+		if self.makeplots: c = r.TCanvas("c", "c", 600, 600)
 		for mass_i in range(len(self.masses)):
 			ms = str(self.masses[mass_i])
 			if "signal" in self.currentkey and self.currentkey.split("_")[2] != ms: continue
 			if ms == "0": continue
 
-			tree.Draw(draw_str % mass_i,"","goff")
+			tree.Draw(draw_str % mass_i, "", "goff")
 			h = r.gDirectory.Get("htemp")
 			means[mass_i] = h.GetMean()
 			stds[mass_i] = h.GetStdDev()
@@ -223,20 +245,67 @@ class miniTreeInterface:
 		if not f: raise IOError
 		return f
 
-	def GetMasses(self,f):
+	def GetMasses(self, f):
 		masses = r.std.vector(int)()
-		f.GetObject("signal_mass",masses)
+		f.GetObject("signal_mass", masses)
 		self.masses = [m for m in masses]
 	
 	def setTag(self, tag):
 		self.filefmt_dict["tag"] = tag
+
+		
+class Systematics:
+	#for formatting. if a string format as string otherwise use fmt_spec
+	#class nuisance_value:
+	#	def __init__(self, value):
+	#		self.value = value
+	#	def __format__(self, spec):
+	#		if(isinstance(self.value, str)): return str(self.value)
+	#		else: return format(self.value, spec)
+
+	def __init__(self, channel_names, nuisance_params):
+		self.channel_names = channel_names
+		self.rows = nuisance_params
+		self.n_nuisance = len(self.rows)
+		self.values = {}
+	def add(self, channel, syst, value):
+		key = channel+syst
+		self.values[key] = value
+	def __str__(self):
+		maxlen = max([len(name) for name, s_type in self.rows])
+		floatsize = 9
+		prefix = "{name:{maxlen}} {type} {N:6}"
+		fmt = " {:{floatsize}.4f}"
+		s = ""
+		for name, s_type in self.rows:
+			line = prefix 
+			N = ""
+			for channel in self.channel_names:
+				key = channel + name
+				try:
+					N, v = self.values[key]
+					line += fmt.format(v)
+				except KeyError:
+					line += " " * floatsize + "-"
+				except TypeError:
+					v = self.values[key]
+					line += fmt.format(v, floatsize=floatsize )
+			s += line.format(name=name, type=s_type, N=N, maxlen=maxlen) + "\n"
+		return s
+	def __len__(self):
+		return len(self.values)
+
+		
+
+
+
 
 ##
 # @brief calls and parses command for `combine'
 #
 # @param command a list to pass to subprocess.check_output
 #
-# @return (mean, meanError), (onesig_minus,onesig_plus), (twosig_minus,twosig_plus)
+# @return (mean, meanError), (onesig_minus, onesig_plus), (twosig_minus, twosig_plus)
 def runCombine(command):
 	name  = "combine" + datetime.datetime.now().time().isoformat()
 	out_file = open(name + ".out", "w+")
@@ -302,7 +371,7 @@ def runCombine(command):
 		raise e
 		return None
 
-mass_cut =  {mass:(low,hi) for mass,low,hi in [ map(int,s.split()) for s in open(configfolder + "mass_cuts.txt",'r').read().split('\n') if s and s[0] != "#"]}
+mass_cut =  {mass:(low, hi) for mass, low, hi in [ map(int, s.split()) for s in open(configfolder + "mass_cuts.txt", 'r').read().split('\n') if s and s[0] != "#"]}
 
 import sys
 if __name__ == '__main__':
