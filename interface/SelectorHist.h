@@ -28,8 +28,9 @@ private:
 
 };
 
-namespace sel {
-	extern SelectorHist hists;
+namespace sel
+{
+extern SelectorHist hists;
 }
 
 #endif

@@ -7,14 +7,14 @@ observation 0
 bin    mumujj    mumujj    mumujj
 process  WR_mumujj  TTBar  DY  
 process  0  1  2
-rate  1.613  0.0001  0.0001  
+rate  1.675  0.0001  0.0001  
 ------------
-lumi lnN 1.027 1.027 1.027
-TT_ratio lnN - 1.040696627 -
-DY_SF lnN - - 1.0
-Signal_syst lnN 1.0 - -
-Signal_stat lnN 1.00896444882 - -
-TTBar_syst lnN - 1.0 -
-TTBar_stat lnN - 1.0 -
-DY_syst lnN - - 1.0
-DY_stat lnN - - 16758.2200298
+lumi        lnN           1.0270    1.0270    1.0270
+TT_ratio    lnN                -    1.0421         -
+DY_SF       lnN                -         -    1.0000
+signal_syst lnN           1.0184         -         -
+signal_stat gmN  30892         -         -         -
+TT_syst     lnN                -    1.0000         -
+TT_stat     gmN      0         -         -         -
+DYAMC_syst  lnN                -         -  654.2103
+DYAMC_stat  gmN      1         -         -         -
