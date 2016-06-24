@@ -50,6 +50,8 @@ public:
 	Float_t sublead_jet_eta;
 	Float_t lead_jet_phi;
 	Float_t sublead_jet_phi;
+	Float_t lead_jet_jec_unc;
+	Float_t sublead_jet_jec_unc;
 	Float_t lead_lepton_weight;
 	Float_t sublead_lepton_weight;
 	Float_t lead_jet_weight;
@@ -60,7 +62,20 @@ public:
 	Float_t dR_subleadlepton_subleadjet;
 	Float_t lead_lepton_r9;
 	Float_t sublead_lepton_r9;
+	Float_t lead_lepton_IDSF_error;
+	Float_t lead_lepton_IsoSF_error;
+	Float_t lead_lepton_RecoSF_error;
+	Float_t lead_lepton_HltSF_error;
+	Float_t lead_lepton_ESmearing_error;
+	Float_t lead_lepton_EScaling_error;
+	Float_t sublead_lepton_IDSF_error;
+	Float_t sublead_lepton_IsoSF_error;
+	Float_t sublead_lepton_RecoSF_error;
+	Float_t sublead_lepton_HltSF_error;
+	Float_t sublead_lepton_ESmearing_error;
+	Float_t sublead_lepton_EScaling_error;
 
+	Double_t nPU;	///<positive only for MC
 	Int_t nPV;
 	Int_t njets;
 
