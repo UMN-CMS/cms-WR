@@ -3,13 +3,13 @@
 #lead and sublead jet pt cuts used to determine dy scaling factors
 ljPtCut=40
 sjPtCut=40
-llPtCut=33
-slPtCut=20
+llPtCut=35
+slPtCut=35
 
 tAndPdatasetNames=('data' 'DYPOWHEG' 'DYAMC' 'DYMADHT')
 sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMADHT' 'DYPOWHEG' 'DYAMC')
 
-# #cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
+#cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
 eval "rm -r test/validationPlots/"
 
 echo -n '#' > configs/miniTreeEntries.dat
@@ -97,11 +97,12 @@ eval "cd ../."
 
 echo "about to reprocess the minitrees with dy scaling factors"
 
-#W dataset is WJets
+##W dataset is WJets
 for r in ${!sidebandDatasetNames[*]}
 do
 	eval "./bin/analysis -c MuMu --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}.txt &"
-	eval "./bin/analysis -c EE --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}.txt &" #	eval "./bin/analysis -c EMu --ignoreDyScaleFactors false -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}.txt &"
+	eval "./bin/analysis -c EE --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}.txt &" 
+	eval "./bin/analysis -c EMu --ignoreDyScaleFactors false -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}.txt &"
 done
 
 for r in ${!tAndPdatasetNames[*]}
@@ -160,10 +161,10 @@ rm combinedMiniPlotterEE_C*
 rm combinedMiniPlotterEMu_C*
 
 eval "cd ../."
-#dyScalingStudy.sh replaced by code written above
-#eval "./scripts/dyScalingStudy.sh"
-#eval "cd test/"
-#eval "mv *.png *.pdf validationPlots/."
-#eval "cd ../."
+#dyScalingStudy.sh should be run after the scaling factors are calculated and applied
+eval "./scripts/dyScalingStudy.sh"
+eval "cd test/"
+eval "mv *.png *.pdf validationPlots/."
+eval "cd ../."
 eval "git commit -m 'finished running validation and committing ZPeakRegionIntegrals.txt, miniTreeEntries.dat and dyScaleFactors.txt in configs dir' "
 
