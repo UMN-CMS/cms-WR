@@ -26,6 +26,10 @@ public:
 	std::vector<Float_t> * electron_smearing;
 	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
+	std::vector<Float_t> * electron_IDSF_central;
+	std::vector<Float_t> * electron_IDSF_error;
+	std::vector<Float_t> * electron_RecoSF_central;
+	std::vector<Float_t> * electron_RecoSF_error;
 
 	std::vector<TLorentzVector> * muons_p4;
 	std::vector<Int_t> * muon_charge;
