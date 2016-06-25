@@ -33,6 +33,8 @@ public:
 	Float_t sublead_jet_eta;
 	Float_t lead_jet_phi;
 	Float_t sublead_jet_phi;
+	Float_t lead_jet_jec_unc;
+	Float_t sublead_jet_jec_unc;
 	Float_t lead_lepton_weight;
 	Float_t sublead_lepton_weight;
 	Float_t lead_jet_weight;

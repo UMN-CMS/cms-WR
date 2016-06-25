@@ -210,6 +210,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	if(sublead_lepton_p4.Pt() < 35) return false;
 
 	//defaults if no jets are found in the event
+	lead_jet_jec_unc = -10;
+	sublead_jet_jec_unc = -10;
 	lead_jet_pt = -9;
 	lead_jet_eta = -6;
 	lead_jet_phi = -6;
@@ -219,7 +221,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	sublead_jet_eta = -6;
 	sublead_jet_phi = -6;
 	dR_leadlepton_leadjet = 9, dR_leadlepton_subleadjet = 9, dR_subleadlepton_leadjet = 9, dR_subleadlepton_subleadjet = 9;
-
+		
 	njets = jets.size();
 
 	if(jets.size() == 1) {
@@ -227,6 +229,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_jet_eta = jets[0].p4.Eta();
 		lead_jet_phi = jets[0].p4.Phi();
 		lead_jet_weight = 1.0;
+		lead_jet_jec_unc = jets[0].jec_uncertainty;
 		dR_leadlepton_leadjet = dR_TLV(lead_lepton_p4, jets[0].p4);
 		dR_subleadlepton_leadjet = dR_TLV(sublead_lepton_p4, jets[0].p4);
 	}//one jet in event
@@ -237,7 +240,9 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_jet_phi = jets[0].p4.Phi();
 		lead_jet_weight = 1.0;
 		sublead_jet_weight = 1.0;
-
+		lead_jet_jec_unc = jets[0].jec_uncertainty;
+		sublead_jet_jec_unc = jets[1].jec_uncertainty;
+	
 		sublead_jet_pt = jets[1].p4.Pt();
 		sublead_jet_eta = jets[1].p4.Eta();
 		sublead_jet_phi = jets[1].p4.Phi();
@@ -316,12 +321,14 @@ bool Selector::isPassing(tag_t tag)
 	}
 
 	njets = jets.size();
-
+	
 	lead_jet_pt = jets[0].p4.Pt();
 	lead_jet_eta = jets[0].p4.Eta();
 	lead_jet_phi = jets[0].p4.Phi();
 	lead_jet_weight = 1.0;
 	sublead_jet_weight = 1.0;
+	lead_jet_jec_unc = jets[0].jec_uncertainty;
+	sublead_jet_jec_unc = jets[1].jec_uncertainty;
 
 	sublead_jet_pt = jets[1].p4.Pt();
 	sublead_jet_eta = jets[1].p4.Eta();
@@ -474,6 +481,8 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("dilepton_mass", &dilepton_mass);
 	tree->Branch("pu_weight", &pu_weight);
 	tree->Branch("njets", &njets);
+	tree->Branch("lead_jet_jec_unc", &lead_jet_jec_unc);
+	tree->Branch("sublead_jet_jec_unc", &sublead_jet_jec_unc);
 
 }
 
@@ -508,6 +517,8 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("dilepton_mass", &dilepton_mass);
 	tree->SetBranchAddress("pu_weight", &pu_weight);
 	tree->SetBranchAddress("njets", &njets);
+	tree->SetBranchAddress("lead_jet_jec_unc", &lead_jet_jec_unc);
+	tree->SetBranchAddress("sublead_jet_jec_unc", &sublead_jet_jec_unc);
 
 }
 
