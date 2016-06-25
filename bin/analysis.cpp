@@ -407,13 +407,25 @@ int main(int ac, char* av[])
 				unsigned int nEle = myEvent.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
-					if(isData) { //only scales are corrected
+					if(isData) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0.
 						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
 						//(*myEvent.electron_scale)[iEle] = 1.0;
 						(*myEvent.electron_smearing)[iEle] = 0.;
+						(*myEvent.electron_IDSF_central)[iEle] = 1.0;
+						(*myEvent.electron_IDSF_error)[iEle] = 0.;
+						(*myEvent.electron_RecoSF_central)[iEle] = 1.0;
+						(*myEvent.electron_RecoSF_error)[iEle] = 0.;
+						(*myEvent.electron_HltSF_central)[iEle] = 1.0;
+						(*myEvent.electron_HltSF_error)[iEle] = 0.;
 					} else { // only the smearings are corrected
 						(*myEvent.electron_scale)[iEle] = 1.;
 						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
+						(*myEvent.electron_IDSF_central)[iEle] = 0.99401;
+						(*myEvent.electron_IDSF_error)[iEle] = 0.00950;
+						(*myEvent.electron_RecoSF_central)[iEle] = 0.98532;
+						(*myEvent.electron_RecoSF_error)[iEle] = 0.00948;
+						(*myEvent.electron_HltSF_central)[iEle] = 0.94667;
+						(*myEvent.electron_HltSF_error)[iEle] = 0.04929;
 					}
 				}
 				myEventVector.push_back(myEvent);
