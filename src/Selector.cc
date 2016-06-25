@@ -70,7 +70,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.smearing = myEvent.electron_smearing->at(i);
 		ele.charge = myEvent.electron_charge->at(i);
 		ele.r9 = myEvent.electron_r9->at(i);
-		ele.weight = 1.;
+		ele.weight = (myEvent.electron_IDSF_central->at(i))*(myEvent.electron_RecoSF_central->at(i))*(myEvent.electron_HltSF_central->at(i));
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -206,8 +206,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	}
 
 	//lepton pt cuts necessitated by dytagandprobe triggers
-	if(lead_lepton_p4.Pt() < 33) return false;
-	if(sublead_lepton_p4.Pt() < 20) return false;
+	if(lead_lepton_p4.Pt() < 35) return false;
+	if(sublead_lepton_p4.Pt() < 35) return false;
 
 	//defaults if no jets are found in the event
 	lead_jet_pt = -9;

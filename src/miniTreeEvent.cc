@@ -11,6 +11,8 @@ miniTreeEvent::miniTreeEvent():
 	electron_IDSF_error(new std::vector<Float_t>),
 	electron_RecoSF_central(new std::vector<Float_t>),
 	electron_RecoSF_error(new std::vector<Float_t>),
+	electron_HltSF_central(new std::vector<Float_t>),
+	electron_HltSF_error(new std::vector<Float_t>),
 	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
 	muon_IDSF_central(new std::vector<Float_t>),
@@ -36,6 +38,8 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	electron_IDSF_error(new std::vector<Float_t>),
 	electron_RecoSF_central(new std::vector<Float_t>),
 	electron_RecoSF_error(new std::vector<Float_t>),
+	electron_HltSF_central(new std::vector<Float_t>),
+	electron_HltSF_error(new std::vector<Float_t>),
 	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
 	muon_IDSF_central(new std::vector<Float_t>),
@@ -59,6 +63,8 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*electron_IDSF_error = *(otherEvent.electron_IDSF_error);
 	*electron_RecoSF_central = *(otherEvent.electron_RecoSF_central);
 	*electron_RecoSF_error = *(otherEvent.electron_RecoSF_error);
+	*electron_HltSF_central = *(otherEvent.electron_HltSF_central);
+	*electron_HltSF_error = *(otherEvent.electron_HltSF_error);
 	*muon_charge = *(otherEvent.muon_charge);
 	*muon_IDSF_central = *(otherEvent.muon_IDSF_central);
 	*muon_IsoSF_central = *(otherEvent.muon_IsoSF_central);
@@ -96,6 +102,8 @@ void miniTreeEvent::clear()
 	electron_IDSF_error->clear();
 	electron_RecoSF_central->clear();
 	electron_RecoSF_error->clear();
+	electron_HltSF_central->clear();
+	electron_HltSF_error->clear();
 	muon_charge->clear();
 	muon_IDSF_central->clear();
 	muon_IsoSF_central->clear();
@@ -120,6 +128,8 @@ miniTreeEvent::~miniTreeEvent()
 	delete electron_IDSF_error;
 	delete electron_RecoSF_central;
 	delete electron_RecoSF_error;
+	delete electron_HltSF_central;
+	delete electron_HltSF_error;
 	delete muons_p4;
 	delete muon_charge;
 	delete muon_IDSF_central;
@@ -144,6 +154,8 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("electron_IDSF_error", electron_IDSF_error);
 	tree->Branch("electron_RecoSF_central", electron_RecoSF_central);
 	tree->Branch("electron_RecoSF_error", electron_RecoSF_error);
+	tree->Branch("electron_HltSF_central", electron_HltSF_central);
+	tree->Branch("electron_HltSF_error", electron_HltSF_error);
 
 	tree->Branch("jec_uncertainty", jec_uncertainty);
 	tree->Branch("electron_scale", electron_scale);
@@ -179,6 +191,8 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete electron_IDSF_error;
 	delete electron_RecoSF_central;
 	delete electron_RecoSF_error;
+	delete electron_HltSF_central;
+	delete electron_HltSF_error;
 	delete muon_charge;
 	delete muon_IDSF_central;
 	delete muon_IsoSF_central;
@@ -200,6 +214,8 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	electron_IDSF_error = 0;
 	electron_RecoSF_central = 0;
 	electron_RecoSF_error = 0;
+	electron_HltSF_central = 0;
+	electron_HltSF_error = 0;
 	muon_charge = 0;
 	muon_IDSF_central = 0;
 	muon_IsoSF_central = 0;
@@ -224,6 +240,8 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("electron_IDSF_error", &electron_IDSF_error);
 	tree->SetBranchAddress("electron_RecoSF_central", &electron_RecoSF_central);
 	tree->SetBranchAddress("electron_RecoSF_error", &electron_RecoSF_error);
+	tree->SetBranchAddress("electron_HltSF_central", &electron_HltSF_central);
+	tree->SetBranchAddress("electron_HltSF_error", &electron_HltSF_error);
 	
 	tree->SetBranchAddress("muon_charge", &muon_charge);
 	tree->SetBranchAddress("muon_IDSF_central", &muon_IDSF_central);
