@@ -10,6 +10,14 @@ public:
 	Int_t charge;
 	Float_t r9;
 	Float_t weight;
+	Float_t IDSF;
+	Float_t RecoSF;
+	Float_t HltSF;
+	Float_t IDSF_error;
+	Float_t RecoSF_error;
+	Float_t HltSF_error;
+	Float_t scale_error;
+	Float_t smearing_error;
 
 	myElectron() {}; ///< default contructor (empty)
 
