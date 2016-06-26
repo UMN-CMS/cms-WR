@@ -150,12 +150,6 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("electrons_p4", electrons_p4, 32000, -1);
 	tree->Branch("muons_p4", muons_p4, 32000, -1);
 	tree->Branch("jets_p4", jets_p4, 32000, -1);
-	tree->Branch("electron_IDSF_central", electron_IDSF_central);
-	tree->Branch("electron_IDSF_error", electron_IDSF_error);
-	tree->Branch("electron_RecoSF_central", electron_RecoSF_central);
-	tree->Branch("electron_RecoSF_error", electron_RecoSF_error);
-	tree->Branch("electron_HltSF_central", electron_HltSF_central);
-	tree->Branch("electron_HltSF_error", electron_HltSF_error);
 
 	tree->Branch("jec_uncertainty", jec_uncertainty);
 	tree->Branch("electron_scale", electron_scale);
@@ -187,12 +181,6 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete electron_smearing;
 	delete electron_r9;
 	delete electron_charge;
-	delete electron_IDSF_central;
-	delete electron_IDSF_error;
-	delete electron_RecoSF_central;
-	delete electron_RecoSF_error;
-	delete electron_HltSF_central;
-	delete electron_HltSF_error;
 	delete muon_charge;
 	delete muon_IDSF_central;
 	delete muon_IsoSF_central;
@@ -210,12 +198,6 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	electron_smearing = 0;
 	electron_r9 = 0;
 	electron_charge = 0;
-	electron_IDSF_central = 0;
-	electron_IDSF_error = 0;
-	electron_RecoSF_central = 0;
-	electron_RecoSF_error = 0;
-	electron_HltSF_central = 0;
-	electron_HltSF_error = 0;
 	muon_charge = 0;
 	muon_IDSF_central = 0;
 	muon_IsoSF_central = 0;
@@ -236,12 +218,6 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("electron_smearing", &electron_smearing);
 	tree->SetBranchAddress("electron_r9", &electron_r9);
 	tree->SetBranchAddress("electron_charge", &electron_charge);
-	tree->SetBranchAddress("electron_IDSF_central", &electron_IDSF_central);
-	tree->SetBranchAddress("electron_IDSF_error", &electron_IDSF_error);
-	tree->SetBranchAddress("electron_RecoSF_central", &electron_RecoSF_central);
-	tree->SetBranchAddress("electron_RecoSF_error", &electron_RecoSF_error);
-	tree->SetBranchAddress("electron_HltSF_central", &electron_HltSF_central);
-	tree->SetBranchAddress("electron_HltSF_error", &electron_HltSF_error);
 	
 	tree->SetBranchAddress("muon_charge", &muon_charge);
 	tree->SetBranchAddress("muon_IDSF_central", &muon_IDSF_central);

@@ -26,12 +26,15 @@ public:
 	std::vector<Float_t> * electron_smearing;
 	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
+	
+	///none of these electron central values or errors are stored in the minitrees, so dont try to read them from minitrees
 	std::vector<Float_t> * electron_IDSF_central;
 	std::vector<Float_t> * electron_IDSF_error;
 	std::vector<Float_t> * electron_RecoSF_central;
 	std::vector<Float_t> * electron_RecoSF_error;
 	std::vector<Float_t> * electron_HltSF_central;
 	std::vector<Float_t> * electron_HltSF_error;
+	///end electron central values and errors
 
 	std::vector<TLorentzVector> * muons_p4;
 	std::vector<Int_t> * muon_charge;
