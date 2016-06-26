@@ -404,8 +404,6 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 			std::cout<<"about to call GetEntry on TChain named c"<<std::endl;
 #endif
-			//miniTreeEvent myEvent;
-			//myEvent.SetBranchAddresses(c);
 			c->GetEntry(ev);
 			unsigned int nEle = myEvent.electrons_p4->size();
 #ifdef DEBUGG
