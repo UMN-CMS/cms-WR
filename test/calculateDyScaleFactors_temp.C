@@ -106,11 +106,11 @@ void calculateDyScaleFactors()
 
 	Float_t minLeadLeptonPt = globalLeadingLeptonPtCut, minSubleadLeptonPt = globalSubLeadingLeptonPtCut, maxMll = 122, minMll = 58, maxLeptonEta = 2.4;
 	std::vector<TH1F*> hs_DYPowhegEE;
-	MakeHistos(chain_DYPowhegEE, &myEvent_DYPowhegEE, &hs_DYPowhegEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 0.857, true);
+	MakeHistos(chain_DYPowhegEE, &myEvent_DYPowhegEE, &hs_DYPowhegEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1, true);
 	std::vector<TH1F*> hs_DYMadInclEE;
-	MakeHistos(chain_DYMadInclEE, &myEvent_DYMadInclEE, &hs_DYMadInclEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 0.857, true);
+	MakeHistos(chain_DYMadInclEE, &myEvent_DYMadInclEE, &hs_DYMadInclEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1, true);
 	std::vector<TH1F*> hs_DYAmcInclEE;
-	MakeHistos(chain_DYAmcInclEE, &myEvent_DYAmcInclEE, &hs_DYAmcInclEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 0.857, true);
+	MakeHistos(chain_DYAmcInclEE, &myEvent_DYAmcInclEE, &hs_DYAmcInclEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1, true);
 	std::vector<TH1F*> hs_DYPowhegMuMu;
 	MakeHistos(chain_DYPowhegMuMu, &myEvent_DYPowhegMuMu, &hs_DYPowhegMuMu, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1.0, false);
 	std::vector<TH1F*> hs_DYMadInclMuMu;
@@ -126,11 +126,11 @@ void calculateDyScaleFactors()
 #ifdef DONARROWMLL
 	Float_t narrowMaxMll = 110, narrowMinMll = 70;
 	std::vector<TH1F*> hs_DYPowhegEENarrowDiLeptonMass;
-	MakeHistos(chain_DYPowhegEE, &myEvent_DYPowhegEE, &hs_DYPowhegEENarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 0.857, true);
+	MakeHistos(chain_DYPowhegEE, &myEvent_DYPowhegEE, &hs_DYPowhegEENarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 1, true);
 	std::vector<TH1F*> hs_DYMadInclEENarrowDiLeptonMass;
-	MakeHistos(chain_DYMadInclEE, &myEvent_DYMadInclEE, &hs_DYMadInclEENarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 0.857, true);
+	MakeHistos(chain_DYMadInclEE, &myEvent_DYMadInclEE, &hs_DYMadInclEENarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 1, true);
 	std::vector<TH1F*> hs_DYAmcInclEENarrowDiLeptonMass;
-	MakeHistos(chain_DYAmcInclEE, &myEvent_DYAmcInclEE, &hs_DYAmcInclEENarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 0.857, true);
+	MakeHistos(chain_DYAmcInclEE, &myEvent_DYAmcInclEE, &hs_DYAmcInclEENarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 1, true);
 	std::vector<TH1F*> hs_DYPowhegMuMuNarrowDiLeptonMass;
 	MakeHistos(chain_DYPowhegMuMu, &myEvent_DYPowhegMuMu, &hs_DYPowhegMuMuNarrowDiLeptonMass, minLeadLeptonPt, minSubleadLeptonPt, narrowMaxMll, narrowMinMll, maxLeptonEta, 1.0, false);
 	std::vector<TH1F*> hs_DYMadInclMuMuNarrowDiLeptonMass;
