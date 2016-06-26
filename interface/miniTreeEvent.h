@@ -12,6 +12,10 @@ class miniTreeEvent
 {
 public:
 
+	miniTreeEvent(); ///< default contructor (empty)
+	~miniTreeEvent(); ///< default contructor (empty)
+	miniTreeEvent(const miniTreeEvent& otherEvent);
+
 // public members to be filled by your program
 	Int_t run;
 	Int_t lumi;
@@ -50,10 +54,6 @@ public:
 	Int_t nPV;
 	Float_t weight;
 	Float_t PU_reweight;
-
-	miniTreeEvent(); ///< default contructor (empty)
-	~miniTreeEvent(); ///< default contructor (empty)
-	miniTreeEvent(const miniTreeEvent& otherEvent);
 
 	void clear();
 	void SetBranches(TTree* tree);

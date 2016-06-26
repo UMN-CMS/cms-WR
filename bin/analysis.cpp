@@ -404,6 +404,8 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 			std::cout<<"about to call GetEntry on TChain named c"<<std::endl;
 #endif
+			//miniTreeEvent myEvent;
+			//myEvent.SetBranchAddresses(c);
 			c->GetEntry(ev);
 			unsigned int nEle = myEvent.electrons_p4->size();
 #ifdef DEBUGG
@@ -463,6 +465,7 @@ int main(int ac, char* av[])
 				}
 				myEventVector.push_back(myEvent);
 			}
+			myEvent.clear();
 		}
 		nEntries = myEventVector.size();
 		nEntries_100 = nEntries / 100;
@@ -511,7 +514,7 @@ int main(int ac, char* av[])
 			//------------------------------ scale random numbers: one set of numbers per toy, common to all events and electrons
 			// it's the Random_Numbers_for_Systematics_Up_Down[2]
 
-			for(auto myEvent : myEventVector) {
+			for(auto myEventIt : myEventVector) {
 
 
 				if(nEntries > 100 && ev % nEntries_100 == 1) {
@@ -522,49 +525,49 @@ int main(int ac, char* av[])
 
 //#ifdef DEBUG
 				if (debug) {
-					std::cout << "RUN=" << myEvent.run << std::endl;
+					std::cout << "RUN=" << myEventIt.run << std::endl;
 					std::cout << "Mu" << std::endl;
-					for(auto m : * (myEvent.muons_p4))
+					for(auto m : * (myEventIt.muons_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 					std::cout << "Jet" << std::endl;
-					for(auto m : * (myEvent.jets_p4))
+					for(auto m : * (myEventIt.jets_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				}
 //#endif
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
-				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
+				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
 
-				unsigned int nEle = myEvent.electrons_p4->size();
+				unsigned int nEle = myEventIt.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
-					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
+					TLorentzVector& p4 = (*myEventIt.electrons_p4)[iEle];
 
 					if(isData) { //only scales are corrected
 #ifdef DEBUG
 						std::cout << p4.Et() << "-->";
 #endif
-						p4 *= (*myEvent.electron_scale)[iEle];
+						p4 *= (*myEventIt.electron_scale)[iEle];
 						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
-						if(loop_one == false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
+						if(loop_one == false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
 #ifdef DEBUG
-						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEvent.electron_r9)[iEle] << "\t" << (*myEvent.electron_scale)[iEle] << "\t" << (eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et())) << std::endl;
+						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEventIt.electron_r9)[iEle] << "\t" << (*myEventIt.electron_scale)[iEle] << "\t" << (eSmearer.ScaleCorrectionUncertainty(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et())) << std::endl;
 #endif
 					} else { // only the smearings are corrected
 						double r = (loop_one == false && Flag_Smear_Electron_Scale) ? Rand.Gaus(0., 1.) : 0;
-						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r);
+						(*myEventIt.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r);
 #ifdef DEBUG
 						std::cout << p4.Et() << "-->";
 #endif
-						p4 *= Rand.Gaus(1., (*myEvent.electron_smearing)[iEle]);
+						p4 *= Rand.Gaus(1., (*myEventIt.electron_smearing)[iEle]);
 #ifdef DEBUG
-						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEvent.electron_r9)[iEle] << "\t" <<	(*myEvent.electron_smearing)[iEle] << "\t" <<  eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0) << "\t" << eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r) << std::endl;
+						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEventIt.electron_r9)[iEle] << "\t" <<	(*myEventIt.electron_smearing)[iEle] << "\t" <<  eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0) << "\t" << eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r) << std::endl;
 #endif
 
 					}
 				}
 
-				Selector tmp_selEvent(myEvent);
+				Selector tmp_selEvent(myEventIt);
 				selEvent = tmp_selEvent;
 				// Select events with one good WR candidate
 				// Tags:
@@ -575,13 +578,13 @@ int main(int ac, char* av[])
 				// if(debug && selEvent.isPassing(channel)) {
 				// 	std::cout << std::endl << selEvent.dilepton_mass << std::endl;
 				// 	std::cout << "Mu " << ev  << std::endl;
-				// 	for(auto m : * (myEvent.muons_p4))
+				// 	for(auto m : * (myEventIt.muons_p4))
 				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				// 	std::cout << "Ele" << std::endl;
-				// 	for(auto m : * (myEvent.electrons_p4))
+				// 	for(auto m : * (myEventIt.electrons_p4))
 				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				// 	std::cout << "Jet" << std::endl;
-				// 	for(auto m : * (myEvent.jets_p4))
+				// 	for(auto m : * (myEventIt.jets_p4))
 				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				// }
 
@@ -604,7 +607,7 @@ int main(int ac, char* av[])
 					std::cout << "selEvent.weight=\t" << selEvent.weight << std::endl;
 					std::cout << "integratedLumi=\t" << integratedLumi << std::endl;
 					std::cout << "myReader.getNorm1fb(selEvent.datasetName)=\t" << myReader.getNorm1fb(selEvent.datasetName) << std::endl;
-					std::cout << "myEvent.weight=\t" << myEvent.weight << std::endl;
+					std::cout << "myEventIt.weight=\t" << myEventIt.weight << std::endl;
 #endif
 
 					if(selEvent.dilepton_mass > 61.2 && selEvent.dilepton_mass < 121.2 && loop_one) ++zMass60to120EvtCount;
