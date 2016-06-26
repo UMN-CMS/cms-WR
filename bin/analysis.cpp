@@ -410,8 +410,8 @@ int main(int ac, char* av[])
 			std::cout<<"the number of reco electrons in the event =\t"<< nEle <<std::endl;
 #endif
 			
-			if(nEle>0 && !(channel_str == "MuMu") ){
-				///if there are electrons in the event and the channel is EE or EMu, then write the electron SF and SF errors into the miniTreeEvent object named myEvent
+			if(nEle>0){
+				///if there are electrons in the event, then write the electron SF and SF errors into the miniTreeEvent object named myEvent
 				///before calling the Selector constructor
 				for(unsigned int ele=0; ele<nEle; ++ele){
 					if(isData){
