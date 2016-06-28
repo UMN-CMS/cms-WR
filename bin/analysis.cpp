@@ -428,8 +428,15 @@ int main(int ac, char* av[])
 						(*myEvent.electron_IDSF_error).push_back(0.00950);
 						(*myEvent.electron_RecoSF_central).push_back(0.98532);
 						(*myEvent.electron_RecoSF_error).push_back(0.00948);
-						(*myEvent.electron_HltSF_central).push_back(0.94667);
-						(*myEvent.electron_HltSF_error).push_back(0.04929);
+						if(isTagAndProbe == true && channel_str == "EE"){
+							///only apply non unity HltSF to DY MC used for ee tagandprobe
+							(*myEvent.electron_HltSF_central).push_back(0.94667);
+							(*myEvent.electron_HltSF_error).push_back(0.04929);
+						}
+						else{///not EE tagandprobe
+							(*myEvent.electron_HltSF_central).push_back(1.0);
+							(*myEvent.electron_HltSF_error).push_back(0.);
+						}
 					}//end if(!isData)
 
 				}//end loop over reco electrons in the event
