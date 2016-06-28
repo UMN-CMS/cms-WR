@@ -402,38 +402,37 @@ int main(int ac, char* av[])
 				std::cout << myEventVector.size() << std::endl;
 			}
 #ifdef DEBUGG
-			std::cout<<"about to call GetEntry on TChain named c"<<std::endl;
+			std::cout << "about to call GetEntry on TChain named c" << std::endl;
 #endif
 			c->GetEntry(ev);
 			unsigned int nEle = myEvent.electrons_p4->size();
 #ifdef DEBUGG
-			std::cout<<"the number of reco electrons in the event =\t"<< nEle <<std::endl;
+			std::cout << "the number of reco electrons in the event =\t" << nEle << std::endl;
 #endif
-			
-			if(nEle>0){
+
+			if(nEle > 0) {
 				///if there are electrons in the event, then write the electron SF and SF errors into the miniTreeEvent object named myEvent
 				///before calling the Selector constructor
-				for(unsigned int ele=0; ele<nEle; ++ele){
-					if(isData){
+				for(unsigned int ele = 0; ele < nEle; ++ele) {
+					if(isData) {
 						(*myEvent.electron_IDSF_central).push_back(1.0);
 						(*myEvent.electron_IDSF_error).push_back(0.);
 						(*myEvent.electron_RecoSF_central).push_back(1.0);
 						(*myEvent.electron_RecoSF_error).push_back(0.);
 						(*myEvent.electron_HltSF_central).push_back(1.0);
 						(*myEvent.electron_HltSF_error).push_back(0.);
-					
+
 					}//end if(isData)
-					else{
+					else {
 						(*myEvent.electron_IDSF_central).push_back(0.99401);
 						(*myEvent.electron_IDSF_error).push_back(0.00950);
 						(*myEvent.electron_RecoSF_central).push_back(0.98532);
 						(*myEvent.electron_RecoSF_error).push_back(0.00948);
-						if(isTagAndProbe == true && channel_str == "EE"){
+						if(isTagAndProbe == true && channel_str == "EE") {
 							///only apply non unity HltSF to DY MC used for ee tagandprobe
 							(*myEvent.electron_HltSF_central).push_back(0.94667);
 							(*myEvent.electron_HltSF_error).push_back(0.04929);
-						}
-						else{///not EE tagandprobe
+						} else { ///not EE tagandprobe
 							(*myEvent.electron_HltSF_central).push_back(1.0);
 							(*myEvent.electron_HltSF_error).push_back(0.);
 						}
@@ -443,20 +442,20 @@ int main(int ac, char* av[])
 
 			}//end if there are reco electrons in the event, and the channel is EE or EMu
 #ifdef DEBUGG
-			std::cout<<"about to make a Selector class object named sel using a miniTreeEvent object named myEvent"<<std::endl;
+			std::cout << "about to make a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
 #endif
 			Selector sel(myEvent);
 #ifdef DEBUGG
-			std::cout<<"made a Selector class object named sel using a miniTreeEvent object named myEvent"<<std::endl;
+			std::cout << "made a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
 #endif
 			if((isTagAndProbe == true && ( (channel_str == "EE" && myEvent.electrons_p4->size() > 1) || (channel_str == "MuMu" && myEvent.muons_p4->size() > 1) ) ) || sel.isPassingPreselect()) {
 				//unsigned int nEle = myEvent.electrons_p4->size();
 #ifdef DEBUGG
-				std::cout<<"found an event passing preselection"<<std::endl;
+				std::cout << "found an event passing preselection" << std::endl;
 #endif
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 #ifdef DEBUGG
-					std::cout<<"looping over reco electrons in the event passing preselection"<<std::endl;
+					std::cout << "looping over reco electrons in the event passing preselection" << std::endl;
 #endif
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
 					if(isData && !(channel_str == "MuMu") ) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0., skip this step if the channel is not EE or EMu
