@@ -78,7 +78,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.RecoSF_error = myEvent.electron_RecoSF_error->at(i);
 		ele.HltSF = myEvent.electron_HltSF_central->at(i);
 		ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
-		ele.weight = (ele.IDSF)*(ele.RecoSF)*(ele.HltSF);
+		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -138,7 +138,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	sublead_lepton_EScaling_error = -9;
 	lead_lepton_IsoSF_error = -9;
 	sublead_lepton_IsoSF_error = -9;
-	
+
 	myJetCollection gJets;
 	myElectronCollection gEles;
 	myMuonCollection gMuons;
@@ -243,7 +243,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 			sublead_lepton_HltSF_error = electrons[0].HltSF_error;
 			sublead_lepton_ESmearing_error = electrons[0].smearing_error;
 			sublead_lepton_EScaling_error = electrons[0].scale_error;
-	
+
 			lead_lepton_IDSF_error = muons[0].IDSF_error;
 			lead_lepton_IsoSF_error = muons[0].IsoSF_error;
 			lead_lepton_p4 = muons[0].p4;
@@ -268,7 +268,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	sublead_jet_eta = -6;
 	sublead_jet_phi = -6;
 	dR_leadlepton_leadjet = 9, dR_leadlepton_subleadjet = 9, dR_subleadlepton_leadjet = 9, dR_subleadlepton_subleadjet = 9;
-		
+
 	njets = jets.size();
 
 	if(jets.size() == 1) {
@@ -289,7 +289,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		sublead_jet_weight = 1.0;
 		lead_jet_jec_unc = jets[0].jec_uncertainty;
 		sublead_jet_jec_unc = jets[1].jec_uncertainty;
-	
+
 		sublead_jet_pt = jets[1].p4.Pt();
 		sublead_jet_eta = jets[1].p4.Eta();
 		sublead_jet_phi = jets[1].p4.Phi();
@@ -347,7 +347,7 @@ bool Selector::isPassing(tag_t tag)
 	sublead_lepton_EScaling_error = -9;
 	lead_lepton_IsoSF_error = -9;
 	sublead_lepton_IsoSF_error = -9;
-	
+
 	myJetCollection gJets;
 	myElectronCollection gEles;
 	myMuonCollection gMuons;
@@ -380,7 +380,7 @@ bool Selector::isPassing(tag_t tag)
 	}
 
 	njets = jets.size();
-	
+
 	lead_jet_pt = jets[0].p4.Pt();
 	lead_jet_eta = jets[0].p4.Eta();
 	lead_jet_phi = jets[0].p4.Phi();
@@ -474,10 +474,10 @@ bool Selector::isPassing(tag_t tag)
 			sublead_lepton_HltSF_error = electrons[0].HltSF_error;
 			sublead_lepton_ESmearing_error = electrons[0].smearing_error;
 			sublead_lepton_EScaling_error = electrons[0].scale_error;
-	
+
 			lead_lepton_IDSF_error = muons[0].IDSF_error;
 			lead_lepton_IsoSF_error = muons[0].IsoSF_error;
-	
+
 			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
 
