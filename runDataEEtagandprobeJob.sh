@@ -9,5 +9,5 @@ export X509_USER_PROXY=/afs/cern.ch/user/s/skalafut/x509up_u38430
 cd $UP/$CMSSW_PROJECT_SRC
 eval `scramv1 runtime -sh`
 eval 'make'
-eval "./bin/analysis -m data -c EE --isTagAndProbe true --ignoreDyScaleFactors false"
+eval "./bin/analysis -m data -c EE --isTagAndProbe true --ignoreDyScaleFactors true"
 
