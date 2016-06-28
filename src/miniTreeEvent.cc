@@ -218,7 +218,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("electron_smearing", &electron_smearing);
 	tree->SetBranchAddress("electron_r9", &electron_r9);
 	tree->SetBranchAddress("electron_charge", &electron_charge);
-	
+
 	tree->SetBranchAddress("muon_charge", &muon_charge);
 	tree->SetBranchAddress("muon_IDSF_central", &muon_IDSF_central);
 	tree->SetBranchAddress("muon_IsoSF_central", &muon_IsoSF_central);
