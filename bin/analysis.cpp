@@ -261,7 +261,7 @@ int main(int ac, char* av[])
 	Selector::tag_t cut_channel;
 	if(channel == Selector::EMu) {
 		cut_channel = Selector::getTag(channel_cut_str);
-		outFileTag += channel_cut_str;
+		//outFileTag += channel_cut_str;
 	} else
 		cut_channel = channel;
 
@@ -598,6 +598,12 @@ int main(int ac, char* av[])
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+#ifdef DEBUGG
+						std::cout<<"PU weight=\t" << selEvent.pu_weight << std::endl;
+						std::cout<<"num vertices=\t"<< selEvent.nPV << std::endl;
+						std::cout<<"num PV from miniTreeEvent=\t"<< myEventIt.nPV << std::endl;
+						std::cout<<"num PU from miniTreeEvent=\t"<< myEventIt.nPU << std::endl;
+#endif
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {

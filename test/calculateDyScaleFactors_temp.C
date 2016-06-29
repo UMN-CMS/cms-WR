@@ -39,10 +39,10 @@ Float_t idealSubleadJetPt = 1;
 //Float_t subLeadJetPtCut = 0;
 Float_t leadJetPtCut = LEADJETPT;
 Float_t subLeadJetPtCut = SUBJETPT;
-//dont use this with dyScalingStudy.sh Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
-//dont use this with dyScalingStudy.sh Float_t globalSubLeadingLeptonPtCut = SUBLEPTPT;
-Float_t globalLeadingLeptonPtCut = 35;
-Float_t globalSubLeadingLeptonPtCut = 35;
+Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
+Float_t globalSubLeadingLeptonPtCut = SUBLEPTPT;
+//Float_t globalLeadingLeptonPtCut = 35;
+//Float_t globalSubLeadingLeptonPtCut = 35;
 //TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/", mcFileTag = "", dataFileTag = "";
 TString dir = "../", mcFileTag = "", dataFileTag = "";
 
@@ -199,12 +199,16 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	///writeAction != 0 or 1 or 959 --> do nothing
 	
 	Double_t zCentr = 91.1876, halfRange = 20.0000;
-	Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
-	Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + halfRange);
-	Double_t dataIntegral = hs_data->Integral(lowBin, highBin);
-	Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral(lowBin, highBin);
-	Double_t dyPowhegIntegral = hs_DYPowheg->Integral(lowBin, highBin);
-	Double_t dyMadInclIntegral = hs_DYMadIncl->Integral(lowBin, highBin);
+	//Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
+	//Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + halfRange);
+	//Double_t dataIntegral = hs_data->Integral(lowBin, highBin);
+	//Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral(lowBin, highBin);
+	//Double_t dyPowhegIntegral = hs_DYPowheg->Integral(lowBin, highBin);
+	//Double_t dyMadInclIntegral = hs_DYMadIncl->Integral(lowBin, highBin);
+	Double_t dataIntegral = hs_data->Integral();
+	Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral();
+	Double_t dyPowhegIntegral = hs_DYPowheg->Integral();
+	Double_t dyMadInclIntegral = hs_DYMadIncl->Integral();
 	Double_t DYPowhegSf = dataIntegral/dyPowhegIntegral;
 	Double_t DYMadInclSf = dataIntegral/dyMadInclIntegral;
 	Double_t DYAmcInclSf = dataIntegral/dyAmcInclIntegral;
@@ -212,28 +216,29 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	Double_t DYPowhegSfUncert = DYPowhegSf*sqrt((1/dataIntegral) + (1/dyPowhegIntegral));
 	Double_t DYMadInclSfUncert = DYMadInclSf*sqrt((1/dataIntegral) + (1/dyMadInclIntegral));
 
-	///DO NOT change the hard coded strings AMC, POWHEG, and MAD
+	///DO NOT change the hard coded strings DYAMC, DYPOWHEG, and DYMADHT
 	std::string dyScaleFactorFile = "../configs/dyScaleFactors.txt";
 	std::string secondaryDyScaleFactorFile = "../configs/allDyScaleFactors.txt";
+	std::string amcName = "DYAMC", madhtName = "DYMADHT", powName = "DYPOWHEG";
 	if(writeAction == 1){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);
-		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
-		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << DYPowhegSfUncert << std::endl;
-		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << powName << "\t"<< DYPowhegSf << DYPowhegSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << madhtName << "\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
 		writeToDyFile.close();
 	}
 	if(writeAction == 0){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::app);
-		writeToDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
-		writeToDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << DYPowhegSfUncert << std::endl;
-		writeToDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << powName << "\t"<< DYPowhegSf << DYPowhegSfUncert << std::endl;
+		writeToDyFile << channel << "\t" << madhtName << "\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
 		writeToDyFile.close();
 	}
 	if(writeAction == 959 || writeAction == 0 || writeAction == 1){
 		ofstream writeToSecondaryDyFile(secondaryDyScaleFactorFile.c_str(), ofstream::app);
-		writeToSecondaryDyFile << channel << "\t" << "AMC\t"<< DYAmcInclSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
-		writeToSecondaryDyFile << channel << "\t" << "POWHEG\t"<< DYPowhegSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
-		writeToSecondaryDyFile << channel << "\t" << "MADHT\t"<< DYMadInclSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << "\t" << DYAmcInclSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << powName << "\t"<< DYPowhegSf << "\t"<< DYPowhegSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << madhtName << "\t"<< DYMadInclSf << "\t" << DYMadInclSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
 		writeToSecondaryDyFile << " " << std::endl;
 		writeToSecondaryDyFile.close();
 	}

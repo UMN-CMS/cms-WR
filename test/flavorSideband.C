@@ -114,6 +114,8 @@ void flavorSideband(){
   mycanvas_MuMu->Print(("flavor_MuMu_variablebinwidth_xmax3300.pdf"));
   mycanvas_MuMu->Print(("flavor_MuMu_variablebinwidth_xmax3300.png"));
 
+  ///dont show anything in histo stats box for the two plots with TF1 curves
+  gStyle->SetOptStat("");
   TH1F *h_ratio_EE = (TH1F*)h_WR_mass_EE->Clone();
   TH1F *h_ratio_MuMu = (TH1F*)h_WR_mass_MuMu->Clone();
   h_ratio_EE->Divide(h_WR_mass_EMu);
@@ -173,6 +175,7 @@ void flavorSideband(){
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_xmax3300_logx.png"));
 
 
+  gStyle->SetOptStat("nemr");
   TCanvas* canvMuMuEMu = new TCanvas("canvMuMuEMu","",600,600);
   canvMuMuEMu->cd();
   TLegend * legMuMuEMu = new TLegend(0.72,0.6,0.98,0.8);
@@ -190,7 +193,7 @@ void flavorSideband(){
   legMuMuEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
   legMuMuEMuData->AddEntry(h_WR_mass_MuMu,"MuMu MC");
   h_WR_mass_MuMu->Draw("histo");
-  h_WR_mass_EMuData->Scale(0.64);
+  h_WR_mass_EMuData->Scale(mumuEmuSF);
   h_WR_mass_EMuData->SetMarkerStyle(2);
   h_WR_mass_EMuData->SetMarkerSize(2);
   h_WR_mass_EMuData->Draw("Psame");
@@ -216,10 +219,10 @@ void flavorSideband(){
   legEEEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
   legEEEMuData->AddEntry(h_WR_mass_EE,"EE MC");
   h_WR_mass_EE->Draw("histo");
-  h_WR_mass_EMuData->Scale(1/0.64);	///<undo the scaling which was done earlier
+  h_WR_mass_EMuData->Scale(1/mumuEmuSF);	///<undo the scaling which was done earlier
   h_WR_mass_EMuData->SetMarkerStyle(2);
   h_WR_mass_EMuData->SetMarkerSize(2);
-  h_WR_mass_EMuData->Scale(0.427);
+  h_WR_mass_EMuData->Scale(eeEmuSF);
   h_WR_mass_EMuData->Draw("Psame");
   legEEEMuData->Draw();
   canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth_xmax3300.pdf","recreate");
@@ -343,7 +346,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
     if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
-  //std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
+  std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
 }
 
 //call this fxn once TF1 is fitted to distribution
