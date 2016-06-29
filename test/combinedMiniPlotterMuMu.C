@@ -45,8 +45,8 @@ void combinedMiniPlotterMuMu(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::MuMu:
-    //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
-    dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
+    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
 	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
     wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
     wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
@@ -150,7 +150,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_dilepton_mass->Fill(myEvent->dilepton_mass,myEvent->weight);
     h_nPV->Fill(myEvent->nPV,myEvent->weight);
   }
-
+  
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
   hs->push_back(h_jet_pt0);
@@ -250,7 +250,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
 
   if(channel == Selector::MuMu)
-    fn = "validationPlots/"+fname + "_lowdileptonMuMuChannelDyMadgraphHTbinned";
+    fn = "validationPlots/"+fname + "_lowdileptonMuMuChannelDyAmc";
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());
