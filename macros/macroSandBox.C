@@ -56,12 +56,12 @@ using namespace std;
 
 
 ///use this fxn to calculate the efficiency of a selection applied to a TChain, and return the efficiency value
-Float_t calculateEfficiencyWithOneChain(TChain * chain,TString branchToScan,TString baseSelection,TString tighterSelection){
+void calculateEfficiencyWithOneChain(TChain * chain,TString branchToScan,TString baseSelection,TString tighterSelection,Float_t & effUnc,Float_t & eff){
 	chain->SetScanField(0);
 	Long64_t evtsBeforeCut = chain->Scan(branchToScan,baseSelection);
 	Long64_t evtsAfterCut = chain->Scan(branchToScan,tighterSelection);
-	Float_t efficiency = ((Float_t) evtsAfterCut/evtsBeforeCut);
-	return efficiency;
+	eff = ((Float_t) evtsAfterCut/evtsBeforeCut);
+	effUnc = eff*sqrt(((Float_t) 1/evtsBeforeCut) + ((Float_t) 1/evtsAfterCut));
 
 }///end calculateEfficiencyWithOneChain()
 
@@ -670,17 +670,29 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 	TLegend * leg = new TLegend(legXmin,legYmin,legXmax,legYmax);
 	map<string,TH1F*> overlayHistoMap;	///< links string keys to TH1F histos which will ultimately be overlaid
 	for(map<string,TChain*>::const_iterator chMapIt=inputChainMap.begin(); chMapIt!=inputChainMap.end(); chMapIt++){
-		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = (chMapIt->first).find_last_of('>');
+		size_t openParenth = (chMapIt->first).find_first_of('('), lastChevron = ((chMapIt->first).find_first_of('>')+1);
 		string uncutHistoName(chMapIt->first);
 		///now initialize a new string, get rid of the content in uncutHistoName before '>>' and after '(',
 		///and store the substring in the new string object
 		string oneHistoName( uncutHistoName.substr(lastChevron+1,openParenth-lastChevron-1) );
-		(chMapIt->second)->Draw((chMapIt->first).c_str());
+		if( (chMapIt->first).find_first_of('(') == (chMapIt->first).find_last_of('(') ) (chMapIt->second)->Draw((chMapIt->first).c_str());
+		else{	///a cut should be applied in tree Draw
+			size_t lastOpenParenth = (chMapIt->first).find_last_of('(');
+			size_t lastClosedParenth = (chMapIt->first).find_last_of(')');
+			string cut( uncutHistoName.substr(lastOpenParenth+1, lastClosedParenth-lastOpenParenth-1) );
+			string drawArg( uncutHistoName.substr(0,lastOpenParenth-1) );
+			//cout<<"drawArg=\t"<< drawArg << endl;
+			//cout<<"cut=\t"<< cut << endl;
+			//cout<<"oneHistoName=\t"<< oneHistoName <<endl;
+			(chMapIt->second)->Draw(drawArg.c_str(),cut.c_str());
+
+		}
 		
 		///save pointers to all histograms into overlayHistoMap
 		overlayHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 	}///end loop over elements in inputChainMap
 
+	//cout<<"left first loop over elements in input chain"<<endl;
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
 	int colors[] = {1,2,4,8,12,25,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
@@ -714,7 +726,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		Double_t tempMax = (histIt->second)->GetBinContent((histIt->second)->GetMaximumBin());
 		if(oldMax < tempMax) oldMax = tempMax;
 	
-		size_t lastChevron = (histIt->first).find_last_of('>');
+		size_t lastChevron = (histIt->first).find_first_of('>')+1;
 		size_t underscorePos = (histIt->first).find_first_of("_",lastChevron);
 		string legEntryName = (histIt->first).substr(lastChevron+1,underscorePos-lastChevron-1);
 #ifdef DEBUG
@@ -1777,7 +1789,7 @@ void macroSandBox(){
 	string fileEnd = ".root";
 	string fileMiddle = "_Nu_M-";
 	string genCutEffVsMassFile = "genCutEfficienciesVsMasses.txt";
-	ofstream writeToGenEfficiencyFile(genCutEffVsMassFile.c_str(),ofstream::app);
+	ofstream writeToGenEfficiencyFile(genCutEffVsMassFile.c_str(),ofstream::trunc);
 	gStyle->SetTitleOffset(1.4,"Y");
 	Int_t nBins = 25;	///max is 25
 	Float_t wrMassVals[nBins], genMatchedPtEtaEff[nBins], genLeadAndSubleadPtEtaEff[nBins];
@@ -1793,6 +1805,7 @@ void macroSandBox(){
 		string pfn = dir+fileBegin+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2)+fileEnd;
 		wrMassVals[i] = (Float_t) wrMassArr[i];
 		string plotDir = "plotHolder/noCutsGenAndRecoWr_MWR-"+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2);
+		TF1 * bwfit = new TF1("bwfit","TMath::BreitWigner(x,[0],[1])",wrMassVals[i]/2,1.4*wrMassVals[i]);
 
 		TChain * wrChain = new TChain("wrAnalyzerOne/genAndMatchedRecoWrDecayNoCuts");
 		wrChain->Add(pfn.c_str());
@@ -1804,8 +1817,8 @@ void macroSandBox(){
 		TString genLeadingEtaCutString = "TMath::Abs(etaLeadGenLepton)<2.5 && TMath::Abs(etaSubleadGenLepton)<2.5 && TMath::Abs(etaLeadGenQuark)<2.5 && TMath::Abs(etaSubleadGenQuark)<2.5";
 		TString genLeadingPtCutString = "ptLeadGenLepton>40 && ptSubleadGenLepton>40 && ptLeadGenQuark>40 && ptSubleadGenQuark>40";
 
-		genMatchedPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenMatchedCutString, genMatchedEtaCutString+" && "+genMatchedPtCutString));
-		genLeadAndSubleadPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenLeadingCutString, genLeadingEtaCutString+" && "+genLeadingPtCutString));
+		//genMatchedPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenMatchedCutString, genMatchedEtaCutString+" && "+genMatchedPtCutString));
+		//genLeadAndSubleadPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenLeadingCutString, genLeadingEtaCutString+" && "+genLeadingPtCutString));
 
 		writeToGenEfficiencyFile << genMatchedPtEtaEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tpass the requirement that the gen leptons and quarks from WR and Nu decays have |eta| < 2.5 and pt > 40"<< endl;
 		writeToGenEfficiencyFile << genLeadAndSubleadPtEtaEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tpass the requirement that lead and sublead gen leptons and quarks have |eta| < 2.5 and pt > 40"<< endl;
@@ -1814,6 +1827,7 @@ void macroSandBox(){
 		SaveTreePlots(wrChain, plotDir.c_str());
 
 		wrChain->Delete();
+		bwfit->Delete();
 
 	}///end loop over WR mass values	
 
