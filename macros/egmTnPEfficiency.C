@@ -68,14 +68,14 @@ void egmTnPEfficiency(){
 	TChain * inclusiveHltEtEffDYMC = new TChain(inclusiveHlt);
 	TChain * inclusiveHltIdEffDYMC = new TChain(inclusiveHlt);
 	
-	inclusiveRecoEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_thirtyInputFiles.root");
-	inclusiveHeepEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfHeepUsingSC4path_minProbePtTwentyFive_thirtyInputFiles.root");
-	inclusiveHltEtEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfHighETCutUsingSC4path_minProbePtTwentyFive_thirtyInputFiles.root");
-	inclusiveHltIdEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfWP60CutsUsingSC4path_minProbePtTwentyFive_thirtyInputFiles.root");
-	inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_thirtyInputFiles.root");
-	inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_minProbePtTwentyFive_thirtyInputFiles.root");
-	inclusiveHltEtEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHighETCutUsingSC4path_minProbePtTwentyFive_thirtyInputFiles.root");
-	inclusiveHltIdEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfWP60CutsUsingSC4path_minProbePtTwentyFive_thirtyInputFiles.root");
+	inclusiveRecoEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
+	inclusiveHeepEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
+	inclusiveHltEtEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfHighETUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
+	inclusiveHltIdEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfWP60IdUsingSC4path_tagPassesTightLegProbePassesHighET_allWrSkims.root");
+	inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
+	inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
+	inclusiveHltEtEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHighETUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
+	inclusiveHltIdEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfWP60IdUsingSC4path_tagPassesTightLegProbePassesHighET_allWrSkims.root");
 
 	///calculate inclusive efficiencies and SFs which do not depend on ET
 	string inclusiveEfficiencyFile = "inclusiveEleRecoHeepHltEfficiency.txt";
@@ -109,17 +109,6 @@ void egmTnPEfficiency(){
 	writeToInclusiveEfficiencyFile << "HltId\t" << datadymcHltIdSf << "\t+/-\t"<< datadymcHltIdSfUnc << std::endl;
 	writeToInclusiveEfficiencyFile.close();
 	
-	//calculateEffAndSFwithTwoChains(TChain * numerCh, TChain * denomCh, TString branchToScan, TString baseSelection, TString tighterSelection, Float_t & numerChEff, Float_t & numerChEffUnc, Float_t & denomChEff, Float_t & denomChEffUnc, Float_t & SF, Float_t & SFUnc, string title, string xLabel, string outFileTag){
-	
-
-
-
-
-
-
-
-
-
 
 	delete inclusiveRecoEffData;
 	delete inclusiveHeepEffData;
