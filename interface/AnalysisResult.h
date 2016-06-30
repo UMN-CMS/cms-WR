@@ -18,6 +18,7 @@ public:
 	UInt_t nmasses;
 	Float_t fit_parameters[16], fit_parameter_errors[16];
 	Float_t events_in_range[64];
+	UInt_t unweighted_events_in_range[64];
 	Float_t error_in_range[64];
 	Float_t fit_integral_in_range[64];
 
