@@ -1809,11 +1809,13 @@ void macroSandBox(){
 
 		TChain * wrChain = new TChain("wrAnalyzerOne/genAndMatchedRecoWrDecayNoCuts");
 		wrChain->Add(pfn.c_str());
-		
+	
+		/*
 		for(int j=0; j<nBranches ; j++){
 			makeAndSaveSingleHistoFromTree(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]);
 		}//end loop over TChain branches
-		
+		*/
+
 		/*
 		TString baseGenMatchedCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<8 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<8 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<8 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<8";
 		TString genMatchedEtaCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<2.5 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<2.5 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<2.5 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<2.5";
