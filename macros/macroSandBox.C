@@ -1,3 +1,4 @@
+#include "TMath.h"
 #include <TFile.h>
 #include <TList.h>
 #include <TLegend.h>
@@ -46,7 +47,7 @@ using namespace std;
 //#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
-//#define DEBUG
+#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
@@ -114,11 +115,13 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 ///use this fxn to plot and save one histogram using one branch from one TTree (or TChain) with a fitted curve
 void makeAndSaveSingleHistoFromTreeWithFit(TChain * chain,string canvName,string cuts,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName, TF1 * fitFxn){
 	gStyle->SetOptStat("");
+	gStyle->SetOptFit(1112);
 	TCanvas * cc = new TCanvas(canvName.c_str(),canvName.c_str(),750,700);
 	cc->cd();
 	chain->Draw(treeDrawArgs.c_str(),cuts.c_str());
 	TH1F * tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
 	tempHist->Fit(fitFxn,"QR");
+	//tempHist->Fit(fitFxn,"Q");
 	tempHist->SetTitle(histTitle.c_str());
 	tempHist->GetXaxis()->SetTitle(xAxisTitle.c_str());
 	tempHist->SetLineWidth(3);
@@ -126,9 +129,32 @@ void makeAndSaveSingleHistoFromTreeWithFit(TChain * chain,string canvName,string
 
 	//adjust the horizontal axis range
 	resetXaxisLimits(tempHist);	///< defined in dumpTreePlots.C
+	tempHist->Scale(1/tempHist->Integral());
+	Float_t histMax = tempHist->GetBinContent(tempHist->GetMaximumBin());
+	Float_t fitMax = fitFxn->GetMaximum(400,7000);
+	
+	//rescale the hist area so that the hist max equals the fit max divided by 7
+	tempHist->Scale((fitMax/10)/histMax);
+	
+	//rescale the vertical axis
+	histMax = tempHist->GetBinContent(tempHist->GetMaximumBin());
+	//Float_t newMax = ((fitMax > histMax) ? 1.3*fitMax : 1.3*histMax);
+	Float_t newMax = (1.3*histMax);
+	
+	tempHist->SetMaximum(newMax);
+#ifdef DEBUG
+	cout<<"histMax =\t"<< histMax <<endl;
+	cout<<"fitMax =\t"<< fitMax <<endl;
+	cout<<"location of fitMax=\t"<< fitFxn->GetMaximumX(400,7000) <<endl;
+	cout<<"newMax =\t"<< newMax <<endl;
+	cout<<"tempHist integral=\t"<< tempHist->Integral() <<endl;
+	cout<<"fit integral=\t"<< fitFxn->Integral(0,8000) <<endl;
+	cout<<"fit param 0=\t"<< fitFxn->GetParameter(0) <<endl;
+	cout<<"fit param 1=\t"<< fitFxn->GetParameter(1) <<endl;
+#endif
 	tempHist->Draw("");
 	fitFxn->SetLineColor(kRed);
-	fitFxn->Draw("same");
+	fitFxn->Draw("LSAME");
 	cc->SaveAs((outputFileName+".png").c_str(),"recreate");
 	cc->SaveAs((outputFileName+".pdf").c_str(),"recreate");
 	tempHist->Delete();
@@ -1843,12 +1869,12 @@ void macroSandBox(){
 	string barrelAndEndcapFractionFile = "fractionOfEventsInBarrelAndEndcaps.txt";
 	ofstream writeToBarrelEndcapFile(barrelAndEndcapFractionFile.c_str(), ofstream::trunc);
 	gStyle->SetTitleOffset(1.4,"Y");
-	Int_t nBins = 24;	///max is 25
+	Int_t nBins = 4;	///max is 25
 	Float_t wrMassVals[nBins], genMatchedPtEtaEff[nBins], genLeadAndSubleadPtEtaEff[nBins];
 	gStyle->SetOptStat("");
 
-	int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	//int wrMassArr[] = {800,1000};
+	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000,800};
+	int wrMassArr[] = {800,1000,1200,800};
 
 	//element number i in plotArg is linked to element number i in plotCut   don't change the order
 	string plotArg[] = {"numGenFstHvyPtcl","numGenScdHvyPtcl","numGenLeptons","numGenQuarks","leadGenLeptonNotFromFstHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","leadGenQuarkNotFromScdHvyPtcl","subleadGenQuarkNotFromScdHvyPtcl","etaGenFstHvyPtcl", "ptGenFstHvyPtcl", "massGenFstHvyPtcl", "etaGenScdHvyPtcl", "ptGenScdHvyPtcl", "massGenScdHvyPtcl", "etaGenLeptFromFstHvyPtcl", "ptGenLeptFromFstHvyPtcl", "phiGenLeptFromFstHvyPtcl", "etaGenLeptFromScdHvyPtcl", "ptGenLeptFromScdHvyPtcl", "phiGenLeptFromScdHvyPtcl", "etaGenQuarkOneFromScdHvyPtcl", "ptGenQuarkOneFromScdHvyPtcl", "phiGenQuarkOneFromScdHvyPtcl", "etaGenQuarkTwoFromScdHvyPtcl", "ptGenQuarkTwoFromScdHvyPtcl", "phiGenQuarkTwoFromScdHvyPtcl","ptLeadGenLepton", "etaLeadGenLepton", "phiLeadGenLepton", "ptSubleadGenLepton", "etaSubleadGenLepton", "phiSubleadGenLepton", "ptLeadGenQuark", "etaLeadGenQuark", "phiLeadGenQuark", "ptSubleadGenQuark", "etaSubleadGenQuark", "phiSubleadGenQuark","ptRecoLeptMatchedToWrDau", "etaRecoLeptMatchedToWrDau", "phiRecoLeptMatchedToWrDau", "ptRecoLeptMatchedToNuDau", "etaRecoLeptMatchedToNuDau", "phiRecoLeptMatchedToNuDau", "ptRecoJetOneMatchedToNuDau", "etaRecoJetOneMatchedToNuDau", "phiRecoJetOneMatchedToNuDau", "ptRecoJetTwoMatchedToNuDau", "etaRecoJetTwoMatchedToNuDau", "phiRecoJetTwoMatchedToNuDau", "ptGenJetFromMatchedRecoJetOne", "etaGenJetFromMatchedRecoJetOne", "phiGenJetFromMatchedRecoJetOne", "ptGenJetFromMatchedRecoJetTwo", "etaGenJetFromMatchedRecoJetTwo", "phiGenJetFromMatchedRecoJetTwo", "ptLeadRecoLept", "etaLeadRecoLept", "phiLeadRecoLept", "ptSubleadRecoLept", "etaSubleadRecoLept", "phiSubleadRecoLept", "ptLeadRecoJet", "etaLeadRecoJet", "phiLeadRecoJet", "ptSubleadRecoJet", "etaSubleadRecoJet", "phiSubleadRecoJet","rapidityGenFstHvyPtcl","rapidityGenScdHvyPtcl"};
@@ -1871,14 +1897,16 @@ void macroSandBox(){
 		wrMassVals[i] = (Float_t) wrMassArr[i];
 		string plotDir = "plotHolder/noCutsGenAndRecoWr_MWR-"+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2);
 		TF1 * fitcrv = new TF1("fitcrv","TMath::BreitWigner(x,[0],[1])",(0.7)*wrMassVals[i],(1.3)*wrMassVals[i]);
+		//TF1 * fitcrv = new TF1("fitcrv","TMath::BreitWigner(x,[0],[1])");
+		fitcrv->FixParameter(0,wrMassVals[i]);
 
 		TChain * wrChain = new TChain("wrAnalyzerOne/genAndMatchedRecoWrDecayNoCuts");
 		wrChain->Add(pfn.c_str());
 	
 		for(int j=0; j<nBranches ; j++){
 			//make plots from every branch and save them to a directory with a unique name that identifies the WR and Nu masses
-			if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
-			//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]);
+			if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(3000,"+to_string(wrMassArr[i]/2)+","+to_string((1.5)*wrMassArr[i]) +")",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
+			makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]);
 		}//end loop over TChain branches
 
 		/*
