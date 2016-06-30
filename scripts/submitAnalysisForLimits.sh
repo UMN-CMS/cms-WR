@@ -1,10 +1,10 @@
-arguments="--toys 4000 --makeSelectorPlots"
+arguments="--toys 4000"
 logdir=$PWD/log
 mass_n=$(seq 1 25)
 
 queue=1nd
 tag=4000toys
-finaldir=/afs/cern.ch/work/s/shervin/public/$tag/
+finaldir=/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/$tag/
 
 for mass in $mass_n
 do
@@ -23,7 +23,7 @@ bsub -q $queue -eo $logdir/dy_ee_${tag}.err -oo $logdir/dy_ee_${tag}.out "$PWD/r
 bsub -q $queue -eo $logdir/dy_mumu_${tag}.err -oo $logdir/dy_mumu_${tag}.out "$PWD/runJob.sh MuMu DYAMC $finaldir $PWD \"$arguments\""
 
 ##EE ttbar mc
-bsub -q $queue -eo $logdir/ttbar_ee_${tag}.err -oo $logdir/ttbar_ee_${tag}.out "$PWD/runJob.sh EE TT $finaldir $PWD \"$arguments\""
+#bsub -q $queue -eo $logdir/ttbar_ee_${tag}.err -oo $logdir/ttbar_ee_${tag}.out "$PWD/runJob.sh EE TT $finaldir $PWD \"$arguments\""
 
 ##MUMU ttbar mc
-bsub -q $queue -eo $logdir/ttbar_mumu_${tag}.err -oo $logdir/ttbar_mumu_${tag}.out "$PWD/runJob.sh MuMu TT $finaldir $PWD \"$arguments\""
+#bsub -q $queue -eo $logdir/ttbar_mumu_${tag}.err -oo $logdir/ttbar_mumu_${tag}.out "$PWD/runJob.sh MuMu TT $finaldir $PWD \"$arguments\""
