@@ -2,25 +2,29 @@
 #include <utility>
 #include <fstream>
 #include <string>
+#include "Selector.h"
 
 #include "RooAbsPdf.h"
 #include "RooRealVar.h"
 using namespace RooFit;
 
-std::map<int, std::pair<int, int> >  getMassCutMap()
+typedef std::map< std::pair<Selector::tag_t, int>, std::pair<int, int> > mass_cut_map_t;
+
+mass_cut_map_t getMassCutMap()
 {
-	std::map<int, std::pair<int, int> > mass_cut;
+	mass_cut_map_t mass_cut;
 	std::ifstream ifs;
 	ifs.open("configs/mass_cuts.txt", std::ifstream::in);
 	std::string line;
-	std::string mass, low, high;
+	std::string mass, ch, low, high;
 	while (std::getline(ifs, line)) {
 		if (line[0] == '#' || line.size() == 0) continue;
 		std::stringstream ss(line);
+		std::getline(ss, ch, ' ');
 		std::getline(ss, mass, ' ');
 		std::getline(ss, low, ' ');
 		std::getline(ss, high, ' ');
-		mass_cut[std::stoi(mass)] = std::make_pair(std::stoi(low), std::stoi(high));
+		mass_cut[std::make_pair(Selector::getTag(ch), std::stoi(mass))] = std::make_pair(std::stoi(low), std::stoi(high));
 	}
 
 	return mass_cut;
@@ -36,6 +40,7 @@ std::vector<int> getMassVec()
 	while (std::getline(ifs, line)) {
 		if (line[0] == '#' || line.size() == 0) continue;
 		std::stringstream ss(line);
+		std::getline(ss, m, ' ');
 		std::getline(ss, m, ' ');
 		mass.push_back(std::stoi(m));
 	}

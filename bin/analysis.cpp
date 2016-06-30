@@ -22,6 +22,7 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <utility>
 #include <boost/program_options.hpp>
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
@@ -190,6 +191,7 @@ int main(int ac, char* av[])
 	chainNames chainNames_;
 
 	std::string channel_str, outDir, outFileTag;
+	std::string channel_cut_str;
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
@@ -221,6 +223,7 @@ int main(int ac, char* av[])
 	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
 	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
 	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
+	("cut_channel", po::value<std::string>(&channel_cut_str)->default_value(""), "if channel is EMu choose which Mass cut to apply")
 	;
 
 	po::variables_map vm;
@@ -253,18 +256,16 @@ int main(int ac, char* av[])
 
 
 	//------------------------------ translate the channel option into the selector type
-	Selector::tag_t channel;
-	if(channel_str == "EE")
-		channel = Selector::EE;
-	else if(channel_str == "MuMu")
-		channel = Selector::MuMu;
-	else if(channel_str == "EMu")
-		channel = Selector::EMu;
-	else {
-		std::cerr << "[ERROR] Channel " << channel_str << " not recognized" << std::endl;
-		std::cerr << desc << std::endl;
-		return 1;
+	Selector::tag_t channel = Selector::getTag(channel_str);
+
+	Selector::tag_t cut_channel;
+	if(channel == Selector::EMu)
+	{
+		cut_channel = Selector::getTag(channel_cut_str);
+		outFileTag += channel_cut_str;
 	}
+	else
+		cut_channel = channel;
 
 	configReader myReader("configs/2015-v1.conf");
 	if(debug) std::cout << myReader << std::endl;
@@ -295,7 +296,7 @@ int main(int ac, char* av[])
 	myReader.setupDyMllScaleFactor("configs/dyScaleFactors.txt");
 
 
-	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
+	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
@@ -631,7 +632,7 @@ int main(int ac, char* av[])
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			double error = 0;
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-				auto range = mass_cut[mass_vec.at(mass_i)];
+				auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 				result.events_in_range[mass_i] = hWR_mass->IntegralAndError(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second), error);
 				result.error_in_range[mass_i] = float(error);
 			}
@@ -645,7 +646,7 @@ int main(int ac, char* av[])
 				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
 				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
 					auto mass = mass_vec[massi];
-					auto range = mass_cut[mass];
+					auto range = mass_cut[std::make_pair(cut_channel,mass)];
 					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
 					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
@@ -693,7 +694,7 @@ int main(int ac, char* av[])
 				}
 
 				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-					auto range = mass_cut[mass_vec.at(mass_i)];
+					auto range = mass_cut[std::make_pair(cut_channel,mass_vec.at(mass_i))];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					result.fit_integral_in_range[mass_i] = integral;
 				}
@@ -723,7 +724,7 @@ int main(int ac, char* av[])
 						}
 						//Calculate integrals for each fit
 						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-							auto range = mass_cut[mass_vec.at(mass_i)];
+							auto range = mass_cut[std::make_pair(cut_channel,mass_vec.at(mass_i))];
 							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 							stat_result.fit_integral_in_range[mass_i] = integral;
 						}
