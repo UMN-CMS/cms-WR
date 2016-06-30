@@ -5,6 +5,7 @@
 /* #include "ExoAnalysis/cmsWR/interface/Objects.h" */
 #include "../interface/miniTreeEvent.h"
 #include "ExoAnalysis/cmsWR/interface/Objects.h"
+#include <stdexcept>
 
 
 class Selector
@@ -15,6 +16,22 @@ public:
 		MuMu,
 		EMu
 	};
+
+	static tag_t getTag(std::string ch)
+	{
+		tag_t channel;
+		if(ch == "EE")
+			channel = Selector::EE;
+		else if(ch == "MuMu")
+			channel = Selector::MuMu;
+		else if(ch == "EMu")
+			channel = Selector::EMu;
+		else {
+			std::cerr << "[ERROR] Channel " << ch << " not recognized" << std::endl;
+			throw std::invalid_argument( "Unrecognized channel" );
+		}
+		return channel;
+	}
 
 	std::string datasetName;
 

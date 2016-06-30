@@ -97,12 +97,13 @@ class miniTreeInterface:
 			key += "_" + str(MWR)
 
 		MWR = int(MWR)
-		f = self.OpenFile(channel, process, MWR)
-		if not self.masses: self.GetMasses(f)
+		if key not in self.results:
+			f = self.OpenFile(channel, process, MWR)
+			if not self.masses: self.GetMasses(f)
+			self.ProcessFile(key, f)
 
 		mass_i = self.masses.index(MWR)
 
-		self.ProcessFile(key, f)
 
 		mean =     self.results[key]["syst"]["mean"][mass_i]
 		tmp_syst = self.results[key]["syst"]["std"] [mass_i]
@@ -252,6 +253,24 @@ class miniTreeInterface:
 	
 	def setTag(self, tag):
 		self.filefmt_dict["tag"] = tag
+
+	def getMassHisto(self, MWR, channel, process):
+		r.gROOT.SetBatch(True)
+		key = channel + "_" + process
+		if "signal" == process:
+			key += "_" + str(MWR)
+
+		MWR = int(MWR)
+		f = self.OpenFile(channel, process, MWR)
+		if not self.masses: self.GetMasses(f)
+
+		tree = f.Get("Tree_Iter0")
+
+		mass_histo = r.TH1D("mass","mass",590,600, 6500)
+		tree.Draw("WR_mass>>mass","","")
+
+		mass_histo.SetDirectory(0)
+		return mass_histo
 
 		
 class Systematics:
