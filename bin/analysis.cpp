@@ -6,6 +6,7 @@
 #include "TH1F.h"
 #include "TChain.h"
 #include "TFile.h"
+#include "TCanvas.h"
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "TRandom3.h"
@@ -15,11 +16,13 @@
 #include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
 #include "ExoAnalysis/cmsWR/interface/AnalysisResult.h"
 #include "ExoAnalysis/cmsWR/interface/Selector.h"
+#include "ExoAnalysis/cmsWR/interface/SelectorHist.h"
 
 #include <vector>
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <utility>
 #include <boost/program_options.hpp>
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
@@ -188,6 +191,7 @@ int main(int ac, char* av[])
 	chainNames chainNames_;
 
 	std::string channel_str, outDir, outFileTag;
+	std::string channel_cut_str;
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
@@ -195,6 +199,7 @@ int main(int ac, char* av[])
 	int nStatToys;
 	int signalN;
 	int seed;
+	bool makeSelectorPlots;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
 	required.add_options()
@@ -216,7 +221,9 @@ int main(int ac, char* av[])
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
 	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
-	("signalN", po::value<int>(&signalN)->default_value(0), "throw N toys for stat uncertainty.")
+	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
+	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
+	("cut_channel", po::value<std::string>(&channel_cut_str)->default_value(""), "if channel is EMu choose which Mass cut to apply")
 	;
 
 	po::variables_map vm;
@@ -249,18 +256,14 @@ int main(int ac, char* av[])
 
 
 	//------------------------------ translate the channel option into the selector type
-	Selector::tag_t channel;
-	if(channel_str == "EE")
-		channel = Selector::EE;
-	else if(channel_str == "MuMu")
-		channel = Selector::MuMu;
-	else if(channel_str == "EMu")
-		channel = Selector::EMu;
-	else {
-		std::cerr << "[ERROR] Channel " << channel_str << " not recognized" << std::endl;
-		std::cerr << desc << std::endl;
-		return 1;
-	}
+	Selector::tag_t channel = Selector::getTag(channel_str);
+
+	Selector::tag_t cut_channel;
+	if(channel == Selector::EMu) {
+		cut_channel = Selector::getTag(channel_cut_str);
+		outFileTag += channel_cut_str;
+	} else
+		cut_channel = channel;
 
 	configReader myReader("configs/2015-v1.conf");
 	if(debug) std::cout << myReader << std::endl;
@@ -291,7 +294,7 @@ int main(int ac, char* av[])
 	myReader.setupDyMllScaleFactor("configs/dyScaleFactors.txt");
 
 
-	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
+	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
@@ -399,7 +402,6 @@ int main(int ac, char* av[])
 		for(unsigned long long int ev = 0; ev < nEntries; ++ev) {
 			if(nEntries > 100 && ev % nEntries_100 == 1) {
 				std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
-				std::cout << myEventVector.size() << std::endl;
 			}
 #ifdef DEBUGG
 			std::cout << "about to call GetEntry on TChain named c" << std::endl;
@@ -424,14 +426,14 @@ int main(int ac, char* av[])
 
 					}//end if(isData)
 					else {
-						(*myEvent.electron_IDSF_central).push_back(0.99401);
-						(*myEvent.electron_IDSF_error).push_back(0.00950);
-						(*myEvent.electron_RecoSF_central).push_back(0.98532);
-						(*myEvent.electron_RecoSF_error).push_back(0.00948);
+						(*myEvent.electron_IDSF_central).push_back(0.990493);
+						(*myEvent.electron_IDSF_error).push_back(0.001685);
+						(*myEvent.electron_RecoSF_central).push_back(0.983581);
+						(*myEvent.electron_RecoSF_error).push_back(0.001686);
 						if(isTagAndProbe == true && channel_str == "EE") {
 							///only apply non unity HltSF to DY MC used for ee tagandprobe
-							(*myEvent.electron_HltSF_central).push_back(0.94667);
-							(*myEvent.electron_HltSF_error).push_back(0.04929);
+							(*myEvent.electron_HltSF_central).push_back(0.960473);
+							(*myEvent.electron_HltSF_error).push_back(0.002551);
 						} else { ///not EE tagandprobe
 							(*myEvent.electron_HltSF_central).push_back(1.0);
 							(*myEvent.electron_HltSF_error).push_back(0.);
@@ -448,7 +450,7 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 			std::cout << "made a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
 #endif
-			if((isTagAndProbe == true && ( (channel_str == "EE" && myEvent.electrons_p4->size() > 1) || (channel_str == "MuMu" && myEvent.muons_p4->size() > 1) ) ) || sel.isPassingPreselect()) {
+			if((isTagAndProbe == true && ( (channel_str == "EE" && myEvent.electrons_p4->size() > 1) || (channel_str == "MuMu" && myEvent.muons_p4->size() > 1) ) ) || sel.isPassingPreselect(makeSelectorPlots)) {
 				//unsigned int nEle = myEvent.electrons_p4->size();
 #ifdef DEBUGG
 				std::cout << "found an event passing preselection" << std::endl;
@@ -504,6 +506,7 @@ int main(int ac, char* av[])
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
+			t1[i]->SetDirectory(0);
 			selEvent.SetBranches(t1[i]);
 			if(loop_one) selEvent.SetBranches(tDyCheck);
 
@@ -623,7 +626,7 @@ int main(int ac, char* av[])
 					if(loop_one) tDyCheck->Fill();
 				}
 
-				if(selEvent.isPassing(channel)) {
+				if(selEvent.isPassing(channel, makeSelectorPlots && loop_one)) {
 
 					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
 
@@ -667,12 +670,29 @@ int main(int ac, char* av[])
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			double error = 0;
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-				auto range = mass_cut[mass_vec.at(mass_i)];
+				auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 				result.events_in_range[mass_i] = hWR_mass->IntegralAndError(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second), error);
 				result.error_in_range[mass_i] = float(error);
 			}
 			delete hWR_mass;
 
+			if(loop_one) {
+				TString hist_name(mode + "_unweighted");
+				hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
+
+				//Draw unweighted histogram
+				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
+				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
+					auto mass = mass_vec[massi];
+					auto range = mass_cut[std::make_pair(cut_channel, mass)];
+					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
+					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
+				}
+				delete hWR_mass;
+			}
+
+			f.cd();
 			if(saveToys) t1[i]->Write();
 			if(loop_one) {
 				if(!saveToys) t1[i]->Write();
@@ -712,7 +732,7 @@ int main(int ac, char* av[])
 				}
 
 				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-					auto range = mass_cut[mass_vec.at(mass_i)];
+					auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					result.fit_integral_in_range[mass_i] = integral;
 				}
@@ -742,7 +762,7 @@ int main(int ac, char* av[])
 						}
 						//Calculate integrals for each fit
 						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-							auto range = mass_cut[mass_vec.at(mass_i)];
+							auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 							stat_result.fit_integral_in_range[mass_i] = integral;
 						}
@@ -757,11 +777,17 @@ int main(int ac, char* av[])
 			}
 
 			// fill the tree with the normalization, parameters, and errors
-			if(loop_one) central_value_tree->Fill();
-			else syst_tree->Fill();
+			if(loop_one) {
+				central_value_tree->Fill();
+				sel::hists.PrintEntries("plots/", mode);
+				sel::hists.Draw("plots/", mode);
+				sel::hists.Clear();
+			} else syst_tree->Fill();
 
 			loop_one = false;
 		}
+
+		syst_tree->SetDirectory(&f);
 		syst_tree->Write();
 		central_value_tree->Write();
 	}
