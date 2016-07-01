@@ -4,7 +4,7 @@
 // #include "ExoAnalysis/cmsWR/interface/Selector.h"
 #include "../interface/Selector.h"
 #include "DataFormats/Math/interface/deltaR.h"
-//#include "../interface/SelectorHist.h"
+#include "../interface/SelectorHist.h"
 //#define DEBUGG
 
 float dR_TLV(TLorentzVector t1, TLorentzVector t2)
@@ -572,8 +572,8 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		if(pair == P_EB) sel::hists("global_EB", 1, 0, 1)->Fill(0);
 		if(pair == P_GAP)  sel::hists("global_GAP", 1, 0, 1)->Fill(0);
 	}
-	_isPassing = true;
 	*/
+	_isPassing = true;
 	return _isPassing;
 
 }
