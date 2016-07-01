@@ -199,12 +199,16 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	///writeAction != 0 or 1 or 959 --> do nothing
 	
 	Double_t zCentr = 91.1876, halfRange = 20.0000;
-	Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
-	Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + halfRange);
-	Double_t dataIntegral = hs_data->Integral(lowBin, highBin);
-	Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral(lowBin, highBin);
-	Double_t dyPowhegIntegral = hs_DYPowheg->Integral(lowBin, highBin);
-	Double_t dyMadInclIntegral = hs_DYMadIncl->Integral(lowBin, highBin);
+	//Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
+	//Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + halfRange);
+	//Double_t dataIntegral = hs_data->Integral(lowBin, highBin);
+	//Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral(lowBin, highBin);
+	//Double_t dyPowhegIntegral = hs_DYPowheg->Integral(lowBin, highBin);
+	//Double_t dyMadInclIntegral = hs_DYMadIncl->Integral(lowBin, highBin);
+	Double_t dataIntegral = hs_data->Integral();
+	Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral();
+	Double_t dyPowhegIntegral = hs_DYPowheg->Integral();
+	Double_t dyMadInclIntegral = hs_DYMadIncl->Integral();
 	Double_t DYPowhegSf = dataIntegral/dyPowhegIntegral;
 	Double_t DYMadInclSf = dataIntegral/dyMadInclIntegral;
 	Double_t DYAmcInclSf = dataIntegral/dyAmcInclIntegral;
@@ -232,9 +236,9 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	}
 	if(writeAction == 959 || writeAction == 0 || writeAction == 1){
 		ofstream writeToSecondaryDyFile(secondaryDyScaleFactorFile.c_str(), ofstream::app);
-		writeToSecondaryDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
-		writeToSecondaryDyFile << channel << "\t" << powName << "\t"<< DYPowhegSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
-		writeToSecondaryDyFile << channel << "\t" << madhtName << "\t"<< DYMadInclSf << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << "\t" << DYAmcInclSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << powName << "\t"<< DYPowhegSf << "\t"<< DYPowhegSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
+		writeToSecondaryDyFile << channel << "\t" << madhtName << "\t"<< DYMadInclSf << "\t" << DYMadInclSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
 		writeToSecondaryDyFile << " " << std::endl;
 		writeToSecondaryDyFile.close();
 	}
