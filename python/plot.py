@@ -147,4 +147,3 @@ class limit1d:
 		c1.SaveAs(filename + ".png")
 		c1.SaveAs(filename + ".pdf")
 		c1.SaveAs(filename + ".C")
-
