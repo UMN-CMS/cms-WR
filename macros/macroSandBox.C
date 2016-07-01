@@ -72,6 +72,14 @@ float deltaR(float etaOne, float phiOne, float etaTwo, float phiTwo){
 
 }//end deltaR()
 
+//calculates the dilepton mass given the pt, eta, and phi of two objects
+Float_t calcDileptonMass(Float_t ptOne, Float_t etaOne, Float_t phiOne, Float_t ptTwo, Float_t etaTwo, Float_t phiTwo){
+	Float_t mll = 0.;
+	Float_t mllSqd = 2*ptOne*ptTwo*(TMath::CosH(etaOne - etaTwo) - TMath::Cos(phiOne - phiTwo));
+	if(mllSqd > 0.) mll = TMath::Sqrt(mllSqd);
+	return mll;
+}//end calcDileptonMass()
+
 //returns 0 if cand is has same eta and pt as either One or Two, returns 1 if no match is found
 Int_t matching(Float_t candEta, Float_t candPt, Float_t etaOne, Float_t ptOne, Float_t etaTwo, Float_t ptTwo){
 	if(candPt == ptOne && candEta == etaOne) return 0.;
@@ -133,6 +141,7 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 	cc->SaveAs((outputFileName+".pdf").c_str(),"recreate");
 	tempHist->Delete();
 	cc->Close();
+	cc->Delete();
 
 }///end makeAndSaveSingleHistoFromTreeWithCuts()
 
@@ -1932,7 +1941,7 @@ void macroSandBox(){
 		for(int j=0; j<nBranches ; j++){
 			//make plots from every branch and save them to a directory with a unique name that identifies the WR and Nu masses
 			//if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(3000,"+to_string(wrMassArr[i]/2)+","+to_string((1.5)*wrMassArr[i]) +")",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
-			makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]);
+			//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]);
 		}//end loop over TChain branches
 
 
@@ -1945,7 +1954,9 @@ void macroSandBox(){
 		//how often the leading and subleading GEN leptons are not the WR or Nu dau lepton  (pt eta matching)
 		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c5","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaLeadGenLepton>-9","matching(etaLeadGenLepton,ptLeadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>leadGenLeptonNotFromWrOrNuHist(3,0.,2.)","leadGenLeptonNotFromWrOrNuHist","Events where lead GEN lepton not from W_{R} or Nu","1 = lead GEN lepton not from W_{R} or Nu",plotDir+"_leadGenLeptonNotFromWrOrNu");
 		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c6","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9","matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>subleadGenLeptonNotFromWrOrNuHist(3,0.,2.)","subleadGenLeptonNotFromWrOrNuHist","Events where sublead GEN lepton not from W_{R} or Nu","1 = sublead GEN lepton not from W_{R} or Nu",plotDir+"_subleadGenLeptonNotFromWrOrNu");
-
+		
+		//plot gen dilepton mass using GEN leptons whose mothers are the WR and heavy Nu
+		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"d1","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9","calcDileptonMass(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl)>>genDileptonMassHist()","genDileptonMassHist","","GEN M_{LL} leptons from W_{R} and Nu [GeV]",plotDir+"_genDileptonMass");
 
 		/*
 		//dR btwn gen leptons and gen jets whose parents are WR or Nu   and how often the leading or subleading GEN lepton is not the GEN WR or Nu daughter
