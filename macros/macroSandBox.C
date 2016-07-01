@@ -1894,11 +1894,12 @@ void macroSandBox(){
 	string barrelAndEndcapFractionFile = "fractionOfEventsInBarrelAndEndcaps.txt";
 	ofstream writeToBarrelEndcapFile(barrelAndEndcapFractionFile.c_str(), ofstream::trunc);
 	gStyle->SetTitleOffset(1.4,"Y");
-	Int_t nBins = 24;	///max is 24
+	Int_t nBins = 5;	///max is 24
 	Float_t wrMassVals[nBins], genMatchedPtEtaEff[nBins], genLeadAndSubleadPtEtaEff[nBins];
 	gStyle->SetOptStat("");
 
-	int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
+	int wrMassArr[] = {800,1600,2600,3800,5800};
+	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
 	//int wrMassArr[] = {800,1000,1200};
 
 	//element number i in plotArg is linked to element number i in plotCut   don't change the order
@@ -1930,20 +1931,20 @@ void macroSandBox(){
 	
 		for(int j=0; j<nBranches ; j++){
 			//make plots from every branch and save them to a directory with a unique name that identifies the WR and Nu masses
-			if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(3000,"+to_string(wrMassArr[i]/2)+","+to_string((1.5)*wrMassArr[i]) +")",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
+			//if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(3000,"+to_string(wrMassArr[i]/2)+","+to_string((1.5)*wrMassArr[i]) +")",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
 			makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]);
 		}//end loop over TChain branches
 
 
 		//dR between GEN leptons and GEN jets matched to GEN WR and Nu
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c1","etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9","deltaR(etaGenLeptFromFstHvyPtcl,phiGenLeptFromFstHvyPtcl,etaGenQuarkOneFromScdHvyPtcl,phiGenQuarkOneFromScdHvyPtcl)>>dRwrLeptNuGenQrkOneHist(50,0.,5.)","dRwrLeptNuGenQrkOneHist","#DeltaR W_{R} dau GEN lepton and first GEN quark from Nu","#DeltaR",plotDir+"_dRwrLeptNuGenQrkOne");
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c2","etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9","deltaR(etaGenLeptFromFstHvyPtcl,phiGenLeptFromFstHvyPtcl,etaGenQuarkTwoFromScdHvyPtcl,phiGenQuarkTwoFromScdHvyPtcl)>>dRwrLeptNuGenQrkTwoHist(50,0.,5.)","dRwrLeptNuGenQrkTwoHist","#DeltaR W_{R} dau GEN lepton and second GEN quark from Nu","#DeltaR",plotDir+"_dRwrLeptNuGenQrkTwo");
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c3","etaGenLeptFromScdHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9","deltaR(etaGenLeptFromScdHvyPtcl,phiGenLeptFromScdHvyPtcl,etaGenQuarkOneFromScdHvyPtcl,phiGenQuarkOneFromScdHvyPtcl)>>dRnuLeptNuGenQrkOneHist(50,0.,5.)","dRnuLeptNuGenQrkOneHist","#DeltaR Nu dau GEN lepton and first GEN quark from Nu","#DeltaR",plotDir+"_dRnuLeptNuGenQrkOne");
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c4","etaGenLeptFromScdHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9","deltaR(etaGenLeptFromScdHvyPtcl,phiGenLeptFromScdHvyPtcl,etaGenQuarkTwoFromScdHvyPtcl,phiGenQuarkTwoFromScdHvyPtcl)>>dRnuLeptNuGenQrkTwoHist(50,0.,5.)","dRnuLeptNuGenQrkTwoHist","#DeltaR Nu dau GEN lepton and second GEN quark from Nu","#DeltaR",plotDir+"_dRnuLeptNuGenQrkTwo");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c1","etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9","deltaR(etaGenLeptFromFstHvyPtcl,phiGenLeptFromFstHvyPtcl,etaGenQuarkOneFromScdHvyPtcl,phiGenQuarkOneFromScdHvyPtcl)>>dRwrLeptNuGenQrkOneHist(50,0.,5.)","dRwrLeptNuGenQrkOneHist","#DeltaR W_{R} dau GEN lepton and first GEN quark from Nu","#DeltaR",plotDir+"_dRwrLeptNuGenQrkOne");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c2","etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9","deltaR(etaGenLeptFromFstHvyPtcl,phiGenLeptFromFstHvyPtcl,etaGenQuarkTwoFromScdHvyPtcl,phiGenQuarkTwoFromScdHvyPtcl)>>dRwrLeptNuGenQrkTwoHist(50,0.,5.)","dRwrLeptNuGenQrkTwoHist","#DeltaR W_{R} dau GEN lepton and second GEN quark from Nu","#DeltaR",plotDir+"_dRwrLeptNuGenQrkTwo");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c3","etaGenLeptFromScdHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9","deltaR(etaGenLeptFromScdHvyPtcl,phiGenLeptFromScdHvyPtcl,etaGenQuarkOneFromScdHvyPtcl,phiGenQuarkOneFromScdHvyPtcl)>>dRnuLeptNuGenQrkOneHist(50,0.,5.)","dRnuLeptNuGenQrkOneHist","#DeltaR Nu dau GEN lepton and first GEN quark from Nu","#DeltaR",plotDir+"_dRnuLeptNuGenQrkOne");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c4","etaGenLeptFromScdHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9","deltaR(etaGenLeptFromScdHvyPtcl,phiGenLeptFromScdHvyPtcl,etaGenQuarkTwoFromScdHvyPtcl,phiGenQuarkTwoFromScdHvyPtcl)>>dRnuLeptNuGenQrkTwoHist(50,0.,5.)","dRnuLeptNuGenQrkTwoHist","#DeltaR Nu dau GEN lepton and second GEN quark from Nu","#DeltaR",plotDir+"_dRnuLeptNuGenQrkTwo");
 
 		//how often the leading and subleading GEN leptons are not the WR or Nu dau lepton  (pt eta matching)
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c5","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaLeadGenLepton>-9","matching(etaLeadGenLepton,ptLeadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>leadGenLeptonNotFromWrOrNuHist(3,0.,2.)","leadGenLeptonNotFromWrOrNuHist","Events where lead GEN lepton not from W_{R} or Nu","1 = lead GEN lepton not from W_{R} or Nu",plotDir+"_leadGenLeptonNotFromWrOrNu");
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c6","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9","matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>subleadGenLeptonNotFromWrOrNuHist(3,0.,2.)","subleadGenLeptonNotFromWrOrNuHist","Events where sublead GEN lepton not from W_{R} or Nu","1 = sublead GEN lepton not from W_{R} or Nu",plotDir+"_subleadGenLeptonNotFromWrOrNu");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c5","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaLeadGenLepton>-9","matching(etaLeadGenLepton,ptLeadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>leadGenLeptonNotFromWrOrNuHist(3,0.,2.)","leadGenLeptonNotFromWrOrNuHist","Events where lead GEN lepton not from W_{R} or Nu","1 = lead GEN lepton not from W_{R} or Nu",plotDir+"_leadGenLeptonNotFromWrOrNu");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c6","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9","matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>subleadGenLeptonNotFromWrOrNuHist(3,0.,2.)","subleadGenLeptonNotFromWrOrNuHist","Events where sublead GEN lepton not from W_{R} or Nu","1 = sublead GEN lepton not from W_{R} or Nu",plotDir+"_subleadGenLeptonNotFromWrOrNu");
 
 
 		/*
