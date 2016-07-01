@@ -4,6 +4,7 @@ import ROOT as r
 import re
 import numpy as np
 import subprocess
+from collections import defaultdict
 from random import gauss
 import ExoAnalysis.cmsWR.backgroundFits as bgfits
 import ExoAnalysis.cmsWR.cross_sections as xs
@@ -56,12 +57,12 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 			out.write(str(systematics))
 	return signal_rate, tuple(bg_rates.split())
 
-class miniTreeInterface:
+class AnalysisResultsInterface:
 	chnlName = {"ee":"EE", "mumu":"MuMu", "emu":"EMu"}
 	def __init__(self,
 			base="./",
 			tag = "",
-			emufilename = "flavor_fits.root",
+			SFfilename = configfolder + "/MCScaleFactors.txt",
 			makeplots = False,
 			):
 
@@ -70,27 +71,23 @@ class miniTreeInterface:
 		self.filefmt_dict = {"base":base, "tag":tag}
 		self.filefmt = "{base}/selected_tree_{mode}_{minitreename}{chnlName}{tag}.root"
 
-		emufile = r.TFile.Open(emufilename)
-		if emufile:
-			f_EE = emufile.Get("f_EE")
-			f_MuMu = emufile.Get("f_MuMu")
-			self.tt_emu_ratio = {
-					"ee": f_EE.GetParameter(1),
-					"mumu": f_MuMu.GetParameter(1),
-					}
-			self.tt_emu_error = {
-					"ee": f_EE.GetParError(1),
-					"mumu": f_MuMu.GetParError(1),
-					}
-		else:
-			self.tt_emu_ratio = {}
+		self.SF = defaultdict(lambda : defaultdict(dict))
+		with open(SFfilename) as f:
+			for line in f:
+				if line[0] == "#": continue
+				mode, ch, sf, stat, syst  = line.split()
+				ch = ch.lower()
+				self.SF[mode][ch]["SF"] = float(sf)
+				self.SF[mode][ch]["unc"] = math.sqrt(float(stat)**2 + float(syst)**2)
+
+
 		self.masses = []
 		self.results = {}
 
-	def getTTBarUncertainty(self, channel):
-		return 1 + abs(self.tt_emu_error[channel]/self.tt_emu_ratio[channel])
+	def getUncertainty(self, mode, channel):
+		return 1 + self.SF[mode][channel]["unc"]/self.SF[mode][channel]["SF"]
 
-	def getNEvents(self, MWR, channel, process, systematics):
+	def getNEvents(self, MWR, channel, process, systematics, scale = 1.0):
 		""" returns mean, syst, stat """
 		key = channel + "_" + process
 		if "signal" == process:
@@ -104,47 +101,51 @@ class miniTreeInterface:
 
 		mass_i = self.masses.index(MWR)
 
-
-		mean =     self.results[key]["syst"]["mean"][mass_i]
-		tmp_syst = self.results[key]["syst"]["std"] [mass_i]
-		tmp_stat = self.results[key]["stat"]        [mass_i]
-		central_value = self.results[key]["central"]["weighted"][mass_i]
+		syst_mean = self.results[key]["syst"]["mean"][mass_i]*scale
+		tmp_syst  = self.results[key]["syst"]["std"] [mass_i]*scale
+		tmp_stat  = self.results[key]["stat"]        [mass_i]*scale
+		central_value      = self.results[key]["central"]["weighted"][mass_i]*scale
 		central_unweighted = self.results[key]["central"]["unweighted"][mass_i]
 
 
-		if mean < .0001:
+		var = tmp_syst**2 + tmp_stat**2
+		if syst_mean > 0:
+			mean = syst_mean
+			alpha = var/mean
+			N = mean**2/var
+			if N < 1:
+				N = 0
+				mean = math.sqrt(var)
+				alpha = mean
+		elif syst_mean < 0:
+			mean = math.sqrt(var)
+			alpha = mean
+			N = 1
+		else:
+			N=0
+			alpha = self.results[key]["syst"]["mean"][0]*scale/( self.results[key]["central"]["unweighted"][0] + 1)
 			mean = .0001
-		syst = 1 + tmp_syst/abs(mean)
-		stat = 1 + tmp_stat/abs(mean)
+
+		raw = [ syst_mean, mean, central_value, tmp_syst, tmp_stat, var, central_unweighted, ]
+		systematics.add(process, "lumi", 1.027)
+		raw += [1.027]
+
+		systematics.add(process, process + "_unc", (N,alpha))
+		raw +=[N,alpha]
+		
+		if process in ["DYAMC", "TT"]:
+			systematics.add(process,process + "_SF", self.getUncertainty(process, channel))
+			raw += [self.getUncertainty(process, channel)]
+		else:
+			raw += [0.0]
 
 		if "_800" == key[-4:]:
 			key = key[:-3] + "0800"
-			
-		raw = [ mean, central_value, tmp_syst, tmp_stat, central_unweighted, ]
-		systematics.add(process, "lumi", 1.027)
-		raw += [1.027]
-		systematics.add(process, process + "_syst", syst)
-		raw += [syst]
-		if(central_unweighted):
-			systematics.add(process, process + "_stat", (central_unweighted, mean/central_unweighted))
-		else:
-			systematics.add(process, process + "_stat", (0, 0))
-		if "TT" in process: 
-			systematics.add(process, "TT_ratio", self.getTTBarUncertainty(channel))
-			raw += [ self.getTTBarUncertainty(channel)]
-		elif "DY" in process: 
-			#TODO get this number
-			systematics.add(process, "DY_SF", 1.0)
-			raw += [1.0]
-		else:
-			raw += [0.0]
 		raw = ["%0.4f" % x for x in raw]
 		raw = ["raw", key, "%04d" % MWR] + raw
 		print " ".join(raw)
 
-
-
-		return mean, syst, stat
+		return mean
 
 	def getMeanStd(self, tree, fromFit=False):
 		means = np.zeros(len(self.masses))
@@ -158,7 +159,6 @@ class miniTreeInterface:
 		for mass_i in range(len(self.masses)):
 			ms = str(self.masses[mass_i])
 			if "signal" in self.currentkey and self.currentkey.split("_")[2] != ms: continue
-			if ms == "0": continue
 
 			tree.Draw(draw_str % mass_i, "", "goff")
 			h = r.gDirectory.Get("htemp")
@@ -198,10 +198,12 @@ class miniTreeInterface:
 		except AttributeError:
 			central_unweighted = np.zeros(len(self.masses))
 
-		if "TT" in key and self.tt_emu_ratio:
+		if "TT" in key or "DYAMC" in key:
+			if "TT" in key: mode = "TT"
+			elif "DYAMC" in key: mode = "DYAMC"
 			if "ee" in key: channel = "ee"
-			if "mumu" in key: channel = "mumu"
-			scale = self.tt_emu_ratio[channel]
+			elif "mumu" in key: channel = "mumu"
+			scale = self.SF[mode][channel]["SF"]
 			syst_means *= scale
 			syst_stds *= scale
 			central_value *= scale
@@ -221,12 +223,14 @@ class miniTreeInterface:
 
 
 	def OpenFile(self, channel, process, MWR):
+		oldtag = self.filefmt_dict["tag"]
 		if process == "signal":
 			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
 			if MWR == 1800: 
 				mode = "WRto" + self.chnlName[channel] + "JJ_1800_1400"
 			minitreename = "signal_" + channel
 		elif "TT" in process:
+			self.filefmt_dict["tag"] = self.chnlName[channel]
 			channel = "emu"
 			mode = "data"
 			minitreename = "flavoursideband"
@@ -241,6 +245,7 @@ class miniTreeInterface:
 		self.filefmt_dict["mode"] = mode
 
 		filename = self.filefmt.format(**self.filefmt_dict)
+		self.filefmt_dict["tag"] = oldtag
 		print "Opening File ", filename
 		f = r.TFile.Open(filename)
 		if not f: raise IOError
@@ -292,9 +297,9 @@ class Systematics:
 		self.values[key] = value
 	def __str__(self):
 		maxlen = max([len(name) for name, s_type in self.rows])
-		floatsize = 9
+		floatsize = 10
 		prefix = "{name:{maxlen}} {type} {N:6}"
-		fmt = " {:{floatsize}.4f}"
+		fmt = " {:{floatsize}.4e}"
 		s = ""
 		for name, s_type in self.rows:
 			line = prefix 
@@ -303,8 +308,9 @@ class Systematics:
 				key = channel + name
 				try:
 					N, v = self.values[key]
-					line += fmt.format(v)
-				except KeyError:
+					N = int(round(N))
+					line += fmt.format(v, floatsize=floatsize)
+				except KeyError as e:
 					line += " " * floatsize + "-"
 				except TypeError:
 					v = self.values[key]
@@ -325,8 +331,8 @@ class Systematics:
 # @param command a list to pass to subprocess.check_output
 #
 # @return (mean, meanError), (onesig_minus, onesig_plus), (twosig_minus, twosig_plus)
-def runCombine(command):
-	name  = "combine" + datetime.datetime.now().time().isoformat()
+def runCombine(command, ID):
+	name  = "combine" + ID
 	out_file = open(name + ".out", "w+")
 	err_file = open(name + ".err", "w")
 	command = "unbuffer " + command
@@ -372,14 +378,14 @@ def runCombine(command):
 			
 			outfile = r.TFile.Open("higgsCombine" + jobname + "." + method + ".mH" + mass + "." + seed + ".root")
 			limitTree = outfile.Get("limit")
-			limits = np.zeros(limitTree.GetEntries())
-			for i in range(limitTree.GetEntries()):
-				limitTree.GetEntry(i)
-				limits[i] = limitTree.limit 
+			limits = []
+			for toy in limitTree:
+				if not np.isnan(toy.limit):
+					limits.append(toy.limit)
 			#limitTree.Draw("limit>>tmphist")
 			#h = r.gDirectory.Get("tmphist")
 			q = [2.5, 16, 50, 84, 97.5]
-			twosig_minus, onesig_minus, median, onesig_plus, twosig_plus = np.percentile(limits, q)
+			twosig_minus, onesig_minus, median, onesig_plus, twosig_plus = np.percentile(np.array(limits), q)
 
 		if not all([median, onesig_minus, onesig_plus, twosig_minus, twosig_plus]):
 			print "combine parse failed"
@@ -390,12 +396,19 @@ def runCombine(command):
 		raise e
 		return None
 
-mass_cut =  {mass:(low, hi) for mass, low, hi in [ map(int, s.split()) for s in open(configfolder + "mass_cuts.txt", 'r').read().split('\n') if s and s[0] != "#"]}
+mass_cut = {"ee":{},
+		      "mumu":{}
+		     }
+with open(configfolder + "mass_cuts.txt") as mc_file:
+	for line in mc_file:
+		if line[0] == "#": continue
+		ch, mass, low, hi = line.split()
+		mass_cut[ch.lower()][int(mass)] = (int(low), int(hi))
 
 import sys
 if __name__ == '__main__':
 	ID = sys.argv[1]
 	command = " ".join(sys.argv[2:])
-	print command
-	result = runCombine(command)
+	print ID, command
+	result = runCombine(command, ID)
 	print ("COMBINE", ID, result)
