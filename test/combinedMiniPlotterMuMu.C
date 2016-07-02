@@ -35,12 +35,12 @@ void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
 void combinedMiniPlotterMuMu(){
 
-  TChain * chain_DY = new TChain("Tree_Iter0");
-  TChain * chain_ttbar = new TChain("Tree_Iter0");
-  TChain * chain_WJets = new TChain("Tree_Iter0");
-  TChain * chain_WZ = new TChain("Tree_Iter0");
-  TChain * chain_ZZ = new TChain("Tree_Iter0");
-  TChain * chain_data = new TChain("Tree_Iter0");
+  TChain * chain_DY = new TChain("Tree_Iter0","DY");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TT");
+  TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
+  TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
+  TChain * chain_data = new TChain("Tree_Iter0","Data");
  
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
@@ -150,7 +150,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_dilepton_mass->Fill(myEvent->dilepton_mass,myEvent->weight);
     h_nPV->Fill(myEvent->nPV,myEvent->weight);
   }
-  
+
+  TString chTitle(chain->GetTitle());
+  std::cout<<"chain named\t"<< chTitle << "\thas this WR mass integral=\t"<< h_WR_mass->Integral() <<"\tand this dilepton mass integral=\t"<< h_dilepton_mass->Integral() <<std::endl;
+
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
   hs->push_back(h_jet_pt0);
