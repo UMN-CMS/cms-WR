@@ -23,7 +23,7 @@
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
 void flavorSideband(){
 
-  Float_t mumuEmuSF = 0.6, eeEmuSF = 0.4;
+  Float_t mumuEmuSF = 0.657, eeEmuSF = 0.414;
   gStyle->SetOptFit(100);	///<only show chiSquared divided by nDOF
   TChain * chain_EMu = new TChain("Tree_Iter0");
   TChain * chain_EE = new TChain("Tree_Iter0");
@@ -46,22 +46,22 @@ void flavorSideband(){
   myEvent_EE.SetBranchAddresses(chain_EE);
   myEvent_MuMu.SetBranchAddresses(chain_MuMu);
 
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,4000);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,4000);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,4000);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,4000);
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,2000);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,2000);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,2000);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,2000);
+  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,4000);
+  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,4000);
+  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,4000);
+  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,4000);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,2000);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,2000);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,2000);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,2000);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
 
-  /*
   TCanvas* mycanvas_EE = new TCanvas( "mycanvas_EE", "", 0, 0, 600, 600 ) ;
+  h_WR_mass_EMu->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
   h_WR_mass_EMu->DrawNormalized();
   h_WR_mass_EE->SetLineColor(kRed);
   h_WR_mass_EE->DrawNormalized("same histo");
@@ -74,6 +74,7 @@ void flavorSideband(){
 
   TCanvas* mycanvas_MuMu = new TCanvas( "mycanvas_MuMu", "", 0, 0, 600, 600 ) ;
   h_WR_mass_EMu->DrawNormalized();
+  h_WR_mass_EMu->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
   h_WR_mass_MuMu->SetLineColor(kRed);
   h_WR_mass_MuMu->DrawNormalized("same histo");
   TLegend *leg_MuMu = new TLegend( 0.72, 0.50, 0.98, 0.70 );
@@ -88,7 +89,9 @@ void flavorSideband(){
   TH1F *h_ratio_EE = (TH1F*)h_WR_mass_EE->Clone();
   TH1F *h_ratio_MuMu = (TH1F*)h_WR_mass_MuMu->Clone();
   h_ratio_EE->Divide(h_WR_mass_EMu);
+  h_ratio_EE->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
   h_ratio_MuMu->Divide(h_WR_mass_EMu);
+  h_ratio_MuMu->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
   TF1 *f_EE = new TF1("f_EE","[0]",600,1500);
   f_EE->FixParameter(0,eeEmuSF);
@@ -174,7 +177,7 @@ void flavorSideband(){
   gStyle->SetOptStat("");
   TCanvas* canvEMuDataTwoRescaledMCs = new TCanvas("canvEMuDataTwoRescaledMCs","",600,600);
   canvEMuDataTwoRescaledMCs->cd();
-  TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.45,0.98,0.85);
+  TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.55,0.98,0.89);
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMuData,"EMu Data");
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EE,"Rescaled TTBar EE MC");
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_MuMu,"Rescaled TTBar MuMu MC");
@@ -229,22 +232,26 @@ void flavorSideband(){
   ratio_Data_EE->SetMarkerStyle(20);
   ratio_Data_EE->SetMarkerColor(kRed);
   ratio_Data_EE->SetLabelSize(0.1, "y");
-  ratio_Data_EE->GetYaxis()->SetRangeUser(0.85, 1.15);
+  ratio_Data_EE->GetYaxis()->SetRangeUser(0.60, 1.4);
   ratio_Data_EE->GetYaxis()->SetNdivisions(505);
- 
+  ratio_Data_EE->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
+
   ratio_Data_EMu->Divide(h_WR_mass_EMu);
   ratio_Data_EMu->SetMarkerStyle(22);
   ratio_Data_EMu->SetMarkerColor(kBlue);
   ratio_Data_EMu->SetLabelSize(0.1, "y");
-  ratio_Data_EMu->GetYaxis()->SetRangeUser(0.85, 1.15);
+  ratio_Data_EMu->GetYaxis()->SetRangeUser(0.60, 1.4);
   ratio_Data_EMu->GetYaxis()->SetNdivisions(505);
- 
+  ratio_Data_EMu->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
+
   ratio_Data_MuMu->Divide(h_WR_mass_MuMu);
   ratio_Data_MuMu->SetMarkerStyle(21);
   ratio_Data_MuMu->SetMarkerColor(kBlack);
   ratio_Data_MuMu->SetLabelSize(0.1, "y");
-  ratio_Data_MuMu->GetYaxis()->SetRangeUser(0.85, 1.15);
+  ratio_Data_MuMu->GetYaxis()->SetRangeUser(0.60, 1.4);
   ratio_Data_MuMu->GetYaxis()->SetNdivisions(505);
+  ratio_Data_MuMu->GetXaxis()->SetTitle("LLJJ Mass [GeV]");
+
 
   ratio_Data_EE->Draw("p");
   ratio_Data_EMu->Draw("p");
@@ -266,7 +273,6 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
 
-  */
 
 }
 
@@ -275,11 +281,12 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
   Long64_t nEntries = chain->GetEntries();
 
   cout<< nEntries << endl;
+  //cout<<"chain has\t"<< chain->GetEntries("WR_mass>600 && dilepton_mass>200") <<"entries above selection cuts" << endl;
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
     if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
-  std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
+  //std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
 }
