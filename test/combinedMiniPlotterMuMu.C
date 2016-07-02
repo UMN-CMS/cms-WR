@@ -151,9 +151,6 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_nPV->Fill(myEvent->nPV,myEvent->weight);
   }
 
-  TString chTitle(chain->GetTitle());
-  std::cout<<"chain named\t"<< chTitle << "\thas this WR mass integral=\t"<< h_WR_mass->Integral() <<"\tand this dilepton mass integral=\t"<< h_dilepton_mass->Integral() <<std::endl;
-
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
   hs->push_back(h_jet_pt0);
@@ -236,6 +233,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_DY->Add(hs_WJets);
   hs_DY->Add(hs_WZ);
   hs_DY->Add(hs_ZZ);
+  if(fname.EqualTo("Mll") || fname.EqualTo("Mlljj") ){
+	  Float_t dataMCratio = (hs_data->Integral()/hs_DY->Integral());
+	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio << std::endl;
+  }
 
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
