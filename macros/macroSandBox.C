@@ -1,3 +1,4 @@
+#include "TLorentzVector.h"
 #include "TMath.h"
 #include <TFile.h>
 #include <TList.h>
@@ -47,13 +48,42 @@ using namespace std;
 //#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
-//#define DEBUG
+#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
 
+
+//calculate four object mass given pt, eta, phi of four objects
+Float_t lljj(Float_t ptOne, Float_t etaOne, Float_t phiOne, Float_t ptTwo, Float_t etaTwo, Float_t phiTwo, Float_t ptThree, Float_t etaThree, Float_t phiThree, Float_t ptFour, Float_t etaFour, Float_t phiFour){
+#ifdef DEBUG
+	cout<<" "<<endl;
+	cout<<"enterred calcFourObjMass fxn"<<endl;
+#endif
+	TLorentzVector One, Two, Three, Four;
+#ifdef DEBUG
+	cout<<"declared four TLorentzVectors"<<endl;
+#endif
+	One.SetPtEtaPhiM(ptOne, etaOne, phiOne, 0);
+	Two.SetPtEtaPhiM(ptTwo, etaTwo, phiTwo, 0);
+	Three.SetPtEtaPhiM(ptThree, etaThree, phiThree, 0);
+	Four.SetPtEtaPhiM(ptFour, etaFour, phiFour, 0);
+#ifdef DEBUG
+	cout<<"initialized pt, eta, phi, and mass vals for four TLorentzVectors"<<endl;
+	cout<<"One.Pt()=\t"<< One.Pt() <<endl;
+	cout<<"Two.Pt()=\t"<< Two.Pt() <<endl;
+	cout<<"Three.Pt()=\t"<< Three.Pt() <<endl;
+	cout<<"Four.Pt()=\t"<< Four.Pt() <<endl;
+#endif
+	Float_t mass = (One+Two+Three+Four).M();
+#ifdef DEBUG
+	cout<<"four object mass=\t"<< mass <<endl;
+#endif
+	return mass;
+
+}//end lljj()
 
 ///for calculating deltaR given eta and phi of two objects
 float deltaR(float etaOne, float phiOne, float etaTwo, float phiTwo){
@@ -123,20 +153,37 @@ void makeAndSaveSingleHistoFromTree(TChain * chain,string canvName,string treeDr
 
 ///use this fxn to plot and save one histogram using one branch from one TTree (or TChain) with cuts
 void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,string cuts,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName){
+#ifdef DEBUG
+	cout<<"in makeAndSaveSingleHistoFromTreeWithCuts fxn"<<endl;
+#endif
 	gStyle->SetOptStat("");
 	TCanvas * cc = new TCanvas(canvName.c_str(),canvName.c_str(),750,700);
 	cc->cd();
+#ifdef DEBUG
+	cout<<"about to draw tree"<<endl;
+	cout<<"treeDrawArgs=\t"<< treeDrawArgs <<endl;
+	cout<<"cuts=\t"<< cuts <<endl;
+#endif
 	chain->Draw(treeDrawArgs.c_str(),cuts.c_str());
+#ifdef DEBUG
+	cout<<"successfully drew tree, about to look for histo with FindObject"<<endl;
+#endif
 	TH1F * tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
 	tempHist->SetTitle(histTitle.c_str());
 	tempHist->GetXaxis()->SetTitle(xAxisTitle.c_str());
 	tempHist->SetLineWidth(3);
 	tempHist->SetLineColor(1);
 
+#ifdef DEBUG
+	cout<<"about to reset x axis limits"<<endl;
+#endif
 	//adjust the horizontal axis range
 	resetXaxisLimits(tempHist);	///< defined in dumpTreePlots.C
 	if(xAxisTitle.find_first_of(" not ") != string::npos && tempHist->GetNbinsX() < 5) tempHist->Draw("HISTTEXT90");	///<for histos showing how often a leading or subleading GEN particle is not matched to the expected GEN mother
 	else tempHist->Draw("");
+#ifdef DEBUG
+	cout<<"drew histo"<<endl;
+#endif
 	cc->SaveAs((outputFileName+".png").c_str(),"recreate");
 	cc->SaveAs((outputFileName+".pdf").c_str(),"recreate");
 	tempHist->Delete();
@@ -1956,17 +2003,20 @@ void macroSandBox(){
 		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c6","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9","matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>subleadGenLeptonNotFromWrOrNuHist(3,0.,2.)","subleadGenLeptonNotFromWrOrNuHist","Events where sublead GEN lepton not from W_{R} or Nu","1 = sublead GEN lepton not from W_{R} or Nu",plotDir+"_subleadGenLeptonNotFromWrOrNu");
 		
 		//plot gen dilepton mass using GEN leptons whose mothers are the WR and heavy Nu
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"d1","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9","calcDileptonMass(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl)>>genDileptonMassHist()","genDileptonMassHist","","GEN M_{LL} leptons from W_{R} and Nu [GeV]",plotDir+"_genDileptonMass");
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"d1","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9","calcDileptonMass(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl)>>genDileptonMassHist()","genDileptonMassHist","","GEN M_{LL} leptons from W_{R} and Nu [GeV]",plotDir+"_genDileptonMass");
 
-		/*
-		//dR btwn gen leptons and gen jets whose parents are WR or Nu   and how often the leading or subleading GEN lepton is not the GEN WR or Nu daughter
-		Long64_t nEvts = wrChain->GetEntries();
-		for(Long64_t i=0; i<nEvts; i++){
-			wrChain->GetEntry(i);
+		//plot four object mass using GEN leptons and quarks matched to WR and heavy Nu
+		//string masscuts = "etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9";
+		string masscuts = "etaGenLeptFromScdHvyPtcl>-9";
 
-		}//end loop over events in TChain
-		*/
 
+		//string partialDrawArg = "lljj(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl, ptGenQuarkOneFromScdHvyPtcl, etaGenQuarkOneFromScdHvyPtcl,phiGenQuarkOneFromScdHvyPtcl, ptGenQuarkTwoFromScdHvyPtcl, etaGenQuarkTwoFromScdHvyPtcl,phiGenQuarkTwoFromScdHvyPtcl)";
+		//string partialDrawArg = "lljj(80,2,3.1,55,-1.1,2,45,0,1,43,-2,0)";
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"m1",masscuts,partialDrawArg+">>massHist()","massHist","GEN M_{LLJJ}","GEN M_{LLJJ}  leptons and quarks from W_{R} and Nu [GeV]",plotDir+"_genFourObjMass");
+
+ 
+		//lljj(Float_t ptOne, Float_t etaOne, Float_t phiOne, Float_t ptTwo, Float_t etaTwo, Float_t phiTwo, Float_t ptThree, Float_t etaThree, Float_t phiThree, Float_t ptFour, Float_t etaFour, Float_t phiFour)
+	
 		/*
 		//calculate the fraction of WR->LLJJ events in which the GEN leptons fall into the barrel or the endcaps or a mix
 		//ignore the dead zone region between 1.444 and 1.566, and restrict the max eta to be less than 2.4
