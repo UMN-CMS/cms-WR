@@ -200,7 +200,6 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 	cc->SaveAs((outputFileName+".pdf").c_str(),"recreate");
 	tempHist->Delete();
 	cc->Close();
-	cc->Delete();
 
 }///end makeAndSaveSingleHistoFromTreeWithCuts()
 
@@ -1962,13 +1961,13 @@ void macroSandBox(){
 	string barrelAndEndcapFractionFile = "fractionOfEventsInBarrelAndEndcaps.txt";
 	ofstream writeToBarrelEndcapFile(barrelAndEndcapFractionFile.c_str(), ofstream::trunc);
 	gStyle->SetTitleOffset(1.4,"Y");
-	Int_t nBins = 5;	///max is 24
+	Int_t nBins = 1;	///max is 24
 	Float_t wrMassVals[nBins], genMatchedPtEtaEff[nBins], genLeadAndSubleadPtEtaEff[nBins];
 	gStyle->SetOptStat("");
 
-	int wrMassArr[] = {800,1600,2600,3800,5800};
+	//int wrMassArr[] = {800,1600,2600,3800,5800};
 	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	//int wrMassArr[] = {800,1000,1200};
+	int wrMassArr[] = {800};
 
 	//element number i in plotArg is linked to element number i in plotCut   don't change the order
 	string plotArg[] = {"numGenFstHvyPtcl","numGenScdHvyPtcl","numGenLeptons","numGenQuarks","leadGenLeptonNotFromFstHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","leadGenQuarkNotFromScdHvyPtcl","subleadGenQuarkNotFromScdHvyPtcl","etaGenFstHvyPtcl", "ptGenFstHvyPtcl", "massGenFstHvyPtcl", "etaGenScdHvyPtcl", "ptGenScdHvyPtcl", "massGenScdHvyPtcl", "etaGenLeptFromFstHvyPtcl", "ptGenLeptFromFstHvyPtcl", "phiGenLeptFromFstHvyPtcl", "etaGenLeptFromScdHvyPtcl", "ptGenLeptFromScdHvyPtcl", "phiGenLeptFromScdHvyPtcl", "etaGenQuarkOneFromScdHvyPtcl", "ptGenQuarkOneFromScdHvyPtcl", "phiGenQuarkOneFromScdHvyPtcl", "etaGenQuarkTwoFromScdHvyPtcl", "ptGenQuarkTwoFromScdHvyPtcl", "phiGenQuarkTwoFromScdHvyPtcl","ptLeadGenLepton", "etaLeadGenLepton", "phiLeadGenLepton", "ptSubleadGenLepton", "etaSubleadGenLepton", "phiSubleadGenLepton", "ptLeadGenQuark", "etaLeadGenQuark", "phiLeadGenQuark", "ptSubleadGenQuark", "etaSubleadGenQuark", "phiSubleadGenQuark","ptRecoLeptMatchedToWrDau", "etaRecoLeptMatchedToWrDau", "phiRecoLeptMatchedToWrDau", "ptRecoLeptMatchedToNuDau", "etaRecoLeptMatchedToNuDau", "phiRecoLeptMatchedToNuDau", "ptRecoJetOneMatchedToNuDau", "etaRecoJetOneMatchedToNuDau", "phiRecoJetOneMatchedToNuDau", "ptRecoJetTwoMatchedToNuDau", "etaRecoJetTwoMatchedToNuDau", "phiRecoJetTwoMatchedToNuDau", "ptGenJetFromMatchedRecoJetOne", "etaGenJetFromMatchedRecoJetOne", "phiGenJetFromMatchedRecoJetOne", "ptGenJetFromMatchedRecoJetTwo", "etaGenJetFromMatchedRecoJetTwo", "phiGenJetFromMatchedRecoJetTwo", "ptLeadRecoLept", "etaLeadRecoLept", "phiLeadRecoLept", "ptSubleadRecoLept", "etaSubleadRecoLept", "phiSubleadRecoLept", "ptLeadRecoJet", "etaLeadRecoJet", "phiLeadRecoJet", "ptSubleadRecoJet", "etaSubleadRecoJet", "phiSubleadRecoJet","rapidityGenFstHvyPtcl","rapidityGenScdHvyPtcl"};
@@ -2000,7 +1999,12 @@ void macroSandBox(){
 		for(int j=0; j<nBranches ; j++){
 			//make plots from every branch and save them to a directory with a unique name that identifies the WR and Nu masses
 			//if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(3000,"+to_string(wrMassArr[i]/2)+","+to_string((1.5)*wrMassArr[i]) +")",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
-			//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.);
+			//if(plotArg[j] == "ptGenLeptFromFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j],60.);
+			//if(plotArg[j] == "ptGenLeptFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j],50.);
+			//if(plotArg[j] == "ptGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.);
+			//if(plotArg[j] == "ptGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",plotTitle[j],plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.);
+
+
 		}//end loop over TChain branches
 
 
@@ -2016,7 +2020,6 @@ void macroSandBox(){
 		
 		//plot gen dilepton mass using GEN leptons whose mothers are the WR and heavy Nu
 		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"d1","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9","calcDileptonMass(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl)>>genDileptonMassHist()","genDileptonMassHist","","GEN M_{LL} leptons from W_{R} and Nu [GeV]",plotDir+"_genDileptonMass",200.);
-
 
 		//plot four object mass using GEN leptons and quarks matched to WR and heavy Nu
 		//string masscuts = "etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9";
