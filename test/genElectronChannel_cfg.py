@@ -126,9 +126,9 @@ process.matchedGenAnalyzerFive = cms.EDAnalyzer('matchedAnalyzer',
 
 
 process.printMuOrTauDecayChain = cms.Path(
-		#process.hasGenNuMuOrTau
-		#*process.hasGenNuMuOrTauFilter
-		process.printParticleTree
+		process.hasGenNuMuOrTau
+		*process.hasGenNuMuOrTauFilter
+		*process.printParticleTree
 		)
 
 #process.runUnmatchedGenAnalysis = cms.Path(
@@ -153,23 +153,21 @@ process.runMatchedGenAnalysis = cms.Path(
 		#*process.matchedGenAnalyzerFive
 		)
 
-process.schedule = cms.Schedule(process.runMatchedGenAnalysis)
+process.schedule = cms.Schedule(process.printMuOrTauDecayChain)
 
-process.TFileService = cms.Service("TFileService",
-		#fileName = cms.string('analysis_genElectronChannel_using_miniAOD.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_1300_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_520_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_2080_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_1400_MNu_700_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_50_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_100_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_200_using_GEN_SIM.root')
-		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_300_using_GEN_SIM.root')
-		fileName = cms.string('analysis_genElectronChannel_MWR_800_MNu_400_using_miniAOD.root')
-
-
-
-)
+#process.TFileService = cms.Service("TFileService",
+#		#fileName = cms.string('analysis_genElectronChannel_using_miniAOD.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_1300_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_520_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_2080_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_1400_MNu_700_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_50_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_100_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_200_using_GEN_SIM.root')
+#		#fileName = cms.string('analysis_genElectronChannel_MWR_2600_MNu_300_using_GEN_SIM.root')
+#		fileName = cms.string('analysis_genElectronChannel_MWR_800_MNu_400_using_miniAOD.root')
+#
+#)
 
 process.options = cms.untracked.PSet(
 		wantSummary = cms.untracked.bool(True)
@@ -178,7 +176,8 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-		'file:/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root'
+		#'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_3.root'
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'
 		##WR->e + Nu_e --> eejj miniAOD files 
 		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
 		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_23.root',
@@ -872,7 +871,7 @@ process.source = cms.Source( "PoolSource",
 
 # limit the number of events to be processed
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(20)
 )
 
 
