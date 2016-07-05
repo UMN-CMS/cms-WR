@@ -74,6 +74,7 @@ public:
 	Float_t sublead_lepton_ESmearing_error;
 	Float_t sublead_lepton_EScaling_error;
 
+	Float_t nPU;	///<positive only for MC
 	Int_t nPV;
 	Int_t njets;
 

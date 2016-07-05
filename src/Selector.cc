@@ -104,6 +104,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	}
 
 	nPV = myEvent.nPV;
+	nPU = myEvent.nPU;
 	global_event_weight = (myEvent.weight > 0 ? 1 : -1) * myEvent.PU_reweight;
 #ifdef DEBUGG
 	std::cout << "global_event_weight=\t" << global_event_weight << std::endl;
@@ -635,6 +636,7 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("lead_jet_phi", &lead_jet_phi);
 	tree->Branch("sublead_jet_phi", &sublead_jet_phi);
 	tree->Branch("nPV", &nPV);
+	tree->Branch("nPU", &nPU);
 	tree->Branch("dR_leadlepton_leadjet", &dR_leadlepton_leadjet);
 	tree->Branch("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
 	tree->Branch("dR_subleadlepton_leadjet", &dR_subleadlepton_leadjet);
@@ -682,6 +684,7 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("sublead_jet_eta", &sublead_jet_eta);
 	tree->SetBranchAddress("sublead_jet_phi", &sublead_jet_phi);
 	tree->SetBranchAddress("nPV", &nPV);
+	tree->SetBranchAddress("nPU", &nPU);
 
 	tree->SetBranchAddress("dR_leadlepton_leadjet", &dR_leadlepton_leadjet);
 	tree->SetBranchAddress("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
