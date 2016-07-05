@@ -326,6 +326,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 #endif
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
+	if(dilepton_mass < 60.0 || dilepton_mass > 120.0) return false;
 
 	_isPassingLooseCuts = true;
 	return _isPassingLooseCuts;
