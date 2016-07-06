@@ -119,7 +119,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,6000);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
   float dilepton_max = 200.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
