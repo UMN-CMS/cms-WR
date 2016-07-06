@@ -47,7 +47,7 @@ void combinedMiniPlotterForDYTandPMuMu()
 
 	TString treeName = "treeDyCheck";
 	TChain * chain_DYPowheg = new TChain(treeName,"DYPowhegM50to120");
-	TChain * chain_DYMadIncl = new TChain(treeName,"DYMadgraphInclusive");
+	TChain * chain_DYMadIncl = new TChain(treeName,"DYMadgraphHTBinned");
 	TChain * chain_DYAmcIncl = new TChain(treeName,"DYAMCInclusive");
 	TChain * chain_data = new TChain(treeName,"Data");
 
@@ -55,7 +55,7 @@ void combinedMiniPlotterForDYTandPMuMu()
 	switch (channel) {
 		case Selector::MuMu:
 	   	powheg = chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_withMllWeight.root");
-		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMAD_dytagandprobeMuMu_withMllWeight.root"); // 1 - Muons
+		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMADHT_dytagandprobeMuMu_withMllWeight.root"); // 1 - Muons
 		amc = chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_withMllWeight.root");
 		data = chain_data->Add("../selected_tree_data_dytagandprobeMuMu.root");
 		break;
@@ -283,7 +283,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	gStyle->SetOptStat("eou");
 	TLegend *leg = new TLegend( 0.80, 0.50, 0.98, 0.70 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
+	leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned " ) ;
 	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
@@ -382,7 +382,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	else cuts += "_isNotReweighted";
 
 	if(channel == Selector::MuMu)
-		fn = "validationPlots/" + fname + cuts + "_dyTandPMuMuChannel";
+		fn = "validationPlots/" + fname + cuts + "_dyTandPMuMuChannelMadHtBinned";
 
 	mycanvas->Print((fn + ".pdf").Data());
 	mycanvas->Print((fn + ".png").Data());

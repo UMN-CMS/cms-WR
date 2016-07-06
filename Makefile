@@ -23,6 +23,7 @@ else
 	ROOFIT_LIBDIR = -L$(shell cd $(CMSSW_BASE); scram tool info roofitcore | grep LIBDIR= | sed 's|LIBDIR=||')
 	ROOFIT_LIB+=$(ROOFIT_LIBDIR)
 endif
+
 ROOSTAT_LIB="-lRooStats"
 
 
@@ -40,6 +41,7 @@ LIB=-L$(BOOST)/lib -L/usr/lib64 # -L/usr/lib
 
 #### Make the list of modules from the list of .cc files in the SRC directory
 MODULES=$(shell ls $(SRCDIR)/*.cc | sed "s|.cc|.o|;s|$(SRCDIR)|$(OBJ_DIR)|g")
+MODULESZFitter=../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
 #### Make the list of dependencies for a particular module
 
 default: signalPdf.exe $(BUILDDIR)/analysis
@@ -55,6 +57,10 @@ lib/%.o: $(SRCDIR)/%.cc
 	@echo "--> Making $@" 
 	@$(COMPILE.cc) $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $<
 
+scales: ../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
+../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o: ../../Calibration/ZFitter/src/EnergyScaleCorrection_class.cc
+	@echo "--> Making $@" 
+	@$(COMPILE.cc) $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< 
 
 -include $(MODULES:.o=.d)
 -include $(BUILDDIR)/analysis.d
@@ -64,17 +70,11 @@ lib/%.o: $(SRCDIR)/%.cc
 
 
 ###### Main program
-ZFitter.exe: $(BUILDDIR)/ZFitter.exe
-$(BUILDDIR)/ZFitter.exe:  $(BUILDDIR)/ZFitter.cpp 
-	cd $(EoPDir) && make
-	@echo "---> Making ZFitter $(COMPILE.exe)"
-	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
-	-lboost_program_options -lTreePlayer 
 
-$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp  $(MODULES)
+$(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp  $(MODULES) $(MODULESZFitter)
 	@echo "---> Making analysis $(COMPILE)"
-	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESEoP) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
-	-lboost_program_options -lTreePlayer 
+	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESZFitter) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
+	-lboost_program_options -lTreePlayer $(CMSSW_BASE)/tmp/slc6_amd64_gcc491/src/FWCore/ParameterSet/src/FWCoreParameterSet/libFWCoreParameterSet.so
 
 clean:
 	rm -f $(OBJ_DIR)/*.o

@@ -63,7 +63,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	weight = otherEvent.weight;
 	PU_reweight = otherEvent.PU_reweight;
 
-
+	sprintf(datasetName, "%s", otherEvent.datasetName);
 }
 
 
@@ -91,6 +91,23 @@ void miniTreeEvent::clear()
 	weight = 0.0;
 	PU_reweight = 0.0;
 
+}
+miniTreeEvent::~miniTreeEvent()
+{
+	clear();
+	delete electrons_p4;
+	delete electron_scale;
+	delete electron_smearing;
+	delete electron_r9;
+	delete electron_charge;
+	delete muons_p4;
+	delete muon_charge;
+	delete muon_IDSF_central;
+	delete muon_IsoSF_central;
+	delete muon_IDSF_error;
+	delete muon_IsoSF_error;
+	delete jets_p4;
+	delete jec_uncertainty;
 }
 
 void miniTreeEvent::SetBranches(TTree* tree)
