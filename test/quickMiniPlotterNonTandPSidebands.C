@@ -36,7 +36,7 @@ Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
-void combinedMiniPlotterMuMu(){
+void quickMiniPlotterNonTandPSidebands(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
   TChain * chain_ttbar = new TChain("Tree_Iter0","TT");
@@ -103,7 +103,7 @@ void combinedMiniPlotterMuMu(){
     drawPlots(hs_DY[i],hs_ttbar[i],hs_WJets[i],hs_WZ[i],hs_ZZ[i],hs_data[i],xtitles[i],fnames[i]);
   }
   
-}
+}//end quickMiniPlotterNonTandPSidebands()
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
@@ -263,8 +263,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
 
   if(channel == Selector::MuMu)
-    //fn = "validationPlots/"+fname + "_lowdileptonMuMuChannelDyAmc";
-    fn = "validationPlots/"+fname + "_noRatio_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
+    //fn = fname + "_lowdileptonMuMuChannelDyAmc";
+    fn = fname + "_noRatio_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
 
 
   mycanvas->Print((fn+".pdf").Data());
