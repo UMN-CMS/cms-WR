@@ -57,6 +57,7 @@ using namespace std;
 
 
 //calculate four object mass given pt, eta, phi of four objects
+//cannot get this function to work within a TTree Draw call
 Float_t lljj(Float_t ptOne, Float_t etaOne, Float_t phiOne, Float_t ptTwo, Float_t etaTwo, Float_t phiTwo, Float_t ptThree, Float_t etaThree, Float_t phiThree, Float_t ptFour, Float_t etaFour, Float_t phiFour){
 #ifdef DEBUG
 	cout<<" "<<endl;
@@ -2015,11 +2016,27 @@ void macroSandBox(){
 		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c4","etaGenLeptFromScdHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9","deltaR(etaGenLeptFromScdHvyPtcl,phiGenLeptFromScdHvyPtcl,etaGenQuarkTwoFromScdHvyPtcl,phiGenQuarkTwoFromScdHvyPtcl)>>dRnuLeptNuGenQrkTwoHist(50,0.,5.)","dRnuLeptNuGenQrkTwoHist","#DeltaR Nu dau GEN lepton and second GEN quark from Nu","#DeltaR",plotDir+"_dRnuLeptNuGenQrkTwo",0.4);
 
 		//how often the leading and subleading GEN leptons are not the WR or Nu dau lepton  (pt eta matching)
-		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c5","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaLeadGenLepton>-9","matching(etaLeadGenLepton,ptLeadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>leadGenLeptonNotFromWrOrNuHist(3,0.,2.)","leadGenLeptonNotFromWrOrNuHist","Events where lead GEN lepton not from W_{R} or Nu","1 = lead GEN lepton not from W_{R} or Nu",plotDir+"_leadGenLeptonNotFromWrOrNu");
-		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c6","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9","matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>subleadGenLeptonNotFromWrOrNuHist(3,0.,2.)","subleadGenLeptonNotFromWrOrNuHist","Events where sublead GEN lepton not from W_{R} or Nu","1 = sublead GEN lepton not from W_{R} or Nu",plotDir+"_subleadGenLeptonNotFromWrOrNu");
-		
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c5","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaLeadGenLepton>-9","matching(etaLeadGenLepton,ptLeadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>leadGenLeptonNotFromWrOrNuHist(3,0.,2.)","leadGenLeptonNotFromWrOrNuHist","Events where lead GEN lepton not from W_{R} or Nu","1 = lead GEN lepton not from W_{R} or Nu",plotDir+"_leadGenLeptonNotFromWrOrNu",-1);
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c6","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9","matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>>subleadGenLeptonNotFromWrOrNuHist(3,0.,2.)","subleadGenLeptonNotFromWrOrNuHist","Events where sublead GEN lepton not from W_{R} or Nu","1 = sublead GEN lepton not from W_{R} or Nu",plotDir+"_subleadGenLeptonNotFromWrOrNu",-1);
+
+		//there is a surprisingly high fraction (about 3 percent) of events where the second highest pT GEN lepton (sublead lepton) is not the lepton whose first mother is the WR or Nu
+		//across all mass points, in about 0.6 percent of events the leading GEN lepton is not the lepton whose first mother is the WR or Nu. this seems sensible
+		string cutsSubleadLeptNotFromWRorNu = "etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaSubleadGenLepton>-9 && matching(etaSubleadGenLepton,ptSubleadGenLepton,etaGenLeptFromScdHvyPtcl,ptGenLeptFromScdHvyPtcl,etaGenLeptFromFstHvyPtcl,ptGenLeptFromFstHvyPtcl)>0.";
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"r1",cutsSubleadLeptNotFromWRorNu,"((ptSubleadGenLepton - ptGenLeptFromScdHvyPtcl)/ptGenLeptFromScdHvyPtcl)>>ptPercentDiffSubleadGenLeptAndGenLeptFromNuHist(50,-1.5,5)","ptPercentDiffSubleadGenLeptAndGenLeptFromNuHist","#DeltaP_{T}[sublead GEN lepton, GEN lepton from Nu]/P_{T} GEN lepton from Nu  when sublead GEN lepton is not from W_{R} or Nu","#DeltaP_{T}[sublead GEN lepton, GEN lepton from Nu]/P_{T} GEN lepton from Nu",plotDir+"_ptPercentDiffSubleadGenLeptonGenLeptFromNu_subleadGenLeptNotFromWrOrNu",-2);
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"r2",cutsSubleadLeptNotFromWRorNu,"((ptSubleadGenLepton - ptGenLeptFromFstHvyPtcl)/ptGenLeptFromFstHvyPtcl)>>ptPercentDiffSubleadGenLeptAndGenLeptFromWRHist(50,-1.5,5)","ptPercentDiffSubleadGenLeptAndGenLeptFromWRHist","#DeltaP_{T}[sublead GEN lepton, GEN lepton from WR]/P_{T} GEN lepton from WR  when sublead GEN lepton is not from W_{R} or Nu","#DeltaP_{T}[sublead GEN lepton, GEN lepton from WR]/P_{T} GEN lepton from WR",plotDir+"_ptPercentDiffSubleadGenLeptonGenLeptFromWR_subleadGenLeptNotFromWrOrNu",-2);
+		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"r3",cutsSubleadLeptNotFromWRorNu,"deltaR(etaSubleadGenLepton,phiSubleadGenLepton,etaGenLeptFromFstHvyPtcl,phiGenLeptFromFstHvyPtcl)>>dRSubleadGenLeptAndGenLeptFromWRHist(50,-0.5,5.)","dRSubleadGenLeptAndGenLeptFromWRHist","#DeltaR[sublead GEN lepton, GEN lepton from WR] when sublead GEN lepton is not from W_{R} or Nu","#DeltaR[sublead GEN lepton, GEN lepton from WR]",plotDir+"_dRSubleadGenLeptonGenLeptFromWR_subleadGenLeptNotFromWrOrNu",-2);
+		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"r4",cutsSubleadLeptNotFromWRorNu,"deltaR(etaSubleadGenLepton,phiSubleadGenLepton,etaGenLeptFromScdHvyPtcl,phiGenLeptFromScdHvyPtcl)>>dRSubleadGenLeptAndGenLeptFromNuHist(50,-0.5,5.)","dRSubleadGenLeptAndGenLeptFromNuHist","#DeltaR[sublead GEN lepton, GEN lepton from Nu] when sublead GEN lepton is not from W_{R} or Nu","#DeltaR[sublead GEN lepton, GEN lepton from Nu]",plotDir+"_dRSubleadGenLeptonGenLeptFromNu_subleadGenLeptNotFromWrOrNu",-2);
+
+
+
+
+
+
+
+
+
 		//plot gen dilepton mass using GEN leptons whose mothers are the WR and heavy Nu
-		makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"d1","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9","calcDileptonMass(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl)>>genDileptonMassHist()","genDileptonMassHist","","GEN M_{LL} leptons from W_{R} and Nu [GeV]",plotDir+"_genDileptonMass",200.);
+		//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"d1","etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9","calcDileptonMass(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl)>>genDileptonMassHist()","genDileptonMassHist","","GEN M_{LL} leptons from W_{R} and Nu [GeV]",plotDir+"_genDileptonMass",200.);
 
 		//plot four object mass using GEN leptons and quarks matched to WR and heavy Nu
 		//string masscuts = "etaGenLeptFromScdHvyPtcl>-9 && etaGenLeptFromFstHvyPtcl>-9 && etaGenQuarkOneFromScdHvyPtcl>-9 && etaGenQuarkTwoFromScdHvyPtcl>-9";
