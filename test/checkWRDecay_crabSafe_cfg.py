@@ -100,7 +100,12 @@ process.schedule = cms.Schedule(process.checkWRdecay)
 process.TFileService = cms.Service("TFileService",
 		#fileName = cms.string('WR_decay_kinematics_MWR_2600_MNu_1300.root')
 		#fileName = cms.string('WR_decay_kinematics_MWR_800_MNu_400.root')
-		fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500.root')
+		#fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500.root')
+		#fileName = cms.string('WR_decay_kinematics_MWR_2600_MNu_1300_8TeV.root')
+		#fileName = cms.string('WR_decay_kinematics_MWR_800_MNu_400_8TeV.root')
+		fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500_8TeV.root')
+
+
 )
 
 process.options = cms.untracked.PSet(
@@ -111,7 +116,12 @@ process.options = cms.untracked.PSet(
 process.source = cms.Source( "PoolSource",
 	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_2600_ToENu_MNu_1300_GEN_13TeV_1.root'),
 	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_800_ToENu_MNu_400_GEN_13TeV_1.root'),
-	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToLNu_MNu_2500_GEN_13TeV_1.root'),
+	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToMuNu_MNu_2500_GEN_13TeV_1.root'),
+	
+	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_2600_ToENu_MNu_1300_GEN_8TeV_1.root'),
+	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_800_ToENu_MNu_400_GEN_8TeV_1.root'),
+	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
+	
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
