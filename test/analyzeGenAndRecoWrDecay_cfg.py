@@ -59,7 +59,7 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
 	#fileNames = inputFiles,
-	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WR_signal_miniAODFile_1.root'),
+	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
