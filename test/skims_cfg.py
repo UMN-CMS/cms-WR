@@ -13,8 +13,14 @@ options.register('saveTnP',
                  "tell to the output module to save the tagAndProbe triggered events"
 )
 
+options.register('doWR',
+		'',
+		VarParsing.VarParsing.multiplicity.singleton,
+		VarParsing.VarParsing.varType.string,
+		"enable filters for WR skims")
+
 options.register('GT',
-		'74X_mcRun2_asymptotic_v2',
+		'74X_mcRun2_asymptotic_v4',
 		VarParsing.VarParsing.multiplicity.singleton,
 		VarParsing.VarParsing.varType.string,
 		"global tag name")
@@ -89,10 +95,16 @@ process.microAOD_output = cms.OutputModule("PoolOutputModule",
 
 # here the full set of sequences and hlt paths used to make the first step
 process.load('ExoAnalysis.cmsWR.microAOD_cff')
+process.load('ExoAnalysis.cmsWR.genFilterForWrSkims_cff')
 
 # Path and EndPath definitions
 process.tagAndProbe = cms.Path(process.tagAndProbeHltSequence)
 process.skimPreselected = cms.Path(process.signalHltSequence * process.wRdiLeptonSkimSequence * process.wRdijetSkimSequence)
+if (options.doWR=='WRMuMu'):
+	process.skimPreselected = cms.Path(process.skipGenNuEleSeq * process.skipGenNuTauSeq * process.signalHltSequence * process.wRdiLeptonSkimSequence * process.wRdijetSkimSequence)
+
+if (options.doWR=='WREE'):
+	process.skimPreselected = cms.Path(process.skipGenNuMuSeq * process.skipGenNuTauSeq * process.signalHltSequence * process.wRdiLeptonSkimSequence * process.wRdijetSkimSequence)
 
 process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
