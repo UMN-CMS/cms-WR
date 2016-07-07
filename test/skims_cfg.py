@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process('SKIM')
+#undo later process = cms.Process('SKIM')
+process = cms.Process('RESKIM') #delete later
 
 ############################################################ OPTIONS
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -20,7 +21,7 @@ options.register('doWR',
 		"enable filters for WR skims")
 
 options.register('GT',
-		'74X_mcRun2_asymptotic_v2',
+		'74X_mcRun2_asymptotic_v4',
 		VarParsing.VarParsing.multiplicity.singleton,
 		VarParsing.VarParsing.varType.string,
 		"global tag name")
