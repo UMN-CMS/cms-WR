@@ -14,6 +14,32 @@ hasGenNuTauFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 skipGenNuTauSeq = cms.Sequence(hasGenNuTau *~hasGenNuTauFilter)
+
+#discard any events in which a Nu_Rmu appears in the decay chain   pdgId 9900014
+hasGenNuMu = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("prunedGenParticles"),
+		cut = cms.string("abs(pdgId) == 9900014")
+		)
+
+hasGenNuMuFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("hasGenNuMu"),
+		minNumber = cms.uint32(1)
+		)
+
+skipGenNuMuSeq = cms.Sequence(hasGenNuMu *~hasGenNuMuFilter)
+
+#discard any events in which a Nu_Re appears in the decay chain   pdgId 9900012
+hasGenNuEle = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("prunedGenParticles"),
+		cut = cms.string("abs(pdgId) == 9900012")
+		)
+
+hasGenNuEleFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("hasGenNuEle"),
+		minNumber = cms.uint32(1)
+		)
+
+skipGenNuEleSeq = cms.Sequence(hasGenNuEle *~hasGenNuEleFilter)
 #################################################
 
 #################################################
@@ -71,9 +97,9 @@ flavorChangeVetoFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 trueNuAndFlavorChangeVetoSeq = cms.Sequence(
-		trueNuEle + trueNuMu
-		+ mergeTrueNuMuEle * mergeTrueNuMuEleFilter
-		+ flavorChangeVeto *~flavorChangeVetoFilter
+		#trueNuEle + trueNuMu
+		#+ mergeTrueNuMuEle * mergeTrueNuMuEleFilter
+		flavorChangeVeto *~flavorChangeVetoFilter
 		)
 #################################################
 
@@ -114,7 +140,7 @@ trueQuarksFromNuSeq = cms.Sequence(trueQuarksFromNu * trueQuarksFromNuFilter)
 
 completeGenFilterSeq = cms.Sequence(
 		skipGenNuTauSeq
-		*trueWRSeq
+		#*trueWRSeq
 		*trueNuAndFlavorChangeVetoSeq
 		*trueLeptonFromNuSeq
 		*trueQuarksFromNuSeq
