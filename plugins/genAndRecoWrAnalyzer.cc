@@ -87,7 +87,7 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include "TTree.h"
-//#include "TLorentzVector.h"
+#include "TLorentzVector.h"
 #include <TFile.h>
 #include <TBranch.h>
 #include <TChain.h>
@@ -228,6 +228,8 @@ public:
 		motherPdgIdLeadGenQuark = -1, motherStatusLeadGenQuark = -1;
 		motherPdgIdSubleadGenQuark = -1, motherStatusSubleadGenQuark = -1;
 
+		fourObjMassFromGenObjsFromFstAndScdHvyPtcl = -9;
+	
 	}///end resetTreeVars()
 
 private:
@@ -299,6 +301,7 @@ private:
 	Int_t motherStatusGenQuarkOneFromScdHvyPtcl;
 	Int_t motherPdgIdGenQuarkTwoFromScdHvyPtcl;
 	Int_t motherStatusGenQuarkTwoFromScdHvyPtcl;
+	Float_t fourObjMassFromGenObjsFromFstAndScdHvyPtcl;
 	
 
 
@@ -406,7 +409,8 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 	tree->Branch("etaGenQuarkTwoFromScdHvyPtcl", &etaGenQuarkTwoFromScdHvyPtcl, "etaGenQuarkTwoFromScdHvyPtcl/F");
 	tree->Branch("ptGenQuarkTwoFromScdHvyPtcl", &ptGenQuarkTwoFromScdHvyPtcl, "ptGenQuarkTwoFromScdHvyPtcl/F");
 	tree->Branch("phiGenQuarkTwoFromScdHvyPtcl", &phiGenQuarkTwoFromScdHvyPtcl, "phiGenQuarkTwoFromScdHvyPtcl/F");
-
+	tree->Branch("fourObjMassFromGenObjsFromFstAndScdHvyPtcl", &fourObjMassFromGenObjsFromFstAndScdHvyPtcl, "fourObjMassFromGenObjsFromFstAndScdHvyPtcl/F");
+	
 
 	tree->Branch("etaLeadGenLepton", &etaLeadGenLepton, "etaLeadGenLepton/F");
 	tree->Branch("ptLeadGenLepton", &ptLeadGenLepton, "ptLeadGenLepton/F");
@@ -654,6 +658,14 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	motherPdgIdGenQuarkTwoFromScdHvyPtcl = (genQuarkTwoFromScdHvyPtcl->mother(0))->pdgId(), motherStatusGenQuarkTwoFromScdHvyPtcl = (genQuarkTwoFromScdHvyPtcl->mother(0))->status();
 	etaGenQuarkOneFromScdHvyPtcl = genQuarkOneFromScdHvyPtcl->eta(), ptGenQuarkOneFromScdHvyPtcl = genQuarkOneFromScdHvyPtcl->pt(), phiGenQuarkOneFromScdHvyPtcl = genQuarkOneFromScdHvyPtcl->phi();
 	motherPdgIdGenQuarkOneFromScdHvyPtcl = (genQuarkOneFromScdHvyPtcl->mother(0))->pdgId(), motherStatusGenQuarkOneFromScdHvyPtcl = (genQuarkOneFromScdHvyPtcl->mother(0))->status();
+
+	TLorentzVector genLeptFromFstHvyPtclFourMom, genLeptFromScdHvyPtclFourMom, genQuarkOneFromScdHvyPtclFourMom, genQuarkTwoFromScdHvyPtclFourMom;
+	genLeptFromFstHvyPtclFourMom.SetPtEtaPhiM(ptGenLeptFromFstHvyPtcl, etaGenLeptFromFstHvyPtcl, phiGenLeptFromFstHvyPtcl, genLeptFromFstHvyPtcl->mass());
+	genLeptFromScdHvyPtclFourMom.SetPtEtaPhiM(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, genLeptFromScdHvyPtcl->mass());
+	genQuarkOneFromScdHvyPtclFourMom.SetPtEtaPhiM(ptGenQuarkOneFromScdHvyPtcl, etaGenQuarkOneFromScdHvyPtcl, phiGenQuarkOneFromScdHvyPtcl, genQuarkOneFromScdHvyPtcl->mass());
+	genQuarkTwoFromScdHvyPtclFourMom.SetPtEtaPhiM(ptGenQuarkTwoFromScdHvyPtcl, etaGenQuarkTwoFromScdHvyPtcl, phiGenQuarkTwoFromScdHvyPtcl, genQuarkTwoFromScdHvyPtcl->mass());
+	
+	fourObjMassFromGenObjsFromFstAndScdHvyPtcl = (genLeptFromFstHvyPtclFourMom + genLeptFromScdHvyPtclFourMom + genQuarkOneFromScdHvyPtclFourMom + genQuarkTwoFromScdHvyPtclFourMom).M();
 
 #ifdef DEBUG
 	std::cout << "saved kinematic info from GEN lepton and quark daughters of the two hvy particles" << std::endl;
