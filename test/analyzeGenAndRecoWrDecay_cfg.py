@@ -4,6 +4,7 @@ process = cms.Process("AnalyzeWRDecay")
 
 ## load the filters, producers, and sequences defined in other config file fragments
 process.load('ExoAnalysis.cmsWR.reformatGenAndRecoCollections_cff')
+process.load('ExoAnalysis.cmsWR.genFilterForWrSkims_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -19,7 +20,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 #Analyzers
 
 ## analyze the kinematic distributions of electrons at gen and reco level with these analyzers
-process.wrAnalyzerOne = cms.EDAnalyzer('genAndRecoWrAnalyzer',
+process.wrDecayChainAnalyzer = cms.EDAnalyzer('genAndRecoWrAnalyzer',
 		treeName = cms.string("genAndMatchedRecoWrDecayNoCuts"),
 		leptonPdgId = cms.double(11),
 		minQuarkPdgId = cms.double(1),
@@ -28,7 +29,7 @@ process.wrAnalyzerOne = cms.EDAnalyzer('genAndRecoWrAnalyzer',
 		secondHeavyParticlePdgId = cms.double(9900012),
 		firstHeavyParticleStatus = cms.double(62),
 		saveMatchedRecoInfo = cms.bool(True),
-		cutOnStatusCode = cms.bool(False),
+		cutOnStatusCode = cms.bool(True),
 		recoJetCollection = cms.InputTag("slimmedJets"),
 		recoLeptonCollection = cms.InputTag("slimmedElectrons"),
 		genParticlesCollection = cms.InputTag("genParticlesFormatter")
@@ -37,8 +38,9 @@ process.wrAnalyzerOne = cms.EDAnalyzer('genAndRecoWrAnalyzer',
 #################################
 #Paths
 process.analyzeWRdecay = cms.Path(
-		process.genAndRecoFormatterSeq
-		*process.wrAnalyzerOne
+		process.completeGenFilterSeq
+		*process.genAndRecoFormatterSeq
+		*process.wrDecayChainAnalyzer
 		)
 process.schedule = cms.Schedule(process.analyzeWRdecay)
 
