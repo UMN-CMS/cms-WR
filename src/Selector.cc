@@ -336,6 +336,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 bool Selector::isPassing(tag_t tag, bool makeHists)
 {
 
+	/*
 	enum det_t {
 		DET_ENDCAP,
 		DET_BARREL,
@@ -348,6 +349,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		P_EB,
 		P_GAP,
 	} pair;
+	*/
 
 	_isPassing = false;
 	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
@@ -509,6 +511,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			sublead_lepton_r9 = electrons[0].r9;
 		}
 	}
+	/*
 	if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
 	else if(fabs(lead_lepton_p4.Eta()) > 1.4222) lead_det = DET_GAP;
 	else lead_det = DET_BARREL;
@@ -520,6 +523,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	else if( lead_det == DET_BARREL && sublead_det == DET_BARREL) pair = P_BB;
 	else if( lead_det == DET_ENDCAP && sublead_det == DET_ENDCAP) pair = P_EE;
 	else pair = P_EB;
+	*/
 
 	// check eta and pt cuts
 	//if (makeHists) sel::hists("lead_lepton_pt", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
