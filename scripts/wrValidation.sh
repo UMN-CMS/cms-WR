@@ -115,12 +115,12 @@ sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYAMC')
 #echo "about to reprocess the minitrees with dy scaling factors"
 
 ##W dataset is WJets
-for r in ${!sidebandDatasetNames[*]}
-do
-	eval "./bin/analysis -c MuMu --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}_withMllSf.txt &"
-	eval "./bin/analysis -c EE --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}_withMllSf.txt &" 
-	eval "./bin/analysis -c EMu --ignoreDyScaleFactors false -m ${sidebandDatasetNames[$r]} --cut_channel EE >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}_withMllSf_EEcutChannel.txt &"
-done
+#for r in ${!sidebandDatasetNames[*]}
+#do
+#	eval "./bin/analysis -c MuMu --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkMuMuLowDileptonMass_${sidebandDatasetNames[$r]}_withMllSf.txt &"
+#	eval "./bin/analysis -c EE --ignoreDyScaleFactors false --isLowDiLepton true -m ${sidebandDatasetNames[$r]} >& outputFromAnalysis/checkEELowDileptonMass_${sidebandDatasetNames[$r]}_withMllSf.txt &" 
+#	eval "./bin/analysis -c EMu --ignoreDyScaleFactors false -m ${sidebandDatasetNames[$r]} --cut_channel EE >& outputFromAnalysis/checkEMu_${sidebandDatasetNames[$r]}_withMllSf_EEcutChannel.txt &"
+#done
 
 #for r in ${!tAndPdatasetNames[*]}
 #do
@@ -128,7 +128,7 @@ done
 #	eval "./bin/analysis --c EE --ignoreDyScaleFactors false --isTagAndProbe true --m ${tAndPdatasetNames[$r]} >& outputFromAnalysis/checkEEDYTandP_${tAndPdatasetNames[$r]}.txt &"
 #done
 #
-wait 
+#wait 
 ##delay this script until all of the analysis processes are finished
 #while :
 #do
@@ -152,9 +152,9 @@ eval "cd test"
 #eval "sed 's@MuMu@EE@g' runCombinedMiniPlotterForDYTandPMuMu.C > runCombinedMiniPlotterForDYTandPEE.C"
 eval "sed 's@MuMu@EE@g' combinedMiniPlotterMuMu.C > combinedMiniPlotterEE.C"
 eval "sed 's@MuMu@EE@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEE.C"
-eval "sed 's@MuMu@EMu@g' combinedMiniPlotterMuMu.C > tempEMu.C"
-eval "sed 's@lowdilepton@flavour@g' tempEMu.C > combinedMiniPlotterEMu.C"
-eval "sed 's@MuMu@EMu@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEMu.C"
+#eval "sed 's@MuMu@EMu@g' combinedMiniPlotterMuMu.C > tempEMu.C"
+#eval "sed 's@lowdilepton@flavour@g' tempEMu.C > combinedMiniPlotterEMu.C"
+#eval "sed 's@MuMu@EMu@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEMu.C"
 
 #overwrite ZPeakRegionIntegrals.txt if it already exists
 #echo -n '#' > validationPlots/ZPeakRegionIntegrals.txt
@@ -162,13 +162,13 @@ eval "sed 's@MuMu@EMu@g' runCombinedMiniPlotterMuMu.C > runCombinedMiniPlotterEM
 #echo -n '#' >> validationPlots/ZPeakRegionIntegrals.txt
 #eval "git log -1 | grep commit | cut -d ' ' -f 2 >> validationPlots/ZPeakRegionIntegrals.txt"
 
-eval "cp ../configs/miniTreeEntries.dat validationPlots/."
-eval "cp ../configs/dyScaleFactors.txt validationPlots/."
+#eval "cp ../configs/miniTreeEntries.dat validationPlots/."
+#eval "cp ../configs/dyScaleFactors.txt validationPlots/."
 #eval "root -l -b runCombinedMiniPlotterForDYTandPMuMu.C"
 #eval "root -l -b runCombinedMiniPlotterForDYTandPEE.C"
 eval "root -l -b runCombinedMiniPlotterMuMu.C"
 eval "root -l -b runCombinedMiniPlotterEE.C"
-eval "root -l -b runCombinedMiniPlotterEMu.C"
+#eval "root -l -b runCombinedMiniPlotterEMu.C"
 #eval "cp validationPlots/*.txt ../configs/."
 #eval "git add ../configs/ZPeakRegionIntegrals.txt ../configs/miniTreeEntries.dat"
 rm runCombinedMiniPlotterForDYTandPEE.C runCombinedMiniPlotterEE.C runCombinedMiniPlotterEMu.C
