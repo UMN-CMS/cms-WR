@@ -4,7 +4,9 @@ process = cms.Process("GENEEJJ")
 
 ## load the filters, producers, and sequences defined in the config file fragment
 process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
+process.load('ExoAnalysis.cmsWR.genFilterForWrSkims_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+
 
 ## run these analyzers after selecting gen electrons, jets, and quarks without any cuts applied
 process.genAnalyzerOne = cms.EDAnalyzer('genAnalyzer',
@@ -128,6 +130,7 @@ process.matchedGenAnalyzerFive = cms.EDAnalyzer('matchedAnalyzer',
 process.printMuOrTauDecayChain = cms.Path(
 		process.hasGenNuMuOrTau
 		*process.hasGenNuMuOrTauFilter
+		*process.completeGenFilterSeq
 		*process.printParticleTree
 		)
 
@@ -177,7 +180,8 @@ process.options = cms.untracked.PSet(
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
 		#'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-2000_MNu-1000_TuneCUETP8M1_pythia8_13TeV_3.root'
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'
+		#'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuMuToMuMuJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'
 		##WR->e + Nu_e --> eejj miniAOD files 
 		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_1.root',
 		#'file:/eos/uscms/store/user/skalafut/WR/13TeV/miniAOD_WR_signal/WR_signal_miniAODFile_23.root',
