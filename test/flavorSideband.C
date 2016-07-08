@@ -132,7 +132,21 @@ void flavorSideband(){
   f_EE->Draw("same");
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.pdf"));
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.png"));
-
+  mycanvas_ratio_EE->SetLogx(1);
+  chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.png"));
+  mycanvas_ratio_EE->Clear();
+  mycanvas_ratio_EE->SetLogx(0);
+  h_ratio_EE->GetYaxis()->SetRangeUser(0.1,0.7);
+  mycanvas_ratio_EE->SetLogy(1);
+  h_ratio_EE->Draw();
+  chiSqdBoxEE->DrawPave(1500.,0.45,2000.,0.58,4,"same");
+  f_EE->SetLineColor(kBlue);
+  f_EE->Draw("same");
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logy.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logy.png"));
+ 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
   TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);	///< TPaveText objects must be declared using the abs coords of the plot, with the scale of x and y axes taken into account
@@ -146,6 +160,11 @@ void flavorSideband(){
   f_MuMu->Draw("same");
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.pdf"));
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.png"));
+  mycanvas_ratio_MuMu->SetLogx(1);
+  chiSqdBoxMuMu->DrawPave(500.,0.73,1000.,0.79,4,"same");
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.png"));
+
 
   gStyle->SetOptStat("nemr");
   TCanvas* canvMuMuEMu = new TCanvas("canvMuMuEMu","",600,600);
