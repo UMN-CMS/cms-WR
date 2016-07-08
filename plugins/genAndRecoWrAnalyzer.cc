@@ -424,7 +424,7 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 	tree->Branch("dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl", &dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl, "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl/F");
-	tree->Branch("dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
+	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
 
 	tree->Branch("etaLeadGenLepton", &etaLeadGenLepton, "etaLeadGenLepton/F");
 	tree->Branch("ptLeadGenLepton", &ptLeadGenLepton, "ptLeadGenLepton/F");
@@ -453,7 +453,6 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 	tree->Branch("subleadGenQuarkNotFromScdHvyPtcl", &subleadGenQuarkNotFromScdHvyPtcl, "subleadGenQuarkNotFromScdHvyPtcl/I");
 	tree->Branch("motherPdgIdSubleadGenQuark", &motherPdgIdSubleadGenQuark, "motherPdgIdSubleadGenQuark/I");
 	tree->Branch("motherStatusSubleadGenQuark", &motherStatusSubleadGenQuark, "motherStatusSubleadGenQuark/I");
-	
 
 	tree->Branch("numGenFstHvyPtcl", &numGenFstHvyPtcl, "numGenFstHvyPtcl/I");
 	tree->Branch("numGenScdHvyPtcl", &numGenScdHvyPtcl, "numGenScdHvyPtcl/I");
