@@ -1,7 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-#undo later process = cms.Process('SKIM')
-process = cms.Process('RESKIM') #delete later
+process = cms.Process('SKIM')
 
 ############################################################ OPTIONS
 import FWCore.ParameterSet.VarParsing as VarParsing
