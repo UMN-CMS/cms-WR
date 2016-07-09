@@ -388,16 +388,16 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+	//if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 
-	if(fname.EqualTo("nPV") == true && channel == "MuMu" ){
+	if(fname.EqualTo("nPV") == true && channel == "MuMu" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
 		//write the nPV hsitogram only from data to a file
 		fData.cd();
 		hs_data->Write();
 		fMC.cd();
 		hs_DYAmcIncl->Write();
 	}
-	if(fname.EqualTo("nPV") == true && channel == "EE" ){
+	if(fname.EqualTo("nPV") == true && channel == "EE" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
 		//write the nPV hsitogram only from data to a file
 		fDataEle.cd();
 		hs_data->Write();
