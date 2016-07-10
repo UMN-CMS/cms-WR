@@ -42,8 +42,6 @@ using namespace std;
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
 #define compareCentrallyProducedToPrivateWrSignal
-//#define genWrAndNuMass
-//#define signalRegionEEJJBkgnds
 //#define lowMassSkimmedBkgndOnRealData
 //#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
@@ -1109,50 +1107,6 @@ void macroSandBox(){
 	numEvtsTwentyFiveNs[wzKey]=991232;
 	numEvtsTwentyFiveNs[zzKey]=996168;
 
-#ifdef signalRegionEEJJBkgnds
-
-	TString treeName = "unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts";
-	TString dirName = "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
-	TChain * ttBarTree = new TChain(treeName,"");
-	ttBarTree->Add(dirName+"analyzed_TTOnly_PowhegPythia_25ns_eejj_signal_region.root");
-	TChain * dyJetsTree = new TChain(treeName,"");
-	dyJetsTree->Add(dirName+"analyzed_DYJets_Madgraph_25ns_eejj_signal_region.root");
-	TChain * wJetsTree = new TChain(treeName,"");
-	wJetsTree->Add(dirName+"analyzed_WJets_Madgraph_25ns_eejj_signal_region.root");
-	//wJetsTree->Add(dirName+"analyzed_WJets_25ns_eejj_signal_region.root");	///< wJets aMCNLO
-	TChain * wzTree = new TChain(treeName,"");
-	wzTree->Add(dirName+"analyzed_WZ_25ns_eejj_signal_region.root");
-	//wzTree->Add(dirName+"analyzed_WZPlusJets_25ns_eejj_signal_region.root");	///< wzPlusJets aMCNLO
-	TChain * zzTree = new TChain(treeName,"");
-	zzTree->Add(dirName+"analyzed_ZZ_25ns_eejj_signal_region.root");
-
-	Float_t integratedLumi = 1000.;	///inverse picobarns
-	string branchNames[] = {"fourObjectMass"};
-	string histoEndings[] = {"_fourObjectMass(20,0.,3600.)"};
-	string link = ">>";
-
-	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
-
-	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	//string histoBeginnings[] = {zzKey,wzKey,ttBarKey,dyPlusJetsKey};
-	string histoBeginnings[] = {zzKey,wzKey,dyPlusJetsKey};
-	map<string,TChain*> placeHolderMap;
-	unsigned int maxI = histoEndingVect.size();
-	for(unsigned int i=0; i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyJetsTree;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = ttBarTree;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = wzTree;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = zzTree;
-		string cName = "o"+to_string(i);
-		makeStackedHisto(placeHolderMap,cName.c_str(),0.5,0.75,0.9,0.89,xSxnsFiftyNs,integratedLumi,numEvtsTwentyFiveNs,evWeightCut,false);
-		placeHolderMap.clear();
-	}///end loop over branchNames
-	//makeStackedHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap,TString treeCuts,Bool_t doLogYaxis){
-	
-
-#endif
-///end signalRegionEEJJBkgnds
-
 
 #ifdef lowMassFlavorSidebandBkgndOnData
 	string modAndTreeName = "recoAnalyzerTwo/recoObjectsWithPtEtaCuts";
@@ -1552,47 +1506,6 @@ void macroSandBox(){
 
 	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel){
 	
-#endif
-
-
-#ifdef genWrAndNuMass
-	//plot the gen WR and Nu mass distributions using the GEN lvl WR and Nu, not their decay products
-	string dir= "/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/";
-	string fileBegin = "all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-";
-	string fileEnd = ".root";
-	string fileMiddle = "_Nu_M-";
-	string wrMassOutputBegin = "genWRMass_WR_M-";
-	string nuMassOutputBegin = "genNuMass_WR_M-";
-	string nuWrMassRatioOutputBegin = "genNuMassOverWrMass_WR_M-";
-	string outputMiddle = "_Nu_M-";
-	string outputEnd = ".png";
-	int wrMass[] = {800,1000,1200,1400,1600,2000,2200,2400,2600,2800,3000,3200,3600,3800,4400,5000,5200,5600,5800,6000};
-	//int wrMass[] = {800,1000};
-	vector<int> wrMassVect(wrMass,wrMass + sizeof(wrMass)/sizeof(int));
-
-	string massDrawArgs="massWr>>+particleMassHisto";
-	string massHistoName="particleMassHisto";
-
-	//loop over all root files, plot the wr mass, and save png image of the plot
-	unsigned int maxI = wrMassVect.size();
-	for(unsigned int i=0;i<maxI ;i++){
-		string pfn = dir + fileBegin + to_string(wrMassVect[i]) + fileMiddle + to_string(wrMassVect[i]/2) + fileEnd;
-		TChain * wrChain = new TChain("genWRAnalyzerOne/genWR");
-		wrChain->Add(pfn.c_str());
-		TChain * nuChain = new TChain("genNuAnalyzerOne/genNu");
-		nuChain->Add(pfn.c_str());
-		makeAndSaveSingleHistoFromTree(wrChain,"c"+to_string(i),massDrawArgs,massHistoName,"GEN WR mass when Nu mass = "+to_string(wrMassVect[i]/2)+" GeV","WR Mass [GeV]",wrMassOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
-		makeAndSaveSingleHistoFromTree(nuChain,"d"+to_string(i),massDrawArgs,massHistoName,"GEN Nu mass when WR mass = "+to_string(wrMassVect[i])+" GeV","Nu Mass [GeV]",nuMassOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
-
-		//use the friend tree fxn to plot Nu mass / WR mass
-		string chAlias="wrTree", massRatioDrawArgs="(massWr/"+chAlias+".massWr)>>+nuMassOverWrMassHisto", massRatioHistoName="nuMassOverWrMassHisto";
-		makeAndSaveSingleHistoFromTreeWithFriend(nuChain,wrChain,chAlias,"e"+to_string(i),massRatioDrawArgs,massRatioHistoName,"GEN Nu Mass / WR Mass when WR mass = "+to_string(wrMassVect[i])+" GeV","Nu Mass / WR Mass",nuWrMassRatioOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
-
-		nuChain->Delete(), wrChain->Delete();
-
-	}//end loop over root files
-	
-
 #endif
 
 
