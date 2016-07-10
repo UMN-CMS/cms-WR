@@ -37,13 +37,12 @@
 
 using namespace std;
 
-#define genAndRecoWrPlotsMinimalCuts
+#define studyGenWrKinematicsVsWrAndNuMasses
+//#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
 //#define compareCentrallyProducedToPrivateWrSignal
-//#define genWrAndNuMass
-//#define signalRegionEEJJBkgnds
 //#define lowMassSkimmedBkgndOnRealData
 //#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
@@ -832,7 +831,7 @@ void overlayPointsOnStackedHistos(map<string,TChain *> inputChainMap,TString can
  *
  *
  */
-void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
+void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal){
 	gStyle->SetOptStat("");
 	TCanvas * canv = new TCanvas(canvName,canvName,750,700);
 	canv->cd();
@@ -860,6 +859,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		///save pointers to all histograms into overlayHistoMap
 		overlayHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 	}///end loop over elements in inputChainMap
+	canv->Update();
 
 	//cout<<"left first loop over elements in input chain"<<endl;
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
@@ -929,10 +929,21 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		}
 		else (hIt->second)->Draw("same");
 	}///end loop which draws histograms
+	canv->Update();
+	leg->SetTextSize( (1.1)*( leg->GetTextSize() ) );
 	leg->Draw();
+	canv->Update();
 	canv->SaveAs(outputFile.c_str(),"recreate");
 	canv->SaveAs(outputFilePdf.c_str(),"recreate");
-
+	canv->Clear();
+	canv->Close();
+	delete canv;
+	delete leg;
+	for(cMapIt hIt=overlayHistoMap.begin(); hIt!=overlayHistoMap.end(); hIt++){
+		delete (hIt->second);
+	}///end loop which draws histograms
+	overlayHistoMap.clear();
+	
 }///end makeAndSaveMultipleCurveOverlayHisto()
 
 
@@ -1108,50 +1119,6 @@ void macroSandBox(){
 	numEvtsTwentyFiveNs[wJetsKey]=72121586;
 	numEvtsTwentyFiveNs[wzKey]=991232;
 	numEvtsTwentyFiveNs[zzKey]=996168;
-
-#ifdef signalRegionEEJJBkgnds
-
-	TString treeName = "unmatchedSignalRecoAnalyzerFive/signalRecoObjectsWithAllCuts";
-	TString dirName = "/eos/uscms/store/user/skalafut/analyzed_25ns_eejj_signal_region/";
-	TChain * ttBarTree = new TChain(treeName,"");
-	ttBarTree->Add(dirName+"analyzed_TTOnly_PowhegPythia_25ns_eejj_signal_region.root");
-	TChain * dyJetsTree = new TChain(treeName,"");
-	dyJetsTree->Add(dirName+"analyzed_DYJets_Madgraph_25ns_eejj_signal_region.root");
-	TChain * wJetsTree = new TChain(treeName,"");
-	wJetsTree->Add(dirName+"analyzed_WJets_Madgraph_25ns_eejj_signal_region.root");
-	//wJetsTree->Add(dirName+"analyzed_WJets_25ns_eejj_signal_region.root");	///< wJets aMCNLO
-	TChain * wzTree = new TChain(treeName,"");
-	wzTree->Add(dirName+"analyzed_WZ_25ns_eejj_signal_region.root");
-	//wzTree->Add(dirName+"analyzed_WZPlusJets_25ns_eejj_signal_region.root");	///< wzPlusJets aMCNLO
-	TChain * zzTree = new TChain(treeName,"");
-	zzTree->Add(dirName+"analyzed_ZZ_25ns_eejj_signal_region.root");
-
-	Float_t integratedLumi = 1000.;	///inverse picobarns
-	string branchNames[] = {"fourObjectMass"};
-	string histoEndings[] = {"_fourObjectMass(20,0.,3600.)"};
-	string link = ">>";
-
-	TString evWeightCut = "(evWeightSign < 0 ? -1. : 1.)";
-
-	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	//string histoBeginnings[] = {zzKey,wzKey,ttBarKey,dyPlusJetsKey};
-	string histoBeginnings[] = {zzKey,wzKey,dyPlusJetsKey};
-	map<string,TChain*> placeHolderMap;
-	unsigned int maxI = histoEndingVect.size();
-	for(unsigned int i=0; i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = dyJetsTree;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = ttBarTree;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = wzTree;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = zzTree;
-		string cName = "o"+to_string(i);
-		makeStackedHisto(placeHolderMap,cName.c_str(),0.5,0.75,0.9,0.89,xSxnsFiftyNs,integratedLumi,numEvtsTwentyFiveNs,evWeightCut,false);
-		placeHolderMap.clear();
-	}///end loop over branchNames
-	//makeStackedHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,map<string,Float_t> crossSxnsMap,Float_t intLumi,map<string,Float_t> nEvtsMap,TString treeCuts,Bool_t doLogYaxis){
-	
-
-#endif
-///end signalRegionEEJJBkgnds
 
 
 #ifdef lowMassFlavorSidebandBkgndOnData
@@ -1555,119 +1522,137 @@ void macroSandBox(){
 #endif
 
 
-#ifdef genWrAndNuMass
-	//plot the gen WR and Nu mass distributions using the GEN lvl WR and Nu, not their decay products
-	string dir= "/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/";
-	string fileBegin = "all_genWrNuAndDecayKinematicsNoMatchingInfo_WR_M-";
-	string fileEnd = ".root";
-	string fileMiddle = "_Nu_M-";
-	string wrMassOutputBegin = "genWRMass_WR_M-";
-	string nuMassOutputBegin = "genNuMass_WR_M-";
-	string nuWrMassRatioOutputBegin = "genNuMassOverWrMass_WR_M-";
-	string outputMiddle = "_Nu_M-";
-	string outputEnd = ".png";
-	int wrMass[] = {800,1000,1200,1400,1600,2000,2200,2400,2600,2800,3000,3200,3600,3800,4400,5000,5200,5600,5800,6000};
-	//int wrMass[] = {800,1000};
-	vector<int> wrMassVect(wrMass,wrMass + sizeof(wrMass)/sizeof(int));
-
-	string massDrawArgs="massWr>>+particleMassHisto";
-	string massHistoName="particleMassHisto";
-
-	//loop over all root files, plot the wr mass, and save png image of the plot
-	unsigned int maxI = wrMassVect.size();
-	for(unsigned int i=0;i<maxI ;i++){
-		string pfn = dir + fileBegin + to_string(wrMassVect[i]) + fileMiddle + to_string(wrMassVect[i]/2) + fileEnd;
-		TChain * wrChain = new TChain("genWRAnalyzerOne/genWR");
-		wrChain->Add(pfn.c_str());
-		TChain * nuChain = new TChain("genNuAnalyzerOne/genNu");
-		nuChain->Add(pfn.c_str());
-		makeAndSaveSingleHistoFromTree(wrChain,"c"+to_string(i),massDrawArgs,massHistoName,"GEN WR mass when Nu mass = "+to_string(wrMassVect[i]/2)+" GeV","WR Mass [GeV]",wrMassOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
-		makeAndSaveSingleHistoFromTree(nuChain,"d"+to_string(i),massDrawArgs,massHistoName,"GEN Nu mass when WR mass = "+to_string(wrMassVect[i])+" GeV","Nu Mass [GeV]",nuMassOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
-
-		//use the friend tree fxn to plot Nu mass / WR mass
-		string chAlias="wrTree", massRatioDrawArgs="(massWr/"+chAlias+".massWr)>>+nuMassOverWrMassHisto", massRatioHistoName="nuMassOverWrMassHisto";
-		makeAndSaveSingleHistoFromTreeWithFriend(nuChain,wrChain,chAlias,"e"+to_string(i),massRatioDrawArgs,massRatioHistoName,"GEN Nu Mass / WR Mass when WR mass = "+to_string(wrMassVect[i])+" GeV","Nu Mass / WR Mass",nuWrMassRatioOutputBegin+to_string(wrMassVect[i])+outputMiddle+to_string(wrMassVect[i]/2)+outputEnd);
-
-		nuChain->Delete(), wrChain->Delete();
-
-	}//end loop over root files
-	
-
-#endif
-
-
 #ifdef compareCentrallyProducedToPrivateWrSignal
 
 	//compare distributions of the gen WR mass using the WR particle itself between centrally produced WR->eejj datasets
 	//and privately produced WR->eejj datasets
-	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel)
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
 
-	TChain * Gen1000MWR500MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen1000MWR500MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_1000_NU_500_1.root");
-	TChain * Gen1000MWR150MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen1000MWR150MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_1000_NU_150_1.root");
-	TChain * Gen1000MWR900MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen1000MWR900MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_1000_NU_900_1.root");
+	TString dirAndTreeName = "wrDecayChainAnalyzer/genAndMatchedRecoWrDecayNoCuts";
+	TString privateDirName = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/", centralDirName = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/WR_signal_MC_centralProduction/RunIISpring15/";
+	TChain * genWRtoEEJJMWR800MNu400Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR800MNu400Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_800_MNu_400.root");
+	TChain * genWRtoEEJJMWR2600MNu1300Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2600MNu1300Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2600_MNu_1300.root");
+	TChain * genWRtoEEJJMWR5000MNu2500Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR5000MNu2500Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_5000_MNu_2500.root");
 	
-	TChain * Gen2000MWR1000MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen2000MWR1000MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_2000_NU_1000_1.root");
-	TChain * Gen2000MWR200MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen2000MWR200MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_2000_NU_200_1.root");
-	TChain * Gen2000MWR1900MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen2000MWR1900MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_2000_NU_1900_1.root");
-	
-	TChain * Gen3200MWR1600MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen3200MWR1600MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_3200_NU_1600_1.root");
-	TChain * Gen3200MWR300MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen3200MWR300MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_3200_NU_300_1.root");
-	TChain * Gen3200MWR3100MNu = new TChain("genWRAnalyzerOne/genWR","");
-	Gen3200MWR3100MNu->Add("/eos/uscms/store/user/skalafut/WR/13TeV/analyzed_GEN_WRSignal_grid/analyzed_genWrToEEJJFullOfflineAnalysis_WR_3200_NU_3100_1.root");
-	
-	//TChain * GenMWR1300_matchedGenCentralProduction = new TChain("genWRAnalyzerOne/genWR","");
-	//MWR2600MNu1300_matchedGenCentralProduction->Add("/eos/uscms/store/user/skalafut/analyzed_25ns_WR_MC_check_WR_mass/all_genWrKinematics_WR_M-2600_Nu_M-1300.root");
 
-	string branchNames[] = {"massWr"};
+	TChain * genWRtoEEJJMWR800MNu400Central = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR800MNu400Central->Add(centralDirName + "analyzed_central_WREEJJ_MWR_800_MNu_400.root");
+	TChain * genWRtoEEJJMWR2600MNu1300Central = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2600MNu1300Central->Add(centralDirName + "analyzed_central_WREEJJ_MWR_2600_MNu_1300.root");
+	TChain * genWRtoEEJJMWR5000MNu2500Central = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR5000MNu2500Central->Add(centralDirName + "analyzed_central_WREEJJ_MWR_5000_MNu_2500.root");
+	
+
+	string branchNames[] = {"threeObjMassFromGenObjsFromScdHvyPtcl","ptGenLeptFromFstHvyPtcl","etaGenLeptFromFstHvyPtcl","phiGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","etaGenLeptFromScdHvyPtcl","phiGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","etaGenQuarkOneFromScdHvyPtcl","phiGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","etaGenQuarkTwoFromScdHvyPtcl","phiGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","fourObjMassFromGenObjsFromFstAndScdHvyPtcl"};
 	string link=">>";
-	//string histoEndings[] = {"_massWR(50,700,1300)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	//string histoEndings[] = {"_massWR(50,1600,2400)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	string histoEndings[] = {"_massWR(50,2800,3800)"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
+	//string histoEndings[] = {"_massNu(50,350,450)","_genLeptPtFromWR(50,0.,450.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,450.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,450.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,450.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,850.)","_massWrGenLeptsAndQrksFromWRandNu(50,600.,1000.)"};	//for low WR mass
+	//string histoEndings[] = {"_massNu(50,1250,1350)","_genLeptPtFromWR(50,0.,1450.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,1450.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,1450.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,1450.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,2600.)","_massWrGenLeptsAndQrksFromWRandNu(50,2200.,3000.)"};	//for medium WR mass
+	string histoEndings[] = {"_massNu(50,2450,2550)","_genLeptPtFromWR(50,0.,2500.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,2500.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,2500.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,2500.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,5000.)","_massWrGenLeptsAndQrksFromWRandNu(50,4000.,6000.)"};	//for high WR mass
 		
-	//string histoEndings[] = {"_numWrs(4,0.,3.)","_etaWR(60,-6.,6.)","_ptWR(20,0.,200.)","_phiWR(30,-3.2,3.2)","_massWR(50,1800,3000)"};	//compare private GENSIM to centrally produced miniAOD
-	string titles[] = {"GEN WR Mass"};
-	string xAxisLabels[] = {"WR mass [GeV]"};
+	string titles[] = {"CMS Preliminary                     #surds = 13 TeV"};
+	string xAxisLabels[] = {"M_{LJJ} of GEN Nu daughter lepton and quarks [GeV]","P_{T} of GEN WR daughter lepton [GeV]","#eta of GEN WR daughter lepton","#phi of GEN WR daughter lepton","P_{T} of GEN Nu daughter lepton [GeV]","#eta of GEN Nu daughter lepton","#phi of GEN Nu daughter lepton","P_{T} of GEN Nu daughter quark one [GeV]","#eta of GEN Nu daughter quark one","#phi of GEN Nu daughter quark one","P_{T} of GEN Nu daughter quark two [GeV]","#eta of GEN Nu daughter quark two","#phi of GEN Nu daughter quark two","M_{LL} of GEN Nu and WR daughter leptons [GeV]","M_{LLJJ} of GEN WR and Nu daughter leptons and quarks [GeV]"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	//string histoBeginnings[] = {"MWR 1000 MNU 150","MWR 1000 MNU 500","MWR 1000 MNU 900"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	//string histoBeginnings[] = {"MWR 2000 MNU 200","MWR 2000 MNU 1000","MWR 2000 MNU 1900"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	string histoBeginnings[] = {"MWR 3200 MNU 300","MWR 3200 MNU 1600","MWR 3200 MNU 3100"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	//string histoBeginnings[] = {"MWR 1000 MNU 150","MWR 1000 MNU 500","MWR 1000 MNU 900","MWR 2000 MNU 200","MWR 2000 MNU 1000","MWR 2000 MNU 1900","MWR 3200 MNU 300","MWR 3200 MNU 1600","MWR 3200 MNU 3100"};	//compare privately produced GENSIM with different Nu masses and the same WR mass
-	
-	//string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
+	string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen1000MWR150MNu;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen1000MWR500MNu;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen1000MWR900MNu;
-	
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen2000MWR200MNu;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen2000MWR1000MNu;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen2000MWR1900MNu;
-	
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = Gen3200MWR300MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = Gen3200MWR1600MNu;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = Gen3200MWR3100MNu;
-		
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = MWR2600MNu1300_matchedGenCentralProduction;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = MWR2600MNu1300;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Central;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
 		
 		string cName = "o"+to_string(i);
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.45,0.95,0.90,true,titles[i]+" at different GEN Nu Masses",xAxisLabels[i],"_GEN_WR_mass_3200_Nu_masses_300_1600_3100",true);
-		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.75,0.6,0.98,0.95,true,titles[i]+" Central vs Private Production",xAxisLabels[i],"_GEN_WR_mass_multipleNuAndWRMasses");
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.6,0.95,0.90,true,titles[0],xAxisLabels[i],"_MWR_5000_MNu_2500_centralVsPrivate",false);
 		placeHolderMap.clear();
 	}///end loop over branchNames
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
+
 
 
 #endif
+
+
+#ifdef studyGenWrKinematicsVsWrAndNuMasses
+
+	//compare distributions of the gen WR mass using the WR particle itself between centrally produced WR->eejj datasets
+	//and privately produced WR->eejj datasets
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
+
+	TString dirAndTreeName = "wrDecayChainAnalyzer/genAndMatchedRecoWrDecayNoCuts";
+	TString privateDirName = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/";
+	TChain * genWRtoEEJJMWR800MNu400Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR800MNu400Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_800_MNu_400.root");
+	TChain * genWRtoEEJJMWR800MNu150Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR800MNu150Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_800_MNu_150.root");
+	TChain * genWRtoEEJJMWR800MNu700Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR800MNu700Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_800_MNu_700.root");
+	
+	
+	TChain * genWRtoEEJJMWR2600MNu1300Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2600MNu1300Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2600_MNu_1300.root");
+	TChain * genWRtoEEJJMWR2600MNu300Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2600MNu300Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2600_MNu_300.root");
+	TChain * genWRtoEEJJMWR2600MNu2500Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2600MNu2500Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2600_MNu_2500.root");
+
+
+	TChain * genWRtoEEJJMWR5000MNu2500Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR5000MNu2500Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_5000_MNu_2500.root");
+	TChain * genWRtoEEJJMWR5000MNu400Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR5000MNu400Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_5000_MNu_400.root");
+	TChain * genWRtoEEJJMWR5000MNu4700Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR5000MNu4700Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_5000_MNu_4700.root");
+
+
+	TChain * genWRtoEEJJMWR1600MNu800Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR1600MNu800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_1600_MNu_800.root");
+	TChain * genWRtoEEJJMWR2400MNu800Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2400MNu800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2400_MNu_800.root");
+	TChain * genWRtoEEJJMWR3400MNu800Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR3400MNu800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_3400_MNu_800.root");
+
+	string title = "CMS Preliminary                     #surds = 13 TeV";
+	string link=">>";
+	
+	//the arrays branchNames, cutVals, and xAxisLabels must have the same number of elements
+	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
+	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
+	Float_t cutVals[] = {-1, 50., 40., 40., 200., 0.4, 0.4};	//cut values for different distributions, synched with branchNames array
+	string xAxisLabels[] = {"P_{T} of GEN WR daughter lepton [GeV]","P_{T} of GEN Nu daughter lepton [GeV]","P_{T} of GEN Nu daughter quark one [GeV]","P_{T} of GEN Nu daughter quark two [GeV]","M_{LL} of GEN Nu and WR daughter leptons [GeV]","#DeltaR between GEN Nu daughter lepton and quark one","#DeltaR between GEN Nu daughter lepton and quark two"};
+	
+	//the arrays histoEndingsMaster, chains, histoBeginnings, and fileLabels must have the same number of elements
+	string histoEndingsMaster[] = {"_genLeptPtFromWR(100,0.,450.)","_genLeptPtFromNu(100,0.,450.)","_genQrkOnePtFromNu(100,0.,450.)","_genQrkTwoPtFromNu(100,0.,450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,850.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_genLeptPtFromWR(100,0.,1450.)","_genLeptPtFromNu(100,0.,1450.)","_genQrkOnePtFromNu(100,0.,1450.)","_genQrkTwoPtFromNu(100,0.,1450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,2600.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_genLeptPtFromWR(100,0.,2500.)","_genLeptPtFromNu(100,0.,2500.)","_genQrkOnePtFromNu(100,0.,2500.)","_genQrkTwoPtFromNu(100,0.,2500.)","_dileptonMassGenLeptsFromWRandNu(100,0.,5000.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_genLeptPtFromWR(100,0.,1850.)","_genLeptPtFromNu(100,0.,1850.)","_genQrkOnePtFromNu(100,0.,1850.)","_genQrkTwoPtFromNu(100,0.,1850.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)"};
+	TChain * chains[] = {genWRtoEEJJMWR800MNu150Private, genWRtoEEJJMWR800MNu400Private, genWRtoEEJJMWR800MNu700Private, genWRtoEEJJMWR2600MNu300Private, genWRtoEEJJMWR2600MNu1300Private, genWRtoEEJJMWR2600MNu2500Private, genWRtoEEJJMWR5000MNu400Private, genWRtoEEJJMWR5000MNu2500Private, genWRtoEEJJMWR5000MNu4700Private, genWRtoEEJJMWR1600MNu800Private, genWRtoEEJJMWR2400MNu800Private, genWRtoEEJJMWR3400MNu800Private};
+	string histoBeginnings[] = {"MWR 800 MNu 150","MWR 800 MNu 400","MWR 800 MNu 700","MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500","MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700","MWR 1600 MNu 800","MWR 2400 MNu 800","MWR 3400 MNu 800"};	//legend entries
+	string fileLabels[] = {"_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private"};	//output file labels
+	
+	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
+	map<string,TChain*> placeHolderMap;
+	unsigned int maxI = brNamesVect.size();
+	unsigned int maxIterations = histoBeginningsVect.size();
+	unsigned int diffMassesPerPlot = 3;	///<user controlled
+	for(unsigned int i=0; i<maxI; i++){
+		string cName;
+	
+		for(unsigned int j=0; j<maxIterations; j+=diffMassesPerPlot){
+			for(unsigned int n=j; n<(j+diffMassesPerPlot); n++){
+				placeHolderMap[branchNames[i]+link+histoBeginnings[n]+histoEndingsMaster[i]] = chains[n];
+				cName = "o"+to_string(n+i+j);
+			}
+
+			makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.6,0.95,0.90,true,title,xAxisLabels[i],fileLabels[j],true,cutVals[i]);
+			placeHolderMap.clear();
+		}//end loop over different mass points
+
+	}///end loop over branchNames
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal){
+
+
+
+#endif
+//end ifdef studyGenWrKinematicsVsWrAndNuMasses
+
 
 #ifdef genPlotsUsingWRDecayProducts
 	TChain * MWR2600MNu1300_matchedGenDecayProductsNoCuts = new TChain("genMatchedParticleAnalyzerOne/genLeptonsAndJetsNoCuts","");
