@@ -229,6 +229,7 @@ public:
 		motherPdgIdSubleadGenQuark = -1, motherStatusSubleadGenQuark = -1;
 
 		fourObjMassFromGenObjsFromFstAndScdHvyPtcl = -9;
+		threeObjMassFromGenObjsFromScdHvyPtcl = -9;
 		dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl = -9;
 		dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl = -9;
 		dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl = -9;
@@ -313,7 +314,8 @@ private:
 	Float_t dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl;
 	Float_t dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl;
 	Float_t dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl;
-
+	Float_t threeObjMassFromGenObjsFromScdHvyPtcl;
+	
 
 ///pt and eta of the two leading GEN leptons and quarks in each event, no requirements on mother pdgId
 ///count how often the lead lepton does not come from the first heavy particle (use mother info), how often
@@ -425,7 +427,8 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 	tree->Branch("dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
-
+	tree->Branch("threeObjMassFromGenObjsFromScdHvyPtcl", &threeObjMassFromGenObjsFromScdHvyPtcl, "threeObjMassFromGenObjsFromScdHvyPtcl/F");
+	
 	tree->Branch("etaLeadGenLepton", &etaLeadGenLepton, "etaLeadGenLepton/F");
 	tree->Branch("ptLeadGenLepton", &ptLeadGenLepton, "ptLeadGenLepton/F");
 	tree->Branch("phiLeadGenLepton", &phiLeadGenLepton, "phiLeadGenLepton/F");
@@ -684,7 +687,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl = deltaR(genLeptFromFstHvyPtclFourMom.Eta(), genLeptFromFstHvyPtclFourMom.Phi(), genQuarkTwoFromScdHvyPtclFourMom.Eta(), genQuarkTwoFromScdHvyPtclFourMom.Phi());
 	dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl = deltaR(genLeptFromScdHvyPtclFourMom.Eta(), genLeptFromScdHvyPtclFourMom.Phi(), genQuarkOneFromScdHvyPtclFourMom.Eta(), genQuarkOneFromScdHvyPtclFourMom.Phi());
 	dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = deltaR(genLeptFromScdHvyPtclFourMom.Eta(), genLeptFromScdHvyPtclFourMom.Phi(), genQuarkTwoFromScdHvyPtclFourMom.Eta(), genQuarkTwoFromScdHvyPtclFourMom.Phi());
-
+	threeObjMassFromGenObjsFromScdHvyPtcl = (genLeptFromScdHvyPtclFourMom + genQuarkOneFromScdHvyPtclFourMom + genQuarkTwoFromScdHvyPtclFourMom).M();
 
 #ifdef DEBUG
 	std::cout << "saved kinematic info from GEN lepton and quark daughters of the two hvy particles" << std::endl;
