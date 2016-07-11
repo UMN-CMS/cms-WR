@@ -259,12 +259,10 @@ int main(int ac, char* av[])
 	Selector::tag_t channel = Selector::getTag(channel_str);
 
 	Selector::tag_t cut_channel;
-	if(channel == Selector::EMu)
-	{
+	if(channel == Selector::EMu) {
 		cut_channel = Selector::getTag(channel_cut_str);
 		outFileTag += channel_cut_str;
-	}
-	else
+	} else
 		cut_channel = channel;
 
 	configReader myReader("configs/2015-v1.conf");
@@ -646,7 +644,7 @@ int main(int ac, char* av[])
 				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
 				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
 					auto mass = mass_vec[massi];
-					auto range = mass_cut[std::make_pair(cut_channel,mass)];
+					auto range = mass_cut[std::make_pair(cut_channel, mass)];
 					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
 					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
 					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
@@ -694,7 +692,7 @@ int main(int ac, char* av[])
 				}
 
 				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-					auto range = mass_cut[std::make_pair(cut_channel,mass_vec.at(mass_i))];
+					auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					result.fit_integral_in_range[mass_i] = integral;
 				}
@@ -724,7 +722,7 @@ int main(int ac, char* av[])
 						}
 						//Calculate integrals for each fit
 						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-							auto range = mass_cut[std::make_pair(cut_channel,mass_vec.at(mass_i))];
+							auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 							stat_result.fit_integral_in_range[mass_i] = integral;
 						}
