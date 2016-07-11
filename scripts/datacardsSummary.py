@@ -14,10 +14,9 @@ for datacard in datacards:
 		continue
 	filenames.append(( ch, mass, 'datacards/' + datacard))
 
-print "#CHANNEL MASS XS(fb) SIG_RATE TT_RATE DY_RATE SIG_N TT_N DY_N SIG_ALPHA TT_ALPHA DY_ALPHA"
+print "#CHANNEL MASS XS(fb) SIG_NEVENTS SIG_RATE TT_RATE DY_RATE TT_SF DY_SF SIG_N TT_N DY_N SIG_ALPHA TT_ALPHA DY_ALPHA"
 for ch,mass,fn in sorted(filenames):
 	with open(fn) as f:
-		print ch,mass, xs.WR_jj[ch][int(mass)]/.001,
 		unc = {}
 		for line in f:
 			if "rate" in line:
@@ -32,6 +31,8 @@ for ch,mass,fn in sorted(filenames):
 				N = int(line[2])
 				unc[name] = float([x for x in line[3:] if '-' != x][0])
 				unc[name + "N"] = N
+
+		print ch,mass, xs.WR_jj[ch][int(mass)]/.001, "%.3f" % (float(xs.WR_jj[ch][int(mass)]/.001)*float(sig)), 
 		print sig, tt, dy,
 		print unc["TT_SF"],
 		print unc["DYAMC_SF"],

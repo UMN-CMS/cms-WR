@@ -44,7 +44,11 @@ for channel in ["ee", "mumu"]:
 	for mass in sorted(combineTools.mass_cut[channel]):
 		try:
 			systematics = combineTools.Systematics(["signal", "TT", "DYAMC"], nuisance_params)
-			signalNevents = minitrees.getNEvents(mass, channel, "signal", systematics, scale = .001/xs.WR_jj[channel][mass])
+			if unscale_by_xs:
+				scale =  .001/xs.WR_jj[channel][mass]
+			else:
+				scale = 1.0
+			signalNevents = minitrees.getNEvents(mass, channel, "signal", systematics, scale = scale)
 
 			TTBar = minitrees.getNEvents(mass, channel, "TT", systematics)
 			DY = minitrees.getNEvents(mass, channel, "DYAMC", systematics)
