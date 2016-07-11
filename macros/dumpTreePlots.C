@@ -27,10 +27,70 @@
 //#define GENLVL
 #define GENMATCHEDRECO
 
+///calculate the x axis limits of a plot such that 99.9 percent of the histogram integral is shown
+///return a pair of values representing the low and high x axis values
+std::pair<Double_t,Double_t> determinePlotDomain(TH1F * histo){
+#ifdef DEBUG
+	std::cout<<"in determinePlotDomain fxn"<<std::endl;
+#endif
+	Double_t trueIntegral = histo->Integral();
+	Double_t integralFrxn, tempIntegral;
+	Int_t nBins = histo->GetNbinsX(), lowBin, highBin;
+	Double_t lowVal = -10, highVal = -10;
+	std::string hName(histo->GetName());
+	///IF the plot is not a GEN mass plot
+	///start from a bin half way between the furthest left and furthest right bin, and expand the integral range
+	///for each loop iteration
+	if(hName.find("mass") == string::npos){
+#ifdef DEBUG
+		std::cout<<"the histo named\t"<< hName <<"\tdoes not contain the word mass"<<std::endl;
+#endif
+		for(Int_t i=0; i<((Int_t) nBins/2)-1; i++){
+			lowBin = ((Int_t) nBins/2)-i, highBin = ((Int_t) nBins/2)+i;
+			tempIntegral = histo->Integral(lowBin,highBin);
+			if(tempIntegral/trueIntegral >= 0.999){
+				lowVal = histo->GetXaxis()->GetBinLowEdge(lowBin);
+				highVal = (histo->GetXaxis()->GetBinCenter(highBin)) + ( (histo->GetXaxis()->GetBinWidth(2))/2 );
+				break;
+			}//end if(tempIntegral is within 99.9 percent of total histo integral)
+		}//end loop over histo bins
+	}//end if(histo name does not contain the word mass)
+
+	///ELSE (the plot is a GEN mass plot) start at the bin which has the greatest number of entries, and expand
+	///the integral range above and below this bin
+	else{
+		Int_t maxContentBin = histo->GetMaximumBin();	///<expand Integral() range symmetrically about this bin
+#ifdef DEBUG
+		std::cout<<"the histo named\t"<< hName <<"\tdoes contain the word mass"<<std::endl;
+		std::cout<<"the bin number with the greatest number of entries is\t"<< maxContentBin <<std::endl;
+#endif
+		Double_t maxContent = histo->GetBinContent(maxContentBin);
+		Double_t thresholdBinContents = maxContent/5;	///<the number of entries in lowBin and highBin must be less than this threshold
+		for(Int_t i=0; i<((Int_t) nBins/2)-1; i++){
+			lowBin = maxContentBin-i, highBin = maxContentBin+i;
+			if(lowBin < 1) lowBin = 1;
+			if(highBin > nBins) highBin = nBins;
+			tempIntegral = histo->Integral(lowBin,highBin);
+			if(tempIntegral/trueIntegral >= 0.999 && histo->GetBinContent(lowBin) <= thresholdBinContents && histo->GetBinContent(highBin) <= thresholdBinContents){
+				lowVal = histo->GetXaxis()->GetBinLowEdge(lowBin);
+				highVal = (histo->GetXaxis()->GetBinCenter(highBin)) + ( (histo->GetXaxis()->GetBinWidth(2))/2 );
+				break;
+			}//end if(tempIntegral is within 99.9 percent of total histo integral)
+		}//end loop over histo bins
+	}//end else(plot shows a GEN mass distribution
+
+#ifdef DEBUG
+	std::cout<<"min domain value=\t"<<lowVal<<std::endl;
+	std::cout<<"max domain value=\t"<<highVal<<std::endl;
+#endif
+	std::pair<Double_t,Double_t> domainExtrema = std::make_pair(lowVal,highVal);
+	return domainExtrema;
+
+}///end determinePlotDomain()
+
+
 ///adjust the lower and upper limit values for the horizontal axis of the histo
 void resetXaxisLimits(TH1F * histo){
-	bool done = false;
-
 	string hName(histo->GetName());
 	Double_t mean = histo->GetMean(1);
 	Double_t rms = histo->GetRMS(1);
@@ -38,37 +98,13 @@ void resetXaxisLimits(TH1F * histo){
 	Double_t min = 0, max = 0;
 
 	///easy to compute limits based on histo name
-	if(hName.find("phi") != string::npos || hName.find("eta") != string::npos){
-		histo->SetAxisRange(-3.3,3.3,"X");
-		done = true;
-	}///end eta and phi
-	if(!done && (hName.find("runNumber") != string::npos || hName.find("evtNumber") != string::npos) ) done = true;
-	if(!done && hName.find("dR_") != string::npos ){
-		histo->SetAxisRange(0.,4.5,"X");
-		done = true;
-	}///end dR_
-	if(!done && hName.find("Mass") != string::npos ){
-		if( (mean - 2.8*rms) > 0) min = (mean - 2.8*rms);
-		max = (mean + 2.8*rms);
-		histo->SetAxisRange(min,max,"X");
-		done=true;
-	}///end Mass
-	if(!done){
-		///the only remaining quantities are the lepton and jet pT distributions
-		if(hName.find("ptGenEle[0]") != string::npos){
-			///leading pT tends to have a long low pT tail, and a sharp drop after the peak bin
-			min = (peakVal - 3*rms);
-			max = (peakVal + 1.2*rms);
-			if(min < 0) min = 0;
-			histo->SetAxisRange(min,max,"X");
-		}///end leading lepton pT
-		else{
-			///the other three object pT distributions have a long high pT tail, and a low pT plateau
-			max = (mean + 2.5*rms);
-			histo->SetAxisRange(min,max,"X");
-		}///end subleading lepton pT, or jet pT
-
-	}///end lepton and jet pT
+	if(hName.find("phi") != string::npos){
+		histo->GetXaxis()->SetRangeUser(-3.3,3.3);
+	}///end phi
+	else{
+		std::pair<Double_t,Double_t> plotMinAndMax = determinePlotDomain(histo);
+		histo->GetXaxis()->SetRangeUser(plotMinAndMax.first, plotMinAndMax.second);
+	}
 
 }///end resetXaxisLimits()
 

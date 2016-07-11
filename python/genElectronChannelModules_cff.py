@@ -9,7 +9,7 @@ printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
 		)
 
 hasGenMuOrTau = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("(abs(pdgId) == 13 && abs(mother(0).pdgId) > 9900011) || (abs(pdgId) == 15 && abs(mother(0).pdgId) > 9900011)")
 		)
 
@@ -19,8 +19,9 @@ hasGenMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 hasGenNuMuOrTau = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
-		cut = cms.string("abs(pdgId) > 9900012 && abs(pdgId) < 9900024")
+		src = cms.InputTag("prunedGenParticles"),
+		#cut = cms.string("abs(pdgId) > 9900012 && abs(pdgId) < 9900024")
+		cut = cms.string("abs(pdgId) == 9900012")
 		)
 
 hasGenNuMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
@@ -106,8 +107,8 @@ bareMatchedNuSeq = cms.Sequence(bareMatchedNu*bareMatchedNuFilter)
 
 ## filters to select the generated WR
 bareMatchedWR = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("prunedGenParticles"),
-		#src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 9900024 && abs(mother(0).pdgId) == 9900024 && abs(status) == 62")
 		)
 

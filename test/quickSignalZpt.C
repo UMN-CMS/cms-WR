@@ -16,6 +16,7 @@
 // #include "ExoAnalysis/cmsWR/src/Selector.cc"
 // #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
+#include "../src/SelectorHist.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>

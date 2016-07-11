@@ -30,8 +30,9 @@
 #endif
 //#define DBG
 
-bool isReweighted = true;
-Selector::tag_t channel = Selector::MuMu;
+bool isReweighted = false;
+//bool isReweighted = true;
+Selector::tag_t channel = Selector::EE;
 
 /*
  * this macro is designed to read several TChains, representing data and MC, apply lepton and jet kinematic cuts, and plot
@@ -43,22 +44,22 @@ Selector::tag_t channel = Selector::MuMu;
 void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Float_t minLeadJetPt, Int_t minNJets, Float_t minSubleadJetPt);
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs, Float_t leadJetPtCut, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Int_t minNJets, Float_t subleadJetPtCut, Float_t normRescale);
 void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Float_t minLeadJetPt, Int_t minNJets, Float_t minSubleadJetPt);
-void combinedMiniPlotterForDYTandPMuMu()
+void quickZPeakRegionCheckEE()
 {
 
 	TString treeName = "treeDyCheck";
 	TChain * chain_DYPowheg = new TChain(treeName,"DYPowhegM50to120");
-	TChain * chain_DYMadIncl = new TChain(treeName,"DYMadgraphHTBinned");
+	TChain * chain_DYMadIncl = new TChain(treeName,"DYMadgraphInclusive");
 	TChain * chain_DYAmcIncl = new TChain(treeName,"DYAMCInclusive");
 	TChain * chain_data = new TChain(treeName,"Data");
 
 	Int_t powheg=1, madgraph=1, amc=1, data=1;
 	switch (channel) {
-		case Selector::MuMu:
-	   	powheg = chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeMuMu_withMllWeight.root");
-		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMADHT_dytagandprobeMuMu_withMllWeight.root"); // 1 - Muons
-		amc = chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeMuMu_withMllWeight.root");
-		data = chain_data->Add("../selected_tree_data_dytagandprobeMuMu.root");
+		case Selector::EE:
+	   	powheg = chain_DYPowheg->Add("../selected_tree_DYPOWHEG_dytagandprobeEE.root");
+		madgraph = chain_DYMadIncl->Add("../selected_tree_DYMADHT_dytagandprobeEE.root"); // 1 - Muons
+		amc = chain_DYAmcIncl->Add("../selected_tree_DYAMC_dytagandprobeEE.root");
+		data = chain_data->Add("../selected_tree_data_dytagandprobeEEwithEleScaleCorrOn.root");
 		break;
 	default:
 		std::cout << "Unknown tag" << std::endl;
@@ -120,7 +121,7 @@ void writeIntegralsToTxtFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	unsigned int num = zMassRanges.size();
 
 	//write the integral of each dilepton_mass histo over a certain range into a txt file
-	std::string zPeakEvtCountFile = "validationPlots/ZPeakRegionIntegrals.txt";
+	std::string zPeakEvtCountFile = "ZPeakRegionIntegralsCheck.txt";
 	ofstream writeToZpeakFile(zPeakEvtCountFile.c_str(), ofstream::app);
 	writeToZpeakFile << "\t" << std::endl;
 	writeToZpeakFile << "\t" << std::endl;
@@ -153,7 +154,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	if(isReweighted){
 		TString chTitle = chain->GetTitle();
 		if( !(chTitle.Contains("Data")) ){
-			reweight = (channel == Selector::EE) ? (1) : (1);
+			//reweight = (channel == Selector::EE) ? (1) : (1);
+			reweight = (channel == Selector::EE) ? (0.87) : (1);
 		}
 		std::cout<<"reweight =\t"<< reweight << std::endl;
 	}//end if(isReweighted)
@@ -195,6 +197,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		if(myEvent->njets < minNJets) continue;
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subleadJetPtCut) continue;
+		//if(myEvent->lead_jet_pt > 0 && (myEvent->dR_leadlepton_leadjet < 0.4 || myEvent->dR_subleadlepton_leadjet < 0.4) ) continue;
+		//if(myEvent->sublead_jet_pt > 0 && (myEvent->dR_leadlepton_subleadjet < 0.4 || myEvent->dR_subleadlepton_subleadjet < 0.4) ) continue;
+
 
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
@@ -284,8 +289,10 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	gStyle->SetOptStat("eou");
 	TLegend *leg = new TLegend( 0.80, 0.50, 0.98, 0.70 ) ;
 	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned " ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
+	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
+	leg->AddEntry( hs_DYMadIncl, "DY MAD HT binned" ) ;
+	//leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY MAD HT binned" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -378,18 +385,21 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	mycanvas->cd();
 
 	TString fn = "";
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(minLeadJetPt) + "_minSubleadJetPt_" + to_string(minSubleadJetPt) + "_minNJets_" + to_string(minNJets);
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(minLeadJetPt) + "_minSubleadJetPt_" + to_string(minSubleadJetPt) + "_minNJets_" + to_string(minNJets) + "_eleScaleCorrOn";
 	if(isReweighted) cuts += "_isReweighted";
 	else cuts += "_isNotReweighted";
 
-	if(channel == Selector::MuMu)
-		fn = "validationPlots/" + fname + cuts + "_dyTandPMuMuChannelMadHtBinned";
+	if(channel == Selector::EE)
+		fn = fname + cuts + "_dyTandPEEChannel";
 
-	mycanvas->Print((fn + ".pdf").Data());
-	mycanvas->Print((fn + ".png").Data());
-	p1->SetLogy();
-	mycanvas->Print((fn + "_log.pdf").Data());
-	mycanvas->Print((fn + "_log.png").Data());
+	if(fname.EqualTo("Mll") == true){
+		mycanvas->Print((fn + ".pdf").Data());
+		mycanvas->Print((fn + ".png").Data());
+		mycanvas->Print((fn + ".root").Data());
+		p1->SetLogy();
+		mycanvas->Print((fn + "_log.pdf").Data());
+		mycanvas->Print((fn + "_log.png").Data());
+	}
 
 	mycanvas->Close();
 }

@@ -71,7 +71,15 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.smearing = myEvent.electron_smearing->at(i);
 		ele.charge = myEvent.electron_charge->at(i);
 		ele.r9 = myEvent.electron_r9->at(i);
-		ele.weight = 1.;
+		ele.smearing_error = 0.;	///<temporary
+		ele.scale_error = 0.;		///<temporary
+		ele.IDSF = myEvent.electron_IDSF_central->at(i);
+		ele.IDSF_error = myEvent.electron_IDSF_error->at(i);
+		ele.RecoSF = myEvent.electron_RecoSF_central->at(i);
+		ele.RecoSF_error = myEvent.electron_RecoSF_error->at(i);
+		ele.HltSF = myEvent.electron_HltSF_central->at(i);
+		ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
+		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -82,13 +90,6 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
-		/*
-		                mu.IDSF = 1;
-		                mu.IsoSF = 1;
-		                mu.IDSF_error = 0.01;
-		                mu.IsoSF_error = 0.01;
-		*/
-
 		mu.charge = myEvent.muon_charge->at(i);
 		mu.weight = mu.IDSF * mu.IsoSF;
 		muons.push_back(mu);
@@ -103,6 +104,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	}
 
 	nPV = myEvent.nPV;
+	nPU = myEvent.nPU;
 	global_event_weight = (myEvent.weight > 0 ? 1 : -1) * myEvent.PU_reweight;
 #ifdef DEBUGG
 	std::cout << "global_event_weight=\t" << global_event_weight << std::endl;
@@ -126,6 +128,18 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	_isPassingLooseCuts = false;
 	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
+	lead_lepton_IDSF_error = -9;
+	lead_lepton_RecoSF_error = -9;
+	lead_lepton_HltSF_error = -9;
+	lead_lepton_ESmearing_error = -9;
+	lead_lepton_EScaling_error = -9;
+	sublead_lepton_IDSF_error = -9;
+	sublead_lepton_RecoSF_error = -9;
+	sublead_lepton_HltSF_error = -9;
+	sublead_lepton_ESmearing_error = -9;
+	sublead_lepton_EScaling_error = -9;
+	lead_lepton_IsoSF_error = -9;
+	sublead_lepton_IsoSF_error = -9;
 
 	myJetCollection gJets;
 	myElectronCollection gEles;
@@ -165,6 +179,18 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
+		lead_lepton_IDSF_error = electrons[0].IDSF_error;
+		lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
+		lead_lepton_HltSF_error = electrons[0].HltSF_error;
+		lead_lepton_ESmearing_error = electrons[0].smearing_error;
+		lead_lepton_EScaling_error = electrons[0].scale_error;
+
+		sublead_lepton_IDSF_error = electrons[1].IDSF_error;
+		sublead_lepton_RecoSF_error = electrons[1].RecoSF_error;
+		sublead_lepton_HltSF_error = electrons[1].HltSF_error;
+		sublead_lepton_ESmearing_error = electrons[1].smearing_error;
+		sublead_lepton_EScaling_error = electrons[1].scale_error;
+
 		lead_lepton_r9 = electrons[0].r9;
 		sublead_lepton_r9 = electrons[1].r9;
 	} else if(tag == MuMu) { // MuMuJJ Channel
@@ -175,6 +201,12 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 		lead_lepton_p4 = muons[0].p4;
 		sublead_lepton_p4 = muons[1].p4;
+
+		lead_lepton_IDSF_error = muons[0].IDSF_error;
+		lead_lepton_IsoSF_error = muons[0].IsoSF_error;
+
+		sublead_lepton_IDSF_error = muons[1].IDSF_error;
+		sublead_lepton_IsoSF_error = muons[1].IsoSF_error;
 
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
@@ -192,6 +224,15 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 			lead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_p4 = muons[0].p4;
 
+			lead_lepton_IDSF_error = electrons[0].IDSF_error;
+			lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
+			lead_lepton_HltSF_error = electrons[0].HltSF_error;
+			lead_lepton_ESmearing_error = electrons[0].smearing_error;
+			lead_lepton_EScaling_error = electrons[0].scale_error;
+
+			sublead_lepton_IDSF_error = muons[0].IDSF_error;
+			sublead_lepton_IsoSF_error = muons[0].IsoSF_error;
+
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
 			lead_lepton_r9 = electrons[0].r9;
@@ -199,7 +240,14 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 			sublead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_weight = electrons[0].weight;
+			sublead_lepton_IDSF_error = electrons[0].IDSF_error;
+			sublead_lepton_RecoSF_error = electrons[0].RecoSF_error;
+			sublead_lepton_HltSF_error = electrons[0].HltSF_error;
+			sublead_lepton_ESmearing_error = electrons[0].smearing_error;
+			sublead_lepton_EScaling_error = electrons[0].scale_error;
 
+			lead_lepton_IDSF_error = muons[0].IDSF_error;
+			lead_lepton_IsoSF_error = muons[0].IsoSF_error;
 			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
 			sublead_lepton_r9 = electrons[0].r9;
@@ -207,10 +255,13 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	}
 
 	//lepton pt cuts necessitated by dytagandprobe triggers
-	if(lead_lepton_p4.Pt() < 33) return false;
-	if(sublead_lepton_p4.Pt() < 20) return false;
+	if(lead_lepton_p4.Pt() < 35) return false;
+	if(sublead_lepton_p4.Pt() < 35) return false;
+
 
 	//defaults if no jets are found in the event
+	lead_jet_jec_unc = -10;
+	sublead_jet_jec_unc = -10;
 	lead_jet_pt = -9;
 	lead_jet_eta = -6;
 	lead_jet_phi = -6;
@@ -228,6 +279,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_jet_eta = jets[0].p4.Eta();
 		lead_jet_phi = jets[0].p4.Phi();
 		lead_jet_weight = 1.0;
+		lead_jet_jec_unc = jets[0].jec_uncertainty;
 		dR_leadlepton_leadjet = dR_TLV(lead_lepton_p4, jets[0].p4);
 		dR_subleadlepton_leadjet = dR_TLV(sublead_lepton_p4, jets[0].p4);
 	}//one jet in event
@@ -238,6 +290,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_jet_phi = jets[0].p4.Phi();
 		lead_jet_weight = 1.0;
 		sublead_jet_weight = 1.0;
+		lead_jet_jec_unc = jets[0].jec_uncertainty;
+		sublead_jet_jec_unc = jets[1].jec_uncertainty;
 
 		sublead_jet_pt = jets[1].p4.Pt();
 		sublead_jet_eta = jets[1].p4.Eta();
@@ -272,6 +326,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 #endif
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
+	if(dilepton_mass < 60.0 || dilepton_mass > 120.0) return false;
 
 	_isPassingLooseCuts = true;
 	return _isPassingLooseCuts;
@@ -297,6 +352,18 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	_isPassing = false;
 	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
+	lead_lepton_IDSF_error = -9;
+	lead_lepton_RecoSF_error = -9;
+	lead_lepton_HltSF_error = -9;
+	lead_lepton_ESmearing_error = -9;
+	lead_lepton_EScaling_error = -9;
+	sublead_lepton_IDSF_error = -9;
+	sublead_lepton_RecoSF_error = -9;
+	sublead_lepton_HltSF_error = -9;
+	sublead_lepton_ESmearing_error = -9;
+	sublead_lepton_EScaling_error = -9;
+	lead_lepton_IsoSF_error = -9;
+	sublead_lepton_IsoSF_error = -9;
 
 	myJetCollection gJets;
 	myElectronCollection gEles;
@@ -338,6 +405,8 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	lead_jet_phi = jets[0].p4.Phi();
 	lead_jet_weight = 1.0;
 	sublead_jet_weight = 1.0;
+	lead_jet_jec_unc = jets[0].jec_uncertainty;
+	sublead_jet_jec_unc = jets[1].jec_uncertainty;
 
 	sublead_jet_pt = jets[1].p4.Pt();
 	sublead_jet_eta = jets[1].p4.Eta();
@@ -358,6 +427,18 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
+		lead_lepton_IDSF_error = electrons[0].IDSF_error;
+		lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
+		lead_lepton_HltSF_error = electrons[0].HltSF_error;
+		lead_lepton_ESmearing_error = electrons[0].smearing_error;
+		lead_lepton_EScaling_error = electrons[0].scale_error;
+
+		sublead_lepton_IDSF_error = electrons[1].IDSF_error;
+		sublead_lepton_RecoSF_error = electrons[1].RecoSF_error;
+		sublead_lepton_HltSF_error = electrons[1].HltSF_error;
+		sublead_lepton_ESmearing_error = electrons[1].smearing_error;
+		sublead_lepton_EScaling_error = electrons[1].scale_error;
+
 		lead_lepton_r9 = electrons[0].r9;
 		sublead_lepton_r9 = electrons[1].r9;
 	} else if(tag == MuMu) { // MuMuJJ Channel
@@ -370,6 +451,12 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 		lead_lepton_p4 = muons[0].p4;
 		sublead_lepton_p4 = muons[1].p4;
+
+		lead_lepton_IDSF_error = muons[0].IDSF_error;
+		lead_lepton_IsoSF_error = muons[0].IsoSF_error;
+
+		sublead_lepton_IDSF_error = muons[1].IDSF_error;
+		sublead_lepton_IsoSF_error = muons[1].IsoSF_error;
 
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
@@ -390,6 +477,15 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			lead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_p4 = muons[0].p4;
 
+			lead_lepton_IDSF_error = electrons[0].IDSF_error;
+			lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
+			lead_lepton_HltSF_error = electrons[0].HltSF_error;
+			lead_lepton_ESmearing_error = electrons[0].smearing_error;
+			lead_lepton_EScaling_error = electrons[0].scale_error;
+
+			sublead_lepton_IDSF_error = muons[0].IDSF_error;
+			sublead_lepton_IsoSF_error = muons[0].IsoSF_error;
+
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
 
@@ -398,6 +494,14 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 			sublead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_weight = electrons[0].weight;
+			sublead_lepton_IDSF_error = electrons[0].IDSF_error;
+			sublead_lepton_RecoSF_error = electrons[0].RecoSF_error;
+			sublead_lepton_HltSF_error = electrons[0].HltSF_error;
+			sublead_lepton_ESmearing_error = electrons[0].smearing_error;
+			sublead_lepton_EScaling_error = electrons[0].scale_error;
+
+			lead_lepton_IDSF_error = muons[0].IDSF_error;
+			lead_lepton_IsoSF_error = muons[0].IsoSF_error;
 
 			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
@@ -529,6 +633,7 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("lead_jet_phi", &lead_jet_phi);
 	tree->Branch("sublead_jet_phi", &sublead_jet_phi);
 	tree->Branch("nPV", &nPV);
+	tree->Branch("nPU", &nPU);
 	tree->Branch("dR_leadlepton_leadjet", &dR_leadlepton_leadjet);
 	tree->Branch("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
 	tree->Branch("dR_subleadlepton_leadjet", &dR_subleadlepton_leadjet);
@@ -541,6 +646,21 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("dilepton_mass", &dilepton_mass);
 	tree->Branch("pu_weight", &pu_weight);
 	tree->Branch("njets", &njets);
+	tree->Branch("lead_jet_jec_unc", &lead_jet_jec_unc);
+	tree->Branch("sublead_jet_jec_unc", &sublead_jet_jec_unc);
+
+	tree->Branch("lead_lepton_IDSF_error", &lead_lepton_IDSF_error);
+	tree->Branch("lead_lepton_IsoSF_error", &lead_lepton_IsoSF_error);
+	tree->Branch("lead_lepton_RecoSF_error", &lead_lepton_RecoSF_error);
+	tree->Branch("lead_lepton_HltSF_error", &lead_lepton_HltSF_error);
+	tree->Branch("lead_lepton_ESmearing_error", &lead_lepton_ESmearing_error);
+	tree->Branch("lead_lepton_EScaling_error", &lead_lepton_EScaling_error);
+	tree->Branch("sublead_lepton_IDSF_error", &sublead_lepton_IDSF_error);
+	tree->Branch("sublead_lepton_IsoSF_error", &sublead_lepton_IsoSF_error);
+	tree->Branch("sublead_lepton_RecoSF_error", &sublead_lepton_RecoSF_error);
+	tree->Branch("sublead_lepton_HltSF_error", &sublead_lepton_HltSF_error);
+	tree->Branch("sublead_lepton_ESmearing_error", &sublead_lepton_ESmearing_error);
+	tree->Branch("sublead_lepton_EScaling_error", &sublead_lepton_EScaling_error);
 
 }
 
@@ -561,6 +681,7 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("sublead_jet_eta", &sublead_jet_eta);
 	tree->SetBranchAddress("sublead_jet_phi", &sublead_jet_phi);
 	tree->SetBranchAddress("nPV", &nPV);
+	tree->SetBranchAddress("nPU", &nPU);
 
 	tree->SetBranchAddress("dR_leadlepton_leadjet", &dR_leadlepton_leadjet);
 	tree->SetBranchAddress("dR_leadlepton_subleadjet", &dR_leadlepton_subleadjet);
@@ -575,6 +696,21 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("dilepton_mass", &dilepton_mass);
 	tree->SetBranchAddress("pu_weight", &pu_weight);
 	tree->SetBranchAddress("njets", &njets);
+	tree->SetBranchAddress("lead_jet_jec_unc", &lead_jet_jec_unc);
+	tree->SetBranchAddress("sublead_jet_jec_unc", &sublead_jet_jec_unc);
+
+	tree->SetBranchAddress("lead_lepton_IDSF_error", &lead_lepton_IDSF_error);
+	tree->SetBranchAddress("lead_lepton_IsoSF_error", &lead_lepton_IsoSF_error);
+	tree->SetBranchAddress("lead_lepton_RecoSF_error", &lead_lepton_RecoSF_error);
+	tree->SetBranchAddress("lead_lepton_HltSF_error", &lead_lepton_HltSF_error);
+	tree->SetBranchAddress("lead_lepton_ESmearing_error", &lead_lepton_ESmearing_error);
+	tree->SetBranchAddress("lead_lepton_EScaling_error", &lead_lepton_EScaling_error);
+	tree->SetBranchAddress("sublead_lepton_IDSF_error", &sublead_lepton_IDSF_error);
+	tree->SetBranchAddress("sublead_lepton_IsoSF_error", &sublead_lepton_IsoSF_error);
+	tree->SetBranchAddress("sublead_lepton_RecoSF_error", &sublead_lepton_RecoSF_error);
+	tree->SetBranchAddress("sublead_lepton_HltSF_error", &sublead_lepton_HltSF_error);
+	tree->SetBranchAddress("sublead_lepton_ESmearing_error", &sublead_lepton_ESmearing_error);
+	tree->SetBranchAddress("sublead_lepton_EScaling_error", &sublead_lepton_EScaling_error);
 
 }
 
