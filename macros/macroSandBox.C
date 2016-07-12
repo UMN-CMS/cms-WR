@@ -37,8 +37,8 @@
 
 using namespace std;
 
-#define studyGenWrKinematicsVsWrAndNuMasses
-//#define genAndRecoWrPlotsMinimalCuts
+//#define studyGenWrKinematicsVsWrAndNuMasses
+#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
@@ -859,14 +859,15 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		///save pointers to all histograms into overlayHistoMap
 		overlayHistoMap[chMapIt->first]= (TH1F*) gROOT->FindObject(oneHistoName.c_str());
 	}///end loop over elements in inputChainMap
-	canv->Update();
+	//canv->Update();
 
 	//cout<<"left first loop over elements in input chain"<<endl;
 	///now overlay all TH1F objects in overlayHistoMap onto one TCanvas
 	int colors[] = {1,2,4,8,12,25,30,40,45};
 	vector<int> colorVect(colors,colors + sizeof(colors)/sizeof(int) );
 	//short colorsSpecial[] = {kBlack,kBlack,kBlack,kRed,kRed,kRed,kBlue,kBlue,kBlue};
-	short colorsSpecial[] = {kRed,kBlack,kBlue};
+	short colorsSpecial[] = {kRed,kBlack,kBlue};	//standard
+	//short colorsSpecial[] = {kBlack,kBlue,kRed};	//temp for fixes
 	vector<short> colorSpecialVect(colorsSpecial,colorsSpecial + sizeof(colorsSpecial)/sizeof(short) );
 	//int lineStyleSpecial[] = {2,1,6,1,6,2,1,2,6};	///1 is solid, 2 is small dash, 3 is dotted, 7 is medium dash, 9 is large dash, 10 is large dash dot
 	int lineStyleSpecial[] = {1,1,1};	///1 is solid, 2 is small dash, 3 is dotted, 7 is medium dash, 9 is large dash, 10 is large dash dot
@@ -929,13 +930,12 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		}
 		else (hIt->second)->Draw("same");
 	}///end loop which draws histograms
-	canv->Update();
-	leg->SetTextSize( (1.1)*( leg->GetTextSize() ) );
+	leg->SetTextSize(0.027);
 	leg->Draw();
 	canv->Update();
 	canv->SaveAs(outputFile.c_str(),"recreate");
 	canv->SaveAs(outputFilePdf.c_str(),"recreate");
-	canv->Clear();
+	//canv->Clear();
 	canv->Close();
 	delete canv;
 	delete leg;
@@ -1548,25 +1548,25 @@ void macroSandBox(){
 
 	string branchNames[] = {"threeObjMassFromGenObjsFromScdHvyPtcl","ptGenLeptFromFstHvyPtcl","etaGenLeptFromFstHvyPtcl","phiGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","etaGenLeptFromScdHvyPtcl","phiGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","etaGenQuarkOneFromScdHvyPtcl","phiGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","etaGenQuarkTwoFromScdHvyPtcl","phiGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","fourObjMassFromGenObjsFromFstAndScdHvyPtcl"};
 	string link=">>";
-	//string histoEndings[] = {"_massNu(50,350,450)","_genLeptPtFromWR(50,0.,450.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,450.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,450.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,450.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,850.)","_massWrGenLeptsAndQrksFromWRandNu(50,600.,1000.)"};	//for low WR mass
+	string histoEndings[] = {"_massNu(50,395,405)","_genLeptPtFromWR(50,0.,450.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,450.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,450.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,450.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,850.)","_massWrGenLeptsAndQrksFromWRandNu(50,600.,1000.)"};	//for low WR mass
 	//string histoEndings[] = {"_massNu(50,1250,1350)","_genLeptPtFromWR(50,0.,1450.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,1450.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,1450.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,1450.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,2600.)","_massWrGenLeptsAndQrksFromWRandNu(50,2200.,3000.)"};	//for medium WR mass
-	string histoEndings[] = {"_massNu(50,2450,2550)","_genLeptPtFromWR(50,0.,2500.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,2500.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,2500.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,2500.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,5000.)","_massWrGenLeptsAndQrksFromWRandNu(50,4000.,6000.)"};	//for high WR mass
+	//string histoEndings[] = {"_massNu(50,2450,2550)","_genLeptPtFromWR(50,0.,2500.)","_genLeptEtaFromWR(50,-4.,4.)","_genLeptPhiFromWR(50,-3.2,3.2)","_genLeptPtFromNu(50,0.,2500.)","_genLeptEtaFromNu(50,-4.,4.)","_genLeptPhiFromNu(50,-3.2,3.2)","_genQrkOnePtFromNu(50,0.,2500.)","_genQrkOneEtaFromNu(50,-4.,4.)","_genQrkOnePhiFromNu(50,-3.2,3.2)","_genQrkTwoPtFromNu(50,0.,2500.)","_genQrkTwoEtaFromNu(50,-4.,4.)","_genQrkTwoPhiFromNu(50,-3.2,3.2)","_dileptonMassGenLeptsFromWRandNu(50,0.,5000.)","_massWrGenLeptsAndQrksFromWRandNu(50,4000.,6000.)"};	//for high WR mass
 		
 	string titles[] = {"CMS Preliminary                     #surds = 13 TeV"};
 	string xAxisLabels[] = {"M_{LJJ} of GEN Nu daughter lepton and quarks [GeV]","P_{T} of GEN WR daughter lepton [GeV]","#eta of GEN WR daughter lepton","#phi of GEN WR daughter lepton","P_{T} of GEN Nu daughter lepton [GeV]","#eta of GEN Nu daughter lepton","#phi of GEN Nu daughter lepton","P_{T} of GEN Nu daughter quark one [GeV]","#eta of GEN Nu daughter quark one","#phi of GEN Nu daughter quark one","P_{T} of GEN Nu daughter quark two [GeV]","#eta of GEN Nu daughter quark two","#phi of GEN Nu daughter quark two","M_{LL} of GEN Nu and WR daughter leptons [GeV]","M_{LLJJ} of GEN WR and Nu daughter leptons and quarks [GeV]"};
 	vector<string> histoEndingVect(histoEndings,histoEndings + sizeof(histoEndings)/sizeof(string));
-	string histoBeginnings[] = {"Central","Private"};	//compare private GENSIM to centrally produced miniAOD
+	string histoBeginnings[] = {"Central 50k events","Private 15k events"};	//compare private GENSIM to centrally produced miniAOD
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = histoEndingVect.size();
 	for(unsigned int i=0; i<maxI; i++){
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Central;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR800MNu400Central;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR800MNu400Private;
 		
 		string cName = "o"+to_string(i);
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.6,0.95,0.90,true,titles[0],xAxisLabels[i],"_MWR_5000_MNu_2500_centralVsPrivate",false);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.6,0.95,0.90,true,titles[0],xAxisLabels[i],"_MWR_800_MNu_400_centralVsPrivate",false,-1);
 		placeHolderMap.clear();
 	}///end loop over branchNames
-	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal){
 
 
 
@@ -1616,28 +1616,61 @@ void macroSandBox(){
 	string link=">>";
 	
 	//the arrays branchNames, cutVals, and xAxisLabels must have the same number of elements
-	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
+	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl"};
 	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
-	Float_t cutVals[] = {-1, 50., 40., 40., 200., 0.4, 0.4};	//cut values for different distributions, synched with branchNames array
-	string xAxisLabels[] = {"P_{T} of GEN WR daughter lepton [GeV]","P_{T} of GEN Nu daughter lepton [GeV]","P_{T} of GEN Nu daughter quark one [GeV]","P_{T} of GEN Nu daughter quark two [GeV]","M_{LL} of GEN Nu and WR daughter leptons [GeV]","#DeltaR between GEN Nu daughter lepton and quark one","#DeltaR between GEN Nu daughter lepton and quark two"};
+	Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions, synched with branchNames array
+	string xAxisLabels[] = {"P_{T} of GEN WR daughter lepton [GeV]","P_{T} of GEN Nu daughter lepton [GeV]","P_{T} of GEN Nu daughter quark one [GeV]","P_{T} of GEN Nu daughter quark two [GeV]","M_{LL} of GEN Nu and WR daughter leptons [GeV]","#DeltaR between GEN Nu daughter lepton and quark one","#DeltaR between GEN Nu daughter lepton and quark two","1 = events in which subleading GEN lepton does not have Nu mother"};
 	
-	//the arrays histoEndingsMaster, chains, histoBeginnings, and fileLabels must have the same number of elements
-	string histoEndingsMaster[] = {"_genLeptPtFromWR(100,0.,450.)","_genLeptPtFromNu(100,0.,450.)","_genQrkOnePtFromNu(100,0.,450.)","_genQrkTwoPtFromNu(100,0.,450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,850.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_genLeptPtFromWR(100,0.,1450.)","_genLeptPtFromNu(100,0.,1450.)","_genQrkOnePtFromNu(100,0.,1450.)","_genQrkTwoPtFromNu(100,0.,1450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,2600.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_genLeptPtFromWR(100,0.,2500.)","_genLeptPtFromNu(100,0.,2500.)","_genQrkOnePtFromNu(100,0.,2500.)","_genQrkTwoPtFromNu(100,0.,2500.)","_dileptonMassGenLeptsFromWRandNu(100,0.,5000.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_genLeptPtFromWR(100,0.,1850.)","_genLeptPtFromNu(100,0.,1850.)","_genQrkOnePtFromNu(100,0.,1850.)","_genQrkTwoPtFromNu(100,0.,1850.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)"};
-	TChain * chains[] = {genWRtoEEJJMWR800MNu150Private, genWRtoEEJJMWR800MNu400Private, genWRtoEEJJMWR800MNu700Private, genWRtoEEJJMWR2600MNu300Private, genWRtoEEJJMWR2600MNu1300Private, genWRtoEEJJMWR2600MNu2500Private, genWRtoEEJJMWR5000MNu400Private, genWRtoEEJJMWR5000MNu2500Private, genWRtoEEJJMWR5000MNu4700Private, genWRtoEEJJMWR1600MNu800Private, genWRtoEEJJMWR2400MNu800Private, genWRtoEEJJMWR3400MNu800Private};
-	string histoBeginnings[] = {"MWR 800 MNu 150","MWR 800 MNu 400","MWR 800 MNu 700","MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500","MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700","MWR 1600 MNu 800","MWR 2400 MNu 800","MWR 3400 MNu 800"};	//legend entries
-	string fileLabels[] = {"_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private"};	//output file labels
+	//string histoEndingsMaster[] = {};
+	//TChain * chains[] = {genWRtoEEJJMWR800MNu150Private, genWRtoEEJJMWR800MNu400Private, genWRtoEEJJMWR800MNu700Private, genWRtoEEJJMWR2600MNu300Private, genWRtoEEJJMWR2600MNu1300Private, genWRtoEEJJMWR2600MNu2500Private, genWRtoEEJJMWR5000MNu400Private, genWRtoEEJJMWR5000MNu2500Private, genWRtoEEJJMWR5000MNu4700Private, genWRtoEEJJMWR1600MNu800Private, genWRtoEEJJMWR2400MNu800Private, genWRtoEEJJMWR3400MNu800Private};
+	//string histoBeginnings[] = {"MWR 800 MNu 150","MWR 800 MNu 400","MWR 800 MNu 700","MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500","MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700","MWR 1600 MNu 800","MWR 2400 MNu 800","MWR 3400 MNu 800"};	//legend entries
+	//string fileLabels[] = {"_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private"};	//output file labels
+
+	string histoEndings[] = {"_genLeptPtFromWR(100,0.,450.)","_genLeptPtFromNu(100,0.,450.)","_genQrkOnePtFromNu(100,0.,450.)","_genQrkTwoPtFromNu(100,0.,450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,850.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//low mass
+	string histoBeginnings[] = {"MWR 800 MNu 150","MWR 800 MNu 400","MWR 800 MNu 700"};	//low mass
 	
+	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,1450.)","_genLeptPtFromNu(100,0.,1450.)","_genQrkOnePtFromNu(100,0.,1450.)","_genQrkTwoPtFromNu(100,0.,1450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,2600.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//medium mass
+	//string histoBeginnings[] = {"MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500"};	//medium mass
+
+	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,2500.)","_genLeptPtFromNu(100,0.,2500.)","_genQrkOnePtFromNu(100,0.,2500.)","_genQrkTwoPtFromNu(100,0.,2500.)","_dileptonMassGenLeptsFromWRandNu(100,0.,5000.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//high mass
+	//string histoBeginnings[] = {"MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700"};	//high mass
+
+	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,1850.)","_genLeptPtFromNu(100,0.,1850.)","_genQrkOnePtFromNu(100,0.,1850.)","_genQrkTwoPtFromNu(100,0.,1850.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
+	//string histoBeginnings[] = {"MWR 1600 MNu 800","MWR 2400 MNu 800","MWR 3400 MNu 800"};	//fixed Nu mass
 	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = brNamesVect.size();
+	for(unsigned int i=0; i<maxI; i++){
+		string cName = "o"+to_string(i);
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR800MNu150Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR800MNu400Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR800MNu700Private;
+
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2600MNu300Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2600MNu2500Private;
+
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR5000MNu400Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu4700Private;
+
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR3400MNu800Private;
+
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.6,0.95,0.90,true,title,xAxisLabels[i],"_MWR_800_several_MNu_private",true,cutVals[i]);
+		placeHolderMap.clear();
+	}///end loop over branchNames
+	
+	/*
 	unsigned int maxIterations = histoBeginningsVect.size();
 	unsigned int diffMassesPerPlot = 3;	///<user controlled
 	for(unsigned int i=0; i<maxI; i++){
 		string cName;
 	
-		for(unsigned int j=0; j<maxIterations; j+=diffMassesPerPlot){
+		for(unsigned int j=3; j<6; j+=diffMassesPerPlot){
 			for(unsigned int n=j; n<(j+diffMassesPerPlot); n++){
-				placeHolderMap[branchNames[i]+link+histoBeginnings[n]+histoEndingsMaster[i]] = chains[n];
+				placeHolderMap[branchNames[i]+link+histoBeginnings[n]+histoEndingsMaster[n]] = chains[n];
 				cName = "o"+to_string(n+i+j);
 			}
 
@@ -1646,6 +1679,7 @@ void macroSandBox(){
 		}//end loop over different mass points
 
 	}///end loop over branchNames
+	*/
 	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal){
 
 
@@ -1971,7 +2005,7 @@ void macroSandBox(){
 	
 	string plotXaxisLabel[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","1 = lead GEN lepton not W_{R} dau","1 = sublead GEN lepton not Nu dau","1 = lead GEN quark not Nu dau","1 = sublead GEN quark not Nu dau","GEN W_{R} #eta","GEN W_{R} P_{T} [GeV]","GEN W_{R} Mass [GeV]","GEN Nu #eta","GEN Nu P_{T} [GeV]","GEN Nu Mass [GeV]","#eta of GEN Lepton from W_{R}","P_{T} of GEN Lepton from W_{R} [GeV]","#phi of GEN Lepton from W_{R}","#eta of GEN Lepton from Nu","P_{T} of GEN Lepton from Nu [GeV]","#phi of GEN Lepton from Nu","#eta of GEN quark one from Nu","P_{T} of GEN quark one from Nu [GeV]","#phi of GEN quark one from Nu","#eta of GEN quark two from Nu","P_{T} of GEN quark two from Nu [GeV]","#phi of GEN quark two from Nu","P_{T} of leading GEN lepton [GeV]","#eta of leading GEN lepton","#phi of leading GEN lepton","P_{T} of subleading GEN lepton [GeV]","#eta of subleading GEN lepton","#phi of subleading GEN lepton","P_{T} of leading GEN quark [GeV]","#eta of leading GEN quark","#phi of leading GEN quark","P_{T} of subleading GEN quark [GeV]","#eta of subleading GEN quark","#phi of subleading GEN quark", "GEN four object mass [GeV]", "GEN dilepton mass [GeV]", "#DeltaR[Gen Lept from WR, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from WR, Gen Qrk Two from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk Two from Nu]"};
 
-	string stdPlotTitle = "CMS Preliminary            #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
+	string stdPlotTitle = "CMS Preliminary                 #surds = 13 TeV";
 	
 	vector<string> vectForNEntries(plotCut,plotCut + sizeof(plotCut)/sizeof(string));
 	int nBranches = vectForNEntries.size();
