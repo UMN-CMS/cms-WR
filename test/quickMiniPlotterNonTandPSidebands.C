@@ -41,8 +41,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 void quickMiniPlotterNonTandPSidebands(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
-  TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
-  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
@@ -53,8 +53,8 @@ void quickMiniPlotterNonTandPSidebands(){
   case Selector::EE:
     //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
     dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandEE_withMllWeight.root");
-	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandEE.root");
-    //tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
+	//tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandEE.root");
+    tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
 	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandEE.root");
     wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandEE.root");
     zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandEE.root");
@@ -279,14 +279,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
 
   TString fn = "";
-
-  if(channel == Selector::EE){
-	  //fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";	//for ratio plot
-	  fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyMadHt";	//for ratio plot
-	  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyAmc";	//for ratio plot
-	  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyMadHt";	//for ratio plot
-	  //fn = fname + "_noRatio_variablebinwidths_lowdileptonEEChannelDyAmc";	//only needed when no ratio plot is drawn
-  }
+  //fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";	//for ratio plot
+  //fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyMadHt";	//for ratio plot
+  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyAmc";	//for ratio plot
+  fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyMadHt";	//for ratio plot
+  //fn = fname + "_noRatio_variablebinwidths_lowdileptonEEChannelDyAmc";	//only needed when no ratio plot is drawn
 
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
