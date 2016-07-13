@@ -339,7 +339,6 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.pdf","recreate");
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
-
 }
 
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
