@@ -15,6 +15,7 @@
 // #include "ExoAnalysis/cmsWR/src/Selector.cc"
 // #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
+#include "../src/SelectorHist.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>
@@ -25,9 +26,9 @@
 #endif
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
-//to change from EE to MuMu, simply search for all instances of EE, and replace them with MuMu
+//to change from MuMu to EE, simply search for all instances of EE, and replace them with MuMu
 //BELOW THIS LINE
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 /*
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -40,7 +41,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 void quickMiniPlotterNonTandPSidebands(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
-  TChain * chain_ttbar = new TChain("Tree_Iter0","TT");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
+  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
@@ -48,14 +50,15 @@ void quickMiniPlotterNonTandPSidebands(){
  
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
-  case Selector::MuMu:
-    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
-    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
-	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
-    wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
-    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
-    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandMuMu.root");
-    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
+  case Selector::EE:
+    //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
+    dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandEE_withMllWeight.root");
+	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandEE.root");
+    //tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
+	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandEE.root");
+    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandEE.root");
+    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandEE.root");
+    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandEE.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -138,26 +141,35 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   cout<< nEntries << endl;
 
+  TString chainTitle(chain->GetTitle());
+  Float_t ttScaleFactor = 1.0;
+  if( chainTitle.EqualTo("TTMC") ){
+	  ttScaleFactor = (channel = Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
+  }
+  if( chainTitle.EqualTo("TTData") ){
+	  ttScaleFactor = (channel = Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
+  }
+
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
 
-    h_lepton_pt0->Fill(myEvent->lead_lepton_pt,myEvent->weight);
-    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,myEvent->weight);
-    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,myEvent->weight);
-    h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,myEvent->weight);
-    h_lepton_phi0->Fill(myEvent->lead_lepton_phi,myEvent->weight);
-    h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,myEvent->weight);
+    h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+    h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+    h_lepton_phi0->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+    h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
 
-    h_jet_pt0->Fill(myEvent->lead_jet_pt,myEvent->weight);
-    h_jet_pt1->Fill(myEvent->sublead_jet_pt,myEvent->weight);
-    h_jet_eta0->Fill(myEvent->lead_jet_eta,myEvent->weight);
-    h_jet_eta1->Fill(myEvent->sublead_jet_eta,myEvent->weight);
-    h_jet_phi0->Fill(myEvent->lead_jet_phi,myEvent->weight);
-    h_jet_phi1->Fill(myEvent->sublead_jet_phi,myEvent->weight);
+    h_jet_pt0->Fill(myEvent->lead_jet_pt,(myEvent->weight)*ttScaleFactor);
+    h_jet_pt1->Fill(myEvent->sublead_jet_pt,(myEvent->weight)*ttScaleFactor);
+    h_jet_eta0->Fill(myEvent->lead_jet_eta,(myEvent->weight)*ttScaleFactor);
+    h_jet_eta1->Fill(myEvent->sublead_jet_eta,(myEvent->weight)*ttScaleFactor);
+    h_jet_phi0->Fill(myEvent->lead_jet_phi,(myEvent->weight)*ttScaleFactor);
+    h_jet_phi1->Fill(myEvent->sublead_jet_phi,(myEvent->weight)*ttScaleFactor);
       
-    h_WR_mass->Fill(myEvent->WR_mass,myEvent->weight);
-    h_dilepton_mass->Fill(myEvent->dilepton_mass,myEvent->weight);
-    h_nPV->Fill(myEvent->nPV,myEvent->weight);
+    h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
+    h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
+    h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
   }
 
   hs->push_back(h_lepton_pt0);
@@ -248,7 +260,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  Float_t dataEntries = hs_data->GetEntries();
 	  Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());
 	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
-	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+	  std::cout<< "in EE channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
   }
 
   ratio->Divide(hs_DY);
@@ -268,9 +280,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TString fn = "";
 
-  if(channel == Selector::MuMu)
-    fn = fname + "_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-    //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
+  if(channel == Selector::EE){
+	  //fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";	//for ratio plot
+	  fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyMadHt";	//for ratio plot
+	  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyAmc";	//for ratio plot
+	  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyMadHt";	//for ratio plot
+	  //fn = fname + "_noRatio_variablebinwidths_lowdileptonEEChannelDyAmc";	//only needed when no ratio plot is drawn
+  }
 
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
