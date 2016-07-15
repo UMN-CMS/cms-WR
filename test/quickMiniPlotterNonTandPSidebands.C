@@ -28,7 +28,7 @@
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, simply search for all instances of EE, and replace them with MuMu
 //BELOW THIS LINE
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /*
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -41,8 +41,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 void quickMiniPlotterNonTandPSidebands(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
-  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
-  TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
+  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
@@ -50,15 +50,15 @@ void quickMiniPlotterNonTandPSidebands(){
  
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
-  case Selector::EE:
-    //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
-    dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandEE_withMllWeight.root");
-	//tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandEE.root");
-    tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
-	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandEE.root");
-    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandEE.root");
-    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandEE.root");
-    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandEE.root");
+  case Selector::MuMu:
+    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
+	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
+    //tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
+	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
+    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
+    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandMuMu.root");
+    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -126,7 +126,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
   //variable bin widths only for WR mass plot
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};
+  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};	//original
+  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
@@ -152,6 +153,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
+	//if(myEvent->dR_leadlepton_leadjet < 1.2 || myEvent->dR_leadlepton_subleadjet < 1.2 || myEvent->dR_subleadlepton_leadjet < 1.2 || myEvent->dR_subleadlepton_subleadjet < 1.2) continue;
+	//if(myEvent->lead_jet_pt < 100 || myEvent->sublead_jet_pt < 100) continue;
+
 
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -188,9 +192,30 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
+  //normalize histo bins
+  unsigned int max = hs->size();
+  for(unsigned int i=0; i<max; i++){
+	  //get num bins in histo i
+	  Int_t nBins = (hs->at(i))->GetNbinsX();
+	  for(Int_t j=1; j<=nBins; j++){
+		  //in each bin, divide the bin contents by the bin width
+		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
+		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+	  }//end loop over bins in histo
+
+  }//end loop over histos in vector
+
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
+
+  hs_DY->Sumw2();
+  hs_ttbar->Sumw2();
+  hs_WJets->Sumw2();
+  hs_WZ->Sumw2();
+  hs_ZZ->Sumw2();
+  hs_data->Sumw2();
 
   TLegend *leg = new TLegend( 0.72, 0.70, 0.98, 0.90 ) ; 
   leg->AddEntry( hs_DY, "DY" ) ; 
@@ -260,13 +285,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  Float_t dataEntries = hs_data->GetEntries();
 	  Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());
 	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
-	  std::cout<< "in EE channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
   }
 
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.6,1.4);
+  ratio->GetYaxis()->SetRangeUser(0.6,2.);
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
   ratio->Draw("p");
@@ -279,12 +304,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
 
   TString fn = "";
-  //fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";	//for ratio plot
-  //fn = fname + "_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyMadHt";	//for ratio plot
-  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyAmc";	//for ratio plot
-  fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyMadHt";	//for ratio plot
-  //fn = fname + "_noRatio_variablebinwidths_lowdileptonEEChannelDyAmc";	//only needed when no ratio plot is drawn
-
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
+  //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+ 
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
