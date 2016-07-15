@@ -24,13 +24,13 @@ void trig_eff()
 	h3->SetStats(0);
 	h3->SetLineWidth(3);
 	h3->SetMarkerStyle(20);
-	h3->GetXaxis()->SetTitle("W_{R} Mass [GeV]");
+	h3->GetXaxis()->SetTitle("W_{R} Mass Hypothesis [GeV]");
 	h3->GetXaxis()->SetLabelFont(42);
 	h3->GetXaxis()->SetLabelOffset(0.007);
 	h3->GetXaxis()->SetLabelSize(0.05);
 	h3->GetXaxis()->SetTitleSize(0.05);
 	h3->GetXaxis()->SetTitleFont(42);
-	h3->GetYaxis()->SetTitle("Trigger Efficiency");
+	h3->GetYaxis()->SetTitle("Trigger Efficiency | Offline Selection");
 	h3->GetYaxis()->SetLabelFont(42);
 	h3->GetYaxis()->SetLabelOffset(0.007);
 	h3->GetYaxis()->SetLabelSize(0.05);
@@ -232,7 +232,7 @@ void trig_eff()
 	leg->SetLineWidth(1);
 	leg->SetFillColor(0);
 	leg->SetFillStyle(1001);
-	TLegendEntry *entry=leg->AddEntry("Graph0","Electron","L");
+	TLegendEntry *entry=leg->AddEntry("Graph0","Electron Channel","L");
 
 	ci = TColor::GetColor("#00ff00");
 	entry->SetLineColor(ci);
@@ -242,7 +242,7 @@ void trig_eff()
 	entry->SetMarkerStyle(21);
 	entry->SetMarkerSize(1);
 	entry->SetTextFont(42);
-	entry=leg->AddEntry("Graph1","Muon","L");
+	entry=leg->AddEntry("Graph1","Muon Channel","L");
 
 	ci = TColor::GetColor("#ff0000");
 	entry->SetLineColor(ci);
