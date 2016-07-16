@@ -120,7 +120,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass
+  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//wider bins work better at high WR mass
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
@@ -240,7 +240,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ytitle += ")";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
-
+  hs_data->GetYaxis()->SetTitle(ytitle.Data());
+ 
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   ratio->GetXaxis()->SetTickSize(0.40);
   ratio->GetXaxis()->SetTitleSize(0.2);
@@ -279,6 +280,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Draw("p");
   f1->Draw("same");
   mycanvas->cd();
+  mycanvas->Update();
 
   TString fn = fname + "_sidebandEMuChannelNoDyRescaledTTBarMCNoLLJJCut";
 
