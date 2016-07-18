@@ -36,8 +36,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 1;
 Float_t idealSubleadJetPt = 1;
-Float_t leadJetPtCut = 40;
-Float_t subLeadJetPtCut = 40;
+Float_t leadJetPtCut = -10;
+Float_t subLeadJetPtCut = -10;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -275,8 +275,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 
 	//defaultTH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);
 	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 560, 70., 110.);
-	TH1D *h_nPV = new TH1D("pileup", "nPV distribution", 60, 0, 60);
-	TH1D *h_nPU = new TH1D("pileup", "true nPU distribution for MC", 60, 0, 60);
+	TH1D *h_nPV = new TH1D("pileup", "nPV distribution", 50., 0, 50.);
+	TH1D *h_nPU = new TH1D("pileup", "true nPU distribution for MC", 50., 0, 50.);
 
 	TH1D *h_Z_phi = new TH1D("h_Z_phi", "", 50, -3.2, 3.2);
 	TH1D *h_Z_rapidity = new TH1D("h_Z_rapidity", "", 70, -5., 8.);
@@ -326,7 +326,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 
 		h_dilepton_mass->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 		h_nPV->Fill(myEvent->nPV, (myEvent->weight)*hltCorrFactor);
-		h_nPU->Fill(myEvent->nPU, myEvent->weight);
+		h_nPU->Fill(myEvent->nPU, 1.0);
 
 		//these three ifs are mutually exclusive
 		if(std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) h_dilepton_massBothEB->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
@@ -391,15 +391,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 
 	//if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 
-	if(fname.EqualTo("nPV") == true && channel == "MuMu" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
-		//write the nPV hsitogram only from data to a file
+	if(fname.EqualTo("nPU") == true && channel == "MuMu" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
+		//write the nPU hsitogram only from data to a file
 		fData.cd();
 		hs_data->Write();
 		fMC.cd();
 		hs_DYAmcIncl->Write();
 	}
-	if(fname.EqualTo("nPV") == true && channel == "EE" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
-		//write the nPV hsitogram only from data to a file
+	if(fname.EqualTo("nPU") == true && channel == "EE" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
+		//write the nPU hsitogram only from data to a file
 		fDataEle.cd();
 		hs_data->Write();
 		fMCEle.cd();
