@@ -145,7 +145,7 @@ class Job:
 			for command in self.commands:
 				call( command.split())
 		elif mode == "lsf":
-			bsub_prefix = "bsub -q cmscaf1nd "
+			bsub_prefix = "bsub -q 1nd "
 			for command in self.commands:
 				call( (bsub_prefix + command).split())
 		elif mode == "condor":

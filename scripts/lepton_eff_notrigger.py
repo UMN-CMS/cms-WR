@@ -7,10 +7,10 @@ customROOTstyle()
 ROOT.gROOT.SetBatch(True)
 colors = [ROOT.kGreen, ROOT.kRed, ROOT.kBlue, ROOT.kBlack]
 
-col = ["BB", "EB", "EE", "Global"]
+col_name = ["BB", "EB", "EE", "Global"]
 
-ele_names = [a + ' ' + b for a,b in itertools.product(["Electron"], col)]
-mu_names = [a + ' ' + b for a,b in itertools.product(["Muon"], col)]
+ele_names = [a + ' ' + b for a,b in itertools.product(["Electron"], col_name)]
+mu_names = [a + ' ' + b for a,b in itertools.product(["Muon"], col_name)]
 mass = np.ndarray(25)
 ele_results = np.ndarray((4,25))
 ele_nt_results = np.ndarray((4,25))
@@ -38,6 +38,8 @@ with open("lepton_eff_notrigger.txt","r") as f:
 		mu_nt_results[:,linei] = line[5:]
 		linei += 1
 
+ele_trig_eff = ele_results/ele_nt_results
+mu_trig_eff = mu_results/mu_nt_results
 
 h = ROOT.TH1F("h","",1,700, 6200)
 
@@ -59,7 +61,7 @@ leg.SetTextSize(0.032)
 leg.SetBorderSize(0)
 
 graphs = []
-for n,col in enumerate(ele_results/ele_nt_results):
+for n,col in enumerate(ele_trig_eff):
 	print ele_names[n]
 	graphs.append( ROOT.TGraph(len(mass), mass, col))
 	g = graphs[-1]
@@ -83,7 +85,7 @@ leg.SetTextSize(0.032)
 leg.SetBorderSize(0)
 
 graphs = []
-for n,col in enumerate(mu_results/mu_nt_results):
+for n,col in enumerate(mu_trig_eff):
 	print mu_names[n]
 	graphs.append( ROOT.TGraph(len(mass), mass, col))
 	g = graphs[-1]
@@ -98,3 +100,25 @@ c.SaveAs("plots/trig_mu_eff.pdf")
 c.SaveAs("plots/trig_mu_eff.C")
 
 h.Draw()
+leg = ROOT.TLegend(.3, .8, .85, .9)
+leg.SetNColumns(2)
+leg.SetTextFont(42)
+leg.SetTextSize(0.032)
+leg.SetBorderSize(0)
+
+graphs = []
+gi = col_name.index("Global")
+names = ["Electron", "Muon"]
+for n,col in enumerate((ele_trig_eff[gi], mu_trig_eff[gi])):
+	graphs.append( ROOT.TGraph(len(mass), mass, col))
+	g = graphs[-1]
+	g.SetLineColor(colors[n])
+	g.SetLineWidth(3)
+	g.Draw("Lsame")
+	leg.AddEntry(g, names[n], "L")
+
+leg.Draw("same")
+c.SaveAs("plots/trig_eff.png")
+c.SaveAs("plots/trig_eff.pdf")
+c.SaveAs("plots/trig_eff.C")
+
