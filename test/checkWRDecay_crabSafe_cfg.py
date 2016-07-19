@@ -7,13 +7,7 @@ process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
-
-#import FWCore.ParameterSet.VarParsing as VarParsing
-#options = VarParsing.VarParsing('standard') 
-#options.maxEvents = -1
-#options.parseArguments()
-
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
 
 #################################
 #Analyzers
@@ -35,7 +29,9 @@ process.genMatchedParticleAnalyzerOne = cms.EDAnalyzer('unmatchedAnalyzerForMixe
 		minDileptonMass = cms.double(-1),
 		leptonsOneCollection = cms.InputTag("bareMatchedLeadingGenEle"),#lepton with WR mother 
 		leptonsTwoCollection = cms.InputTag("bareMatchedSubleadingGenEle"),#lepton with Nu mother
-		jetsCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts")
+		jetsCollection = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
+		dontCheckSelector = cms.bool(True),
+		ignoreJets = cms.bool(False)
 		)
 
 process.genMatchedParticleAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
@@ -44,7 +40,9 @@ process.genMatchedParticleAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzerForMixe
 		minDileptonMass = cms.double(-1),
 		leptonsOneCollection = cms.InputTag("simultaneousPtEtaCutMatchedLeadingGenEle"),#lepton with WR mother 
 		leptonsTwoCollection = cms.InputTag("simultaneousPtEtaCutMatchedSubleadingGenEle"),#lepton with Nu mother
-		jetsCollection = cms.InputTag("simultaneousPtEtaCutMatchedGenJets")
+		jetsCollection = cms.InputTag("simultaneousPtEtaCutMatchedGenJets"),
+		dontCheckSelector = cms.bool(True),
+		ignoreJets = cms.bool(False)
 		)
 
 process.genMatchedParticleAnalyzerTwoPFive = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
@@ -53,16 +51,42 @@ process.genMatchedParticleAnalyzerTwoPFive = cms.EDAnalyzer('unmatchedAnalyzerFo
 		minDileptonMass = cms.double(-1),
 		leptonsOneCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedLeadingGenElePassingDrSeparationCut"),#lepton with WR mother 
 		leptonsTwoCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","matchedSubleadingGenElePassingDrSeparationCut"),#lepton with Nu mother
-		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut")
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut"),
+		dontCheckSelector = cms.bool(True),
+		ignoreJets = cms.bool(False)
 		)
 
 process.genMatchedParticleAnalyzerThree = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaDrHighPtCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		leptonsOneCollection = cms.InputTag("pickGenMatchedLeadingEle"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("pickGenMatchedSubleadingEle"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut"),
+		dontCheckSelector = cms.bool(True),
+		ignoreJets = cms.bool(False)
+		)
+
+process.genMatchedParticleAnalyzerFour = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
+		treeName = cms.string("genLeptonsAndJetsWithPtEtaDrHighPtDileptonMassCuts"),
+		doDileptonMassCut = cms.bool(True),
+		minDileptonMass = cms.double(200),
+		leptonsOneCollection = cms.InputTag("pickGenMatchedLeadingEle"),#lepton with WR mother 
+		leptonsTwoCollection = cms.InputTag("pickGenMatchedSubleadingEle"),#lepton with Nu mother
+		jetsCollection = cms.InputTag("genMatchedJetLeptonDrSeparation","genJetsPassingDrSeparationCut"),
+		dontCheckSelector = cms.bool(True),
+		ignoreJets = cms.bool(False)
+		)
+
+process.genMatchedParticleAnalyzerFive = cms.EDAnalyzer('unmatchedAnalyzerForMixedLeptonFlavor',
 		treeName = cms.string("genLeptonsAndJetsWithAllCuts"),
 		doDileptonMassCut = cms.bool(True),
 		minDileptonMass = cms.double(200),
 		leptonsOneCollection = cms.InputTag("genMatchedFourObjMass","genMatchedLeadingElectronPassingFourObjMassCut"),#lepton with WR mother 
 		leptonsTwoCollection = cms.InputTag("genMatchedFourObjMass","genMatchedSubleadingElectronPassingFourObjMassCut"),#lepton with Nu mother
-		jetsCollection = cms.InputTag("genMatchedFourObjMass","genJetsPassingFourObjMassCut")
+		jetsCollection = cms.InputTag("genMatchedFourObjMass","genJetsPassingFourObjMassCut"),
+		dontCheckSelector = cms.bool(True),
+		ignoreJets = cms.bool(False)
 		)
 
 
@@ -72,39 +96,35 @@ process.checkWRdecay = cms.Path(
 		#process.hasGenMuOrTauFlavorsSeq
 		process.bareMatchedWRSeq
 		*process.genWRAnalyzerOne
-		#*process.bareMatchedNuSeq
-		#*process.genNuAnalyzerOne
+		*process.bareMatchedNuSeq
+		*process.genNuAnalyzerOne
 		##identify the gen leptons from the WR decay, and the gen jets
 		##matched to the gen quarks from the WR decay
-		#*process.bareMatchedGenParticleSeq
-		#*process.bareGenJetSeq
-		#*process.matchGenJetsToGenQuarksSeq
+		*process.bareMatchedGenParticleSeq
+		*process.bareGenJetSeq
+		*process.matchGenJetsToGenQuarksSeq
 		##now that the gen leptons and gen jets have been selected
 		##run an analyzer to study their kinematics before any cuts
-		#*process.genMatchedParticleAnalyzerOne
+		*process.genMatchedParticleAnalyzerOne
 		##now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
-		#*process.simultaneousPtEtaCutMatchedObjectsSeq
-		#*process.genMatchedParticleAnalyzerTwo
-		#*process.genMatchedJetLeptonDrSeparationSeq
-		#*process.genMatchedParticleAnalyzerTwoPFive
+		*process.simultaneousPtEtaCutMatchedObjectsSeq
+		*process.genMatchedParticleAnalyzerTwo
+		*process.genMatchedJetLeptonDrSeparationSeq
+		*process.genMatchedParticleAnalyzerTwoPFive
 		##now apply the one lepton pt>60, dilepton mass, and four object mass cuts
-		#*process.pickGenMatchedEleSeq
-		#*process.requireGenMatchedHighPtEleSeq
-		#*process.genMatchedDiLeptonCandidateSeq
-		#*process.genMatchedFourObjMassSeq
-		#*process.genMatchedParticleAnalyzerThree	
+		*process.pickGenMatchedEleSeq
+		*process.requireGenMatchedHighPtEleSeq
+		*process.genMatchedParticleAnalyzerThree
+		*process.genMatchedDiLeptonCandidateSeq
+		*process.genMatchedParticleAnalyzerFour
+		*process.genMatchedFourObjMassSeq
+		*process.genMatchedParticleAnalyzerFive	
 		)
 process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		#fileName = cms.string('WR_decay_kinematics_MWR_2600_MNu_1300.root')
-		#fileName = cms.string('WR_decay_kinematics_MWR_800_MNu_400.root')
-		#fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500.root')
-		#fileName = cms.string('WR_decay_kinematics_MWR_2600_MNu_1300_8TeV.root')
-		#fileName = cms.string('WR_decay_kinematics_MWR_800_MNu_400_8TeV.root')
 		fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500_8TeV.root')
-
 
 )
 
@@ -114,12 +134,6 @@ process.options = cms.untracked.PSet(
 		)
 
 process.source = cms.Source( "PoolSource",
-	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_2600_ToENu_MNu_1300_GEN_13TeV_1.root'),
-	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_800_ToENu_MNu_400_GEN_13TeV_1.root'),
-	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToMuNu_MNu_2500_GEN_13TeV_1.root'),
-	
-	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_2600_ToENu_MNu_1300_GEN_8TeV_1.root'),
-	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_800_ToENu_MNu_400_GEN_8TeV_1.root'),
 	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
 	
 	#inputCommands = cms.untracked.vstring(
@@ -128,7 +142,7 @@ process.source = cms.Source( "PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(200)
 )
 
 
