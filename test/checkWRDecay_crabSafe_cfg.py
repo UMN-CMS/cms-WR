@@ -7,7 +7,12 @@ process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(3000)
+
+import FWCore.ParameterSet.VarParsing as VarParsing
+options = VarParsing.VarParsing('standard') 
+options.maxEvents = -1
+options.parseArguments()
 
 #################################
 #Analyzers
@@ -124,8 +129,8 @@ process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500_8TeV.root')
-
+		#fileName = cms.string('analyzed_genWrToEEJJFullOfflineAnalysis_WR_XXX_NU_YYY_NUM.root')
+		fileName = cms.string(options.output)
 )
 
 process.options = cms.untracked.PSet(
@@ -133,16 +138,19 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
+#dont need to use options.files thanks to userInputFiles option in crab3
+#inputFiles = cms.untracked.vstring(options.files)
+
 process.source = cms.Source( "PoolSource",
 	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
-	
+	#fileNames = inputFiles,
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(200)
+    input = cms.untracked.int32(options.maxEvents)
 )
 
 
