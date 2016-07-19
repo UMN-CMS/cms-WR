@@ -1,0 +1,36 @@
+/**
+\page limts_ Limiting Setting
+\par Instructions for Limit Setting
+
+First we need to run over the minitrees. A script will submit jobs for each channel for every signal MC, EMu data, DY MC, TT MC. ROOT files will be writtin in a new folder FOLDER/TAG/.
+
+\verbatim
+./scripts/submitAnalysisForLimits.sh TAG FOLDER
+\endverbatim
+
+Then generate the Higgs Combine datacards
+
+\verbatim
+python scripts/makeDatacards.py --dir FOLDER/TAG/ --outdir datacards/ -s
+\endverbatim
+
+Then we run combine setting the number of toys. 
+\verbatim
+python scripts/setLimits.py NTOYS LIMIT_FOLDER/TAG/
+\endverbatim
+
+The resulting limits are plotting using
+\verbatim
+python scripts/plotLimits.py TAG LIMIT_FOLDER/
+\endverbatim
+
+A summary plot of the mean signal and backgrounds rates can be made by running
+\verbatim
+python scripts/datacardsSummary.py  | column -t | tee datacards/summary.txt
+python scripts/sig_bg_plot.py
+\endverbatim
+
+Go back to \ref index
+\verbatim
+\endverbatim
+*/

@@ -4,13 +4,14 @@ import ExoAnalysis.cmsWR.cross_sections as xs
 import os 
 import sys
 
-tag = sys.argv[1] 
 
 configfile = open("configs/2015-v1.conf")
 config = dict( [ line.strip().split('=') for line in configfile])
 
-prodSpace = "/local/cms/user/phansen/limits/"
-prodSpace = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag + "/"
+#prodSpace = "/local/cms/user/phansen/limits/"
+#prodSpace = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag + "/"
+
+tag,prodSpace sys.argv[1:] 
 name = config["productionTAG"]
 
 results = []

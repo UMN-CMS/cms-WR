@@ -4,11 +4,11 @@ import re
 import subprocess
 import sys
 
-tag, toys = sys.argv[1:]
-
 thisdir = os.getcwd()
-proddir = "/local/cms/user/phansen/limits/"
-proddir = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag
+#proddir = "/local/cms/user/phansen/limits/"
+#proddir = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag
+
+toys, proddir = sys.argv[1:]
 
 datacardfolder = thisdir + "/datacards/"
 datacards = os.listdir(datacardfolder)
