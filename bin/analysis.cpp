@@ -691,21 +691,19 @@ int main(int ac, char* av[])
 			}
 			delete hWR_mass;
 
-			if(loop_one) {
-				TString hist_name(mode + "_unweighted");
-				hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
+			TString hist_name(mode + "_unweighted");
+			hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
 
-				//Draw unweighted histogram
-				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
-				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
-					auto mass = mass_vec[massi];
-					auto range = mass_cut[std::make_pair(cut_channel, mass)];
-					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
-					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
-					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
-				}
-				delete hWR_mass;
+			//Draw unweighted histogram
+			t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
+			for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
+				auto mass = mass_vec[massi];
+				auto range = mass_cut[std::make_pair(cut_channel, mass)];
+				float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
+				std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
 			}
+			delete hWR_mass;
 
 			f.cd();
 			if(saveToys) t1[i]->Write();
