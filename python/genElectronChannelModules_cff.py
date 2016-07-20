@@ -214,7 +214,7 @@ etaRestrictedMatchedGenParticleSeq = cms.Sequence(
 ## matched to gen quarks from WR decay
 simultaneousPtEtaCutMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("bareMatchedLeadingGenEle"),
-		cut = cms.string("pt>60 && abs(eta) < 2.4")
+		cut = cms.string("pt>50 && abs(eta) < 2.4")
 		)
 
 simultaneousPtEtaCutMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
