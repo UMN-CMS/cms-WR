@@ -2,6 +2,17 @@
 \page limts_ Limiting Setting
 \par Instructions for Limit Setting
 
+Need to checkout and compile HiggsCombine
+\verbatim
+cd $CMSSW_RELEASE
+git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+cd HiggsAnalysis/CombinedLimit
+git fetch origin
+git checkout v6.2.1
+scramv1 b clean
+scramv1 b
+\endverbatim
+
 First we need to run over the minitrees. A script will submit jobs for each channel for every signal MC, EMu data, DY MC, TT MC. ROOT files will be writtin in a new folder FOLDER/TAG/.
 
 \verbatim

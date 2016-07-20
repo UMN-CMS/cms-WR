@@ -11,7 +11,9 @@ config = dict( [ line.strip().split('=') for line in configfile])
 #prodSpace = "/local/cms/user/phansen/limits/"
 #prodSpace = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag + "/"
 
-tag,prodSpace sys.argv[1:] 
+tag,prodSpace = sys.argv[1:] 
+
+prodSpace = prodSpace + "/" + tag + "/"
 name = config["productionTAG"]
 
 results = []
