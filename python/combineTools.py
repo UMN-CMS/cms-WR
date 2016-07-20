@@ -147,7 +147,7 @@ class AnalysisResultsInterface:
 			alpha = global_ratio
 			rate = .0001
 
-		raw = [ syst_mean, rate, central_value, tmp_syst, stat_err,tmp_stat, var, central_unweighted, ]
+		raw = [ syst_mean, rate, central_value, tmp_syst, stat_err,tmp_stat, var, syst_unweighted, ]
 		systematics.add(process, "lumi", 1.027)
 		raw += [1.027]
 
