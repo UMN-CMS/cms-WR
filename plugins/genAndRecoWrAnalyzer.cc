@@ -214,15 +214,15 @@ public:
 	void resetTreeVars()
 	{
 		runNumber = -1, evtNumber = -1, numGenFstHvyPtcl = -1, numGenScdHvyPtcl = -1, numGenLeptons = -1, numGenQuarks = -1, leadGenLeptonNotFromFstHvyPtcl = -1, subleadGenLeptonNotFromScdHvyPtcl = -1, leadGenQuarkNotFromScdHvyPtcl = -1, subleadGenQuarkNotFromScdHvyPtcl = -1, wrLeptonDidRadiatePhoton = -1;
-	
+
 		motherPdgIdGenLeptFromFstHvyPtcl = -1, motherStatusGenLeptFromFstHvyPtcl = -1, motherPdgIdGenLeptFromScdHvyPtcl = -1, motherStatusGenLeptFromScdHvyPtcl = -1, motherPdgIdGenQuarkOneFromScdHvyPtcl = -1, motherStatusGenQuarkOneFromScdHvyPtcl = -1, motherPdgIdGenQuarkTwoFromScdHvyPtcl = -1, motherStatusGenQuarkTwoFromScdHvyPtcl = -1;
-		
+
 		etaGenFstHvyPtcl = -9, ptGenFstHvyPtcl = -9, massGenFstHvyPtcl = -9, etaGenScdHvyPtcl = -9, ptGenScdHvyPtcl = -9, massGenScdHvyPtcl = -9, etaGenLeptFromFstHvyPtcl = -9, ptGenLeptFromFstHvyPtcl = -9, phiGenLeptFromFstHvyPtcl = -9, etaGenLeptFromScdHvyPtcl = -9, ptGenLeptFromScdHvyPtcl = -9, phiGenLeptFromScdHvyPtcl = -9, etaGenQuarkOneFromScdHvyPtcl = -9, ptGenQuarkOneFromScdHvyPtcl = -9, phiGenQuarkOneFromScdHvyPtcl = -9, etaGenQuarkTwoFromScdHvyPtcl = -9, ptGenQuarkTwoFromScdHvyPtcl = -9, phiGenQuarkTwoFromScdHvyPtcl = -9;
 
 		ptLeadGenLepton = -9, etaLeadGenLepton = -9, phiLeadGenLepton = -9, ptSubleadGenLepton = -9, etaSubleadGenLepton = -9, phiSubleadGenLepton = -9, ptLeadGenQuark = -9, etaLeadGenQuark = -9, phiLeadGenQuark = -9, ptSubleadGenQuark = -9, etaSubleadGenQuark = -9, phiSubleadGenQuark = -9, evWeight = 1, evWeightSign = 1;
 
 		ptRecoLeptMatchedToWrDau = -9, etaRecoLeptMatchedToWrDau = -9, phiRecoLeptMatchedToWrDau = -9, ptRecoLeptMatchedToNuDau = -9, etaRecoLeptMatchedToNuDau = -9, phiRecoLeptMatchedToNuDau = -9, ptRecoJetOneMatchedToNuDau = -9, etaRecoJetOneMatchedToNuDau = -9, phiRecoJetOneMatchedToNuDau = -9, ptRecoJetTwoMatchedToNuDau = -9, etaRecoJetTwoMatchedToNuDau = -9, phiRecoJetTwoMatchedToNuDau = -9, ptGenJetFromMatchedRecoJetOne = -9, etaGenJetFromMatchedRecoJetOne = -9, phiGenJetFromMatchedRecoJetOne = -9, ptGenJetFromMatchedRecoJetTwo = -9, etaGenJetFromMatchedRecoJetTwo = -9, phiGenJetFromMatchedRecoJetTwo = -9, ptLeadRecoLept = -9, etaLeadRecoLept = -9, phiLeadRecoLept = -9, ptSubleadRecoLept = -9, etaSubleadRecoLept = -9, phiSubleadRecoLept = -9, ptLeadRecoJet = -9, etaLeadRecoJet = -9, phiLeadRecoJet = -9, ptSubleadRecoJet = -9, etaSubleadRecoJet = -9, phiSubleadRecoJet = -9;
-		
+
 		motherPdgIdLeadGenLepton = -1, motherStatusLeadGenLepton = -1;
 		motherPdgIdSubleadGenLepton = -1, motherStatusSubleadGenLepton = -1;
 		motherPdgIdLeadGenQuark = -1, motherStatusLeadGenQuark = -1;
@@ -236,7 +236,7 @@ public:
 		dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl = -9;
 		dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = -9;
 
-	
+
 	}///end resetTreeVars()
 
 private:
@@ -315,7 +315,7 @@ private:
 	Float_t dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl;
 	Float_t dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl;
 	Float_t threeObjMassFromGenObjsFromScdHvyPtcl;
-	
+
 
 ///pt and eta of the two leading GEN leptons and quarks in each event, no requirements on mother pdgId
 ///count how often the lead lepton does not come from the first heavy particle (use mother info), how often
@@ -428,28 +428,28 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
 	tree->Branch("threeObjMassFromGenObjsFromScdHvyPtcl", &threeObjMassFromGenObjsFromScdHvyPtcl, "threeObjMassFromGenObjsFromScdHvyPtcl/F");
-	
+
 	tree->Branch("etaLeadGenLepton", &etaLeadGenLepton, "etaLeadGenLepton/F");
 	tree->Branch("ptLeadGenLepton", &ptLeadGenLepton, "ptLeadGenLepton/F");
 	tree->Branch("phiLeadGenLepton", &phiLeadGenLepton, "phiLeadGenLepton/F");
 	tree->Branch("leadGenLeptonNotFromFstHvyPtcl", &leadGenLeptonNotFromFstHvyPtcl, "leadGenLeptonNotFromFstHvyPtcl/I");
 	tree->Branch("motherPdgIdLeadGenLepton", &motherPdgIdLeadGenLepton, "motherPdgIdLeadGenLepton/I");
 	tree->Branch("motherStatusLeadGenLepton", &motherStatusLeadGenLepton, "motherStatusLeadGenLepton/I");
-	
+
 	tree->Branch("etaSubleadGenLepton", &etaSubleadGenLepton, "etaSubleadGenLepton/F");
 	tree->Branch("ptSubleadGenLepton", &ptSubleadGenLepton, "ptSubleadGenLepton/F");
 	tree->Branch("phiSubleadGenLepton", &phiSubleadGenLepton, "phiSubleadGenLepton/F");
 	tree->Branch("subleadGenLeptonNotFromScdHvyPtcl", &subleadGenLeptonNotFromScdHvyPtcl, "subleadGenLeptonNotFromScdHvyPtcl/I");
 	tree->Branch("motherPdgIdSubleadGenLepton", &motherPdgIdSubleadGenLepton, "motherPdgIdSubleadGenLepton/I");
 	tree->Branch("motherStatusSubleadGenLepton", &motherStatusSubleadGenLepton, "motherStatusSubleadGenLepton/I");
-	
+
 	tree->Branch("etaLeadGenQuark", &etaLeadGenQuark, "etaLeadGenQuark/F");
 	tree->Branch("ptLeadGenQuark", &ptLeadGenQuark, "ptLeadGenQuark/F");
 	tree->Branch("phiLeadGenQuark", &phiLeadGenQuark, "phiLeadGenQuark/F");
 	tree->Branch("leadGenQuarkNotFromScdHvyPtcl", &leadGenQuarkNotFromScdHvyPtcl, "leadGenQuarkNotFromScdHvyPtcl/I");
 	tree->Branch("motherPdgIdLeadGenQuark", &motherPdgIdLeadGenQuark, "motherPdgIdLeadGenQuark/I");
 	tree->Branch("motherStatusLeadGenQuark", &motherStatusLeadGenQuark, "motherStatusLeadGenQuark/I");
-	
+
 	tree->Branch("etaSubleadGenQuark", &etaSubleadGenQuark, "etaSubleadGenQuark/F");
 	tree->Branch("ptSubleadGenQuark", &ptSubleadGenQuark, "ptSubleadGenQuark/F");
 	tree->Branch("phiSubleadGenQuark", &phiSubleadGenQuark, "phiSubleadGenQuark/F");
@@ -587,7 +587,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 			photonRadiatedFromWrLepton = true;	//if this is reached, then dont change the genScdHvyPtcl iterator again
 			wrLeptonDidRadiatePhoton = 1;	///<1 if true, 0 if false
 		}
-	
+
 
 
 		//find the gen quarks which are decay products of the second heavy particle, and the leading and subleading gen quarks
@@ -680,7 +680,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	genLeptFromScdHvyPtclFourMom.SetPtEtaPhiM(ptGenLeptFromScdHvyPtcl, etaGenLeptFromScdHvyPtcl, phiGenLeptFromScdHvyPtcl, genLeptFromScdHvyPtcl->mass());
 	genQuarkOneFromScdHvyPtclFourMom.SetPtEtaPhiM(ptGenQuarkOneFromScdHvyPtcl, etaGenQuarkOneFromScdHvyPtcl, phiGenQuarkOneFromScdHvyPtcl, genQuarkOneFromScdHvyPtcl->mass());
 	genQuarkTwoFromScdHvyPtclFourMom.SetPtEtaPhiM(ptGenQuarkTwoFromScdHvyPtcl, etaGenQuarkTwoFromScdHvyPtcl, phiGenQuarkTwoFromScdHvyPtcl, genQuarkTwoFromScdHvyPtcl->mass());
-	
+
 	fourObjMassFromGenObjsFromFstAndScdHvyPtcl = (genLeptFromFstHvyPtclFourMom + genLeptFromScdHvyPtclFourMom + genQuarkOneFromScdHvyPtclFourMom + genQuarkTwoFromScdHvyPtclFourMom).M();
 	dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl = (genLeptFromFstHvyPtclFourMom + genLeptFromScdHvyPtclFourMom).M();
 	dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl = deltaR(genLeptFromFstHvyPtclFourMom.Eta(), genLeptFromFstHvyPtclFourMom.Phi(), genQuarkOneFromScdHvyPtclFourMom.Eta(), genQuarkOneFromScdHvyPtclFourMom.Phi());
@@ -709,7 +709,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	ptLeadGenLepton = leadGenLept->pt(), etaLeadGenLepton = leadGenLept->eta(), phiLeadGenLepton = leadGenLept->phi();
 	motherPdgIdLeadGenLepton = (leadGenLept->mother(0))->pdgId(), motherStatusLeadGenLepton = (leadGenLept->mother(0))->status();
 	if(leadGenLept != genLeptFromFstHvyPtcl) leadGenLeptonNotFromFstHvyPtcl = 1;
-	
+
 	ptSubleadGenLepton = subleadGenLept->pt(), etaSubleadGenLepton = subleadGenLept->eta(), phiSubleadGenLepton = subleadGenLept->phi();
 	motherPdgIdSubleadGenLepton = (subleadGenLept->mother(0))->pdgId(), motherStatusSubleadGenLepton = (subleadGenLept->mother(0))->status();
 	if(subleadGenLept != genLeptFromScdHvyPtcl) subleadGenLeptonNotFromScdHvyPtcl = 1;

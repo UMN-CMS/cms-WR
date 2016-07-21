@@ -599,10 +599,10 @@ int main(int ac, char* av[])
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 #ifdef DEBUGG
-						std::cout<<"PU weight=\t" << selEvent.pu_weight << std::endl;
-						std::cout<<"num vertices=\t"<< selEvent.nPV << std::endl;
-						std::cout<<"num PV from miniTreeEvent=\t"<< myEventIt.nPV << std::endl;
-						std::cout<<"num PU from miniTreeEvent=\t"<< myEventIt.nPU << std::endl;
+						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
+						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
+						std::cout << "num PV from miniTreeEvent=\t" << myEventIt.nPV << std::endl;
+						std::cout << "num PU from miniTreeEvent=\t" << myEventIt.nPU << std::endl;
 #endif
 
 						//multiply by an additional weight when processing DY samples
