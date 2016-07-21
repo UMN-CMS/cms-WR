@@ -6,6 +6,9 @@
 \section _INSTRUCTIONS Download instructions: 
 Follow the link \ref instructions_
 
+\section _DEVINSTRUCTIONS Developer instructions:
+Follow the link \ref developerInstructions_
+
 \section _CONF Configuration files
 \par Main configuration file
 Trying to collect all possible configurable things in a configuration file in configs/.
@@ -21,7 +24,7 @@ The list of datasets is written in
 configs/datasets.dat
 \endverbatim
 
-\ref triggers List of triggers used to filter events at preselection level
+\ref triggers List of triggers used to filter events skim level
 
 \section _UTILS Utilities
 \par How to estimate cross sections
