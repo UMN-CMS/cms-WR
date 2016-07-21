@@ -5,15 +5,10 @@
 #nuMass is used as an iterator which is frequently changed, while minNuMass is used
 #as a reset point for nuMass when wrMass is incremented
 #the value of wrMass set here determines the lowest WR mass which will be simulated
-#wrMass=800
-#nuMass=50
-#minNuMass=50
-#maxWrMass=3500
-#increment=50
 wrMass=800
-nuMass=700
-minNuMass=700
-maxWrMass=800
+nuMass=50
+minNuMass=50
+maxWrMass=3500
 increment=50
 label="genWrToEEJJFullOfflineAnalysis_WR"
 masterBatchSubDir="batchSubmFilesAndLogDirs"
