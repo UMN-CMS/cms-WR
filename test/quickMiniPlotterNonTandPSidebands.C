@@ -200,8 +200,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  for(Int_t j=1; j<=nBins; j++){
 		  //in each bin, divide the bin contents by the bin width
 		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
 		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
 		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
@@ -262,7 +264,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ytitle += ")";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
-  if(fname.EqualTo("Mlljj")) th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  if(fname.EqualTo("Mlljj")){
+	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+	  //std::cout<<"bin number\t"<< 4 <<"has DY bin contents=\t" << hs_DY->GetBinContent(4) <<" and bin error =\t"<< hs_DY->GetBinError(4) << std::endl;
+  	  //std::cout<<"bin number\t"<< 4 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(4) <<" and bin error =\t"<< hs_ttbar->GetBinError(4) << std::endl;
+	  //std::cout<<"bin number\t"<< 5 <<"has DY bin contents=\t" << hs_DY->GetBinContent(5) <<" and bin error =\t"<< hs_DY->GetBinError(5) << std::endl;
+  	  //std::cout<<"bin number\t"<< 5 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(5) <<" and bin error =\t"<< hs_ttbar->GetBinError(5) << std::endl;
+
+  }
   th->GetYaxis()->SetTitleOffset(1.3);
 
   ratio->GetXaxis()->SetTitle(xtitle.Data());
@@ -291,7 +300,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.6,2.);
+  ratio->GetYaxis()->SetRangeUser(0.5,2.);
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
   ratio->Draw("p");

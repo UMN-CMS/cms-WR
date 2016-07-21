@@ -187,12 +187,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  for(Int_t j=1; j<=nBins; j++){
 		  //in each bin, divide the bin contents by the bin width
 		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
 		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
 		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
-
+ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
@@ -246,7 +248,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
-  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
