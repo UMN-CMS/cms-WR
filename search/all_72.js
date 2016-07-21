@@ -28,6 +28,7 @@ var searchData=
   ['requiregenmatchedhighptelefilter',['requireGenMatchedHighPtEleFilter',['../namespacepython_1_1genElectronChannelModules__cff.html#a5b98d48d4bf55c8f6cc0e936c2a07343',1,'python::genElectronChannelModules_cff']]],
   ['requiregenmatchedhighpteleseq',['requireGenMatchedHighPtEleSeq',['../namespacepython_1_1genElectronChannelModules__cff.html#a09e21e90cd19b1e6761a9d39c8d948f5',1,'python::genElectronChannelModules_cff']]],
   ['result',['result',['../namespacepython_1_1combineTools.html#ac8bdf019f1dcbe7eeca559fba7aaf401',1,'python::combineTools']]],
-  ['results',['results',['../namespacepython_1_1produceIdIsoSF__cff.html#a449537b1671d232d4a7efeeea48555f4',1,'python::produceIdIsoSF_cff']]],
+  ['results',['results',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#a8c846b57cd57000721093b20db1872b2',1,'python.combineTools.AnalysisResultsInterface.results()'],['../namespacepython_1_1produceIdIsoSF__cff.html#a449537b1671d232d4a7efeeea48555f4',1,'python.produceIdIsoSF_cff.results()']]],
+  ['rows',['rows',['../classpython_1_1combineTools_1_1Systematics.html#a792b83f260b3455e2b22d4ecc82d852a',1,'python::combineTools::Systematics']]],
   ['runcombine',['runCombine',['../namespacepython_1_1combineTools.html#a980974524cdb0e33b7c8371257cb48da',1,'python::combineTools']]]
 ];

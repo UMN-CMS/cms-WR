@@ -9,6 +9,7 @@ var searchData=
   ['selectheepeles',['selectHEEPEles',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#a7a800783cd5974d6c882a2b4daf48530',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
   ['selectheepelesfilter',['selectHEEPElesFilter',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#a17d7eabda682d9a0180cbc3cbd5e6498',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
   ['selectheepelesseq',['selectHEEPElesSeq',['../namespacepython_1_1inspectGenAndRecoZeeInDYJetsSamples__cff.html#a14d345a61bc4f399ae57aaebb2ea9e31',1,'python::inspectGenAndRecoZeeInDYJetsSamples_cff']]],
+  ['sf',['SF',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#a5b4e085ffcff83153ddf1b9a66fb4e07',1,'python::combineTools::AnalysisResultsInterface']]],
   ['sf_5fid_5fc',['SF_ID_C',['../namespacepython_1_1produceIdIsoSF__cff.html#af6abf3320b0fa020391f54e003787f07',1,'python::produceIdIsoSF_cff']]],
   ['sf_5fid_5fe',['SF_ID_E',['../namespacepython_1_1produceIdIsoSF__cff.html#a1892181c20fee35e02fec3db2fef050d',1,'python::produceIdIsoSF_cff']]],
   ['sf_5fiso_5fc',['SF_ISO_C',['../namespacepython_1_1produceIdIsoSF__cff.html#a3dcd7466f3ff17965aa50eae720ab816',1,'python::produceIdIsoSF_cff']]],
@@ -21,6 +22,9 @@ var searchData=
   ['simultaneousptetacutmatchedobjectsseq',['simultaneousPtEtaCutMatchedObjectsSeq',['../namespacepython_1_1genElectronChannelModules__cff.html#a5768700941d21ebd679d7b86c6f90d4f',1,'python::genElectronChannelModules_cff']]],
   ['simultaneousptetacutmatchedsubleadinggenele',['simultaneousPtEtaCutMatchedSubleadingGenEle',['../namespacepython_1_1genElectronChannelModules__cff.html#ac69ea575cf9914f3fa8274cdc7c8678a',1,'python::genElectronChannelModules_cff']]],
   ['simultaneousptetacutmatchedsubleadinggenelefilter',['simultaneousPtEtaCutMatchedSubleadingGenEleFilter',['../namespacepython_1_1genElectronChannelModules__cff.html#ac996d29926c2650463408826e7a41f93',1,'python::genElectronChannelModules_cff']]],
+  ['skipgennueleseq',['skipGenNuEleSeq',['../namespacepython_1_1genFilterForWrSkims__cff.html#a8006789a891efbf91b5294765f5a3264',1,'python::genFilterForWrSkims_cff']]],
+  ['skipgennumuseq',['skipGenNuMuSeq',['../namespacepython_1_1genFilterForWrSkims__cff.html#a6959ff2698521dbf28637e013ad7586c',1,'python::genFilterForWrSkims_cff']]],
+  ['skipgennutauseq',['skipGenNuTauSeq',['../namespacepython_1_1genFilterForWrSkims__cff.html#a24c19004cbcca5cbecb87156a7aa983d',1,'python::genFilterForWrSkims_cff']]],
   ['splitlevel',['splitLevel',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#a8b5295da58a8cd5772bab957cf056aa2',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
   ['subleadingpt',['subleadingPt',['../namespacepython_1_1selections__cff.html#ab033c59a3cb7ea240de70efabc3234c3',1,'python::selections_cff']]]
 ];

@@ -150,9 +150,10 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacepython_1_1reformatGenAndRecoCollections__cff.html">    1</a></span>&#160;= cms.EDFilter(<span class="stringliteral">&quot;CandViewSelector&quot;</span>,</div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        src = cms.InputTag(<span class="stringliteral">&quot;prunedGenParticles&quot;</span>),</div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        cut = cms.string(<span class="stringliteral">&quot;&quot;</span>)</div>
-<div class="line"><a name="l00004"></a><span class="lineno"><a class="line" href="namespacepython_1_1reformatGenAndRecoCollections__cff.html#aba9d958182f5e640d10662d11f98d1c7">    4</a></span>&#160;        )</div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;        <span class="comment">#src = cms.InputTag(&quot;prunedGenParticles&quot;),</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;        src = cms.InputTag(<span class="stringliteral">&quot;genParticles&quot;</span>),</div>
+<div class="line"><a name="l00004"></a><span class="lineno"><a class="line" href="namespacepython_1_1reformatGenAndRecoCollections__cff.html#aba9d958182f5e640d10662d11f98d1c7">    4</a></span>&#160;        cut = cms.string(<span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;        )</div>
 </div><!-- fragment -->
 <p>no cuts, just transforming the different collections into reco::Candidate collections </p>
 
@@ -324,7 +325,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Apr 18 2016 22:58:19 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 21 2016 09:28:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

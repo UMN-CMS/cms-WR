@@ -137,11 +137,6 @@ Variables</h2></td></tr>
 <tr class="memitem:a6bcf3cba8bbe0c34a51d3d4fc62e8197"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a6bcf3cba8bbe0c34a51d3d4fc62e8197">python.selections_cff.wRHEEPElectronRefiner</a></td></tr>
 <tr class="memdesc:a6bcf3cba8bbe0c34a51d3d4fc62e8197"><td class="mdescLeft">&#160;</td><td class="mdescRight">this is to change the type of the collection for the analyzer  <a href="#a6bcf3cba8bbe0c34a51d3d4fc62e8197">More...</a><br/></td></tr>
 <tr class="separator:a6bcf3cba8bbe0c34a51d3d4fc62e8197"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga953f3995f199ad28600a5061b0b8db62"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">python.selections_cff.wRleadingElectron</a></td></tr>
-<tr class="memdesc:ga953f3995f199ad28600a5061b0b8db62"><td class="mdescLeft">&#160;</td><td class="mdescRight">select leading electron  <a href="group__electronSkim__Group.html#ga953f3995f199ad28600a5061b0b8db62">More...</a><br/></td></tr>
-<tr class="separator:ga953f3995f199ad28600a5061b0b8db62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a922c93111d254c47f65bb22f2ae5efd2"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a922c93111d254c47f65bb22f2ae5efd2">python.selections_cff.cut</a></td></tr>
-<tr class="separator:a922c93111d254c47f65bb22f2ae5efd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0eca09ba84fb56616b6dff5263092499"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a0eca09ba84fb56616b6dff5263092499">python.selections_cff.wRminiTreeElectron</a></td></tr>
 <tr class="separator:a0eca09ba84fb56616b6dff5263092499"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a518fbc1be29b5c3b887c980fe7aec20e"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e">python.selections_cff.wRdiElectronCandidate</a></td></tr>
@@ -150,7 +145,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a3ca36346f0c71fff39317c30f1faf818"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a3ca36346f0c71fff39317c30f1faf818">python.selections_cff.wRdiElectronCandidateFilter</a></td></tr>
 <tr class="memdesc:a3ca36346f0c71fff39317c30f1faf818"><td class="mdescLeft">&#160;</td><td class="mdescRight">filter: at least one di-electron candidate in signal region  <a href="#a3ca36346f0c71fff39317c30f1faf818">More...</a><br/></td></tr>
 <tr class="separator:a3ca36346f0c71fff39317c30f1faf818"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab587204b5679ea0e348ae4b2a7d4bc1d">python.selections_cff.electronSelectionSeq</a> = cms.Sequence(wRIsolatedElectrons * wRHEEPElectron * wRHEEPElectronRefiner * (wRleadingElectron + wRsubleadingElectron + wRminiTreeElectron) * wRdiElectronCandidate)</td></tr>
+<tr class="memitem:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#ab587204b5679ea0e348ae4b2a7d4bc1d">python.selections_cff.electronSelectionSeq</a> = cms.Sequence(wRIsolatedElectrons * wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)</td></tr>
 <tr class="separator:ab587204b5679ea0e348ae4b2a7d4bc1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a801db56aec438a2f54a6757f411722dc"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a801db56aec438a2f54a6757f411722dc">python.selections_cff.tunePMuons</a></td></tr>
 <tr class="memdesc:a801db56aec438a2f54a6757f411722dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Muons.  <a href="#a801db56aec438a2f54a6757f411722dc">More...</a><br/></td></tr>
@@ -158,20 +153,18 @@ Variables</h2></td></tr>
 <tr class="memitem:a37b50f0e2b4cdae269b6ef4863cbf828"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a37b50f0e2b4cdae269b6ef4863cbf828">python.selections_cff.tunePIsolatedMuons</a></td></tr>
 <tr class="separator:a37b50f0e2b4cdae269b6ef4863cbf828"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a23df2a272fe1abd409ca3a50e4efc8a8">python.selections_cff.tunePIDIsoMuons</a></td></tr>
-<tr class="memdesc:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">add here the rochester corrections  <a href="#a23df2a272fe1abd409ca3a50e4efc8a8">More...</a><br/></td></tr>
+<tr class="memdesc:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">muon ID and isolation make a collection of TuneP muons which pass isHighPt ID  <a href="#a23df2a272fe1abd409ca3a50e4efc8a8">More...</a><br/></td></tr>
 <tr class="separator:a23df2a272fe1abd409ca3a50e4efc8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a1f7247a4588955431f44bfc6eb6e1c"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a2a1f7247a4588955431f44bfc6eb6e1c">python.selections_cff.scaleCorrectedMuons</a></td></tr>
+<tr class="memdesc:a2a1f7247a4588955431f44bfc6eb6e1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rochester corrections.  <a href="#a2a1f7247a4588955431f44bfc6eb6e1c">More...</a><br/></td></tr>
 <tr class="separator:a2a1f7247a4588955431f44bfc6eb6e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ea0563f7e5eea5f86a3a0bdaaab95bf"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a8ea0563f7e5eea5f86a3a0bdaaab95bf">python.selections_cff.scaleCorrectedMuonsRefiner</a></td></tr>
 <tr class="separator:a8ea0563f7e5eea5f86a3a0bdaaab95bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepython_1_1selections__cff.html#a9a1d92604f1ca05def5ab50db8ab1f08">python.selections_cff.wRleadingMuon</a></td></tr>
-<tr class="memdesc:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="mdescLeft">&#160;</td><td class="mdescRight">add here the trigger matching  <a href="#a9a1d92604f1ca05def5ab50db8ab1f08">More...</a><br/></td></tr>
-<tr class="separator:a9a1d92604f1ca05def5ab50db8ab1f08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Apr 18 2016 22:57:34 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 21 2016 09:28:25 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

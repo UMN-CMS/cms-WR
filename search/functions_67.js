@@ -1,9 +1,8 @@
 var searchData=
 [
-  ['getdynevents',['getDYNEvents',['../namespacepython_1_1combineTools.html#ad931609c8bd23b154187cb5f14b94112',1,'python::combineTools']]],
-  ['geteejjmasshisto',['getEEJJMassHisto',['../namespacepython_1_1combineTools.html#a8441072e7719d107b800facbe3dad110',1,'python::combineTools']]],
-  ['getmumujjmasshisto',['getMuMuJJMassHisto',['../namespacepython_1_1combineTools.html#a00ce1cfd06b7a72745ccfca3b2b02858',1,'python::combineTools']]],
-  ['getnevents',['getNEvents',['../namespacepython_1_1combineTools.html#a0d12382ab6ba27cbfd8c315bd05f67e2',1,'python::combineTools']]],
-  ['getsignalmasshisto',['getSignalMassHisto',['../namespacepython_1_1combineTools.html#a8a0864cc410865e6d57c7c1d7b403cb6',1,'python::combineTools']]],
-  ['getttbarnevents',['getTTBarNEvents',['../namespacepython_1_1combineTools.html#a2cd6154889cb2f1ada5598edffd92e8b',1,'python::combineTools']]]
+  ['getmasses',['GetMasses',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#ac7b7e5036a6447fd46b4dec2f87a1f9d',1,'python::combineTools::AnalysisResultsInterface']]],
+  ['getmasshisto',['getMassHisto',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#afda926b2fb9bcdbd439a663d477211b6',1,'python::combineTools::AnalysisResultsInterface']]],
+  ['getmeanstd',['getMeanStd',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#a9adf6887e50407e628dc4a8d08cc4233',1,'python::combineTools::AnalysisResultsInterface']]],
+  ['getnevents',['getNEvents',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#ad7939de3464b2cb932c89efa2658ac2b',1,'python::combineTools::AnalysisResultsInterface']]],
+  ['getuncertainty',['getUncertainty',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#a87416dda83058d8a4334f45717c3fab7',1,'python::combineTools::AnalysisResultsInterface']]]
 ];
