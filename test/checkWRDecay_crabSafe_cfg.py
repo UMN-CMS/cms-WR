@@ -216,12 +216,12 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
-#dont need to use options.files thanks to userInputFiles option in crab3
-#inputFiles = cms.untracked.vstring(options.files)
+#dont need to use options.files in conjunction with crab3, do need options.files with lxplus batch system
+inputFiles = cms.untracked.vstring(options.files)
 
 process.source = cms.Source( "PoolSource",
-	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
-	#fileNames = inputFiles,
+	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
+	fileNames = inputFiles,
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
