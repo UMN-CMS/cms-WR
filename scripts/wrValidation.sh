@@ -24,15 +24,15 @@ sidebandDatasetNames=('data' 'TT' 'W' 'WZ' 'ZZ' 'DYMADHT' 'DYPOWHEG' 'DYAMC')
 #cd to cmsWR/. and run the python script test/miniTreeDumpCheck.py to check the number of entries in minitrees
 eval "rm -r test/validationPlots/"
 
-echo -n '#' > configs/miniTreeEntries.dat
-echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> configs/miniTreeEntries.dat
-echo -n '#' >> configs/miniTreeEntries.dat
-eval "git log -1 | grep commit | cut -d ' ' -f 2 >> configs/miniTreeEntries.dat"
+eval "echo -n '#' > data/2015-v1/miniTreeEntries.dat"
+eval "echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> data/2015-v1/miniTreeEntries.dat"
+eval "echo -n '#' >> data/2015-v1/miniTreeEntries.dat"
+eval "git log -1 | grep commit | cut -d ' ' -f 2 >> data/2015-v1/miniTreeEntries.dat"
 
 #this next line removes the bizarre ^[[?1034h code which is written to the first line of a file
 #when bash is used to redirect the output of a python script to a file
 eval "TERM=linux"
-eval 'python test/miniTreeDumpCheck.py >> configs/miniTreeEntries.dat'
+eval 'python test/miniTreeDumpCheck.py >> data/2015-v1/miniTreeEntries.dat'
 
 echo "finished checking num entries in minitrees"
 
@@ -85,8 +85,8 @@ jetCutVals=('-10.0' '10.0' '20.0' '30.0' '40.0' '50.0')
 leadLeptCutVals=('40.0' '40.0')
 subleadLeptCutVals=('35.0' '40.0')
 
-#overwrite configs/allDyScaleFactors.txt if it already exists
-echo 'channel   DY   data/DY   leadLeptPtCut   subleadLeptPtCut   leadJetPtCut   subleadJetPtCut' > ../configs/allDyScaleFactors.txt
+#overwrite data/2015-v1/allDyScaleFactors.txt if it already exists
+eval "echo 'channel   DY   data/DY   leadLeptPtCut   subleadLeptPtCut   leadJetPtCut   subleadJetPtCut' > ../data/2015-v1/allDyScaleFactors.txt"
 for e in ${!jetCutVals[*]}
 do
 	#leadJetPtCut and subLeadJetPtCut are the actual jet pt cuts which are applied when histograms are filled
@@ -94,7 +94,7 @@ do
 	eval "sed 's@leadJetPtCut = LEADJETPT@leadJetPtCut = ${jetCutVals[$e]}@' <calculateDyScaleFactors_temp.C >tempNoSfOne.C"
 	eval "sed 's@subLeadJetPtCut = SUBJETPT@subLeadJetPtCut = ${jetCutVals[$e]}@' <tempNoSfOne.C >tempNoSfTwo.C"
 	
-	#idealLeadJetPt and idealSubleadJetPt determine which txt file in the configs dir the data over DY ratios are written
+	#idealLeadJetPt and idealSubleadJetPt determine which txt file in the data/2015-v1 dir the data over DY ratios are written
 	#these values do not need to be varied
 	eval "sed 's@idealLeadJetPt = 1@idealLeadJetPt = $ljPtCut@' <tempNoSfTwo.C >tempNoSfThree.C"
 	eval "sed 's@idealSubleadJetPt = 1@idealSubleadJetPt = $sjPtCut@' <tempNoSfThree.C >tempNoSfFour.C"
@@ -115,8 +115,8 @@ done
 #make directory where all plots and text files will be stored
 eval "mkdir -p validationPlots"
 eval "mv *.png *.pdf validationPlots/."
-eval "git add ../configs/dyScaleFactors.txt ../configs/allDyScaleFactors.txt"
-echo "MLL scale factors have been calculated and written to configs/dyScaleFactors.txt and configs/allDyScaleFactors.txt"
+eval "git add ../data/2015-v1/dyScaleFactors.txt ../data/2015-v1/allDyScaleFactors.txt"
+echo "MLL scale factors have been calculated and written to data/2015-v1/dyScaleFactors.txt and data/2015-v1/allDyScaleFactors.txt"
 eval "cd ../."
 
 echo "about to reprocess the minitrees with dy scaling factors"
@@ -162,15 +162,15 @@ echo priorCommitNumberForWhichTheseEventCountNumbersAreValid >> validationPlots/
 echo -n '#' >> validationPlots/ZPeakRegionIntegrals.txt
 eval "git log -1 | grep commit | cut -d ' ' -f 2 >> validationPlots/ZPeakRegionIntegrals.txt"
 
-eval "cp ../configs/miniTreeEntries.dat validationPlots/."
-eval "cp ../configs/dyScaleFactors.txt validationPlots/."
+eval "cp ../data/2015-v1/miniTreeEntries.dat validationPlots/."
+eval "cp ../data/2015-v1/dyScaleFactors.txt validationPlots/."
 eval "root -l -b runCombinedMiniPlotterForDYTandPMuMu.C"
 eval "root -l -b runCombinedMiniPlotterForDYTandPEE.C"
 eval "root -l -b runCombinedMiniPlotterMuMu.C"
 eval "root -l -b runCombinedMiniPlotterEE.C"
 eval "root -l -b runCombinedMiniPlotterEMu.C"
-eval "cp validationPlots/*.txt ../configs/."
-eval "git add ../configs/ZPeakRegionIntegrals.txt ../configs/miniTreeEntries.dat"
+eval "cp validationPlots/*.txt ../data/2015-v1/."
+eval "git add ../data/2015-v1/ZPeakRegionIntegrals.txt ../data/2015-v1/miniTreeEntries.dat"
 rm runCombinedMiniPlotterForDYTandPEE.C runCombinedMiniPlotterEE.C runCombinedMiniPlotterEMu.C
 rm combinedMiniPlotterForDYTandPEE.C combinedMiniPlotterEE.C combinedMiniPlotterEMu.C tempEMu.C
 rm combinedMiniPlotterForDYTandPEE_C*
@@ -187,5 +187,5 @@ eval "cd ../."
 #eval "cd ../."
 
 #commit the text files which summarize the status of the minitrees and data to DY scale factors
-eval "git commit -m 'finished running validation and committing ZPeakRegionIntegrals.txt, miniTreeEntries.dat and dyScaleFactors.txt in configs dir' "
+eval "git commit -m 'finished running validation and committing ZPeakRegionIntegrals.txt, miniTreeEntries.dat and dyScaleFactors.txt in data/2015-v1 dir' "
 

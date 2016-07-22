@@ -228,8 +228,8 @@ void writeScaleFactorsToFile(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYA
 	Double_t DYMadInclSfUncert = (dataEntries/dymadEntries)*sqrt((1/dataEntries) + (1/dymadEntries));
 
 	///DO NOT change the hard coded strings DYAMC, DYPOWHEG, and DYMADHT
-	std::string dyScaleFactorFile = "../configs/dyScaleFactors.txt";
-	std::string secondaryDyScaleFactorFile = "../configs/allDyScaleFactors.txt";
+	std::string dyScaleFactorFile = "../data/2015-v1/dyScaleFactors.txt";
+	std::string secondaryDyScaleFactorFile = "../data/2015-v1/allDyScaleFactors.txt";
 	std::string amcName = "DYAMC", madhtName = "DYMADHT", powName = "DYPOWHEG";
 	if(writeAction == 1){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);
