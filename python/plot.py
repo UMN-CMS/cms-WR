@@ -36,7 +36,8 @@ class limit1d:
 
 	def plot(self, filename, x_title="", y_title="",
 			x_limits=(600,6000), y_limits=(1e-3, 1e-1), 
-			leg_x = .55, leg_y=.66, SetLogx=False):
+			leg_x = .55, leg_y=.66, leg_h=.32, SetLogx=False):
+
 		customROOTstyle()
 		#ROOT.gROOT.LoadMacro("scripts/tdrStyle.C")
 		c1 = ROOT.TCanvas("c1","c1",800,800);
@@ -72,10 +73,9 @@ class limit1d:
 		dummy.GetXaxis().SetTitle(x_title)
 		dummy.GetYaxis().SetTitle(y_title)
 
-		dummy.GetYaxis().SetTitleOffset(1.1)
+		dummy.GetYaxis().SetTitleOffset(1.2)
 		dummy.Draw("HIST")
 		leg_w = .44
-		leg_h = .32
 		leg = ROOT.TLegend(leg_x,leg_y,leg_x + leg_w, leg_y + leg_h)
 		latex = ROOT.TLatex(leg_x + 0.02, leg_y + leg_h + 0.02, "M_{#scale[1.25]{N_{#scale[1.5]{%s}}}}= M_{#scale[1.25]{W_{R}}}/2" % self.channel);
 		latex.SetNDC();
@@ -149,7 +149,7 @@ class limit1d:
 				line.SetLineStyle( [1, 9, 10][i % 3] )
 				line.Draw()
 				lines.append(line)
-				leg.AddEntry(line, "Observed = %d" % obs, "L")
+				leg.AddEntry(line, "Observed = %d" % i, "L")
 
 		leg.Draw("same")
 
