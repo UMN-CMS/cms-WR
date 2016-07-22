@@ -280,7 +280,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,1.5);
+  ratio->GetYaxis()->SetRangeUser(0.5,2.0);
   ratio->GetYaxis()->SetNdivisions(505);
   ratio->Draw("p");
   float xmax = ratio->GetXaxis()->GetXmax();
@@ -293,11 +293,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TString fn = fname + "_sidebandEMuChannelNoDyRescaledTTBarMCNoLLJJCut";
 
-  mycanvas->Print((fn+".pdf").Data());
-  mycanvas->Print((fn+".png").Data());
-  p1->SetLogy();
-  mycanvas->Print((fn+"_log.pdf").Data());
-  mycanvas->Print((fn+"_log.png").Data());
+  if(fname.EqualTo("Mlljj")){
+	  mycanvas->Print((fn+".pdf").Data());
+	  mycanvas->Print((fn+".png").Data());
+	  p1->SetLogy();
+	  mycanvas->Print((fn+"_log.pdf").Data());
+	  mycanvas->Print((fn+"_log.png").Data());
+  }
 
   mycanvas->Close();
 }
