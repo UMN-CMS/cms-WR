@@ -1,14 +1,18 @@
 #!/bin/bash
 
-#only use this script AFTER the dy scale factors have been calculated and used to reprocess the dytagandprobe minitrees for DY MC and data with analysis.cpp
-#this script studies the dytagandprobe data and MC after the DY mll scale factors have been applied
-#as a function of jet pt cuts
+###only use this script AFTER the dy scale factors have been calculated and used by analysis.cpp to reprocess the dytagandprobe minitrees for DY MC and data
+###this script studies the dytagandprobe data and MC after the DY mll scale factors have been applied
+###as a function of jet pt cuts
+###this script can be run by itself, or within wrValidation.sh
+###the only parameters which can be changed without consulting the lepton and jet default pts and pt cuts in the Selector class and isPassingLooseCuts() are
+###maxJetPt and increment. initialPtCut, minLeadJetPt, and minSubleadJetPt must be equal.
+
 leadLeptPtCut=35
 subleadLeptPtCut=35
 initialPtCut=-10
 maxJetPt=40
 minLeadJetPt=-10
-increment=40
+increment=10
 minSubleadJetPt=-10
 lowestPositiveCutVal=0
 switchPoint=-1
