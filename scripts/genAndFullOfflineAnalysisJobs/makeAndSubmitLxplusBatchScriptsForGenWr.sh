@@ -24,17 +24,13 @@ eval "mkdir -p $masterBatchSubDir"
 #q is a number appended to the end of the output .root file names
 q=1
 
-#absolute path names to output file directories
-#where GEN events and TTree files will be stored
-pathToTrees='/uscms/home/skalafut/nobackup/WR_starting2015/genWrTTrees'
-
 ####
 ##NOTE these 6 sed commands are added to maintain functionality of the root macro
 ##which calculates the GEN efficiency values as a fxn of Nu and WR mass
 
 #replace int values, fxn name, and abs path name in calculateGenWrScaleFactors_temp.C
 eval "sed 's@NULL@@' calculateGenWrScaleFactors_temp.C > macrozero.C"
-eval "sed 's@PTHTOTREES@$pathToTrees@g' macrozero.C > macroone.C"
+eval "sed 's@PTHTOTREES@$outputFileDir@g' macrozero.C > macroone.C"
 eval "sed 's@QNUM@$q@g' macroone.C > macrotwo.C"
 eval "sed 's@MXWRMSS@$maxWrMass@g' macrotwo.C > macrothree.C"
 eval "sed 's@INCRMT@$increment@g' macrothree.C > macrofour.C"
