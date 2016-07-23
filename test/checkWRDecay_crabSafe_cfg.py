@@ -5,9 +5,27 @@ process = cms.Process("CheckWRDecay")
 ## load the filters, producers, and sequences defined in other config file fragments
 process.load('ExoAnalysis.cmsWR.genElectronChannelModules_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+process.load('ExoAnalysis.cmsWR.genFilterForWrSkims_cff')
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
+
+import FWCore.ParameterSet.VarParsing as VarParsing
+options = VarParsing.VarParsing('standard') 
+
+#currently the simplest way to switch channels and reuse the same modules in genElectronChannelModules_cff is by editing this
+#cff file directly, and changing the gen quark and gen lepton requirements which are applied in the sequence named
+#bareMatchedGenParticleSeq
+#currently the code is setup to process WR to eejj GEN events
+options.register('channel',
+		'',
+		VarParsing.VarParsing.multiplicity.singleton,
+		VarParsing.VarParsing.varType.string,
+		"enable lepton and NuR flavor filters based on channel")
+
+options.maxEvents = -1
+options.parseArguments()
+
 
 #################################
 #Analyzers
@@ -120,12 +138,77 @@ process.checkWRdecay = cms.Path(
 		*process.genMatchedFourObjMassSeq
 		*process.genMatchedParticleAnalyzerFive	
 		)
+
+if (options.channel == 'EE'):
+	process.checkWRdecay = cms.Path(
+			process.skipGenNuMuSeq * process.skipGenNuTauSeq
+			*process.bareMatchedWRSeq
+			*process.genWRAnalyzerOne
+			*process.bareMatchedNuSeq
+			*process.genNuAnalyzerOne
+			##identify the gen leptons from the WR decay, and the gen jets
+			##matched to the gen quarks from the WR decay
+			*process.bareMatchedGenParticleSeq
+			*process.bareGenJetSeq
+			*process.matchGenJetsToGenQuarksSeq
+			##now that the gen leptons and gen jets have been selected
+			##run an analyzer to study their kinematics before any cuts
+			*process.genMatchedParticleAnalyzerOne
+			##now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
+			*process.simultaneousPtEtaCutMatchedObjectsSeq
+			*process.genMatchedParticleAnalyzerTwo
+			*process.genMatchedJetLeptonDrSeparationSeq
+			*process.genMatchedParticleAnalyzerTwoPFive
+			##now apply the one lepton pt>60, dilepton mass, and four object mass cuts
+			*process.pickGenMatchedEleSeq
+			*process.requireGenMatchedHighPtEleSeq
+			*process.genMatchedParticleAnalyzerThree
+			*process.genMatchedDiLeptonCandidateSeq
+			*process.genMatchedParticleAnalyzerFour
+			*process.genMatchedFourObjMassSeq
+			*process.genMatchedParticleAnalyzerFive	
+			)
+
+
+###################################
+if (options.channel == 'MuMu'):
+	process.checkWRdecay = cms.Path(
+			process.skipGenNuEleSeq * process.skipGenNuTauSeq
+			*process.bareMatchedWRSeq
+			*process.genWRAnalyzerOne
+			*process.bareMatchedNuSeq
+			*process.genNuAnalyzerOne
+			##identify the gen leptons from the WR decay, and the gen jets
+			##matched to the gen quarks from the WR decay
+			*process.bareMatchedGenParticleSeq
+			*process.bareGenJetSeq
+			*process.matchGenJetsToGenQuarksSeq
+			##now that the gen leptons and gen jets have been selected
+			##run an analyzer to study their kinematics before any cuts
+			*process.genMatchedParticleAnalyzerOne
+			##now apply pt, eta, and dR(lepton, jet) cuts to the gen leptons and gen jets
+			*process.simultaneousPtEtaCutMatchedObjectsSeq
+			*process.genMatchedParticleAnalyzerTwo
+			*process.genMatchedJetLeptonDrSeparationSeq
+			*process.genMatchedParticleAnalyzerTwoPFive
+			##now apply the one lepton pt>60, dilepton mass, and four object mass cuts
+			*process.pickGenMatchedEleSeq
+			*process.requireGenMatchedHighPtEleSeq
+			*process.genMatchedParticleAnalyzerThree
+			*process.genMatchedDiLeptonCandidateSeq
+			*process.genMatchedParticleAnalyzerFour
+			*process.genMatchedFourObjMassSeq
+			*process.genMatchedParticleAnalyzerFive	
+			)
+
+
+##################################
 process.schedule = cms.Schedule(process.checkWRdecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('WR_decay_kinematics_MWR_5000_MNu_2500_8TeV.root')
-
+		#fileName = cms.string('analyzed_genWrToEEJJFullOfflineAnalysis_WR_XXX_NU_YYY_NUM.root')
+		fileName = cms.string(options.output)
 )
 
 process.options = cms.untracked.PSet(
@@ -133,16 +216,19 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
+#dont need to use options.files in conjunction with crab3, do need options.files with lxplus batch system
+inputFiles = cms.untracked.vstring(options.files)
+
 process.source = cms.Source( "PoolSource",
-	fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
-	
+	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/WR_MWR_5000_ToENu_MNu_2500_GEN_8TeV_1.root'),
+	fileNames = inputFiles,
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(200)
+    input = cms.untracked.int32(options.maxEvents)
 )
 
 
