@@ -1,6 +1,7 @@
 /**
-\page _LIMITS Extracting 1D WR cross section limits
+\page _LIMITS Extracting 1D and 2D WR cross section and exclusion limits
 
+\subsection 1D WR cross section limits
 Checkout and compile HiggsCombine.
 
 \verbatim
@@ -47,4 +48,36 @@ python scripts/sig_bg_plot.py
 \endverbatim
 
 Go back to \ref index
+
+\subsection 2D exclusion limit versus WR and NuR mass
+This secion is under development.
+
+GEN WR MC samples were generated and stored in the FNAL /eos space, and are accessible using the xrootd redirector
+\verbatim
+root://cmseos.fnal.gov/
+\endverbatim
+
+To apply offline selection requirements to these events, execute these commands:
+\verbatim
+cd cmsWR/scripts/genAndFullOfflineAnalysisJobs
+voms-proxy-init --voms cms
+copy your grid proxy to ~/.
+open makeAndSubmitLxplusBatchScriptsForGenWr.sh in an editor, and change the grid proxy location to ~/, and update outputFileDir
+with the location where you want the output files to be stored.  You need 17 GB of space.
+./makeAndSubmitLxplusBatchScriptsForGenWr.sh >& jobsToBatch1DayQueue.txt &
+\endverbatim
+submitting the jobs will take about 50 minutes, and the CPU time needed by each job will be between 300 and 800 seconds.
+
+DO NOT change git repo branches once the jobs are submitted.  To prevent any mishaps, do this work in a separate CMSSW release
+with the appropriate packages checked out.
+
+Once the jobs are finished, run this to extract the efficiencies as a function of MNu and MWR:
+\verbatim
+root -l -b
+.L calculateGenWrScaleFactors.C
+calculateGenWrScaleFactors()
+.q
+\endverbatim
+The efficiencies will be plotted in a 2D color map, and written to a txt file in the same directory.
+
 */
