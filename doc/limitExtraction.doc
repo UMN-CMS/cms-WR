@@ -1,0 +1,50 @@
+/**
+\page _LIMITS Extracting 1D WR cross section limits
+
+Checkout and compile HiggsCombine.
+
+\verbatim
+cd $CMSSW_RELEASE
+git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+cd HiggsAnalysis/CombinedLimit
+git fetch origin
+git checkout v6.2.1
+scramv1 b clean
+scramv1 b
+\endverbatim
+
+First we need to run over the minitrees. A script will submit jobs for each channel for every signal MC, EMu data, DY MC, TT MC. ROOT files will be writtin in a new folder FOLDER/TAG/.
+
+\verbatim
+voms-proxy-init --voms cms
+make
+./scripts/submitAnalysisForLimits.sh TAG FOLDER
+\endverbatim
+
+Then generate the Higgs Combine datacards.
+
+\verbatim
+python scripts/makeDatacards.py --dir FOLDER/TAG/ --outdir datacards/ -s
+\endverbatim
+
+Then run Combine with a user specified number of toys.
+
+\verbatim
+python scripts/setLimits.py NTOYS LIMIT_FOLDER/TAG/
+\endverbatim
+
+The resulting limits are plotted by executing:
+
+\verbatim
+python scripts/plotLimits.py TAG LIMIT_FOLDER/
+\endverbatim
+
+A summary plot of the mean signal and background rates can be made by running:
+
+\verbatim
+python scripts/datacardsSummary.py  | column -t | tee datacards/summary.txt
+python scripts/sig_bg_plot.py
+\endverbatim
+
+Go back to \ref index
+*/

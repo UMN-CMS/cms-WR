@@ -24,4 +24,5 @@ flavorSideband()
 The scale factors will be printed to stdout and written to a file in data/2015-v1/.  Rescale the EMu collision data by one
 scale factor to obtain the ttbar estimate in one channel.
  
+Go back to \ref index
 */
