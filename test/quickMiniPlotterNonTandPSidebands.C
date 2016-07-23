@@ -30,9 +30,12 @@
 //BELOW THIS LINE
 Selector::tag_t channel = Selector::EE;
 
-/*
+/**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
- * data as points and all MC as one stacked histogram with several fill colors
+ * data as points and all MC as one stacked histogram with several fill colors.
+ *
+ * This macro should be used by itself on minitrees which have been processed with analysis.cpp, -c EE
+ * or MuMu, and --isLowDiLepton true.
  *
  */
 

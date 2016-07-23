@@ -26,9 +26,13 @@
 
 Selector::tag_t channel = Selector::MuMu;
 
-/*
+/**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
- * data as points and all MC as one stacked histogram with several fill colors
+ * data as points and all MC as one stacked histogram with several fill colors.
+ *
+ * This macro uses minitrees which have been processed by analysis.cpp with the low dilepton mass sideband
+ * or EMu channel requirements.  It is used automatically by wrValidation.sh, and can be used by itself but should
+ * not be modified.  A similar macro which can be modified is quickMiniPlotterNonTandPSidebands.C.
  *
  */
 

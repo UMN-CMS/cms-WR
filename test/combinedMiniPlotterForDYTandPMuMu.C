@@ -32,10 +32,14 @@
 bool isReweighted = true;
 Selector::tag_t channel = Selector::MuMu;
 
-/*
+/**
  * this macro is designed to read several TChains, representing data and MC, apply lepton and jet kinematic cuts, and plot
  * data and MC as separate curves or data points
- * the curves representing MC should not be stacked
+ * the curves representing MC should not be stacked.
+ * This macro is used automatically by wrValidation.sh, and should not be modified.  It is designed to run on minitrees which
+ * have been processed by analysis.cpp with --isTagAndProbe true.
+ * This macro should only be used by wrValidation.sh.  An equivalent macro which can be modified and does similar work to
+ * this is quickCalcDyScaleFactors.C.
  *
  */
 
@@ -74,7 +78,7 @@ void combinedMiniPlotterForDYTandPMuMu()
 	myEvent_DYAmcIncl.SetBranchAddresses(chain_DYAmcIncl);
 	myEvent_data.SetBranchAddresses(chain_data);
 
-	Float_t minLeadJetPt = -10, minLeadLeptonPt = 33, minSubleadLeptonPt = 20, maxMll = 123, minMll = 57, maxLeptonEta = 2.4, minSubleadJetPt = -10;
+	Float_t minLeadJetPt = 40, minLeadLeptonPt = 35, minSubleadLeptonPt = 35, maxMll = 123, minMll = 57, maxLeptonEta = 2.4, minSubleadJetPt = 40;
 	Int_t minNumJets = -1;
 	std::vector<TH1F*> hs_DYPowheg;
 	MakeHistos(chain_DYPowheg, &myEvent_DYPowheg, &hs_DYPowheg, minLeadJetPt, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, minNumJets, minSubleadJetPt, 1.0);
