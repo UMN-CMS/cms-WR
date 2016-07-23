@@ -265,12 +265,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")){
-	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
-	  //std::cout<<"bin number\t"<< 4 <<"has DY bin contents=\t" << hs_DY->GetBinContent(4) <<" and bin error =\t"<< hs_DY->GetBinError(4) << std::endl;
-  	  //std::cout<<"bin number\t"<< 4 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(4) <<" and bin error =\t"<< hs_ttbar->GetBinError(4) << std::endl;
-	  //std::cout<<"bin number\t"<< 5 <<"has DY bin contents=\t" << hs_DY->GetBinContent(5) <<" and bin error =\t"<< hs_DY->GetBinError(5) << std::endl;
-  	  //std::cout<<"bin number\t"<< 5 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(5) <<" and bin error =\t"<< hs_ttbar->GetBinError(5) << std::endl;
-
+	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events PER GeV"), hs_data->GetYaxis()->SetTitle("Events PER GeV");
+	  Int_t maxBin = hs_data->GetNbinsX();
+	  //std::cout<<"bin number\t"<< maxBin-1 <<"\thas data bin contents=\t" << hs_data->GetBinContent(maxBin-1) <<"\tand bin error =\t"<< hs_data->GetBinError(maxBin-1) << std::endl;
+	  //std::cout<<"bin number\t"<< maxBin-1 <<"\thas DY bin contents=\t" << hs_DY->GetBinContent(maxBin-1) <<"\tand bin error =\t"<< hs_DY->GetBinError(maxBin-1) << std::endl;
+  	  //std::cout<<"bin number\t"<< maxBin-1 <<"\thas ttbar bin contents=\t" << hs_ttbar->GetBinContent(maxBin-1) <<"\tand bin error =\t"<< hs_ttbar->GetBinError(maxBin-1) << std::endl;
+	  //std::cout<<" "<<std::endl;
+	  //std::cout<<" "<<std::endl;
+	  //std::cout<<"bin number\t"<< maxBin <<"\thas data bin contents=\t" << hs_data->GetBinContent(maxBin) <<"\tand bin error =\t"<< hs_data->GetBinError(maxBin) << std::endl;
+	  //std::cout<<"bin number\t"<< maxBin <<"\thas DY bin contents=\t" << hs_DY->GetBinContent(maxBin) <<"\tand bin error =\t"<< hs_DY->GetBinError(maxBin) << std::endl;
+  	  //std::cout<<"bin number\t"<< maxBin <<"\thas ttbar bin contents=\t" << hs_ttbar->GetBinContent(maxBin) <<"\tand bin error =\t"<< hs_ttbar->GetBinError(maxBin) << std::endl;
   }
   th->GetYaxis()->SetTitleOffset(1.3);
 

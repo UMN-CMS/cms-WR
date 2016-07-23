@@ -268,13 +268,18 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);
-  if(fname.EqualTo("Mll") || fname.EqualTo("Mlljj") ){
+  if(fname.EqualTo("Mlljj") ){
 	  Float_t dataMCratio = (hs_data->Integral()/hs_ttbar->Integral());
 	  Float_t dataEntries = hs_data->GetEntries();
 	  Float_t mcEntries = (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());	///<temp fix
 	  //Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());	///<use this once DY emu is available
 	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
 	  std::cout<< "in EMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+	  std::cout<<" "<<std::endl;
+  	  std::cout<<"bin number\t"<< 6 <<"has data bin contents=\t" << hs_data->GetBinContent(6) <<" and bin error =\t"<< hs_data->GetBinError(6) << std::endl;
+  	  std::cout<<"bin number\t"<< 6 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(6) <<" and bin error =\t"<< hs_ttbar->GetBinError(6) << std::endl;
+	  std::cout<<"bin number\t"<< 7 <<"has data bin contents=\t" << hs_data->GetBinContent(7) <<" and bin error =\t"<< hs_data->GetBinError(7) << std::endl;
+  	  std::cout<<"bin number\t"<< 7 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(7) <<" and bin error =\t"<< hs_ttbar->GetBinError(7) << std::endl;
   }
 
   ratio->Divide(hs_ttbar);
