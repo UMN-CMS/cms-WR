@@ -15,6 +15,9 @@ listed in configs/2015-v1.conf using
    to start the validation script, run it in the background, and pipe any text sent to stdout by
    wrValidation.sh to a txt file.
 
-when the script is finished the directory cmsWR/test/validationPlots/ will be filled with plots.
+when the script is finished the directory cmsWR/test/validationPlots/ will be filled with plots. Scale factors to bring DY MC MLL
+into agreement with data MLL in the dytagandprobe region, the number of events in dytagandprobe events in the Z peak region in
+data and MC, and the number of events in all minitrees (not only the ones processed by analysis.cpp) will be written into
+files in data/2015-v1/.
 
 */
