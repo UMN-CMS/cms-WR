@@ -94,51 +94,36 @@ the cfg to be used is
 test/runAnalysis_cfg.py
 \endverbatim
 
-There are three paths defined:
- - SignalRegion
- - FlavourSideband
- - LowDiLeptonSideband
+There are four paths defined in runAnalysis_cfg.py:
+ - SignalRegion: require dilepton mass > 200, signal region triggers 
+ - FlavourSideband: require dilepton mass > 200, Mu30_Ele30 trigger
+ - LowDiLeptonSideband: requiredilepton mass < 200, signal region triggers
+ - DYtagAndProbe: require tag and probe single mu or double ele triggers
 
-A simple blinding filter is used if option isMC is set to 0 (so for data). This can be improved
+Lepton and jet IDs are applied when these paths are run, and filters on the number of ID'd objects is applied
+in the SignalRegion, FlavourSideband, and LowDiLeptonSideband (by the dilepton object candidate filters). No such
+filter is applied in the DYtagAndProbe path.
 
+Once minitrees are made by runAnalysis_cfg.py, analysis.cpp can be used once a grid proxy is created.
 
 \subsection _PRODVALIDATION Validation of the production
-\ref VALIDATIONSCRIPTS_
+See \ref VALIDATIONSCRIPTS_
 
-\par Making data/MC comparison plots
-To make the data/MC plots for the flavor and low dilepton mass
-sidebands, first run the analysis code with only 1 toy. 
-For flavor sideband:
-Edit the analysis.cpp file for nToys=1 and channel=Selector::EMu. The script
-will loop over all the datasets and produce root files called
-selected_tree_*_flavoursideband2.root.
-\verbatim
-make;./bin/analysis
-\endverbatim
-These files are the input to the plotting script. To make the plots,
-edit the plotting script so that the channel matches the one chosen in
-the analysis script. Make channel = Selector::EMu
-\verbatim
-cd test
-mkdir test/plots/Flavor
-mkdir test/plots/EELowDilepton
-mkdir test/plots/MuMuLowDilepton
-root -b miniPlotter.C
-\endverbatim
+\subsection _TTBAR TTBar estimation using collision data
+See \ref _TTBARBKG
 
-Repeat the previous steps with the different channel options(EE or MuMu).
+\subsection _DY DY estimation
+See \ref _DYBKGND
 
-\subsection _TTBAR TTBar from data
-Follow the link \ref _TTBARBKG
+\subsection _XSECLIMITS
+See \ref _LIMITS
 
 \section _AOB AOB
 \par JEC
 The twiki page is:
 \url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
 
-74X_mcRun2_asymptotic_v4
-
-
+74X_mcRun2_asymptotic_v5
 
 \par selection ID scale factors
 
