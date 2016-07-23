@@ -3,25 +3,25 @@
 
 To estimate ttBar in the EE and MuMu signal regions using real data, two scale factors must be computed using TTBar MC.  The two scale factors, EE/EMu and MuMu/EMu, represent
 the ratios M_EEJJ/M_EMuJJ and M_MuMuJJ/M_EMuJJ taken from TTBar MC events which have passed all signal region selection cuts.  To calculate these ratios and save them
-to a root file named flavor_fits.root, run these commands in cmsWR/.:
+to a root file named flavor_fits.root, run these commands in cmsWR/.: (--cut_channel has no effect on the results relevant to this section)
 
 \verbatim
+voms-proxy-init --voms cms
 make
 ./bin/analysis -m TT -c MuMu >& ttMuMuSignalRegion.txt &
 ./bin/analysis -m TT -c EE >& ttEESignalRegion.txt &
-./bin/analysis -m TT -c EMu >& ttEMuSignalRegion.txt &
+./bin/analysis -m TT -c EMu --cut_channel EE >& ttEMuSignalRegion.txt &
+./bin/analysis -m data -c EMu --cut_channel EE >& dataEMuSignalRegion.txt &
 cd test/
-root -l -b runFlavorSideband.C
+in flavorSideband.C, make sure the four h_WR_mass TH1F pointers whose max domain is 6000 and have variable bin widths
+are the only TH1F pointers which are uncommented.
+root -l -b
+.L flavorSideband.C+
+flavorSideband()
+.q
 \endverbatim
 
-the scale factors are determined by dividing two M_LLJJ histos (like M_EEJJ/M_EMuJJ), and fitting a linear function [0]*x + [1] to the resulting divided histogram.
-The scale factor is the value [1] after the fit.  To extract these scale factors from the file flavor_fits.root, the file should be opened, and these commands should
-be executed:
-
-\verbatim f_EE->GetParameter(1)\endverbatim returns the EE/EMu scale factor
-\verbatim f_EE->GetParError(1)\endverbatim  returns the error on the EE/EMu scale factor
-analogous calls to obtain the MuMu/EMu scale factor.
-
-The EE/EMu scale factor should be between 0.4 and 0.5, and the MuMu/EMu scale factor should be between 0.5 and 0.65.
+The scale factors will be printed to stdout and written to a file in data/2015-v1/.  Rescale the EMu collision data by one
+scale factor to obtain the ttbar estimate in one channel.
  
 */

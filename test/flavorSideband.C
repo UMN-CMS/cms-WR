@@ -12,6 +12,7 @@
 #include "TLorentzVector.h"
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
@@ -24,16 +25,16 @@
  * should be run by itself.  Currently it is not used in wrValidation.sh.
  *
  * This macro creates plots comparing ttbar MC to itself and to EMu data.  No plots use stacked histograms,
- * only overlaid curves.
+ * only overlaid curves.  It also calculates and saves the ttbar MC EE/EMu and MuMu/EMu scale factors to a file in data/2015-v1/.
  */
 
-#define PRINTRATIOS
+//#define PRINTRATIOS
 
 std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
 void flavorSideband(){
 
-  Float_t mumuEmuSF = 0.657, eeEmuSF = 0.414;
+  Float_t mumuEmuSF = 0.657, eeEmuSF = 0.414;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
   std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
@@ -67,19 +68,13 @@ void flavorSideband(){
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
-  //do not use variable bin widths on these histos with large domain, they are not needed
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,6000);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,6000);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,6000);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,6000);
-
   //fixed bin width MLLJJ plots with standard domain
   //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,2000);
   //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,2000);
   //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,2000);
   //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,2000);
   
-  //variable bin width MLLJJ plots with standard domain
+  //variable bin width MLLJJ plots
   TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
   TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
   TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
@@ -89,8 +84,23 @@ void flavorSideband(){
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
+  
+  Double_t MuMuMCIntegral = h_WR_mass_MuMu->Integral();
+  Double_t EEMCIntegral = h_WR_mass_EE->Integral();
+  Double_t EMuMCIntegral = h_WR_mass_EMu->Integral();
 
-  /**/
+  std::cout<<"\t"<<std::endl;
+  std::cout<<"\t"<<std::endl;
+  std::cout<<"ttbarMC EE/EMu ratio =\t"<< (EEMCIntegral/EMuMCIntegral) << std::endl;
+  std::cout<<"ttbarMC MuMu/EMu ratio =\t"<< (MuMuMCIntegral/EMuMCIntegral) << std::endl;
+  std::cout<<"\t"<<std::endl;
+  std::cout<<"\t"<<std::endl;
+  std::string ttScaleFactorFile = "../data/2015-v1/ttScaleFactors.txt";
+  ofstream writeToTTFile(ttScaleFactorFile.c_str(), ofstream::trunc);
+  writeToTTFile << "#Channel\tSF" << std::endl;
+  writeToTTFile << "EE\t" << (EEMCIntegral/EMuMCIntegral) << std::endl;
+  writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
+
   ///use this title for all plots
   TString stdTitle = "CMS Preliminary            #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
   h_WR_mass_EMu->SetTitle(stdTitle);
@@ -346,7 +356,6 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.pdf","recreate");
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
-  /**/
 }
 
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
@@ -360,7 +369,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
     if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
-  //std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
+  std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
 }
 
 //call this fxn once TF1 is fitted to distribution
