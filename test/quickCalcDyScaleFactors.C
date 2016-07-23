@@ -13,8 +13,6 @@
 #include <vector>
 #include <iostream>
 #include <string>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
@@ -23,6 +21,15 @@
 #include <cstdlib>
 #include <sstream>
 #include <cmath>
+
+/**
+ * this macro is a compliment to combinedMiniPlotterForDYTandPMuMu.C,  but is modifiable, and processes both electron
+ * and muon channel results at the same time.  This macro should be run by itself using minitrees which have
+ * been processed by analysis.cpp with --isTagAndProbe true.  It will create plots showing data and MC in the
+ * dytagandprobe sideband as individual curves, not stacked.
+ *
+ *
+ */
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;

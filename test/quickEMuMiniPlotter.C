@@ -27,9 +27,11 @@
 
 Selector::tag_t channel = Selector::EMu;
 
-/*
+/**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
- * data as points and all MC as one stacked histogram with several fill colors
+ * data as points and all MC as one stacked histogram with several fill colors.
+ *
+ * This macro should be used by itself on minitrees processed by analysis.cpp with -c EMu.
  *
  */
 

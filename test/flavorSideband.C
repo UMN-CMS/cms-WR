@@ -13,12 +13,19 @@
 #include <vector>
 #include <iostream>
 #include <string>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>
+
+/**
+ * this macro runs on EMu data and TTBar MC minitrees which have been processed by analysis.cpp
+ * with -c EMu or -c EE or -c MuMu and signal region requirements.  This macro can be modified, and
+ * should be run by itself.  Currently it is not used in wrValidation.sh.
+ *
+ * This macro creates plots comparing ttbar MC to itself and to EMu data.  No plots use stacked histograms,
+ * only overlaid curves.
+ */
 
 #define PRINTRATIOS
 
@@ -235,11 +242,11 @@ void flavorSideband(){
   canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth.pdf","recreate");
   canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth.png","recreate");
 
-  TFile f("flavor_fits.root","RECREATE");
-  h_ratio_EE->Write();
-  h_ratio_MuMu->Write();
-  f_EE->Write();
-  f_MuMu->Write();
+  //TFile f("flavor_fits.root","RECREATE");
+  //h_ratio_EE->Write();
+  //h_ratio_MuMu->Write();
+  //f_EE->Write();
+  //f_MuMu->Write();
 
 
   ///rescale the EEJJ and MuMuJJ MC and compare it to the EMu data and EMuJJ MC

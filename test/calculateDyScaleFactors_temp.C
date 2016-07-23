@@ -13,8 +13,6 @@
 #include <vector>
 #include <iostream>
 #include <string>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
@@ -23,6 +21,15 @@
 #include <cstdlib>
 #include <sstream>
 #include <cmath>
+
+/**
+ * this macro takes dytagandprobe minitrees which have been processed by analysis.cpp with --isTagAndProbe true
+ * --ignoreDyScaleFactors true, and makes kinematic plots after different jet pt cut thresholds, and
+ *  writes scale factors to a txt file in data/ which normalize MC to data in the M_LL region 60 to 120 GeV.
+ *
+ *  this macro can be used by itself, but should not be modified.  This macro is used automatically by
+ *  wrValidation.sh.
+ */
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
