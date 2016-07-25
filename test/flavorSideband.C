@@ -63,22 +63,22 @@ void flavorSideband(){
   myEvent_EE.SetBranchAddresses(chain_EE);
   myEvent_MuMu.SetBranchAddresses(chain_MuMu);
 
-  //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
-  Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
+  Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
+  //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
   //fixed bin width MLLJJ plots with standard domain
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,2000);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,2000);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,2000);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,2000);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
   
   //variable bin width MLLJJ plots
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
+  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
+  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
+  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
+  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
@@ -118,8 +118,8 @@ void flavorSideband(){
   leg_EE->AddEntry( h_WR_mass_EMu, "EMu" );
   leg_EE->AddEntry( h_WR_mass_EE, "EE" );
   leg_EE->Draw();
-  mycanvas_EE->Print(("flavor_EE_variablebinwidth.pdf"));
-  mycanvas_EE->Print(("flavor_EE_variablebinwidth.png"));
+  mycanvas_EE->Print(("flavor_EE_fixedbinwidth.pdf"));
+  mycanvas_EE->Print(("flavor_EE_fixedbinwidth.png"));
 
   TCanvas* mycanvas_MuMu = new TCanvas( "mycanvas_MuMu", "", 0, 0, 600, 600 ) ;
   h_WR_mass_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -130,8 +130,8 @@ void flavorSideband(){
   leg_MuMu->AddEntry( h_WR_mass_EMu, "EMu" );
   leg_MuMu->AddEntry( h_WR_mass_MuMu, "MuMu" );
   leg_MuMu->Draw();
-  mycanvas_MuMu->Print(("flavor_MuMu_variablebinwidth.pdf"));
-  mycanvas_MuMu->Print(("flavor_MuMu_variablebinwidth.png"));
+  mycanvas_MuMu->Print(("flavor_MuMu_fixedbinwidth.pdf"));
+  mycanvas_MuMu->Print(("flavor_MuMu_fixedbinwidth.png"));
 
 #ifdef PRINTRATIOS
   std::cout<<"number of overflow events in h_WR_mass_EE histo =\t"<< h_WR_mass_EE->GetBinContent(h_WR_mass_EE->GetNbinsX() + 1) <<std::endl;
@@ -168,13 +168,13 @@ void flavorSideband(){
   chiSqdBoxEE->Draw("same");
   f_EE->SetLineColor(kBlue);
   f_EE->Draw("same");
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
   mycanvas_ratio_EE->SetLogx(1);
   //chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");	//for xmax 2000
   chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax much greater than 2000
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx.png"));
 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
@@ -190,13 +190,13 @@ void flavorSideband(){
   f_MuMu->SetLineColor(kBlue);
   chiSqdBoxMuMu->Draw("same");
   f_MuMu->Draw("same");
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.png"));
   mycanvas_ratio_MuMu->SetLogx(1);
   //chiSqdBoxMuMu->DrawPave(500.,0.73,1000.,0.79,4,"same");	//for xmax 2000
   chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax much greater than 2000
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.png"));
 
 
   gStyle->SetOptStat("nemr");
@@ -208,8 +208,8 @@ void flavorSideband(){
   h_WR_mass_EMu->Draw("histo");
   h_WR_mass_MuMu->Draw("Psame");
   legMuMuEMu->Draw();
-  canvMuMuEMu->SaveAs("emujj_and_mumujj_signal_region_variablebinwidth.pdf","recreate");
-  canvMuMuEMu->SaveAs("emujj_and_mumujj_signal_region_variablebinwidth.png","recreate");
+  canvMuMuEMu->SaveAs("emujj_and_mumujj_signal_region_fixedbinwidth.pdf","recreate");
+  canvMuMuEMu->SaveAs("emujj_and_mumujj_signal_region_fixedbinwidth.png","recreate");
 
   TCanvas* canvMuMuEMuData = new TCanvas("canvMuMuEMuData","",600,600);
   canvMuMuEMuData->cd();
@@ -222,8 +222,8 @@ void flavorSideband(){
   h_WR_mass_EMuData->SetMarkerSize(2);
   h_WR_mass_EMuData->Draw("Psame");
   legMuMuEMuData->Draw();
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_variablebinwidth.pdf","recreate");
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_variablebinwidth.png","recreate");
+  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.pdf","recreate");
+  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.png","recreate");
 
 
   TCanvas* canvEEEMu = new TCanvas("canvEEEMu","",600,600);
@@ -234,8 +234,8 @@ void flavorSideband(){
   h_WR_mass_EMu->Draw("histo");
   h_WR_mass_EE->Draw("Psame");
   legEEEMu->Draw();
-  canvEEEMu->SaveAs("emujj_and_eejj_signal_region_variablebinwidth.pdf","recreate");
-  canvEEEMu->SaveAs("emujj_and_eejj_signal_region_variablebinwidth.png","recreate");
+  canvEEEMu->SaveAs("emujj_and_eejj_signal_region_fixedbinwidth.pdf","recreate");
+  canvEEEMu->SaveAs("emujj_and_eejj_signal_region_fixedbinwidth.png","recreate");
 
   TCanvas* canvEEEMuData = new TCanvas("canvEEEMuData","",600,600);
   canvEEEMuData->cd();
@@ -249,8 +249,8 @@ void flavorSideband(){
   h_WR_mass_EMuData->Scale(eeEmuSF);
   h_WR_mass_EMuData->Draw("Psame");
   legEEEMuData->Draw();
-  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth.pdf","recreate");
-  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth.png","recreate");
+  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.pdf","recreate");
+  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.png","recreate");
 
   //TFile f("flavor_fits.root","RECREATE");
   //h_ratio_EE->Write();
@@ -260,14 +260,18 @@ void flavorSideband(){
 
 
   ///rescale the EEJJ and MuMuJJ MC and compare it to the EMu data and EMuJJ MC
+  ///this plot with variable bin widths SHOULD NOT be used. If it is ever decided to use this plot with
+  ///variable bin widths, the bin contents and bin errors must be divided by the bin widths.
   gStyle->SetOptStat("");
   TCanvas* canvEMuDataTwoRescaledMCs = new TCanvas("canvEMuDataTwoRescaledMCs","",600,600);
   canvEMuDataTwoRescaledMCs->cd();
-  TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.15,0.98,0.4);
-  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMuData,"EMu Data");
+  //TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.15,0.94,0.45);	//for variable bin widths
+  TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.55,0.94,0.9);	//for fixed bin widths
+  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMuData,"EMu Data");	
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EE,"Rescaled TTBar EE MC");
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_MuMu,"Rescaled TTBar MuMu MC");
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMu,"TTBar EMu MC");
+  legEMuDataTwoRescaledMCs->SetTextSize(0.027);
   h_WR_mass_EE->Scale(1/eeEmuSF);
   h_WR_mass_MuMu->Scale(1/mumuEmuSF);
   h_WR_mass_EMuData->Scale(1/eeEmuSF);	///<undo the scaling which was done earlier
@@ -280,6 +284,11 @@ void flavorSideband(){
   h_WR_mass_EMuData->SetMarkerStyle(20);
   h_WR_mass_EMuData->SetMarkerSize(1);
   h_WR_mass_EMuData->SetMarkerColor(kBlack);
+  h_WR_mass_EMuData->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  h_WR_mass_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  h_WR_mass_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  h_WR_mass_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+
 
   Double_t eps = 0.001;
   TPad* p1 = new TPad("p1", "p1", 0, 0.25, 1, 1, 0);
@@ -306,6 +315,11 @@ void flavorSideband(){
   legEMuDataTwoRescaledMCs->Draw();
   canvEMuDataTwoRescaledMCs->cd();
   p2->cd();	///<change to ratio TPad
+  Float_t minYratio = 0.5, maxYratio = 1.5;
+  Float_t xLabelSize = 0.1, xTitleSize = 0.2;
+  ratio_Data_EE->SetTitle(""), ratio_Data_MuMu->SetTitle(""), ratio_Data_EMu->SetTitle("");
+  ratio_Data_EE->GetXaxis()->SetTitleSize(xTitleSize), ratio_Data_MuMu->GetXaxis()->SetTitleSize(xTitleSize), ratio_Data_EMu->GetXaxis()->SetTitleSize(xTitleSize);
+  ratio_Data_EE->SetLabelSize(xLabelSize,"x"), ratio_Data_MuMu->SetLabelSize(xLabelSize,"x"), ratio_Data_EMu->SetLabelSize(xLabelSize,"x");
   ratio_Data_EE->Sumw2();
   ratio_Data_EE->SetStats(0);
   ratio_Data_EMu->Sumw2();
@@ -316,15 +330,16 @@ void flavorSideband(){
   ratio_Data_EE->SetMarkerStyle(20);
   ratio_Data_EE->SetMarkerColor(kRed);
   ratio_Data_EE->SetLabelSize(0.1, "y");
-  ratio_Data_EE->GetYaxis()->SetRangeUser(0.60, 1.4);
+  ratio_Data_EE->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_EE->GetYaxis()->SetNdivisions(505);
   ratio_Data_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  ratio_Data_EE->SetLabelSize(0.1,"x");
 
   ratio_Data_EMu->Divide(h_WR_mass_EMu);
   ratio_Data_EMu->SetMarkerStyle(22);
   ratio_Data_EMu->SetMarkerColor(kBlue);
   ratio_Data_EMu->SetLabelSize(0.1, "y");
-  ratio_Data_EMu->GetYaxis()->SetRangeUser(0.60, 1.4);
+  ratio_Data_EMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_EMu->GetYaxis()->SetNdivisions(505);
   ratio_Data_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
 
@@ -332,10 +347,9 @@ void flavorSideband(){
   ratio_Data_MuMu->SetMarkerStyle(21);
   ratio_Data_MuMu->SetMarkerColor(kBlack);
   ratio_Data_MuMu->SetLabelSize(0.1, "y");
-  ratio_Data_MuMu->GetYaxis()->SetRangeUser(0.60, 1.4);
+  ratio_Data_MuMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_MuMu->GetYaxis()->SetNdivisions(505);
   ratio_Data_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-
 
   ratio_Data_EE->Draw("p");
   ratio_Data_EMu->Draw("p");
@@ -349,12 +363,12 @@ void flavorSideband(){
   f1->Draw("same");
   canvEMuDataTwoRescaledMCs->cd();
   canvEMuDataTwoRescaledMCs->Update();
-  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_variablebinwidth.pdf","recreate");
-  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_variablebinwidth.png","recreate");
+  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_fixedbinwidth.pdf","recreate");
+  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_fixedbinwidth.png","recreate");
 
   p1->SetLogy();
-  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.pdf","recreate");
-  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.png","recreate");
+  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_fixedbinwidth.pdf","recreate");
+  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_fixedbinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
 }
 
