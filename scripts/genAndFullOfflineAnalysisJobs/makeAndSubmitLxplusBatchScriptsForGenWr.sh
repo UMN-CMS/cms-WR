@@ -15,7 +15,7 @@ masterBatchSubDir="batchSubmFilesAndLogDirs"
 jobStartingDir="$PWD/../.."
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
 leptonChannel="EE"
-outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen"	#do not add a fwd slash at the end of this string
+outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter"	#do not add a fwd slash at the end of this string
 eval "mkdir -p $outputFileDir"
 
 #make a directory for the crab python files and crab project directories

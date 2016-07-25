@@ -141,8 +141,8 @@ process.checkWRdecay = cms.Path(
 
 if (options.channel == 'EE'):
 	process.checkWRdecay = cms.Path(
-			process.skipGenNuMuSeq * process.skipGenNuTauSeq
-			*process.bareMatchedWRSeq
+			#process.skipGenNuMuSeq * process.skipGenNuTauSeq
+			process.bareMatchedWRSeq
 			*process.genWRAnalyzerOne
 			*process.bareMatchedNuSeq
 			*process.genNuAnalyzerOne
@@ -173,8 +173,8 @@ if (options.channel == 'EE'):
 ###################################
 if (options.channel == 'MuMu'):
 	process.checkWRdecay = cms.Path(
-			process.skipGenNuEleSeq * process.skipGenNuTauSeq
-			*process.bareMatchedWRSeq
+			#process.skipGenNuEleSeq * process.skipGenNuTauSeq
+			process.bareMatchedWRSeq
 			*process.genWRAnalyzerOne
 			*process.bareMatchedNuSeq
 			*process.genNuAnalyzerOne
