@@ -8,8 +8,10 @@
 wrMass=800
 nuMass=50
 minNuMass=50
-maxWrMass=3500
+maxWrMass=4500
 increment=50
+incrementForLowNuMass=10
+changeIncrementThr=400
 label="genWrToEEJJFullOfflineAnalysis_WR"
 masterBatchSubDir="batchSubmFilesAndLogDirs"
 jobStartingDir="$PWD/../.."
@@ -22,7 +24,10 @@ eval "mkdir -p $outputFileDir"
 eval "mkdir -p $masterBatchSubDir"
 
 #q is a number appended to the end of the output .root file names
+#nevts is the number of evts generated at each mass point (default is 15000)
 q=1
+nevts=15000
+
 
 ####
 ##NOTE these 6 sed commands are added to maintain functionality of the root macro
@@ -45,6 +50,14 @@ rm macro*.C
 while [ $wrMass -le $maxWrMass ]; do
 	while [ $nuMass -lt $wrMass ]; do
 
+		#replace MMAASS, MASSNU, EVTCT, and NUM in WR_M-UNDEF_ToLNu_M-UNDEF_GEN.py
+		eval "sed 's@MMAASS@$wrMass@g' WR_M-UNDEF_ToLNu_M-UNDEF_GEN.py > genOne.py"
+		eval "sed 's@MASSNU@$nuMass@g' genOne.py > genTwo.py"
+		eval "sed 's/NUM/$q/g' genTwo.py > genThree.py"
+		eval "sed 's@EVTCT@$nevts@' genThree.py > WR_M-${wrMass}_ToLNu_M-${nuMass}_GEN_${q}.py"
+		eval "mv WR_M-${wrMass}_ToLNu_M-${nuMass}_GEN_${q}.py ../../."
+		rm gen*.py
+
 		#replace CHNL, PROXYPATH, LOCALPATH, OUTPATH, SMPL, NUM, MMAASS, and MASSNU in runBatchJobTemp.sh
 		#label has the channel information
 		eval "sed 's/NUM/$q/g' runBatchJobTemp.sh > jobOne.sh"
@@ -56,14 +69,20 @@ while [ $wrMass -le $maxWrMass ]; do
 		eval "sed 's@SMPL@$label@' jobSix.sh > jobSeven.sh"
 		eval "sed 's@OUTPATH@$outputFileDir@' jobSeven.sh > batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
 
-		rm jobOne.sh jobTwo.sh jobThree.sh jobFour.sh jobFive.sh jobSix.sh jobSeven.sh
+		rm job*.sh
 		mv batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh $masterBatchSubDir
 		eval "cd $masterBatchSubDir"
-		eval "bsub -R 'rusage[mem=1500]' -q 1nd -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
+		#eval "bsub -R 'rusage[mem=2000]' -q 1nd -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
+		eval "bsub -R 'rusage[mem=2000]' -q 8nm -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
 		eval "cd ../."
 	
 		#increment nuMass before restarting the loop
-		let nuMass=nuMass+$increment
+		if [ $nuMass -ge $changeIncrementThr ]; then
+			let nuMass=nuMass+$increment
+		fi
+		if [ $nuMass -lt $changeIncrementThr ]; then
+			let nuMass=nuMass+$incrementForLowNuMass
+		fi
 	done
 	#reset the nuMass value to the lower bound value before restarting the while loop
 	#with a higher wrMass value

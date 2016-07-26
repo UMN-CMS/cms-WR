@@ -51,7 +51,8 @@ process.GENRAWoutput = cms.OutputModule("PoolOutputModule",
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     fileName = cms.untracked.string('file:WR_MWR_MMAASS_ToLNu_MNu_MASSNU_GEN_13TeV_NUM.root'),
-    outputCommands = process.GENRAWEventContent.outputCommands + cms.untracked.vstring('drop *','keep GenEventInfoProduct_*_*_*','keep recoGenJets_ak4GenJets_*_*','keep recoGenParticles_*_*_*'),
+    #fileName = cms.untracked.string('file:genwr.root'),
+	outputCommands = process.GENRAWEventContent.outputCommands + cms.untracked.vstring('drop *','keep GenEventInfoProduct_*_*_*','keep recoGenJets_ak4GenJets_*_*','keep recoGenParticles_*_*_*'),
     splitLevel = cms.untracked.int32(0)
 )
 
@@ -60,7 +61,7 @@ process.GENRAWoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v2', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v4', '')
 
 process.generator = cms.EDFilter("Pythia8GeneratorFilter",
 	PythiaParameters = cms.PSet(
