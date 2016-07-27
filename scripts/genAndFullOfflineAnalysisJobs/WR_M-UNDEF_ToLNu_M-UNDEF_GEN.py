@@ -74,7 +74,7 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
             '9900014:m0 = MASSNU',
             '9900016:m0 = MASSNU',
             '9900024:onMode = off',
-            '9900024:onIfAny = 11 9900012'
+            '9900024:onIfAny = 13 9900014'
 			),
         pythia8CUEP8M1Settings = cms.vstring('Tune:pp 14', 
             'Tune:ee 7', 

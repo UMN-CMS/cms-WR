@@ -6,17 +6,17 @@
 #as a reset point for nuMass when wrMass is incremented
 #the value of wrMass set here determines the lowest WR mass which will be simulated
 wrMass=800
-nuMass=50
-minNuMass=50
+nuMass=100
+minNuMass=100
 maxWrMass=4500
-increment=50
-incrementForLowNuMass=10
+increment=100
+incrementForLowNuMass=100
 changeIncrementThr=400
-label="genWrToEEJJFullOfflineAnalysis_WR"
+label="genWrToMuMuJJFullOfflineAnalysis_WR"
 masterBatchSubDir="batchSubmFilesAndLogDirs"
 jobStartingDir="$PWD/../.."
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
-leptonChannel="EE"
+leptonChannel="MuMu"
 outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter"	#do not add a fwd slash at the end of this string
 eval "mkdir -p $outputFileDir"
 
@@ -72,7 +72,7 @@ while [ $wrMass -le $maxWrMass ]; do
 		rm job*.sh
 		mv batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh $masterBatchSubDir
 		eval "cd $masterBatchSubDir"
-		eval "bsub -R 'rusage[mem=2000]' -q 1nd -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
+		eval "bsub -R 'rusage[mem=2000]' -q 1nh -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
 		eval "cd ../."
 	
 		#increment nuMass before restarting the loop
