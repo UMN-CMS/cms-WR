@@ -3,7 +3,7 @@ logdir=$PWD/log
 mass_n=$(seq 1 25)
 
 queue=1nd
-tag=4000toys
+tag=4000toysOnlyJetScaleSyst
 finaldir=/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/$tag/
 
 for mass in $mass_n
