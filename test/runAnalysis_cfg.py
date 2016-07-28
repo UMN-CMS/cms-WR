@@ -42,7 +42,7 @@ options.output = defaultFileOutput
 
 options.parseArguments()
 if(options.test==3):
-    options.files="file:skim_test.root"   
+    options.files="file:skim_test.root"
     #options.maxEvents=100
     options.isMC=1
 elif(options.test==2):
@@ -51,7 +51,7 @@ elif(options.test==2):
     options.maxEvents= -1
     options.isMC=1
 elif(options.test==1):
-    options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
+    options.files='root://xrootd-cms.infn.it//store/mc/RunIIFall15MiniAODv2/WRToNuMuToMuMuJJ_MW-1000_MNu-500_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/50000/38CDE93A-C2B8-E511-BEE7-002590FD5A72.root'
     options.maxEvents=200
     options.isMC=1
 
@@ -76,9 +76,9 @@ process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.
 
 ### \todo set the global tag in a separate file such that it will be common to all cfg files
 if(options.isMC==0):
-    process.GlobalTag.globaltag = '74X_dataRun2_v5'
+    process.GlobalTag.globaltag = '80X_dataRun2_ICHEP16_repro_v0'
 else:
-    process.GlobalTag.globaltag = '74X_mcRun2_asymptotic_v4'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_RealisticBS_25ns_13TeV2016_v1_mc'
 
 
 process.maxEvents = cms.untracked.PSet(
@@ -135,6 +135,15 @@ SelectEventsPSet = cms.untracked.PSet(
 
 
 # here the full set of sequences and hlt paths used to make the first step
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+
+updateJetCollection(
+    process,
+    jetSource = cms.InputTag('slimmedJets'),
+    labelName = 'UpdatedJEC',
+    jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None')  # Do not forget 'L2L3Residual' on data!
+    )
+
 process.load('ExoAnalysis.cmsWR.selections_cff')
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
@@ -151,7 +160,8 @@ process.load('ExoAnalysis.cmsWR.dataMcAnalyzers_cfi')
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
-process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
+process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.selectionSequence  * process.filterSequence)
+
 
 process.miniTree_signal_ee   = process.MiniTTree.clone()
 process.miniTree_signal_mumu = process.MiniTTree.clone()
@@ -166,7 +176,7 @@ process.FlavourSideband     = cms.Path(process.signalHltSequence * process.fullS
 process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq                   * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
 #process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 

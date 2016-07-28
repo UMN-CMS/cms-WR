@@ -28,6 +28,7 @@ public:
 
 private:
 	const edm::InputTag src;	///<input particle objects
+	edm::EDGetToken srcToken_;
 	std::string outputCollName1;     ///<label name of collection made by this producer
 	std::string outputCollName2;     ///<label name of collection made by this producer
 	std::string outputCollName3;     ///<label name of collection made by this producer
@@ -37,13 +38,13 @@ private:
 	std::vector<double> Scale_Factor_ID_Error;
 	std::vector<double> Scale_Factor_ISO_Central;
 	std::vector<double> Scale_Factor_ISO_Error;
-//        double Scale_Factor_Central;
-//        double Scale_Factor_Error;
+	//        double Scale_Factor_Central;
+	//        double Scale_Factor_Error;
 
 };
 
 produceLepIdIsoScaleFactors::produceLepIdIsoScaleFactors(const edm::ParameterSet& cfg)
-	: src(cfg.getParameter<edm::InputTag>("src")),
+	: srcToken_ ( consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("src"))),
 	  outputCollName1(cfg.getParameter<std::string>("OutputCollectionName1")),
 	  outputCollName2(cfg.getParameter<std::string>("OutputCollectionName2")),
 	  outputCollName3(cfg.getParameter<std::string>("OutputCollectionName3")),
@@ -61,8 +62,8 @@ produceLepIdIsoScaleFactors::produceLepIdIsoScaleFactors(const edm::ParameterSet
 
 void produceLepIdIsoScaleFactors::produce(edm::Event& event, const edm::EventSetup&)
 {
-	edm::Handle<pat::MuonCollection> muons;
-	event.getByLabel(src, muons);
+	edm::Handle<edm::View<pat::Muon> > muons;
+	event.getByToken(srcToken_, muons);
 	std::auto_ptr<pat::MuonCollection> mus(new pat::MuonCollection);
 	std::vector<v_t>  scale_factor_ID_central;
 	std::vector<v_t>  scale_factor_ID_error;

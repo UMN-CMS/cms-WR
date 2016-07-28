@@ -23,13 +23,12 @@ muonIDIso=' isolationR03().sumPt/pt < 0.1 && userInt("highPtID") == 1'
 
 
 ############################################################ Jets
-from ExoAnalysis.cmsWR.JEC_cff import *
-
 #patJetsReapplyJEC
+from ExoAnalysis.cmsWR.JEC_cff import *
 
 ### select tight-ID jets
 wRtightJets = cms.EDFilter("PATJetSelector",
-                          src = cms.InputTag("patJetsReapplyJEC"),
+                          src = cms.InputTag("updatedPatJetsUpdatedJEC"),
                           cut = cms.string(jetID),
                           )
 
