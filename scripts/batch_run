@@ -17,10 +17,16 @@ cd ${WORKSPACE}
 /bin/rm -f ${LOG} ${ELOG} ${LOG}.gz ${ELOG}.gz
 /bin/hostname > ${LOG}
 echo ${RELSPACE} >> ${LOG}
-source /local/grid/cmssoft/cms/cmsset_default.sh >> ${LOG} 2>> ${ELOG}
+
+if ! which scram > /dev/null
+then
+	source /local/grid/cmssoft/cms/cmsset_default.sh >> ${LOG} 2>> ${ELOG}
+fi
 
 cd ${RELSPACE}
 eval `scramv1 runtime -sh` >> ${LOG} 2>> ${ELOG}
 
 cd ${WORKSPACE}
 ${COMMAND} >> ${LOG} 2>> ${ELOG}
+
+echo ${LOG}

@@ -6,6 +6,7 @@
 #include "TH1F.h"
 #include "TChain.h"
 #include "TFile.h"
+#include "TCanvas.h"
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "TRandom3.h"
@@ -15,11 +16,13 @@
 #include "ExoAnalysis/cmsWR/interface/miniTreeEvent.h"
 #include "ExoAnalysis/cmsWR/interface/AnalysisResult.h"
 #include "ExoAnalysis/cmsWR/interface/Selector.h"
+#include "ExoAnalysis/cmsWR/interface/SelectorHist.h"
 
 #include <vector>
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <utility>
 #include <boost/program_options.hpp>
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
@@ -188,6 +191,7 @@ int main(int ac, char* av[])
 	chainNames chainNames_;
 
 	std::string channel_str, outDir, outFileTag;
+	std::string channel_cut_str;
 	float integratedLumi;
 	Int_t nToys;
 	bool debug;
@@ -195,6 +199,7 @@ int main(int ac, char* av[])
 	int nStatToys;
 	int signalN;
 	int seed;
+	bool makeSelectorPlots;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
 	required.add_options()
@@ -216,7 +221,9 @@ int main(int ac, char* av[])
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
 	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
-	("signalN", po::value<int>(&signalN)->default_value(0), "throw N toys for stat uncertainty.")
+	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
+	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
+	("cut_channel", po::value<std::string>(&channel_cut_str)->default_value(""), "if channel is EMu choose which Mass cut to apply")
 	;
 
 	po::variables_map vm;
@@ -240,7 +247,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/76X_16DecRereco_2015_Etunc");
+	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -249,18 +256,14 @@ int main(int ac, char* av[])
 
 
 	//------------------------------ translate the channel option into the selector type
-	Selector::tag_t channel;
-	if(channel_str == "EE")
-		channel = Selector::EE;
-	else if(channel_str == "MuMu")
-		channel = Selector::MuMu;
-	else if(channel_str == "EMu")
-		channel = Selector::EMu;
-	else {
-		std::cerr << "[ERROR] Channel " << channel_str << " not recognized" << std::endl;
-		std::cerr << desc << std::endl;
-		return 1;
-	}
+	Selector::tag_t channel = Selector::getTag(channel_str);
+
+	Selector::tag_t cut_channel;
+	if(channel == Selector::EMu) {
+		cut_channel = Selector::getTag(channel_cut_str);
+		//outFileTag += channel_cut_str;
+	} else
+		cut_channel = channel;
 
 	configReader myReader("configs/2015-v1.conf");
 	if(debug) std::cout << myReader << std::endl;
@@ -270,10 +273,8 @@ int main(int ac, char* av[])
 	modes.erase( std::remove( modes.begin(), modes.end(), "signal" ), modes.end() );
 	if(modes.size() != msize) {
 		int di = 0;
-		for(std::string datasetName : myReader.getDatasetNames())
-		{
-			if(datasetName.find("WRto" + channel_str + "JJ_") != _ENDSTRING) 
-			{
+		for(std::string datasetName : myReader.getDatasetNames()) {
+			if(datasetName.find("WRto" + channel_str + "JJ_") != _ENDSTRING) {
 				di++;
 				if(!signalN || signalN == di)
 					modes.push_back(datasetName);
@@ -293,7 +294,7 @@ int main(int ac, char* av[])
 	myReader.setupDyMllScaleFactor("configs/dyScaleFactors.txt");
 
 
-	std::map<int, std::pair<int, int> > mass_cut = getMassCutMap();
+	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
@@ -306,7 +307,8 @@ int main(int ac, char* av[])
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
-
+		if(isData) eSmearer.doScale = true;
+		else eSmearer.doSmearings = true;
 
 		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
 #ifdef DEBUG
@@ -346,7 +348,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 50000;
+		nEntries = 500;
 #endif
 
 		TRandom3 Rand;
@@ -397,14 +399,79 @@ int main(int ac, char* av[])
 		ts.Start();
 		std::cout << "Loading events (nEvents = " << nEntries << "): [ 0%]" << std::flush;
 		unsigned long long int nEntries_100 = nEntries / 100;
-		for(unsigned long long int ev = 0; ev < nEntries; ev++) {
+		for(unsigned long long int ev = 0; ev < nEntries; ++ev) {
 			if(nEntries > 100 && ev % nEntries_100 == 1) {
 				std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
 			}
+#ifdef DEBUGG
+			std::cout << "about to call GetEntry on TChain named c" << std::endl;
+#endif
 			c->GetEntry(ev);
+			unsigned int nEle = myEvent.electrons_p4->size();
+#ifdef DEBUGG
+			std::cout << "the number of reco electrons in the event =\t" << nEle << std::endl;
+#endif
+
+			if(nEle > 0) {
+				///if there are electrons in the event, then write the electron SF and SF errors into the miniTreeEvent object named myEvent
+				///before calling the Selector constructor
+				for(unsigned int ele = 0; ele < nEle; ++ele) {
+					if(isData) {
+						(*myEvent.electron_IDSF_central).push_back(1.0);
+						(*myEvent.electron_IDSF_error).push_back(0.);
+						(*myEvent.electron_RecoSF_central).push_back(1.0);
+						(*myEvent.electron_RecoSF_error).push_back(0.);
+						(*myEvent.electron_HltSF_central).push_back(1.0);
+						(*myEvent.electron_HltSF_error).push_back(0.);
+
+					}//end if(isData)
+					else {
+						(*myEvent.electron_IDSF_central).push_back(0.990493);
+						(*myEvent.electron_IDSF_error).push_back(0.001685);
+						(*myEvent.electron_RecoSF_central).push_back(0.983581);
+						(*myEvent.electron_RecoSF_error).push_back(0.001686);
+						if(isTagAndProbe == true && channel_str == "EE") {
+							///only apply non unity HltSF to DY MC used for ee tagandprobe
+							(*myEvent.electron_HltSF_central).push_back(0.960473);
+							(*myEvent.electron_HltSF_error).push_back(0.002551);
+						} else { ///not EE tagandprobe
+							(*myEvent.electron_HltSF_central).push_back(1.0);
+							(*myEvent.electron_HltSF_error).push_back(0.);
+						}
+					}//end if(!isData)
+
+				}//end loop over reco electrons in the event
+
+			}//end if there are reco electrons in the event, and the channel is EE or EMu
+#ifdef DEBUGG
+			std::cout << "about to make a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
+#endif
 			Selector sel(myEvent);
-			if(sel.isPassingPreselect())
+#ifdef DEBUGG
+			std::cout << "made a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
+#endif
+			if((isTagAndProbe == true && ( (channel_str == "EE" && myEvent.electrons_p4->size() > 1) || (channel_str == "MuMu" && myEvent.muons_p4->size() > 1) ) ) || sel.isPassingPreselect(makeSelectorPlots)) {
+				//unsigned int nEle = myEvent.electrons_p4->size();
+#ifdef DEBUGG
+				std::cout << "found an event passing preselection" << std::endl;
+#endif
+				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
+#ifdef DEBUGG
+					std::cout << "looping over reco electrons in the event passing preselection" << std::endl;
+#endif
+					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
+					if(isData && !(channel_str == "MuMu") ) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0., skip this step if the channel is not EE or EMu
+						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
+						//(*myEvent.electron_scale)[iEle] = 1.0;
+						(*myEvent.electron_smearing)[iEle] = 0.;
+					} else if(!isData && !(channel_str == "MuMu") ) { // only the smearings are corrected, skip this step if the channel != EE or EMu (this could be entered when running over DYToLL samples)
+						(*myEvent.electron_scale)[iEle] = 1.;
+						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
+					}
+				}
 				myEventVector.push_back(myEvent);
+			}
+			myEvent.clear();
 		}
 		nEntries = myEventVector.size();
 		nEntries_100 = nEntries / 100;
@@ -415,6 +482,11 @@ int main(int ac, char* av[])
 		bool loop_one = true;
 		int seed_i = seed + 1;
 
+		// electron systematics!
+		bool Flag_Smear_Electron_Scale = false;
+		for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
+			if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
+		}
 
 
 		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
@@ -425,7 +497,7 @@ int main(int ac, char* av[])
 			if(loop_one) {
 				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
-				Random_Numbers_for_Systematics_Up_Down[2] = Rand.Gaus(0.0, 1.);// Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Rand.Gaus(0.0, 1.);// Electron Scale(Data)
 				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
@@ -434,6 +506,7 @@ int main(int ac, char* av[])
 			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
+			t1[i]->SetDirectory(0);
 			selEvent.SetBranches(t1[i]);
 			if(loop_one) selEvent.SetBranches(tDyCheck);
 
@@ -445,7 +518,10 @@ int main(int ac, char* av[])
 
 			unsigned long long int ev = 0;
 
-			for(auto myEvent : myEventVector) {
+			//------------------------------ scale random numbers: one set of numbers per toy, common to all events and electrons
+			// it's the Random_Numbers_for_Systematics_Up_Down[2]
+
+			for(auto myEventIt : myEventVector) {
 
 
 				if(nEntries > 100 && ev % nEntries_100 == 1) {
@@ -453,46 +529,52 @@ int main(int ac, char* av[])
 					std::cout << "\b\b\b\b\b[" << std::setw (2) <<  (int)(ev / nEntries_100) << "%]" << std::flush;
 				}
 				//std::cout << "\b\b\b\b" << (int)( ev/nEntries_100) << " %" << std::endl;
-//				c->GetEntry(ev);
 
 //#ifdef DEBUG
 				if (debug) {
-					std::cout << "RUN=" << myEvent.run << std::endl;
+					std::cout << "RUN=" << myEventIt.run << std::endl;
 					std::cout << "Mu" << std::endl;
-					for(auto m : * (myEvent.muons_p4))
+					for(auto m : * (myEventIt.muons_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 					std::cout << "Jet" << std::endl;
-					for(auto m : * (myEvent.jets_p4))
+					for(auto m : * (myEventIt.jets_p4))
 						std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				}
 //#endif
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
-				ToyThrower( &myEvent, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
+				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
-				// // electron systematics!
-				// bool Flag_Smear_Electron_Scale = false;
-				// for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
-				// 	if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
-				// }
 
-				// unsigned int nEle = myEvent.electrons_p4->size();
-				// for(unsigned int iEle = 0; iEle < nEle; ++iEle){
-				// 	TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
+				unsigned int nEle = myEventIt.electrons_p4->size();
+				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
+					TLorentzVector& p4 = (*myEventIt.electrons_p4)[iEle];
 
-				// 	if(isData) { //only scales are corrected
-				// 		(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
-				// 		(*myEvent.electron_smearing)[iEle] = 0.;
-				// 		p4 *= (*myEvent.electron_scale)[iEle];
-				// 		if(Flag_Smear_Electron_Scale) p4 *= Rand.Gaus(0., 1.) * eSmearer.ScaleCorrectionUncertainty(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et());
-				// 	} else { // only the smearings are corrected
-				// 		(*myEvent.electron_scale)[iEle] = 1.;
-				// 		(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta())<1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 1.);
-				// 		if(Flag_Smear_Electron_Scale) p4 *= Rand.Gaus(0.,1) * (*myEvent.electron_smearing)[iEle];
-				// 	}
-				// }
+					if(isData) { //only scales are corrected
+#ifdef DEBUG
+						std::cout << p4.Et() << "-->";
+#endif
+						p4 *= (*myEventIt.electron_scale)[iEle];
+						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
+						if(loop_one == false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
+#ifdef DEBUG
+						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEventIt.electron_r9)[iEle] << "\t" << (*myEventIt.electron_scale)[iEle] << "\t" << (eSmearer.ScaleCorrectionUncertainty(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et())) << std::endl;
+#endif
+					} else { // only the smearings are corrected
+						double r = (loop_one == false && Flag_Smear_Electron_Scale) ? Rand.Gaus(0., 1.) : 0;
+						(*myEventIt.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r);
+#ifdef DEBUG
+						std::cout << p4.Et() << "-->";
+#endif
+						p4 *= Rand.Gaus(1., (*myEventIt.electron_smearing)[iEle]);
+#ifdef DEBUG
+						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEventIt.electron_r9)[iEle] << "\t" <<	(*myEventIt.electron_smearing)[iEle] << "\t" <<  eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0) << "\t" << eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r) << std::endl;
+#endif
 
-				Selector tmp_selEvent(myEvent);
+					}
+				}
+
+				Selector tmp_selEvent(myEventIt);
 				selEvent = tmp_selEvent;
 				// Select events with one good WR candidate
 				// Tags:
@@ -500,22 +582,28 @@ int main(int ac, char* av[])
 				// 1 -- MuMuJJ Channel
 				// 2 -- EMuJJ Channel
 
-				if(debug && selEvent.isPassing(channel)) {
-					std::cout << std::endl << selEvent.dilepton_mass << std::endl;
-					std::cout << "Mu " << ev  << std::endl;
-					for(auto m : * (myEvent.muons_p4))
-						std::cout << m.Pt() << " " << m.Eta() << std::endl;
-					std::cout << "Ele" << std::endl;
-					for(auto m : * (myEvent.electrons_p4))
-						std::cout << m.Pt() << " " << m.Eta() << std::endl;
-					std::cout << "Jet" << std::endl;
-					for(auto m : * (myEvent.jets_p4))
-						std::cout << m.Pt() << " " << m.Eta() << std::endl;
-				}
+				// if(debug && selEvent.isPassing(channel)) {
+				// 	std::cout << std::endl << selEvent.dilepton_mass << std::endl;
+				// 	std::cout << "Mu " << ev  << std::endl;
+				// 	for(auto m : * (myEventIt.muons_p4))
+				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
+				// 	std::cout << "Ele" << std::endl;
+				// 	for(auto m : * (myEventIt.electrons_p4))
+				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
+				// 	std::cout << "Jet" << std::endl;
+				// 	for(auto m : * (myEventIt.jets_p4))
+				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
+				// }
 
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+#ifdef DEBUGG
+						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
+						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
+						std::cout << "num PV from miniTreeEvent=\t" << myEventIt.nPV << std::endl;
+						std::cout << "num PU from miniTreeEvent=\t" << myEventIt.nPU << std::endl;
+#endif
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
@@ -532,7 +620,7 @@ int main(int ac, char* av[])
 					std::cout << "selEvent.weight=\t" << selEvent.weight << std::endl;
 					std::cout << "integratedLumi=\t" << integratedLumi << std::endl;
 					std::cout << "myReader.getNorm1fb(selEvent.datasetName)=\t" << myReader.getNorm1fb(selEvent.datasetName) << std::endl;
-					std::cout << "myEvent.weight=\t" << myEvent.weight << std::endl;
+					std::cout << "myEventIt.weight=\t" << myEventIt.weight << std::endl;
 #endif
 
 					if(selEvent.dilepton_mass > 61.2 && selEvent.dilepton_mass < 121.2 && loop_one) ++zMass60to120EvtCount;
@@ -544,7 +632,7 @@ int main(int ac, char* av[])
 					if(loop_one) tDyCheck->Fill();
 				}
 
-				if(selEvent.isPassing(channel)) {
+				if(selEvent.isPassing(channel, makeSelectorPlots && loop_one)) {
 
 					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
 
@@ -588,12 +676,29 @@ int main(int ac, char* av[])
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			double error = 0;
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-				auto range = mass_cut[mass_vec.at(mass_i)];
+				auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 				result.events_in_range[mass_i] = hWR_mass->IntegralAndError(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second), error);
 				result.error_in_range[mass_i] = float(error);
 			}
 			delete hWR_mass;
 
+			if(loop_one) {
+				TString hist_name(mode + "_unweighted");
+				hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
+
+				//Draw unweighted histogram
+				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
+				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
+					auto mass = mass_vec[massi];
+					auto range = mass_cut[std::make_pair(cut_channel, mass)];
+					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
+					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
+				}
+				delete hWR_mass;
+			}
+
+			f.cd();
 			if(saveToys) t1[i]->Write();
 			if(loop_one) {
 				if(!saveToys) t1[i]->Write();
@@ -605,7 +710,7 @@ int main(int ac, char* av[])
 
 			permanentWeightedDataSet->Print();
 
-			if(mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) {
+			if((isTagAndProbe == false) && (mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) ) {
 				assert(permanentWeightedDataSet->sumEntries() > 0);
 				Fits::expPower.setVal(-0.004);
 				RooFitResult * tempFitRslt = NULL;
@@ -633,7 +738,7 @@ int main(int ac, char* av[])
 				}
 
 				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-					auto range = mass_cut[mass_vec.at(mass_i)];
+					auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 					result.fit_integral_in_range[mass_i] = integral;
 				}
@@ -663,7 +768,7 @@ int main(int ac, char* av[])
 						}
 						//Calculate integrals for each fit
 						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-							auto range = mass_cut[mass_vec.at(mass_i)];
+							auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
 							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
 							stat_result.fit_integral_in_range[mass_i] = integral;
 						}
@@ -678,11 +783,17 @@ int main(int ac, char* av[])
 			}
 
 			// fill the tree with the normalization, parameters, and errors
-			if(loop_one) central_value_tree->Fill();
-			else syst_tree->Fill();
+			if(loop_one) {
+				central_value_tree->Fill();
+				sel::hists.PrintEntries("plots/", mode);
+				sel::hists.Draw("plots/", mode);
+				sel::hists.Clear();
+			} else syst_tree->Fill();
 
 			loop_one = false;
 		}
+
+		syst_tree->SetDirectory(&f);
 		syst_tree->Write();
 		central_value_tree->Write();
 	}

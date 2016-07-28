@@ -6,6 +6,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Make datacards')
 parser.add_argument('--no-syst', dest='nosyst', action='store_true',
 		help='do not write systematics to datacards')
+parser.add_argument('--draw-plots', dest='drawplots', action='store_true',
+		help='draw plots')
 parser.add_argument('-d', '--dir', dest='basedir',
 		default="./",
 		help='base dir for analysis tree files')
@@ -19,59 +21,56 @@ parser.add_argument('-o', '--outdir', dest='outdir',
 
 args = parser.parse_args()
 
-minitrees = combineTools.miniTreeInterface(
+minitrees = combineTools.AnalysisResultsInterface(
 			base=args.basedir,
 			tag =args.tag,
-			makeplots=True
+			makeplots=args.drawplots
 			)
 
-unscale_by_xs = True
-for channel in ["ee","mumu"]:
+nuisance_params = []
+nuisance_params.append(("lumi",        "lnN"))
+nuisance_params.append(("TT_SF",       "lnN"))
+nuisance_params.append(("DYAMC_SF",       "lnN"))
+nuisance_params.append(("signal_unc",  "gmN"))
+nuisance_params.append(("TT_unc",      "gmN"))
+nuisance_params.append(("DYAMC_unc",   "gmN"))
+unscale_by_xs = False
+for channel in ["ee", "mumu"]:
 	sig_name = "WR_" + channel + "jj"
 	MWR = []
 	signal = []
 	bg = []
-	systematics_list  = []
-	for mass in sorted(combineTools.mass_cut):
+	systematics_list = []
+	for mass in sorted(combineTools.mass_cut[channel]):
 		try:
-			systematics = []
-			signalNevents, sig_syst, sig_stat = minitrees.getNEvents(mass, channel, "signal")
+			systematics = combineTools.Systematics(["signal", "TT", "DYAMC"], nuisance_params)
 			if unscale_by_xs:
-				uns = .001/xs.WR_jj[channel][mass]
-				signalNevents *= uns
+				scale =  .001/xs.WR_jj[channel][mass]
+			else:
+				scale = 1.0
+			signalNevents = minitrees.getNEvents(mass, channel, "signal", systematics, scale = scale)
 
-			TTBar, TTBar_syst, TTBar_stat = minitrees.getNEvents(mass, channel, "TT")
-			minitrees.setTag("_withMllWeight")
-			DY, DY_syst, DY_stat = minitrees.getNEvents(mass, channel, "DYAMC")
-			minitrees.setTag("")
+			TTBar = minitrees.getNEvents(mass, channel, "TT", systematics)
+			DY = minitrees.getNEvents(mass, channel, "DYAMC", systematics)
 
 			MWR.append(mass)
 			signal.append(signalNevents)
 			bg.append([TTBar, DY])
 
-			#TODO: add Lumi uncertainty and others
-			#systematics.append( ("", "", [ (sig_name, sig_syst )]))
-			print "nosyst", args.nosyst
-			if not args.nosyst:
-				systematics.append( ("Signal_syst", "lnN", [ (sig_name, sig_syst )]))
-				systematics.append( ("TTBar_syst", "lnN", [ ("TTBar", TTBar_syst)] ))
-				systematics.append( ("DY_syst", "lnN", [ ("DY", DY_syst)] ))
-				systematics.append( ("TTBar_stat", "lnN", [ ("TTBar", TTBar_stat)] ))
-				systematics.append( ("DY_stat", "lnN", [ ("DY", DY_stat)] ))
+			if args.nosyst: systematics = None
 			systematics_list.append(systematics)
-		except IOError:
+		except (IOError,KeyError) as e:
 			print mass, "not found"
 
 	bg_names = ["TTBar", "DY"]
 
 	for i in range(len(MWR)):
-		print MWR[i], signal[i], sum(bg[i])
-		print "syst", len(systematics_list[i])
+		print channel, MWR[i], signal[i]/sum(bg[i])
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
 
-		datacard = "WR%sjj_MASS%04d" % (channel,MWR[i])
+		datacard = "WR%sjj_MASS%04d" % (channel, MWR[i])
 		datacard_file = args.outdir + "/" + datacard + ".txt"
 		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])

@@ -9,7 +9,7 @@ printParticleTree = cms.EDAnalyzer("ParticleListDrawer",
 		)
 
 hasGenMuOrTau = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("(abs(pdgId) == 13 && abs(mother(0).pdgId) > 9900011) || (abs(pdgId) == 15 && abs(mother(0).pdgId) > 9900011)")
 		)
 
@@ -19,8 +19,9 @@ hasGenMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 hasGenNuMuOrTau = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
-		cut = cms.string("abs(pdgId) > 9900012 && abs(pdgId) < 9900024")
+		src = cms.InputTag("prunedGenParticles"),
+		#cut = cms.string("abs(pdgId) > 9900012 && abs(pdgId) < 9900024")
+		cut = cms.string("abs(pdgId) == 9900012")
 		)
 
 hasGenNuMuOrTauFilter = cms.EDFilter("CandViewCountFilter",
@@ -35,8 +36,8 @@ hasGenMuOrTauFlavorsSeq = cms.Sequence(
 		)
 
 bareGenJet = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("slimmedGenJets"),
-		#src = cms.InputTag("ak4GenJets"),
+		#src = cms.InputTag("slimmedGenJets"),
+		src = cms.InputTag("ak4GenJets"),
 		cut = cms.string("")
 		)
 
@@ -46,8 +47,8 @@ bareGenJetFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("prunedGenParticles"),
-		#src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 11")
 		)
 
@@ -91,8 +92,8 @@ matchGenJetsToGenQuarksSeq = cms.Sequence(matchGenJetsToGenQuarksNoCuts*matchGen
 
 ## filters to select the generated Nu
 bareMatchedNu = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("prunedGenParticles"),
-		#src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 9900012 && abs(mother(0).pdgId) == 9900024")
 		)
 
@@ -106,8 +107,8 @@ bareMatchedNuSeq = cms.Sequence(bareMatchedNu*bareMatchedNuFilter)
 
 ## filters to select the generated WR
 bareMatchedWR = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("prunedGenParticles"),
-		#src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 9900024 && abs(mother(0).pdgId) == 9900024 && abs(status) == 62")
 		)
 
@@ -124,8 +125,8 @@ bareMatchedWRSeq = cms.Sequence(bareMatchedWR*bareMatchedWRFilter)
 
 #this filter looks for electrons whose mother is a WR
 bareMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("genParticles"),
-		src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900024")
 		)
 
@@ -136,8 +137,8 @@ bareMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for electrons whose mother is a heavy Nu
 bareMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("genParticles"),
-		src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900012")
 		)
 
@@ -148,8 +149,8 @@ bareMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
 
 #this filter looks for quarks whose real mother is a heavy Nu (virtuals are not tracked in Pythia) 
 bareMatchedGenQuark = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("genParticles"),
-		src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900012")
 		)
 
@@ -213,7 +214,7 @@ etaRestrictedMatchedGenParticleSeq = cms.Sequence(
 ## matched to gen quarks from WR decay
 simultaneousPtEtaCutMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("bareMatchedLeadingGenEle"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5")
+		cut = cms.string("pt>60 && abs(eta) < 2.4")
 		)
 
 simultaneousPtEtaCutMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
@@ -223,7 +224,7 @@ simultaneousPtEtaCutMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilt
 
 simultaneousPtEtaCutMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("bareMatchedSubleadingGenEle"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5")
+		cut = cms.string("pt>50 && abs(eta) < 2.4")
 		)
 
 simultaneousPtEtaCutMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
@@ -233,7 +234,7 @@ simultaneousPtEtaCutMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountF
 
 simultaneousPtEtaCutMatchedGenJets = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("matchGenJetsToGenQuarksNoCuts","matchedGenJetsNoCuts"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5")
+		cut = cms.string("pt>40 && abs(eta) < 2.4")
 		)
 
 simultaneousPtEtaCutMatchedGenJetsFilter = cms.EDFilter("CandViewCountFilter",
@@ -260,7 +261,7 @@ genMatchedJetLeptonDrSeparation = cms.EDProducer("applyLeptonJetDrCutMixedLepton
 		outputJetsCollectionName = cms.string("genJetsPassingDrSeparationCut"),
 		outputLeptonsOneCollectionName = cms.string("matchedLeadingGenElePassingDrSeparationCut"),
 		outputLeptonsTwoCollectionName = cms.string("matchedSubleadingGenElePassingDrSeparationCut"),
-		minDrSeparation = cms.double(0.4),
+		minDrSeparation = cms.double(0.4),	#separation btwn leptons and jets
 		inputJetsCollTag = cms.InputTag("simultaneousPtEtaCutMatchedGenJets"),
 		inputLeptonsOneCollTag = cms.InputTag("simultaneousPtEtaCutMatchedLeadingGenEle"),
 		inputLeptonsTwoCollTag = cms.InputTag("simultaneousPtEtaCutMatchedSubleadingGenEle"),

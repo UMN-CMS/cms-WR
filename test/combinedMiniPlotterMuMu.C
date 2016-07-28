@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <cmath>
 // #include "ExoAnalysis/cmsWR/src/Selector.cc"
 // #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
@@ -35,18 +36,18 @@ void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
 void combinedMiniPlotterMuMu(){
 
-  TChain * chain_DY = new TChain("Tree_Iter0");
-  TChain * chain_ttbar = new TChain("Tree_Iter0");
-  TChain * chain_WJets = new TChain("Tree_Iter0");
-  TChain * chain_WZ = new TChain("Tree_Iter0");
-  TChain * chain_ZZ = new TChain("Tree_Iter0");
-  TChain * chain_data = new TChain("Tree_Iter0");
+  TChain * chain_DY = new TChain("Tree_Iter0","DY");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TT");
+  TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
+  TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
+  TChain * chain_data = new TChain("Tree_Iter0","Data");
  
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::MuMu:
-    //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
-    dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
+    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
 	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
     wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
     wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
@@ -118,7 +119,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,6000);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
   float dilepton_max = 200.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
@@ -233,6 +234,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_DY->Add(hs_WJets);
   hs_DY->Add(hs_WZ);
   hs_DY->Add(hs_ZZ);
+  if(fname.EqualTo("Mll") || fname.EqualTo("Mlljj") ){
+	  Float_t dataMCratio = (hs_data->Integral()/hs_DY->Integral());
+	  Float_t dataEntries = hs_data->GetEntries();
+	  Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());
+	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
+	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+  }
 
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
@@ -250,7 +258,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
 
   if(channel == Selector::MuMu)
-    fn = "validationPlots/"+fname + "_lowdileptonMuMuChannelDyMadgraphHTbinned";
+    fn = "validationPlots/"+fname + "_lowdileptonMuMuChannelDyAmc";
 
   mycanvas->Print((fn+".pdf").Data());
   mycanvas->Print((fn+".png").Data());

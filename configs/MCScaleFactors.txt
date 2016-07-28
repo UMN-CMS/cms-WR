@@ -1,0 +1,5 @@
+#mode  channel  SF      stat_unc  syst_unc
+DYAMC  EE       0.9558  0.0028    0.01
+DYAMC  MuMu     0.9643  0.0021    0.01
+TT     EE       0.4185  0.0032    0.0056
+TT     MuMu     0.6538  0.0044    0.0087

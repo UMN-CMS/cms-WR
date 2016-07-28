@@ -46,10 +46,10 @@ if(options.test==3):
     #options.maxEvents=100
     options.isMC=1
 elif(options.test==2):
-    #options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800_SHv2/160124_155521/0000/output_1.root'
-    options.files='root://eoscms//eos/cms/store/user/shervin/DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_700to800/151217_073650/0000/output_1.root'
-    options.maxEvents= -1
-    options.isMC=1
+	options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
+	options.maxEvents= -1
+	options.isMC=1
+	options.datasetTag='dyJetsAmcNloInclusive'
 elif(options.test==1):
     options.files='root://xrootd-cms.infn.it//store/mc/RunIIFall15MiniAODv2/WRToNuMuToMuMuJJ_MW-1000_MNu-500_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/50000/38CDE93A-C2B8-E511-BEE7-002590FD5A72.root'
     options.maxEvents=200

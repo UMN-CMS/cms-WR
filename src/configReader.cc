@@ -82,8 +82,7 @@ TChain *configReader::getMiniTreeChain(std::vector<std::string> datasetNames, st
 std::vector<std::string> configReader::getDatasetNames()
 {
 	std::vector<std::string> names;
-	for(auto d : configMap)
-	{
+	for(auto d : configMap) {
 		names.push_back(d.first);
 	}
 	return names;

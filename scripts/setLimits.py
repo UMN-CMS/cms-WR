@@ -1,8 +1,14 @@
 import ExoAnalysis.cmsWR.condorTools as condorTools
 import os
 import re
+import subprocess
+import sys
+
+tag, toys = sys.argv[1:]
 
 thisdir = os.getcwd()
+proddir = "/local/cms/user/phansen/limits/"
+proddir = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag
 
 datacardfolder = thisdir + "/datacards/"
 datacards = os.listdir(datacardfolder)
@@ -13,7 +19,7 @@ config = dict( [ line.strip().split('=') for line in configfile])
 
 
 mode = "BayesianToyMC"
-job = condorTools.Job(thisdir + "/scripts/batch_run", config["productionTAG"], prodSpace="/local/cms/user/phansen/limits/")
+job = condorTools.Job(thisdir + "/scripts/batch_run", config["productionTAG"], prodSpace=proddir)
 for datacard in datacards:
 	m = pattern.match(datacard)
 	if not m: continue
@@ -25,7 +31,7 @@ for datacard in datacards:
 	datacard_file = datacardfolder + datacard
 
 	jobname = channel + "_" + MWR + "_"
-	systematics = True
+	systematics = False
 #TODO: Make hybrid new work for observed
 	if "Hybrid" in mode:
 		jobid = jobname + "EXPECTED"
@@ -36,11 +42,10 @@ for datacard in datacards:
 		jobid = jobname + "OBSERVED"
 		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s " %(systematics, datacard_file, datacard)
 		prefix  = thisdir + "/python/combineTools.py " + jobid
-		job.addJob( prefix + " " + command, jobid)
+		#job.addJob( prefix + " " + command, jobid)
 		jobid = jobname + "EXPECTED"
-		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys 100" %(systematics, datacard_file, datacard)
+		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys %s" %(systematics, datacard_file, datacard, toys)
 		prefix  = thisdir + "/python/combineTools.py " + jobid
 		job.addJob( prefix + " " + command, jobid)
 
-#TODO make interactive mode
-job.submit()
+job.submit(mode = "lsf")

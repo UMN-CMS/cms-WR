@@ -51,7 +51,7 @@ public:
 	void setupDyMllScaleFactor(std::string inputFile)
 	{
 		std::string ch = "", dataset = "";
-		double scalefactor = 1.0;
+		double scalefactor = 1.0, scalefactorUncertainty = 0.0;
 		std::ifstream readScaleFactors;
 		readScaleFactors.open(inputFile);
 		if(readScaleFactors.is_open() == false) {
@@ -59,7 +59,7 @@ public:
 		}
 
 		while(readScaleFactors.peek() != EOF && readScaleFactors.good()) {
-			readScaleFactors >> ch >> dataset >> scalefactor;
+			readScaleFactors >> ch >> dataset >> scalefactor >> scalefactorUncertainty;
 			DyMllScaleFactorMap[ch + dataset] = scalefactor;
 		}
 	}
@@ -75,6 +75,12 @@ public:
 		}
 		return 1.0;	///< for DYPOWINCL
 	}///end getDyMllScaleFactor()
+
+	inline configLine::numEvents_t getPrimaryEvents(std::string datasetName) const
+	{
+		if(checkCategory(datasetName) == true) return getConfigLine(datasetName).primaryDatasetEvents;
+		else return -1;
+	}
 
 
 

@@ -12,6 +12,10 @@ class miniTreeEvent
 {
 public:
 
+	miniTreeEvent(); ///< default contructor (empty)
+	~miniTreeEvent(); ///< default contructor (empty)
+	miniTreeEvent(const miniTreeEvent& otherEvent);
+
 // public members to be filled by your program
 	Int_t run;
 	Int_t lumi;
@@ -27,6 +31,15 @@ public:
 	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
 
+	///none of these electron central values or errors are stored in the minitrees, so dont try to read them from minitrees
+	std::vector<Float_t> * electron_IDSF_central;
+	std::vector<Float_t> * electron_IDSF_error;
+	std::vector<Float_t> * electron_RecoSF_central;
+	std::vector<Float_t> * electron_RecoSF_error;
+	std::vector<Float_t> * electron_HltSF_central;
+	std::vector<Float_t> * electron_HltSF_error;
+	///end electron central values and errors
+
 	std::vector<TLorentzVector> * muons_p4;
 	std::vector<Int_t> * muon_charge;
 	std::vector<Float_t> * muon_IDSF_central;
@@ -41,10 +54,6 @@ public:
 	Int_t nPV;
 	Float_t weight;
 	Float_t PU_reweight;
-
-	miniTreeEvent(); ///< default contructor (empty)
-	~miniTreeEvent(); ///< default contructor (empty)
-	miniTreeEvent(const miniTreeEvent& otherEvent);
 
 	void clear();
 	void SetBranches(TTree* tree);
