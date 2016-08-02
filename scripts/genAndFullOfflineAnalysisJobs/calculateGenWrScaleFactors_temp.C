@@ -49,7 +49,7 @@ void calculateGenWrScaleFactorsNULL(){
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
-	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN cuts",58,700,3600,72,0,3600);
+	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN cuts",32,MNWRMSS,MXWRMSS,38,MNNUMSS,MXWRMSS);
 
 	int maxWrMass = MXWRMSS, increment = INCRMT, minWrMass = MNWRMSS, minNuMass = MNNUMSS;
 	//starting value for wrMass equals the minimum wr mass

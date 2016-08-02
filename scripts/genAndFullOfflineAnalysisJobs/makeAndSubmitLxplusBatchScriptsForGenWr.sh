@@ -8,16 +8,26 @@
 wrMass=800
 nuMass=100
 minNuMass=100
-maxWrMass=4500
+maxWrMass=4000
 increment=100
-incrementForLowNuMass=100
-changeIncrementThr=400
-label="genWrToMuMuJJFullOfflineAnalysis_WR"
+
+######temp
+#wrMass=850
+#nuMass=650
+#minNuMass=650
+#maxWrMass=850
+#increment=100
+#outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen"	#do not add a fwd slash at the end of this string
+#nevts=500
+###end temp
+
+label="genWrToEEJJFullOfflineAnalysis_WR"
 masterBatchSubDir="batchSubmFilesAndLogDirs"
 jobStartingDir="$PWD/../.."
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
-leptonChannel="MuMu"
+leptonChannel="EE"
 outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter"	#do not add a fwd slash at the end of this string
+
 eval "mkdir -p $outputFileDir"
 
 #make a directory for the crab python files and crab project directories
@@ -26,8 +36,11 @@ eval "mkdir -p $masterBatchSubDir"
 #q is a number appended to the end of the output .root file names
 #nevts is the number of evts generated at each mass point (default is 15000)
 q=1
-nevts=15000
+nevts=10000
 
+#if there are more than maxRunning jobs running, delay the submission of jobs until the number of jobs drops below safeLowerBoundNumRunningJobs
+currentSubmittedJobs=0
+maxRunning=120
 
 ####
 ##NOTE these 6 sed commands are added to maintain functionality of the root macro
@@ -56,7 +69,7 @@ while [ $wrMass -le $maxWrMass ]; do
 		eval "sed 's/NUM/$q/g' genTwo.py > genThree.py"
 		eval "sed 's@EVTCT@$nevts@' genThree.py > WR_M-${wrMass}_ToLNu_M-${nuMass}_GEN_${q}.py"
 		eval "mv WR_M-${wrMass}_ToLNu_M-${nuMass}_GEN_${q}.py ../../."
-		rm gen*.py
+		rm genOne.py genTwo.py genThree.py 
 
 		#replace CHNL, PROXYPATH, LOCALPATH, OUTPATH, SMPL, NUM, MMAASS, and MASSNU in runBatchJobTemp.sh
 		#label has the channel information
@@ -72,16 +85,41 @@ while [ $wrMass -le $maxWrMass ]; do
 		rm job*.sh
 		mv batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh $masterBatchSubDir
 		eval "cd $masterBatchSubDir"
-		eval "bsub -R 'rusage[mem=2000]' -q 1nh -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
+		eval "bsub -R 'rusage[mem=1200] && pool>2000' -q 1nh -J analyze_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}_job < batchJob_${q}_${label}_${wrMass}_ToLNu_M_${nuMass}.sh"
 		eval "cd ../."
 	
 		#increment nuMass before restarting the loop
-		if [ $nuMass -ge $changeIncrementThr ]; then
-			let nuMass=nuMass+$increment
+		let nuMass=nuMass+$increment
+
+		#increment currentSubmittedJobs
+		let currentSubmittedJobs=currentSubmittedJobs+1
+
+		#if the number of running jobs is large, delay the submission of more jobs
+		if [ $currentSubmittedJobs -ge $maxRunning ]; then
+			let currentSubmittedJobs=0
+			eval "sleep 40m"
+		#	while :
+		#	do
+		#		eval "bjobs > numRunningJobs.txt"
+		#		eval "wc -l < numRunningJobs.txt > numlines.txt"
+		#		tempVar=$(cat numlines.txt)
+		#		one=1
+		#		if [ $tempVar -eq $one ]; then
+		#			echo "breaking out of loop because there are no unfinished jobs"
+		#			break
+		#		fi
+		#		rm numlines.txt numRunningJobs.txt
+		#		let tempRunningJobs=tempRunningJobs+$tempVar
+		#		#now tempRunningJobs equals the number of running jobs plus one
+		#		if [ $tempRunningJobs -le $safeLowerBoundNumRunningJobs ]; then
+		#			let currentSubmittedJobs=tempRunningJobs
+		#			let tempRunningJobs=0
+		#			echo "the number of running jobs is low enough for new jobs to be submitted"
+		#			break
+		#		fi
+		#	done
 		fi
-		if [ $nuMass -lt $changeIncrementThr ]; then
-			let nuMass=nuMass+$incrementForLowNuMass
-		fi
+
 	done
 	#reset the nuMass value to the lower bound value before restarting the while loop
 	#with a higher wrMass value

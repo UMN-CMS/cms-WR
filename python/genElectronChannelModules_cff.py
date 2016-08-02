@@ -95,6 +95,7 @@ bareMatchedNu = cms.EDFilter("CandViewSelector",
 		#src = cms.InputTag("prunedGenParticles"),
 		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 9900012 && abs(mother(0).pdgId) == 9900024")
+		#cut = cms.string("abs(pdgId) == 9900014 && abs(mother(0).pdgId) == 9900024")
 		)
 
 bareMatchedNuFilter = cms.EDFilter("CandViewCountFilter",
@@ -128,6 +129,7 @@ bareMatchedLeadingGenEle = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("genParticles"),
 		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900024")
+		#cut = cms.string("abs(pdgId) == 13 && abs(mother(0).pdgId) == 9900024")
 		)
 
 bareMatchedLeadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
@@ -140,6 +142,7 @@ bareMatchedSubleadingGenEle = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("genParticles"),
 		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 11 && abs(mother(0).pdgId) == 9900012")
+		#cut = cms.string("abs(pdgId) == 13 && abs(mother(0).pdgId) == 9900014")
 		)
 
 bareMatchedSubleadingGenEleFilter = cms.EDFilter("CandViewCountFilter",
@@ -152,6 +155,7 @@ bareMatchedGenQuark = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("genParticles"),
 		#src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900012")
+		#cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900014")
 		)
 
 bareMatchedGenQuarkFilter = cms.EDFilter("CandViewCountFilter",
