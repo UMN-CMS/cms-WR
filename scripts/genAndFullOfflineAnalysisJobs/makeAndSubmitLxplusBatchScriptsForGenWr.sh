@@ -21,11 +21,11 @@ increment=100
 #nevts=500
 ###end temp
 
-label="genWrToEEJJFullOfflineAnalysis_WR"
+label="genWrToMuMuJJFullOfflineAnalysis_WR"
 masterBatchSubDir="batchSubmFilesAndLogDirs"
 jobStartingDir="$PWD/../.."
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
-leptonChannel="EE"
+leptonChannel="MuMu"
 outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter"	#do not add a fwd slash at the end of this string
 
 eval "mkdir -p $outputFileDir"

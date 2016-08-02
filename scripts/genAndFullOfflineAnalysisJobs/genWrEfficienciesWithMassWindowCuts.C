@@ -37,10 +37,9 @@ using namespace std;
 //  brName > XX && brName < YY
 //where XX is the lower bound cut, brName is the branch to which the cut is applied, and YY is the upper bound cut
 //channel can be EE or MuMu
-string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string desiredChannel){
+string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string desiredChannel, string inputMassCutsFilePath){
 	string cutStringToReturn = "";
-	string massCutsFilePath = "../../configs/mass_cuts.txt";
-	ifstream massWindowReader(massCutsFilePath.c_str());
+	ifstream massWindowReader(inputMassCutsFilePath.c_str());
 	int mass = std::stoi(desiredWrMass);
 	bool wrMassIsNotEven = ((mass % 200) != 0);
 	int increment = 100;
@@ -128,7 +127,7 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 
 			//make another file reader and a second set of four strings to read another line from the mass cuts file
 			string channelFromFileTwo, wrMassForMassWindowTwo, massWindowLowerBoundTwo, massWindowUpperBoundTwo;
-			ifstream massWindowReaderTwo(massCutsFilePath.c_str());
+			ifstream massWindowReaderTwo(inputMassCutsFilePath.c_str());
 			while(massWindowReaderTwo.peek() != EOF && massWindowReaderTwo.good() ){
 				if(massWindowReaderTwo.peek() == 35){
 					massWindowReaderTwo.ignore(1000, '\n');
@@ -184,7 +183,10 @@ void genWrEfficienciesWithMassWindowCuts(){
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
-	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN and mass window cuts",32,800,4000,38,100,4000);
+	Float_t passingMassWindow=-1;
+	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN and mass window cuts",32,800,4000,39,100,4000);
+	TH2F * twoDimMassWindowEfficiencyHist = new TH2F("twoDimMassWindowEfficiencyHist","Percentage of events passing mass window cuts given events passing MLLJJ>600 cut",32,800,4000,38,100,4000);
+
 
 	int maxWrMass = 4000, increment = 100, minWrMass = 800, minNuMass = 100;
 	//starting value for wrMass equals the minimum wr mass
@@ -205,13 +207,17 @@ void genWrEfficienciesWithMassWindowCuts(){
 			afterOfflineCuts->Add(pfn.c_str());
 
 			///calculate percentage of evts which pass GEN cuts, and store this percentage along with the nu and wr mass values in a txt file
-			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu")).c_str() )/genInfo->GetEntries());
+			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
+			
+			///calculate percentage of evts which pass mass window cut, given events passing full offline selection including MLLJJ>600 cut
+			passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/afterOfflineCuts->GetEntries());
 
 	
 			writeToEfficiencyFile << wrMass <<"\t"<< nuMass <<"\t"<< passingPercentage << endl;
 	
 			///fill a bin in the 2D histo with a weight equal to passingPercentage
 			twoDimAcceptanceHist->Fill((Double_t) wrMass, (Double_t) nuMass,passingPercentage);
+			twoDimMassWindowEfficiencyHist->Fill((Double_t) wrMass, (Double_t) nuMass, passingMassWindow);
 			genInfo->Delete();
 			afterOfflineCuts->Delete();
 
@@ -228,8 +234,16 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * r1 = new TCanvas("r1","r1",900,700);
 	r1->cd();
 	twoDimAcceptanceHist->Draw("COLZ");
-	r1->SaveAs("twoDimGenWrAcceptances_afterAllCutsIncludingMassWindows.png","recreate");
-	r1->SaveAs("twoDimGenWrAcceptances_afterAllCutsIncludingMassWindows.pdf","recreate");
-	
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows.png","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows.pdf","recreate");
+
+	twoDimMassWindowEfficiencyHist->GetXaxis()->SetTitle("WR Mass [GeV]");
+	twoDimMassWindowEfficiencyHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
+	TCanvas * c1 = new TCanvas("c1","c1",900,700);
+	c1->cd();
+	twoDimMassWindowEfficiencyHist->Draw("COLZ");
+	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts.png","recreate");
+	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts.pdf","recreate");
+
 }///end genWrEfficienciesWithMassWindowCuts()
 
