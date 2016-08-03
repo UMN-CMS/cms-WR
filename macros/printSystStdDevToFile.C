@@ -46,7 +46,7 @@ using namespace std;
 ///given the location of the mass_cuts.txt file, and the WR mass and lepton channel as a string, this function returns the correct index
 ///of NEventsInRange to use for plotting.  When NEventsInRange is plotted with this index, the RMS of the distribution
 ///is equal to the systematic uncertainty.
-int getIndexForSystematicUncertainty(string wrMass, string leptonChannel, string pathToMassCutsFile){
+int getIndexForSystematicUncertainty(string wrMass, string inputLeptonChannel, string pathToMassCutsFile){
 	int indexToReturn = 0;
 	ifstream massWindowReader(pathToMassCutsFile.c_str());
 	while(massWindowReader.peek() != EOF && massWindowReader.good() ){
@@ -57,7 +57,7 @@ int getIndexForSystematicUncertainty(string wrMass, string leptonChannel, string
 
 		string channelFromFile, wrMassForMassWindow, massWindowLowerBound, massWindowUpperBound;
 		massWindowReader >> channelFromFile >> wrMassForMassWindow >> massWindowLowerBound >> massWindowUpperBound;
-		if(channelFromFile == leptonChannel && wrMassForMassWindow == wrMass) break;	///<leave the loop once a match is found
+		if(inputLeptonChannel.find(channelFromFile) != string::npos && wrMassForMassWindow == wrMass) break;	///<leave the loop once a match is found
 
 		indexToReturn++;
 	}//end loop over lines in mass cuts file
@@ -81,8 +81,9 @@ void printSystStdDevToFile(){
 	///and other strings related to TTree file access
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	string relDirPaths[] = {"800toysOnlyJetScaleSyst/", "800toysOnlySmearEleScaleSyst/", "410toysOnlyMuScaleIdSyst/"};
-	vector<string> relDirPathsVector(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
-	string uncertTagNames[] = {"jet energy scale smearing","electron energy scale smearing","muon energy scale smearing and ID Iso smearing"};
+	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
+	string uncertTagNames[] = {"only jet energy scale smearing","only electron energy scale smearing","only muon energy scale smearing and ID Iso smearing"};
+	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
 	string dyFileName = "selected_tree_DYAMC_signal_";
 	//string wrMuMuLowMassFileName = "selected_tree_WRtoMuMuJJ_" + to_string(lowMass) + "_" + to_string(lowMass/2) + "_signal_" + mumuChannelInFileNames;
@@ -93,12 +94,54 @@ void printSystStdDevToFile(){
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
-	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVector.size();
+	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
 	for(int m=0; m<numWrMasses; m++){
 		for(int s=0; s<numSystematics; s++){
 			//for each WR mass and source of uncertainty, determine the systematic uncertainty and write it to a txt file
-			TChain * dyMuMu = new TChain(treeName.c_str());
-			dyMuMu->Add( (absPathToMainRootFileDir +  ).c_str() );
+			map<string,TChain*> chainPointers;
+			if(uncertTagNamesVect[s].find("only jet") != string::npos){
+				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
+				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect + dyFileName + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
+				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
+				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect + dyFileName + eeChannelInFileNames +".root" ).c_str() );
+				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
+				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
+				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers["MuMuWR"] = wrMuMu;
+				chainPointers["EEDY"] = dyEE;
+				chainPointers["EEWR"] = wrEE;
+			}
+
+			if(uncertTagNamesVect[s].find("only electron") != string::npos){
+				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
+				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect + dyFileName + eeChannelInFileNames +".root" ).c_str() );
+				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
+				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
+				chainPointers["EEDY"] = dyEE;
+				chainPointers["EEWR"] = wrEE;
+			}
+
+			if(uncertTagNamesVect[s].find("only muon") != string::npos){
+				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
+				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect + dyFileName + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
+				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
+				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers["MuMuWR"] = wrMuMu;
+			}
+
+			for(map<string,TChain*>::const_iterator chMapIt=chainPointers.begin(); chMapIt!=chainPointers.end(); chMapIt++){
+				//get the integer corresponding to the correct index position in NEventsInRange
+				string nEventsIndex = to_string( getIndexForSystematicUncertainty( to_string(wrMassVect[m]), chMapIt->first, pathToMassWindowsFile) );
+				(chMapIt->second)->Draw("NEventsInRange["+nEventsIndex+"]">>tempHist());
+	
+			}//end loop over TChains
+	
+
+			//loop over chainPointers elements, and clear allocated memory
+			for(map<string,TChain*>::const_iterator mapIt=chainPointers.begin(); mapIt!=chainPointers.end(); mapIt++){ (mapIt->second)->Delete();}
 
 		}//end loop over different systematics to evaluate
 
