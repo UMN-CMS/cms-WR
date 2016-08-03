@@ -1,9 +1,9 @@
-arguments="--toys 4000"
+arguments="--toys 410"
 logdir=$PWD/log
 mass_n=$(seq 1 25)
 
-queue=1nd
-tag=4000toysOnlyJetScaleSyst
+queue=1nh
+tag=410toysAllSyst
 finaldir=/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/$tag/
 
 for mass in $mass_n
