@@ -12,21 +12,29 @@
 #include "TLorentzVector.h"
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <string>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>
 
-#define PRINTRATIOS
+/**
+ * this macro runs on EMu data and TTBar MC minitrees which have been processed by analysis.cpp
+ * with -c EMu or -c EE or -c MuMu and signal region requirements.  This macro can be modified, and
+ * should be run by itself.  Currently it is not used in wrValidation.sh.
+ *
+ * This macro creates plots comparing ttbar MC to itself and to EMu data.  No plots use stacked histograms,
+ * only overlaid curves.  It also calculates and saves the ttbar MC EE/EMu and MuMu/EMu scale factors to a file in data/2015-v1/.
+ */
+
+//#define PRINTRATIOS
 
 std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
 void flavorSideband(){
 
-  Float_t mumuEmuSF = 0.657, eeEmuSF = 0.414;
+  Float_t mumuEmuSF = 0.657, eeEmuSF = 0.414;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
   std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
@@ -55,16 +63,10 @@ void flavorSideband(){
   myEvent_EE.SetBranchAddresses(chain_EE);
   myEvent_MuMu.SetBranchAddresses(chain_MuMu);
 
-  Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
-  //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 620, 645, 678, 705, 740, 790, 850, 940, 1030, 1400, 3300 };	//for xMax much greater than 2000 
+  //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
+  Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-
-  //do not use variable bin widths on these histos with large domain, they are not needed
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,4000);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",50,200,4000);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,4000);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,4000);
 
   //fixed bin width MLLJJ plots with standard domain
   //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",50,200,2000);
@@ -72,18 +74,33 @@ void flavorSideband(){
   //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",50,200,2000);
   //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",50,200,2000);
   
-  //variable bin width MLLJJ plots with standard domain
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
+  //variable bin width MLLJJ plots
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
+  
+  Double_t MuMuMCIntegral = h_WR_mass_MuMu->Integral();
+  Double_t EEMCIntegral = h_WR_mass_EE->Integral();
+  Double_t EMuMCIntegral = h_WR_mass_EMu->Integral();
 
-  /*
+  std::cout<<"\t"<<std::endl;
+  std::cout<<"\t"<<std::endl;
+  std::cout<<"ttbarMC EE/EMu ratio =\t"<< (EEMCIntegral/EMuMCIntegral) << std::endl;
+  std::cout<<"ttbarMC MuMu/EMu ratio =\t"<< (MuMuMCIntegral/EMuMCIntegral) << std::endl;
+  std::cout<<"\t"<<std::endl;
+  std::cout<<"\t"<<std::endl;
+  std::string ttScaleFactorFile = "../data/2015-v1/ttScaleFactors.txt";
+  ofstream writeToTTFile(ttScaleFactorFile.c_str(), ofstream::trunc);
+  writeToTTFile << "#Channel\tSF" << std::endl;
+  writeToTTFile << "EE\t" << (EEMCIntegral/EMuMCIntegral) << std::endl;
+  writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
+
   ///use this title for all plots
   TString stdTitle = "CMS Preliminary            #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
   h_WR_mass_EMu->SetTitle(stdTitle);
@@ -139,8 +156,8 @@ void flavorSideband(){
   h_ratio_MuMu->SetTitleOffset(1.55,"Y");
   
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
-  TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);	///< for xmax 2000
-  //TPaveText* chiSqdBoxEE = new TPaveText(300.,0.54,1800.,0.59);	///< for xmax much greater than 2000
+  //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);	///< for xmax 2000
+  TPaveText* chiSqdBoxEE = new TPaveText(300.,0.54,1800.,0.59);	///< for xmax much greater than 2000
   chiSqdBoxEE->SetFillColor(kWhite);
   TF1 *f_EE = new TF1("f_EE","[0]",600,1500);
   f_EE->FixParameter(0,eeEmuSF);
@@ -154,15 +171,15 @@ void flavorSideband(){
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.pdf"));
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.png"));
   mycanvas_ratio_EE->SetLogx(1);
-  chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");	//for xmax 2000
-  //chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax much greater than 2000
+  //chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");	//for xmax 2000
+  chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax much greater than 2000
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.pdf"));
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.png"));
 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
-  TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);	///< for xmax 2000
-  //TPaveText* chiSqdBoxMuMu = new TPaveText(300.,0.74,1800.,0.79);	///< for xmax much greater than 2000
+  //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);	///< for xmax 2000
+  TPaveText* chiSqdBoxMuMu = new TPaveText(300.,0.74,1800.,0.79);	///< for xmax much greater than 2000
   chiSqdBoxMuMu->SetFillColor(kWhite);
   TF1 *f_MuMu = new TF1("f_MuMu","[0]",600,1500);
   f_MuMu->FixParameter(0,mumuEmuSF);
@@ -176,8 +193,8 @@ void flavorSideband(){
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.pdf"));
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.png"));
   mycanvas_ratio_MuMu->SetLogx(1);
-  chiSqdBoxMuMu->DrawPave(500.,0.73,1000.,0.79,4,"same");	//for xmax 2000
-  //chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax much greater than 2000
+  //chiSqdBoxMuMu->DrawPave(500.,0.73,1000.,0.79,4,"same");	//for xmax 2000
+  chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax much greater than 2000
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.pdf"));
   mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.png"));
 
@@ -235,11 +252,11 @@ void flavorSideband(){
   canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth.pdf","recreate");
   canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth.png","recreate");
 
-  TFile f("flavor_fits.root","RECREATE");
-  h_ratio_EE->Write();
-  h_ratio_MuMu->Write();
-  f_EE->Write();
-  f_MuMu->Write();
+  //TFile f("flavor_fits.root","RECREATE");
+  //h_ratio_EE->Write();
+  //h_ratio_MuMu->Write();
+  //f_EE->Write();
+  //f_MuMu->Write();
 
 
   ///rescale the EEJJ and MuMuJJ MC and compare it to the EMu data and EMuJJ MC
@@ -339,7 +356,6 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.pdf","recreate");
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_variablebinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
-  */
 }
 
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){

@@ -13,8 +13,6 @@
 #include <vector>
 #include <iostream>
 #include <string>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
@@ -23,6 +21,15 @@
 #include <cstdlib>
 #include <sstream>
 #include <cmath>
+
+/**
+ * this macro takes dytagandprobe minitrees which have been processed by analysis.cpp with --isTagAndProbe true
+ * --ignoreDyScaleFactors true, and makes kinematic plots after different jet pt cut thresholds, and
+ *  writes scale factors to a txt file in data/ which normalize MC to data in the M_LL region 60 to 120 GeV.
+ *
+ *  this macro can be used by itself, but should not be modified.  This macro is used automatically by
+ *  wrValidation.sh.
+ */
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -217,8 +224,8 @@ void writeScaleFactorsToFile(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYA
 	Double_t DYMadInclSfUncert = DYMadInclSf*sqrt((1/dataIntegral) + (1/dyMadInclIntegral));
 
 	///DO NOT change the hard coded strings DYAMC, DYPOWHEG, and DYMADHT
-	std::string dyScaleFactorFile = "../configs/dyScaleFactors.txt";
-	std::string secondaryDyScaleFactorFile = "../configs/allDyScaleFactors.txt";
+	std::string dyScaleFactorFile = "../data/2015-v1/dyScaleFactors.txt";
+	std::string secondaryDyScaleFactorFile = "../data/2015-v1/allDyScaleFactors.txt";
 	std::string amcName = "DYAMC", madhtName = "DYMADHT", powName = "DYPOWHEG";
 	if(writeAction == 1){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);

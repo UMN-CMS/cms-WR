@@ -1,0 +1,53 @@
+/**
+\page developerInstructions_ Developer instructions
+\par Prerequisites for using GIT with github
+Please make sure you have your github account, you have properly added your private key such that you are able to use the SSH protocol
+
+The main branch is downloaded by default the first time you download the code. It is named \b master.
+
+Developers have to:
+\verbatim
+git checkout master
+git pull
+git branch myWorkingBranch
+git checkout myWorkingBranch
+...
+...
+git add files_you_have_worked_on.cc
+git commit -m "new point in the history, this is a comment to make clear which are the changes"
+...
+...
+git add files_you_have_worked_on.cc
+git commit -m "another commit"
+# to make sure what you did works
+scram b -j16 && cmsRun test/runAnalysis_cfg.py test=2
+git push origin myWorkingBranch:myWorkingBranch
+git checkout master
+\endverbatim
+
+Submit a pull request online through the github web interface to merge myWorkingBranch into the master branch.  If the
+master branch has changed with respect to the master branch from which myWorkingBranch was made, then follow this
+procedure before submitting a pull request:
+
+\verbatim
+git checkout master
+git pull
+git checkout myWorkingBranch
+git branch rebaseMyWorkingBranch
+gitk
+using the gitk GUI and the github web interface, identify the master branch commit from which myWorkingBranch was made
+git branch rebaseMyWorkingBranchOnItself
+git checkout rebaseMyWorkingBranchOnItself
+git rebase -i oldMasterBranchCommitNumber
+consolidate commits using pick, fixup, squash etc into a smaller number of commits to speed up next rebase with current master branch
+git branch rebaseMyWorkingBranchOnCurrentMaster
+git checkout rebaseMyWorkingBranchOnCurrentMaster
+find the current master branch commit number
+git rebase -i currentMasterBranchCommitNumber
+git push origin rebaseMyWorkingBranchOnCurrentMaster:rebaseMyWorkingBranchOnCurrentMaster
+\endverbatim
+
+submit the pull request to merge rebaseMyWorkingBranchOnCurrentMaster into master.
+
+Go back to \ref index
+*/

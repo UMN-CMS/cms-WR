@@ -6,22 +6,28 @@
 \section _INSTRUCTIONS Download instructions: 
 Follow the link \ref instructions_
 
-\section _CONF Configuration files
-\par Main configuration file
-Trying to collect all possible configurable things in a configuration file in configs/.
-The file is \b configs/2015-v1.conf
+\section _DEVINSTRUCTIONS Developer instructions:
+Follow the link \ref developerInstructions_
 
-Currently the following informations are stored there:
- - json file
- - dataset file (configs/datsets.dat)
+\section _CONF Files Governing Analysis Workflow Configuration
+All configuration files and parameters which are used to process minitrees are stored in configs/ and data/.
+
+\par Main configuration file
+The file is \b configs/2015-v1.conf lists the json file, minitree and skim version number, the blinded or unblinded
+status of minitrees made from collision data, and the location of the .dat file which lists all collision
+data and MC samples from which minitrees have been made.
+
+The following information is also stored in configs/:
+ - list of datasets which have been skimmed and made into minitrees (configs/datsets.dat)
+ - mass windows (in GeV) used for limit extraction at different WR mass hypotheses. These values are used by analysis.cpp.
 
 \par Datasets
-The list of datasets is written in 
+The datasets which have been processed into minitrees are listed in 
 \verbatim
 configs/datasets.dat
 \endverbatim
 
-\ref triggers List of triggers used to filter events at preselection level
+\ref triggers List of triggers used to filter events at skim level
 
 \section _UTILS Utilities
 \par How to estimate cross sections
@@ -31,7 +37,7 @@ Once the dataset is entered in the datasets.dat config file putting dashes for c
 \endverbatim
 to update the file with the estimated cross sections
 Cross sections for SM processes can be found here:
-ttps://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
+https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
 
 Instructions on how to get the cross sections of a MC sample: https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer
 
@@ -88,51 +94,36 @@ the cfg to be used is
 test/runAnalysis_cfg.py
 \endverbatim
 
-There are three paths defined:
- - SignalRegion
- - FlavourSideband
- - LowDiLeptonSideband
+There are four paths defined in runAnalysis_cfg.py:
+ - SignalRegion: require dilepton mass > 200, signal region triggers 
+ - FlavourSideband: require dilepton mass > 200, Mu30_Ele30 trigger
+ - LowDiLeptonSideband: requiredilepton mass < 200, signal region triggers
+ - DYtagAndProbe: require tag and probe single mu or double ele triggers
 
-A simple blinding filter is used if option isMC is set to 0 (so for data). This can be improved
+Lepton and jet IDs are applied when these paths are run, and filters on the number of ID'd objects is applied
+in the SignalRegion, FlavourSideband, and LowDiLeptonSideband (by the dilepton object candidate filters). No such
+filter is applied in the DYtagAndProbe path.
 
+Once minitrees are made by runAnalysis_cfg.py, analysis.cpp can be used once a grid proxy is created.
 
 \subsection _PRODVALIDATION Validation of the production
-\ref VALIDATIONSCRIPTS_
+See \ref VALIDATIONSCRIPTS_
 
-\par Making data/MC comparison plots
-To make the data/MC plots for the flavor and low dilepton mass
-sidebands, first run the analysis code with only 1 toy. 
-For flavor sideband:
-Edit the analysis.cpp file for nToys=1 and channel=Selector::EMu. The script
-will loop over all the datasets and produce root files called
-selected_tree_*_flavoursideband2.root.
-\verbatim
-make;./bin/analysis
-\endverbatim
-These files are the input to the plotting script. To make the plots,
-edit the plotting script so that the channel matches the one chosen in
-the analysis script. Make channel = Selector::EMu
-\verbatim
-cd test
-mkdir test/plots/Flavor
-mkdir test/plots/EELowDilepton
-mkdir test/plots/MuMuLowDilepton
-root -b miniPlotter.C
-\endverbatim
+\subsection _TTBAR TTBar estimation using collision data
+See \ref _TTBARBKG
 
-Repeat the previous steps with the different channel options(EE or MuMu).
+\subsection _DY DY estimation
+See \ref _DYBKGND
 
-\subsection _TTBAR TTBar from data
-Follow the link \ref _TTBARBKG
+\subsection _XSECLIMITS
+See \ref _LIMITS
 
 \section _AOB AOB
 \par JEC
 The twiki page is:
 \url https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC
 
-74X_mcRun2_asymptotic_v4
-
-
+74X_mcRun2_asymptotic_v5
 
 \par selection ID scale factors
 
@@ -144,30 +135,6 @@ Muons: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
 \par Energy corrections
 \subpar muons
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
-
-
-\par GIT instructions
-The main branch is downloaded by default the first time you download the code. It is \b master
-
-Developers have to:
-\verbatim
-git checkout master
-git pull
-git branch myWorkingBranch
-git checkout myWorkingBranch
-...
-...
-git add files_you_have_worked_on.cc
-git commit -m "new point in the history, this is a comment to make clear which are the changes"
-...
-...
-git add files_you_have_worked_on.cc
-git commit -m "another commit"
-# to make sure what you did works
-scram b -j16 && cmsRun test/runAnalysis_cfg.py test=3
-git push origin myWorkingBranch:myWorkingBranch
-git checkout master
-\endverbatim
 
 
 */

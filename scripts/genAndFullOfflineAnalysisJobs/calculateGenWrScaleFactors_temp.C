@@ -46,7 +46,8 @@ void calculateGenWrScaleFactorsNULL(){
 	gStyle->SetOptStat("");
 
 	string cutEfficiencyVsMassFile = "offlineEfficienciesVsMasses.txt";
-	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::app);
+	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
+	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
 	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN cuts",58,700,3600,72,0,3600);
 
@@ -65,13 +66,14 @@ void calculateGenWrScaleFactorsNULL(){
 			///define another TChain to count the number of evts passing all offline cuts at GEN lvl (no HLT or ID)
 			TChain * genInfo = new TChain("genNuAnalyzerOne/genNu");
 			genInfo->Add(pfn.c_str());
-			TChain * afterOfflineCuts = new TChain("genMatchedParticleAnalyzerThree/genLeptonsAndJetsWithAllCuts");
+			TChain * afterOfflineCuts = new TChain("genMatchedParticleAnalyzerFive/genLeptonsAndJetsWithAllCuts");
 			afterOfflineCuts->Add(pfn.c_str());
 
 			///calculate percentage of evts which pass GEN cuts, and store this percentage along with the nu and wr mass values in a txt file
 			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries()/genInfo->GetEntries());
-			writeToEfficiencyFile << passingPercentage <<"\tpercent of events with WR mass=\t"<< wrMass <<"\tand Nu mass=\t"<< nuMass <<"\tpass all cuts"<< endl;
 			
+			writeToEfficiencyFile << wrMass <<"\t"<< nuMass <<"\t"<< passingPercentage << endl;
+	
 			///fill a bin in the 2D histo with a weight equal to passingPercentage
 			twoDimAcceptanceHist->Fill((Double_t) wrMass, (Double_t) nuMass,passingPercentage);
 			genInfo->Delete();

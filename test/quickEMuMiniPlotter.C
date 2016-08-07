@@ -27,9 +27,11 @@
 
 Selector::tag_t channel = Selector::EMu;
 
-/*
+/**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
- * data as points and all MC as one stacked histogram with several fill colors
+ * data as points and all MC as one stacked histogram with several fill colors.
+ *
+ * This macro should be used by itself on minitrees processed by analysis.cpp with -c EMu.
  *
  */
 
@@ -187,12 +189,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  for(Int_t j=1; j<=nBins; j++){
 		  //in each bin, divide the bin contents by the bin width
 		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
 		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
 		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
-
+ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
@@ -246,7 +250,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
-  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -266,19 +270,24 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);
-  if(fname.EqualTo("Mll") || fname.EqualTo("Mlljj") ){
+  if(fname.EqualTo("Mlljj") ){
 	  Float_t dataMCratio = (hs_data->Integral()/hs_ttbar->Integral());
 	  Float_t dataEntries = hs_data->GetEntries();
 	  Float_t mcEntries = (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());	///<temp fix
 	  //Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());	///<use this once DY emu is available
 	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
 	  std::cout<< "in EMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+	  std::cout<<" "<<std::endl;
+  	  std::cout<<"bin number\t"<< 6 <<"has data bin contents=\t" << hs_data->GetBinContent(6) <<" and bin error =\t"<< hs_data->GetBinError(6) << std::endl;
+  	  std::cout<<"bin number\t"<< 6 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(6) <<" and bin error =\t"<< hs_ttbar->GetBinError(6) << std::endl;
+	  std::cout<<"bin number\t"<< 7 <<"has data bin contents=\t" << hs_data->GetBinContent(7) <<" and bin error =\t"<< hs_data->GetBinError(7) << std::endl;
+  	  std::cout<<"bin number\t"<< 7 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(7) <<" and bin error =\t"<< hs_ttbar->GetBinError(7) << std::endl;
   }
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,1.5);
+  ratio->GetYaxis()->SetRangeUser(0.5,2.0);
   ratio->GetYaxis()->SetNdivisions(505);
   ratio->Draw("p");
   float xmax = ratio->GetXaxis()->GetXmax();
@@ -291,11 +300,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TString fn = fname + "_sidebandEMuChannelNoDyRescaledTTBarMCNoLLJJCut";
 
-  mycanvas->Print((fn+".pdf").Data());
-  mycanvas->Print((fn+".png").Data());
-  p1->SetLogy();
-  mycanvas->Print((fn+"_log.pdf").Data());
-  mycanvas->Print((fn+"_log.png").Data());
+  if(fname.EqualTo("Mlljj")){
+	  mycanvas->Print((fn+".pdf").Data());
+	  mycanvas->Print((fn+".png").Data());
+	  p1->SetLogy();
+	  mycanvas->Print((fn+"_log.pdf").Data());
+	  mycanvas->Print((fn+"_log.png").Data());
+  }
 
   mycanvas->Close();
 }

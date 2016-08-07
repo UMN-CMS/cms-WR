@@ -1,0 +1,35 @@
+/**
+\page _DYBKGND Estimate of the DY+Jets background using MC and collision data
+First the DY MC must be normalized to data in the dilepton mass distribution.  The DYtagandprobe
+sideband is used for this, and the scale factors are calculated automatically when the minitree
+validation script is run.  If the MC or collision data being analyzed was not collected in 2015 using
+74X, then the scale factors to correct for efficiency diffierences in the HEEP ID, electron trigger,
+and electron reco must be recomputed and updated in analysis.cpp.  Follow the instructions on the Tag
+and Probe tool twiki to estimate these SFs.  The inclusive (constant versus electron ET) SFs obtained
+from makeTree.py should be sufficient, but fitter.py should also be run to check the validity of each
+SF as a function of electron ET.  These SFs should only be applied to dytagandprobe events, as is
+currently setup in analysis.cpp.
+
+https://twiki.cern.ch/twiki/bin/view/CMSPublic/ElectronTagAndProbe
+
+Once the HLT, HEEP ID, and reco efficiency SFs have been updated, follow the instructions in \ref VALIDATIONSCRIPTS_
+to run the minitree validation script, and save the dilepton mass based DY MC scale factors.
+
+One the scale factors are calculated, process the optimal DY MC sample using analysis.cpp with
+signal region requirements and the MLL scale factors applied.  In 2015, the optimal DY MC sample
+was the amcnlo inclusive DYJetsToLL sample, and this sample is processed by analysis.cpp by executing:
+
+\verbatim
+cd cmsWR/
+voms-proxy-init --voms cms
+make
+./bin/analysis -c MuMu -m DYAMC --ignoreDyScaleFactors false >& dyAmcMuMuSignalRegion.txt &
+./bin/analysis -c EE -m DYAMC --ignoreDyScaleFactors false >& dyAmcEESignalRegion.txt &
+\endverbatim
+
+The two resulting .root files will have the four object mass distribution saved in a TTree named
+Tree_Iter0, in a branch named WR_mass.  The distribution of all WR_mass values is the DYJets
+background estimate.
+
+Go back to \ref index
+*/

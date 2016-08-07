@@ -216,7 +216,7 @@ int main(int ac, char* av[])
 	("saveToys", po::bool_switch(&saveToys)->default_value(false), "Save t1 tree vector for every toy iteration")
 	("outputDir,d", po::value<std::string>(&outDir)->default_value(""), "output dir for file with plotting trees")
 	("outputFileTag,f", po::value<std::string>(&outFileTag)->default_value(""), "tag name added to output file with plotting trees")
-	("ignoreDyScaleFactors", po::value<bool>(&ignoreDyScaleFactors)->default_value(true), "Ignore DyScaleFactors defined in configs directory")
+	("ignoreDyScaleFactors", po::value<bool>(&ignoreDyScaleFactors)->default_value(true), "Ignore DyScaleFactors defined in data directory")
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
@@ -291,7 +291,7 @@ int main(int ac, char* av[])
 	std::cout << "******************************* Analysis ******************************" << std::endl;
 	std::cout << "[WARNING] no weights associated to jets yet" << std::endl;
 
-	myReader.setupDyMllScaleFactor("configs/dyScaleFactors.txt");
+	myReader.setupDyMllScaleFactor("data/2015-v1/dyScaleFactors.txt");
 
 
 	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();

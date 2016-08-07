@@ -1,3 +1,7 @@
+###this script should not be run if no minitree files are stored in the directory indicated by prefix below
+###this script loops over all minitree files in a given directory, and all subdirectories, and prints the number of events
+###in each minitree to std out, along with the name of the dataset specified in configs/datasets.dat
+###this script can be run by itself, and is run automatically when scripts/wrValidation.sh is executed
 import ROOT
 import subprocess
 
