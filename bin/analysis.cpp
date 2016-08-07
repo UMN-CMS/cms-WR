@@ -200,6 +200,7 @@ int main(int ac, char* av[])
 	int signalN;
 	int seed;
 	bool makeSelectorPlots;
+	std::string inputFile;
 	// Declare the supported options.
 	po::options_description required("Mandatory command line options");
 	required.add_options()
@@ -224,6 +225,7 @@ int main(int ac, char* av[])
 	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
 	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
 	("cut_channel", po::value<std::string>(&channel_cut_str)->default_value(""), "if channel is EMu choose which Mass cut to apply")
+	("input", po::value<std::string>(&inputFile)->default_value(""), "input minitree file")
 	;
 
 	po::variables_map vm;
@@ -310,7 +312,14 @@ int main(int ac, char* av[])
 		if(isData) eSmearer.doScale = true;
 		else eSmearer.doSmearings = true;
 
-		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
+		TChain * c;
+		if(inputFile.size() == 0) {
+			c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
+		} else {
+			c = new TChain((treeName + "/t").c_str(), "");
+			c->Add(inputFile.c_str());
+			c->GetEntries();
+		}
 #ifdef DEBUG
 		c->Print();
 #endif
@@ -682,21 +691,19 @@ int main(int ac, char* av[])
 			}
 			delete hWR_mass;
 
-			if(loop_one) {
-				TString hist_name(mode + "_unweighted");
-				hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
+			TString hist_name(mode + "_unweighted");
+			hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
 
-				//Draw unweighted histogram
-				t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
-				for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
-					auto mass = mass_vec[massi];
-					auto range = mass_cut[std::make_pair(cut_channel, mass)];
-					float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
-					result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
-					std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
-				}
-				delete hWR_mass;
+			//Draw unweighted histogram
+			t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
+			for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
+				auto mass = mass_vec[massi];
+				auto range = mass_cut[std::make_pair(cut_channel, mass)];
+				float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
+				std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
 			}
+			delete hWR_mass;
 
 			f.cd();
 			if(saveToys) t1[i]->Write();

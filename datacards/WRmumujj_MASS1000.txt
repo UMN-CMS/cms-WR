@@ -2,16 +2,16 @@ imax 1  number of channels
 jmax 2  number of backgrounds
 kmax 6  number of nuisance parameters
 bin mumujj
-observation 300
+observation 293
 ------------
 bin    mumujj    mumujj    mumujj
 process  WR_mumujj  TTBar  DY  
 process  0  1  2
-rate  1.207  224  76.03  
+rate  1.206  223.2  69.54  
 ------------
 lumi       lnN        1.0270e+00 1.0270e+00 1.0270e+00
 TT_SF      lnN                 - 1.0149e+00          -
 DYAMC_SF   lnN                 -          - 1.0106e+00
-signal_unc gmN   2274 5.3081e-04          -          -
-TT_unc     gmN    266          - 8.4288e-01          -
-DYAMC_unc  gmN     13          -          - 6.0590e+00
+signal_unc gmN   2237 5.3924e-04          -          -
+TT_unc     gmN    265          - 8.4210e-01          -
+DYAMC_unc  gmN     11          -          - 6.4881e+00

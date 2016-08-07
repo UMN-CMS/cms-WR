@@ -4,7 +4,8 @@ from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
 import ROOT 
 
 class limit1d:
-	def __init__(self,xs=None):
+	def __init__(self,channel,xs=None):
+		self.channel = channel
 		self.plus1sig = []
 		self.min1sig = []
 		self.plus2sig = []
@@ -14,6 +15,7 @@ class limit1d:
 		self.masses = []
 		self.observed = []
 		self.theory = None
+		self.obslines = None
 		if xs is None:
 			xs = 1
 		self.xs = xs
@@ -29,10 +31,13 @@ class limit1d:
 		self.observed.append(float(point))
 	def addTheory(self, theory):
 		self.theory = theory
+	def addObsLines(self, obs):
+		self.obslines = obs
 
 	def plot(self, filename, x_title="", y_title="",
 			x_limits=(600,6000), y_limits=(1e-3, 1e-1), 
-			leg_x = .55, leg_y=.66, SetLogx=False):
+			leg_x = .55, leg_y=.66, leg_h=.32, SetLogx=False):
+
 		customROOTstyle()
 		#ROOT.gROOT.LoadMacro("scripts/tdrStyle.C")
 		c1 = ROOT.TCanvas("c1","c1",800,800);
@@ -68,12 +73,11 @@ class limit1d:
 		dummy.GetXaxis().SetTitle(x_title)
 		dummy.GetYaxis().SetTitle(y_title)
 
-		dummy.GetYaxis().SetTitleOffset(1.1)
+		dummy.GetYaxis().SetTitleOffset(1.2)
 		dummy.Draw("HIST")
 		leg_w = .44
-		leg_h = .21
 		leg = ROOT.TLegend(leg_x,leg_y,leg_x + leg_w, leg_y + leg_h)
-		latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
+		latex = ROOT.TLatex(leg_x + 0.02, leg_y + leg_h + 0.02, "M_{#scale[1.25]{N_{#scale[1.5]{%s}}}}= M_{#scale[1.25]{W_{R}}}/2" % self.channel);
 		latex.SetNDC();
 		latex.SetTextSize(0.032);
 		latex.SetTextFont(42);
@@ -134,6 +138,19 @@ class limit1d:
 		leg.AddEntry(g_twosig, "Expected #pm 2 #sigma", "F")
 		if self.theory:
 			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
+
+		if self.obslines:
+			lines = []
+			for i in range(len(self.obslines)):
+				obs = self.obslines[i]
+				print i, obs
+				line = ROOT.TLine(3800, obs*self.xs, 6000, obs*self.xs)
+				line.SetLineWidth(2)
+				line.SetLineStyle( [1, 9, 10][i % 3] )
+				line.Draw()
+				lines.append(line)
+				leg.AddEntry(line, "Observed = %d" % i, "L")
+
 		leg.Draw("same")
 
 

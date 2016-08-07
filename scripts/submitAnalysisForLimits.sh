@@ -3,8 +3,9 @@ logdir=$PWD/log
 mass_n=$(seq 1 25)
 
 queue=1nd
-tag=4000toys
-finaldir=/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/$tag/
+tag=$1
+dir=$2
+finaldir=$dir/$tag/
 
 for mass in $mass_n
 do

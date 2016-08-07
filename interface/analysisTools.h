@@ -36,13 +36,16 @@ std::vector<int> getMassVec()
 	std::ifstream ifs;
 	ifs.open("configs/mass_cuts.txt", std::ifstream::in);
 	std::string line;
-	std::string m;
+	std::string word;
 	while (std::getline(ifs, line)) {
 		if (line[0] == '#' || line.size() == 0) continue;
 		std::stringstream ss(line);
-		std::getline(ss, m, ' ');
-		std::getline(ss, m, ' ');
-		mass.push_back(std::stoi(m));
+		// check channel, only use ee.
+		std::getline(ss, word, ' ');
+		if (word == "EE") {
+			std::getline(ss, word, ' ');
+			mass.push_back(std::stoi(word));
+		}
 	}
 
 	return mass;

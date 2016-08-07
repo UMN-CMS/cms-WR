@@ -98,6 +98,11 @@ class AnalysisResultsInterface:
 			f = self.OpenFile(channel, process, MWR)
 			if not self.masses: self.GetMasses(f)
 			self.ProcessFile(key, f)
+			if "signal" in key:
+				zerokey = "_".join(key.split("_")[:2] + ["0"])
+				if zerokey not in self.results:
+					self.ProcessFile(zerokey, f)
+
 
 		mass_i = self.masses.index(MWR)
 
@@ -107,26 +112,42 @@ class AnalysisResultsInterface:
 		central_value      = self.results[key]["central"]["weighted"][mass_i]*scale
 		central_unweighted = self.results[key]["central"]["unweighted"][mass_i]
 
+		#averages of unweighted events over all toys
+		syst_unweighted = self.results[key]["syst"]["unweighted_mean"][mass_i]
+		#average of stat error for all toys
+		stat_err = self.results[key]["syst"]["stat_err"][mass_i]*scale
 
-		var = tmp_syst**2 + tmp_stat**2
+		if "signal" in key:
+			zerokey = "_".join(key.split("_")[:2] + ["0"])
+		else:
+			zerokey = key
+
+		global_ratio = self.results[zerokey]["syst"]["mean"][0]*scale/( self.results[zerokey]["syst"]["unweighted_mean"][0] + 1)
+		if syst_unweighted < 3:
+			stat_err = global_ratio*syst_unweighted
+
+		var = tmp_syst**2 + stat_err**2
 		if syst_mean > 0:
 			mean = syst_mean
 			alpha = var/mean
-			N = mean**2/var
-			if N < 1:
-				N = 0
+			N = mean**2/var - 1
+			rate = N*alpha
+			if N < 0:
 				mean = math.sqrt(var)
 				alpha = mean
+				rate = 0.0001
+				N = 0
 		elif syst_mean < 0:
 			mean = math.sqrt(var)
 			alpha = mean
-			N = 1
+			rate = 0.0001
+			N = 0
 		else:
 			N=0
-			alpha = self.results[key]["syst"]["mean"][0]*scale/( self.results[key]["central"]["unweighted"][0] + 1)
-			mean = .0001
+			alpha = global_ratio
+			rate = .0001
 
-		raw = [ syst_mean, mean, central_value, tmp_syst, tmp_stat, var, central_unweighted, ]
+		raw = [ syst_mean, rate, central_value, tmp_syst, stat_err,tmp_stat, var, syst_unweighted, ]
 		systematics.add(process, "lumi", 1.027)
 		raw += [1.027]
 
@@ -141,36 +162,41 @@ class AnalysisResultsInterface:
 
 		if "_800" == key[-4:]:
 			key = key[:-3] + "0800"
-		raw = ["%0.4f" % x for x in raw]
+		raw = ["%0.4e" % x for x in raw]
 		raw = ["raw", key, "%04d" % MWR] + raw
 		print " ".join(raw)
 
-		return mean
+		return rate
 
-	def getMeanStd(self, tree, fromFit=False):
+	def getMeanStd(self, tree, draw_str=None):
+		r.gROOT.SetBatch(True)
 		means = np.zeros(len(self.masses))
 		stds = np.zeros(len(self.masses))
-		if fromFit:
-			draw_str = "FitIntegralInRange[%d]*Normalization"
-		else:
+		if not draw_str:
 			draw_str = "NEventsInRange[%d]"
+			#draw_str = "FitIntegralInRange[%d]*Normalization"
 
 		if self.makeplots: c = r.TCanvas("c", "c", 600, 600)
 		for mass_i in range(len(self.masses)):
 			ms = str(self.masses[mass_i])
-			if "signal" in self.currentkey and self.currentkey.split("_")[2] != ms: continue
+			if "signal" in self.currentkey:
+				if (self.currentkey.split("_")[2] != ms) :
+					continue
+
 
 			tree.Draw(draw_str % mass_i, "", "goff")
 			h = r.gDirectory.Get("htemp")
 			means[mass_i] = h.GetMean()
 			stds[mass_i] = h.GetStdDev()
 
+			if ms == "0": print "debug", draw_str, self.currentkey, means
+
 			if self.makeplots:
 				r.gStyle.SetOptStat(1001110)
 				c.SetLogy()
 				h.SetTitle(self.currentkey + tree.GetName() + " Mass " + ms)
 				h.Draw()
-				c.SaveAs("plots/" + self.currentkey  + tree.GetName() + "_mass" + ms + ".png")
+				c.SaveAs("plots/" + self.currentkey  + tree.GetName() + "_" + draw_str % int(ms) + ".png")
 
 		return means, stds
 
@@ -182,6 +208,8 @@ class AnalysisResultsInterface:
 		if not tree or tree.GetEntries() == 0:
 			tree = f.Get("central_value_tree")
 		syst_means, syst_stds = self.getMeanStd(tree) 
+		syst_unweighted_means, __ = self.getMeanStd(tree, "UnweightedNEventsInRange[%d]")
+		stat_err, __              = self.getMeanStd(tree, "ErrorEventsInRange[%d]")
 
 		central_tree = f.Get("central_value_tree")
 		central_tree.GetEntry(0)
@@ -208,11 +236,15 @@ class AnalysisResultsInterface:
 			syst_stds *= scale
 			central_value *= scale
 			central_error *= scale
+			stat_err *= scale
+			
 
 		self.results[key] = {
 				"syst": {
 					"mean":syst_means.tolist(),
-					"std":syst_stds.tolist()
+					"std":syst_stds.tolist(),
+					"unweighted_mean": syst_unweighted_means.tolist(),
+					"stat_err": stat_err.tolist(),
 					},
 				"stat": central_error.tolist(),
 				"central": {

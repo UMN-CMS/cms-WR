@@ -4,11 +4,11 @@ import re
 import subprocess
 import sys
 
-tag, toys = sys.argv[1:]
-
 thisdir = os.getcwd()
-proddir = "/local/cms/user/phansen/limits/"
-proddir = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag
+#proddir = "/local/cms/user/phansen/limits/"
+#proddir = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag
+
+toys, proddir = sys.argv[1:]
 
 datacardfolder = thisdir + "/datacards/"
 datacards = os.listdir(datacardfolder)
@@ -31,7 +31,7 @@ for datacard in datacards:
 	datacard_file = datacardfolder + datacard
 
 	jobname = channel + "_" + MWR + "_"
-	systematics = False
+	systematics = True
 #TODO: Make hybrid new work for observed
 	if "Hybrid" in mode:
 		jobid = jobname + "EXPECTED"
