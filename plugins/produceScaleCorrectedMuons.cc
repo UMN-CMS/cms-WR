@@ -25,12 +25,13 @@ public:
 	float qter = 1.0;
 //        std::unique_ptr<pat::ObjectModifier<pat::Muon> > muonModifier;
 private:
-	const edm::InputTag src;	///<input particle objects
+	//const edm::InputTag src;	///<input particle objects
+	edm::EDGetToken srcToken_;
 	std::string outputCollName;     ///<label name of collection made by this producer
 };
 
 produceScaleCorrectedMuons::produceScaleCorrectedMuons(const edm::ParameterSet& cfg)
-	: src(cfg.getParameter<edm::InputTag>("src")),
+	: srcToken_ ( consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("src"))),
 	  outputCollName(cfg.getParameter<std::string>("OutputCollectionName"))
 {
 	produces <pat::MuonCollection>(outputCollName);
@@ -38,8 +39,8 @@ produceScaleCorrectedMuons::produceScaleCorrectedMuons(const edm::ParameterSet& 
 
 void produceScaleCorrectedMuons::produce(edm::Event& event, const edm::EventSetup& setup)
 {
-	edm::Handle<pat::MuonCollection> muons;
-	event.getByLabel(src, muons);
+	edm::Handle<edm::View<pat::Muon> > muons;
+	event.getByToken(srcToken_, muons);
 	std::auto_ptr<pat::MuonCollection> mus(new pat::MuonCollection);
 	rochcor2015 *rmcor = new rochcor2015();
 	for(auto mu : *muons) {

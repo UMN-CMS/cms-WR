@@ -4,6 +4,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "DataFormats/JetReco/interface/Jet.h"
 
 #include <TFile.h>
 #include <TH1F.h>
