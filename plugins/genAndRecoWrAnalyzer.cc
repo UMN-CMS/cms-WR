@@ -236,6 +236,12 @@ public:
 		dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl = -9;
 		dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = -9;
 
+		fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus = -9;
+		dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus = -9;
+		dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau = -9;
+		dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau = -9;
+		dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau = -9;
+		dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau = -9;
 
 	}///end resetTreeVars()
 
@@ -356,7 +362,14 @@ private:
 	Float_t ptLeadRecoJet, etaLeadRecoJet, phiLeadRecoJet;
 	Float_t ptSubleadRecoJet, etaSubleadRecoJet, phiSubleadRecoJet;
 
-
+	///dilepton mass, dR btwn reco leptons and jets, and four obj mass using reco leptons and jets matched to GEN partners produced by WR decay
+	Float_t fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus;
+	Float_t dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus;
+	Float_t dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau;
+	Float_t dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau;
+	Float_t dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau;
+	Float_t dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau;
+	
 };
 
 //
@@ -501,7 +514,17 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 		tree->Branch("ptSubleadRecoJet", &ptSubleadRecoJet, "ptSubleadRecoJet/F");
 		tree->Branch("etaSubleadRecoJet", &etaSubleadRecoJet, "etaSubleadRecoJet/F");
 		tree->Branch("phiSubleadRecoJet", &phiSubleadRecoJet, "phiSubleadRecoJet/F");
-
+		
+	
+		//dilepton mass, dR btwn leptons and jets, and four object mass using reco leptons and jets matched to GEN WR and Nu daughters
+		tree->Branch("fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus", &fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus, "fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus/F");
+		tree->Branch("dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus", &dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus, "dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus/F");
+		tree->Branch("dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau", &dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau, "dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau/F");
+		tree->Branch("dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau", &dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau, "dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau/F");
+		tree->Branch("dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau", &dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau, "dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau/F");
+		tree->Branch("dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau", &dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau, "dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau/F");
+		
+		
 		recoJetCollectionToken = consumes<std::vector<pat::Jet> >(iConfig.getParameter<edm::InputTag>("recoJetCollection"));
 		recoLeptonCollectionToken = consumes<reco::CandidateView>(iConfig.getParameter<edm::InputTag>("recoLeptonCollection"));
 	}
@@ -753,6 +776,9 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		//std::vector<pat::Jet>::const_iterator recoJetOneFromScdHvyPtcl = recoJetCollection->end(), recoJetTwoFromScdHvyPtcl = recoJetCollection->end();
 		Bool_t filledFirstMatchedRecoJet = false;
 
+		///TLorentzVectors for matched reco leptons and jets
+		TLorentzVector recoLeptMatchedToGenWrDauLept, recoLeptMatchedToGenNuDauLept, recoJetOneMatchedToGenNuDauQrk, recoJetTwoMatchedToGenNuDauQrk;
+
 		for(std::vector<pat::Jet>::const_iterator it = recoJetCollection->begin(); it != recoJetCollection->end(); it++) {
 #ifdef DEBUG
 			std::cout << "in loop over recoJetCollection objs" << std::endl;
@@ -767,6 +793,8 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 #endif
 				if(filledFirstMatchedRecoJet) {
 					ptRecoJetTwoMatchedToNuDau = it->pt(), etaRecoJetTwoMatchedToNuDau = it->eta(), phiRecoJetTwoMatchedToNuDau = it->phi();
+					recoJetTwoMatchedToGenNuDauQrk.SetPtEtaPhiM(it->pt(), it->eta(), it->phi(), it->mass());
+				
 #ifdef DEBUG
 					std::cout << "about to access gen jet matched to second reco jet and gen quark" << std::endl;
 #endif
@@ -778,6 +806,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 				if(!filledFirstMatchedRecoJet) {
 					filledFirstMatchedRecoJet = true;
 					ptRecoJetOneMatchedToNuDau = it->pt(), etaRecoJetOneMatchedToNuDau = it->eta(), phiRecoJetOneMatchedToNuDau = it->phi();
+					recoJetOneMatchedToGenNuDauQrk.SetPtEtaPhiM(it->pt(), it->eta(), it->phi(), it->mass());
 #ifdef DEBUG
 					std::cout << "about to access gen jet matched to first reco jet and gen quark" << std::endl;
 #endif
@@ -795,10 +824,12 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 			if(it->genLepton() == NULL) continue;
 			if(std::fabs( (it->genLepton()->mother(0))->pdgId() ) == (Int_t) _secondHeavyParticlePdgId && std::fabs( it->genLepton()->pdgId() ) == (Int_t) _leptonPdgId) {
 				ptRecoLeptMatchedToNuDau = it->pt(), etaRecoLeptMatchedToNuDau = it->eta(), phiRecoLeptMatchedToNuDau = it->phi();
+				recoLeptMatchedToGenNuDauLept.SetPtEtaPhiM(it->pt(), it->eta(), it->phi(), it->mass());
 			}//end reco lepton matched to Nu daughter lepton
 
 			if(std::fabs( (it->genLepton()->mother(0))->pdgId() ) == (Int_t) _firstHeavyParticlePdgId && std::fabs( it->genLepton()->pdgId() ) == (Int_t) _leptonPdgId) {
 				ptRecoLeptMatchedToWrDau = it->pt(), etaRecoLeptMatchedToWrDau = it->eta(), phiRecoLeptMatchedToWrDau = it->phi();
+				recoLeptMatchedToGenWrDauLept.SetPtEtaPhiM(it->pt(), it->eta(), it->phi(), it->mass());
 			}//end reco lepton matched to WR daughter lepton
 		}///end loop over reco lepton collection
 
@@ -828,6 +859,13 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		ptSubleadRecoJet = recoSubleadJet->pt(), etaSubleadRecoJet = recoSubleadJet->eta(), phiSubleadRecoJet = recoSubleadJet->phi();
 
 	}///end filling matched RECO branches
+	
+	fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus = (recoLeptMatchedToGenWrDauLept + recoLeptMatchedToGenNuDauLept + recoJetOneMatchedToGenNuDauQrk + recoJetTwoMatchedToGenNuDauQrk).M();
+	dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus = (recoLeptMatchedToGenWrDauLept + recoLeptMatchedToGenNuDauLept).M();
+	dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToWrDau, phiRecoLeptMatchedToWrDau, etaRecoJetOneMatchedToNuDau, phiRecoJetOneMatchedToNuDau);
+	dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToWrDau, phiRecoLeptMatchedToWrDau, etaRecoJetTwoMatchedToNuDau, phiRecoJetTwoMatchedToNuDau);
+	dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToNuDau, phiRecoLeptMatchedToNuDau, etaRecoJetOneMatchedToNuDau, phiRecoJetOneMatchedToNuDau);
+	dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToNuDau, phiRecoLeptMatchedToNuDau, etaRecoJetTwoMatchedToNuDau, phiRecoJetTwoMatchedToNuDau);
 
 	tree->Fill();
 
