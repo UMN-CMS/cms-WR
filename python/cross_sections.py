@@ -1,25 +1,37 @@
 from os import environ
 folder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR"
 
-datasetsfile = open(folder + "/configs/datasets.dat")
 
 WR_eejj = {}
 WR_mumujj = {}
 
 WR_jj = {"ee":WR_eejj, "mumu":WR_mumujj}
 
-for line in datasetsfile:
-	line = line.split()
-	name = line[0]
-	namesplit = name.split("_")
-	if len(namesplit) != 3: continue
-	channel, MWR, MHNu, = namesplit
-	if channel == "WRtoEEJJ":
-		xs = float(line[2])
-		WR_eejj[int(MWR)] = xs
-	elif channel == "WRtoMuMuJJ":
-		xs = float(line[2])
-		WR_mumujj[int(MWR)] = xs
+with open(folder + "/configs/datasets.dat") as datasetsfile:
+	for line in datasetsfile:
+		line = line.split()
+		name = line[0]
+		namesplit = name.split("_")
+		if len(namesplit) != 3: continue
+		channel, MWR, MHNu, = namesplit
+		if channel == "WRtoEEJJ":
+			xs = float(line[2])
+			WR_eejj[int(MWR)] = xs
+		elif channel == "WRtoMuMuJJ":
+			xs = float(line[2])
+			WR_mumujj[int(MWR)] = xs
+
+WR_eejj_offdiagonal = {}
+WR_mumujj_offdiagonal = {}
+WR_jj_offdiagonal = {"ee":WR_eejj_offdiagonal, "mumu":WR_mumujj_offdiagonal}
+
+with open(folder + "/data/crosssections.txt","r") as xsfile:
+	for line in xsfile:
+		line = line.strip()
+		if line[0] == "#": continue
+		ch, mwr, mnu, xs, xs_err = line.split()
+		WR_jj_offdiagonal[ch][(int(mwr),int(mnu))] = float(xs)
+
 
 #WR_eejj = {
 #800 :3.65,

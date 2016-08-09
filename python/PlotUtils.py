@@ -147,3 +147,16 @@ def drawMultipleSame(hists,labels,filename,colors=[], width = 500, height = 500,
 
     leg.Draw()
     canv.SaveAs(filename)
+
+
+def ave(a):
+	return sum(a)/len(a)
+
+def ave_tuple(a,b):
+	ret = ()
+	for x in zip(a,b):
+		try:
+			ret += (ave(x),)
+		except TypeError:
+			ret += (ave_tuple(*x),)
+	return ret
