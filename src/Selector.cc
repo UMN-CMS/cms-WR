@@ -336,22 +336,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 bool Selector::isPassing(tag_t tag, bool makeHists)
 {
 
-	/*
-	enum det_t {
-		DET_ENDCAP,
-		DET_BARREL,
-		DET_GAP,
-	} lead_det, sublead_det;
 
-	enum pair_t {
-		P_EE,
-		P_BB,
-		P_EB,
-		P_GAP,
-	} pair;
-	*/
-
-	_isPassing = false;
+	_isPassing = true;
 	WR_mass = -1, lead_lepton_r9 = -1, sublead_lepton_r9 = -1;
 	TLorentzVector lead_lepton_p4, sublead_lepton_p4, lead_jet_p4, sublead_jet_p4;
 	lead_lepton_IDSF_error = -9;
@@ -376,6 +362,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	goodEles(&electrons, &gEles);
 	goodMuons(&muons, &gMuons);
 
+
 	std::sort(gJets.begin(), gJets.end(),
 	[](myJet const & a, myJet const & b) {
 		return a.p4.Pt() > b.p4.Pt();
@@ -393,35 +380,34 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	electrons = gEles;
 	muons = gMuons;
 
-	//if (makeHists) sel::hists("njets", 10, 0, 10)->Fill(jets.size());
-	// Assert at least 2 good jets
-	if(jets.size() < 2) {
-		return false;
-	}
-	//if (makeHists) sel::hists("njets_cut", 10, 0, 10)->Fill(jets.size());
-
 	njets = jets.size();
+	// Assert at least 2 good jets
 
-	lead_jet_pt = jets[0].p4.Pt();
-	lead_jet_eta = jets[0].p4.Eta();
-	lead_jet_phi = jets[0].p4.Phi();
-	lead_jet_weight = 1.0;
-	sublead_jet_weight = 1.0;
-	lead_jet_jec_unc = jets[0].jec_uncertainty;
-	sublead_jet_jec_unc = jets[1].jec_uncertainty;
+	if(makeHists) sel::hists("njets", 10, 0, 10)->Fill(jets.size());
 
-	sublead_jet_pt = jets[1].p4.Pt();
-	sublead_jet_eta = jets[1].p4.Eta();
-	sublead_jet_phi = jets[1].p4.Phi();
-	lead_jet_weight = 1.0;
+	_isPassing &= njets >= 2;
+	if(!_isPassing) return false;
+	else {
+		if(makeHists) sel::hists("njets_cut", 10, 0, 10)->Fill(jets.size());
+		lead_jet_pt = jets[0].p4.Pt();
+		lead_jet_eta = jets[0].p4.Eta();
+		lead_jet_phi = jets[0].p4.Phi();
+		lead_jet_weight = 1.0;
+		sublead_jet_weight = 1.0;
+		lead_jet_jec_unc = jets[0].jec_uncertainty;
+		sublead_jet_jec_unc = jets[1].jec_uncertainty;
 
+		sublead_jet_pt = jets[1].p4.Pt();
+		sublead_jet_eta = jets[1].p4.Eta();
+		sublead_jet_phi = jets[1].p4.Phi();
+		lead_jet_weight = 1.0;
+	}
 	if(tag == EE) { // EEJJ Channel
 		// Assert at least 2 good leptons
-		//if (makeHists) sel::hists("nlep", 10, 0, 10)->Fill(electrons.size());
-		if(electrons.size() < 2) {
-			return false;
-		}
-		//if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(electrons.size());
+		_isPassing &= electrons.size() >= 2;
+		if(makeHists) sel::hists("nelectrons", 10, 0, 10)->Fill(electrons.size());
+		if(!_isPassing) return false;
+		if(makeHists) sel::hists("nelectrons_cut", 10, 0, 10)->Fill(electrons.size());
 
 		lead_lepton_p4 = electrons[0].p4;
 		sublead_lepton_p4 = electrons[1].p4;
@@ -445,11 +431,10 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		sublead_lepton_r9 = electrons[1].r9;
 	} else if(tag == MuMu) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
-		//if (makeHists) sel::hists("nlep", 10, 0, 10)->Fill(muons.size());
-		if(muons.size() < 2) {
-			return false;
-		}
-		//if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(muons.size());
+		_isPassing &= muons.size() >= 2;
+		if(makeHists) sel::hists("nmuons", 10, 0, 10)->Fill(muons.size());
+		if(!_isPassing) return false;
+		if(makeHists) sel::hists("nmuons_cut", 10, 0, 10)->Fill(muons.size());
 
 		lead_lepton_p4 = muons[0].p4;
 		sublead_lepton_p4 = muons[1].p4;
@@ -465,11 +450,11 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 	} else if(tag == EMu) { // EMuJJ Channel
 		// Assert at least 2 good leptons
-		//if (makeHists) sel::hists("nlep", 10, 0, 10)->Fill(muons.size() + electrons.size());
-		if(electrons.size() < 1 || muons.size() < 1) {
-			return false;
-		}
-		//if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(muons.size() + electrons.size());
+		_isPassing &= !(electrons.size() < 1 || muons.size() < 1);
+
+		if(makeHists) sel::hists("nlepts", 10, 0, 10)->Fill(electrons.size() + muons.size());
+		if(!_isPassing) return false;
+		if(makeHists) sel::hists("nlepts_cut", 10, 0, 10)->Fill(electrons.size() + muons.size());
 
 //////////////////////////////////////////////////////
 
@@ -511,42 +496,34 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			sublead_lepton_r9 = electrons[0].r9;
 		}
 	}
-	/*
-	if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
-	else if(fabs(lead_lepton_p4.Eta()) > 1.4222) lead_det = DET_GAP;
-	else lead_det = DET_BARREL;
-	if(fabs(sublead_lepton_p4.Eta()) > 1.566) sublead_det = DET_ENDCAP;
-	else if(fabs(sublead_lepton_p4.Eta()) > 1.4222) sublead_det = DET_GAP;
-	else sublead_det = DET_BARREL;
-
-	if(lead_det == DET_GAP || sublead_det == DET_GAP) pair = P_GAP;
-	else if( lead_det == DET_BARREL && sublead_det == DET_BARREL) pair = P_BB;
-	else if( lead_det == DET_ENDCAP && sublead_det == DET_ENDCAP) pair = P_EE;
-	else pair = P_EB;
-	*/
 
 	// check eta and pt cuts
-	//if (makeHists) sel::hists("lead_lepton_pt", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
-	if(lead_lepton_p4.Pt() < 60) return false;
-	//if (makeHists) sel::hists("lead_lepton_pt_cut", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
-	//if (makeHists) sel::hists("sublead_lepton_pt", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
-	if(sublead_lepton_p4.Pt() < 50) return false;
-	//if (makeHists) sel::hists("sublead_lepton_pt_cut", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
 
-	//if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[0].p4));
-	//if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[1].p4));
-	//if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(sublead_lepton_p4, gJets[0].p4));
-	//if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(sublead_lepton_p4, gJets[1].p4));
-	//if (makeHists) sel::hists("dr_count", 1, 0, 1)->Fill(0);
-	if(dR_TLV(lead_lepton_p4, gJets[0].p4) < 0.4) return false;
-	if(dR_TLV(lead_lepton_p4, gJets[1].p4) < 0.4) return false;
-	if(dR_TLV(sublead_lepton_p4, gJets[0].p4) < 0.4) return false;
-	if(dR_TLV(sublead_lepton_p4, gJets[1].p4) < 0.4) return false;
-	//if (makeHists) sel::hists("dr_cut", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[0].p4));
-	//if (makeHists) sel::hists("dr_cut", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[1].p4));
-	//if (makeHists) sel::hists("dr_cut", 100, 0, 5)->Fill(dR_TLV(sublead_lepton_p4, gJets[0].p4));
-	//if (makeHists) sel::hists("dr_cut", 100, 0, 5)->Fill(dR_TLV(sublead_lepton_p4, gJets[1].p4));
-	//if (makeHists) sel::hists("dr_count_cut", 1, 0, 1)->Fill(0);
+
+	_isPassing &= !(lead_lepton_p4.Pt() < 60);
+	if(!(makeHists || _isPassing)) return false;
+	if(makeHists) sel::hists("leadlepton_pt", 100, 0, 200, lead_lepton_p4.Pt(), !(lead_lepton_p4.Pt() < 60));
+
+	_isPassing &= !(sublead_lepton_p4.Pt() < 60);
+	if(!(makeHists || _isPassing)) return false;
+	if(makeHists) sel::hists("subleadlepton_pt", 100, 0, 200, sublead_lepton_p4.Pt(), !(sublead_lepton_p4.Pt() < 60));
+
+	float dR;
+	dR = dR_TLV(lead_lepton_p4, gJets[0].p4);
+	_isPassing &= !(dR < .4);
+	if(makeHists) sel::hists("leadlepton_leadjet_dR", 100, 0, 5, dR, !(dR < .4));
+	dR = dR_TLV(lead_lepton_p4, gJets[1].p4);
+	_isPassing &= !(dR < .4);
+	if(makeHists) sel::hists("leadlepton_subleadjet_dR", 100, 0, 5, dR, !(dR < .4));
+	dR = dR_TLV(sublead_lepton_p4, gJets[0].p4);
+	_isPassing &= !(dR < .4);
+	if(makeHists) sel::hists("subleadlepton_leadjet_dR", 100, 0, 5, dR, !(dR < .4));
+	dR = dR_TLV(sublead_lepton_p4, gJets[1].p4);
+	_isPassing &= !(dR < .4);
+	if(makeHists) sel::hists("subleadlepton_subleadjet_dR", 100, 0, 5, dR, !(dR < .4));
+
+
+	if(!(makeHists || _isPassing)) return false;
 
 	dR_leadlepton_leadjet = dR_TLV(lead_lepton_p4, jets[0].p4);
 	dR_subleadlepton_leadjet = dR_TLV(sublead_lepton_p4, jets[0].p4);
@@ -571,55 +548,61 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	pu_weight = fabs(global_event_weight);
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
-	/*
+
 	if (makeHists) {
+		enum det_t {
+			DET_ENDCAP,
+			DET_BARREL,
+			DET_GAP,
+		} lead_det, sublead_det;
+
+		enum pair_t {
+			P_EE,
+			P_BB,
+			P_EB,
+			P_GAP,
+		} pair;
+		if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
+		else if(fabs(lead_lepton_p4.Eta()) > 1.4222) lead_det = DET_GAP;
+		else lead_det = DET_BARREL;
+		if(fabs(sublead_lepton_p4.Eta()) > 1.566) sublead_det = DET_ENDCAP;
+		else if(fabs(sublead_lepton_p4.Eta()) > 1.4222) sublead_det = DET_GAP;
+		else sublead_det = DET_BARREL;
+
+		if(lead_det == DET_GAP || sublead_det == DET_GAP) pair = P_GAP;
+		else if( lead_det == DET_BARREL && sublead_det == DET_BARREL) pair = P_BB;
+		else if( lead_det == DET_ENDCAP && sublead_det == DET_ENDCAP) pair = P_EE;
+		else pair = P_EB;
 		sel::hists("global", 4, 0, 4)->Fill(int(pair));
 		if(pair == P_EE) sel::hists("global_EE", 1, 0, 1)->Fill(0);
 		if(pair == P_BB) sel::hists("global_BB", 1, 0, 1)->Fill(0);
 		if(pair == P_EB) sel::hists("global_EB", 1, 0, 1)->Fill(0);
 		if(pair == P_GAP)  sel::hists("global_GAP", 1, 0, 1)->Fill(0);
 	}
-	*/
-	_isPassing = true;
+	sel::hists.FillNMinusOnes();
 	return _isPassing;
 
 }
 
 bool Selector::isPassingPreselect(bool makeHists)
 {
+	// If we are going to make n-1 plots don't perform preselect
+	if(makeHists) return true;
 	int l54 = 0;
 	int l44 = 0;
 	int j30 = 0;
 	for(auto ele : electrons) {
-		//if (makeHists) sel::hists("preselect_ele_pt", 100, 0, 200)->Fill(ele.p4.Pt());
 		if(ele.p4.Pt() > 54) l54 += 1;
 		if(ele.p4.Pt() > 44) l44 += 1;
-		//if(!makeHists && l54 >= 1 && l44 >= 2) break;
 	}
 	for(auto mu : muons) {
-		//if (makeHists) sel::hists("preselect_mu_pt", 100, 0, 200)->Fill(mu.p4.Pt());
 		if(mu.p4.Pt() > 54) l54 += 1;
 		if(mu.p4.Pt() > 44) l44 += 1;
-		//if(!makeHists && l54 >= 1 && l44 >= 2) break;
 	}
 	for(auto jet : jets) {
-		//if (makeHists) sel::hists("preselect_jet_pt", 100, 0, 200)->Fill(jet.p4.Pt());
 		if(jet.p4.Pt() > 30) j30 += 1;
-		//if(!makeHists && j30 >= 2) break;
 	}
-	//if (makeHists) sel::hists("preselect_count", 1, 0, 1)->Fill(0);
 	bool passes = ( l54 >= 1 && l44 >= 2 && j30 >= 2);
-	/*
-	if (passes && makeHists) {
-		sel::hists("preselect_count_cut", 1, 0, 1)->Fill(0);
-		for(auto ele : electrons)
-			sel::hists("preselect_ele_pt_cut", 100, 0, 200)->Fill(ele.p4.Pt());
-		for(auto mu : muons)
-			sel::hists("preselect_mu_pt_cut", 100, 0, 200)->Fill(mu.p4.Pt());
-		for(auto jet : jets)
-			sel::hists("preselect_jet_pt_cut", 100, 0, 200)->Fill(jet.p4.Pt());
-	}
-	*/
 	return passes;
 }
 
