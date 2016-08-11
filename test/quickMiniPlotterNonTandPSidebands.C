@@ -28,13 +28,13 @@
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, simply search for all instances of EE, and replace them with MuMu
 //BELOW THIS LINE
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
  * data as points and all MC as one stacked histogram with several fill colors.
  *
- * This macro should be used by itself on minitrees which have been processed with analysis.cpp, -c EE
+ * This macro should be used by itself on minitrees which have been processed with analysis.cpp, -c MuMu
  * or MuMu, and --isLowDiLepton true.
  *
  */
@@ -53,15 +53,15 @@ void quickMiniPlotterNonTandPSidebands(){
  
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
-  case Selector::EE:
-    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
-    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandEE_withMllWeight.root");
-	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandEE.root");
+  case Selector::MuMu:
+    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
+	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
     //tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
-	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandEE.root");
-    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandEE.root");
-    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandEE.root");
-    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandEE.root");
+	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
+    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
+    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandMuMu.root");
+    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -301,7 +301,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  Float_t dataEntries = hs_data->GetEntries();
 	  Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());
 	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
-	  std::cout<< "in EE channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
   }
 
   ratio->Divide(hs_DY);
@@ -320,12 +320,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
 
   TString fn = "";
-  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyAmc";	//for ratio plot
-  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";	//for ratio plot
-  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonEEChannelDyMadHt";	//for ratio plot
-  //fn = fname + "_noRatio_variablebinwidths_lowdileptonEEChannelDyAmc";	//only needed when no ratio plot is drawn
-  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonEEChannelDyMadHt";	//for ratio plot
-  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonEEChannelDyAmc";	//for ratio plot
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
+  //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
  
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
