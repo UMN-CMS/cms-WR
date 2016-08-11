@@ -38,7 +38,7 @@
 #define _ENDSTRING std::string::npos
 //#define DEBUG
 //#define DEBUGG
-//process only 50000 events when DEBUGG is defined
+//process a small number of events when DEBUGG is defined
 
 /**
 TT
@@ -348,7 +348,7 @@ int main(int ac, char* av[])
 		TTree * tDyCheck = new TTree("treeDyCheck", "");
 		ULong64_t nEntries = c->GetEntries();
 #ifdef DEBUGG
-		nEntries = 500;
+		nEntries = 5000;
 #endif
 
 		TRandom3 Rand;
@@ -785,8 +785,8 @@ int main(int ac, char* av[])
 			// fill the tree with the normalization, parameters, and errors
 			if(loop_one) {
 				central_value_tree->Fill();
-				sel::hists.PrintEntries("plots/", mode);
-				sel::hists.Draw("plots/", mode);
+				sel::hists.PrintEntries("plots", mode);
+				sel::hists.Draw("plots", mode);
 				sel::hists.Clear();
 			} else syst_tree->Fill();
 
