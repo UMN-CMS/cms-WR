@@ -80,7 +80,7 @@ void printSystStdDevToFile(){
 
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
-	int wrMassPoints[] = {1000,1600,2200,2800,3600};
+	int wrMassPoints[] = {800,1000,1600,2200,2800,3600};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -88,10 +88,10 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/"};
-	string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso"};
-	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/"};
-	//string uncertTagNames[] = {"only jet energy scale smearing","only electron energy scale smearing"};
+	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/"};
+	//string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso"};
+	string relDirPaths[] = {"3200toysAllSyst/"};
+	string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
@@ -102,7 +102,7 @@ void printSystStdDevToFile(){
 	string pathToSystUncOutputFile = "systAndStatUncertaintiesFromAnalysisCpp.txt";
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
-	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert"<< endl;
+	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tsyst and stat uncert percent"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -147,8 +147,23 @@ void printSystStdDevToFile(){
 				chainPointers["MuMuWR"] = wrMuMu;
 			}
 
+			else{
+				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
+				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
+				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
+				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + eeChannelInFileNames +".root" ).c_str() );
+				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
+				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
+				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers["MuMuWR"] = wrMuMu;
+				chainPointers["EEDY"] = dyEE;
+				chainPointers["EEWR"] = wrEE;
+			}
+
 #ifdef DEBUG
-			cout<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\t stat uncert"<< endl;
+			cout<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\t stat uncert\tsyst and stat uncert percent"<< endl;
 #endif
 
 			for(map<string,TChain*>::const_iterator chMapIt=chainPointers.begin(); chMapIt!=chainPointers.end(); chMapIt++){
@@ -165,11 +180,11 @@ void printSystStdDevToFile(){
 				TH1F* statUncTempHist = (TH1F*) gROOT->FindObject(statUncHistName.c_str());
 				Double_t statUnc = statUncTempHist->GetMean();
 #ifdef DEBUG
-				cout<< wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t"<< mean << "\t" << stdDev << "\t"<< statUnc << endl;
+				cout<< wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t"<< mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << endl;
 				cout<<"index used in NEventsInRange and ErrorEventsInRange=\t"<< nEventsIndex <<endl;
 				cout<<"\t"<<endl;
 #endif
-				writeToSystFile << wrMassVect[m] << "  &  "<< chMapIt->first << "  &  " << uncertTagNamesVect[s] << "  &  " << mean << "  &  " << stdDev << "  &  "<< statUnc << "  DBLSLSH"<< endl;
+				writeToSystFile << wrMassVect[m] << "  &  "<< chMapIt->first << "  &  " << uncertTagNamesVect[s] << "  &  " << mean << "  &  " << stdDev << "  &  "<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << "  DBLSLSH"<< endl;
 			}//end loop over TChains
 
 			//loop over chainPointers elements, and clear allocated memory
