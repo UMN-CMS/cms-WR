@@ -39,6 +39,7 @@ genMuChnlGenJetsNoMatchingSequence = cms.Sequence(
 		bareGenMu*bareGenMuFilter
 		*bareGenJet*bareGenJetFilter
 		)
+genJetSeq = cms.Sequence(bareGenJet*bareGenJetFilter)
 ##end modules and sequence for selecting gen leptons and gen jets without mother requirements
 
 ##############################################################################################
@@ -101,13 +102,18 @@ matchedGenMuAndQuarkFromTTBarSeq = cms.Sequence(
 ##the gen jets are dR matched to the gen quarks which come from the TTBar decay chain
 matchedGenJetFromTTBar = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedGenJetsNoCuts"),
-		dRforMatching = cms.double(0.6),
+		dRforMatching = cms.double(0.4),
 		treeName = cms.string("matchedGenJetsNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("matchedGenQuarkFromTTBar"),
 		higherLevelCollTag = cms.InputTag("bareGenJet")
 		)
 
-matchedGenJetFromTTBarFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenJetFromTTBar"))
+matchedGenJetFromTTBarFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchedGenJetFromTTBar","matchedGenJetsNoCuts"),
+		minNumber = cms.uint32(1)
+		)
+
+matchedGenJetSeq = cms.Sequence(matchedGenJetFromTTBar*matchedGenJetFromTTBarFilter)
 
 condenseMatchedGenJetCollName = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("matchedGenJetFromTTBar","matchedGenJetsNoCuts"),
@@ -115,17 +121,13 @@ condenseMatchedGenJetCollName = cms.EDFilter("CandViewSelector",
 		)
 condenseMatchedGenJetCollNameFilter = bareGenEleFilter.clone(src = cms.InputTag("condenseMatchedGenJetCollName"))
 
-matchedGenEleAndJetFromTTBarSeq = cms.Sequence(
-		matchedGenEleAndQuarkFromTTBarSeq
-		*matchedGenJetFromTTBar*matchedGenJetFromTTBarFilter
-		*condenseMatchedGenJetCollName*condenseMatchedGenJetCollNameFilter
-		)
+condenseGenJetTTBarSeq = cms.Sequence(condenseMatchedGenJetCollName*condenseMatchedGenJetCollNameFilter)
 
-matchedGenMuAndJetFromTTBarSeq = cms.Sequence(
-		matchedGenMuAndQuarkFromTTBarSeq
-		*matchedGenJetFromTTBar*matchedGenJetFromTTBarFilter
-		*condenseMatchedGenJetCollName*condenseMatchedGenJetCollNameFilter
-		)
+#matchedGenJetFromTTBarSeq = cms.Sequence(
+#		bareGenJet*bareGenJetFilter
+#		*matchedGenJetFromTTBar*matchedGenJetFromTTBarFilter
+#		*condenseMatchedGenJetCollName*condenseMatchedGenJetCollNameFilter
+#		)
 ##end modules and sequences for selecting gen leptons and gen jets with mother requirements
 
 

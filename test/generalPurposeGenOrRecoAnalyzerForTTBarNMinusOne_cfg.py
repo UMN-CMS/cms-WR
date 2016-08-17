@@ -20,7 +20,7 @@ loadHEEPIDSelector(process)
 process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('standard') 
@@ -78,6 +78,7 @@ process.analyzerThree = process.analyzerOne.clone(
 #gen jets and leptons with GEN mother requirements
 process.analyzerFour = process.analyzerTwo.clone(
 		treeName = cms.string("genKinematicsUsingGenJetsWithGenMotherRequirements"),
+		inputHadronsAreQuarks = cms.bool(False),
 		hadronCollection = cms.InputTag("condenseMatchedGenJetCollName"),
 		)
 
@@ -107,7 +108,12 @@ if (options.channel=='EE'):
 	process.analyzeWRdecayGenQuarksWithoutMatching = cms.Path(process.genEleChnlGenQuarksNoMatchingSequence*process.analyzerOne)
 	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenEleAndQuarkFromTTBarSeq*process.analyzerTwo)
 	process.analyzeWRdecayGenJetsWithoutMatching = cms.Path(process.genEleChnlGenJetsNoMatchingSequence*process.analyzerThree)
-	process.analyzeWRdecayGenJetsWithMatching = cms.Path(process.matchedGenEleAndJetFromTTBarSeq*process.analyzerFour)
+	process.analyzeWRdecayGenJetsWithMatching = cms.Path(
+			process.matchedGenEleAndQuarkFromTTBarSeq
+			*process.genJetSeq
+			*process.matchedGenJetSeq
+			*process.condenseGenJetTTBarSeq
+			*process.analyzerFour)
 
 #
 if (options.channel=='MuMu'):
@@ -115,7 +121,12 @@ if (options.channel=='MuMu'):
 	process.analyzeWRdecayGenQuarksWithoutMatching = cms.Path(process.genMuChnlGenQuarksNoMatchingSequence*process.analyzerOne)
 	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenMuAndQuarkFromTTBarSeq*process.analyzerTwo)
 	process.analyzeWRdecayGenJetsWithoutMatching = cms.Path(process.genMuChnlGenJetsNoMatchingSequence*process.analyzerThree)
-	process.analyzeWRdecayGenJetsWithMatching = cms.Path(process.matchedGenMuAndJetFromTTBarSeq*process.analyzerFour)
+	process.analyzeWRdecayGenJetsWithMatching = cms.Path(
+			process.matchedGenMuAndQuarkFromTTBarSeq
+			*process.genJetSeq
+			*process.matchedGenJetSeq
+			*process.condenseGenJetTTBarSeq
+			*process.analyzerFour)
 
 #
 #process.schedule = cms.Schedule(process.analyzeWRdecay)
