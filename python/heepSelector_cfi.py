@@ -24,7 +24,7 @@ HEEPIDFilter = cms.EDFilter("CandViewCountFilter",
 		minNumber = cms.uint32(2)
 		)
 
-#HEEPIDSequence = cms.Sequence(egmGsfElectronIDSequence ) #PIDSelector * HEEPIDFilter)
+HEEPIDSequence = cms.Sequence(HEEPIDSelector * HEEPIDFilter)
 
 #only require that one electron in the low mass sideband pass HEEP ID
 #HEEPIDSidebandFilter = HEEPIDFilter.clone(minNumber = cms.uint32(1) )
