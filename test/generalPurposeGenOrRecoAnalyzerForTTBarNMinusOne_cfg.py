@@ -20,7 +20,7 @@ loadHEEPIDSelector(process)
 process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('standard') 

@@ -102,7 +102,7 @@ matchedGenMuAndQuarkFromTTBarSeq = cms.Sequence(
 ##the gen jets are dR matched to the gen quarks which come from the TTBar decay chain
 matchedGenJetFromTTBar = cms.EDProducer('FindHigherLevelMatchedObject',
 		matchedOutputCollectionName = cms.string("matchedGenJetsNoCuts"),
-		dRforMatching = cms.double(0.4),
+		dRforMatching = cms.double(0.6),
 		treeName = cms.string("matchedGenJetsNoCutsTree"),
 		lowLevelCollTag = cms.InputTag("matchedGenQuarkFromTTBar"),
 		higherLevelCollTag = cms.InputTag("bareGenJet")
@@ -110,7 +110,7 @@ matchedGenJetFromTTBar = cms.EDProducer('FindHigherLevelMatchedObject',
 
 matchedGenJetFromTTBarFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("matchedGenJetFromTTBar","matchedGenJetsNoCuts"),
-		minNumber = cms.uint32(1)
+		minNumber = cms.uint32(2)
 		)
 
 matchedGenJetSeq = cms.Sequence(matchedGenJetFromTTBar*matchedGenJetFromTTBarFilter)
