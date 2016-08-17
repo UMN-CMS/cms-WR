@@ -3,8 +3,16 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("AnalyzeTTBarDecay")
 
 ## load the filters, producers, and sequences defined in other config file fragments
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.EventContent.EventContent_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+process.load('Configuration.StandardSequences.EndOfProcess_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load('ExoAnalysis.cmsWR.ttBarGenAndRecoForNMinusOne_cff')
+process.GlobalTag.globaltag = '74X_mcRun2_asymptotic_v4'
+
 
 # import the HEEP selection modules and sequences
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
@@ -123,13 +131,12 @@ process.options = cms.untracked.PSet(
 		SkipEvent = cms.untracked.vstring('ProductNotFound')
 		)
 
-#inputFiles = cms.untracked.vstring(options.files)
-#/store/mc/RunIISpring15MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext1-v1/10000/0036F7A6-CC6D-E511-8B5B-002590D60150.root
+inputFiles = cms.untracked.vstring(options.files)
 
 process.source = cms.Source( "PoolSource",
-	#fileNames = inputFiles,
+	fileNames = inputFiles,
 	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'),
-	fileNames = cms.untracked.vstring('/store/mc/RunIISpring15MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext1-v1/10000/0036F7A6-CC6D-E511-8B5B-002590D60150.root')
+	#fileNames = cms.untracked.vstring('/store/mc/RunIISpring15MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext1-v1/10000/0036F7A6-CC6D-E511-8B5B-002590D60150.root')
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
