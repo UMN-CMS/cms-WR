@@ -17,7 +17,10 @@ def loadHEEPIDSelector(process):
 	switchOnVIDElectronIdProducer(process, dataFormat)
 	setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff',setupVIDElectronSelection)
 
-
+HEEPIDSelector = cms.EDProducer('HEEPIDSelector',
+                                electrons= cms.InputTag("slimmedElectrons"),
+                                eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
+                                )
 
 HEEPIDFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("HEEPIDSelector"),
