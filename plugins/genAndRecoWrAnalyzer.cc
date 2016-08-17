@@ -858,15 +858,15 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		ptLeadRecoJet = recoLeadJet->pt(), etaLeadRecoJet = recoLeadJet->eta(), phiLeadRecoJet = recoLeadJet->phi();
 		ptSubleadRecoJet = recoSubleadJet->pt(), etaSubleadRecoJet = recoSubleadJet->eta(), phiSubleadRecoJet = recoSubleadJet->phi();
 
+		fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus = (recoLeptMatchedToGenWrDauLept + recoLeptMatchedToGenNuDauLept + recoJetOneMatchedToGenNuDauQrk + recoJetTwoMatchedToGenNuDauQrk).M();
+		dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus = (recoLeptMatchedToGenWrDauLept + recoLeptMatchedToGenNuDauLept).M();
+		dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToWrDau, phiRecoLeptMatchedToWrDau, etaRecoJetOneMatchedToNuDau, phiRecoJetOneMatchedToNuDau);
+		dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToWrDau, phiRecoLeptMatchedToWrDau, etaRecoJetTwoMatchedToNuDau, phiRecoJetTwoMatchedToNuDau);
+		dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToNuDau, phiRecoLeptMatchedToNuDau, etaRecoJetOneMatchedToNuDau, phiRecoJetOneMatchedToNuDau);
+		dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToNuDau, phiRecoLeptMatchedToNuDau, etaRecoJetTwoMatchedToNuDau, phiRecoJetTwoMatchedToNuDau);
+	
 	}///end filling matched RECO branches
 	
-	fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus = (recoLeptMatchedToGenWrDauLept + recoLeptMatchedToGenNuDauLept + recoJetOneMatchedToGenNuDauQrk + recoJetTwoMatchedToGenNuDauQrk).M();
-	dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus = (recoLeptMatchedToGenWrDauLept + recoLeptMatchedToGenNuDauLept).M();
-	dRrecoLeptonMatchedToGenWrDauAndRecoJetOneMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToWrDau, phiRecoLeptMatchedToWrDau, etaRecoJetOneMatchedToNuDau, phiRecoJetOneMatchedToNuDau);
-	dRrecoLeptonMatchedToGenWrDauAndRecoJetTwoMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToWrDau, phiRecoLeptMatchedToWrDau, etaRecoJetTwoMatchedToNuDau, phiRecoJetTwoMatchedToNuDau);
-	dRrecoLeptonMatchedToGenNuDauAndRecoJetOneMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToNuDau, phiRecoLeptMatchedToNuDau, etaRecoJetOneMatchedToNuDau, phiRecoJetOneMatchedToNuDau);
-	dRrecoLeptonMatchedToGenNuDauAndRecoJetTwoMatchedToGenNuDau = deltaR(etaRecoLeptMatchedToNuDau, phiRecoLeptMatchedToNuDau, etaRecoJetTwoMatchedToNuDau, phiRecoJetTwoMatchedToNuDau);
-
 	tree->Fill();
 
 }
