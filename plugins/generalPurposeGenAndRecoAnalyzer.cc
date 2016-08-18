@@ -116,6 +116,15 @@ public:
 
 	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
+	/**calculate diobject mass, return zero if result is 0 or imaginary
+	 */
+	Float_t diobjectMass(edm::OwnVector<reco::Candidate>::const_iterator objOne, edm::OwnVector<reco::Candidate>::const_iterator objTwo){
+		Float_t result = 0.;
+		Float_t massSqd = 2*(objOne->pt())*(objTwo->pt())*(TMath::CosH( (objOne->eta()) - (objTwo->eta()) ) - TMath::Cos( (objOne->phi()) - (objTwo->phi()) ) );
+		if(massSqd > 0.) result = TMath::Sqrt(massSqd);
+		return result;
+	}
+
 	/** this fxn sifts through a collection of reco::Candidate objects, finds the highest pT object in the collection, and assigns
 	 * a pointer to this object to the iterator named iter
 	 * a reference to iter is input to this fxn
@@ -445,34 +454,23 @@ generalPurposeGenAndRecoAnalyzer::analyze(const edm::Event& iEvent, const edm::E
 
 	edm::OwnVector<reco::Candidate>::const_iterator leadHadronPtr = hadronCollection->end(), subleadHadronPtr = hadronCollection->end(), leadLept = leptonCollection->end(), subleadLept = leptonCollection->end();
 
-	for(edm::OwnVector<reco::Candidate>::const_iterator it = hadronCollection->begin(); it != hadronCollection->end(); it++) {
-		//find the leading and subleading hadrons
-		if(std::fabs(it->eta()) < 10 && it->pt() > 0.01) {
-#ifdef DEBUG
-			std::cout << " " << std::endl;
-			std::cout << "hadron pt=\t" << it->pt() << std::endl;
-			std::cout << "hadron eta=\t" << it->eta() << std::endl;
-			std::cout << "hadron phi=\t" << it->phi() << std::endl;
-			std::cout << " " << std::endl;
-#endif
-			numQuarks++;
-			if(leadHadronPtr == hadronCollection->end()) leadHadronPtr = it;
-			else {
-				if(it->pt() > leadHadronPtr->pt() && deltaR(it->eta(), it->phi(), leadHadronPtr->eta(), leadHadronPtr->phi() ) > 0.1) {
-					subleadHadronPtr = leadHadronPtr;
-					leadHadronPtr = it;
-				} else if(it->pt() > leadHadronPtr->pt() && deltaR(it->eta(), it->phi(), leadHadronPtr->eta(), leadHadronPtr->phi() ) <= 0.1) leadHadronPtr = it;
-				else if((subleadHadronPtr == hadronCollection->end() || it->pt() > subleadHadronPtr->pt()) && deltaR(it->eta(), it->phi(), leadHadronPtr->eta(), leadHadronPtr->phi() ) > 0.1) subleadHadronPtr = it;
-
-			}//end reassigning hadron iterators
-		}///end if(iterator points to a hadron with sensible pt and eta)
-	}///end loop over hadrons collection
-
 	for(edm::OwnVector<reco::Candidate>::const_iterator it = leptonCollection->begin(); it != leptonCollection->end(); it++) {
 		//find the leading and subleading leptons
 		if(std::fabs(it->eta()) <= 10 && it->pt() > 0.01) {
 			numLeptons++;
+#ifdef DEBUG
+			std::cout << " " << std::endl;
+			std::cout << "lepton pt=\t" << it->pt() << std::endl;
+			std::cout << "lepton eta=\t" << it->eta() << std::endl;
+			std::cout << "lepton phi=\t" << it->phi() << std::endl;
+			std::cout << " " << std::endl;
+#endif
+
 			if(leadLept == leptonCollection->end()) leadLept = it;
+			if(leadLept->pt() == it->pt() || diobjectMass(leadLept, it) == 0.) continue;	///<avoid selecting lepton pairs with dilepton mass zero
+			if(subleadLept != leptonCollection->end()){
+				if(subleadLept->pt() == it->pt()) continue;
+			}
 			else {
 				if(it->pt() > leadLept->pt() && deltaR(it->eta(), it->phi(), leadLept->eta(), leadLept->phi() ) > 0.1) {
 					subleadLept = leadLept;
@@ -483,6 +481,38 @@ generalPurposeGenAndRecoAnalyzer::analyze(const edm::Event& iEvent, const edm::E
 			}//end reassigning lepton iterators
 		}///end if(iterator points to a lepton with sensible pt and eta)
 	}///end loop over leptons collection
+
+	for(edm::OwnVector<reco::Candidate>::const_iterator it = hadronCollection->begin(); it != hadronCollection->end(); it++) {
+		//find the leading and subleading hadrons
+		if(std::fabs(it->eta()) < 10 && it->pt() > 0.01 && it->mass() > 0.05) {	///<avoid selecting zero mass gluons
+			if(subleadLept != leptonCollection->end()){
+				if(deltaR(it->eta(), it->phi(), subleadLept->eta(), subleadLept->phi())<=0.15 ) continue;
+			}
+			if(leadLept != leptonCollection->end()){
+				if(deltaR(it->eta(), it->phi(), leadLept->eta(), leadLept->phi())<=0.15 ) continue;
+			}
+
+#ifdef DEBUG
+			std::cout << " " << std::endl;
+			std::cout << "hadron pt=\t" << it->pt() << std::endl;
+			std::cout << "hadron eta=\t" << it->eta() << std::endl;
+			std::cout << "hadron phi=\t" << it->phi() << std::endl;
+			std::cout << " " << std::endl;
+#endif
+			
+			numQuarks++;
+			if(leadHadronPtr == hadronCollection->end()) leadHadronPtr = it;
+			if(diobjectMass(leadHadronPtr, it) == 0.) continue;
+			else {
+				if(it->pt() > leadHadronPtr->pt() && deltaR(it->eta(), it->phi(), leadHadronPtr->eta(), leadHadronPtr->phi() ) > 0.1) {
+					subleadHadronPtr = leadHadronPtr;
+					leadHadronPtr = it;
+				} else if(it->pt() > leadHadronPtr->pt() && deltaR(it->eta(), it->phi(), leadHadronPtr->eta(), leadHadronPtr->phi() ) <= 0.1) leadHadronPtr = it;
+				else if((subleadHadronPtr == hadronCollection->end() || it->pt() > subleadHadronPtr->pt()) && deltaR(it->eta(), it->phi(), leadHadronPtr->eta(), leadHadronPtr->phi() ) > 0.1) subleadHadronPtr = it;
+
+			}//end reassigning hadron iterators
+		}///end if(iterator points to a hadron with sensible pt and eta)
+	}///end loop over hadrons collection
 
 	if(leadLept == leptonCollection->end() || subleadLept == leptonCollection->end() || leadHadronPtr == hadronCollection->end() || subleadHadronPtr == hadronCollection->end() ) {
 		tree->Fill();
@@ -498,32 +528,79 @@ generalPurposeGenAndRecoAnalyzer::analyze(const edm::Event& iEvent, const edm::E
 	etaQuarkTwo = subleadHadronPtr->eta(), ptQuarkTwo = subleadHadronPtr->pt(), phiQuarkTwo = subleadHadronPtr->phi();
 	etaQuarkOne = leadHadronPtr->eta(), ptQuarkOne = leadHadronPtr->pt(), phiQuarkOne = leadHadronPtr->phi();
 
+#ifdef DEBUG
+	std::cout <<"saved pt, eta and phi of two leading leptons and hadrons into tree"<<std::endl;
+	std::cout<<"leptOne pt eta phi mass:\t"<< ptLeptOne <<"  "<< etaLeptOne <<"  "<< phiLeptOne <<"  " << leadLept->mass() <<std::endl;
+	std::cout<<"leptTwo pt eta phi mass:\t"<< ptLeptTwo <<"  "<< etaLeptTwo <<"  "<< phiLeptTwo <<"  " << subleadLept->mass() <<std::endl;
+	std::cout<<"hadronOne pt eta phi mass:\t"<< ptQuarkOne <<"  "<< etaQuarkOne <<"  "<< phiQuarkOne << "  " << leadHadronPtr->mass() <<std::endl;
+	std::cout<<"hadronTwo pt eta phi mass:\t"<< ptQuarkTwo <<"  "<< etaQuarkTwo <<"  "<< phiQuarkTwo <<"  " << subleadHadronPtr->mass() <<std::endl;
+#endif
+
 	TLorentzVector fourMomLeadLept, fourMomSubleadLept, fourMomLeadHadron, fourMomSubleadHadron;
 	fourMomLeadLept.SetPtEtaPhiM(ptLeptOne, etaLeptOne, phiLeptOne, leadLept->mass());
 	fourMomSubleadLept.SetPtEtaPhiM(ptLeptTwo, etaLeptTwo, phiLeptTwo, subleadLept->mass());
 	fourMomLeadHadron.SetPtEtaPhiM(ptQuarkOne, etaQuarkOne, phiQuarkOne, leadHadronPtr->mass());
 	fourMomSubleadHadron.SetPtEtaPhiM(ptQuarkTwo, etaQuarkTwo, phiQuarkTwo, subleadHadronPtr->mass());
 
-	dileptonMass = (fourMomLeadLept + fourMomSubleadLept).M();
-	dileptonPt = (fourMomLeadLept + fourMomSubleadLept).Pt();
-	dileptonEta = (fourMomLeadLept + fourMomSubleadLept).Eta();
-	dileptonPhi = (fourMomLeadLept + fourMomSubleadLept).Phi();
+#ifdef DEBUG
+	std::cout <<"built TLorentzVector objects to represent leading leptons and hadrons"<<std::endl;
+#endif
 
-	subleadLeptonBothHadronsMass = (fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).M();
-	subleadLeptonBothHadronsPt = (fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).Pt();
-	subleadLeptonBothHadronsEta = (fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).Eta();
-	subleadLeptonBothHadronsPhi = (fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).Phi();
+	TLorentzVector dileptonVect = fourMomLeadLept + fourMomSubleadLept;
+	if(dileptonVect.M2() > 0. && dileptonVect.Perp2() > 0. && dileptonVect.Et2() > 0. && std::fabs(dileptonVect.CosTheta()) < 1.0){
+		dileptonMass = dileptonVect.M();
+		dileptonPt = dileptonVect.Pt();
+		dileptonEta = dileptonVect.Eta();
+		dileptonPhi = dileptonVect.Phi();
+	}
 
-	leadLeptonBothHadronsMass = (fourMomLeadLept + fourMomLeadHadron + fourMomSubleadHadron).M();
-	leadLeptonBothHadronsPt = (fourMomLeadLept + fourMomLeadHadron + fourMomSubleadHadron).Pt();
-	leadLeptonBothHadronsEta = (fourMomLeadLept + fourMomLeadHadron + fourMomSubleadHadron).Eta();
-	leadLeptonBothHadronsPhi = (fourMomLeadLept + fourMomLeadHadron + fourMomSubleadHadron).Phi();
+#ifdef DEBUG
+	std::cout <<"calculated and saved dilepton system kinematics"<<std::endl;
+#endif
 
-	dileptonDihadronMass = (fourMomLeadLept + fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).M();
-	dileptonDihadronPt = (fourMomLeadLept + fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).Pt();
-	dileptonDihadronEta = (fourMomLeadLept + fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).Eta();
-	dileptonDihadronPhi = (fourMomLeadLept + fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron).Phi();
-	
+	TLorentzVector subleadLJJVect = fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron;
+	if(subleadLJJVect.M2() > 0. && subleadLJJVect.Perp2() > 0. && subleadLJJVect.Et2() > 0. && std::fabs(subleadLJJVect.CosTheta()) < 1.0){
+		subleadLeptonBothHadronsMass = subleadLJJVect.M();
+		subleadLeptonBothHadronsPt = subleadLJJVect.Pt();
+		subleadLeptonBothHadronsEta = subleadLJJVect.Eta();
+		subleadLeptonBothHadronsPhi = subleadLJJVect.Phi();
+	}
+
+#ifdef DEBUG
+	std::cout <<"calculated and saved sublead lepton plus dihadron system kinematics"<<std::endl;
+#endif
+
+	TLorentzVector leadLJJVect = fourMomLeadLept + fourMomLeadHadron + fourMomSubleadHadron;
+	if(leadLJJVect.M2() > 0. && leadLJJVect.Perp2() > 0. && leadLJJVect.Et2() > 0. && std::fabs(leadLJJVect.CosTheta()) < 1.0){
+		leadLeptonBothHadronsMass = leadLJJVect.M();
+		leadLeptonBothHadronsPt = leadLJJVect.Pt();
+		leadLeptonBothHadronsEta = leadLJJVect.Eta();
+		leadLeptonBothHadronsPhi = leadLJJVect.Phi();
+	}
+
+#ifdef DEBUG
+	std::cout <<"calculated and saved lead lepton plus dihadron system kinematics"<<std::endl;
+#endif
+
+	TLorentzVector lljjFourVect = fourMomLeadLept + fourMomSubleadLept + fourMomLeadHadron + fourMomSubleadHadron;
+#ifdef DEBUG
+	std::cout <<"made four vector representing dilepton plus dihadron system"<<std::endl;
+#endif
+	if(lljjFourVect.M2() > 0. && lljjFourVect.Perp2() > 0. && lljjFourVect.Et2() > 0. && std::fabs(lljjFourVect.CosTheta()) < 1.0){
+#ifdef DEBUG
+	std::cout <<"dilepton plus dihadron system mass, squared pt, and squared et are all greater than zero"<<std::endl;
+	std::cout<<"CosTheta =\t"<< lljjFourVect.CosTheta() <<"  "<<"fZ=\t"<< lljjFourVect(2) << std::endl;
+#endif
+		dileptonDihadronMass = (lljjFourVect).M();
+		dileptonDihadronPt = (lljjFourVect).Pt();
+		dileptonDihadronEta = (lljjFourVect).Eta();
+		dileptonDihadronPhi = (lljjFourVect).Phi();
+	}
+
+#ifdef DEBUG
+	std::cout <<"calculated and saved dilepton plus dihadron system kinematics"<<std::endl;
+#endif
+
 	dRleptonOneQuarkOne = deltaR(fourMomLeadLept.Eta(), fourMomLeadLept.Phi(), fourMomLeadHadron.Eta(), fourMomLeadHadron.Phi());
 	dRleptonOneQuarkTwo = deltaR(fourMomLeadLept.Eta(), fourMomLeadLept.Phi(), fourMomSubleadHadron.Eta(), fourMomSubleadHadron.Phi());
 	dRleptonTwoQuarkOne = deltaR(fourMomSubleadLept.Eta(), fourMomSubleadLept.Phi(), fourMomLeadHadron.Eta(), fourMomLeadHadron.Phi());
