@@ -69,7 +69,13 @@ matchedGenEleFromDY = bareGenEle.clone(
 matchedGenEleFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenEleFromDY"))
 
 matchedGenPartonFromDY = bareGenEle.clone(cut = cms.string("(abs(pdgId) < 7 || abs(pdgId) == 21) && status == 23"))
-matchedGenPartonFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromDY"))
+#matchedGenPartonFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromDY"))
+#######temporary test
+matchedGenPartonFromDYFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchedGenPartonFromDY"),
+		minNumber = cms.uint32(0)
+		)
+######
 
 matchedGenMuonFromDY = bareGenEle.clone(
 		cut = cms.string("abs(pdgId) == 13 && ( (abs(mother(0).pdgId) == 23 && mother(0).status == 62 ) || status == 23 )")
@@ -100,10 +106,17 @@ matchedGenJetFromDY = cms.EDProducer('FindHigherLevelMatchedObject',
 		higherLevelCollTag = cms.InputTag("bareGenJet")
 		)
 
+#matchedGenJetFromDYFilter = cms.EDFilter("CandViewCountFilter",
+#		src = cms.InputTag("matchedGenJetFromDY","matchedGenJetsDYNoCuts"),
+#		minNumber = cms.uint32(2)
+#		)
+
+#######temporary test
 matchedGenJetFromDYFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("matchedGenJetFromDY","matchedGenJetsDYNoCuts"),
-		minNumber = cms.uint32(2)
+		minNumber = cms.uint32(0)
 		)
+#######
 
 matchedGenJetDYSeq = cms.Sequence(matchedGenJetFromDY*matchedGenJetFromDYFilter)
 
@@ -111,7 +124,14 @@ condenseMatchedGenJetDYCollName = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("matchedGenJetFromDY","matchedGenJetsDYNoCuts"),
 		cut = cms.string("")
 		)
-condenseMatchedGenJetDYCollNameFilter = bareGenEleFilter.clone(src = cms.InputTag("condenseMatchedGenJetDYCollName"))
+#condenseMatchedGenJetDYCollNameFilter = bareGenEleFilter.clone(src = cms.InputTag("condenseMatchedGenJetDYCollName"))
+
+#######temporary test
+condenseMatchedGenJetDYCollNameFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("condenseMatchedGenJetDYCollName"),
+		minNumber = cms.uint32(0)
+		)
+#######
 
 condenseGenJetDYSeq = cms.Sequence(condenseMatchedGenJetDYCollName*condenseMatchedGenJetDYCollNameFilter)
 ##end modules and sequences for selecting gen leptons and gen jets with mother requirements
