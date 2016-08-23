@@ -38,15 +38,21 @@ options.parseArguments()
 #these collection names must be checked for correctness before execution
 genLeptonCollName="tempLeptColl"
 matchedGenLeptonCollName="tempMatchedLeptColl"
+matchedGenQuarkCollName="tempMatchedGenQuarkColl"
+matchedGenJetCollName="tempMatchedGenJetColl"
 recoLeptCollName="tempRecoLeptColl"
 if (options.channel=='EE'):
 	genLeptonCollName = "bareGenEle"
-	matchedGenLeptonCollName = ""
+	matchedGenLeptonCollName = "matchedGenEleFromWR"
+	matchedGenQuarkCollName = "matchedGenPartonFromWREle"
+	matchedGenJetCollName = "condenseMatchedGenJetWREleCollName"
 	recoLeptCollName = "heepRecoEle"
 #
 if (options.channel=='MuMu'):
 	genLeptonCollName = "bareGenMu"
-	matchedGenLeptonCollName = ""
+	matchedGenLeptonCollName = "matchedGenMuonFromWR"
+	matchedGenQuarkCollName = "matchedGenPartonFromWRMu"
+	matchedGenJetCollName = "condenseMatchedGenJetWRMuCollName"
 	recoLeptCollName = "highPtIdRecoMu"
 #################################
 #Analyzers
@@ -65,7 +71,7 @@ process.analyzerOne = cms.EDAnalyzer('generalPurposeGenAndRecoAnalyzer',
 #gen quarks and leptons with GEN mother requirements
 process.analyzerTwo = process.analyzerOne.clone(
 		treeName = cms.string("genKinematicsUsingGenQuarksWithGenMotherRequirements"),
-		hadronCollection = cms.InputTag("matchedGenQuarkFromTTBar"),
+		hadronCollection = cms.InputTag(matchedGenQuarkCollName),
 		leptonCollection = cms.InputTag(matchedGenLeptonCollName)
 		)
 
@@ -80,7 +86,7 @@ process.analyzerThree = process.analyzerOne.clone(
 process.analyzerFour = process.analyzerTwo.clone(
 		treeName = cms.string("genKinematicsUsingGenJetsWithGenMotherRequirements"),
 		inputHadronsAreQuarks = cms.bool(False),
-		hadronCollection = cms.InputTag("condenseMatchedGenJetCollName"),
+		hadronCollection = cms.InputTag(matchedGenJetCollName),
 		)
 
 #reco jets and leptons, no matching requirements
@@ -107,35 +113,32 @@ if (options.channel=='EE'):
 			*process.recoEleJetPassingIdSeq*process.analyzerFive
 			)
 	process.analyzeWRdecayGenQuarksWithoutMatching = cms.Path(process.genEleChnlGenQuarksNoMatchingSequence*process.analyzerOne)
-	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenEleAndQuarkFromTTBarSeq*process.analyzerTwo)
+	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenEleAndQuarkFromWRSeq*process.analyzerTwo)
 	process.analyzeWRdecayGenJetsWithoutMatching = cms.Path(process.genEleChnlGenJetsNoMatchingSequence*process.analyzerThree)
 	process.analyzeWRdecayGenJetsWithMatching = cms.Path(
-			process.matchedGenEleAndQuarkFromTTBarSeq
+			process.matchedGenEleAndQuarkFromWRSeq
 			*process.genJetSeq
-			*process.matchedGenJetSeq
-			*process.condenseGenJetTTBarSeq
+			*process.matchedGenJetWREleSeq
+			*process.condenseGenJetWREleSeq
 			*process.analyzerFour)
 
 #
 if (options.channel=='MuMu'):
 	process.analyzeWRdecayReco = cms.Path(process.recoMuJetPassingIdSeq*process.analyzerFive)
 	process.analyzeWRdecayGenQuarksWithoutMatching = cms.Path(process.genMuChnlGenQuarksNoMatchingSequence*process.analyzerOne)
-	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenMuAndQuarkFromTTBarSeq*process.analyzerTwo)
+	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenMuAndQuarkFromWRSeq*process.analyzerTwo)
 	process.analyzeWRdecayGenJetsWithoutMatching = cms.Path(process.genMuChnlGenJetsNoMatchingSequence*process.analyzerThree)
 	process.analyzeWRdecayGenJetsWithMatching = cms.Path(
-			process.matchedGenMuAndQuarkFromTTBarSeq
+			process.matchedGenMuAndQuarkFromWRSeq
 			*process.genJetSeq
-			*process.matchedGenJetSeq
-			*process.condenseGenJetTTBarSeq
+			*process.matchedGenJetWRMuSeq
+			*process.condenseGenJetWRMuSeq
 			*process.analyzerFour)
 
 #
-#process.schedule = cms.Schedule(process.analyzeWRdecay)
-
 
 process.TFileService = cms.Service("TFileService",
 		fileName = cms.string(options.output)
-		#fileName = cms.string('analyzedWr.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -147,16 +150,10 @@ inputFiles = cms.untracked.vstring(options.files)
 
 process.source = cms.Source( "PoolSource",
 	fileNames = inputFiles,
-	#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/miniAOD/WR_signal_MC/WRToNuEToEEJJ_MW-6000_MNu-3000_TuneCUETP8M1_pythia8_13TeV.root'),
-	#fileNames = cms.untracked.vstring('/store/mc/RunIISpring15MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext1-v1/10000/0036F7A6-CC6D-E511-8B5B-002590D60150.root')
-	#inputCommands = cms.untracked.vstring(
-    #    'keep *'
-    #)
 )
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
-    #input = cms.untracked.int32(-1)
 )
 
 
