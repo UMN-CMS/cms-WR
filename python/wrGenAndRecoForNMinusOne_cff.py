@@ -6,26 +6,29 @@ from ttBarGenAndRecoForNMinusOne_cff import *
 ##modules and sequences for selecting gen leptons and gen quarks with mother requirements
 
 matchedGenEleFromWR = bareGenEle.clone(
-		cut = cms.string("abs(pdgId) == 11 && ( (abs(mother(0).pdgId) == 23 && mother(0).status == 62 ) || status == 23 )")
+		cut = cms.string("(abs(pdgId) == 11 && (abs(mother(0).pdgId) == 9900024 || abs(mother(0).pdgId) == 9900012) ")
 		)
 matchedGenEleFromWRFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenEleFromWR"))
 
-matchedGenPartonFromWR = bareGenEle.clone(cut = cms.string("(abs(pdgId) < 7 || abs(pdgId) == 21) && status == 23"))
-matchedGenPartonFromWRFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromWR"))
+matchedGenPartonFromWREle = bareGenEle.clone(cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900012"))
+matchedGenPartonFromWREleFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromWREle"))
 
-matchedGenMuonFromDY = bareGenEle.clone(
-		cut = cms.string("abs(pdgId) == 13 && ( (abs(mother(0).pdgId) == 23 && mother(0).status == 62 ) || status == 23 )")
+matchedGenMuonFromWR = bareGenEle.clone(
+		cut = cms.string("abs(pdgId) == 13 && (abs(mother(0).pdgId) == 9900024 || abs(mother(0).pdgId) == 9900014)")
 		)
-matchedGenMuonFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenMuonFromDY"))
+matchedGenMuonFromWRFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenMuonFromWR"))
 
-matchedGenEleAndQuarkFromDYSeq = cms.Sequence(
+matchedGenPartonFromWRMu = bareGenEle.clone(cut = cms.string("abs(pdgId) < 7 && abs(mother(0).pdgId) == 9900014"))
+matchedGenPartonFromWRMuFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromWRMu"))
+
+matchedGenEleAndQuarkFromWRSeq = cms.Sequence(
 		matchedGenEleFromWR*matchedGenEleFromWRFilter
-		*matchedGenPartonFromWR*matchedGenPartonFromWRFilter
+		*matchedGenPartonFromWREle*matchedGenPartonFromWREleFilter
 		)
 
-matchedGenMuAndQuarkFromDYSeq = cms.Sequence(
-		matchedGenMuonFromDY*matchedGenMuonFromDYFilter
-		*matchedGenPartonFromWR*matchedGenPartonFromWRFilter
+matchedGenMuAndQuarkFromWRSeq = cms.Sequence(
+		matchedGenMuonFromWR*matchedGenMuonFromWRFilter
+		*matchedGenPartonFromWRMu*matchedGenPartonFromWRMuFilter
 		)
 ##end modules and sequences for selecting gen leptons and gen quarks with mother requirements
 
@@ -33,43 +36,53 @@ matchedGenMuAndQuarkFromDYSeq = cms.Sequence(
 
 ##############################################################################################
 ##modules and sequences for selecting gen leptons and gen jets with mother requirements
-##the gen jets are dR matched to the gen quarks which come from the DY hard interaction
-matchedGenJetFromDY = cms.EDProducer('FindHigherLevelMatchedObject',
-		matchedOutputCollectionName = cms.string("matchedGenJetsDYNoCuts"),
+##the gen jets are dR matched to the gen quarks which come from the hard interaction
+matchedGenJetFromWREle = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedGenJetsWREleNoCuts"),
 		dRforMatching = cms.double(0.6),
-		treeName = cms.string("matchedGenJetsDYNoCutsTree"),
-		lowLevelCollTag = cms.InputTag("matchedGenPartonFromWR"),
+		treeName = cms.string("matchedGenJetsWREleNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("matchedGenPartonFromWREle"),
 		higherLevelCollTag = cms.InputTag("bareGenJet")
 		)
 
-#matchedGenJetFromDYFilter = cms.EDFilter("CandViewCountFilter",
-#		src = cms.InputTag("matchedGenJetFromDY","matchedGenJetsDYNoCuts"),
-#		minNumber = cms.uint32(2)
-#		)
-
-#######temporary test
-matchedGenJetFromDYFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("matchedGenJetFromDY","matchedGenJetsDYNoCuts"),
-		minNumber = cms.uint32(0)
+matchedGenJetFromWREleFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchedGenJetFromWREle","matchedGenJetsWREleNoCuts"),
+		minNumber = cms.uint32(2)
 		)
-#######
 
-matchedGenJetDYSeq = cms.Sequence(matchedGenJetFromDY*matchedGenJetFromDYFilter)
+matchedGenJetWREleSeq = cms.Sequence(matchedGenJetFromWREle*matchedGenJetFromWREleFilter)
 
-condenseMatchedGenJetDYCollName = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("matchedGenJetFromDY","matchedGenJetsDYNoCuts"),
+condenseMatchedGenJetWREleCollName = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("matchedGenJetFromWREle","matchedGenJetsWREleNoCuts"),
 		cut = cms.string("")
 		)
-#condenseMatchedGenJetDYCollNameFilter = bareGenEleFilter.clone(src = cms.InputTag("condenseMatchedGenJetDYCollName"))
+condenseMatchedGenJetWREleCollNameFilter = bareGenEleFilter.clone(src = cms.InputTag("condenseMatchedGenJetWREleCollName"))
 
-#######temporary test
-condenseMatchedGenJetDYCollNameFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("condenseMatchedGenJetDYCollName"),
-		minNumber = cms.uint32(0)
+condenseGenJetWREleSeq = cms.Sequence(condenseMatchedGenJetWREleCollName*condenseMatchedGenJetWREleCollNameFilter)
+
+
+matchedGenJetFromWRMu = cms.EDProducer('FindHigherLevelMatchedObject',
+		matchedOutputCollectionName = cms.string("matchedGenJetsWRMuNoCuts"),
+		dRforMatching = cms.double(0.6),
+		treeName = cms.string("matchedGenJetsWRMuNoCutsTree"),
+		lowLevelCollTag = cms.InputTag("matchedGenPartonFromWRMu"),
+		higherLevelCollTag = cms.InputTag("bareGenJet")
 		)
-#######
 
-condenseGenJetDYSeq = cms.Sequence(condenseMatchedGenJetDYCollName*condenseMatchedGenJetDYCollNameFilter)
+matchedGenJetFromWRMuFilter = cms.EDFilter("CandViewCountFilter",
+		src = cms.InputTag("matchedGenJetFromWRMu","matchedGenJetsWRMuNoCuts"),
+		minNumber = cms.uint32(2)
+		)
+
+matchedGenJetWRMuSeq = cms.Sequence(matchedGenJetFromWRMu*matchedGenJetFromWRMuFilter)
+
+condenseMatchedGenJetWRMuCollName = cms.EDFilter("CandViewSelector",
+		src = cms.InputTag("matchedGenJetFromWRMu","matchedGenJetsWRMuNoCuts"),
+		cut = cms.string("")
+		)
+condenseMatchedGenJetWRMuCollNameFilter = bareGenEleFilter.clone(src = cms.InputTag("condenseMatchedGenJetWRMuCollName"))
+
+condenseGenJetWRMuSeq = cms.Sequence(condenseMatchedGenJetWRMuCollName*condenseMatchedGenJetWRMuCollNameFilter)
 ##end modules and sequences for selecting gen leptons and gen jets with mother requirements
 
 
