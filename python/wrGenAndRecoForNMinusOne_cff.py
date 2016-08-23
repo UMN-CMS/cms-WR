@@ -6,7 +6,7 @@ from ttBarGenAndRecoForNMinusOne_cff import *
 ##modules and sequences for selecting gen leptons and gen quarks with mother requirements
 
 matchedGenEleFromWR = bareGenEle.clone(
-		cut = cms.string("(abs(pdgId) == 11 && (abs(mother(0).pdgId) == 9900024 || abs(mother(0).pdgId) == 9900012) ")
+		cut = cms.string("abs(pdgId) == 11 && (abs(mother(0).pdgId) == 9900024 || abs(mother(0).pdgId) == 9900012) ")
 		)
 matchedGenEleFromWRFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenEleFromWR"))
 
