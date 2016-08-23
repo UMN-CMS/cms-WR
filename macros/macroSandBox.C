@@ -37,8 +37,9 @@
 
 using namespace std;
 
+#define nMinusOneCutEffsGenAndReco
 //#define studyGenWrKinematicsVsWrAndNuMasses
-#define genAndRecoWrPlotsMinimalCuts
+//#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
@@ -2149,5 +2150,89 @@ void macroSandBox(){
 
 #endif
 	//end genAndRecoWrPlotsMinimalCuts
+
+
+#ifdef nMinusOneCutEffsGenAndReco
+	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
+	string dir= "../rootfilesfornminusoneefficiencies/";
+
+	//inputFiles and processTags must have the same number of elements
+	string inputFiles = {"dyjetsEEForNminusOne_updatedAnalyzer.root", "dyjetsMuMuForNminusOne_updatedAnalyzer.root", "ttbarEEForNminusOne.root", "ttbarEEForNminusOne_updatedAnalyzer.root", "ttbarMuMuForNminusOne.root", "ttbarMuMuForNminusOne_updatedAnalyzer.root"};
+	string processTags[] = {"DYtoEE","DYtoMuMu","TTtoEEwithoutAnalyzerFilters","TTtoEEwithAnalyzerFilters","TTtoMuMuwithoutAnalyzerFilters","TTtoMuMuwithAnalyzerFilters"};
+	vector<string> inputFilesVect(inputFiles,inputFiles + sizeof(inputFiles)/sizeof(string));
+	vector<string> processTagsVect(processTags,processTags + sizeof(processTags)/sizeof(string));
+	int nBins = inputFilesVect.size();
+	if(nBins != processTagsVect.size()){
+		cout<<"inputFilesVect and processTagsVect do not have the same number of elements. exiting now"<<endl;
+		exit(1);
+	}
+	gStyle->SetTitleOffset(1.4,"Y");
+	gStyle->SetOptStat("");
+
+	//names of TChains stored in each input root file
+	string chainNames[] = {"analyzerOne/genKinematicsUsingGenQuarksWithoutGenMotherRequirements","analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerThree/genKinematicsUsingGenJetsWithoutGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics"};
+	vector<string> chainNameVect(chainNames,chainNames + sizeof(chainNames)/sizeof(string));
+	int nChains = chainNameVect.size();
+
+	//element number i in plotArg is linked to element number i in plotCut   don't change the order
+	//plotting cuts, arguments, and X axis labels for N-1 efficiencies of lepton and jet pT cuts, dilepton mass cut, dR lepton jet cuts, and four obj mass cut at GEN lvl
+	string cutEffOutputFilePath = "nMinusOneCutEfficienciesGENandRECO_DY_TTBar_WR.txt";
+	string plotArg[] = {"etaLeptOne", "ptLeptOne", "etaLeptTwo", "ptLeptTwo", "etaQuarkOne", "ptQuarkOne", "etaQuarkTwo", "ptQuarkTwo", "dileptonMass", "dileptonPt", "dileptonEta", "dileptonPhi", "subleadLeptonBothHadronsMass", "subleadLeptonBothHadronsPt", "subleadLeptonBothHadronsEta", "subleadLeptonBothHadronsPhi", "leadLeptonBothHadronsMass", "leadLeptonBothHadronsPt", "leadLeptonBothHadronsEta", "leadLeptonBothHadronsPhi", "dileptonDihadronMass", "dileptonDihadronPt", "dileptonDihadronEta", "dileptonDihadronPhi", "dRleptonOneQuarkOne", "dRleptonOneQuarkTwo", "dRleptonTwoQuarkOne", "dRleptonTwoQuarkTwo"};
+
+	//use this stdNMinusOneEffPlotCut in conjunction with other cuts when calculating N-1 cut efficiencies
+	string stdNMinusOneEffPlotCut = " && fabs(etaLeptOne)<2.4 && fabs(etaLeptTwo)<2.4 && fabs(etaQuarkTwo)<2.4 && fabs(etaQuarkOne)<2.4";
+
+	//use allCutsExceptStd to apply all offline cuts when plotting variables like dileptonPt or etaLeptTwo for which we are not trying to measure the N-1 efficiency
+	string allCutsExceptStd = "ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4";
+	string plotCut[] = {allCutsExceptStd,"ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4",allCutsExceptStd,"ptLeptOne>60 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4",allCutsExceptStd,"ptLeptOne>60 && ptLeptTwo>50 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4",allCutsExceptStd,"ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4","ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4",allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,"ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4",allCutsExceptStd,allCutsExceptStd,allCutsExceptStd,"ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4","ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4","ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkTwo>0.4","ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4"};
+
+	string plotXaxisLabel[] = {"Lead lepton #eta", "Lead lepton P_{T} [GeV]","Sublead lepton #eta","Sublead lepton P_{T} [GeV]","Lead hadron #eta","Lead hadron P_{T} [GeV]","Sublead hadron #eta","Sublead hadron P_{T} [GeV]","Dilepton system mass [GeV]", "Dilepton system P_{T}","Dilepton system #eta","Dilepton system #phi","Sublead lepton plus dihadron system mass [GeV]","Sublead lepton plus dihadron system P_{T} [GeV]","Sublead lepton plus dihadron system #eta","Sublead lepton plus dihadron system #phi","Lead lepton plus dihadron system mass [GeV]","Lead lepton plus dihadron system P_{T} [GeV]","Lead lepton plus dihadron system #eta","Lead lepton plus dihadron system #phi","Dilepton Dihadron system mass M_{LLJJ} [GeV]","Dilepton Dihadron system P_{T} [GeV]","Dilepton Dihadron system #eta","Dilepton Dihadron system #phi", "#DeltaR[Lead lepton, Lead hadron]", "#DeltaR[Lead lepton, Sublead hadron]", "#DeltaR[Sublead lepton, Lead hadron]", "#DeltaR[Sublead lepton, Sublead hadron]"};
+
+
+	string stdPlotTitle = "CMS Preliminary                 #surds = 13 TeV";
+	
+	vector<string> vectForNEntries(plotCut,plotCut + sizeof(plotCut)/sizeof(string));
+	int nBranches = vectForNEntries.size();
+
+	for(int i=0; i<nBins ; i++){
+		///loop over input root files
+
+		for(int r=0; r<nChains; r++){
+			//loop over TChains within each input root file
+
+			TChain * inputChain = new TChain(chainNameVect[r]);
+			inputChain->Add(inputFilesVect[i].c_str());
+
+			for(int j=0; j<nBranches ; j++){
+				//calculate N-1 efficiency of lepton and hadron pt cuts
+				if(plotArg[j] == "ptLeptOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],60.,true,cutEffOutputFilePath,"ptLeptOne");
+				if(plotArg[j] == "ptLeptTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],50.,true,cutEffOutputFilePath,"ptLeptTwo");
+				if(plotArg[j] == "ptQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.,true,cutEffOutputFilePath,"ptQuarkOne");
+				if(plotArg[j] == "ptQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.,true,cutEffOutputFilePath,"ptQuarkTwo");
+
+				//calculate N-1 efficiency of four object mass cut
+				if(plotArg[j] == "dileptonDihadronMass") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],600.,true,cutEffOutputFilePath,"dileptonDihadronMass");
+
+				//N-1 efficiency of dilepton mass cut
+				if(plotArg[j] == "dileptonMass") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],200.,true,cutEffOutputFilePath,"dileptonMass");
+
+				//N-1 efficiency of dR lepton hadron cuts
+				if(plotArg[j] == "dRleptonOneQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRleptonOneQuarkOne");
+				if(plotArg[j] == "dRleptonOneQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRleptonOneQuarkTwo");
+				if(plotArg[j] == "dRleptonTwoQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRleptonTwoQuarkOne");
+				if(plotArg[j] == "dRleptonTwoQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRleptonTwoQuarkTwo");
+
+				//save plots from all other variables which are not used in offline cuts
+				else makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"");
+
+			}//end loop over TChain branches
+			inputChain->Delete();
+		}//end loop over TChains within each input root file
+
+	}///end loop over input files	
+
+#endif
+	//end nMinusOneCutEffsGenAndReco
+
 }///end macroSandBox()
 
