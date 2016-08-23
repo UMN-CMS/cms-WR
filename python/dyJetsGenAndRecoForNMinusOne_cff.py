@@ -69,13 +69,7 @@ matchedGenEleFromDY = bareGenEle.clone(
 matchedGenEleFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenEleFromDY"))
 
 matchedGenPartonFromDY = bareGenEle.clone(cut = cms.string("(abs(pdgId) < 7 || abs(pdgId) == 21) && status == 23"))
-#matchedGenPartonFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromDY"))
-#######temporary test
-matchedGenPartonFromDYFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("matchedGenPartonFromDY"),
-		minNumber = cms.uint32(0)
-		)
-######
+matchedGenPartonFromDYFilter = bareGenEleFilter.clone(src = cms.InputTag("matchedGenPartonFromDY"))
 
 matchedGenMuonFromDY = bareGenEle.clone(
 		cut = cms.string("abs(pdgId) == 13 && ( (abs(mother(0).pdgId) == 23 && mother(0).status == 62 ) || status == 23 )")

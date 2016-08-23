@@ -484,12 +484,13 @@ generalPurposeGenAndRecoAnalyzer::analyze(const edm::Event& iEvent, const edm::E
 
 	for(edm::OwnVector<reco::Candidate>::const_iterator it = hadronCollection->begin(); it != hadronCollection->end(); it++) {
 		//find the leading and subleading hadrons
-		if(std::fabs(it->eta()) < 10 && it->pt() > 0.01 && it->mass() > 0.05) {	///<avoid selecting zero mass gluons
+		if(std::fabs(it->eta()) < 10 && it->pt() > 0.01) {
+			//if a leading and or subleading lepton has already been found, make sure a selected hadron does not overlap with a selected lepton
 			if(subleadLept != leptonCollection->end()){
-				if(deltaR(it->eta(), it->phi(), subleadLept->eta(), subleadLept->phi())<=0.15 ) continue;
+				if(deltaR(it->eta(), it->phi(), subleadLept->eta(), subleadLept->phi())<=0.01 ) continue;
 			}
 			if(leadLept != leptonCollection->end()){
-				if(deltaR(it->eta(), it->phi(), leadLept->eta(), leadLept->phi())<=0.15 ) continue;
+				if(deltaR(it->eta(), it->phi(), leadLept->eta(), leadLept->phi())<=0.01 ) continue;
 			}
 
 #ifdef DEBUG
