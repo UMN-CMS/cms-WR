@@ -92,6 +92,16 @@ process.analyzerFive = cms.EDAnalyzer('generalPurposeGenAndRecoAnalyzer',
 		leptonCollection = cms.InputTag(recoLeptCollName)
 		)
 
+#gen quarks and leptons in events where the correct flavor GEN leptons must be present with correct mothers
+process.analyzerSix = process.analyzerOne.clone(
+		treeName = cms.string("genKinematicsUsingGenQuarksWithoutGenMotherRequirementsWithGenFlavorReqs")
+		)
+
+#gen jets and leptons in events where the correct flavor GEN leptons and b quarks must be present with correct mothers
+process.analyzerSeven = process.analyzerThree.clone(
+		treeName = cms.string("genKinematicsUsingGenJetsWithoutGenMotherRequirementsWithGenFlavorReqs")
+		)
+
 #################################
 #Paths
 process.analyzeWRdecayGenQuarksWithoutMatching = cms.Path(process.analyzerOne)
@@ -99,9 +109,13 @@ process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.analyzerTwo)
 process.analyzeWRdecayGenJetsWithoutMatching = cms.Path(process.analyzerThree)
 process.analyzeWRdecayGenJetsWithMatching = cms.Path(process.analyzerFour)
 process.analyzeWRdecayReco = cms.Path(process.analyzerFive)
+process.analyzeWRdecayGenQuarksWithFlavorReq = cms.Path(process.analyzerSix)
+process.analyzeWRdecayGenJetsWithFlavorReq = cms.Path(process.analyzerSeven)
 
 #all paths need to be modified based on the lepton channel
 if (options.channel=='EE'):
+	process.analyzeWRdecayGenQuarksWithFlavorReq = cms.Path(process.matchedGenEleAndQuarkFromDYSeq*process.genEleChnlGenQuarksNoMatchingSequence*process.analyzerSix)
+	process.analyzeWRdecayGenJetsWithFlavorReq = cms.Path(process.matchedGenEleAndQuarkFromDYSeq*process.genEleChnlGenJetsNoMatchingSequence*process.analyzerSeven)
 	process.analyzeWRdecayReco = cms.Path(
 			process.egmGsfElectronIDSequence*process.HEEPIDSequence
 			*process.recoEleJetPassingIdSeq*process.analyzerFive
@@ -118,6 +132,8 @@ if (options.channel=='EE'):
 
 #
 if (options.channel=='MuMu'):
+	process.analyzeWRdecayGenQuarksWithFlavorReq = cms.Path(process.matchedGenMuAndQuarkFromDYSeq*process.genMuChnlGenQuarksNoMatchingSequence*process.analyzerSix)
+	process.analyzeWRdecayGenJetsWithFlavorReq = cms.Path(process.matchedGenMuAndQuarkFromDYSeq*process.genMuChnlGenJetsNoMatchingSequence*process.analyzerSeven)
 	process.analyzeWRdecayReco = cms.Path(process.recoMuJetPassingIdSeq*process.analyzerFive)
 	process.analyzeWRdecayGenQuarksWithoutMatching = cms.Path(process.genMuChnlGenQuarksNoMatchingSequence*process.analyzerOne)
 	process.analyzeWRdecayGenQuarksWithMatching = cms.Path(process.matchedGenMuAndQuarkFromDYSeq*process.analyzerTwo)
