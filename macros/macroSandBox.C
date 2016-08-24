@@ -2159,8 +2159,8 @@ void macroSandBox(){
 	//inputFiles and processTags must have the same number of elements
 	//string inputFiles[] = {"dyjetsEEForNminusOne_updatedAnalyzer.root", "dyjetsMuMuForNminusOne_updatedAnalyzer.root", "ttbarEEForNminusOne.root", "ttbarEEForNminusOne_updatedAnalyzer.root", "ttbarMuMuForNminusOne.root", "ttbarMuMuForNminusOne_updatedAnalyzer.root"};
 	//string processTags[] = {"DYtoEE","DYtoMuMu","TTtoEEwithoutAnalyzerFilters","TTtoEEwithAnalyzerFilters","TTtoMuMuwithoutAnalyzerFilters","TTtoMuMuwithAnalyzerFilters"};
-	string inputFiles[] = {"ttbarEEForNminusOne.root", "ttbarEEForNminusOne_updatedAnalyzer.root"};
-	string processTags[] = {"TTtoEEwithoutAnalyzerFilters","TTtoEEwithAnalyzerFilters"};
+	string inputFiles[] = {"ttbarEEForNminusOne_correctedAnalyzer.root", "dyjetsEEForNminusOne_correctedAnalyzer.root", "wrEE_2000_1000_ForNminusOne.root"};
+	string processTags[] = {"TTtoEE","DYtoEE","WRtoEE_2000_1000"};
 	vector<string> inputFilesVect(inputFiles,inputFiles + sizeof(inputFiles)/sizeof(string));
 	vector<string> processTagsVect(processTags,processTags + sizeof(processTags)/sizeof(string));
 	int nBins = inputFilesVect.size();
@@ -2173,10 +2173,12 @@ void macroSandBox(){
 
 	//chainNames contains the names of TChains stored in each input root file
 	//chainNameVect and chainTagVect must have the same number of elements
-	string chainNames[] = {"analyzerOne/genKinematicsUsingGenQuarksWithoutGenMotherRequirements","analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerThree/genKinematicsUsingGenJetsWithoutGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics"};
+	//string chainNames[] = {"analyzerOne/genKinematicsUsingGenQuarksWithoutGenMotherRequirements","analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerThree/genKinematicsUsingGenJetsWithoutGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics"};
+	//string chainTags[] = {"genWithQuarksWithoutMatching","genWithQuarksWithMatching","genWithJetsWithoutMatching","genWithJetsWithMatching","recoPassingJetLeptonId"};
+	string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFive/recoKinematics"};
+	string chainTags[] = {"genWithQuarksWithMatching","recoPassingJetLeptonId"};
 	vector<string> chainNameVect(chainNames,chainNames + sizeof(chainNames)/sizeof(string));
 	int nChains = chainNameVect.size();
-	string chainTags[] = {"genWithQuarksWithoutMatching","genWithQuarksWithMatching","genWithJetsWithoutMatching","genWithJetsWithMatching","recoPassingJetLeptonId"};
 	vector<string> chainTagVect(chainTags,chainTags + sizeof(chainTags)/sizeof(string));
 	if(nChains != chainTagVect.size()){
 		cout<<"chainNameVect and chainTagVect do not have the same number of elements. exiting now"<<endl;
