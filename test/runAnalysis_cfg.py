@@ -169,6 +169,13 @@ process.blindSeq = cms.Sequence()
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.selectionSequence  * process.filterSequence)
 
+# Temporary while new MC is produced with HLT
+if (options.isMC==0):
+    process.signalHltSequence = cms.Sequence(process.wRHLTFilter_data)
+    process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_data)
+else:
+    process.signalHltSequence = cms.Sequence(process.wRHLTFilter_MC)
+    process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_MC)
 
 process.miniTree_signal_ee   = process.MiniTTree.clone()
 process.miniTree_signal_mumu = process.MiniTTree.clone()
