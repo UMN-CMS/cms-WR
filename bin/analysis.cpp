@@ -32,7 +32,7 @@
 
 #include <unordered_set>
 
-#include "Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
+#include "ExoAnalysis/Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
 
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
@@ -81,7 +81,7 @@ public:
 		}
 		if(mode == "TT") {
 			//TTchainNames.push_back("TTJets_DiLept_v1");
-			TTchainNames.push_back("TTJets_DiLept_v2");
+			TTchainNames.push_back("TTJets");
 		} else if(mode.find("DY") != _ENDSTRING) {
 			//if(mode.Contains("TANDP") ) tree_channel = "_dytagandprobe";
 			std::string tagName = "";
@@ -247,7 +247,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
+	EnergyScaleCorrection_class eSmearer("ExoAnalysis/Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -265,7 +265,7 @@ int main(int ac, char* av[])
 	} else
 		cut_channel = channel;
 
-	configReader myReader("configs/2015-v1.conf");
+	configReader myReader("configs/2016-v1.conf");
 	if(debug) std::cout << myReader << std::endl;
 
 	std::cout << "[INFO] Selected modes: \n";
@@ -499,6 +499,7 @@ int main(int ac, char* av[])
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
 				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Rand.Gaus(0.0, 1.);// Electron Scale(Data)
 				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
+				Random_Numbers_for_Systematics_Up_Down[4] = 0.;//Mu Res
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
