@@ -7,7 +7,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "ExoAnalysis/cmsWR/interface/rochcor2015.h"
-#include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
+//#include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
 #include <string>
 #include "TLorentzVector.h"
 #include "Math/LorentzVector.h"
