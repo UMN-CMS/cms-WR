@@ -2157,10 +2157,9 @@ void macroSandBox(){
 	string dir= "../rootfilesfornminusoneefficiencies/";
 
 	//inputFiles and processTags must have the same number of elements
-	//string inputFiles[] = {"dyjetsEEForNminusOne_updatedAnalyzer.root", "dyjetsMuMuForNminusOne_updatedAnalyzer.root", "ttbarEEForNminusOne.root", "ttbarEEForNminusOne_updatedAnalyzer.root", "ttbarMuMuForNminusOne.root", "ttbarMuMuForNminusOne_updatedAnalyzer.root"};
-	//string processTags[] = {"DYtoEE","DYtoMuMu","TTtoEEwithoutAnalyzerFilters","TTtoEEwithAnalyzerFilters","TTtoMuMuwithoutAnalyzerFilters","TTtoMuMuwithAnalyzerFilters"};
-	string inputFiles[] = {"ttbarEEForNminusOne_correctedAnalyzer.root", "dyjetsEEForNminusOne_correctedAnalyzer.root", "wrEE_2000_1000_ForNminusOne.root"};
-	string processTags[] = {"TTtoEE","DYtoEE","WRtoEE_2000_1000"};
+	string inputFiles[] = {"ttbarEEForNminusOne_withFlavorFilters.root", "dyjetsEEForNminusOne_withFlavorFilters.root", "wrEE_2000_1000_ForNminusOne_withFlavorFilters.root","ttbarMuMuForNminusOne_withFlavorFilters.root", "dyjetsMuMuForNminusOne_withFlavorFilters.root", "wrMuMu_2000_1000_ForNminusOne_withFlavorFilters.root","wrEE_1000_500_ForNminusOne_withFlavorFilters.root", "wrMuMu_1000_500_ForNminusOne_withFlavorFilters.root"};
+	string processTags[] = {"TTtoEE","DYtoEE","WRtoEE_2000_1000","TTtoMuMu","DYtoMuMu","WRtoMuMu_2000_1000","WRtoEE_1000_500","WRtoMuMu_1000_500"};
+
 	vector<string> inputFilesVect(inputFiles,inputFiles + sizeof(inputFiles)/sizeof(string));
 	vector<string> processTagsVect(processTags,processTags + sizeof(processTags)/sizeof(string));
 	int nBins = inputFilesVect.size();
@@ -2173,10 +2172,10 @@ void macroSandBox(){
 
 	//chainNames contains the names of TChains stored in each input root file
 	//chainNameVect and chainTagVect must have the same number of elements
-	//string chainNames[] = {"analyzerOne/genKinematicsUsingGenQuarksWithoutGenMotherRequirements","analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerThree/genKinematicsUsingGenJetsWithoutGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics"};
-	//string chainTags[] = {"genWithQuarksWithoutMatching","genWithQuarksWithMatching","genWithJetsWithoutMatching","genWithJetsWithMatching","recoPassingJetLeptonId"};
-	string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFive/recoKinematics"};
-	string chainTags[] = {"genWithQuarksWithMatching","recoPassingJetLeptonId"};
+	string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics","analyzerSix/genKinematicsUsingGenQuarksWithoutGenMotherRequirementsWithGenFlavorReqs","analyzerSeven/genKinematicsUsingGenJetsWithoutGenMotherRequirementsWithGenFlavorReqs"};
+	string chainTags[] = {"genWithQuarksWithMatching","genWithJetsWithMatching","recoPassingJetLeptonId","genWithQuarksWithGenFlavorReqs","genWithJetsWithGenFlavorReqs"};
+	//string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFive/recoKinematics"};
+	//string chainTags[] = {"genWithQuarksWithMatching","recoPassingJetLeptonId"};
 	vector<string> chainNameVect(chainNames,chainNames + sizeof(chainNames)/sizeof(string));
 	int nChains = chainNameVect.size();
 	vector<string> chainTagVect(chainTags,chainTags + sizeof(chainTags)/sizeof(string));
@@ -2213,7 +2212,7 @@ void macroSandBox(){
 		for(int r=0; r<nChains; r++){
 			//loop over TChains within each input root file
 	
-			TChain * inputChain = new TChain(chainNameVect[r].c_str());
+			TChain * inputChain = new TChain(chainNameVect[r].c_str(),(processTagsVect[i]+"_"+chainTagVect[r]).c_str());
 			inputChain->Add( (dir+inputFilesVect[i]).c_str() );
 
 			for(int j=0; j<nBranches ; j++){
