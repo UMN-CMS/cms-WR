@@ -58,8 +58,12 @@ void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[
 		}
 
 		if(Flag_Smear_Muon_Resolution) {
-		        if(Smear_Res >= 0.) *(myEvent->muons_p4).Pt() += Smear_Res * 0.1;
-			else *(myEvent->muons_p4).Pt() -= Smear_Res * 0.1;
+			float smeared_pt = (*(myEvent->muons_p4))[Iterator].Pt();
+			if(Smear_Res >= 0.)
+				smeared_pt += Smear_Res * 0.1 * smeared_pt;
+			else smeared_pt -= Smear_Res * 0.1 * smeared_pt;
+
+			(*(myEvent->muons_p4))[Iterator].SetPtEtaPhiM(smeared_pt, (*(myEvent->muons_p4))[Iterator].Eta(), (*(myEvent->muons_p4))[Iterator].Phi(), (*(myEvent->muons_p4))[Iterator].M());
 
 		}
 
