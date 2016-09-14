@@ -55,7 +55,7 @@ elif(options.test==2):
 	#options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
 	options.maxEvents= -1
 	options.isMC=1
-	options.datasetTag='dyJetsAmcNloInclusiveNoSelectionCuts'
+	options.datasetTag='dyJetsAmcNloInclusiveNoSelectionCutsForPUweights'
 	#options.output = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveWithNumPUandNoSelections.root"
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
