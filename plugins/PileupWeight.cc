@@ -15,7 +15,7 @@
 #include <string>
 #include <iostream>
 
-#define DEBUG
+//#define DEBUG
 class producePileupWeight : public edm::EDProducer
 {
 
@@ -140,7 +140,13 @@ void producePileupWeight::produce(edm::Event& event, const edm::EventSetup&)
 	std::cout<<"about to put pu_weight vector into event collection, and leave the produce method in PileupWeight.cc"<<std::endl;
 #endif
 	std::auto_ptr<float> PU_weight_ptr(new float(PU_weight));
+#ifdef DEBUG
+	std::cout<<"made ptr to PU_weight val"<<std::endl;
+#endif
 	event.put(PU_weight_ptr, outputCollName);
+#ifdef DEBUG
+	std::cout<<"leaving the produce method in PileupWeight.cc"<<std::endl;
+#endif
 }
 
 void
