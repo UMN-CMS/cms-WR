@@ -15,7 +15,7 @@
 #include "../interface/miniTreeEvent.h"
 
 
-
+#define DEBUG
 typedef double JECUnc_t;
 typedef edm::ValueMap<JECUnc_t> JECUnc_Map;
 
@@ -106,6 +106,9 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	edm::Handle<std::string> datasetName;
 	event.getByToken(datasetNameToken_, datasetName);
 
+#ifdef DEBUG
+	std::cout<<"declared all handles in miniTTree.cc"<<std::endl;
+#endif
 	sprintf(myEvent.datasetName, "%s", datasetName->c_str());
 
 	if(primary_vertex->size() > 0) {
@@ -113,8 +116,14 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 			myEvent.nPV++;
 	}
 
+#ifdef DEBUG
+	std::cout<<"passed primary_vertex size if statement"<<std::endl;
+#endif
 	if(!event.isRealData()) {
 		event.getByToken(evinfoToken_, evinfo);
+#ifdef DEBUG
+		std::cout<<"called getByToken with evinfo handle to get GEN event weight"<<std::endl;
+#endif
 		myEvent.weight = evinfo->weight();
 		event.getByToken(pileUpInfoToken_, PU_Info);
 		for(auto p : *PU_Info) {
@@ -123,11 +132,14 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 				myEvent.nPU = p.getTrueNumInteractions();
 		}
 		event.getByToken(pileUpReweightToken_, PU_Weights);
+#ifdef DEBUG
+		std::cout<<"called getByToken using PU_Weights handle"<<std::endl;
+#endif
 		myEvent.PU_reweight = *PU_Weights;
 
 	}
 
-
+/*
 	for (size_t i = 0; i < electrons->size(); ++i) {
 		const auto ele = electrons->ptrAt(i);
 		TLorentzVector p4;
@@ -157,10 +169,13 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		p4.SetPtEtaPhiM(jet->pt(), jet->eta(), jet->phi(), jet->mass());
 		myEvent.jets_p4->push_back(p4);
 		myEvent.jec_uncertainty->push_back((*jec_unc)[jet]);
-	}
+	}*/
 
 
 	tree->Fill();
+#ifdef DEBUG
+	std::cout<<"filled tree defined in miniTTree.cc"<<std::endl;
+#endif
 }
 
 DEFINE_FWK_MODULE(miniTTree);
