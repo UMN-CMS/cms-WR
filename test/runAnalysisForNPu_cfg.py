@@ -103,8 +103,7 @@ process.source = cms.Source("PoolSource",
                             secondaryFileNames = cms.untracked.vstring(options.secondaryFiles)
 )
 
-#process.MessageLogger.cerr.FwkReport.reportEvery = 5000
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 
 process.TFileService = cms.Service('TFileService', fileName = cms.string(options.output))
