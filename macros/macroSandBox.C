@@ -37,7 +37,8 @@
 
 using namespace std;
 
-#define nMinusOneCutEffsGenAndReco
+#define makeShiftedMCPileupFiles
+//#define nMinusOneCutEffsGenAndReco
 //#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
@@ -2246,5 +2247,38 @@ void macroSandBox(){
 #endif
 	//end nMinusOneCutEffsGenAndReco
 
+#ifdef makeShiftedMCPileupFiles
+	//read the MCPileup.root file in. this file contains one object - a TH1F histo with name pileup (different title)
+	//make two copies of the file with different names. In one file, shift the x bin values (nPU) up by 5 percent.
+	//In the other file, shift the x bin values (nPU) down by 5 percent.  The names of the histo in these two new
+	//files will be pileup, but the file names will be different.
+	TFile * existingPileupFile, upPileupFile, downPileupFile;
+	existingPileupFile = new TFile("../data/MCPileup.root","READ");
+
+	//read the pileup histo from existingPileupFile
+	TH1F * puShiftUp = ((TH1F*) existingPileupFile->FindObject("pileup"))->Clone("pileup");
+	puShiftUp->SetTitle("nPUMCShiftUp");
+	Int_t nbins = puShiftUp->GetNbinsX();
+	//shift all the nPU x axis values up by 5 percent
+	for(Int_t i=0){
+
+	}//end loop over all bins of puShiftUp
+
+	upPileupFile = new TFile("../data/MCPileupShiftUp.root","RECREATE");
+
+
+	delete upPileupFile;
+	
+	downPileupFile = new TFile("../data/MCPileupShiftDown.root","RECREATE");
+
+
+	delete existingPileupFile;
+	delete downPileupFile;
+
+
+
+#endif
+	//end makeShiftedMCPileupFiles
+	
 }///end macroSandBox()
 
