@@ -75,7 +75,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 #ifdef DEBUG
 	std::cout<<"entered analyze method in miniTTree.cc"<<std::endl;
 #endif
-	//myEvent.clear();
+	myEvent.clear();
 	//myEvent.run = event.id().run();
 	//myEvent.lumi = event.luminosityBlock();
 	//myEvent.event = event.id().event();
@@ -115,7 +115,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 #ifdef DEBUG
 	std::cout<<"declared all handles in miniTTree.cc"<<std::endl;
 #endif
-	sprintf(myEvent.datasetName, "%s", datasetName->c_str());
+	//sprintf(myEvent.datasetName, "%s", datasetName->c_str());
 
 	/*if(primary_vertex->size() > 0) {
 		for(auto pv : *primary_vertex)
