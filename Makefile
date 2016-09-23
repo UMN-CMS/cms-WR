@@ -1,6 +1,6 @@
 $(shell if [ ! -d "lib" ];then mkdir lib/; fi )
 
-CXXFLAGS=-Wall -pedantic -std=c++11
+CXXFLAGS=-Wall -pedantic -std=c++11 -g
 
 ROOT_LIB:=`root-config --libs --glibs`
 ROOT_FLAGS:=`root-config --cflags --ldflags`

@@ -1,9 +1,15 @@
 import ExoAnalysis.cmsWR.cross_sections as xs
 import os
+import sys
 import re
 import math
 
-datacards = os.listdir("datacards/")
+try: 
+	folder = sys.argv[1]
+except:
+	folder = "datacards/"
+
+datacards = os.listdir(folder)
 
 p = re.compile("WR(ee|mumu)jj_MASS(\d*).txt")
 filenames = []
@@ -13,7 +19,7 @@ for datacard in datacards:
 		ch, mass = m.groups()
 	except:
 		continue
-	filenames.append(( ch, mass, 'datacards/' + datacard))
+	filenames.append(( ch, mass, folder + datacard))
 
 print "#CHANNEL MASS XS(fb) SIG_NEVENTS SIG_RATE TT_RATE DY_RATE SIG_SD TT_SD DY_SD TT_SF DY_SF SIG_N TT_N DY_N SIG_ALPHA TT_ALPHA DY_ALPHA"
 for ch,mass,fn in sorted(filenames):
