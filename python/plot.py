@@ -19,6 +19,7 @@ class limit1d:
 		if xs is None:
 			xs = 1
 		self.xs = xs
+		self.lines = []
 	def add(self, mass, point):
 		median, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = point
 		self.masses.append(float(mass))
@@ -31,6 +32,8 @@ class limit1d:
 		self.observed.append(float(point))
 	def addTheory(self, theory):
 		self.theory = theory
+	def addLine(self, masses, line, name, color, style):
+		self.lines.append((masses, line, name, color, style))
 	def addObsLines(self, obs):
 		self.obslines = obs
 
@@ -108,7 +111,7 @@ class limit1d:
 		if self.theory:
 			ntheory = len(self.theory)
 			theory_mass = np.array(sorted(self.theory.keys()), dtype=float)
-			theory_limit = np.array( [ self.theory[mass] for mass in theory_mass], dtype=float)
+			theory_limit = np.array( [ self.theory[mass] for mass in theory_mass], dtype=float)*1000
 			g_theory = ROOT.TGraph(ntheory, theory_mass, theory_limit)
 			g_theory.SetLineWidth(3);
 			g_theory.SetLineColor(ROOT.kRed+2);
@@ -116,6 +119,7 @@ class limit1d:
 			g_theory.SetFillStyle(3002);
 			g_theory.SetFillColor(ROOT.kRed);
 			g_theory.Draw("L SAME")
+		
 
 		if self.observed:
 			nobs = len(self.observed)
@@ -130,7 +134,7 @@ class limit1d:
 			g_obs.SetFillStyle(3002);
 			g_obs.SetFillColor(ROOT.kBlue+2);
 			g_obs.Draw("L SAME")
-		
+
 		if self.observed:
 			leg.AddEntry(g_obs,"Observed limit","L")
 		leg.AddEntry(g_exp, "Expected limit","L")
@@ -139,6 +143,30 @@ class limit1d:
 		if self.theory:
 			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
 
+		arrays = []
+		graphs = []
+		massess = []
+		if self.lines:
+			for masses, line, name, color, style in self.lines:
+				try:
+					color = ROOT.__getattr__(color)
+				except:
+					pass
+				massess.append(np.array(masses, dtype=float))
+				arrays.append(np.array( line, dtype=float))
+				g = ROOT.TGraph(len(massess[-1]), massess[-1], arrays[-1])
+				graphs.append(g)
+				g.SetLineWidth(3);
+				g.SetLineColor(color);
+				g.SetLineStyle(style);
+				g.SetFillStyle(3002);
+				g.SetFillColor(color);
+				g.Draw("L")
+				leg.AddEntry(g,name,"L")
+				print massess[-1][:10]
+				print arrays[-1][:10]
+
+		
 		if self.obslines:
 			lines = []
 			for i in range(len(self.obslines)):
@@ -157,7 +185,7 @@ class limit1d:
 		latex.SetNDC(True)
 		latex.SetTextSize(0.03)
 		latex.SetTextFont(42)
-		latex.DrawLatex(0.72, 0.96, "2.64 fb^{-1} (13 TeV)")
+		latex.DrawLatex(0.72, 0.96, "13 TeV (2.64/fb)")
 
 		latex.DrawLatex(leg_x + .01, leg_y + leg_h + .01, "M_{W_{R}} = 2 M_{N_{l}}")
 
@@ -209,8 +237,8 @@ class limit2d:
 			self.effratio.Fill(mwr, mnu, ratio)
 			self.limits.Fill(mwr, mnu, limit)
 			#self.r.Fill(mwr, mnu, median * self.xs)
-			self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
-			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
+			self.exclusion.Fill(mwr, mnu, limit/(self.theory[(mwr,mnu)]*1000))
+			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)]*1000)
 	def draw(self, h, filename, zrange, ztitle, logz=False, cont=None):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
@@ -263,7 +291,7 @@ class limit2d:
 		latex.SetNDC(True)
 		latex.SetTextSize(0.03)
 		latex.SetTextFont(42)
-		latex.DrawLatex(0.62, 0.96, "2.64 fb^{-1} (13 TeV)")
+		latex.DrawLatex(0.75, 0.96, "13 TeV (2.64/fb)")
 
 		text = ROOT.TText(0.2,0.96,"CMS Preliminary")
 		text.SetNDC();
@@ -294,10 +322,10 @@ class limit2d:
 		graphs = contourFromTH2(self.exclusion, 1)
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 
-		self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0])
-		self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
+		self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq) [fb]" % self.channelname, logz=False, cont = graphs[0])
+		self.draw(self.limits,       filename + "_limit",     (1e-1, 1e3), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [fb]" % self.channelname,    logz=True,  cont = graphs[0])
 		self.draw(self.effratio,     filename + "_effratio",  (0   , 2), "efficiency #times acceptance (W_{R}, N_{l}) / (W_{R}, W_{R}/2) ",                         logz=False )
-		self.draw(self.crosssection, filename + "_xs",        (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(%sjj) [pb]" % self.channelname,                     logz=True  )
+		self.draw(self.crosssection, filename + "_xs",        (1e-1, 1e3), "#sigma(pp#rightarrow W_{R}) #times BR(%sjj) [fb]" % self.channelname,                     logz=True  )
 
 
 

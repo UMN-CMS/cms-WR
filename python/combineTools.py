@@ -64,9 +64,11 @@ class AnalysisResultsInterface:
 			tag = "",
 			SFfilename = configfolder + "/MCScaleFactors.txt",
 			makeplots = False,
+			fromFit = True,
 			):
 
 		self.makeplots = makeplots
+		self.fromFit = fromFit
 		if tag: tag = "_" + tag
 		self.filefmt_dict = {"base":base, "tag":tag}
 		self.filefmt = "{base}/selected_tree_{mode}_{minitreename}{chnlName}{tag}.root"
@@ -83,9 +85,47 @@ class AnalysisResultsInterface:
 
 		self.masses = []
 		self.results = {}
+		self.header = False
 
 	def getUncertainty(self, mode, channel):
 		return 1 + self.SF[mode][channel]["unc"]/self.SF[mode][channel]["SF"]
+
+		#		"syst": {
+		#			"mean":syst_means.tolist(),
+		#			"std":syst_stds.tolist(),
+		#			"unweighted_mean": syst_unweighted_means.tolist(),
+		#			"stat_err": stat_err.tolist(),
+		#			},
+		#		"stat": central_error.tolist(),
+		#		"central": {
+		#			"weighted": central_value.tolist(),
+		#			"unweighted": central_unweighted.tolist(),
+		#			}
+		#		}
+	def printResultsheader(self):
+		if self.header: return
+		self.header = True
+		print "[RESULTS]","key","mass",
+		ex = self.results[self.results.keys()[0]]
+		for key in ex:
+			if type(ex[key]) == type({}):
+				for nkey in ex[key]:
+					print key+"_"+nkey,
+			else:
+				print key,
+		print
+
+	def printResults(self,key,i):
+		self.printResultsheader()
+		print "[RESULTS]",key,self.masses[i],
+		for ikey in self.results[key]:
+			if type(self.results[key][ikey]) == type({}):
+				for jkey in self.results[key][ikey]:
+					print self.results[key][ikey][jkey][i],
+			else:
+				print self.results[key][ikey][i],
+		print
+
 
 	def getNEvents(self, MWR, channel, process, systematics, scale = 1.0):
 		""" returns mean, syst, stat """
@@ -105,6 +145,7 @@ class AnalysisResultsInterface:
 
 
 		mass_i = self.masses.index(MWR)
+		self.printResults(key, mass_i)
 
 		syst_mean = self.results[key]["syst"]["mean"][mass_i]*scale
 		tmp_syst  = self.results[key]["syst"]["std"] [mass_i]*scale
@@ -124,14 +165,21 @@ class AnalysisResultsInterface:
 
 		global_ratio = self.results[zerokey]["syst"]["mean"][0]*scale/( self.results[zerokey]["syst"]["unweighted_mean"][0] + 1)
 		if syst_unweighted < 3:
-			stat_err = global_ratio*syst_unweighted
+			syst_mean = global_ratio*syst_unweighted
+
+		debug  = False
+		if key == "ee_DYAMC" and MWR == 4200:
+			print "DEBUG: (scale, global_ratio)", (scale, global_ratio)
+			debug = True
 
 		var = tmp_syst**2 + stat_err**2
+		if debug: print "DEBUG: (var,tmp_syst,stat_err)",(var,tmp_syst,stat_err)
 		if syst_mean > 0:
 			mean = syst_mean
 			alpha = var/mean
 			N = mean**2/var - 1
 			rate = N*alpha
+			if debug: print "DEBUG: (mean,alpha,N,rate)",(mean,alpha,N,rate)
 			if N < 0:
 				mean = math.sqrt(var)
 				alpha = mean
@@ -147,24 +195,14 @@ class AnalysisResultsInterface:
 			alpha = global_ratio
 			rate = .0001
 
-		raw = [ syst_mean, rate, central_value, tmp_syst, stat_err,tmp_stat, var, syst_unweighted, ]
-		systematics.add(process, "lumi", 1.027)
-		raw += [1.027]
+		#fake scale of lumi
+		rate *= 40/2.64
+		N *= 40/2.64
 
+		systematics.add(process, "lumi", 1.027)
 		systematics.add(process, process + "_unc", (N,alpha))
-		raw +=[N,alpha]
-		
 		if process in ["DYAMC", "TT"]:
 			systematics.add(process,process + "_SF", self.getUncertainty(process, channel))
-			raw += [self.getUncertainty(process, channel)]
-		else:
-			raw += [0.0]
-
-		if "_800" == key[-4:]:
-			key = key[:-3] + "0800"
-		raw = ["%0.4e" % x for x in raw]
-		raw = ["raw", key, "%04d" % MWR] + raw
-		#print " ".join(raw)
 
 		return rate
 
@@ -173,8 +211,8 @@ class AnalysisResultsInterface:
 		means = np.zeros(len(self.masses))
 		stds = np.zeros(len(self.masses))
 		if not draw_str:
-			draw_str = "NEventsInRange[%d]"
-			#draw_str = "FitIntegralInRange[%d]*Normalization"
+			#draw_str = "NEventsInRange[%d]"
+			draw_str = "FitIntegralInRange[%d]"
 
 		if self.makeplots: c = r.TCanvas("c", "c", 600, 600)
 		for mass_i in range(len(self.masses)):
@@ -201,28 +239,38 @@ class AnalysisResultsInterface:
 	def ProcessFile(self, key, f):
 		if key in self.results: return
 
+
 		self.currentkey = key
 		tree = f.Get("syst_tree")
 		if not tree or tree.GetEntries() == 0:
 			tree = f.Get("central_value_tree")
-		syst_means, syst_stds = self.getMeanStd(tree) 
-		syst_unweighted_means, __ = self.getMeanStd(tree, "UnweightedNEventsInRange[%d]")
-		stat_err, __              = self.getMeanStd(tree, "ErrorEventsInRange[%d]")
 
 		central_tree = f.Get("central_value_tree")
 		central_tree.GetEntry(0)
-		try:
+
+		if "signal" in key: 
+			syst_means, syst_stds = self.getMeanStd(tree, draw_str="NEventsInRange[%d]") 
+			stat_err, __              = self.getMeanStd(tree, "ErrorEventsInRange[%d]")
 			central_value = np.array(central_tree.NEventsInRange)
-		except AttributeError:
-			central_value = np.zeros(len(self.masses))
-		try:
 			central_error = np.array(central_tree.ErrorEventsInRange)
-		except AttributeError:
-			central_error = np.zeros(len(self.masses))
-		try:
 			central_unweighted = np.array(central_tree.UnweightedNEventsInRange)
-		except AttributeError:
-			central_unweighted = np.zeros(len(self.masses))
+		elif self.fromFit:
+			syst_means, syst_stds = self.getMeanStd(tree, draw_str="FitIntegralInRange[%d]") 
+			stat_err, __              = self.getMeanStd(tree, "FitErrorInRange[%d]")
+			central_value = np.array(central_tree.FitIntegralInRange)
+			central_error = np.array(central_tree.FitErrorInRange)
+			central_unweighted = np.array(central_tree.UnweightedNEventsInRange)
+		else:
+			syst_means, syst_stds = self.getMeanStd(tree, draw_str="NEventsInRange[%d]") 
+			stat_err, __              = self.getMeanStd(tree, "ErrorEventsInRange[%d]")
+			central_value = np.array(central_tree.NEventsInRange)
+			central_error = np.array(central_tree.ErrorEventsInRange)
+			central_unweighted = np.array(central_tree.UnweightedNEventsInRange)
+
+		syst_unweighted_means, __ = self.getMeanStd(tree, "UnweightedNEventsInRange[%d]")
+
+
+
 
 		if "TT" in key or "DYAMC" in key:
 			if "TT" in key: mode = "TT"

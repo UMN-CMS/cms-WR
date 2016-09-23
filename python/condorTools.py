@@ -140,13 +140,14 @@ class Job:
 		self.cf.write()
 		self.written = True
 
-	def submit(self, mode = "condor"):
+	def submit(self, mode = "condor", queue = "8nh"):
 		if mode == "interactive":
 			for command in self.commands:
 				call( command.split())
 		elif mode == "lsf":
-			bsub_prefix = "bsub -q 1nd "
+			bsub_prefix = "bsub -q " + queue + ' '
 			for command in self.commands:
+				print bsub_prefix + command
 				call( (bsub_prefix + command).split())
 		elif mode == "condor":
 			if not self.written: self.cf.write()
