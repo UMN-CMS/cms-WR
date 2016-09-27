@@ -164,7 +164,7 @@ class AnalysisResultsInterface:
 			key = key[:-3] + "0800"
 		raw = ["%0.4e" % x for x in raw]
 		raw = ["raw", key, "%04d" % MWR] + raw
-		print " ".join(raw)
+		#print " ".join(raw)
 
 		return rate
 
@@ -188,8 +188,6 @@ class AnalysisResultsInterface:
 			h = r.gDirectory.Get("htemp")
 			means[mass_i] = h.GetMean()
 			stds[mass_i] = h.GetStdDev()
-
-			if ms == "0": print "debug", draw_str, self.currentkey, means
 
 			if self.makeplots:
 				r.gStyle.SetOptStat(1001110)
@@ -278,7 +276,7 @@ class AnalysisResultsInterface:
 
 		filename = self.filefmt.format(**self.filefmt_dict)
 		self.filefmt_dict["tag"] = oldtag
-		print "Opening File ", filename
+		#print "Opening File ", filename
 		f = r.TFile.Open(filename)
 		if not f: raise IOError
 		return f

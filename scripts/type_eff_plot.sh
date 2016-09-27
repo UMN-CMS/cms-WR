@@ -26,4 +26,4 @@ cat $1.tmp |column -t > $1
 rm $1.tmp
 rm m ee eb bb glb ee_eff mumu_eff
 
-python scripts/lepton_eff_notrigger.py
+python scripts/${1/.txt/.py}
