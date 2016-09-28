@@ -80,7 +80,8 @@ void printSystStdDevToFile(){
 
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
-	int wrMassPoints[] = {800,1000,1600,2200,2800,3600};
+	int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
+	//int wrMassPoints[] = {800,1600,2600,3800,5000};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -88,8 +89,8 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/"};
-	//string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso"};
+	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/","3200toysAllSyst/"};
+	//string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso","all sources"};
 	string relDirPaths[] = {"3200toysAllSyst/"};
 	string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
@@ -99,10 +100,10 @@ void printSystStdDevToFile(){
 
 	///user defined path to output txt file created by this macro, which lists systematic uncertainties for different processes
 	///in both lepton channels, and several mass windows
-	string pathToSystUncOutputFile = "systAndStatUncertaintiesFromAnalysisCpp.txt";
+	string pathToSystUncOutputFile = "systUncertaintiesFromAnalysisCpp.txt";
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
-	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tsyst and stat uncert percent"<< endl;
+	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tsyst plus stat uncert percent"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -184,7 +185,7 @@ void printSystStdDevToFile(){
 				cout<<"index used in NEventsInRange and ErrorEventsInRange=\t"<< nEventsIndex <<endl;
 				cout<<"\t"<<endl;
 #endif
-				writeToSystFile << wrMassVect[m] << "  &  "<< chMapIt->first << "  &  " << uncertTagNamesVect[s] << "  &  " << mean << "  &  " << stdDev << "  &  "<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << "  DBLSLSH"<< endl;
+				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << endl;
 			}//end loop over TChains
 
 			//loop over chainPointers elements, and clear allocated memory
