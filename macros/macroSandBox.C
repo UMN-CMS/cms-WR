@@ -37,8 +37,8 @@
 
 using namespace std;
 
-#define makeShiftedMCPileupFiles
-//#define nMinusOneCutEffsGenAndReco
+//#define makeShiftedMCPileupFiles
+#define nMinusOneCutEffsGenAndReco
 //#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
@@ -2158,8 +2158,11 @@ void macroSandBox(){
 	string dir= "../rootfilesfornminusoneefficiencies/";
 
 	//inputFiles and processTags must have the same number of elements
-	string inputFiles[] = {"ttbarEEForNminusOne_withFlavorFilters.root", "dyjetsEEForNminusOne_withFlavorFilters.root", "wrEE_2000_1000_ForNminusOne_withFlavorFilters.root","ttbarMuMuForNminusOne_withFlavorFilters.root", "dyjetsMuMuForNminusOne_withFlavorFilters.root", "wrMuMu_2000_1000_ForNminusOne_withFlavorFilters.root","wrEE_1000_500_ForNminusOne_withFlavorFilters.root", "wrMuMu_1000_500_ForNminusOne_withFlavorFilters.root"};
-	string processTags[] = {"TTtoEE","DYtoEE","WRtoEE_2000_1000","TTtoMuMu","DYtoMuMu","WRtoMuMu_2000_1000","WRtoEE_1000_500","WRtoMuMu_1000_500"};
+	//string inputFiles[] = {"ttbarEEForNminusOne_withFlavorFilters.root", "dyjetsEEForNminusOne_withFlavorFilters.root", "wrEE_2000_1000_ForNminusOne_withFlavorFilters.root","ttbarMuMuForNminusOne_withFlavorFilters.root", "dyjetsMuMuForNminusOne_withFlavorFilters.root", "wrMuMu_2000_1000_ForNminusOne_withFlavorFilters.root","wrEE_1000_500_ForNminusOne_withFlavorFilters.root", "wrMuMu_1000_500_ForNminusOne_withFlavorFilters.root"};
+	//string processTags[] = {"TTtoEE","DYtoEE","WRtoEE_2000_1000","TTtoMuMu","DYtoMuMu","WRtoMuMu_2000_1000","WRtoEE_1000_500","WRtoMuMu_1000_500"};
+	string inputFiles[] = {"wrEE_800_400_ForNminusOne_withFlavorFilters.root", "wrMuMu_800_400_ForNminusOne_withFlavorFilters.root"};
+	string processTags[] = {"WRtoEE_800_400","WRtoMuMu_800_400"};
+
 
 	vector<string> inputFilesVect(inputFiles,inputFiles + sizeof(inputFiles)/sizeof(string));
 	vector<string> processTagsVect(processTags,processTags + sizeof(processTags)/sizeof(string));
@@ -2173,10 +2176,11 @@ void macroSandBox(){
 
 	//chainNames contains the names of TChains stored in each input root file
 	//chainNameVect and chainTagVect must have the same number of elements
-	string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics","analyzerSix/genKinematicsUsingGenQuarksWithoutGenMotherRequirementsWithGenFlavorReqs","analyzerSeven/genKinematicsUsingGenJetsWithoutGenMotherRequirementsWithGenFlavorReqs"};
-	string chainTags[] = {"genWithQuarksWithMatching","genWithJetsWithMatching","recoPassingJetLeptonId","genWithQuarksWithGenFlavorReqs","genWithJetsWithGenFlavorReqs"};
-	//string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFive/recoKinematics"};
-	//string chainTags[] = {"genWithQuarksWithMatching","recoPassingJetLeptonId"};
+	//string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics","analyzerSix/genKinematicsUsingGenQuarksWithoutGenMotherRequirementsWithGenFlavorReqs","analyzerSeven/genKinematicsUsingGenJetsWithoutGenMotherRequirementsWithGenFlavorReqs"};
+	//string chainTags[] = {"genWithQuarksWithMatching","genWithJetsWithMatching","recoPassingJetLeptonId","genWithQuarksWithGenFlavorReqs","genWithJetsWithGenFlavorReqs"};
+	string chainNames[] = {"analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics",};
+	string chainTags[] = {"genWithJetsWithMatching","recoPassingJetLeptonId"};
+	
 	vector<string> chainNameVect(chainNames,chainNames + sizeof(chainNames)/sizeof(string));
 	int nChains = chainNameVect.size();
 	vector<string> chainTagVect(chainTags,chainTags + sizeof(chainTags)/sizeof(string));
@@ -2252,6 +2256,7 @@ void macroSandBox(){
 	//make two copies of the file with different names. In one file, shift the x bin values (nPU) up by 5 percent.
 	//In the other file, shift the x bin values (nPU) down by 5 percent.  The names of the histo in these two new
 	//files will be pileup, but the file names will be different.
+	/*
 	TFile * existingPileupFile, upPileupFile, downPileupFile;
 	existingPileupFile = new TFile("../data/MCPileup.root","READ");
 
@@ -2274,7 +2279,7 @@ void macroSandBox(){
 
 	delete existingPileupFile;
 	delete downPileupFile;
-
+*/
 
 
 #endif
