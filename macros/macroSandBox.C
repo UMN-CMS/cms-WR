@@ -37,8 +37,9 @@
 
 using namespace std;
 
+#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
-#define nMinusOneCutEffsGenAndReco
+//#define nMinusOneCutEffsGenAndReco
 //#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
@@ -154,7 +155,7 @@ void makeAndSaveSingleHistoFromTree(TChain * chain,string canvName,string treeDr
 
 
 ///use this fxn to plot and save one histogram using one branch from one TTree (or TChain) with cuts
-void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,string cuts,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName,Float_t efficiencyThreshold,bool saveCutEffToFile,string cutEffsFilePath,string branchName){
+void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,string cuts,string treeDrawArgs,string histName,string histTitle,string xAxisTitle,string outputFileName,Float_t efficiencyThreshold,bool saveCutEffToFile,string cutEffsFilePath,string branchName,bool multiCutEff){
 #ifdef DEBUG
 	cout<<"in makeAndSaveSingleHistoFromTreeWithCuts fxn"<<endl;
 #endif
@@ -182,13 +183,23 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 #endif
 	//adjust the horizontal axis range
 	resetXaxisLimits(tempHist);	///< defined in dumpTreePlots.C
-	if(saveCutEffToFile){
+	if(saveCutEffToFile && !multiCutEff){
 		Float_t cutEffDenom = (Float_t) chain->GetEntries(cuts.c_str());
 		Float_t cutEffNumer = (Float_t) chain->GetEntries( (cuts + " && " + branchName + " > " + to_string(efficiencyThreshold) ).c_str() );
 		ofstream writeToCutEffFile(cutEffsFilePath.c_str(),ofstream::app);
 		writeToCutEffFile << chain->GetTitle() << "  &  " << histName << "  &  "<< (cutEffNumer/cutEffDenom) << "  DBLSLSH" << endl;
 		cout<<"efficiency of lower bound cut with threshold=\t"<< efficiencyThreshold <<"\t=\t"<< (cutEffNumer/cutEffDenom) <<endl;
 	}
+
+	if(saveCutEffToFile && multiCutEff){
+		//if multiCutEff is true, then the field named branchName will have several branch names and the value of each cut"
+		Float_t cutEffDenom = (Float_t) chain->GetEntries(cuts.c_str());
+		Float_t cutEffNumer = (Float_t) chain->GetEntries( (cuts + " && " + branchName).c_str() );
+		ofstream writeToCutEffFile(cutEffsFilePath.c_str(),ofstream::app);
+		writeToCutEffFile << chain->GetTitle() << "  &  " << branchName << "  &  "<< (cutEffNumer/cutEffDenom) << "  DBLSLSH" << endl;
+		cout<<"efficiency of the cuts \t"<< branchName <<"\t=\t"<< (cutEffNumer/cutEffDenom) <<endl;
+	}
+
 
 	if(xAxisTitle.find_first_of(" not ") != string::npos && tempHist->GetNbinsX() < 5) tempHist->Draw("HISTTEXT90");	///<for histos showing how often a leading or subleading GEN particle is not matched to the expected GEN mother
 	else tempHist->Draw("");
@@ -2045,25 +2056,25 @@ void macroSandBox(){
 			//if(plotArg[j] == "massGenFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithFit(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(3000,"+to_string(wrMassArr[i]/2)+","+to_string((1.5)*wrMassArr[i]) +")",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_withBWFit", fitcrv);
 			
 			//determine efficiency of leading and subleading lepton and jet pt cuts
-			if(plotArg[j] == "ptGenLeptFromFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],60.,true,cutEffOutputFilePath,"ptGenLeptFromFstHvyPtcl");
-			if(plotArg[j] == "ptGenLeptFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],50.,true,cutEffOutputFilePath,"ptGenLeptFromScdHvyPtcl");
-			if(plotArg[j] == "ptGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.,true,cutEffOutputFilePath,"ptGenQuarkOneFromScdHvyPtcl");
-			if(plotArg[j] == "ptGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.,true,cutEffOutputFilePath,"ptGenQuarkTwoFromScdHvyPtcl");
+			if(plotArg[j] == "ptGenLeptFromFstHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],60.,true,cutEffOutputFilePath,"ptGenLeptFromFstHvyPtcl",false);
+			if(plotArg[j] == "ptGenLeptFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],50.,true,cutEffOutputFilePath,"ptGenLeptFromScdHvyPtcl",false);
+			if(plotArg[j] == "ptGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.,true,cutEffOutputFilePath,"ptGenQuarkOneFromScdHvyPtcl",false);
+			if(plotArg[j] == "ptGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],40.,true,cutEffOutputFilePath,"ptGenQuarkTwoFromScdHvyPtcl",false);
 
 			//calculate efficiency of four object mass cut
-			if(plotArg[j] == "fourObjMassFromGenObjsFromFstAndScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],600.,true,cutEffOutputFilePath,"fourObjMassFromGenObjsFromFstAndScdHvyPtcl");
+			if(plotArg[j] == "fourObjMassFromGenObjsFromFstAndScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],600.,true,cutEffOutputFilePath,"fourObjMassFromGenObjsFromFstAndScdHvyPtcl",false);
 
 			//efficiency of MLL cut
-			if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],200.,true,cutEffOutputFilePath,"dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl");
+			if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],200.,true,cutEffOutputFilePath,"dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl",false);
 
 			//efficiency of dR lepton jet cuts
-			if(plotArg[j] == "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl");
-			if(plotArg[j] == "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl");
-			if(plotArg[j] == "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl");
-			if(plotArg[j] == "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl");
+			if(plotArg[j] == "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl",false);
+			if(plotArg[j] == "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl",false);
+			if(plotArg[j] == "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl",false);
+			if(plotArg[j] == "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl",false);
 
 			//make and save plots from each branch of the input tree
-			//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"");
+			//makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"",false);
 
 		}//end loop over TChain branches
 
@@ -2222,25 +2233,25 @@ void macroSandBox(){
 
 			for(int j=0; j<nBranches ; j++){
 				//calculate N-1 efficiency of lepton and hadron pt cuts
-				if(plotArg[j] == "ptLeptOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],60.,true,cutEffOutputFilePath,"ptLeptOne");
-				if(plotArg[j] == "ptLeptTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],50.,true,cutEffOutputFilePath,"ptLeptTwo");
-				if(plotArg[j] == "ptQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],40.,true,cutEffOutputFilePath,"ptQuarkOne");
-				if(plotArg[j] == "ptQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],40.,true,cutEffOutputFilePath,"ptQuarkTwo");
+				if(plotArg[j] == "ptLeptOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],60.,true,cutEffOutputFilePath,"ptLeptOne",false);
+				if(plotArg[j] == "ptLeptTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],50.,true,cutEffOutputFilePath,"ptLeptTwo",false);
+				if(plotArg[j] == "ptQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],40.,true,cutEffOutputFilePath,"ptQuarkOne",false);
+				if(plotArg[j] == "ptQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],40.,true,cutEffOutputFilePath,"ptQuarkTwo",false);
 
 				//calculate N-1 efficiency of four object mass cut
-				if(plotArg[j] == "dileptonDihadronMass") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],600.,true,cutEffOutputFilePath,"dileptonDihadronMass");
+				if(plotArg[j] == "dileptonDihadronMass") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],600.,true,cutEffOutputFilePath,"dileptonDihadronMass",false);
 
 				//N-1 efficiency of dilepton mass cut
-				if(plotArg[j] == "dileptonMass") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],200.,true,cutEffOutputFilePath,"dileptonMass");
+				if(plotArg[j] == "dileptonMass") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],200.,true,cutEffOutputFilePath,"dileptonMass",false);
 
 				//N-1 efficiency of dR lepton hadron cuts
-				if(plotArg[j] == "dRleptonOneQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonOneQuarkOne");
-				if(plotArg[j] == "dRleptonOneQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonOneQuarkTwo");
-				if(plotArg[j] == "dRleptonTwoQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonTwoQuarkOne");
-				if(plotArg[j] == "dRleptonTwoQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonTwoQuarkTwo");
+				if(plotArg[j] == "dRleptonOneQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonOneQuarkOne",false);
+				if(plotArg[j] == "dRleptonOneQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonOneQuarkTwo",false);
+				if(plotArg[j] == "dRleptonTwoQuarkOne") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonTwoQuarkOne",false);
+				if(plotArg[j] == "dRleptonTwoQuarkTwo") makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.4,true,cutEffOutputFilePath,"dRleptonTwoQuarkTwo",false);
 
 				//save plots from all other variables which are not used in offline cuts
-				else makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.,false,"","");
+				else makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r],0.,false,"","",false);
 
 			}//end loop over TChain branches
 			inputChain->Delete();
@@ -2250,6 +2261,100 @@ void macroSandBox(){
 
 #endif
 	//end nMinusOneCutEffsGenAndReco
+
+
+#ifdef multiStepCutEffsWRandBkgnds
+	/**use this ifdef to calculate the efficiency of several cuts in a fixed order:
+	 * the efficiency of events to pass the pT and eta cuts on leptons and jets, given events which have two jets and leptons passing ID
+	 * the efficiency of evts to pass the dR(L,J) cuts, given events which pass the pT and eta cuts on leptons and jets
+	 * the efficiency of evts to pass the combined MLL and MLLJJ cuts, given evts which pass the dR(L,J) and pT and eta cuts
+	 **/
+
+	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
+	string dir= "../rootfilesfornminusoneefficiencies/";
+
+	//inputFiles and processTags must have the same number of elements
+	string inputFiles[] = {"ttbarEEForNminusOne_withFlavorFilters.root", "dyjetsEEForNminusOne_withFlavorFilters.root", "wrEE_2000_1000_ForNminusOne_withFlavorFilters.root","ttbarMuMuForNminusOne_withFlavorFilters.root", "dyjetsMuMuForNminusOne_withFlavorFilters.root", "wrMuMu_2000_1000_ForNminusOne_withFlavorFilters.root"};
+	string processTags[] = {"TTtoEE","DYtoEE","WRtoEE_2000_1000","TTtoMuMu","DYtoMuMu","WRtoMuMu_2000_1000"};
+	//string inputFiles[] = {"wrEE_2000_1000_ForNminusOne_withFlavorFilters.root", "wrMuMu_2000_1000_ForNminusOne_withFlavorFilters.root"};
+	//string processTags[] = {"WRtoEE_2000_1000","WRtoMuMu_2000_1000"};
+	//string inputFiles[] = {"wrMuMu_2000_1000_ForNminusOne_withFlavorFilters.root"};
+	//string processTags[] = {"WRtoMuMu_2000_1000"};
+
+
+	vector<string> inputFilesVect(inputFiles,inputFiles + sizeof(inputFiles)/sizeof(string));
+	vector<string> processTagsVect(processTags,processTags + sizeof(processTags)/sizeof(string));
+	int nBins = inputFilesVect.size();
+	if(nBins != processTagsVect.size()){
+		cout<<"inputFilesVect and processTagsVect do not have the same number of elements. exiting now"<<endl;
+		exit(1);
+	}
+	gStyle->SetTitleOffset(1.4,"Y");
+	gStyle->SetOptStat("");
+
+	//chainNames contains the names of TChains stored in each input root file
+	//chainNameVect and chainTagVect must have the same number of elements
+	//string chainNames[] = {"analyzerTwo/genKinematicsUsingGenQuarksWithGenMotherRequirements","analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics","analyzerSix/genKinematicsUsingGenQuarksWithoutGenMotherRequirementsWithGenFlavorReqs","analyzerSeven/genKinematicsUsingGenJetsWithoutGenMotherRequirementsWithGenFlavorReqs"};
+	//string chainTags[] = {"genWithQuarksWithMatching","genWithJetsWithMatching","recoPassingJetLeptonId","genWithQuarksWithGenFlavorReqs","genWithJetsWithGenFlavorReqs"};
+	string chainNames[] = {"analyzerFour/genKinematicsUsingGenJetsWithGenMotherRequirements","analyzerFive/recoKinematics",};
+	string chainTags[] = {"genWithJetsWithMatching","recoPassingJetLeptonId"};
+	
+	vector<string> chainNameVect(chainNames,chainNames + sizeof(chainNames)/sizeof(string));
+	int nChains = chainNameVect.size();
+	vector<string> chainTagVect(chainTags,chainTags + sizeof(chainTags)/sizeof(string));
+	if(nChains != chainTagVect.size()){
+		cout<<"chainNameVect and chainTagVect do not have the same number of elements. exiting now"<<endl;
+		exit(1);
+	}
+	
+
+	//element number i in plotArg is tied to element number i in plotCut   don't change the order
+	//plotting cuts, arguments, and X axis labels for N-1 efficiencies of lepton and jet pT cuts, dilepton mass cut, dR lepton jet cuts, and four obj mass cut at GEN lvl
+	string cutEffOutputFilePath = "cutFlowEfficienciesGENandRECO_DY_TTBar_WR.txt";
+	string plotArg[] = {"dileptonMass", "ptLeptOne", "ptLeptTwo"};
+
+	//use this stdNMinusOneEffPlotCut in conjunction with other cuts when calculating N-1 cut efficiencies
+	string stdNMinusOneEffPlotCut = " && fabs(etaLeptOne)<2.4 && fabs(etaLeptTwo)<2.4 && fabs(etaQuarkTwo)<2.4 && fabs(etaQuarkOne)<2.4";
+
+	//use allCutsExceptStd to apply all offline cuts when plotting variables like dileptonPt or etaLeptTwo for which we are not trying to measure the N-1 efficiency
+	string allCutsExceptStd = "ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dileptonMass>200 && dileptonDihadronMass>600 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4";
+	
+	string plotCut[] = {"","ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40","ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4"};
+
+	//different variables can be plotted every time, the plots will not be used. only the efficiencies written to the txt file will be used
+	string plotXaxisLabel[] = {"Dilepton Mass [GeV]", "Lead lepton P_{T} [GeV]", "Sublead lepton P_{T} [GeV]"};
+
+	string stdPlotTitle = "CMS Private                 #surds = 13 TeV";
+	string plotDir = "plotHolder/cutFlowEfficiencies";
+	
+	vector<string> vectForNEntries(plotCut,plotCut + sizeof(plotCut)/sizeof(string));
+	int nBranches = vectForNEntries.size();
+
+	for(int i=0; i<nBins ; i++){
+		///loop over input root files
+
+		for(int r=0; r<nChains; r++){
+			//loop over TChains within each input root file
+	
+			TChain * inputChain = new TChain(chainNameVect[r].c_str(),(processTagsVect[i]+"_"+chainTagVect[r]).c_str());
+			inputChain->Add( (dir+inputFilesVect[i]).c_str() );
+
+			for(int j=0; j<nBranches ; j++){
+
+				//need a cut which is always true in order for j equal 0 condition to make a plot
+				if(j==0) makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),"2>1"+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r]+"_noCuts",0.,true,cutEffOutputFilePath,"ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40",true);
+				if(j==1) makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r]+"_ptEtaCuts",0.,true,cutEffOutputFilePath,"ptLeptOne>60 && ptLeptTwo>50 && ptQuarkOne>40 && ptQuarkTwo>40 && dRleptonOneQuarkOne>0.4 && dRleptonOneQuarkTwo>0.4 && dRleptonTwoQuarkOne>0.4 && dRleptonTwoQuarkTwo>0.4",true);
+				if(j==2) makeAndSaveSingleHistoFromTreeWithCuts(inputChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j]+"_"+processTagsVect[i]+"_"+chainTagVect[r]+"_ptEtaDrCuts",0.,true,cutEffOutputFilePath,allCutsExceptStd,true);
+				
+			}//end loop over TChain branches
+			inputChain->Delete();
+		}//end loop over TChains within each input root file
+
+	}///end loop over input files	
+
+#endif
+	//end multiStepCutEffsWRandBkgnds
+
 
 #ifdef makeShiftedMCPileupFiles
 	//read the MCPileup.root file in. this file contains one object - a TH1F histo with name pileup (different title)
