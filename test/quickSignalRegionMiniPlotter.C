@@ -25,27 +25,25 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
-//to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
-//to change from MuMu to EE, simply search for all instances of EE, and replace them with MuMu
-//BELOW THIS LINE
-Selector::tag_t channel = Selector::MuMu;
-
 /**
- * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
- * data as points and all MC as one stacked histogram with several fill colors.
+ * this macro is designed to read several TChains, representing WR signal and bkgnd MC, apply no cuts, and plot
+ * WR signal MC as a red curve and all bkgnd MC as one stacked histogram with several fill colors.
  *
- * This macro should be used by itself on minitrees which have been processed with analysis.cpp, -c MuMu
- * or MuMu, and --isLowDiLepton true.
+ * This macro should be used by itself on minitrees processed by analysis.cpp with -c EE or -c MuMu
+ * and signal region requirements (i.e. no additional strings passed to analysis.cpp on the cmd line).
  *
  */
 
+//switch Selector tag here, and everything else will change accordingly
+Selector::tag_t channel = Selector::MuMu;
+
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
-void quickMiniPlotterNonTandPSidebands(){
+void quickSignalRegionMiniPlotter(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
-  TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
-  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
@@ -54,14 +52,23 @@ void quickMiniPlotterNonTandPSidebands(){
   TString localDir = "../analysisCppOutputRootFiles/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
+  case Selector::EE:
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
+	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
+    tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+    data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+    break;
   case Selector::MuMu:
-    dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
-	tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
-    //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
-	wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandMuMu.root");
-    wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandMuMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandMuMu.root");
-    data = chain_data->Add(localDir+"selected_tree_data_lowdileptonsidebandMuMu.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
+    tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
+	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+    data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -110,35 +117,26 @@ void quickMiniPlotterNonTandPSidebands(){
     drawPlots(hs_DY[i],hs_ttbar[i],hs_WJets[i],hs_WZ[i],hs_ZZ[i],hs_data[i],xtitles[i],fnames[i]);
   }
   
-}//end quickMiniPlotterNonTandPSidebands()
+}//end quickSignalRegionMiniPlotter()
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",50,0,500);
+  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",50,0,700);
   TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",50,-3,3);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",50,-3.15,3.15);
-  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",50,0,500);
+  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",50,0,700);
   TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",50,-3,3);
   TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",50,-3.15,3.15);
 
-  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",50,0,500);
+  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",50,0,700);
   TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",50,-3,3);
   TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",50,-3.15,3.15);
-  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,500);
+  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
-
-  //variable bin widths only for WR mass plot
-  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};	//original
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass
-  Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
-  
-  float dilepton_max = 250.;
-  if(channel == Selector::EMu)
-    dilepton_max = 1000;
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,500,3200);
+ 
+  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,150,1600);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
   Long64_t nEntries = chain->GetEntries();
@@ -156,11 +154,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
-	//if(myEvent->dR_leadlepton_leadjet < 1.2 || myEvent->dR_leadlepton_subleadjet < 1.2 || myEvent->dR_subleadlepton_leadjet < 1.2 || myEvent->dR_subleadlepton_subleadjet < 1.2) continue;
-	//if(myEvent->lead_jet_pt < 100 || myEvent->sublead_jet_pt < 100) continue;
+	if(myEvent->WR_mass < 600.) continue;
 
-
-    h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
     h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
@@ -195,46 +191,29 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
-  //normalize histo bins
-  unsigned int max = hs->size();
-  for(unsigned int i=0; i<max; i++){
-	  //get num bins in histo i
-	  Int_t nBins = (hs->at(i))->GetNbinsX();
-	  for(Int_t j=1; j<=nBins; j++){
-		  //in each bin, divide the bin contents by the bin width
-		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
-		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
-		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
-		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
-		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
-	  }//end loop over bins in histo
-
-  }//end loop over histos in vector
-
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
-  hs_DY->Sumw2();
+  TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
+  leg->AddEntry( hs_DY, "DY" ) ; 
+  leg->AddEntry( hs_ttbar, "TT" ) ;
+  leg->AddEntry( hs_WJets, "WJets" ) ; 
+  leg->AddEntry( hs_WZ, "WZ" ) ; 
+  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
+  leg->AddEntry( hs_data, "W_{R} Signal","l");
+  leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{NuR}=1.1 TeV","");
+  leg->SetFillColor( kWhite ) ; 
+
+  hs_data->Sumw2();
   hs_ttbar->Sumw2();
   hs_WJets->Sumw2();
   hs_WZ->Sumw2();
   hs_ZZ->Sumw2();
-  hs_data->Sumw2();
-
-  TLegend *leg = new TLegend( 0.72, 0.70, 0.98, 0.90 ) ; 
-  leg->AddEntry( hs_DY, "DY" ) ; 
-  leg->AddEntry( hs_ttbar, "ttbar" ) ;
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
-  leg->AddEntry( hs_WZ, "WZ" ) ; 
-  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
-  //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
-  leg->AddEntry( hs_data, "Data");
-  leg->SetFillColor( kWhite ) ; 
-
-
+  hs_DY->Sumw2();
+  
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
-  //mycanvas->cd();	//only needed when no ratio plot is drawn
+  mycanvas->cd();	//only needed when no ratio plot is drawn
   THStack* th = new THStack();
   hs_DY->SetFillColor(kYellow);
   hs_ttbar->SetFillColor(kGreen);
@@ -242,37 +221,37 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
-  th->Add(hs_WJets);
   th->Add(hs_ZZ);
-  th->Add(hs_ttbar);
+  th->Add(hs_WJets);
   th->Add(hs_DY);
-  hs_data->SetMarkerStyle(20);
+  th->Add(hs_ttbar);
+  hs_data->SetLineColor(kRed);
+  hs_data->SetLineWidth(2);
 
-  /*for ratio plot*/
+
+  /*for ratio plot
   Double_t eps = 0.001;
   TPad* p1 = new TPad("p1","p1",0,0.25,1,1,0); p1->Draw();
   TPad* p2 = new TPad("p2","p2",0,0.1,1,0.25+eps,0); p2->Draw();
   p1->SetBottomMargin(0);
   p2->SetTopMargin(0);   
   p1->cd();
-  /**/
+  */
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   th->Draw("histo");
-  hs_data->Draw("epsame");
+  hs_data->Draw("histo same");
+  th->Draw("histo same");
   TString ytitle = "Events/(";
   ytitle += (th->GetXaxis()->GetNbins());
   ytitle += ")";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
-  if(fname.EqualTo("Mlljj")){
-	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events PER GeV"), hs_data->GetYaxis()->SetTitle("Events PER GeV");
-	  Int_t maxBin = hs_data->GetNbinsX();
-  }
-  th->GetYaxis()->SetTitleOffset(1.3);
-
+  hs_data->GetYaxis()->SetTitle(ytitle.Data());
+  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+ 
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
@@ -280,28 +259,21 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->SetLabelSize(0.1,"x");
   leg->Draw(); 
   mycanvas->cd();
-  p2->cd();	//for ratio plot
+  //p2->cd();	//for ratio plot
   ratio->Sumw2();
   ratio->SetStats(0);
 
-  hs_DY->Add(hs_ttbar);
-  hs_DY->Add(hs_WJets);
-  hs_DY->Add(hs_WZ);
-  hs_DY->Add(hs_ZZ);
-  if(fname.EqualTo("Mll") || fname.EqualTo("Mlljj") ){
-	  Float_t dataMCratio = (hs_data->Integral()/hs_DY->Integral());
-	  Float_t dataEntries = hs_data->GetEntries();
-	  Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());
-	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
-	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
-  }
+  hs_ttbar->Add(hs_WJets);
+  hs_ttbar->Add(hs_WZ);
+  hs_ttbar->Add(hs_ZZ);
+  hs_ttbar->Add(hs_DY);
 
-  ratio->Divide(hs_DY);
+  ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,3.);	//upper limit 3. for mu, 2. for ele
+  ratio->GetYaxis()->SetRangeUser(0.5,2.0);
   ratio->GetYaxis()->SetNdivisions(505);
-  /*for ratio plot*/
+  /*for ratio plot
   ratio->Draw("p");
   float xmax = ratio->GetXaxis()->GetXmax();
   float xmin = ratio->GetXaxis()->GetXmin();
@@ -309,21 +281,18 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Draw("p");
   f1->Draw("same");
   mycanvas->cd();
-  /**/
+  mycanvas->Update();
+  */
 
-  TString fn = "";
-  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-  //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
-  //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
-  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
-  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
- 
+  TString fn = fname;
+  if(channel == Selector::EE) fn += "_EEChannelWRandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+  if(channel == Selector::MuMu) fn += "_MuMuChannelWRandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
-	  p1->SetLogy();	//for ratio plot
-	  //mycanvas->SetLogy();	//only needed when no ratio plot is drawn
+	  //p1->SetLogy();	//for ratio plot
+	  mycanvas->SetLogy();	//only needed when no ratio plot is drawn
 	  mycanvas->Print((fn+"_log.pdf").Data());
 	  mycanvas->Print((fn+"_log.png").Data());
   }
