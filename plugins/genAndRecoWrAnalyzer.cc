@@ -684,7 +684,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 #endif
 
 	if(genLeptFromFstHvyPtcl == genParticleCollection->end() || genLeptFromScdHvyPtcl == genParticleCollection->end() || genQuarkTwoFromScdHvyPtcl == genParticleCollection->end() || genQuarkOneFromScdHvyPtcl == genParticleCollection->end()) {
-		std::cout << "a ref to one of the gen leptons or quarks coming from the WR decay points to a NULL object" << std::endl;
+		//std::cout << "a ref to one of the gen leptons or quarks coming from the WR decay points to a NULL object" << std::endl;
 		tree->Fill();
 		return;
 	}
@@ -723,7 +723,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 	///one or more of the four const_iterators could point to a null reference if the dR > 0.1 cut is failed in findLeadingAndSubleading()
 	if(leadGenQrk == genParticleCollection->end() || subleadGenQrk == genParticleCollection->end() || leadGenLept == genParticleCollection->end() || subleadGenLept == genParticleCollection->end() ) {
-		std::cout << "a ref to one of the leading gen leptons or quarks points to a NULL object" << std::endl;
+		//std::cout << "a ref to one of the leading gen leptons or quarks points to a NULL object" << std::endl;
 		tree->Fill();
 		return;
 	}
@@ -849,7 +849,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 #endif
 		findLeadingAndSubleadingJet(recoLeadJet, recoSubleadJet, recoJetCollection);
 		if(recoLeadJet == recoJetCollection->end() || recoSubleadJet == recoJetCollection->end() || recoLeadLept == patLepts.end() || recoSubleadLept == patLepts.end() ) {
-			std::cout << "a ref to one of the leading reco leptons or quarks points to a NULL object" << std::endl;
+			//std::cout << "a ref to one of the leading reco leptons or quarks points to a NULL object" << std::endl;
 			tree->Fill();
 			return;
 		}

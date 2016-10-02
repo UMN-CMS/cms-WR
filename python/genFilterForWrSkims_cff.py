@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 
 #discard any events in which a Nu_Rtau appears in the decay chain   pdgId 9900016
 hasGenNuTau = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 9900016")
 		)
 
@@ -17,7 +17,7 @@ skipGenNuTauSeq = cms.Sequence(hasGenNuTau *~hasGenNuTauFilter)
 
 #discard any events in which a Nu_Rmu appears in the decay chain   pdgId 9900014
 hasGenNuMu = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 9900014")
 		)
 
@@ -30,7 +30,7 @@ skipGenNuMuSeq = cms.Sequence(hasGenNuMu *~hasGenNuMuFilter)
 
 #discard any events in which a Nu_Re appears in the decay chain   pdgId 9900012
 hasGenNuEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
 		cut = cms.string("abs(pdgId) == 9900012")
 		)
 

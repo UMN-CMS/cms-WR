@@ -36,13 +36,13 @@ process.wrDecayChainAnalyzer = cms.EDAnalyzer('genAndRecoWrAnalyzer',
 		firstHeavyParticlePdgId = cms.double(9900024),
 		secondHeavyParticlePdgId = cms.double(9900012),
 		firstHeavyParticleStatus = cms.double(62),
-		saveMatchedRecoInfo = cms.bool(False),
+		saveMatchedRecoInfo = cms.bool(True),
 		cutOnStatusCode = cms.bool(True),
-		#recoJetCollection = cms.InputTag("slimmedJets"),
-		#recoLeptonCollection = cms.InputTag("slimmedElectrons"),
+		recoJetCollection = cms.InputTag("slimmedJets"),
+		recoLeptonCollection = cms.InputTag("slimmedElectrons"),
 		genParticlesCollection = cms.InputTag("genParticlesFormatter"),
-		recoJetCollection = cms.InputTag(""),
-		recoLeptonCollection = cms.InputTag("")
+		#recoJetCollection = cms.InputTag(""),
+		#recoLeptonCollection = cms.InputTag("")
 		)
 
 #################################

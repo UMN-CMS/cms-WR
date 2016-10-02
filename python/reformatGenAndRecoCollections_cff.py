@@ -2,8 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 ##no cuts, just transforming the different collections into reco::Candidate collections
 genParticlesFormatter = cms.EDFilter("CandViewSelector",
-		#src = cms.InputTag("prunedGenParticles"),
-		src = cms.InputTag("genParticles"),
+		src = cms.InputTag("prunedGenParticles"),
+		#src = cms.InputTag("genParticles"),
 		cut = cms.string("")
 		)
 genParticlesFormatterFilter = cms.EDFilter("CandViewCountFilter",
