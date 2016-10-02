@@ -45,17 +45,17 @@ void quickEMuMiniPlotter(){
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
- 
+
+  TString localDir = "../analysisCppOutputRootFiles/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EMu:
-    //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEMu_withMllWeight.root");
-	dy = chain_DY->Add("../selected_tree_DYAMC_signal_eeEE.root");	//temporary work around, DY will not be plotted
-	tt = chain_ttbar->Add("../selected_tree_TT_flavoursidebandEMu.root");
-    wjets = chain_WJets->Add("../selected_tree_W_flavoursidebandEMu.root");
-    wz = chain_WZ->Add("../selected_tree_WZ_flavoursidebandEMu.root");
-    zz = chain_ZZ->Add("../selected_tree_ZZ_flavoursidebandEMu.root");
-    data = chain_data->Add("../selected_tree_data_flavoursidebandEMu.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_flavoursidebandEMu.root");
+	tt = chain_ttbar->Add(localDir+"selected_tree_TT_flavoursidebandEMu.root");
+    wjets = chain_WJets->Add(localDir+"selected_tree_W_flavoursidebandEMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
+    data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -122,10 +122,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//wider bins work better at high WR mass
-  Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,200,2500);
+ 
+  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//wider bins work better at high WR mass
+  ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//wider bins work better at high WR mass
+  //Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
+  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
  
   float dilepton_max = 250.;
   if(channel == Selector::EMu)
@@ -145,6 +147,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
+	//if(myEvent->WR_mass < 600.) continue;	///MLLJJ cut
 
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -181,6 +184,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
+  /*
   //normalize histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -196,14 +200,15 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
- 
+
+ */ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ; 
-  //leg->AddEntry( hs_DY, "DY" ) ; 
-  leg->AddEntry( hs_ttbar, "ttbar" ) ;
+  leg->AddEntry( hs_DY, "DY" ) ; 
+  leg->AddEntry( hs_ttbar, "TT" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
@@ -216,6 +221,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->Sumw2();
   hs_WZ->Sumw2();
   hs_ZZ->Sumw2();
+  hs_DY->Sumw2();
   
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
   THStack* th = new THStack();
@@ -226,9 +232,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
   th->Add(hs_WJets);
+  th->Add(hs_DY);
   th->Add(hs_ZZ);
   th->Add(hs_ttbar);
-  //th->Add(hs_DY);
   hs_data->SetMarkerStyle(20);
 
   Double_t eps = 0.001;
@@ -239,8 +245,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   p1->cd();
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->Draw("ep");
   th->Draw("histo same");
   hs_data->Draw("epsame");
@@ -270,6 +276,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);
+  hs_ttbar->Add(hs_DY);
   if(fname.EqualTo("Mlljj") ){
 	  Float_t dataMCratio = (hs_data->Integral()/hs_ttbar->Integral());
 	  Float_t dataEntries = hs_data->GetEntries();
@@ -298,7 +305,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->cd();
   mycanvas->Update();
 
-  TString fn = fname + "_sidebandEMuChannelNoDyRescaledTTBarMCNoLLJJCut";
+  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
 
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
