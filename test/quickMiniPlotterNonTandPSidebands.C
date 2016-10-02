@@ -50,18 +50,18 @@ void quickMiniPlotterNonTandPSidebands(){
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
- 
+
+  TString localDir = "../analysisCppOutputRootFiles/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::MuMu:
-    dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
-    //dy = chain_DY->Add("../selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
-	tt = chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root");
-    //tt = chain_ttbar->Add("../selected_tree_data_flavoursidebandEMu.root");
-	wjets = chain_WJets->Add("../selected_tree_W_lowdileptonsidebandMuMu.root");
-    wz = chain_WZ->Add("../selected_tree_WZ_lowdileptonsidebandMuMu.root");
-    zz = chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsidebandMuMu.root");
-    data = chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
+    dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+	tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
+    //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+	wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandMuMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandMuMu.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandMuMu.root");
+    data = chain_data->Add(localDir+"selected_tree_data_lowdileptonsidebandMuMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -258,8 +258,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   th->Draw("histo");
   hs_data->Draw("epsame");
   TString ytitle = "Events/(";
@@ -270,14 +270,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(fname.EqualTo("Mlljj")){
 	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events PER GeV"), hs_data->GetYaxis()->SetTitle("Events PER GeV");
 	  Int_t maxBin = hs_data->GetNbinsX();
-	  //std::cout<<"bin number\t"<< maxBin-1 <<"\thas data bin contents=\t" << hs_data->GetBinContent(maxBin-1) <<"\tand bin error =\t"<< hs_data->GetBinError(maxBin-1) << std::endl;
-	  //std::cout<<"bin number\t"<< maxBin-1 <<"\thas DY bin contents=\t" << hs_DY->GetBinContent(maxBin-1) <<"\tand bin error =\t"<< hs_DY->GetBinError(maxBin-1) << std::endl;
-  	  //std::cout<<"bin number\t"<< maxBin-1 <<"\thas ttbar bin contents=\t" << hs_ttbar->GetBinContent(maxBin-1) <<"\tand bin error =\t"<< hs_ttbar->GetBinError(maxBin-1) << std::endl;
-	  //std::cout<<" "<<std::endl;
-	  //std::cout<<" "<<std::endl;
-	  //std::cout<<"bin number\t"<< maxBin <<"\thas data bin contents=\t" << hs_data->GetBinContent(maxBin) <<"\tand bin error =\t"<< hs_data->GetBinError(maxBin) << std::endl;
-	  //std::cout<<"bin number\t"<< maxBin <<"\thas DY bin contents=\t" << hs_DY->GetBinContent(maxBin) <<"\tand bin error =\t"<< hs_DY->GetBinError(maxBin) << std::endl;
-  	  //std::cout<<"bin number\t"<< maxBin <<"\thas ttbar bin contents=\t" << hs_ttbar->GetBinContent(maxBin) <<"\tand bin error =\t"<< hs_ttbar->GetBinError(maxBin) << std::endl;
   }
   th->GetYaxis()->SetTitleOffset(1.3);
 
@@ -307,7 +299,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,2.);
+  ratio->GetYaxis()->SetRangeUser(0.5,3.);	//upper limit 3. for mu, 2. for ele
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
   ratio->Draw("p");
