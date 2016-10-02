@@ -88,8 +88,8 @@ public:
 			if(channel == Selector::EE) tagName = "EE";
 			if(channel == Selector::MuMu) tagName = "MuMu";
 			if(channel == Selector::EMu) { ///\todo to be fixes, it should be possible
-				std::cout << "ERROR looking for DY in EMu channel" << std::endl;
-				return TTchainNames;
+				//std::cout << "ERROR looking for DY in EMu channel" << std::endl;
+				//return TTchainNames;
 			}
 			if(mode.find("POWHEG") != _ENDSTRING) {
 				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
