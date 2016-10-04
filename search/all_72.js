@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['r',['r',['../classpython_1_1plot_1_1limit2d.html#abad6244714d7edabe08d9cac9babe302',1,'python::plot::limit2d']]],
   ['recodileptoncandidate',['recoDileptonCandidate',['../namespacepython_1_1recoElectronChannelSignalUnmatchedModules__cff.html#a2a7d56b04a63e8102dd1fa5906ea898d',1,'python::recoElectronChannelSignalUnmatchedModules_cff']]],
   ['recodileptoncandidatefilter',['recoDileptonCandidateFilter',['../namespacepython_1_1recoElectronChannelSignalUnmatchedModules__cff.html#abb341852a982668a488ffa0014f3eb9e',1,'python::recoElectronChannelSignalUnmatchedModules_cff']]],
   ['recodileptoncandidateseq',['recoDileptonCandidateSeq',['../namespacepython_1_1recoElectronChannelSignalUnmatchedModules__cff.html#a2d47cbe1da2a5f0ef6a69dab48992606',1,'python::recoElectronChannelSignalUnmatchedModules_cff']]],

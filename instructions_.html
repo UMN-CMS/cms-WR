@@ -92,14 +92,15 @@ mkdir ExoAnalysis/
 cd ExoAnalysis/
 git clone git@github.com:UMN-CMS/cms-WR.git cmsWR
 git clone https://github.com/ECALELFS/Utilities.git Utilities/scripts/
-git clone -b WR7415patch1 https://github.com/ECALELFS/ECALELF.git Calibration
 cd ../
+git clone -b WR7415patch1 https://github.com/ECALELFS/ECALELF.git Calibration
+
 #git cms-addpkg RecoEgamma/ElectronIdentification
 #git apply ExoAnalysis/cmsWR/test/HEEP_Et.patch
 scram b -j16
 cd ExoAnalysis/cmsWR/
 mkdir data/
-cp /afs/cern.ch/user/s/shervin/public/WR/*.root data/
+cp /afs/cern.ch/user/s/skalafut/public/WR_starting2015/puReweightingFiles/*Pileup.root data/
 make
 </pre><p>Check if you have astyle command installed: </p>
 <pre class="fragment">which astyle
@@ -134,16 +135,7 @@ miniAOD from RECO</h1>
 <pre class="fragment">cmsDriver.py miniAOD --filein file:rec_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_RECO_PU.root --fileout file:EXO-Phys14DR-00009.root --mc --eventcontent MINIAODSIM --runUnscheduled --datatier MINIAODSIM --conditions auto:run2_mc --step PA
 </pre><h1><a class="anchor" id="testSkims_"></a>
 Testing skims</h1>
-<pre class="fragment">cmsRun test/skim_cfg.py
-</pre><h1><a class="anchor" id="makeTTree_"></a>
-Make TTrees</h1>
-<p>To make TTrees from the published skimmed samples, the dataset in the makerTTree.py file must be provided</p>
-<p>os.system('das_client.py &ndash;query="file dataset=USER_DATASET instance=prod/phys03" &ndash;limit=0 &gt; pappy.txt')</p>
-<p>Then it can be run with </p>
-<pre class="fragment">cmsRun test/makeTTree.py
-</pre><p>A file called 'skim_ttree.root' will be generated. This file can now be used as an input for the dataMC_compare.C script. The process must be repeated for all of the bkg samples (DYJets, TTbar, WJets, WZ, ZZ) since the comparator expects the ttrees for all these samples.</p>
-<p>Run the comparison script </p>
-<pre class="fragment">root -b dataMC_compare.C
+<pre class="fragment">did Peter Hansen make a script to run a sanity check on the skims?
 </pre><h1><a class="anchor" id="ttbarXsxn_"></a>
 TTBar to LL cross section</h1>
 <p>the cross section used to normalize events from the ttbar-&gt;dilepton dataset should be 85.67 pb, not 56. 56 pb was calculated using genXsecanalyzer, but 85.67 is based on the PDG branching fraction of ttbar to leptons. See page 3 of this pdf.</p>
@@ -152,7 +144,7 @@ TTBar to LL cross section</h1>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 21 2016 09:33:02 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Oct 4 2016 15:56:43 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

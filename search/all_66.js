@@ -11,5 +11,6 @@ var searchData=
   ['flatttree_2ecc',['FlatTTree.cc',['../FlatTTree_8cc.html',1,'']]],
   ['flavorchangeveto',['flavorChangeVeto',['../namespacepython_1_1genFilterForWrSkims__cff.html#ae4abb8ae245f70654caca8ca8c0708e5',1,'python::genFilterForWrSkims_cff']]],
   ['flavorchangevetofilter',['flavorChangeVetoFilter',['../namespacepython_1_1genFilterForWrSkims__cff.html#a4a1acabdc543e79345fbb97258f651de',1,'python::genFilterForWrSkims_cff']]],
-  ['folder',['folder',['../namespacepython_1_1cross__sections.html#a6a3371eeca02d850e6e5c2e0897c1c65',1,'python::cross_sections']]]
+  ['folder',['folder',['../namespacepython_1_1cross__sections.html#a6a3371eeca02d850e6e5c2e0897c1c65',1,'python::cross_sections']]],
+  ['frameth2d',['frameTH2D',['../namespacepython_1_1plot.html#a509c53dddbeedcc418922b4b7a880845',1,'python::plot']]]
 ];

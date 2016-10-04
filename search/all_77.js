@@ -2,9 +2,12 @@ var searchData=
 [
   ['wantsummary',['wantSummary',['../namespacepython_1_1checkParticleDecayTree__cfg.html#a595d254e524f5a0406936eb6266a4540',1,'python::checkParticleDecayTree_cfg']]],
   ['wr_5feejj',['WR_eejj',['../namespacepython_1_1cross__sections.html#aaf7b836f755431783715c749636b4be3',1,'python::cross_sections']]],
+  ['wr_5feejj_5foffdiagonal',['WR_eejj_offdiagonal',['../namespacepython_1_1cross__sections.html#a97816b4033cfade321575fcbc80589f5',1,'python::cross_sections']]],
   ['wr_5fjj',['WR_jj',['../namespacepython_1_1cross__sections.html#a12196cdf81fd36873b5070fa0da55c2c',1,'python::cross_sections']]],
+  ['wr_5fjj_5foffdiagonal',['WR_jj_offdiagonal',['../namespacepython_1_1cross__sections.html#a4aa74eb2eacba6a238e1882598fc2c7f',1,'python::cross_sections']]],
   ['wr_5fm_2d2000_5ftolnu_5fm_2d1000_5ftunecuetp8m1_5f13tev_2dpythia8_5fgen_5fsim_2epy',['WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM.py',['../WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM_8py.html',1,'']]],
   ['wr_5fmumujj',['WR_mumujj',['../namespacepython_1_1cross__sections.html#a7125dd0436f1b642bc30153cde709c68',1,'python::cross_sections']]],
+  ['wr_5fmumujj_5foffdiagonal',['WR_mumujj_offdiagonal',['../namespacepython_1_1cross__sections.html#abeee8c2f69a7f24d396ebe1f5723fb49',1,'python::cross_sections']]],
   ['wrdielectroncandidate',['wRdiElectronCandidate',['../namespacepython_1_1selections__cff.html#a518fbc1be29b5c3b887c980fe7aec20e',1,'python::selections_cff']]],
   ['wrdielectroncandidatefilter',['wRdiElectronCandidateFilter',['../namespacepython_1_1selections__cff.html#a3ca36346f0c71fff39317c30f1faf818',1,'python::selections_cff']]],
   ['wrdielectroncandidatefilterpresel',['wRdiElectronCandidateFilterPresel',['../namespacepython_1_1skimElectron__cff.html#abcb1f2fa72acefe4ccdbf063bf6bcad6',1,'python::skimElectron_cff']]],

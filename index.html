@@ -82,12 +82,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <div class="toc"><h3>Table of Contents</h3>
 <ul><li class="level1"><a href="#_INSTRUCTIONS">Download instructions:</a></li>
-<li class="level1"><a href="#_CONF">Configuration files</a></li>
+<li class="level1"><a href="#_DEVINSTRUCTIONS">Developer instructions:</a></li>
+<li class="level1"><a href="#_CONF">Files Governing Analysis Workflow Configuration</a></li>
 <li class="level1"><a href="#_UTILS">Utilities</a></li>
 <li class="level1"><a href="#_ANALYSISSEQ">Analysis sequence</a><ul><li class="level2"><a href="#_SKIMS">Skims</a></li>
 <li class="level2"><a href="#MINITREE_">MiniTree production</a></li>
 <li class="level2"><a href="#_PRODVALIDATION">Validation of the production</a></li>
-<li class="level2"><a href="#_TTBAR">TTBar from data</a></li>
+<li class="level2"><a href="#_TTBAR">TTBar estimation using collision data</a></li>
+<li class="level2"><a href="#_DY">DY estimation</a></li>
+<li class="level2"><a href="#_XSECLIMITS"></a></li>
 </ul>
 </li>
 <li class="level1"><a href="#_AOB">AOB</a></li>
@@ -97,21 +100,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
  <h1><a class="anchor" id="_INSTRUCTIONS"></a>
 Download instructions:</h1>
 <p>Follow the link <a class="el" href="instructions_.html">Instructions</a></p>
+<h1><a class="anchor" id="_DEVINSTRUCTIONS"></a>
+Developer instructions:</h1>
+<p>Follow the link <a class="el" href="developerInstructions_.html">Developer instructions</a></p>
 <h1><a class="anchor" id="_CONF"></a>
-Configuration files</h1>
-<dl class="section user"><dt>Main configuration file</dt><dd>Trying to collect all possible configurable things in a configuration file in configs/. The file is <b>configs/2015-v1.conf</b> </dd></dl>
-<p>Currently the following informations are stored there:</p>
+Files Governing Analysis Workflow Configuration</h1>
+<p>All configuration files and parameters which are used to process minitrees are stored in configs/ and data/.</p>
+<dl class="section user"><dt>Main configuration file</dt><dd>The file is <b>configs/2015-v1.conf</b> lists the json file, minitree and skim version number, the blinded or unblinded status of minitrees made from collision data, and the location of the .dat file which lists all collision data and MC samples from which minitrees have been made.</dd></dl>
+<p>The following information is also stored in configs/:</p>
 <ul>
-<li>json file</li>
-<li>dataset file (configs/datsets.dat)</li>
+<li>list of datasets which have been skimmed and made into minitrees (configs/datsets.dat)</li>
+<li>mass windows (in GeV) used for limit extraction at different WR mass hypotheses. These values are used by analysis.cpp.</li>
 </ul>
-<dl class="section user"><dt>Datasets</dt><dd>The list of datasets is written in <pre class="fragment">configs/datasets.dat
+<dl class="section user"><dt>Datasets</dt><dd>The datasets which have been processed into minitrees are listed in <pre class="fragment">configs/datasets.dat
 </pre></dd></dl>
-<p><a class="el" href="triggers.html">Triggers</a> List of triggers used to filter events at preselection level</p>
+<p><a class="el" href="triggers.html">Triggers</a> List of triggers used to filter events at skim level</p>
 <h1><a class="anchor" id="_UTILS"></a>
 Utilities</h1>
 <dl class="section user"><dt>How to estimate cross sections</dt><dd>Once the dataset is entered in the datasets.dat config file putting dashes for cross section, cross section uncetainty, then you can use the script <pre class="fragment"> ./scripts/getXsec.sh
-</pre> to update the file with the estimated cross sections Cross sections for SM processes can be found here: ttps://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV</dd></dl>
+</pre> to update the file with the estimated cross sections Cross sections for SM processes can be found here: <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV">https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV</a></dd></dl>
 <p>Instructions on how to get the cross sections of a MC sample: <a href="https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer">https://twiki.cern.ch/twiki/bin/view/CMS/HowToGenXSecAnalyzer</a></p>
 <h1><a class="anchor" id="_ANALYSISSEQ"></a>
 Analysis sequence</h1>
@@ -140,57 +147,39 @@ voms-proxy-init -voms cms -out $HOME/gpi.out
 </pre><p><b>CAVEAT:</b> the script is set to save the ntuples in Shervin's area on EOS. It has not been yet generalized. So it is not supposed to work for other users in other storage elements on-the-fly. On can also use &ndash;scheduler=remoteGlidein to run over the GRID. The storage element is still CERN. LSF has not been tested.</p>
 <p>the cfg to be used is </p>
 <pre class="fragment">test/runAnalysis_cfg.py
-</pre><p>There are three paths defined:</p>
+</pre><p>There are four paths defined in runAnalysis_cfg.py:</p>
 <ul>
-<li>SignalRegion</li>
-<li>FlavourSideband</li>
-<li>LowDiLeptonSideband</li>
+<li>SignalRegion: require dilepton mass &gt; 200, signal region triggers</li>
+<li>FlavourSideband: require dilepton mass &gt; 200, Mu30_Ele30 trigger</li>
+<li>LowDiLeptonSideband: requiredilepton mass &lt; 200, signal region triggers</li>
+<li>DYtagAndProbe: require tag and probe single mu or double ele triggers</li>
 </ul>
-<p>A simple blinding filter is used if option isMC is set to 0 (so for data). This can be improved</p>
+<p>Lepton and jet IDs are applied when these paths are run, and filters on the number of ID'd objects is applied in the SignalRegion, FlavourSideband, and LowDiLeptonSideband (by the dilepton object candidate filters). No such filter is applied in the DYtagAndProbe path.</p>
+<p>Once minitrees are made by runAnalysis_cfg.py, analysis.cpp can be used once a grid proxy is created.</p>
 <h2><a class="anchor" id="_PRODVALIDATION"></a>
 Validation of the production</h2>
-<p><a class="el" href="VALIDATIONSCRIPTS_.html">Validation scripts</a></p>
-<dl class="section user"><dt>Making data/MC comparison plots</dt><dd>To make the data/MC plots for the flavor and low dilepton mass sidebands, first run the analysis code with only 1 toy. For flavor sideband: Edit the analysis.cpp file for nToys=1 and channel=Selector::EMu. The script will loop over all the datasets and produce root files called selected_tree_*_flavoursideband2.root. <pre class="fragment">make;./bin/analysis
-</pre> These files are the input to the plotting script. To make the plots, edit the plotting script so that the channel matches the one chosen in the analysis script. Make channel = Selector::EMu <pre class="fragment">cd test
-mkdir test/plots/Flavor
-mkdir test/plots/EELowDilepton
-mkdir test/plots/MuMuLowDilepton
-root -b miniPlotter.C
-</pre></dd></dl>
-<p>Repeat the previous steps with the different channel options(EE or MuMu).</p>
+<p>See <a class="el" href="VALIDATIONSCRIPTS_.html">Validation scripts</a></p>
 <h2><a class="anchor" id="_TTBAR"></a>
-TTBar from data</h2>
-<p>Follow the link <a class="el" href="_TTBARBKG.html">Estimate of the TTbar background from data</a></p>
+TTBar estimation using collision data</h2>
+<p>See <a class="el" href="_TTBARBKG.html">Estimate of the TTbar background from data</a></p>
+<h2><a class="anchor" id="_DY"></a>
+DY estimation</h2>
+<p>See <a class="el" href="_DYBKGND.html">Estimate of the DY+Jets background using MC and collision data</a></p>
+<h2><a class="anchor" id="_XSECLIMITS"></a>
+_XSECLIMITS</h2>
+<p>See <a class="el" href="_LIMITS.html">Extracting 1D and 2D WR cross section and exclusion limits</a></p>
 <h1><a class="anchor" id="_AOB"></a>
 AOB</h1>
 <dl class="section user"><dt>JEC</dt><dd>The twiki page is:  <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC">https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC</a></dd></dl>
-<p>74X_mcRun2_asymptotic_v4</p>
+<p>74X_mcRun2_asymptotic_v5</p>
 <dl class="section user"><dt>selection ID scale factors</dt><dd></dd></dl>
 <p>Electrons: <a href="https://cds.cern.ch/record/2118397/export/hx?ln=en">https://cds.cern.ch/record/2118397/export/hx?ln=en</a></p>
 <p>Muons: <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2">https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2</a></p>
-<dl class="section user"><dt>Energy corrections</dt><dd>muons <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon">https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon</a></dd></dl>
-<dl class="section user"><dt>GIT instructions</dt><dd>The main branch is downloaded by default the first time you download the code. It is <b>master</b> </dd></dl>
-<p>Developers have to: </p>
-<pre class="fragment">git checkout master
-git pull
-git branch myWorkingBranch
-git checkout myWorkingBranch
-...
-...
-git add files_you_have_worked_on.cc
-git commit -m "new point in the history, this is a comment to make clear which are the changes"
-...
-...
-git add files_you_have_worked_on.cc
-git commit -m "another commit"
-# to make sure what you did works
-scram b -j16 &amp;&amp; cmsRun test/runAnalysis_cfg.py test=3
-git push origin myWorkingBranch:myWorkingBranch
-git checkout master
-</pre> </div></div><!-- contents -->
+<dl class="section user"><dt>Energy corrections</dt><dd>muons <a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon">https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon</a> </dd></dl>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 21 2016 09:33:02 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Oct 4 2016 15:56:44 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -80,21 +80,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Estimate of the TTbar background from data </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>To estimate ttBar in the EE and MuMu signal regions using real data, two scale factors must be computed using TTBar MC. The two scale factors, EE/EMu and MuMu/EMu, represent the ratios M_EEJJ/M_EMuJJ and M_MuMuJJ/M_EMuJJ taken from TTBar MC events which have passed all signal region selection cuts. To calculate these ratios and save them to a root file named flavor_fits.root, run these commands in cmsWR/.:</p>
-<pre class="fragment">make
+<div class="textblock"><p>To estimate ttBar in the EE and MuMu signal regions using real data, two scale factors must be computed using TTBar MC. The two scale factors, EE/EMu and MuMu/EMu, represent the ratios M_EEJJ/M_EMuJJ and M_MuMuJJ/M_EMuJJ taken from TTBar MC events which have passed all signal region selection cuts. To calculate these ratios and save them to a root file named flavor_fits.root, run these commands in cmsWR/.: (&ndash;cut_channel has no effect on the results relevant to this section)</p>
+<pre class="fragment">voms-proxy-init --voms cms
+make
 ./bin/analysis -m TT -c MuMu &gt;&amp; ttMuMuSignalRegion.txt &amp;
 ./bin/analysis -m TT -c EE &gt;&amp; ttEESignalRegion.txt &amp;
-./bin/analysis -m TT -c EMu &gt;&amp; ttEMuSignalRegion.txt &amp;
+./bin/analysis -m TT -c EMu --cut_channel EE &gt;&amp; ttEMuSignalRegion.txt &amp;
+./bin/analysis -m data -c EMu --cut_channel EE &gt;&amp; dataEMuSignalRegion.txt &amp;
 cd test/
-root -l -b runFlavorSideband.C
-</pre><p>the scale factors are determined by dividing two M_LLJJ histos (like M_EEJJ/M_EMuJJ), and fitting a linear function [0]*x + [1] to the resulting divided histogram. The scale factor is the value [1] after the fit. To extract these scale factors from the file flavor_fits.root, the file should be opened, and these commands should be executed:</p>
-<pre class="fragment">f_EE-&gt;GetParameter(1)</pre><p> returns the EE/EMu scale factor </p>
-<pre class="fragment">f_EE-&gt;GetParError(1)</pre><p> returns the error on the EE/EMu scale factor analogous calls to obtain the MuMu/EMu scale factor.</p>
-<p>The EE/EMu scale factor should be between 0.4 and 0.5, and the MuMu/EMu scale factor should be between 0.5 and 0.65. </p>
+in flavorSideband.C, make sure the four h_WR_mass TH1F pointers whose max domain is 6000 and have variable bin widths
+are the only TH1F pointers which are uncommented.
+root -l -b
+.L flavorSideband.C+
+flavorSideband()
+.q
+</pre><p>The scale factors will be printed to stdout and written to a file in data/2015-v1/. Rescale the EMu collision data by one scale factor to obtain the ttbar estimate in one channel.</p>
+<p>Go back to <a class="el" href="index.html">index</a> </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 21 2016 09:33:02 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Oct 4 2016 15:56:43 for WRanalysis by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -4,7 +4,7 @@ var searchData=
   ['tagandprobedoublemuhltfilter',['tagAndProbeDoubleMuHLTFilter',['../namespacepython_1_1hltFilters__cff.html#a7c50b655662074a6e049a37673bd77cf',1,'python::hltFilters_cff']]],
   ['tagandprobehltfilter',['tagAndProbeHLTFilter',['../namespacepython_1_1hltFilters__cff.html#a71e38692d382aacf2b29cde97838d69e',1,'python::hltFilters_cff']]],
   ['tagandprobehltsequence',['tagAndProbeHltSequence',['../namespacepython_1_1hltFilters__cff.html#a1372f56282aff676b682e50e442e78c5',1,'python::hltFilters_cff']]],
-  ['theory',['theory',['../classpython_1_1plot_1_1limit1d.html#acedb52a08a920622314af0d2a3c8e4d4',1,'python::plot::limit1d']]],
+  ['theory',['theory',['../classpython_1_1plot_1_1limit1d.html#acedb52a08a920622314af0d2a3c8e4d4',1,'python.plot.limit1d.theory()'],['../classpython_1_1plot_1_1limit2d.html#af018b400acef858a8ed6e6347ca97930',1,'python.plot.limit2d.theory()']]],
   ['todo_20list',['Todo List',['../todo.html',1,'']]],
   ['treemaker_5fcff_2epy',['treeMaker_cff.py',['../treeMaker__cff_8py.html',1,'']]],
   ['treemaker_5fcfi_2epy',['treeMaker_cfi.py',['../treeMaker__cfi_8py.html',1,'']]],

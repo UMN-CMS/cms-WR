@@ -1,7 +1,9 @@
 var searchData=
 [
   ['cf',['cf',['../classpython_1_1condorTools_1_1Job.html#abdbeaf86edeb10bfe50fb950c6f92172',1,'python::condorTools::Job']]],
+  ['channel',['channel',['../classpython_1_1plot_1_1limit1d.html#a896dc5f13e241c3826845c1e8c767683',1,'python::plot::limit1d']]],
   ['channel_5fnames',['channel_names',['../classpython_1_1combineTools_1_1Systematics.html#aff32226348621bf4089490583fa33327',1,'python::combineTools::Systematics']]],
+  ['channelname',['channelname',['../classpython_1_1plot_1_1limit2d.html#a964420f1930a1a291032d66913eefa72',1,'python::plot::limit2d']]],
   ['checkemuseq',['checkEMuSeq',['../namespacepython_1_1recoEMuChannelSidebandUnmatchedModules__cff.html#a6e46cb232ffd6a1df5521e632fd85aa4',1,'python.recoEMuChannelSidebandUnmatchedModules_cff.checkEMuSeq()'],['../namespacepython_1_1recoEMuChannelSignalUnmatchedModules__cff.html#aff747938390b1a0641010fd0f5e7fad6',1,'python.recoEMuChannelSignalUnmatchedModules_cff.checkEMuSeq()']]],
   ['checkparticledecaytree_5fcfg_2epy',['checkParticleDecayTree_cfg.py',['../checkParticleDecayTree__cfg_8py.html',1,'']]],
   ['checkzeeseq',['checkZeeSeq',['../namespacepython_1_1recoElectronChannelSidebandUnmatchedModules__cff.html#aa071dab44304a9cd6119fbbf006e22ea',1,'python::recoElectronChannelSidebandUnmatchedModules_cff']]],
@@ -16,10 +18,11 @@ var searchData=
   ['condortools_2epy',['condorTools.py',['../condorTools_8py.html',1,'']]],
   ['configfolder',['configfolder',['../namespacepython_1_1combineTools.html#a409214b85739b7e4cb2497c2b16d7875',1,'python::combineTools']]],
   ['cont',['cont',['../classpython_1_1condorTools_1_1CondorFile.html#ab2a9100209fa7d7ace19ef9482724281',1,'python::condorTools::CondorFile']]],
+  ['contourfromth2',['contourFromTH2',['../namespacepython_1_1plot.html#a7b80928c16853c4781250ed03c6ea7b4',1,'python::plot']]],
   ['countevtsaftercuts',['countEvtsAfterCuts',['../namespacepython_1_1linkGenSequencesForTwoDimLimits__cff.html#af64946e3606fa865266a807ae6b383b3',1,'python::linkGenSequencesForTwoDimLimits_cff']]],
   ['countevtsbeforecuts',['countEvtsBeforeCuts',['../namespacepython_1_1linkGenSequencesForTwoDimLimits__cff.html#ad6d60245ecd76d3615d8ada7bd9da100',1,'python::linkGenSequencesForTwoDimLimits_cff']]],
   ['cross_5fsections_2epy',['cross_sections.py',['../cross__sections_8py.html',1,'']]],
-  ['crosssection',['crossSection',['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#ae4116590cdcb4df8dfc4a3e85ce6fae4',1,'python::WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM']]],
+  ['crosssection',['crosssection',['../classpython_1_1plot_1_1limit2d.html#a64050573459f488e86a2184ca53ba273',1,'python.plot.limit2d.crosssection()'],['../namespacepython_1_1WR__M-2000__toLNu__M-1000__TuneCUETP8M1__13TeV-pythia8__GEN__SIM.html#ae4116590cdcb4df8dfc4a3e85ce6fae4',1,'python.WR_M-2000_toLNu_M-1000_TuneCUETP8M1_13TeV-pythia8_GEN_SIM.crossSection()']]],
   ['currentkey',['currentkey',['../classpython_1_1combineTools_1_1AnalysisResultsInterface.html#a2b79b197872010447645f3ac085316fd',1,'python::combineTools::AnalysisResultsInterface']]],
   ['custompalette',['customPalette',['../namespacepython_1_1PlotUtils.html#a0e9b7d48b1e62ba559aa4d714df6b5ac',1,'python::PlotUtils']]],
   ['customrootstyle',['customROOTstyle',['../namespacepython_1_1PlotUtils.html#a04f29ffec216ec02322ad19b35681148',1,'python::PlotUtils']]],
