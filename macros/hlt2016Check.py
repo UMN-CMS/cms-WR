@@ -40,8 +40,6 @@ doMuonChannel = False
 # define handles and labels for TriggerResults, TriggerObjectStandAlone, and GenParticle collections
 trigResultsHandl, trigResultsLabel = Handle("edm::TriggerResults"), ("TriggerResults","","HLT")
 trigObjsHandl, trigObjsLabel = Handle("std::vector<pat::TriggerObjectStandAlone>"), "selectedPatTrigger"
-recoJetsHandl, recoJetsLabel = Handle("std::vector<pat::Jet>"), "slimmedJets"
-recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
 
 #UPDATE THIS FILE NAME
 # open one or more miniAOD .root files, and create an iterator to loop over the Event objects in the file(s)
@@ -52,8 +50,6 @@ allEvents = Events("/abs/pathName/toMiniAodRootFile.root")
 #absolute file path name used for electron channel
 if(doMuonChannel == False):
 	allEvents = Events("/abs/pathName/toMiniAodRootFile.root")
-	recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Electron>"), "slimmedElectrons"
-
 
 
 #vars and containers which will be filled in loop over events
@@ -71,9 +67,6 @@ for evNum, oneEvent in enumerate(allEvents):
 	totalNumEvts+=1.0
 	
 	#link pat::Electron or pat::Muon collections with a edm::Handle objs
-	oneEvent.getByLabel(recoLeptonLabel, recoLeptonHandl)
-	oneEvent.getByLabel(recoJetsLabel, recoJetsHandl)
-	
 	oneEvent.getByLabel(trigObjsLabel, trigObjsHandl)
 	oneEvent.getByLabel(trigResultsLabel, trigResultsHandl)
 
