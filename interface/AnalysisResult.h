@@ -21,6 +21,7 @@ public:
 	UInt_t unweighted_events_in_range[64];
 	Float_t error_in_range[64];
 	Float_t fit_integral_in_range[64];
+	Float_t error_on_fit_integral_in_range[64];
 
 	AnalysisResult(); ///< default contructor (empty)
 

@@ -19,6 +19,8 @@ parser.add_argument('-o', '--outdir', dest='outdir',
 		help='where to store the datacards')
 parser.add_argument('-s', dest='scale', action='store_true',
 		help='if present, rescale signal to .001 fb XS')
+parser.add_argument('--fit', dest='fromFit', action='store_true',
+		help='if present, use fits instead')
 
 
 args = parser.parse_args()
@@ -26,7 +28,8 @@ args = parser.parse_args()
 minitrees = combineTools.AnalysisResultsInterface(
 			base=args.basedir,
 			tag =args.tag,
-			makeplots=args.drawplots
+			makeplots=args.drawplots,
+			fromFit = args.fromFit
 			)
 
 nuisance_params = []
@@ -61,6 +64,7 @@ for channel in ["ee", "mumu"]:
 			if args.nosyst: systematics = None
 			systematics_list.append(systematics)
 		except (IOError,KeyError) as e:
+			print e.args, e.message
 			print mass, "not found"
 
 	bg_names = ["TTBar", "DY"]

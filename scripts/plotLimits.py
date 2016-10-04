@@ -18,33 +18,64 @@ tag,prodSpace = sys.argv[1:]
 prodSpace = prodSpace + "/" + tag + "/"
 name = config["productionTAG"]
 
-results = []
-for log in os.listdir(prodSpace + name):
-	if log[-4:] != ".log": continue
-	with open(prodSpace + name + "/" + log) as f:
-		for line in f:
-			if "COMBINE" in line:
-				results.append(eval(line.strip()))
 
-ee_interp = []
-mumu_interp = []
-for res in results:
-	_, m, ret = res
-	if m == "ee_3200_EXPECTED":
-		ee_interp.append(ret)
-	elif m == "ee_3600_EXPECTED":
-		ee_interp.append(ret)
-	elif m == "mumu_3200_EXPECTED":
-		mumu_interp.append(ret)
-	elif m == "mumu_3600_EXPECTED":
-		mumu_interp.append(ret)
+# get 8TeV Line
+eightTeV_masses = {"ee":[], "mumu":[]}
+eightTeV_limit = {"ee":[], "mumu":[]}
 
-if len(ee_interp) > 1:
-	results.append(("COMBINE", "ee_3400_EXPECTED", ave_tuple(*ee_interp)))
-if len(mumu_interp) > 1:
-	results.append(("COMBINE", "mumu_3400_EXPECTED", ave_tuple(*mumu_interp)))
+with open("electron_limits.csv","r") as f:
+	for line in f:
+		if not line.strip() or line[0] == "#": continue
+		# mWR, mN, Obs., Exp., Acc., Acc. Unc.
+		mWR, mN, Obs, Exp, __, __ = line.split(',')
+		mWR = int(mWR)
+		mN = int(mN)
+		if(mN*2 == mWR):
+			eightTeV_masses["ee"].append(mWR)
+			eightTeV_limit["ee"].append(Obs)
+with open("muon_limits.csv","r") as f:
+	for line in f:
+		if not line.strip() or line[0] == "#": continue
+		# mWR, mN, Obs., Exp., Acc., Acc. Unc.
+		mWR, mN, Obs, Exp, __, __ = line.split(',')
+		mWR = int(mWR)
+		mN = int(mN)
+		if(mN*2 == mWR):
+			eightTeV_masses["mumu"].append(mWR)
+			eightTeV_limit["mumu"].append(Obs)
 
-results.sort()
+def getResults(folder):
+	results = []
+	for log in os.listdir(folder + name):
+		if log[-4:] != ".log": continue
+		with open(folder + name + "/" + log) as f:
+			for line in f:
+				if "COMBINE" in line:
+					results.append(eval(line.strip()))
+
+	ee_interp = []
+	mumu_interp = []
+	for res in results:
+		_, m, ret = res
+		if m == "ee_3200_EXPECTED":
+			ee_interp.append(ret)
+		elif m == "ee_3600_EXPECTED":
+			ee_interp.append(ret)
+		elif m == "mumu_3200_EXPECTED":
+			mumu_interp.append(ret)
+		elif m == "mumu_3600_EXPECTED":
+			mumu_interp.append(ret)
+
+	if len(ee_interp) > 1:
+		results.append(("COMBINE", "ee_3400_EXPECTED", ave_tuple(*ee_interp)))
+	if len(mumu_interp) > 1:
+		results.append(("COMBINE", "mumu_3400_EXPECTED", ave_tuple(*mumu_interp)))
+
+	results.sort()
+	return results
+
+results = getResults(prodSpace)
+results2 = getResults("/afs/cern.ch/work/p/phansen/public/wr/limits/100toys/")
 
 def write_new_card(old_dc_filename, outfilename, obs):
 	with open(old_dc_filename,'r') as dcf:
@@ -56,7 +87,7 @@ def write_new_card(old_dc_filename, outfilename, obs):
 		outf.write(new_dc)
 
 try:
-	with open("obs_limit.p","r") as obsp:
+	with open("obs_limit_" + tag + ".p","r") as obsp:
 		print "loading from pickle file"
 		obs_limits = pickle.load(obsp)
 except IOError:
@@ -65,19 +96,37 @@ except IOError:
 		for obs in range(3):
 			print "calculating Observed = ", obs
 			jobname =  ch + "obs" + str(obs)
-			new_dc = "datacards/" + jobname + ".txt"
-			write_new_card("datacards/WR{ch}jj_MASS5200.txt".format(ch=ch),new_dc, obs)
+			new_dc = "datacards-20invfb/" + jobname + ".txt"
+			write_new_card("datacards-20invfb/WR{ch}jj_MASS5200.txt".format(ch=ch),new_dc, obs)
 			obs_limits[ch].append( float(combineTools.runCombine("combine -M BayesianToyMC -n " +jobname + " " + new_dc, jobname)))
-	with open("obs_limit.p","w") as obsp:
+	with open("obs_limit_" + tag + ".p","w") as obsp:
 		pickle.dump(obs_limits, obsp)
 
-plotters = {"ee":plt.limit1d("e",.001), "mumu":plt.limit1d("#mu",.001)}
+plotters = {"ee":plt.limit1d("e",1), "mumu":plt.limit1d("#mu",1)}
 plotters["ee"].addTheory(xs.WR_jj["ee"])
 plotters["mumu"].addTheory(xs.WR_jj["mumu"])
 
+
+mass2015 = {"ee":[],"mumu":[]}
+lim2015  = {"ee":[],"mumu":[]}
+
+for res in results2:
+	_, m, ret = res
+	channel,mass,mode = m.split('_')
+	if mode == "EXPECTED":
+		lim, _,_ = ret
+		mass2015[channel].append(int(mass))
+		lim2015[channel].append(float(lim)*1)
+
+#plotters["ee"].addLine(mass2015["ee"], lim2015["ee"], "Expected Limit 2.64/fb", "kBlack", 8)
+#plotters["mumu"].addLine(mass2015["mumu"], lim2015["mumu"], "Expected Limit 2.64/fb", "kBlack", 8)
+
+#plotters["ee"].addLine(eightTeV_masses["ee"], eightTeV_limit["ee"], "8 TeV Observed", "kMagenta", 4)
+#plotters["mumu"].addLine(eightTeV_masses["mumu"], eightTeV_limit["mumu"], "8 TeV Observed", "kMagenta", 4)
+
 plotters2d = {
-		"ee"  : plt.limit2d("data/offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt",    "ee2d" , "ee",     (17, 700, 4100), (40, 50, 4050), xs=.001),
-		"mumu": plt.limit2d("data/offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt", "mumu2d", "#mu#mu", (17, 700, 4100), (40, 50, 4050), xs=.001)
+		"ee"  : plt.limit2d("data/offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt",    "ee2d" , "ee",     (17, 700, 4100), (40, 50, 4050), xs=1),
+		"mumu": plt.limit2d("data/offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt", "mumu2d", "#mu#mu", (17, 700, 4100), (40, 50, 4050), xs=1)
 		}
 
 plotters2d["ee"].addTheory(xs.WR_jj_offdiagonal["ee"])
@@ -94,27 +143,28 @@ for res in results:
 		#plotters[channel].addObserved(mass, ret)
 
 
-ytitle = "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" 
+
+ytitle = "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq) [fb]" 
 #full plot
 plotters["ee"].plot("plots/limWReejj" + name + tag + "_full", x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_y = .56 )
+	y_title=ytitle % "ee", y_limits = (1e-1,1e3), leg_y = .55, leg_x = .55 )
 plotters["mumu"].plot("plots/limWRmumujj" + name + tag + "_full", x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_y = .56 )
+	y_title=ytitle % "#mu#mu", y_limits = (1e-1,1e3), leg_y = .55 , leg_x = .55)
 
 #zoomed plot
 plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
+	y_title=ytitle % "ee", y_limits = (1e-0,1e2), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
 plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
+	y_title=ytitle % "#mu#mu", y_limits = (1e-0,1e2), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
 
 #plot with obs lines
 plotters["ee"].addObsLines(obs_limits["ee"])
 plotters["mumu"].addObsLines(obs_limits["mumu"])
 
 plotters["ee"].plot("plots/limWReejj" + name + tag + "_ObsLines", x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_y = .56 )
+	y_title=ytitle % "ee", y_limits = (1e-1,1e4), leg_y = .56 )
 plotters["mumu"].plot("plots/limWRmumujj" + name + tag + "_ObsLines", x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_y = .56 )
+	y_title=ytitle % "#mu#mu", y_limits = (1e-1,1e4), leg_y = .56 )
 
 plotters2d["ee"].plot("plots/lim2dWReejj" + name + tag)
 plotters2d["mumu"].plot("plots/lim2dWRmumujj" + name + tag)

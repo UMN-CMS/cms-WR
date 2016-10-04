@@ -10,6 +10,7 @@
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "TRandom3.h"
+#include "TF1.h"
 // #include <iostream>
 // // #include "ExoAnalysis/cmsWR/interface/FitRooDataSet.h"
 
@@ -196,7 +197,6 @@ int main(int ac, char* av[])
 	Int_t nToys;
 	bool debug;
 	bool isTagAndProbe, isLowDiLepton, saveToys, ignoreDyScaleFactors;
-	int nStatToys;
 	int signalN;
 	int seed;
 	bool makeSelectorPlots;
@@ -221,7 +221,6 @@ int main(int ac, char* av[])
 	("verbose,v", po::bool_switch(&debug)->default_value(false), "Turn on debug statements")
 	("isTagAndProbe", po::bool_switch(&isTagAndProbe)->default_value(false), "use the tag&probe tree variants")
 	("isLowDiLepton", po::bool_switch(&isLowDiLepton)->default_value(false), "low di-lepton sideband")
-	("nStatToys", po::value<int>(&nStatToys)->default_value(0), "throw N toys for stat uncertainty.")
 	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
 	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
 	("cut_channel", po::value<std::string>(&channel_cut_str)->default_value(""), "if channel is EMu choose which Mass cut to apply")
@@ -263,7 +262,7 @@ int main(int ac, char* av[])
 	Selector::tag_t cut_channel;
 	if(channel == Selector::EMu) {
 		cut_channel = Selector::getTag(channel_cut_str);
-		//outFileTag += channel_cut_str;
+		outFileTag += channel_cut_str;
 	} else
 		cut_channel = channel;
 
@@ -512,7 +511,6 @@ int main(int ac, char* av[])
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
 			}
-			RooDataSet * tempDataSet = new RooDataSet("temp", "temp", Fits::vars);
 			sprintf(name, "Tree_Iter%i", i);
 			t1[i] = new TTree(name, "");
 			t1[i]->SetDirectory(0);
@@ -658,15 +656,11 @@ int main(int ac, char* av[])
 						assert(selEvent.weight == 1);
 					}
 
-					Fits::massWR.setVal(selEvent.WR_mass);
-					Fits::evtWeight.setVal(selEvent.weight);
-					tempDataSet->add(Fits::vars);
-
 					t1[i]->Fill();
 
 				}
 				++ev;
-			}//end loop over all input evts, and adding events to the RooDataSet pointer named tempDataSet
+			}//end loop over all input evts
 			ts.Stop();
 			ts.Print();
 			ts.Start();
@@ -678,10 +672,8 @@ int main(int ac, char* av[])
 			if(loop_one) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
 			if(loop_one) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
 
-			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
-			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
-			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 140, 0, 7000);
+			TH1F * hWR_mass = new TH1F("hWR_mass", "hWR_mass", 700, 0, 7000);
 			t1[i]->Draw("WR_mass>>hWR_mass", "weight", "goff");
 			double error = 0;
 			for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
@@ -689,105 +681,59 @@ int main(int ac, char* av[])
 				result.events_in_range[mass_i] = hWR_mass->IntegralAndError(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second), error);
 				result.error_in_range[mass_i] = float(error);
 			}
-			delete hWR_mass;
 
 			TString hist_name(mode + "_unweighted");
-			hWR_mass = new TH1F(hist_name, hist_name, 140, 0, 7000);
+			TH1F * un_hWR_mass = new TH1F(hist_name, hist_name, 700, 0, 7000);
 
 			//Draw unweighted histogram
 			t1[i]->Draw("WR_mass>>" + hist_name, "", "goff");
 			for(size_t massi = 0; massi < mass_vec.size(); ++massi) {
 				auto mass = mass_vec[massi];
 				auto range = mass_cut[std::make_pair(cut_channel, mass)];
-				float nEvents = hWR_mass->Integral(hWR_mass->FindBin(range.first), hWR_mass->FindBin(range.second));
+				float nEvents = un_hWR_mass->Integral(un_hWR_mass->FindBin(range.first), un_hWR_mass->FindBin(range.second));
 				result.unweighted_events_in_range[massi] = (UInt_t) nEvents;
 				std::cout << "[DEBUG]\t" << mass << '\t' << nEvents << std::endl;
 			}
-			delete hWR_mass;
+
+			if((isTagAndProbe == false) && (mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) ) {
+
+				t1[i]->Draw("WR_mass>>asdf(70,0,7000)", "weight", "goff");
+				TH1F *hWR_mass_forfit = (TH1F*)gDirectory->Get("asdf");
+
+				TF1 * fit = new TF1("fit", "[0]*exp([1]*x)", 600, 6500);
+				fit->SetParLimits(0, 0.1, 10000);
+				fit->SetParLimits(1, -10, 0);
+				hWR_mass_forfit->Fit(fit, "RL", "goff");
+				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
+					auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
+					result.fit_integral_in_range[mass_i] = fit->Integral(range.first, range.second) / hWR_mass_forfit->GetBinWidth(1);
+					result.error_on_fit_integral_in_range[mass_i] = fit->IntegralError(range.first, range.second) / hWR_mass_forfit->GetBinWidth(1);
+				}
+				result.nparam = fit->GetNpar();
+				for( size_t i = 0; i < result.nparam; ++i) {
+					result.fit_parameters[i] = fit->GetParameter(i);
+					result.fit_parameter_errors[i] = fit->GetParError(i);
+				}
+				result.normalization = -1;
+				TCanvas c("c", "c", 600, 600);
+				hWR_mass_forfit->Draw();
+				//fit->Draw("same");
+				c.SaveAs("plots/temp_analysis.png");
+
+				delete hWR_mass_forfit;
+			}
 
 			f.cd();
 			if(saveToys) t1[i]->Write();
 			if(loop_one) {
 				if(!saveToys) t1[i]->Write();
-				permanentWeightedDataSet->Write();
 				tDyCheck->Write();
 				delete tDyCheck;
 			}
+
+			delete hWR_mass;
+			delete un_hWR_mass;
 			delete t1[i];
-
-			permanentWeightedDataSet->Print();
-
-			if((isTagAndProbe == false) && (mode == "TT" || mode.find("DY") != _ENDSTRING || (mode == "data" && channel == Selector::EMu) ) ) {
-				assert(permanentWeightedDataSet->sumEntries() > 0);
-				Fits::expPower.setVal(-0.004);
-				RooFitResult * tempFitRslt = NULL;
-				// fit dataset to given PDF
-				fitRooDataSet(tempFitRslt, permanentWeightedDataSet, Fits::expPdfRooAbsPdf);	///< expPdfRooAbsPdf defined over massWR 600 to 6500
-
-				// dataset normalization is the number of entries in the dataset with fourObjectMass (name of Fits::massWR) above 600
-				result.normalization = permanentWeightedDataSet->sumEntries("fourObjectMass > 600");
-				// set of variables in the PDF
-				RooArgSet *vset = Fits::expPdfRooAbsPdf->getVariables();
-				// loop over RooRealVars in the set
-				TIterator * iter = vset->createIterator();
-				TObject * var = iter->Next();
-				RooRealVar *var_pdf;
-				result.nparam = 0;
-				while (var) {
-					// ignore the M_WR variable
-					if(strcmp(var->GetName(), "fourObjectMass") != 0) {
-						var_pdf = (RooRealVar*)vset->find(var->GetName());
-						// store the value of the fitted parameters and the corresponding errors
-						result.fit_parameters[result.nparam] = var_pdf->getVal();
-						result.fit_parameter_errors[result.nparam++] = var_pdf->getError();
-					}
-					var = iter->Next();
-				}
-
-				for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-					auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
-					double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
-					result.fit_integral_in_range[mass_i] = integral;
-				}
-
-				if(nStatToys && loop_one) {
-					std::cout << "Doing " << nStatToys << " stat Toys" << std::endl;
-					AnalysisResult stat_result;
-					stat_result.normalization = result.normalization;
-					stat_result.nmasses = mass_vec.size();
-					TTree * stat_tree = new TTree("stat_tree", "");
-					stat_result.SetBranches(stat_tree);
-
-					for(int stat_i = 0; stat_i < nStatToys; stat_i++) {
-						// loop over RooRealVars in the set, vary them and store
-						TIterator * iter = vset->createIterator();
-						TObject * var = iter->Next();
-						RooRealVar *var_pdf;
-						stat_result.nparam = 0;
-						while (var) {
-							// ignore the M_WR variable
-							if(strcmp(var->GetName(), "fourObjectMass") != 0) {
-								var_pdf = (RooRealVar*)vset->find(var->GetName());
-								var_pdf->setVal(Rand.Gaus(var_pdf->getVal(), var_pdf->getError()));
-								stat_result.fit_parameters[stat_result.nparam++] = var_pdf->getVal();
-							}
-							var = iter->Next();
-						}
-						//Calculate integrals for each fit
-						for(size_t mass_i = 0; mass_i < mass_vec.size(); mass_i++) {
-							auto range = mass_cut[std::make_pair(cut_channel, mass_vec.at(mass_i))];
-							double integral =  NormalizedIntegral(Fits::expPdfRooAbsPdf, Fits::massWR, range.first, range.second);
-							stat_result.fit_integral_in_range[mass_i] = integral;
-						}
-
-						stat_tree->Fill();
-
-					}
-					stat_tree->Write();
-					delete stat_tree;
-
-				}
-			}
 
 			// fill the tree with the normalization, parameters, and errors
 			if(loop_one) {

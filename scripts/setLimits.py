@@ -4,13 +4,13 @@ import re
 import subprocess
 import sys
 
-thisdir = os.getcwd()
+thisdir = os.getcwd() + '/'
 #proddir = "/local/cms/user/phansen/limits/"
 #proddir = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag
 
-toys, proddir = sys.argv[1:]
+toys, proddir,datacardfolder = sys.argv[1:]
 
-datacardfolder = thisdir + "/datacards/"
+datacardfolder = thisdir + datacardfolder
 datacards = os.listdir(datacardfolder)
 pattern = re.compile("WR(.*)jj_MASS(.*).txt")
 
@@ -48,4 +48,4 @@ for datacard in datacards:
 		prefix  = thisdir + "/python/combineTools.py " + jobid
 		job.addJob( prefix + " " + command, jobid)
 
-job.submit(mode = "lsf")
+job.submit(mode = "lsf", queue = "cmscaf1nd")
