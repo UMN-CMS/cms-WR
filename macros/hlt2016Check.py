@@ -1,5 +1,6 @@
 # use this python program to check the efficiency of triggers in the 2016 HLT menu on miniAOD or miniAODSIM evts
 # without any offline selection requirements
+#run this macro by opening a root session, then execute TPython::LoadMacro("hlt2016Check.py")
 
 import ROOT
 import array
@@ -42,14 +43,15 @@ trigObjsHandl, trigObjsLabel = Handle("std::vector<pat::TriggerObjectStandAlone>
 recoJetsHandl, recoJetsLabel = Handle("std::vector<pat::Jet>"), "slimmedJets"
 recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
 
+#UPDATE THIS FILE NAME
 # open one or more miniAOD .root files, and create an iterator to loop over the Event objects in the file(s)
 #absolute path name to input miniAOD or miniAODSIM file
-allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuMuToMuMuJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
+allEvents = Events("/abs/pathName/toMiniAodRootFile.root")
 
-
+#UPDATE THIS FILE NAME
 #absolute file path name used for electron channel
 if(doMuonChannel == False):
-	allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuEToEEJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
+	allEvents = Events("/abs/pathName/toMiniAodRootFile.root")
 	recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Electron>"), "slimmedElectrons"
 
 
@@ -65,7 +67,7 @@ totalNumEvts = 0
 # in the two tuple is the object of interest
 for evNum, oneEvent in enumerate(allEvents):
 	#evNum points to a simple number, while oneEvent points to an edm::Event object
-	#if(evNum > 2): break
+	#if(evNum > 2000): break
 	totalNumEvts+=1.0
 	
 	#link pat::Electron or pat::Muon collections with a edm::Handle objs
