@@ -1,17 +1,16 @@
 #name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 # Data	##################################################
-DoubleEG_RunC	/DoubleEG/Run2015C_25ns-27Jan2016-v2/MINIAOD	-	-	9666883	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
-DoubleEG_RunD	/DoubleEG/Run2015D-04Dec2015-v2/MINIAOD	-	-	92858893	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
+DoubleEG_RunB	/DoubleEG/Run2016B-01Jul2016-v2/MINIAOD	-	-	5686987	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
+DoubleEG_RunC	/DoubleEG/Run2016C-PromptReco-v2/MINIAOD	-	-	49193716	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
+DoubleEG_RunD	/DoubleEG/Run2016D-PromptReco-v2/MINIAOD	-	-	53758157	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
 #
-SingleMu_RunB	/SingleMuon/Run2016B-PromptReco-v2/MINIAOD	-	-	158188719	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
+SingleMu_RunB	/SingleMuon/Run2016B-29Jul2016-v1/MINIAOD	-	-	5578853	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
 SingleMu_RunC	/SingleMuon/Run2016C-PromptReco-v2/MINIAOD	-	-	68492270	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
 SingleMu_RunD	/SingleMuon/Run2016D-PromptReco-v2/MINIAOD	-	-	98175265	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
-SingleMu_RunE	/SingleMuon/Run2016E-PromptReco-v2/MINIAOD	-	-	90986344	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
-SingleMu_RunF	/SingleMuon/Run2016F-PromptReco-v1/MINIAOD	-	-	65235075	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
-SingleMu_RunG	/SingleMuon/Run2016G-PromptReco-v1/MINIAOD	-	-	32626369	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
 #
-MuEG_RunC	/MuonEG/Run2015C_25ns-27Jan2016-v2/MINIAOD	-	-	408621	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
-MuEG_RunD	/MuonEG/Run2015D-16Dec2015-v1/MINIAOD	-	-	13442593	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunB	/MuonEG/Run2016B-29Jul2016-v1/MINIAOD	-	-	32727796	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
+MuEG_RunC	/MuonEG/Run2016C-PromptReco-v2/MINIAOD	-	-	15416170	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunD	/MuonEG/Run2016D-PromptReco-v2/MINIAOD	-	-	23482352	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
 #	##################################################
 WJetsLNu	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	5.027e+04	1.782e+02	28210360	root://eoscms//eos/cms/store//user/shervin/skims/WJetsLNu_SHv12/	-
 WZ	/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.340e+01	4.670e-02	1000000	root://eoscms//eos/cms/store//user/shervin/skims/WZ_SHv12/	-
@@ -21,30 +20,6 @@ TTJets_DiLept_v1	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpri
 TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM	8.567e+01	2.215e-01	24623997	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v2_SHv12/	-
 TTJets	/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM	8.567e+01	2.215e-01	38261382	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v1_SHv12/	-
 #	##################
-DYJets_amctnlo	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM	5.915e+03	3.414e+01	104113465	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_amctnlo_SHv12/	-
+DYJets_amctnlo	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM	5.915e+03	3.414e+01	83290772	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_amctnlo_SHv12/	-
 DYJets_madgraph	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM	5.991e+03	1.796e+01	49877138	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_madgraph_SHv12/	-
-#	##################
-DYToEE_powheg	/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.803e+03	0.000e+00	49496146	root://eoscms//eos/cms/store/caf/user/shervin/DYToEE_powheg_SHv12/	-
-###
-DYToMuMu_powheg_50to120	/ZToMuMu_NNPDF30_13TeV-powheg_M_50_120/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v2/MINIAODSIM	1.975e+03	9.496e-01	2967200	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_50to120_SHv12/	-
-DYToMuMu_powheg_120to200	/ZToMuMu_NNPDF30_13TeV-powheg_M_120_200/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.932e+01	1.269e-02	99200	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_120to200_SHv12/	-
-DYToMuMu_powheg_200to400	/ZToMuMu_NNPDF30_13TeV-powheg_M_200_400/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.731e+00	1.836e-03	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_200to400_SHv12/	-
-DYToMuMu_powheg_400to800	/ZToMuMu_NNPDF30_13TeV-powheg_M_400_800/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.410e-01	1.665e-04	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_400to800_SHv12/	-
-DYToMuMu_powheg_800to1400	/ZToMuMu_NNPDF30_13TeV-powheg_M_800_1400/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.678e-02	1.186e-05	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_800to1400_SHv12/	-
-DYToMuMu_powheg_1400to2300	/ZToMuMu_NNPDF30_13TeV-powheg_M_1400_2300/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.390e-03	2.639e-03	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_1400to2300_SHv12/	-
-DYToMuMu_powheg_2300to3500	/ZToMuMu_NNPDF30_13TeV-powheg_M_2300_3500/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	8.948e-05	6.068e-08	99200	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_2300to3500_SHv12/	-
-DYToMuMu_powheg_3500to4500	/ZToMuMu_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	4.135e-06	2.480e-09	95200	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_3500to4500_SHv12/	-
-DYToMuMu_powheg_4500to6000	/ZToMuMu_NNPDF30_13TeV-powheg_M_4500_6000/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	4.560e-07	2.574e-10	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_4500to6000_SHv12/	-
-DYToMuMu_powheg_6000toInf	/ZToMuMu_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.066e-08	2.020e-11	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToMuMu_powheg_6000toInf_SHv12/	-
-##
-DYToEE_powheg_50to120	/ZToEE_NNPDF30_13TeV-powheg_M_50_120/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.975e+03	9.957e-01	2912000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_50to120_SHv12/	-
-DYToEE_powheg_120to200	/ZToEE_NNPDF30_13TeV-powheg_M_120_200/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.932e+01	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_120to200_SHv12/	-
-DYToEE_powheg_200to400	/ZToEE_NNPDF30_13TeV-powheg_M_200_400/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.731e+00	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_200to400_SHv12/	-
-DYToEE_powheg_400to800	/ZToEE_NNPDF30_13TeV-powheg_M_400_800/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.410e-01	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_400to800_SHv12/	-
-DYToEE_powheg_800to1400	/ZToEE_NNPDF30_13TeV-powheg_M_800_1400/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	1.678e-02	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_800to1400_SHv12/	-
-DYToEE_powheg_1400to2300	/ZToEE_NNPDF30_13TeV-powheg_M_1400_2300/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v14-v1/MINIAODSIM	1.390e-03	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_1400to2300_SHv12/	-
-DYToEE_powheg_2300to3500	/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	8.948e-05	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_2300to3500_SHv12/	-
-DYToEE_powheg_3500to4500	/ZToEE_NNPDF30_13TeV-powheg_M_3500_4500/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	4.135e-06	9.957e-01	100000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_3500to4500_SHv12/	-
-DYToEE_powheg_4500to6000	/ZToEE_NNPDF30_13TeV-powheg_M_4500_6000/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	4.560e-07	9.957e-01	99000	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_4500to6000_SHv12/	-
-DYToEE_powheg_6000toInf	/ZToEE_NNPDF30_13TeV-powheg_M_6000_Inf/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.066e-08	9.957e-01	0	root://eoscms//eos/cms/store//user/shervin/skims/DYToEE_powheg_6000toInf_SHv12/	-
 #	##################################
