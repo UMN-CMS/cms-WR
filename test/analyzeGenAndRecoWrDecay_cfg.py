@@ -22,27 +22,41 @@ options.register('channel',
 
 options.parseArguments()
 
+recoLeptons="tempLeptColl"
+chargedLeptonId=0
+matchedReco=False
+hvyNuId=0
+if (options.channel=='EE'):
+	recoLeptons="slimmedElectrons"
+	chargedLeptonId=11
+	hvyNuId=9900012
+	matchedReco=True
+#
+if (options.channel=='MuMu'):
+	recoLeptons="slimmedMuons"
+	chargedLeptonId=13
+	hvyNuId=9900014
+	matchedReco=False
+#
 
 #################################
 #Analyzers
 
 ## analyze the kinematic distributions of electrons at gen and reco level with these analyzers
-##DO NOT USE the genAndRecoWrAnalyzer plugin with slimmedMuons, it is currently setup to only handle slimmedElectrons
+## accessing reco leptons matched to GEN leptons currently only works with electrons
 process.wrDecayChainAnalyzer = cms.EDAnalyzer('genAndRecoWrAnalyzer',
 		treeName = cms.string("genAndMatchedRecoWrDecayNoCuts"),
-		leptonPdgId = cms.double(11),
+		leptonPdgId = cms.double(chargedLeptonId),
 		minQuarkPdgId = cms.double(1),
 		maxQuarkPdgId = cms.double(6),
 		firstHeavyParticlePdgId = cms.double(9900024),
-		secondHeavyParticlePdgId = cms.double(9900012),
+		secondHeavyParticlePdgId = cms.double(hvyNuId),
 		firstHeavyParticleStatus = cms.double(62),
-		saveMatchedRecoInfo = cms.bool(True),
+		saveMatchedRecoInfo = cms.bool(matchedReco),
 		cutOnStatusCode = cms.bool(True),
 		recoJetCollection = cms.InputTag("slimmedJets"),
-		recoLeptonCollection = cms.InputTag("slimmedElectrons"),
+		recoLeptonCollection = cms.InputTag(recoLeptons),
 		genParticlesCollection = cms.InputTag("genParticlesFormatter"),
-		#recoJetCollection = cms.InputTag(""),
-		#recoLeptonCollection = cms.InputTag("")
 		)
 
 #################################
