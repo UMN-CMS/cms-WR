@@ -155,6 +155,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
 	if(myEvent->WR_mass < 600.) continue;
+	if(myEvent->dilepton_mass < 200.) continue;
 
 	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
