@@ -264,6 +264,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Sumw2();
   ratio->SetStats(0);
 
+  if(fname.EqualTo("Mlljj")){
+	  //print number of evts passing all cuts
+	  std::cout<<"in MLLJJ distribution there are"<<std::endl;
+	  std::cout<< hs_DY->Integral() <<"\tDY weighted evts"<<std::endl;
+	  std::cout<< hs_ttbar->Integral() <<"\tttbar weighted evts"<<std::endl;
+	  std::cout<< hs_WJets->Integral() <<"\tWJets weighted evts"<<std::endl;
+	  std::cout<< hs_WZ->Integral() <<"\tWZ weighted evts"<<std::endl;
+	  std::cout<< hs_ZZ->Integral() <<"\tZZ weighted evts"<<std::endl;
+  }
+
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);

@@ -35,7 +35,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -136,10 +136,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",30,150,800);
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",30,150,550);
+  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",30,150,800);
+  //TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",30,150,550);
 
-  /*variable bin widths  dont forget to enable the bin division by its width in the lines below
+  /*variable bin widths  dont forget to enable the bin division by its width in the lines below*/
   Float_t bins[] = { 150, 300, 350, 375, 400, 425, 450, 475, 500, 525, 550, 600, 800};
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
@@ -147,7 +147,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   Float_t mllBins[] = { 150, 165, 180, 195, 210, 225, 240, 255, 275, 300, 330, 375, 550};
   Int_t  mllBinnum = sizeof(mllBins)/sizeof(Float_t) - 1;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",mllBinnum, mllBins);
-  */
+  /**/
 
 
   Long64_t nEntries = chain->GetEntries();
@@ -282,6 +282,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+  if(fname.EqualTo("Mll")) th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -317,8 +318,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
 
   TString fn = fname;
-  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_TTBarMC_FixedBinWidthWithRatio";
-  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_TTBarMC_FixedBinWidthWithRatio";
+  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_TTBarMC_VariableBinWidthWithRatio_lowFourObjMass";
+  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_TTBarMC_VariableBinWidthWithRatio_lowFourObjMass";
 
   if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll")){
 	  mycanvas->Print((fn+".pdf").Data());
