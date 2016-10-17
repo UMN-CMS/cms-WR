@@ -49,7 +49,7 @@ void calculateGenWrScaleFactorsNULL(){
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
-	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN cuts",58,700,3600,72,0,3600);
+	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","CMS Private          #surds = 13 TeV",32,800,4000,38,100,4000);
 
 	int maxWrMass = MXWRMSS, increment = INCRMT, minWrMass = MNWRMSS, minNuMass = MNNUMSS;
 	//starting value for wrMass equals the minimum wr mass
@@ -87,7 +87,7 @@ void calculateGenWrScaleFactorsNULL(){
 
 
 	///set axis labels and draw the histo, save an image of it (both pdf and png formats), and close the txt file
-	twoDimAcceptanceHist->GetXaxis()->SetTitle("WR Mass [GeV]");
+	twoDimAcceptanceHist->GetXaxis()->SetTitle("W_{R} Mass [GeV]");
 	twoDimAcceptanceHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
 	TCanvas * r1 = new TCanvas("r1","r1",900,700);
 	r1->cd();
