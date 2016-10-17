@@ -122,12 +122,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,200,2500);
+  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,200,2500);
  
-  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//wider bins work better at high WR mass
+  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//wider bins work better at high WR mass
   ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//wider bins work better at high WR mass
-  //Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
  
   float dilepton_max = 250.;
   if(channel == Selector::EMu)
@@ -184,7 +184,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
-  /*
+  /**/
   //normalize histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -201,7 +201,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   }//end loop over histos in vector
 
- */ 
+ /**/ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
@@ -261,8 +261,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
-  ratio->GetXaxis()->SetTitleSize(0.2);
-  ratio->SetLabelSize(0.1,"x");
+  ratio->GetXaxis()->SetTitleSize(0.3);
+  ratio->SetLabelSize(0.3,"x");
   leg->Draw(); 
   mycanvas->cd();
   p2->cd();
@@ -305,7 +305,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->cd();
   mycanvas->Update();
 
-  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
+  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
 
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
