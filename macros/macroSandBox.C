@@ -1622,7 +1622,7 @@ void macroSandBox(){
 	TChain * genWRtoEEJJMWR3400MNu800Private = new TChain(dirAndTreeName,"");
 	genWRtoEEJJMWR3400MNu800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_3400_MNu_800.root");
 
-	string title = "CMS Private                               13 TeV";
+	string title = "CMS Private                          #surds = 13 TeV";
 	string link=">>";
 	
 	//the arrays branchNames, cutVals, and xAxisLabels must have the same number of elements
@@ -1636,8 +1636,8 @@ void macroSandBox(){
 	//string histoBeginnings[] = {"MWR 800 MNu 150","MWR 800 MNu 400","MWR 800 MNu 700","MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500","MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700","MWR 1600 MNu 800","MWR 2400 MNu 800","MWR 3400 MNu 800"};	//legend entries
 	//string fileLabels[] = {"_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_800_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_2600_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MWR_5000_several_MNu_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private","_MNu_800_several_MWR_private"};	//output file labels
 
-	string histoEndings[] = {"_genLeptPtFromWR(100,0.,450.)","_genLeptPtFromNu(100,0.,450.)","_genQrkOnePtFromNu(100,0.,450.)","_genQrkTwoPtFromNu(100,0.,450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,850.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//low mass
-	string histoBeginnings[] = {"WR mass 800 Nu mass 150 GeV","WR mass 800 Nu mass 400 GeV","WR mass 800 Nu mass 700 GeV"};	//low mass
+	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,450.)","_genLeptPtFromNu(100,0.,450.)","_genQrkOnePtFromNu(100,0.,450.)","_genQrkTwoPtFromNu(100,0.,450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,850.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//low mass
+	//string histoBeginnings[] = {"WR mass 800 Nu mass 150 GeV","WR mass 800 Nu mass 400 GeV","WR mass 800 Nu mass 700 GeV"};	//low mass
 	
 	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,1450.)","_genLeptPtFromNu(100,0.,1450.)","_genQrkOnePtFromNu(100,0.,1450.)","_genQrkTwoPtFromNu(100,0.,1450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,2600.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//medium mass
 	//string histoBeginnings[] = {"MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500"};	//medium mass
@@ -1645,16 +1645,16 @@ void macroSandBox(){
 	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,2500.)","_genLeptPtFromNu(100,0.,2500.)","_genQrkOnePtFromNu(100,0.,2500.)","_genQrkTwoPtFromNu(100,0.,2500.)","_dileptonMassGenLeptsFromWRandNu(100,0.,5000.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//high mass
 	//string histoBeginnings[] = {"MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700"};	//high mass
 
-	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,1800.)","_genLeptPtFromNu(100,0.,1800.)","_genQrkOnePtFromNu(100,0.,1800.)","_genQrkTwoPtFromNu(100,0.,1800.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
-	//string histoBeginnings[] = {"WR mass 1600 Nu mass 800 GeV","WR mass 2400 Nu mass 800 GeV","WR mass 3400 Nu mass 800 GeV"};	//fixed Nu mass
+	string histoEndings[] = {"_genLeptPtFromWR(100,0.,1800.)","_genLeptPtFromNu(100,0.,1800.)","_genQrkOnePtFromNu(100,0.,1800.)","_genQrkTwoPtFromNu(100,0.,1800.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
+	string histoBeginnings[] = {"WR mass 1600 Nu mass 800 GeV","WR mass 2400 Nu mass 800 GeV","WR mass 3400 Nu mass 800 GeV"};	//fixed Nu mass
 	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = brNamesVect.size();
 	for(unsigned int i=0; i<maxI; i++){
 		string cName = "o"+to_string(i);
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR800MNu150Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR800MNu400Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR800MNu700Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR800MNu150Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR800MNu400Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR800MNu700Private;
 
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2600MNu300Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
@@ -1664,11 +1664,11 @@ void macroSandBox(){
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu4700Private;
 
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR3400MNu800Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR3400MNu800Private;
 
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.55,0.90,0.90,true,title,xAxisLabels[i],"_MWR_800_several_MNu_private",true,cutVals[i]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.55,0.90,0.90,true,title,xAxisLabels[i],"_MNu_800_several_MWR_private",true,cutVals[i]);
 		placeHolderMap.clear();
 	}///end loop over branchNames
 	
