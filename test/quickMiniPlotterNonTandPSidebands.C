@@ -26,9 +26,8 @@
 #endif
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
-//to change from MuMu to EE, simply search for all instances of EE, and replace them with MuMu
-//BELOW THIS LINE
-Selector::tag_t channel = Selector::MuMu;
+//to change from MuMu to EE, switch the Selector channel in the next line
+Selector::tag_t channel = Selector::EE;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -54,17 +53,26 @@ void quickMiniPlotterNonTandPSidebands(){
   TString localDir = "../analysisCppOutputRootFiles/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
-  case Selector::MuMu:
-    dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
-	tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
-    //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
-	wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandMuMu.root");
-    wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandMuMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandMuMu.root");
-    data = chain_data->Add(localDir+"selected_tree_data_lowdileptonsidebandMuMu.root");
-    break;
-  default:
-    std::cout << "Unknown tag" << std::endl;
+	  case Selector::MuMu:
+		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
+		  //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+		  wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandMuMu.root");
+		  wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandMuMu.root");
+		  zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandMuMu.root");
+		  data = chain_data->Add(localDir+"selected_tree_data_lowdileptonsidebandMuMu.root");
+		  break;
+	  case Selector::EE:
+		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
+		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandEE.root");
+		  //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+		  wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandEE.root");
+		  wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandEE.root");
+		  zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandEE.root");
+		  data = chain_data->Add(localDir+"selected_tree_data_lowdileptonsidebandEE.root");
+		  break;
+	  default:
+		  std::cout << "Unknown tag" << std::endl;
   }
 
   std::cout<<"data = "<< data <<"\tdy = "<< dy << std::endl;
@@ -222,7 +230,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->Sumw2();
   hs_data->Sumw2();
 
-  TLegend *leg = new TLegend( 0.72, 0.70, 0.98, 0.90 ) ; 
+  TLegend *leg = new TLegend( 0.6, 0.60, 0.90, 0.90 ) ; 
   leg->AddEntry( hs_DY, "DY" ) ; 
   leg->AddEntry( hs_ttbar, "ttbar" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
@@ -258,8 +266,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  hs_data->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   th->Draw("histo");
   hs_data->Draw("epsame");
   TString ytitle = "Events/(";
@@ -268,7 +276,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")){
-	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events PER GeV"), hs_data->GetYaxis()->SetTitle("Events PER GeV");
+	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
 	  Int_t maxBin = hs_data->GetNbinsX();
   }
   th->GetYaxis()->SetTitleOffset(1.3);
@@ -276,8 +284,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
-  ratio->GetXaxis()->SetTitleSize(0.2);
-  ratio->SetLabelSize(0.1,"x");
+  ratio->GetXaxis()->SetTitleSize(0.3);
+  ratio->SetLabelSize(0.3,"x");
   leg->Draw(); 
   mycanvas->cd();
   p2->cd();	//for ratio plot
@@ -293,13 +301,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  Float_t dataEntries = hs_data->GetEntries();
 	  Float_t mcEntries = (hs_DY->GetEntries()) + (hs_ttbar->GetEntries()) + (hs_WJets->GetEntries()) + (hs_WZ->GetEntries()) + (hs_ZZ->GetEntries());
 	  Float_t integralUnc = (dataEntries/mcEntries)*sqrt((1/dataEntries) + (1/mcEntries));
-	  std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+	  if(channel == Selector::MuMu) std::cout<< "in MuMu channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
+  	  if(channel == Selector::EE) std::cout<< "in EE channel "<< fname <<" dataOvrMC ratio=\t"<< dataMCratio <<"\t+/-\t"<< integralUnc << std::endl;
   }
 
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,3.);	//upper limit 3. for mu, 2. for ele
+  Float_t maxYratioRange = 3.0;
+  if(channel == Selector::EE) maxYratioRange = 2.0;
+  ratio->GetYaxis()->SetRangeUser(0.5,maxYratioRange);	//upper limit 3. for mu, 2. for ele
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
   ratio->Draw("p");
@@ -314,6 +325,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = "";
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyAmc";	//for ratio plot
   fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  if(channel == Selector::EE) fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";
   //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
