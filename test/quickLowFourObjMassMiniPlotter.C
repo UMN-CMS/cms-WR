@@ -304,7 +304,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,3.5);
+  Float_t maxYratioRange = 2.0;
+  if(channel == Selector::EE) maxYratioRange = 2.5;
+  ratio->GetYaxis()->SetRangeUser(0.5,maxYratioRange);
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
   ratio->Draw("p");
