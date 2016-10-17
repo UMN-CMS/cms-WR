@@ -47,7 +47,7 @@ void flavorSideband(){
   TChain * chain_MuMu = new TChain("Tree_Iter0");
   TChain * chain_EMuData = new TChain("Tree_Iter0");
  
-  TString dir = "../";
+  TString dir = "../analysisCppOutputRootFiles/";
   chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMu.root");
   chain_EE->Add(dir+"selected_tree_TT_signal_eeEE.root");
   chain_MuMu->Add(dir+"selected_tree_TT_signal_mumuMuMu.root");
@@ -102,7 +102,7 @@ void flavorSideband(){
   writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
 
   ///use this title for all plots
-  TString stdTitle = "CMS Preliminary            #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
+  TString stdTitle = "CMS Private           #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
   h_WR_mass_EMu->SetTitle(stdTitle);
   h_WR_mass_EMuData->SetTitle(stdTitle);
   h_WR_mass_EE->SetTitle(stdTitle);
@@ -148,17 +148,19 @@ void flavorSideband(){
   h_ratio_EE->GetYaxis()->SetTitle("ratio M_{EEJJ} / M_{EMuJJ}");
   h_ratio_EE->SetTitleOffset(1.55,"Y");
   h_ratio_EE->SetTitle(stdTitle);
+  h_ratio_EE->SetFillColor(kWhite);
   h_ratio_MuMu->Divide(h_WR_mass_EMu);
   h_ratio_MuMu->SetTitle(stdTitle);
   h_ratio_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_ratio_MuMu->GetYaxis()->SetRangeUser(0.5,0.8);
   h_ratio_MuMu->GetYaxis()->SetTitle("ratio M_{MuMuJJ} / M_{EMuJJ}");
   h_ratio_MuMu->SetTitleOffset(1.55,"Y");
+  h_ratio_MuMu->SetFillColor(kWhite);
   
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);	///< for xmax 2000
   TPaveText* chiSqdBoxEE = new TPaveText(300.,0.54,1800.,0.59);	///< for xmax much greater than 2000
-  chiSqdBoxEE->SetFillColor(kWhite);
+  chiSqdBoxEE->SetFillColorAlpha(kWhite, 1.0);
   TF1 *f_EE = new TF1("f_EE","[0]",600,1500);
   f_EE->FixParameter(0,eeEmuSF);
   h_ratio_EE->Fit("f_EE");
@@ -180,7 +182,7 @@ void flavorSideband(){
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);	///< for xmax 2000
   TPaveText* chiSqdBoxMuMu = new TPaveText(300.,0.74,1800.,0.79);	///< for xmax much greater than 2000
-  chiSqdBoxMuMu->SetFillColor(kWhite);
+  chiSqdBoxMuMu->SetFillColorAlpha(kWhite, 1.0);
   TF1 *f_MuMu = new TF1("f_MuMu","[0]",600,1500);
   f_MuMu->FixParameter(0,mumuEmuSF);
   h_ratio_MuMu->Fit("f_MuMu");
