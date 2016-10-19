@@ -36,6 +36,11 @@ private:
 	edm::EDGetToken evinfoToken_;
 
 	edm::EDGetToken  jec_unc_src;
+	edm::EDGetToken  jetResolution_src;
+	edm::EDGetToken  JERsf_src;
+	edm::EDGetToken  JERsf_up_src;
+	edm::EDGetToken  JERsf_down_src;
+
 	edm::EDGetToken  muon_IDSF_central_src;
 	edm::EDGetToken  muon_IsoSF_central_src;
 	edm::EDGetToken  muon_IDSF_error_src;
@@ -57,6 +62,10 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
+	jetResolution_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("jetResolution_src"))),
+	JERsf_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_src"))),
+	JERsf_up_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_up_src"))),
+	JERsf_down_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_down_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
 	muon_IDSF_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_error_src"))),
@@ -86,6 +95,14 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 
 	edm::Handle<JECUnc_Map > jec_unc;
 	event.getByToken(jec_unc_src, jec_unc);
+	edm::Handle< edm::ValueMap<float> > jetResolution;
+	event.getByToken(jetResolution_src, jetResolution);
+	edm::Handle< edm::ValueMap<float> > JERsf;
+	event.getByToken(JERsf_src, JERsf);
+	edm::Handle< edm::ValueMap<float> > JERsf_up;
+	event.getByToken(JERsf_up_src, JERsf_up);
+	edm::Handle< edm::ValueMap<float> > JERsf_down;
+	event.getByToken(JERsf_down_src, JERsf_down);
 
 	edm::Handle< edm::ValueMap<float> > muon_IDSF;
 	event.getByToken(muon_IDSF_central_src, muon_IDSF);
@@ -157,6 +174,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		p4.SetPtEtaPhiM(jet->pt(), jet->eta(), jet->phi(), jet->mass());
 		myEvent.jets_p4->push_back(p4);
 		myEvent.jec_uncertainty->push_back((*jec_unc)[jet]);
+		myEvent.jetResolution->push_back((*jetResolution)[jet]);
+		myEvent.JER_sf->push_back((*JERsf)[jet]);
+		myEvent.JER_sf_up->push_back((*JERsf_up)[jet]);
+		myEvent.JER_sf_down->push_back((*JERsf_down)[jet]);
 	}
 
 	tree->Fill();

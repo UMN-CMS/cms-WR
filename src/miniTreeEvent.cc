@@ -21,6 +21,10 @@ miniTreeEvent::miniTreeEvent():
 	muon_IsoSF_error(new std::vector<Float_t>),
 	jets_p4(new std::vector<TLorentzVector>),
 	jec_uncertainty(new std::vector<Float_t>),
+	jetResolution(new std::vector<Float_t>),
+	JER_sf(new std::vector<Float_t>),
+	JER_sf_up(new std::vector<Float_t>),
+	JER_sf_down(new std::vector<Float_t>),
 	_owningMembers(true)
 {
 
@@ -48,6 +52,9 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	muon_IsoSF_error(new std::vector<Float_t>),
 	jets_p4(new std::vector<TLorentzVector>),
 	jec_uncertainty(new std::vector<Float_t>),
+	JER_sf(new std::vector<Float_t>),
+	JER_sf_up(new std::vector<Float_t>),
+	JER_sf_down(new std::vector<Float_t>),
 	_owningMembers(true)
 {
 	clear();
@@ -55,6 +62,10 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*muons_p4 = *(otherEvent.muons_p4);
 	*jets_p4 = *(otherEvent.jets_p4);
 	*jec_uncertainty = *(otherEvent.jec_uncertainty);
+	*jetResolution = *(otherEvent.jetResolution);
+	*JER_sf = *(otherEvent.JER_sf);
+	*JER_sf_up = *(otherEvent.JER_sf_up);
+	*JER_sf_down = *(otherEvent.JER_sf_down);
 	*electron_scale = *(otherEvent.electron_scale);
 	*electron_smearing = *(otherEvent.electron_smearing);
 	*electron_r9 = *(otherEvent.electron_r9);
@@ -94,6 +105,10 @@ void miniTreeEvent::clear()
 	jets_p4->clear();
 
 	jec_uncertainty->clear();
+	jetResolution->clear();
+	JER_sf->clear();
+	JER_sf_up->clear();
+	JER_sf_down->clear();
 	electron_scale->clear();
 	electron_smearing->clear();
 	electron_r9->clear();
@@ -138,6 +153,10 @@ miniTreeEvent::~miniTreeEvent()
 	delete muon_IsoSF_error;
 	delete jets_p4;
 	delete jec_uncertainty;
+	delete jetResolution;
+	delete JER_sf;
+	delete JER_sf_up;
+	delete JER_sf_down;
 }
 
 void miniTreeEvent::SetBranches(TTree* tree)
@@ -152,6 +171,10 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("jets_p4", jets_p4, 32000, -1);
 
 	tree->Branch("jec_uncertainty", jec_uncertainty);
+	tree->Branch("jetResolution", jetResolution);
+	tree->Branch("JER_sf", JER_sf);
+	tree->Branch("JER_sf_up", JER_sf_up);
+	tree->Branch("JER_sf_down", JER_sf_down);
 	tree->Branch("electron_scale", electron_scale);
 	tree->Branch("electron_smearing", electron_smearing);
 	tree->Branch("electron_r9", electron_r9);
@@ -177,6 +200,10 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete jets_p4;
 
 	delete jec_uncertainty;
+	delete jetResolution;
+	delete JER_sf;
+	delete JER_sf_up;
+	delete JER_sf_down;
 	delete electron_scale;
 	delete electron_smearing;
 	delete electron_r9;
@@ -194,6 +221,10 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	jets_p4 = 0;
 
 	jec_uncertainty = 0;
+	jetResolution = 0;
+	JER_sf = 0;
+	JER_sf_up = 0;
+	JER_sf_down = 0;
 	electron_scale = 0;
 	electron_smearing = 0;
 	electron_r9 = 0;
@@ -214,6 +245,11 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("jets_p4", &jets_p4);
 
 	tree->SetBranchAddress("jec_uncertainty", &jec_uncertainty);
+	tree->SetBranchAddress("jetResolution", &jetResolution);
+	tree->SetBranchAddress("JER_sf", &JER_sf);
+	tree->SetBranchAddress("JER_sf_up", &JER_sf_up);
+	tree->SetBranchAddress("JER_sf_down", &JER_sf_down);
+
 	tree->SetBranchAddress("electron_scale", &electron_scale);
 	tree->SetBranchAddress("electron_smearing", &electron_smearing);
 	tree->SetBranchAddress("electron_r9", &electron_r9);

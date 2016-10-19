@@ -47,6 +47,11 @@ public:
 	TLorentzVector p4;
 	Float_t jec_uncertainty;
 	Float_t weight;
+	Float_t JER;
+	Float_t JER_sf;
+	Float_t JER_sf_up;
+	Float_t JER_sf_down;
+
 
 	myJet() {}; ///< default contructor (empty)
 
