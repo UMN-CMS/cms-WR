@@ -8,8 +8,8 @@
 #include "TLorentzVector.h"
 #include "TCanvas.h"
 #include "TFile.h"
-#include "ExoAnalysis/cmsWR/interface/RoccoR.h"
-#include "ExoAnalysis/cmsWR/interface/rochcor2015.h"
+//#include "ExoAnalysis/cmsWR/interface/RoccoR.h"
+#include "ExoAnalysis/cmsWR/interface/rochcor2016.h"
 #include "ExoAnalysis/cmsWR/interface/ToyThrower.h"
 
 #ifdef DEBUG
@@ -35,7 +35,7 @@ void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[
 		else if(list[iii] == "Smear_Muon_Resolution")      Flag_Smear_Muon_Resolution = 1;
 	}
 
-	rochcor2015 *rmcor = new rochcor2015(random_seed);
+	rochcor2016 *rmcor = new rochcor2016(random_seed);
 
 	for(auto muons : * (myEvent->muons_p4)) {
 #ifdef DEBUG
