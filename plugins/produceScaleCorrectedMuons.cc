@@ -44,7 +44,7 @@ void produceScaleCorrectedMuons::produce(edm::Event& event, const edm::EventSetu
 	edm::Handle<edm::View<pat::Muon> > muons;
 	event.getByToken(srcToken_, muons);
 	std::auto_ptr<pat::MuonCollection> mus(new pat::MuonCollection);
-	
+
 	for(auto mu : *muons) {
 		charge = mu.charge();
 		Mu_Original.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());

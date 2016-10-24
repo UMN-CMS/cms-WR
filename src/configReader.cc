@@ -60,7 +60,7 @@ configReader::configReader(std::string filename)
 TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
-	std::cout<<"root://cmseos.fnal.gov//store/user/jchaves/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root"<<std::endl;
+	std::cout << "root://cmseos.fnal.gov//store/user/jchaves/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root" << std::endl;
 	chain->Add(("root://cmseos.fnal.gov//store/user/jchaves/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
 	chain->GetEntries();
 	return chain;

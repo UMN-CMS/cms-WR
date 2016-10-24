@@ -16,40 +16,40 @@
 class PUAnalyzer : public edm::EDAnalyzer
 {
 public:
-  explicit PUAnalyzer(const edm::ParameterSet&);
+	explicit PUAnalyzer(const edm::ParameterSet&);
 
 private:
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+	virtual void analyze(const edm::Event&, const edm::EventSetup&);
 
-  edm::EDGetToken pileUpInfoToken_;
-  
-  TH1F * h_pileup;
+	edm::EDGetToken pileUpInfoToken_;
+
+	TH1F * h_pileup;
 
 };
 
 PUAnalyzer::PUAnalyzer(const edm::ParameterSet& cfg):
 
-  pileUpInfoToken_ ( consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo")))
-	
+	pileUpInfoToken_ ( consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo")))
+
 {
-  edm::Service<TFileService> fs;
- 
-  h_pileup = fs->make<TH1F>("pileup", "pileup", 1000, 0, 100);
- }
+	edm::Service<TFileService> fs;
+
+	h_pileup = fs->make<TH1F>("pileup", "pileup", 1000, 0, 100);
+}
 
 void PUAnalyzer::analyze(const edm::Event& event, const edm::EventSetup&)
 {
 
-  edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
-  
-  if(!event.isRealData()) {
-    event.getByToken(pileUpInfoToken_, PU_Info);
-    for(auto p : *PU_Info) {
-      int BX = p.getBunchCrossing();
-      if(BX == 0)
-	h_pileup->Fill(p.getTrueNumInteractions());
-    }
-  }
+	edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
+
+	if(!event.isRealData()) {
+		event.getByToken(pileUpInfoToken_, PU_Info);
+		for(auto p : *PU_Info) {
+			int BX = p.getBunchCrossing();
+			if(BX == 0)
+				h_pileup->Fill(p.getTrueNumInteractions());
+		}
+	}
 
 
 

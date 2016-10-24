@@ -211,7 +211,7 @@ int main(int ac, char* av[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help", "produce help message")
-		("configFile", po::value<std::string>(&configfile)->default_value("configs/2016-v1.conf"), "Config file")
+	("configFile", po::value<std::string>(&configfile)->default_value("configs/2016-v1.conf"), "Config file")
 	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(0), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(123456), "Starting seed")
