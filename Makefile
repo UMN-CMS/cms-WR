@@ -74,7 +74,7 @@ scales: ../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
 $(BUILDDIR)/analysis: $(BUILDDIR)/analysis.cpp  $(MODULES) $(MODULESZFitter)
 	@echo "---> Making analysis $(COMPILE)"
 	@g++ $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< $(MODULES) $(MODULESZFitter) $(LIB) $(ROOT_LIB) $(ROOFIT_LIB) $(ROOSTAT_LIB) $(ROOT_FLAGS) \
-	-lboost_program_options -lTreePlayer $(CMSSW_BASE)/tmp/slc6_amd64_gcc491/src/FWCore/ParameterSet/src/FWCoreParameterSet/libFWCoreParameterSet.so
+	-lboost_program_options -lTreePlayer $(CMSSW_BASE)/tmp/slc6_amd64_gcc530/src/FWCore/ParameterSet/src/FWCoreParameterSet/libFWCoreParameterSet.so
 
 clean:
 	rm -f $(OBJ_DIR)/*.o

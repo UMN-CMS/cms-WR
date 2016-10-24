@@ -41,6 +41,10 @@ options.output = defaultFileOutput
 #
 
 options.parseArguments()
+if(options.test==4):
+    options.files="root://xrootd-cms.infn.it//store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/40000/00200284-F15C-E611-AA9B-002590574776.root"
+    options.maxEvents=100
+    options.isMC=1
 if(options.test==3):
     options.files="file:skim_test.root"
     #options.maxEvents=100
@@ -78,7 +82,7 @@ process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.
 if(options.isMC==0):
     process.GlobalTag.globaltag = '80X_dataRun2_ICHEP16_repro_v0'
 else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_RealisticBS_25ns_13TeV2016_v1_mc'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
 
 
 process.maxEvents = cms.untracked.PSet(
@@ -144,6 +148,9 @@ updateJetCollection(
     jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None')  # Do not forget 'L2L3Residual' on data!
     )
 
+if (options.isMC==0):
+    updateJetCollection.jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L2L3Residual', 'L3Absolute']), 'None')  # Do not forget 'L2L3Residual' on data!
+
 process.load('ExoAnalysis.cmsWR.selections_cff')
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
@@ -162,6 +169,13 @@ process.blindSeq = cms.Sequence()
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.selectionSequence  * process.filterSequence)
 
+# Temporary while new MC is produced with HLT
+if (options.isMC==0):
+    process.signalHltSequence = cms.Sequence(process.wRHLTFilter_data)
+    process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_data)
+else:
+    process.signalHltSequence = cms.Sequence(process.wRHLTFilter_MC)
+    process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_MC)
 
 process.miniTree_signal_ee   = process.MiniTTree.clone()
 process.miniTree_signal_mumu = process.MiniTTree.clone()

@@ -190,7 +190,7 @@ int main(int ac, char* av[])
 	std::vector<std::string> modes;
 	chainNames chainNames_;
 
-	std::string channel_str, outDir, outFileTag;
+	std::string channel_str, outDir, outFileTag, configFile;
 	std::string channel_cut_str;
 	float integratedLumi;
 	Int_t nToys;
@@ -211,6 +211,7 @@ int main(int ac, char* av[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help", "produce help message")
+		("configFile", po::value<std::string>(&configfile)->default_value("configs/2016-v1.conf"), "Config file")
 	("lumi,l", po::value<float>(&integratedLumi)->default_value(2640.523267), "Integrated luminosity")
 	("toys,t", po::value<int>(&nToys)->default_value(0), "Number of Toys")
 	("seed,s", po::value<int>(&seed)->default_value(123456), "Starting seed")
@@ -268,6 +269,7 @@ int main(int ac, char* av[])
 		cut_channel = channel;
 
 	configReader myReader("configs/2015-v1.conf");
+	configReader myReader(configFile);
 	if(debug) std::cout << myReader << std::endl;
 
 	std::cout << "[INFO] Selected modes: \n";
@@ -508,6 +510,7 @@ int main(int ac, char* av[])
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
 				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Rand.Gaus(0.0, 1.);// Electron Scale(Data)
 				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
+				Random_Numbers_for_Systematics_Up_Down[4] = 0.;//Mu Res
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);

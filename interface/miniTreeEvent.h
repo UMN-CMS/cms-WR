@@ -49,6 +49,11 @@ public:
 
 	std::vector<TLorentzVector> * jets_p4;
 	std::vector<Float_t> * jec_uncertainty;
+	std::vector<Float_t> * jetResolution;
+	std::vector<Float_t> * JER_sf;
+	std::vector<Float_t> * JER_sf_up;
+	std::vector<Float_t> * JER_sf_down;
+
 
 	Float_t nPU;
 	Int_t nPV;

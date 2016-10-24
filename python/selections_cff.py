@@ -25,6 +25,7 @@ muonIDIso=' isolationR03().sumPt/pt < 0.1 && userInt("highPtID") == 1'
 ############################################################ Jets
 #patJetsReapplyJEC
 from ExoAnalysis.cmsWR.JEC_cff import *
+from ExoAnalysis.cmsWR.produceJERsf_cff import *
 
 ### select tight-ID jets
 wRtightJets = cms.EDFilter("PATJetSelector",
@@ -42,6 +43,7 @@ wRJECUncert = JECUnc.clone(
     src = cms.InputTag('wRJets')
     )
 
+
 wRJetFilter = cms.EDFilter("CandViewCountFilter",
                                  src = cms.InputTag("wRJets"),
                                  minNumber = cms.uint32(2)
@@ -56,7 +58,7 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert ) #* wRdiJetCandidate)
+jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert * jetResolutionSF) #* wRdiJetCandidate)
 
 ############################################################ Electrons
 

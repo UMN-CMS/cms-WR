@@ -82,7 +82,10 @@ public:
 		else return -1;
 	}
 
-
+	inline std::string rochesterFile(void) const
+	{
+		return configFile["rochester"];
+	};
 
 private:
 	std::map<std::string, configLine> configMap;
