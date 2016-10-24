@@ -52,6 +52,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	muon_IsoSF_error(new std::vector<Float_t>),
 	jets_p4(new std::vector<TLorentzVector>),
 	jec_uncertainty(new std::vector<Float_t>),
+	jetResolution(new std::vector<Float_t>),
 	JER_sf(new std::vector<Float_t>),
 	JER_sf_up(new std::vector<Float_t>),
 	JER_sf_down(new std::vector<Float_t>),
