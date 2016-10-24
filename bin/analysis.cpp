@@ -32,7 +32,7 @@
 
 #include <unordered_set>
 
-#include "Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
+#include "ExoAnalysis/Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
 
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
@@ -81,7 +81,7 @@ public:
 		}
 		if(mode == "TT") {
 			//TTchainNames.push_back("TTJets_DiLept_v1");
-			TTchainNames.push_back("TTJets_DiLept_v2");
+			TTchainNames.push_back("TTJets");
 		} else if(mode.find("DY") != _ENDSTRING) {
 			//if(mode.Contains("TANDP") ) tree_channel = "_dytagandprobe";
 			std::string tagName = "";
@@ -250,7 +250,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
+	EnergyScaleCorrection_class eSmearer("ExoAnalysis/Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -268,7 +268,6 @@ int main(int ac, char* av[])
 	} else
 		cut_channel = channel;
 
-	configReader myReader("configs/2015-v1.conf");
 	configReader myReader(configFile);
 	if(debug) std::cout << myReader << std::endl;
 
@@ -555,7 +554,7 @@ int main(int ac, char* av[])
 //#endif
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
-				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
+				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData, myReader.rochesterFile);
 
 
 				unsigned int nEle = myEventIt.electrons_p4->size();

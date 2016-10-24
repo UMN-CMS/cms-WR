@@ -41,7 +41,7 @@ LIB=-L$(BOOST)/lib -L/usr/lib64 # -L/usr/lib
 
 #### Make the list of modules from the list of .cc files in the SRC directory
 MODULES=$(shell ls $(SRCDIR)/*.cc | sed "s|.cc|.o|;s|$(SRCDIR)|$(OBJ_DIR)|g")
-MODULESZFitter=../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
+MODULESZFitter=../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
 #### Make the list of dependencies for a particular module
 
 default: signalPdf.exe $(BUILDDIR)/analysis
@@ -57,8 +57,8 @@ lib/%.o: $(SRCDIR)/%.cc
 	@echo "--> Making $@" 
 	@$(COMPILE.cc) $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $<
 
-scales: ../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
-../../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o: ../../Calibration/ZFitter/src/EnergyScaleCorrection_class.cc
+scales: ../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o
+../Calibration/ZFitter/lib/EnergyScaleCorrection_class.o: ../Calibration/ZFitter/src/EnergyScaleCorrection_class.cc
 	@echo "--> Making $@" 
 	@$(COMPILE.cc) $(CXXFLAGS) $(INCLUDE) $(MAKEDEPEND) -o $@ $< 
 
