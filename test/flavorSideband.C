@@ -158,8 +158,8 @@ void flavorSideband(){
   h_ratio_MuMu->SetFillColor(kWhite);
   
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
-  //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);	///< for xmax 2000
-  TPaveText* chiSqdBoxEE = new TPaveText(300.,0.54,1800.,0.59);	///< for xmax much greater than 2000
+  //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);
+  TPaveText* chiSqdBoxEE = new TPaveText(300.,0.54,1800.,0.59);	///< for xmax 2000
   chiSqdBoxEE->SetFillColorAlpha(kWhite, 1.0);
   TF1 *f_EE = new TF1("f_EE","[0]",600,1500);
   f_EE->FixParameter(0,eeEmuSF);
@@ -170,18 +170,22 @@ void flavorSideband(){
   chiSqdBoxEE->Draw("same");
   f_EE->SetLineColor(kBlue);
   f_EE->Draw("same");
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.pdf"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.png"));
   mycanvas_ratio_EE->SetLogx(1);
-  //chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");	//for xmax 2000
-  chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax much greater than 2000
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx.png"));
+  //chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");
+  //chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax 2000
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx_largeXmax.pdf"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx_largeXmax.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.png"));
 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
-  //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);	///< for xmax 2000
-  TPaveText* chiSqdBoxMuMu = new TPaveText(300.,0.74,1800.,0.79);	///< for xmax much greater than 2000
+  //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);
+  TPaveText* chiSqdBoxMuMu = new TPaveText(300.,0.74,1800.,0.79);	///< for xmax 2000
   chiSqdBoxMuMu->SetFillColorAlpha(kWhite, 1.0);
   TF1 *f_MuMu = new TF1("f_MuMu","[0]",600,1500);
   f_MuMu->FixParameter(0,mumuEmuSF);
@@ -192,13 +196,17 @@ void flavorSideband(){
   f_MuMu->SetLineColor(kBlue);
   chiSqdBoxMuMu->Draw("same");
   f_MuMu->Draw("same");
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.png"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.pdf"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.png"));
   mycanvas_ratio_MuMu->SetLogx(1);
-  //chiSqdBoxMuMu->DrawPave(500.,0.73,1000.,0.79,4,"same");	//for xmax 2000
-  chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax much greater than 2000
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.png"));
+  //chiSqdBoxMuMu->DrawPave(300.,0.74,1100.,0.79,4,"same");
+  //chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax 2000
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.pdf"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.png"));
 
 
   gStyle->SetOptStat("nemr");
@@ -317,8 +325,8 @@ void flavorSideband(){
   legEMuDataTwoRescaledMCs->Draw();
   canvEMuDataTwoRescaledMCs->cd();
   p2->cd();	///<change to ratio TPad
-  Float_t minYratio = 0.5, maxYratio = 1.5;
-  Float_t xLabelSize = 0.1, xTitleSize = 0.2;
+  Float_t minYratio = 0.5, maxYratio = 2.0;
+  Float_t xLabelSize = 0.3, xTitleSize = 0.3;
   ratio_Data_EE->SetTitle(""), ratio_Data_MuMu->SetTitle(""), ratio_Data_EMu->SetTitle("");
   ratio_Data_EE->GetXaxis()->SetTitleSize(xTitleSize), ratio_Data_MuMu->GetXaxis()->SetTitleSize(xTitleSize), ratio_Data_EMu->GetXaxis()->SetTitleSize(xTitleSize);
   ratio_Data_EE->SetLabelSize(xLabelSize,"x"), ratio_Data_MuMu->SetLabelSize(xLabelSize,"x"), ratio_Data_EMu->SetLabelSize(xLabelSize,"x");
@@ -331,16 +339,16 @@ void flavorSideband(){
   ratio_Data_EE->Divide(h_WR_mass_EE);
   ratio_Data_EE->SetMarkerStyle(20);
   ratio_Data_EE->SetMarkerColor(kRed);
-  ratio_Data_EE->SetLabelSize(0.1, "y");
+  ratio_Data_EE->SetLabelSize(0.2, "y");
   ratio_Data_EE->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_EE->GetYaxis()->SetNdivisions(505);
   ratio_Data_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  ratio_Data_EE->SetLabelSize(0.1,"x");
+  ratio_Data_EE->SetLabelSize(0.3,"x");
 
   ratio_Data_EMu->Divide(h_WR_mass_EMu);
   ratio_Data_EMu->SetMarkerStyle(22);
   ratio_Data_EMu->SetMarkerColor(kBlue);
-  ratio_Data_EMu->SetLabelSize(0.1, "y");
+  ratio_Data_EMu->SetLabelSize(0.2, "y");
   ratio_Data_EMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_EMu->GetYaxis()->SetNdivisions(505);
   ratio_Data_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -348,7 +356,7 @@ void flavorSideband(){
   ratio_Data_MuMu->Divide(h_WR_mass_MuMu);
   ratio_Data_MuMu->SetMarkerStyle(21);
   ratio_Data_MuMu->SetMarkerColor(kBlack);
-  ratio_Data_MuMu->SetLabelSize(0.1, "y");
+  ratio_Data_MuMu->SetLabelSize(0.2, "y");
   ratio_Data_MuMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_MuMu->GetYaxis()->SetNdivisions(505);
   ratio_Data_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
