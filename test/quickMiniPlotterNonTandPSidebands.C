@@ -27,7 +27,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -108,9 +108,9 @@ void quickMiniPlotterNonTandPSidebands(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","nPU"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -147,7 +147,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   if(channel == Selector::EMu)
     dilepton_max = 1000;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
-  TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
+  TH1F *h_nPV = new TH1F("h_nPV","",50,0,50);
+  TH1F *h_nPU = new TH1F("h_nPU","",50,0,50);
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -185,6 +186,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
     h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
+    h_nPU->Fill(myEvent->nPU,(myEvent->weight)*ttScaleFactor);
+  
   }
 
   hs->push_back(h_lepton_pt0);
@@ -202,6 +205,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
+  hs->push_back(h_nPU);
 
   //normalize histo bins
   unsigned int max = hs->size();
@@ -331,7 +335,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
  
-  if(fname.EqualTo("Mlljj")){
+  if(fname.EqualTo("Mlljj") == true || fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  p1->SetLogy();	//for ratio plot

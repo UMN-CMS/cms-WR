@@ -332,7 +332,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 
 		h_dilepton_mass->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 		h_nPV->Fill(myEvent->nPV, (myEvent->weight)*hltCorrFactor);
-		h_nPU->Fill(myEvent->nPU, 1.0);
+		h_nPU->Fill(myEvent->nPU, (myEvent->weight)*hltCorrFactor);
 
 		//these three ifs are mutually exclusive
 		if(std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) h_dilepton_massBothEB->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
@@ -419,9 +419,9 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.70, 0.90, 0.9 ) ;
-	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
+	//leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
+	//leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
 	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
@@ -439,7 +439,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	hs_data->SetMarkerSize(1);
 	hs_data->SetMarkerColor(kBlack);
 
-	/*for ratio plot/
+	/*for ratio plot*/
 	Double_t eps = 0.001;
 	TPad* p1 = new TPad("p1", "p1", 0, 0.25, 1, 1, 0);
 	p1->Draw();
@@ -448,7 +448,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	p1->SetBottomMargin(0);
 	p2->SetTopMargin(0);
 	p1->cd();
-	*/
+	/**/
 	hs_data->SetStats(1);
 	hs_DYPowheg->SetStats(1);
 	TH1D *ratio_Powheg = (TH1D*)hs_data->Clone();
@@ -485,8 +485,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(fname.EqualTo("Z_pt") ) hs_data->GetXaxis()->SetTitle("Z P_{T} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("Z P_{T} [GeV]");
 	
 	hs_data->Draw("ep");
-	hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
-	hs_DYMadIncl->Draw("histo same");	//comment if only plotting AMC
+	//hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
+	//hs_DYMadIncl->Draw("histo same");	//comment if only plotting AMC
 	hs_DYAmcIncl->Draw("histo same");
 	hs_data->Draw("epsame");
 	/*
@@ -504,6 +504,9 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetXaxis()->SetTitle(xtitle.Data());
 	if(fname.EqualTo("Mll")) ratio_Amc->GetXaxis()->SetTitle("M_{LL} [GeV]");
 	if(fname.EqualTo("Z_pt")) ratio_Amc->GetXaxis()->SetTitle("Z P_{T} [GeV]");
+	if(fname.EqualTo("nPV")) ratio_Amc->GetXaxis()->SetTitle("nPV");
+	if(fname.EqualTo("nPU")) ratio_Amc->GetXaxis()->SetTitle("nPU");
+
 	ratio_Amc->GetXaxis()->SetTickSize(0.40);
 	ratio_Amc->GetXaxis()->SetTitleSize(0.3);
 	ratio_Amc->SetLabelSize(0.3, "x");
@@ -514,7 +517,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Powheg->SetLabelSize(0.3, "x");
 	leg->Draw();
 	mycanvas->cd();
-	//p2->cd();	//for ratio plot
+	p2->cd();	//for ratio plot
 	ratio_Powheg->Sumw2();
 	ratio_Powheg->SetStats(0);
 	ratio_Mad->Sumw2();
@@ -543,7 +546,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
-	/*for ratio plot
+	/*for ratio plot*/
 	//ratio_Mad->Draw("p");	//comment if only plotting AMC
 	ratio_Amc->Draw("p");
 	//ratio_Powheg->Draw("p");	//comment if only plotting AMC
@@ -555,7 +558,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->Draw("p");
 	f1->Draw("same");
 	mycanvas->cd();
-	*/
+	/**/
 
 	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_noRatioPlot_" + channel;
 	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyDYAMC_"+ channel;
@@ -565,9 +568,9 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	TString fn = fname + cuts;
 	//TString fn = fname + cuts + "_DYMadHTBinned";
 
-	/*
-	if(fname.EqualTo("Mll") == true ){
-		if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
+	/**/
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true){
+		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_highestZoomRatio.png").Data());
 
@@ -626,12 +629,12 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 		mycanvas->Print((fn + "_log.png").Data());
 
 	}
-	*/
-	
 	/**/
+	
+	/*
 	mycanvas->Update();
 
-	if(fname.EqualTo("Z_pt") == true){
+	if(fname.EqualTo("Z_pt") == true || fname.EqualTo("nPV") == true){
 		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_noZoomRatio.png").Data());
 
@@ -640,7 +643,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 		mycanvas->Print((fn + "_log.pdf").Data());
 		mycanvas->Print((fn + "_log.png").Data());
 	}
-	/**/
+	*/
 	
 	mycanvas->Close();
 
