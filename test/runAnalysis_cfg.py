@@ -247,6 +247,6 @@ CMSSW_BASE=os.getenv("CMSSW_BASE")
 
 pathPrefix=CMSSW_BASE+'/src/ExoAnalysis/cmsWR/'
 
-process.PUWeights.PileupMCFilename = cms.string("myMCPileup.root")
-process.PUWeights.PileupDataFilename = cms.string("myDataPileup.root")
+process.PUWeights.PileupMCFilename = cms.string("MCPileup.root")
+process.PUWeights.PileupDataFilename = cms.string("DataPileup.root")
 

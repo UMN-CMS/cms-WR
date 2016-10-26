@@ -48,12 +48,12 @@ void miniPlotter(){
     chain_data->Add("../selected_tree_data_EE_lowdileptonsideband0.root");
     break;
   case Selector::MuMu:
-    chain_DY->Add("../selected_tree_DYMuMu_lowdileptonsideband1.root");
-    chain_ttbar->Add("../selected_tree_ttbar_lowdileptonsideband1.root"); // 1 - Muons
-    chain_WJets->Add("../selected_tree_WJets_lowdileptonsideband1.root");
-    chain_WZ->Add("../selected_tree_WZ_lowdileptonsideband1.root");
-    chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsideband1.root");
-    chain_data->Add("../selected_tree_data_MuMu_lowdileptonsideband1.root");
+    chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu.root");
+    chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandMuMu.root"); // 1 - Muons
+    //chain_WJets->Add("../selected_tree_WJets_lowdileptonsideband1.root");
+    //chain_WZ->Add("../selected_tree_WZ_lowdileptonsideband1.root");
+    //chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsideband1.root");
+    chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
     break;
   case Selector::EMu:
     chain_DY->Add("../selected_tree_DYMuMu_flavoursideband2.root");
@@ -134,7 +134,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   if(channel == Selector::EMu)
     dilepton_max = 1000;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
-  TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
+  TH1F *h_nPV = new TH1F("h_nPV","",50,0,50);
 
   Long64_t nEntries = chain->GetEntries();
 
