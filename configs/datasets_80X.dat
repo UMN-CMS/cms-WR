@@ -1,16 +1,23 @@
 #name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 # Data	##################################################
-DoubleEG_RunB	/DoubleEG/Run2016B-01Jul2016-v2/MINIAOD	-	-	5686987	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
-DoubleEG_RunC	/DoubleEG/Run2016C-PromptReco-v2/MINIAOD	-	-	49193716	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
-DoubleEG_RunD	/DoubleEG/Run2016D-PromptReco-v2/MINIAOD	-	-	53758157	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
+DoubleEG_RunB	/DoubleEG/Run2016B-23Sep2016-v2/MINIAOD	-	-	5686987	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
+DoubleEG_RunC	/DoubleEG/Run2016C-23Sep2016-v1/MINIAOD	-	-	47677856	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
+DoubleEG_RunD	/DoubleEG/Run2016D-23Sep2016-v1/MINIAOD	-	-	53324960	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
+DoubleEG_RunE	/DoubleEG/Run2016E-23Sep2016-v1/MINIAOD	-	-	49877710	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
+DoubleEG_RunF	/DoubleEG/Run2016F-23Sep2016-v1/MINIAOD	-	-	34577629	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
+DoubleEG_RunG	/DoubleEG/Run2016G-23Sep2016-v1/MINIAOD	-	-	78797031	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
 #
-SingleMu_RunB	/SingleMuon/Run2016B-29Jul2016-v1/MINIAOD	-	-	5578853	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
-SingleMu_RunC	/SingleMuon/Run2016C-PromptReco-v2/MINIAOD	-	-	68492270	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
-SingleMu_RunD	/SingleMuon/Run2016D-PromptReco-v2/MINIAOD	-	-	98175265	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
+SingleMu_RunB	/SingleMuon/Run2016B-23Sep2016-v1/MINIAOD	-	-	2789243	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
+SingleMu_RunC	/SingleMuon/Run2016C-23Sep2016-v1/MINIAOD	-	-	67441308	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
+SingleMu_RunD	/SingleMuon/Run2016E-23Sep2016-v1/MINIAOD	-	-	90984718	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunE_v3_SHv12/	-
+SingleMu_RunD	/SingleMuon/Run2016F-23Sep2016-v1/MINIAOD	-	-	65489554	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunF_v3_SHv12/	-
 #
-MuEG_RunB	/MuonEG/Run2016B-29Jul2016-v1/MINIAOD	-	-	32727796	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
-MuEG_RunC	/MuonEG/Run2016C-PromptReco-v2/MINIAOD	-	-	15416170	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
-MuEG_RunD	/MuonEG/Run2016D-PromptReco-v2/MINIAOD	-	-	23482352	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunB	/MuonEG/Run2016B-23Sep2016-v3/MINIAOD	-	-	32727796	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
+MuEG_RunC	/MuonEG/Run2016C-23Sep2016-v1/MINIAOD	-	-	15405678	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunD	/MuonEG/Run2016D-23Sep2016-v1/MINIAOD	-	-	23482352	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunE	/MuonEG/Run2016E-23Sep2016-v1/MINIAOD	-	-	22519303	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunF	/MuonEG/Run2016F-23Sep2016-v1/MINIAOD	-	-	16002165	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunG	/MuonEG/Run2016G-23Sep2016-v1/MINIAOD	-	-	33854612	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
 #	##################################################
 WJetsLNu	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	5.027e+04	1.782e+02	28210360	root://eoscms//eos/cms/store//user/shervin/skims/WJetsLNu_SHv12/	-
 WZ	/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM	2.340e+01	4.670e-02	1000000	root://eoscms//eos/cms/store//user/shervin/skims/WZ_SHv12/	-
