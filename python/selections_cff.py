@@ -84,7 +84,7 @@ wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
 
 
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("wRHEEPElectron"), 
+                                    src = cms.InputTag("calibratedPatElectrons"), 
                                     cut = cms.string(''),
                                   )
 
@@ -105,8 +105,8 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
+electronHEEPSeq = cms.Sequence(wRHEEPElectron)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
 
 ############################################################ Muons
 

@@ -42,13 +42,13 @@ options.output = defaultFileOutput
 
 options.parseArguments()
 if(options.test==4):
-    options.files="root://xrootd-cms.infn.it//store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/40000/00200284-F15C-E611-AA9B-002590574776.root"
-    options.maxEvents=100
+    options.files="file:/uscms/home/jchaves/nobackup/DYamc80x_1.root "
+    options.maxEvents=10000
     options.isMC=1
 if(options.test==3):
-    options.files="file:skim_test.root"
+    options.files="file:/uscms/home/jchaves/nobackup/singleMuB_80X_1.root"
     #options.maxEvents=100
-    options.isMC=1
+    options.isMC=0
 elif(options.test==2):
 	options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
 	options.maxEvents= -1
@@ -80,7 +80,7 @@ process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.
 
 ### \todo set the global tag in a separate file such that it will be common to all cfg files
 if(options.isMC==0):
-    process.GlobalTag.globaltag = '80X_dataRun2_ICHEP16_repro_v0'
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v3'
 else:
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
 
@@ -138,7 +138,6 @@ SelectEventsPSet = cms.untracked.PSet(
 # 		)
 
 
-# here the full set of sequences and hlt paths used to make the first step
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
 updateJetCollection(
@@ -151,6 +150,9 @@ updateJetCollection(
 if (options.isMC==0):
     updateJetCollection.jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L2L3Residual', 'L3Absolute']), 'None')  # Do not forget 'L2L3Residual' on data!
 
+
+
+# here the full set of sequences and hlt paths used to make the first step   
 process.load('ExoAnalysis.cmsWR.selections_cff')
 from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
@@ -163,11 +165,43 @@ loadHEEPIDSelector(process)
 
 process.load('ExoAnalysis.cmsWR.dataMcAnalyzers_cfi')
 
+##############################################
+##############################################
+
+files = {"Prompt2015":"EgammaAnalysis/ElectronTools/data/ScalesSmearings/74X_Prompt_2015",
+         "76XReReco" :"EgammaAnalysis/ElectronTools/data/ScalesSmearings/76X_16DecRereco_2015_Etunc",
+         "80Xapproval" : "EgammaAnalysis/ElectronTools/data/ScalesSmearings/80X_ichepV1_2016_ele"}
+
+correctionType = "80Xapproval"
+
+process.load('Configuration.StandardSequences.Services_cff')
+process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
+    calibratedPatElectrons  = cms.PSet( initialSeed = cms.untracked.uint32(81),
+        engineName = cms.untracked.string('TRandom3'),
+        ),
+    calibratedPatPhotons  = cms.PSet( initialSeed = cms.untracked.uint32(81),
+        engineName = cms.untracked.string('TRandom3'),
+        ),
+    )
+
+process.selectedElectrons = cms.EDFilter("PATElectronSelector",
+                                         src = cms.InputTag("wRHEEPElectron"),
+                                         cut = cms.string("pt > 5 && abs(eta)<2.5") )
+    
+process.load('EgammaAnalysis.ElectronTools.calibratedElectronsRun2_cfi')
+
+process.calibratedPatElectrons.electrons = "selectedElectrons"
+process.calibratedPatElectrons.isMC = True
+if (options.isMC==0):
+    process.calibratedPatElectrons.isMC = False
+
+##############################################
+##############################################
 
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
-process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.selectionSequence  * process.filterSequence)
+process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.electronHEEPSeq * process.selectedElectrons * process.calibratedPatElectrons * process.selectionSequence * process.filterSequence)
 
 # Temporary while new MC is produced with HLT
 if (options.isMC==0):
@@ -190,7 +224,7 @@ process.FlavourSideband     = cms.Path(process.signalHltSequence * process.fullS
 process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq                   * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.jecSequence * process.electronHEEPSeq * process.selectedElectrons * process.calibratedPatElectrons * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
 #process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -213,6 +247,6 @@ CMSSW_BASE=os.getenv("CMSSW_BASE")
 
 pathPrefix=CMSSW_BASE+'/src/ExoAnalysis/cmsWR/'
 
-process.PUWeights.PileupMCFilename = cms.string("MCPileup.root")
-process.PUWeights.PileupDataFilename = cms.string("DataPileup.root")
+process.PUWeights.PileupMCFilename = cms.string("myMCPileup.root")
+process.PUWeights.PileupDataFilename = cms.string("myDataPileup.root")
 
