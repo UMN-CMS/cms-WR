@@ -3,8 +3,12 @@
 
 miniTreeEvent::miniTreeEvent():
 	electrons_p4(new std::vector<TLorentzVector>),
-	electron_scale(new std::vector<Float_t>),
-	electron_smearing(new std::vector<Float_t>),
+	electron_scale_error(new std::vector<Float_t>),
+	electron_smearing_sigma(new std::vector<Float_t>),
+	electron_smearing_sigma_phi_up(new std::vector<Float_t>),
+	electron_smearing_sigma_phi_down(new std::vector<Float_t>),
+	electron_smearing_sigma_rho_up(new std::vector<Float_t>),
+	electron_smearing_sigma_rho_down(new std::vector<Float_t>),
 	electron_r9(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
 	electron_IDSF_central(new std::vector<Float_t>),
@@ -34,8 +38,12 @@ miniTreeEvent::miniTreeEvent():
 
 miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	electrons_p4(new std::vector<TLorentzVector>),
-	electron_scale(new std::vector<Float_t>),
-	electron_smearing(new std::vector<Float_t>),
+	electron_scale_error(new std::vector<Float_t>),
+	electron_smearing_sigma(new std::vector<Float_t>),
+	electron_smearing_sigma_phi_up(new std::vector<Float_t>),
+	electron_smearing_sigma_phi_down(new std::vector<Float_t>),
+	electron_smearing_sigma_rho_up(new std::vector<Float_t>),
+	electron_smearing_sigma_rho_down(new std::vector<Float_t>),
 	electron_r9(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
 	electron_IDSF_central(new std::vector<Float_t>),
@@ -67,8 +75,12 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*JER_sf = *(otherEvent.JER_sf);
 	*JER_sf_up = *(otherEvent.JER_sf_up);
 	*JER_sf_down = *(otherEvent.JER_sf_down);
-	*electron_scale = *(otherEvent.electron_scale);
-	*electron_smearing = *(otherEvent.electron_smearing);
+	*electron_scale_error = *(otherEvent.electron_scale_error);
+	*electron_smearing_sigma = *(otherEvent.electron_smearing_sigma);
+	*electron_smearing_sigma_phi_up = *(otherEvent.electron_smearing_sigma_phi_up);
+	*electron_smearing_sigma_phi_down = *(otherEvent.electron_smearing_sigma_phi_down);
+	*electron_smearing_sigma_rho_up = *(otherEvent.electron_smearing_sigma_rho_up);
+	*electron_smearing_sigma_rho_down = *(otherEvent.electron_smearing_sigma_rho_down);
 	*electron_r9 = *(otherEvent.electron_r9);
 	*electron_charge = *(otherEvent.electron_charge);
 	*electron_IDSF_central = *(otherEvent.electron_IDSF_central);
@@ -110,8 +122,12 @@ void miniTreeEvent::clear()
 	JER_sf->clear();
 	JER_sf_up->clear();
 	JER_sf_down->clear();
-	electron_scale->clear();
-	electron_smearing->clear();
+	electron_scale_error->clear();
+	electron_smearing_sigma->clear();
+	electron_smearing_sigma_phi_up->clear();
+	electron_smearing_sigma_phi_down->clear();
+	electron_smearing_sigma_rho_up->clear();
+	electron_smearing_sigma_rho_down->clear();
 	electron_r9->clear();
 	electron_charge->clear();
 	electron_IDSF_central->clear();
@@ -136,8 +152,12 @@ miniTreeEvent::~miniTreeEvent()
 {
 	clear();
 	delete electrons_p4;
-	delete electron_scale;
-	delete electron_smearing;
+	delete electron_scale_error;
+	delete electron_smearing_sigma;
+	delete electron_smearing_sigma_phi_up;
+	delete electron_smearing_sigma_phi_down;
+	delete electron_smearing_sigma_rho_up;
+	delete electron_smearing_sigma_rho_down;
 	delete electron_r9;
 	delete electron_charge;
 	delete electron_IDSF_central;
@@ -176,8 +196,12 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("JER_sf", JER_sf);
 	tree->Branch("JER_sf_up", JER_sf_up);
 	tree->Branch("JER_sf_down", JER_sf_down);
-	tree->Branch("electron_scale", electron_scale);
-	tree->Branch("electron_smearing", electron_smearing);
+	tree->Branch("electron_scale_error", electron_scale_error);
+	tree->Branch("electron_smearing_sigma", electron_smearing_sigma);
+	tree->Branch("electron_smearing_sigma_phi_up", electron_smearing_sigma_phi_up);
+	tree->Branch("electron_smearing_sigma_phi_down", electron_smearing_sigma_phi_down);
+	tree->Branch("electron_smearing_sigma_rho_up", electron_smearing_sigma_rho_up);
+	tree->Branch("electron_smearing_sigma_rho_down", electron_smearing_sigma_rho_down);
 	tree->Branch("electron_r9", electron_r9);
 	tree->Branch("electron_charge", electron_charge);
 	tree->Branch("muon_charge", muon_charge);
@@ -205,8 +229,12 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete JER_sf;
 	delete JER_sf_up;
 	delete JER_sf_down;
-	delete electron_scale;
-	delete electron_smearing;
+	delete electron_scale_error;
+	delete electron_smearing_sigma;
+	delete electron_smearing_sigma_phi_up;
+	delete electron_smearing_sigma_phi_down;
+	delete electron_smearing_sigma_rho_up;
+	delete electron_smearing_sigma_rho_down;
 	delete electron_r9;
 	delete electron_charge;
 	delete muon_charge;
@@ -226,8 +254,12 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	JER_sf = 0;
 	JER_sf_up = 0;
 	JER_sf_down = 0;
-	electron_scale = 0;
-	electron_smearing = 0;
+	electron_scale_error = 0;
+	electron_smearing_sigma = 0;
+	electron_smearing_sigma_phi_up = 0;
+	electron_smearing_sigma_phi_down = 0;
+	electron_smearing_sigma_rho_up = 0;
+	electron_smearing_sigma_rho_down = 0;
 	electron_r9 = 0;
 	electron_charge = 0;
 	muon_charge = 0;
@@ -251,8 +283,12 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("JER_sf_up", &JER_sf_up);
 	tree->SetBranchAddress("JER_sf_down", &JER_sf_down);
 
-	tree->SetBranchAddress("electron_scale", &electron_scale);
-	tree->SetBranchAddress("electron_smearing", &electron_smearing);
+	tree->SetBranchAddress("electron_scale_error", &electron_scale_error);
+	tree->SetBranchAddress("electron_smearing_sigma", &electron_smearing_sigma);
+	tree->SetBranchAddress("electron_smearing_sigma_phi_up", &electron_smearing_sigma_phi_up);
+	tree->SetBranchAddress("electron_smearing_sigma_phi_down", &electron_smearing_sigma_phi_down);
+	tree->SetBranchAddress("electron_smearing_sigma_rho_up", &electron_smearing_sigma_rho_up);
+	tree->SetBranchAddress("electron_smearing_sigma_rho_down", &electron_smearing_sigma_rho_down);
 	tree->SetBranchAddress("electron_r9", &electron_r9);
 	tree->SetBranchAddress("electron_charge", &electron_charge);
 

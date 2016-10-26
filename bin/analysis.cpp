@@ -32,7 +32,7 @@
 
 #include <unordered_set>
 
-#include "ExoAnalysis/Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
+//#include "ExoAnalysis/Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
 
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
@@ -127,9 +127,10 @@ public:
 			if(channel == Selector::EMu)  dataTag = "MuEG";
 			if(channel == Selector::EE)   dataTag = "DoubleEG";
 			if(channel == Selector::MuMu) dataTag = "SingleMu";
+			TTchainNames.push_back(dataTag + "_RunB");
 			TTchainNames.push_back(dataTag + "_RunC");
-			TTchainNames.push_back(dataTag + "_RunD_v3");
-			TTchainNames.push_back(dataTag + "_RunD_v4");
+			TTchainNames.push_back(dataTag + "_RunD");
+			TTchainNames.push_back(dataTag + "_RunE");
 		}
 		if(mode.find("WRto") != _ENDSTRING) {
 			TTchainNames.push_back(mode);
@@ -247,7 +248,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("ExoAnalysis/Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
+	//EnergyScaleCorrection_class eSmearer("ExoAnalysis/Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -307,8 +308,8 @@ int main(int ac, char* av[])
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
-		if(isData) eSmearer.doScale = true;
-		else eSmearer.doSmearings = true;
+		//if(isData) eSmearer.doScale = true;
+		//else eSmearer.doSmearings = true;
 
 		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
 #ifdef DEBUG
@@ -455,6 +456,7 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 				std::cout << "found an event passing preselection" << std::endl;
 #endif
+				/*
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 #ifdef DEBUGG
 					std::cout << "looping over reco electrons in the event passing preselection" << std::endl;
@@ -468,7 +470,7 @@ int main(int ac, char* av[])
 						(*myEvent.electron_scale)[iEle] = 1.;
 						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
 					}
-				}
+				}*/
 				myEventVector.push_back(myEvent);
 			}
 			myEvent.clear();
@@ -546,7 +548,7 @@ int main(int ac, char* av[])
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
-
+				/*
 				unsigned int nEle = myEventIt.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 					TLorentzVector& p4 = (*myEventIt.electrons_p4)[iEle];
@@ -573,7 +575,7 @@ int main(int ac, char* av[])
 #endif
 
 					}
-				}
+				}*/
 
 				Selector tmp_selEvent(myEventIt);
 				selEvent = tmp_selEvent;

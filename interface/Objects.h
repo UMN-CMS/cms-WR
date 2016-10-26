@@ -5,8 +5,12 @@ class myElectron
 {
 public:
 	TLorentzVector p4;
-	Float_t scale;
-	Float_t smearing;
+	Float_t scale_error;
+	Float_t smearing_sigma;
+	Float_t smearing_sigma_phi_up;
+	Float_t smearing_sigma_phi_down;
+	Float_t smearing_sigma_rho_up;
+	Float_t smearing_sigma_rho_down;
 	Int_t charge;
 	Float_t r9;
 	Float_t weight;
@@ -16,8 +20,6 @@ public:
 	Float_t IDSF_error;
 	Float_t RecoSF_error;
 	Float_t HltSF_error;
-	Float_t scale_error;
-	Float_t smearing_error;
 
 	myElectron() {}; ///< default contructor (empty)
 
