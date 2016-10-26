@@ -42,8 +42,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 1;
 Float_t idealSubleadJetPt = 1;
-Float_t leadJetPtCut = 40;
-Float_t subLeadJetPtCut = 40;
+Float_t leadJetPtCut = -10;
+Float_t subLeadJetPtCut = -10;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -418,11 +418,11 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
-	TLegend *leg = new TLegend( 0.60, 0.70, 0.90, 0.9 ) ;
+	TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ;
 	//leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY AMC Incl" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY Simulation" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -457,20 +457,25 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	TString plotTitle = "CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
 	hs_DYPowheg->SetTitle(plotTitle);
 	hs_data->SetTitle(plotTitle);
-	TString ytitle = "Events/(";
-	ytitle += (hs_data->GetXaxis()->GetNbins());
-	ytitle += ")";
+	TString ytitle = "Events";
+	//TString ytitle = "Events/(";
+	//ytitle += (hs_data->GetXaxis()->GetNbins());
+	//ytitle += (hs_data->GetXaxis()->GetBinWidth(2));
+	//ytitle += " GeV)";
 	hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
 	hs_DYPowheg->GetYaxis()->SetTitle(ytitle.Data());
 	hs_DYMadIncl->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitleOffset(1.5);
 	hs_DYAmcIncl->GetYaxis()->SetTitleOffset(1.5);
-	hs_DYMadIncl->GetYaxis()->SetTitleOffset(1.5);
-	hs_DYPowheg->GetYaxis()->SetTitleOffset(1.5);
+	//hs_DYMadIncl->GetYaxis()->SetTitleOffset(1.5);
+	//hs_DYPowheg->GetYaxis()->SetTitleOffset(1.5);
+	//hs_data->GetYaxis()->SetTitleSize(0.042);
+	//hs_DYAmcIncl->GetYaxis()->SetTitleSize(0.042);
+	
 	hs_data->GetXaxis()->SetTitleSize(0.04);
-	hs_data->SetLabelSize(0.04, "x");
-	hs_data->SetLabelSize(0.025, "y");
+	//hs_data->SetLabelSize(0.04, "x");
+	//hs_data->SetLabelSize(0.025, "y");
 	hs_data->GetXaxis()->SetTitle(xtitle.Data());
 	hs_DYAmcIncl->GetXaxis()->SetTitleSize(0.04);
 	hs_DYAmcIncl->SetLabelSize(0.04, "x");
@@ -507,14 +512,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(fname.EqualTo("nPV")) ratio_Amc->GetXaxis()->SetTitle("nPV");
 	if(fname.EqualTo("nPU")) ratio_Amc->GetXaxis()->SetTitle("nPU");
 
+	Float_t labelSize = 0.25;
 	ratio_Amc->GetXaxis()->SetTickSize(0.40);
-	ratio_Amc->GetXaxis()->SetTitleSize(0.3);
-	ratio_Amc->SetLabelSize(0.3, "x");
+	ratio_Amc->GetXaxis()->SetTitleSize(labelSize);
+	ratio_Amc->SetLabelSize(labelSize - 0.07, "x");
 	
 	ratio_Powheg->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Powheg->GetXaxis()->SetTickSize(0.40);
-	ratio_Powheg->GetXaxis()->SetTitleSize(0.3);
-	ratio_Powheg->SetLabelSize(0.3, "x");
+	ratio_Powheg->GetXaxis()->SetTitleSize(labelSize);
+	ratio_Powheg->SetLabelSize(labelSize - 0.07, "x");
 	leg->Draw();
 	mycanvas->cd();
 	p2->cd();	//for ratio plot
@@ -528,21 +534,21 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Powheg->Divide(hs_DYPowheg);
 	ratio_Powheg->SetMarkerStyle(20);
 	ratio_Powheg->SetMarkerColor(kRed);
-	ratio_Powheg->SetLabelSize(0.1, "y");
+	ratio_Powheg->SetLabelSize(labelSize - 0.07, "y");
 	ratio_Powheg->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Powheg->GetYaxis()->SetNdivisions(505);
 
 	ratio_Mad->Divide(hs_DYMadIncl);
 	ratio_Mad->SetMarkerStyle(21);
 	ratio_Mad->SetMarkerColor(kBlack);
-	ratio_Mad->SetLabelSize(0.1, "y");
+	ratio_Mad->SetLabelSize(labelSize - 0.07, "y");
 	ratio_Mad->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
 
 	ratio_Amc->Divide(hs_DYAmcIncl);
 	ratio_Amc->SetMarkerStyle(22);
 	ratio_Amc->SetMarkerColor(kBlue);
-	ratio_Amc->SetLabelSize(0.1, "y");
+	ratio_Amc->SetLabelSize(labelSize - 0.07, "y");
 	ratio_Amc->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
@@ -571,10 +577,12 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	/**/
 	if(fname.EqualTo("Mll") == true || fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true){
 		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
+		/*
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_highestZoomRatio.png").Data());
 
 		///do the zoomed plots only for Z_pt and M_ll distributions
+
 		if(fname.EqualTo("Mll") == true){
 			//reset the Y axis scale on the ratio plot
 			ratio_Powheg->GetYaxis()->SetRangeUser(0.9, 1.1);
@@ -612,11 +620,12 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 			mycanvas->Print((fn + "_lowestZoomRatio.pdf").Data());
 			mycanvas->Print((fn + "_lowestZoomRatio.png").Data());
 		}///end zoom ratio plots for Mll and Zpt distributions
+		*/
 
 		//reset the Y axis scale on the ratio plot
-		//ratio_Powheg->GetYaxis()->SetRangeUser(0.6, 1.4);
-		//ratio_Mad->GetYaxis()->SetRangeUser(0.6, 1.4);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.6, 1.4);
+		//ratio_Powheg->GetYaxis()->SetRangeUser(0.61, 1.39);
+		//ratio_Mad->GetYaxis()->SetRangeUser(0.61, 1.39);
+		ratio_Amc->GetYaxis()->SetRangeUser(0.61, 1.39);
 
 		mycanvas->Update();
 		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
