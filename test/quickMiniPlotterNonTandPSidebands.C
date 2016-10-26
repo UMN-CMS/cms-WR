@@ -27,7 +27,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -283,13 +283,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
 	  Int_t maxBin = hs_data->GetNbinsX();
   }
-  th->GetYaxis()->SetTitleOffset(1.3);
-
+  th->GetYaxis()->SetTitleOffset(1.2);
+  Float_t labelSize = 0.25;
+ 
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
-  ratio->GetXaxis()->SetTitleSize(0.3);
-  ratio->SetLabelSize(0.3,"x");
+  ratio->GetXaxis()->SetTitleSize(labelSize);
+  ratio->SetLabelSize(labelSize - 0.07,"x");
   leg->Draw(); 
   mycanvas->cd();
   p2->cd();	//for ratio plot
@@ -311,10 +312,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
-  ratio->SetLabelSize(0.1,"y");
-  Float_t maxYratioRange = 3.0;
-  if(channel == Selector::EE) maxYratioRange = 2.0;
-  ratio->GetYaxis()->SetRangeUser(0.5,maxYratioRange);	//upper limit 3. for mu, 2. for ele
+  ratio->SetLabelSize(labelSize - 0.07,"y");
+  Float_t maxYratioRange = 2.95;
+  if(channel == Selector::EE) maxYratioRange = 1.9;
+  ratio->GetYaxis()->SetRangeUser(0.51,maxYratioRange);	//upper limit 3. for mu, 2. for ele
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
   ratio->Draw("p");
