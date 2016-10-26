@@ -35,7 +35,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -144,7 +144,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
 
-  Float_t mllBins[] = { 150, 165, 180, 195, 210, 225, 240, 255, 275, 300, 330, 375, 550};
+  Float_t mllBins[] = { 155, 200, 210, 225, 240, 255, 275, 300, 330, 375, 550};
   Int_t  mllBinnum = sizeof(mllBins)/sizeof(Float_t) - 1;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",mllBinnum, mllBins);
   /**/
@@ -206,8 +206,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
-  /*
-  //normalize histo bins
+  /**/
+  //normalize histo bins when using variable bin widths
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
 	  //get num bins in histo i
@@ -222,7 +222,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
-  */
+  /**/
 
 }
 
@@ -260,6 +260,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->SetMarkerStyle(20);
 
 
+  Float_t labelSize = 0.25;
   /*for ratio plot*/
   Double_t eps = 0.001;
   TPad* p1 = new TPad("p1","p1",0,0.25,1,1,0); p1->Draw();
@@ -269,27 +270,34 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   p1->cd();
   /**/
   hs_data->SetStats(0);
+
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->Draw("ep");
   th->Draw("histo same");
   hs_data->Draw("epsame");
+
   TString ytitle = "Events/(";
   ytitle += (th->GetXaxis()->GetNbins());
   ytitle += ")";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
+
+  /*if variable bin widths are used*/
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
-  if(fname.EqualTo("Mll")) th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+  else if(fname.EqualTo("Mll")) hs_data->GetXaxis()->SetTitle("M_{LL} [GeV]"), th->GetXaxis()->SetTitle("M_{LL} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+   /**/
+  hs_data->Draw("epsame");
+  mycanvas->Update();
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  if(fname.EqualTo("Mll")) ratio->GetXaxis()->SetTitle("M_{LL} [GeV]");
+  else if(fname.EqualTo("Mll")) ratio->GetXaxis()->SetTitle("M_{LL} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
-  ratio->GetXaxis()->SetTitleSize(0.3);
-  ratio->SetLabelSize(0.3,"x");
+  ratio->GetXaxis()->SetTitleSize(labelSize);
+  ratio->SetLabelSize(labelSize - 0.07,"x");
   leg->Draw(); 
   mycanvas->cd();
   p2->cd();	//for ratio plot
@@ -303,9 +311,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
-  ratio->SetLabelSize(0.1,"y");
-  Float_t maxYratioRange = 2.0;
-  if(channel == Selector::EE) maxYratioRange = 2.5;
+  ratio->SetLabelSize(labelSize - 0.07,"y");
+  Float_t maxYratioRange = 1.9;
+  if(channel == Selector::EE) maxYratioRange = 2.4;
   ratio->GetYaxis()->SetRangeUser(0.5,maxYratioRange);
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
