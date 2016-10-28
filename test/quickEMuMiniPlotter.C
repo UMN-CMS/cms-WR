@@ -124,8 +124,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,200,2500);
  
-  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//wider bins work better at high WR mass
-  ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//wider bins work better at high WR mass
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
+  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  
+  ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
  
@@ -270,10 +272,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Sumw2();
   ratio->SetStats(0);
 
-  //hs_DY->Add(hs_ttbar);
-  //hs_DY->Add(hs_WJets);
-  //hs_DY->Add(hs_WZ);
-  //hs_DY->Add(hs_ZZ);
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);
@@ -307,7 +305,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->Update();
 
   //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
-  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
+  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
 
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
