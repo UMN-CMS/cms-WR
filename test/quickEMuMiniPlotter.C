@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <memory>
 
+#define doNarrowMlljj
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -108,19 +109,25 @@ void quickEMuMiniPlotter(){
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",50,0,700);
-  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",50,-3,3);
-  TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",50,-3.15,3.15);
-  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",50,0,700);
-  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",50,-3,3);
-  TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",50,-3.15,3.15);
+  Float_t nBins = 50;
 
-  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",50,0,700);
-  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",50,-3,3);
-  TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",50,-3.15,3.15);
-  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
-  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
-  TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
+#ifdef doNarrowMlljj
+	nBins = 15;	///use coarse binning when making data MC comparisons in narrow MLLJJ window
+#endif
+
+  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nBins,0,700);
+  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nBins,-3,3);
+  TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nBins,-3.15,3.15);
+  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",nBins,0,700);
+  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",nBins,-3,3);
+  TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",nBins,-3.15,3.15);
+
+  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",nBins,0,700);
+  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",nBins,-3,3);
+  TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",nBins,-3.15,3.15);
+  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",nBins,0,700);
+  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nBins,-3,3);
+  TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nBins,-3.15,3.15);
 
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,200,2500);
  
@@ -134,7 +141,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   float dilepton_max = 250.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
+  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nBins,50,dilepton_max);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
   Long64_t nEntries = chain->GetEntries();
@@ -150,10 +157,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
 	//if(myEvent->WR_mass < 600.) continue;	///MLLJJ cut
+#ifdef doNarrowMlljj
+	if(myEvent->WR_mass < 1350. || myEvent->WR_mass > 1510.) continue;
+#endif
 
-    h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
-    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
-    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+	h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+	h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
     h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
     h_lepton_phi0->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
     h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
@@ -259,7 +269,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
- 
+#ifdef doNarrowMlljj
+	th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+#endif
+
   Float_t labelSize = 0.25;
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -305,9 +318,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->Update();
 
   //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
-  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
+  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
+#ifdef doNarrowMlljj
+	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjWindow";
+#endif
 
-  if(fname.EqualTo("Mlljj")){
+
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_eta") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_eta")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  p1->SetLogy();
