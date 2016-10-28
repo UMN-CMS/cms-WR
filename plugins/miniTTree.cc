@@ -36,6 +36,18 @@ private:
 	edm::EDGetToken evinfoToken_;
 
 	edm::EDGetToken  jec_unc_src;
+	edm::EDGetToken  jetResolution_src;
+	edm::EDGetToken  JERsf_src;
+	edm::EDGetToken  JERsf_up_src;
+	edm::EDGetToken  JERsf_down_src;
+
+	edm::EDGetToken  ele_scale_error_src;
+	edm::EDGetToken  ele_smearing_sigma_src;
+	edm::EDGetToken  ele_smearing_sigma_phi_up_src;
+	edm::EDGetToken  ele_smearing_sigma_phi_down_src;
+	edm::EDGetToken  ele_smearing_sigma_rho_up_src;
+	edm::EDGetToken  ele_smearing_sigma_rho_down_src;
+
 	edm::EDGetToken  muon_IDSF_central_src;
 	edm::EDGetToken  muon_IsoSF_central_src;
 	edm::EDGetToken  muon_IDSF_error_src;
@@ -57,6 +69,16 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
+	jetResolution_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("jetResolution_src"))),
+	JERsf_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_src"))),
+	JERsf_up_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_up_src"))),
+	JERsf_down_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_down_src"))),
+	ele_scale_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_scale_error_src"))),
+	ele_smearing_sigma_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_src"))),
+	ele_smearing_sigma_phi_up_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_phi_up_src"))),
+	ele_smearing_sigma_phi_down_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_phi_down_src"))),
+	ele_smearing_sigma_rho_up_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_rho_up_src"))),
+	ele_smearing_sigma_rho_down_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_rho_down_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
 	muon_IDSF_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_error_src"))),
@@ -86,6 +108,28 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 
 	edm::Handle<JECUnc_Map > jec_unc;
 	event.getByToken(jec_unc_src, jec_unc);
+	edm::Handle< edm::ValueMap<float> > jetResolution;
+	event.getByToken(jetResolution_src, jetResolution);
+	edm::Handle< edm::ValueMap<float> > JERsf;
+	event.getByToken(JERsf_src, JERsf);
+	edm::Handle< edm::ValueMap<float> > JERsf_up;
+	event.getByToken(JERsf_up_src, JERsf_up);
+	edm::Handle< edm::ValueMap<float> > JERsf_down;
+	event.getByToken(JERsf_down_src, JERsf_down);
+
+	edm::Handle< edm::ValueMap<float> > ele_scale_error;
+	event.getByToken(ele_scale_error_src, ele_scale_error);
+	edm::Handle< edm::ValueMap<float> > ele_smearing_sigma;
+	event.getByToken(ele_smearing_sigma_src, ele_smearing_sigma);
+	edm::Handle< edm::ValueMap<float> > ele_smearing_sigma_phi_up;
+	event.getByToken(ele_smearing_sigma_phi_up_src, ele_smearing_sigma_phi_up);
+	edm::Handle< edm::ValueMap<float> > ele_smearing_sigma_phi_down;
+	event.getByToken(ele_smearing_sigma_phi_up_src, ele_smearing_sigma_phi_down);
+	edm::Handle< edm::ValueMap<float> > ele_smearing_sigma_rho_up;
+	event.getByToken(ele_smearing_sigma_rho_up_src, ele_smearing_sigma_rho_up);
+	edm::Handle< edm::ValueMap<float> > ele_smearing_sigma_rho_down;
+	event.getByToken(ele_smearing_sigma_rho_up_src, ele_smearing_sigma_rho_down);
+
 
 	edm::Handle< edm::ValueMap<float> > muon_IDSF;
 	event.getByToken(muon_IDSF_central_src, muon_IDSF);
@@ -133,8 +177,12 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		TLorentzVector p4;
 		p4.SetPtEtaPhiM(ele->pt(), ele->eta(), ele->phi(), ele->mass());
 		myEvent.electrons_p4->push_back(p4);
-		myEvent.electron_scale->push_back(1.0);
-		myEvent.electron_smearing->push_back(0.01);
+		myEvent.electron_scale_error->push_back((*ele_scale_error)[ele]);
+		myEvent.electron_smearing_sigma->push_back((*ele_smearing_sigma)[ele]);
+		myEvent.electron_smearing_sigma_phi_up->push_back((*ele_smearing_sigma_phi_up)[ele]);
+		myEvent.electron_smearing_sigma_phi_down->push_back((*ele_smearing_sigma_phi_down)[ele]);
+		myEvent.electron_smearing_sigma_rho_up->push_back((*ele_smearing_sigma_rho_up)[ele]);
+		myEvent.electron_smearing_sigma_rho_down->push_back((*ele_smearing_sigma_rho_down)[ele]);
 		myEvent.electron_charge->push_back(ele->charge());
 		myEvent.electron_r9->push_back(ele->full5x5_r9());
 	}
@@ -157,6 +205,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		p4.SetPtEtaPhiM(jet->pt(), jet->eta(), jet->phi(), jet->mass());
 		myEvent.jets_p4->push_back(p4);
 		myEvent.jec_uncertainty->push_back((*jec_unc)[jet]);
+		myEvent.jetResolution->push_back((*jetResolution)[jet]);
+		myEvent.JER_sf->push_back((*JERsf)[jet]);
+		myEvent.JER_sf_up->push_back((*JERsf_up)[jet]);
+		myEvent.JER_sf_down->push_back((*JERsf_down)[jet]);
 	}
 
 	tree->Fill();

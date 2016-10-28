@@ -66,14 +66,22 @@ public:
 	Float_t lead_lepton_IsoSF_error;
 	Float_t lead_lepton_RecoSF_error;
 	Float_t lead_lepton_HltSF_error;
-	Float_t lead_lepton_ESmearing_error;
 	Float_t lead_lepton_EScaling_error;
+	Float_t lead_lepton_ESmearing_sigma;
+	Float_t lead_lepton_ESmearing_sigma_phi_up;
+	Float_t lead_lepton_ESmearing_sigma_phi_down;
+	Float_t lead_lepton_ESmearing_sigma_rho_up;
+	Float_t lead_lepton_ESmearing_sigma_rho_down;
 	Float_t sublead_lepton_IDSF_error;
 	Float_t sublead_lepton_IsoSF_error;
 	Float_t sublead_lepton_RecoSF_error;
 	Float_t sublead_lepton_HltSF_error;
-	Float_t sublead_lepton_ESmearing_error;
 	Float_t sublead_lepton_EScaling_error;
+	Float_t sublead_lepton_ESmearing_sigma;
+	Float_t sublead_lepton_ESmearing_sigma_phi_up;
+	Float_t sublead_lepton_ESmearing_sigma_phi_down;
+	Float_t sublead_lepton_ESmearing_sigma_rho_up;
+	Float_t sublead_lepton_ESmearing_sigma_rho_down;
 
 	Double_t nPU;	///<positive only for MC
 	Int_t nPV;

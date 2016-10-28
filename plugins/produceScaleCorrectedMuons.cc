@@ -6,8 +6,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "ExoAnalysis/cmsWR/interface/rochcor2015.h"
-#include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
+#include "ExoAnalysis/cmsWR/interface/rochcor2016.h"
+//#include "ExoAnalysis/cmsWR/interface/muresolution_run2.h"
 #include <string>
 #include "TLorentzVector.h"
 #include "Math/LorentzVector.h"
@@ -42,7 +42,7 @@ void produceScaleCorrectedMuons::produce(edm::Event& event, const edm::EventSetu
 	edm::Handle<edm::View<pat::Muon> > muons;
 	event.getByToken(srcToken_, muons);
 	std::auto_ptr<pat::MuonCollection> mus(new pat::MuonCollection);
-	rochcor2015 *rmcor = new rochcor2015();
+	rochcor2016 *rmcor = new rochcor2016();
 	for(auto mu : *muons) {
 		charge = mu.charge();
 		Mu_Original.SetPtEtaPhiE(mu.pt(), mu.eta(), mu.phi(), mu.energy());

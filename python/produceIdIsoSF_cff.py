@@ -5,10 +5,11 @@ import math
 Additional_ID_Systematics = 0.01
 Additional_ISO_Systematics = 0.01
 
-f = open('python/MuonHighPt_Z_RunCD_Reco74X_Dec17.pkl', 'r')
-results = pickle.load(f)
-results.keys()
-results["HighPtID_EtaBins_Pt53"].keys()
+f = open('python/MuonID_Z_RunBCD_prompt80X_7p65.pkl', 'r')
+g = open('python/MuonIso_Z_RunBCD_prompt80X_7p65.pkl', 'r')
+ID_results = pickle.load(f)
+Iso_results = pickle.load(g)
+
 ii = 0
 SF_ID_C = []
 SF_ID_E = []
@@ -21,13 +22,13 @@ for i in xrange(0,13):
     SF_ISO_C.append(0)
     SF_ISO_E.append(0)
 
-for key, result in sorted(results["HighPtID_EtaBins_Pt53"]["pTtuneP_ratio"].iteritems()) : 
+for key, result in sorted(ID_results["MC_NUM_HighPtIDPt20andIPCut_DEN_genTracks_PAR_eta"]["eta_ratio"].iteritems()) : 
     SF_ID_C[ii] = result["value"]
     SF_ID_E[ii] = math.sqrt(pow(result["error"],2) + pow(Additional_ID_Systematics,2))
     ii += 1
 
 ii=0
-for key, result in sorted(results["tkRelIsoID_EtaBins_Pt53"]["eta_ratio"].iteritems()) :
+for key, result in sorted(Iso_results["MC_NUM_LooseRelTkIso_DEN_HighPtID_PAR_eta"]["eta_ratio"].iteritems()) :
     SF_ISO_C[ii] = result["value"]
     SF_ISO_E[ii] = math.sqrt(pow(result["error"],2) + pow(Additional_ISO_Systematics,2))
     ii += 1

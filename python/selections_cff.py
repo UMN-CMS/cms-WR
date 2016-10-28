@@ -25,6 +25,7 @@ muonIDIso=' isolationR03().sumPt/pt < 0.1 && userInt("highPtID") == 1'
 ############################################################ Jets
 #patJetsReapplyJEC
 from ExoAnalysis.cmsWR.JEC_cff import *
+from ExoAnalysis.cmsWR.produceJERsf_cff import *
 
 ### select tight-ID jets
 wRtightJets = cms.EDFilter("PATJetSelector",
@@ -42,6 +43,7 @@ wRJECUncert = JECUnc.clone(
     src = cms.InputTag('wRJets')
     )
 
+
 wRJetFilter = cms.EDFilter("CandViewCountFilter",
                                  src = cms.InputTag("wRJets"),
                                  minNumber = cms.uint32(2)
@@ -56,10 +58,10 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert ) #* wRdiJetCandidate)
+jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert * jetResolutionSF) #* wRdiJetCandidate)
 
 ############################################################ Electrons
-
+from ExoAnalysis.cmsWR.produceEleScaleSmearing_cff import *
 
 # muons considered here are only those far from any jet with Pt>ptJets 
 wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
@@ -82,7 +84,7 @@ wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
 
 
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("wRHEEPElectron"), 
+                                    src = cms.InputTag("calibratedPatElectrons"), 
                                     cut = cms.string(''),
                                   )
 
@@ -103,8 +105,8 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
+electronHEEPSeq = cms.Sequence(wRHEEPElectron)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate * eleScaleSmearing)
 
 ############################################################ Muons
 

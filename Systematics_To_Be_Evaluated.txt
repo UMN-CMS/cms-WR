@@ -2,3 +2,4 @@ Smear_Muon_Scale
 Smear_Muon_ID_Iso
 Smear_Electron_Scale
 Smear_Jet_Scale
+Smear_Muon_Resolution
