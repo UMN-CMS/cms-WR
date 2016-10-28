@@ -25,7 +25,7 @@ ZZ	/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_a
 #	##########
 TTJets_DiLept_v1	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/MINIAODSIM	8.567e+01	2.215e-01	6058236	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v1_SHv12/	-
 TTJets_DiLept_v2	/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM	8.567e+01	2.215e-01	24623997	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v2_SHv12/	-
-TTJets	/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM	8.567e+01	2.215e-01	38261382	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v1_SHv12/	-
+TTJets	/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM	8.32e+02	2.215e-01	38261382	root://eoscms//eos/cms/store//user/shervin/skims/TTJets_DiLept_v1_SHv12/	-
 #	##################
 DYJets_amctnlo	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM	5.915e+03	3.414e+01	83290772	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_amctnlo_SHv12/	-
 DYJets_madgraph	/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM	5.991e+03	1.796e+01	49877138	root://eoscms//eos/cms/store//user/shervin/skims/DYJets_madgraph_SHv12/	-
