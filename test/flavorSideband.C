@@ -69,16 +69,16 @@ void flavorSideband(){
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
   //fixed bin width MLLJJ plots with standard domain
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
   
   //variable bin width MLLJJ plots
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
+  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
+  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
+  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
+  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
@@ -318,15 +318,18 @@ void flavorSideband(){
   h_WR_mass_EE->Draw("histo same");
   h_WR_mass_MuMu->Draw("histo same");
   h_WR_mass_EMuData->Draw("epsame");
-  TString ytitle = "Events/(";
-  ytitle += (h_WR_mass_EMuData->GetXaxis()->GetNbins());
-  ytitle += ")";
-  h_WR_mass_MuMu->GetYaxis()->SetTitle(ytitle.Data());
+  //TString ytitle = "Events/(";
+  //ytitle += (h_WR_mass_EMuData->GetXaxis()->GetNbins());
+  //ytitle += ")";
+  TString ytitle = "Events";
+  h_WR_mass_EMuData->GetYaxis()->SetTitle(ytitle.Data());
+  h_WR_mass_EMuData->Draw("epsame");
+  
   legEMuDataTwoRescaledMCs->Draw();
   canvEMuDataTwoRescaledMCs->cd();
   p2->cd();	///<change to ratio TPad
-  Float_t minYratio = 0.5, maxYratio = 2.0;
-  Float_t xLabelSize = 0.3, xTitleSize = 0.3;
+  Float_t minYratio = 0.41, maxYratio = 1.99;
+  Float_t xLabelSize = 0.25, xTitleSize = 0.25;
   ratio_Data_EE->SetTitle(""), ratio_Data_MuMu->SetTitle(""), ratio_Data_EMu->SetTitle("");
   ratio_Data_EE->GetXaxis()->SetTitleSize(xTitleSize), ratio_Data_MuMu->GetXaxis()->SetTitleSize(xTitleSize), ratio_Data_EMu->GetXaxis()->SetTitleSize(xTitleSize);
   ratio_Data_EE->SetLabelSize(xLabelSize,"x"), ratio_Data_MuMu->SetLabelSize(xLabelSize,"x"), ratio_Data_EMu->SetLabelSize(xLabelSize,"x");
@@ -339,16 +342,16 @@ void flavorSideband(){
   ratio_Data_EE->Divide(h_WR_mass_EE);
   ratio_Data_EE->SetMarkerStyle(20);
   ratio_Data_EE->SetMarkerColor(kRed);
-  ratio_Data_EE->SetLabelSize(0.2, "y");
+  ratio_Data_EE->SetLabelSize(0.25, "y");
   ratio_Data_EE->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_EE->GetYaxis()->SetNdivisions(505);
   ratio_Data_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  ratio_Data_EE->SetLabelSize(0.3,"x");
+  ratio_Data_EE->SetLabelSize(0.25,"x");
 
   ratio_Data_EMu->Divide(h_WR_mass_EMu);
   ratio_Data_EMu->SetMarkerStyle(22);
   ratio_Data_EMu->SetMarkerColor(kBlue);
-  ratio_Data_EMu->SetLabelSize(0.2, "y");
+  ratio_Data_EMu->SetLabelSize(0.25, "y");
   ratio_Data_EMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_EMu->GetYaxis()->SetNdivisions(505);
   ratio_Data_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -356,7 +359,7 @@ void flavorSideband(){
   ratio_Data_MuMu->Divide(h_WR_mass_MuMu);
   ratio_Data_MuMu->SetMarkerStyle(21);
   ratio_Data_MuMu->SetMarkerColor(kBlack);
-  ratio_Data_MuMu->SetLabelSize(0.2, "y");
+  ratio_Data_MuMu->SetLabelSize(0.25, "y");
   ratio_Data_MuMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
   ratio_Data_MuMu->GetYaxis()->SetNdivisions(505);
   ratio_Data_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
