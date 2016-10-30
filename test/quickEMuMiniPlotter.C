@@ -95,9 +95,9 @@ void quickEMuMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","#Delta R lead lepton lead jet","#Delta R lead lepton sublead jet","#Delta R sublead lepton lead jet","#Delta R sublead lepton sublead jet","#Delta R lead lepton sublead lepton","#Delta #phi lead lepton lead jet","#Delta #phi lead lepton sublead jet","#Delta #phi sublead lepton lead jet","#Delta #phi sublead lepton sublead jet","#Delta #phi lead lepton sublead lepton","#Delta #eta lead lepton lead jet","#Delta #eta lead lepton sublead jet","#Delta #eta sublead lepton lead jet","#Delta #eta sublead lepton sublead jet","#Delta #eta lead lepton sublead lepton","muon #eta","muon #phi","muon p_{T}","electron #eta","electron #phi","electron p_{T}"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta","mu_eta","mu_phi","mu_pt","ele_eta","ele_phi","ele_pt"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -144,6 +144,16 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nBins,50,dilepton_max);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
+  //"nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta"
+  
+  TH1F *h_muon_pt = new TH1F("h_muon_pt","",nBins,0,700);
+  TH1F *h_muon_eta = new TH1F("h_muon_eta","",nBins,-3,3);
+  TH1F *h_muon_phi = new TH1F("h_muon_phi","",nBins,-3.15,3.15);
+  TH1F *h_ele_pt = new TH1F("h_ele_pt","",nBins,0,700);
+  TH1F *h_ele_eta = new TH1F("h_ele_eta","",nBins,-3,3);
+  TH1F *h_ele_phi = new TH1F("h_ele_phi","",nBins,-3.15,3.15);
+
+
   Long64_t nEntries = chain->GetEntries();
 
   cout<< nEntries << endl;
@@ -178,7 +188,26 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
     h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
-  }
+
+	if(myEvent->lead_lepton_r9 == -1){
+		h_muon_pt->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_muon_eta->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_muon_phi->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+		h_ele_pt->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_ele_eta->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_ele_phi->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+	}//lead lepton is muon
+
+	if(myEvent->lead_lepton_r9 > -1){
+		h_ele_pt->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_ele_eta->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_ele_phi->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+		h_muon_pt->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_muon_eta->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_muon_phi->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+	}//lead lepton is electron
+
+  }//end loop over events
 
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
@@ -196,6 +225,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
+  //"nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta","mu_eta","mu_phi","mu_pt","ele_eta","ele_phi","ele_pt"
+ 
   /**/
   //normalize histo bins
   unsigned int max = hs->size();
