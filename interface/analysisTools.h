@@ -42,19 +42,17 @@ std::vector<int> getMassVec()
 		std::stringstream ss(line);
 		// check channel, only use ee.
 		std::getline(ss, word, ' ');
-		if (word == "EE") {
-			std::getline(ss, word, ' ');
-			mass.push_back(std::stoi(word));
-		}
+//		if (word == "EE") {
+		std::getline(ss, word, ' ');
+		mass.push_back(std::stoi(word));
+//		}
 	}
 
 	return mass;
 }
 
-double NormalizedIntegral(RooAbsPdf * function, RooRealVar& integrationVar, double lowerLimit, double upperLimit)
-{
-	integrationVar.setRange("integralRange", lowerLimit, upperLimit) ;
-	RooAbsReal* integral = (*function).createIntegral(integrationVar, NormSet(integrationVar), Range("integralRange")) ;
-	double normalizedIntegralValue = integral->getVal();
-	return normalizedIntegralValue;
+integrationVar.setRange("integralRange", lowerLimit, upperLimit) ;
+RooAbsReal* integral = (*function).createIntegral(integrationVar, NormSet(integrationVar), Range("integralRange")) ;
+double normalizedIntegralValue = integral->getVal();
+return normalizedIntegralValue;
 }
