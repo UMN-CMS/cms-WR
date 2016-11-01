@@ -28,6 +28,7 @@
 <use name="JetMETCorrections/Modules"/>
 <use name="PhysicsTools/SelectorUtils"/>
 <use name="RecoEgamma/EgammaTools" />
+<use name="EgammaAnalysis/ElectronTools" />
 <use name="SimDataFormats/PileupSummaryInfo" />
 <use name="SimDataFormats/GeneratorProducts"/>
 <use name="ExoAnalysis/cmsWR" />

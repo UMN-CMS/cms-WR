@@ -67,12 +67,14 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	for(int i = 0; i < nele; i++) {
 		myElectron ele;
 		ele.p4 = myEvent.electrons_p4->at(i);
-		ele.scale = myEvent.electron_scale->at(i);
-		ele.smearing = myEvent.electron_smearing->at(i);
+		ele.scale_error = myEvent.electron_scale_error->at(i);
+		ele.smearing_sigma = myEvent.electron_smearing_sigma->at(i);
+		ele.smearing_sigma_phi_up = myEvent.electron_smearing_sigma_phi_up->at(i);
+		ele.smearing_sigma_phi_down = myEvent.electron_smearing_sigma_phi_down->at(i);
+		ele.smearing_sigma_rho_up = myEvent.electron_smearing_sigma_rho_up->at(i);
+		ele.smearing_sigma_rho_down = myEvent.electron_smearing_sigma_rho_down->at(i);
 		ele.charge = myEvent.electron_charge->at(i);
 		ele.r9 = myEvent.electron_r9->at(i);
-		ele.smearing_error = 0.;	///<temporary
-		ele.scale_error = 0.;		///<temporary
 		ele.IDSF = myEvent.electron_IDSF_central->at(i);
 		ele.IDSF_error = myEvent.electron_IDSF_error->at(i);
 		ele.RecoSF = myEvent.electron_RecoSF_central->at(i);
@@ -131,13 +133,20 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	lead_lepton_IDSF_error = -9;
 	lead_lepton_RecoSF_error = -9;
 	lead_lepton_HltSF_error = -9;
-	lead_lepton_ESmearing_error = -9;
 	lead_lepton_EScaling_error = -9;
+	lead_lepton_ESmearing_sigma = -9;
+	lead_lepton_ESmearing_sigma_phi_up = -9;
+	lead_lepton_ESmearing_sigma_phi_down = -9;
+	lead_lepton_ESmearing_sigma_rho_up = -9;
+	lead_lepton_ESmearing_sigma_rho_down = -9;
 	sublead_lepton_IDSF_error = -9;
 	sublead_lepton_RecoSF_error = -9;
 	sublead_lepton_HltSF_error = -9;
-	sublead_lepton_ESmearing_error = -9;
 	sublead_lepton_EScaling_error = -9;
+	sublead_lepton_ESmearing_sigma_phi_up = -9;
+	sublead_lepton_ESmearing_sigma_phi_down = -9;
+	sublead_lepton_ESmearing_sigma_rho_up = -9;
+	sublead_lepton_ESmearing_sigma_rho_down = -9;
 	lead_lepton_IsoSF_error = -9;
 	sublead_lepton_IsoSF_error = -9;
 
@@ -182,14 +191,22 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 		lead_lepton_IDSF_error = electrons[0].IDSF_error;
 		lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 		lead_lepton_HltSF_error = electrons[0].HltSF_error;
-		lead_lepton_ESmearing_error = electrons[0].smearing_error;
 		lead_lepton_EScaling_error = electrons[0].scale_error;
+		lead_lepton_ESmearing_sigma = electrons[0].smearing_sigma;
+		lead_lepton_ESmearing_sigma_phi_up = electrons[0].smearing_sigma_phi_up;
+		lead_lepton_ESmearing_sigma_phi_down = electrons[0].smearing_sigma_phi_down;
+		lead_lepton_ESmearing_sigma_rho_up = electrons[0].smearing_sigma_rho_up;
+		lead_lepton_ESmearing_sigma_rho_down = electrons[0].smearing_sigma_rho_down;
 
 		sublead_lepton_IDSF_error = electrons[1].IDSF_error;
 		sublead_lepton_RecoSF_error = electrons[1].RecoSF_error;
 		sublead_lepton_HltSF_error = electrons[1].HltSF_error;
-		sublead_lepton_ESmearing_error = electrons[1].smearing_error;
 		sublead_lepton_EScaling_error = electrons[1].scale_error;
+		sublead_lepton_ESmearing_sigma = electrons[1].smearing_sigma;
+		sublead_lepton_ESmearing_sigma_phi_up = electrons[1].smearing_sigma_phi_up;
+		sublead_lepton_ESmearing_sigma_phi_down = electrons[1].smearing_sigma_phi_down;
+		sublead_lepton_ESmearing_sigma_rho_up = electrons[1].smearing_sigma_rho_up;
+		sublead_lepton_ESmearing_sigma_rho_down = electrons[1].smearing_sigma_rho_down;
 
 		lead_lepton_r9 = electrons[0].r9;
 		sublead_lepton_r9 = electrons[1].r9;
@@ -227,8 +244,12 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 			lead_lepton_IDSF_error = electrons[0].IDSF_error;
 			lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 			lead_lepton_HltSF_error = electrons[0].HltSF_error;
-			lead_lepton_ESmearing_error = electrons[0].smearing_error;
 			lead_lepton_EScaling_error = electrons[0].scale_error;
+			lead_lepton_ESmearing_sigma = electrons[0].smearing_sigma;
+			lead_lepton_ESmearing_sigma_phi_up = electrons[0].smearing_sigma_phi_up;
+			lead_lepton_ESmearing_sigma_phi_down = electrons[0].smearing_sigma_phi_down;
+			lead_lepton_ESmearing_sigma_rho_up = electrons[0].smearing_sigma_rho_up;
+			lead_lepton_ESmearing_sigma_rho_down = electrons[0].smearing_sigma_rho_down;
 
 			sublead_lepton_IDSF_error = muons[0].IDSF_error;
 			sublead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -243,8 +264,13 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 			sublead_lepton_IDSF_error = electrons[0].IDSF_error;
 			sublead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 			sublead_lepton_HltSF_error = electrons[0].HltSF_error;
-			sublead_lepton_ESmearing_error = electrons[0].smearing_error;
 			sublead_lepton_EScaling_error = electrons[0].scale_error;
+			sublead_lepton_ESmearing_sigma = electrons[0].smearing_sigma;
+			sublead_lepton_ESmearing_sigma_phi_up = electrons[0].smearing_sigma_phi_up;
+			sublead_lepton_ESmearing_sigma_phi_down = electrons[0].smearing_sigma_phi_down;
+			sublead_lepton_ESmearing_sigma_rho_up = electrons[0].smearing_sigma_rho_up;
+			sublead_lepton_ESmearing_sigma_rho_down = electrons[0].smearing_sigma_rho_down;
+
 
 			lead_lepton_IDSF_error = muons[0].IDSF_error;
 			lead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -357,13 +383,21 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	lead_lepton_IDSF_error = -9;
 	lead_lepton_RecoSF_error = -9;
 	lead_lepton_HltSF_error = -9;
-	lead_lepton_ESmearing_error = -9;
 	lead_lepton_EScaling_error = -9;
+	lead_lepton_ESmearing_sigma = -9;
+	lead_lepton_ESmearing_sigma_phi_up = -9;
+	lead_lepton_ESmearing_sigma_phi_down = -9;
+	lead_lepton_ESmearing_sigma_rho_up = -9;
+	lead_lepton_ESmearing_sigma_rho_down = -9;
 	sublead_lepton_IDSF_error = -9;
 	sublead_lepton_RecoSF_error = -9;
 	sublead_lepton_HltSF_error = -9;
-	sublead_lepton_ESmearing_error = -9;
 	sublead_lepton_EScaling_error = -9;
+	sublead_lepton_ESmearing_sigma = -9;
+	sublead_lepton_ESmearing_sigma_phi_up = -9;
+	sublead_lepton_ESmearing_sigma_phi_down = -9;
+	sublead_lepton_ESmearing_sigma_rho_up = -9;
+	sublead_lepton_ESmearing_sigma_rho_down = -9;
 	lead_lepton_IsoSF_error = -9;
 	sublead_lepton_IsoSF_error = -9;
 
@@ -432,14 +466,23 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		lead_lepton_IDSF_error = electrons[0].IDSF_error;
 		lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 		lead_lepton_HltSF_error = electrons[0].HltSF_error;
-		lead_lepton_ESmearing_error = electrons[0].smearing_error;
 		lead_lepton_EScaling_error = electrons[0].scale_error;
+		lead_lepton_ESmearing_sigma = electrons[0].smearing_sigma;
+		lead_lepton_ESmearing_sigma_phi_up = electrons[0].smearing_sigma_phi_up;
+		lead_lepton_ESmearing_sigma_phi_down = electrons[0].smearing_sigma_phi_down;
+		lead_lepton_ESmearing_sigma_rho_up = electrons[0].smearing_sigma_rho_up;
+		lead_lepton_ESmearing_sigma_rho_down = electrons[0].smearing_sigma_rho_down;
 
 		sublead_lepton_IDSF_error = electrons[1].IDSF_error;
 		sublead_lepton_RecoSF_error = electrons[1].RecoSF_error;
 		sublead_lepton_HltSF_error = electrons[1].HltSF_error;
-		sublead_lepton_ESmearing_error = electrons[1].smearing_error;
 		sublead_lepton_EScaling_error = electrons[1].scale_error;
+		sublead_lepton_ESmearing_sigma = electrons[1].smearing_sigma;
+		sublead_lepton_ESmearing_sigma_phi_up = electrons[1].smearing_sigma_phi_up;
+		sublead_lepton_ESmearing_sigma_phi_down = electrons[1].smearing_sigma_phi_down;
+		sublead_lepton_ESmearing_sigma_rho_up = electrons[1].smearing_sigma_rho_up;
+		sublead_lepton_ESmearing_sigma_rho_down = electrons[1].smearing_sigma_rho_down;
+
 
 		lead_lepton_r9 = electrons[0].r9;
 		sublead_lepton_r9 = electrons[1].r9;
@@ -482,8 +525,12 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			lead_lepton_IDSF_error = electrons[0].IDSF_error;
 			lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 			lead_lepton_HltSF_error = electrons[0].HltSF_error;
-			lead_lepton_ESmearing_error = electrons[0].smearing_error;
 			lead_lepton_EScaling_error = electrons[0].scale_error;
+			lead_lepton_ESmearing_sigma = electrons[0].smearing_sigma;
+			lead_lepton_ESmearing_sigma_phi_up = electrons[0].smearing_sigma_phi_up;
+			lead_lepton_ESmearing_sigma_phi_down = electrons[0].smearing_sigma_phi_down;
+			lead_lepton_ESmearing_sigma_rho_up = electrons[0].smearing_sigma_rho_up;
+			lead_lepton_ESmearing_sigma_rho_down = electrons[0].smearing_sigma_rho_down;
 
 			sublead_lepton_IDSF_error = muons[0].IDSF_error;
 			sublead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -499,8 +546,12 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			sublead_lepton_IDSF_error = electrons[0].IDSF_error;
 			sublead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 			sublead_lepton_HltSF_error = electrons[0].HltSF_error;
-			sublead_lepton_ESmearing_error = electrons[0].smearing_error;
 			sublead_lepton_EScaling_error = electrons[0].scale_error;
+			sublead_lepton_ESmearing_sigma = electrons[0].smearing_sigma;
+			sublead_lepton_ESmearing_sigma_phi_up = electrons[0].smearing_sigma_phi_up;
+			sublead_lepton_ESmearing_sigma_phi_down = electrons[0].smearing_sigma_phi_down;
+			sublead_lepton_ESmearing_sigma_rho_up = electrons[0].smearing_sigma_rho_up;
+			sublead_lepton_ESmearing_sigma_rho_down = electrons[0].smearing_sigma_rho_down;
 
 			lead_lepton_IDSF_error = muons[0].IDSF_error;
 			lead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -661,14 +712,22 @@ void Selector::SetBranches(TTree* tree)
 	tree->Branch("lead_lepton_IsoSF_error", &lead_lepton_IsoSF_error);
 	tree->Branch("lead_lepton_RecoSF_error", &lead_lepton_RecoSF_error);
 	tree->Branch("lead_lepton_HltSF_error", &lead_lepton_HltSF_error);
-	tree->Branch("lead_lepton_ESmearing_error", &lead_lepton_ESmearing_error);
 	tree->Branch("lead_lepton_EScaling_error", &lead_lepton_EScaling_error);
+	tree->Branch("lead_lepton_ESmearing_sigma", &lead_lepton_ESmearing_sigma);
+	tree->Branch("lead_lepton_ESmearing_sigma_phi_up", &lead_lepton_ESmearing_sigma_phi_up);
+	tree->Branch("lead_lepton_ESmearing_sigma_phi_down", &lead_lepton_ESmearing_sigma_phi_down);
+	tree->Branch("lead_lepton_ESmearing_sigma_rho_up", &lead_lepton_ESmearing_sigma_rho_up);
+	tree->Branch("lead_lepton_ESmearing_sigma_rho_down", &lead_lepton_ESmearing_sigma_rho_down);
 	tree->Branch("sublead_lepton_IDSF_error", &sublead_lepton_IDSF_error);
 	tree->Branch("sublead_lepton_IsoSF_error", &sublead_lepton_IsoSF_error);
 	tree->Branch("sublead_lepton_RecoSF_error", &sublead_lepton_RecoSF_error);
 	tree->Branch("sublead_lepton_HltSF_error", &sublead_lepton_HltSF_error);
-	tree->Branch("sublead_lepton_ESmearing_error", &sublead_lepton_ESmearing_error);
 	tree->Branch("sublead_lepton_EScaling_error", &sublead_lepton_EScaling_error);
+	tree->Branch("sublead_lepton_ESmearing_sigma", &sublead_lepton_ESmearing_sigma);
+	tree->Branch("sublead_lepton_ESmearing_sigma_phi_up", &sublead_lepton_ESmearing_sigma_phi_up);
+	tree->Branch("sublead_lepton_ESmearing_sigma_phi_down", &sublead_lepton_ESmearing_sigma_phi_down);
+	tree->Branch("sublead_lepton_ESmearing_sigma_rho_up", &sublead_lepton_ESmearing_sigma_rho_up);
+	tree->Branch("sublead_lepton_ESmearing_sigma_rho_down", &sublead_lepton_ESmearing_sigma_rho_down);
 
 }
 
@@ -711,14 +770,22 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("lead_lepton_IsoSF_error", &lead_lepton_IsoSF_error);
 	tree->SetBranchAddress("lead_lepton_RecoSF_error", &lead_lepton_RecoSF_error);
 	tree->SetBranchAddress("lead_lepton_HltSF_error", &lead_lepton_HltSF_error);
-	tree->SetBranchAddress("lead_lepton_ESmearing_error", &lead_lepton_ESmearing_error);
 	tree->SetBranchAddress("lead_lepton_EScaling_error", &lead_lepton_EScaling_error);
+	tree->SetBranchAddress("lead_lepton_ESmearing_sigma", &lead_lepton_ESmearing_sigma);
+	tree->SetBranchAddress("lead_lepton_ESmearing_sigma_phi_up", &lead_lepton_ESmearing_sigma_phi_up);
+	tree->SetBranchAddress("lead_lepton_ESmearing_sigma_phi_down", &lead_lepton_ESmearing_sigma_phi_down);
+	tree->SetBranchAddress("lead_lepton_ESmearing_sigma_rho_up", &lead_lepton_ESmearing_sigma_rho_up);
+	tree->SetBranchAddress("lead_lepton_ESmearing_sigma_rho_down", &lead_lepton_ESmearing_sigma_rho_down);
 	tree->SetBranchAddress("sublead_lepton_IDSF_error", &sublead_lepton_IDSF_error);
 	tree->SetBranchAddress("sublead_lepton_IsoSF_error", &sublead_lepton_IsoSF_error);
 	tree->SetBranchAddress("sublead_lepton_RecoSF_error", &sublead_lepton_RecoSF_error);
 	tree->SetBranchAddress("sublead_lepton_HltSF_error", &sublead_lepton_HltSF_error);
-	tree->SetBranchAddress("sublead_lepton_ESmearing_error", &sublead_lepton_ESmearing_error);
 	tree->SetBranchAddress("sublead_lepton_EScaling_error", &sublead_lepton_EScaling_error);
+	tree->SetBranchAddress("sublead_lepton_ESmearing_sigma", &sublead_lepton_ESmearing_sigma);
+	tree->SetBranchAddress("sublead_lepton_ESmearing_sigma_phi_up", &sublead_lepton_ESmearing_sigma_phi_up);
+	tree->SetBranchAddress("sublead_lepton_ESmearing_sigma_phi_down", &sublead_lepton_ESmearing_sigma_phi_down);
+	tree->SetBranchAddress("sublead_lepton_ESmearing_sigma_rho_up", &sublead_lepton_ESmearing_sigma_rho_up);
+	tree->SetBranchAddress("sublead_lepton_ESmearing_sigma_rho_down", &sublead_lepton_ESmearing_sigma_rho_down);
 
 }
 

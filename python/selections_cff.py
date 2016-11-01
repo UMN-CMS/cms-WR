@@ -61,7 +61,7 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
 jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert * jetResolutionSF) #* wRdiJetCandidate)
 
 ############################################################ Electrons
-
+from ExoAnalysis.cmsWR.produceEleScaleSmearing_cff import *
 
 # muons considered here are only those far from any jet with Pt>ptJets 
 wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
@@ -105,8 +105,8 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
+electronHEEPSeq = cms.Sequence(wRHEEPElectron)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate * eleScaleSmearing)
 
 ############################################################ Muons
 
