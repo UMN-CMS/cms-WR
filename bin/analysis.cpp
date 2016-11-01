@@ -32,8 +32,6 @@
 
 #include <unordered_set>
 
-//#include "ExoAnalysis/Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
-
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
 //#define DEBUG
@@ -91,18 +89,7 @@ public:
 				std::cout << "ERROR looking for DY in EMu channel" << std::endl;
 				return TTchainNames;
 			}
-			if(mode.find("POWHEG") != _ENDSTRING) {
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_50to120");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_120to200");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_200to400");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_400to800");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_800to1400");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_1400to2300");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_2300to3500");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_3500to4500");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_4500to6000");
-				TTchainNames.push_back("DYTo" + tagName + "_powheg_6000toInf");
-			} else if(mode.find("AMC") != _ENDSTRING) {
+			if(mode.find("AMC") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
 			} else if(mode.find("MAD") != _ENDSTRING) {
@@ -128,9 +115,9 @@ public:
 			if(channel == Selector::EE)   dataTag = "DoubleEG";
 			if(channel == Selector::MuMu) dataTag = "SingleMu";
 			TTchainNames.push_back(dataTag + "_RunB");
-			TTchainNames.push_back(dataTag + "_RunC");
-			TTchainNames.push_back(dataTag + "_RunD");
-			TTchainNames.push_back(dataTag + "_RunE");
+			//TTchainNames.push_back(dataTag + "_RunC");
+			//TTchainNames.push_back(dataTag + "_RunD");
+			//TTchainNames.push_back(dataTag + "_RunE");
 		}
 		if(mode.find("WRto") != _ENDSTRING) {
 			TTchainNames.push_back(mode);
@@ -308,8 +295,6 @@ int main(int ac, char* av[])
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
-		//if(isData) eSmearer.doScale = true;
-		//else eSmearer.doSmearings = true;
 
 		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
 #ifdef DEBUG
@@ -456,21 +441,6 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 				std::cout << "found an event passing preselection" << std::endl;
 #endif
-				/*
-				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
-#ifdef DEBUGG
-					std::cout << "looping over reco electrons in the event passing preselection" << std::endl;
-#endif
-					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
-					if(isData && !(channel_str == "MuMu") ) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0., skip this step if the channel is not EE or EMu
-						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
-						//(*myEvent.electron_scale)[iEle] = 1.0;
-						(*myEvent.electron_smearing)[iEle] = 0.;
-					} else if(!isData && !(channel_str == "MuMu") ) { // only the smearings are corrected, skip this step if the channel != EE or EMu (this could be entered when running over DYToLL samples)
-						(*myEvent.electron_scale)[iEle] = 1.;
-						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
-					}
-				}*/
 				myEventVector.push_back(myEvent);
 			}
 			myEvent.clear();
@@ -484,13 +454,6 @@ int main(int ac, char* av[])
 		bool loop_one = true;
 		int seed_i = seed + 1;
 
-		// electron systematics!
-		bool Flag_Smear_Electron_Scale = false;
-		for(unsigned int iii = 0; iii < List_Systematics.size(); iii++) {
-			if(List_Systematics[iii] == "Smear_Electron_Scale") Flag_Smear_Electron_Scale = true;
-		}
-
-
 		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
 
 			Rand.SetSeed(seed_i);
@@ -499,9 +462,10 @@ int main(int ac, char* av[])
 			if(loop_one) {
 				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
-				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Rand.Gaus(0.0, 1.);// Electron Scale(Data)
-				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
-				Random_Numbers_for_Systematics_Up_Down[4] = 0.;//Mu Res
+				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[3] = 0.; //Electron Smear(MC)
+				Random_Numbers_for_Systematics_Up_Down[4] = 0.;//JES
+				Random_Numbers_for_Systematics_Up_Down[5] = 0.;//Mu Res
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
@@ -548,35 +512,6 @@ int main(int ac, char* av[])
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
 				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
-				/*
-				unsigned int nEle = myEventIt.electrons_p4->size();
-				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
-					TLorentzVector& p4 = (*myEventIt.electrons_p4)[iEle];
-
-					if(isData) { //only scales are corrected
-#ifdef DEBUG
-						std::cout << p4.Et() << "-->";
-#endif
-						p4 *= (*myEventIt.electron_scale)[iEle];
-						// since the Random_Numbers_for_Systematics is the same for all the categories, then the uncertainties are considered fully correlated
-						if(loop_one == false && Flag_Smear_Electron_Scale) p4 *= 1 + Random_Numbers_for_Systematics_Up_Down[2] * eSmearer.ScaleCorrectionUncertainty(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et());
-#ifdef DEBUG
-						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEventIt.electron_r9)[iEle] << "\t" << (*myEventIt.electron_scale)[iEle] << "\t" << (eSmearer.ScaleCorrectionUncertainty(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et())) << std::endl;
-#endif
-					} else { // only the smearings are corrected
-						double r = (loop_one == false && Flag_Smear_Electron_Scale) ? Rand.Gaus(0., 1.) : 0;
-						(*myEventIt.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r);
-#ifdef DEBUG
-						std::cout << p4.Et() << "-->";
-#endif
-						p4 *= Rand.Gaus(1., (*myEventIt.electron_smearing)[iEle]);
-#ifdef DEBUG
-						std::cout << p4.Et() << "\t" << p4.Eta() << "\t" << (*myEventIt.electron_r9)[iEle] << "\t" <<	(*myEventIt.electron_smearing)[iEle] << "\t" <<  eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0) << "\t" << eSmearer.getSmearingSigma(myEventIt.run, fabs(p4.Eta()) < 1.479, 0., p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, r) << std::endl;
-#endif
-
-					}
-				}*/
-
 				Selector tmp_selEvent(myEventIt);
 				selEvent = tmp_selEvent;
 				// Select events with one good WR candidate
@@ -585,22 +520,10 @@ int main(int ac, char* av[])
 				// 1 -- MuMuJJ Channel
 				// 2 -- EMuJJ Channel
 
-				// if(debug && selEvent.isPassing(channel)) {
-				// 	std::cout << std::endl << selEvent.dilepton_mass << std::endl;
-				// 	std::cout << "Mu " << ev  << std::endl;
-				// 	for(auto m : * (myEventIt.muons_p4))
-				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
-				// 	std::cout << "Ele" << std::endl;
-				// 	for(auto m : * (myEventIt.electrons_p4))
-				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
-				// 	std::cout << "Jet" << std::endl;
-				// 	for(auto m : * (myEventIt.jets_p4))
-				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
-				// }
-
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
-						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+					  selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi * PUreweight(int(selEvent.nPU)); // the weight is the event weight * single object weights
+					  
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
 						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
@@ -641,7 +564,7 @@ int main(int ac, char* av[])
 
 
 					if(isData == false) {
-						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+					  selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi * PUreweight(int(selEvent.nPU)); // the weight is the event weight * single object weights
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {

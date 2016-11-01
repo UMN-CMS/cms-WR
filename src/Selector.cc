@@ -107,7 +107,8 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 
 	nPV = myEvent.nPV;
 	nPU = myEvent.nPU;
-	global_event_weight = (myEvent.weight > 0 ? 1 : -1) * myEvent.PU_reweight;
+	global_event_weight = (myEvent.weight > 0 ? 1 : -1);
+// * myEvent.PU_reweight;
 #ifdef DEBUGG
 	std::cout << "global_event_weight=\t" << global_event_weight << std::endl;
 #endif
@@ -788,4 +789,3 @@ void Selector::SetBranchAddresses(TTree* tree)
 	tree->SetBranchAddress("sublead_lepton_ESmearing_sigma_rho_down", &sublead_lepton_ESmearing_sigma_rho_down);
 
 }
-
