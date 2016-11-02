@@ -140,10 +140,6 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	edm::Handle< edm::ValueMap<float> > muon_IsoSF_error;
 	event.getByToken(muon_IsoSF_error_src, muon_IsoSF_error);
 
-	edm::Handle<GenEventInfoProduct> evinfo;
-	edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
-	edm::Handle<float > PU_Weights;
-
 	edm::Handle<edm::View<reco::Vertex> > primary_vertex;
 	event.getByToken(primaryVertexToken_, primary_vertex);
 
@@ -156,21 +152,6 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		for(auto pv : *primary_vertex)
 			myEvent.nPV++;
 	}
-
-	if(!event.isRealData()) {
-		event.getByToken(evinfoToken_, evinfo);
-		myEvent.weight = evinfo->weight();
-		event.getByToken(pileUpInfoToken_, PU_Info);
-		for(auto p : *PU_Info) {
-			int BX = p.getBunchCrossing();
-			if(BX == 0)
-				myEvent.nPU = p.getTrueNumInteractions();
-		}
-		event.getByToken(pileUpReweightToken_, PU_Weights);
-		myEvent.PU_reweight = *PU_Weights;
-
-	}
-
 
 	for (size_t i = 0; i < electrons->size(); ++i) {
 		const auto ele = electrons->ptrAt(i);

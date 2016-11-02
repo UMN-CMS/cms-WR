@@ -2,6 +2,7 @@
 #include <utility>
 #include <fstream>
 #include <string>
+#include <map>
 #include "Selector.h"
 
 #include "RooAbsPdf.h"
@@ -9,6 +10,7 @@
 using namespace RooFit;
 
 typedef std::map< std::pair<Selector::tag_t, int>, std::pair<int, int> > mass_cut_map_t;
+static const int MAX_PU_REWEIGHT = 59;
 
 mass_cut_map_t getMassCutMap()
 {
@@ -56,61 +58,80 @@ double NormalizedIntegral(RooAbsPdf * function, RooRealVar& integrationVar, doub
   return normalizedIntegralValue;
 }
 
-std::map<Double_t, float> PU_map = {
-  {0,0.0},
-  {1,0.00037479523852},
-  {2,0.00723350728499},
-  {3,0.0149819481392},
-  {4,0.026772485431},
-  {5,0.0469226006499},
-  {6,0.036530283623},
-  {7,0.0378144988499},
-  {8,0.119371164953},
-  {9,0.285872999831},
-  {10,0.491813793768},
-  {11,0.689632013241},
-  {12,0.959594440995},
-  {13,1.170233541},
-  {14,1.27517863083},
-  {15,1.4401376652},
-  {16,1.44213795678},
-  {17,1.35998258979},
-  {18,1.41063135333},
-  {19,1.34139222043},
-  {20,1.4238085196},
-  {21,1.22503213772},
-  {22,1.10774533938},
-  {23,1.04844682795},
-  {24,1.01400723977},
-  {25,0.905968755792},
-  {26,0.897884712575},
-  {27,0.693673170731},
-  {28,0.619167741211},
-  {29,0.434955151335},
-  {30,0.353393947441},
-  {31,0.246646716677},
-  {32,0.16923169631},
-  {33,0.14852029452},
-  {34,0.11676760677},
-  {35,0.12839888127},
-  {36,0.166653218986},
-  {37,0.188896371236},
-  {38,0.238628610164},
-  {39,0.0},
-  {40,0.0},
-  {41,0.0},
-  {42,0.0},
-  {43,0.0},
-  {44,0.0},
-  {45,0.0},
-  {46,0.0},
-  {47,0.0},
-  {48,0.0},
-  {49,0.0},
-  {50,0.0}
-};
-float PUreweight(Double_t nPU)
+std::map<float, double> PUreweight(std::string PileupDataFilename)
 {
-  return PU_map[nPU];
-  //return nPU;
+  TFile data(PileupDataFilename);
+  TFile mc("MCPileup.root");
+
+  if(!data.IsOpen() || !mc.IsOpen()) {
+    std::cerr << "[ERROR] data or mc PU file not opened" << std::endl;
+    exit(1);
+  }
+
+  TH1D* puMC_hist = (TH1D*) mc.Get("pileup");
+  if(puMC_hist == NULL) {
+    std::cerr << "[ERROR] mc pileup histogram is NULL" << std::endl;
+    exit(1);
+  }
+
+  TH1D *puData_hist = (TH1D *) data.Get("pileup");
+  if(puData_hist == NULL) {
+    std::cerr << "[ERROR] data pileup histogram is NULL" << std::endl;
+    exit(1);
+  }
+
+  // they should have bin width = 1
+  if(puMC_hist->GetBinWidth(2) != 1) {
+    std::cerr << "[ERROR] Bin width for mc pileup distribution different from 1" << std::endl;
+    exit(1);
+  }
+
+  if(puData_hist->GetBinWidth(2) != 1) {
+    std::cerr << "[ERROR] Bin width for data pileup distribution different from 1" << std::endl;
+    exit(1);
+  }
+
+  // they should have the same binning otherwise PU weights until the max between them
+  int nBins = MAX_PU_REWEIGHT;
+  if(puData_hist->GetNbinsX() != puMC_hist->GetNbinsX()) {
+    std::cerr << "[WARNING] Different binning between data and mc pileup distributions:" << puData_hist->GetNbinsX() << "\t" << puMC_hist->GetNbinsX() << std::endl;
+    nBins = std::min(puData_hist->GetNbinsX(), puMC_hist->GetNbinsX());
+    //std::cerr << "Pileup reweighted until nPU max = " << nBins;
+  }
+
+  nBins = std::min(MAX_PU_REWEIGHT, nBins);
+
+  // Normalize Histograms
+  float puMC_int = puMC_hist->Integral(0, nBins);
+  float puData_int = puData_hist->Integral(0, nBins);
+  puMC_hist->Scale(1. / puMC_int);
+  puData_hist->Scale(1. / puData_int);
+
+  double puMCweight_int = 0;
+  std::map<float, double> pu_weights;
+  for (int i = 0; i < nBins; i++) {
+    double binContent = puMC_hist->GetBinContent(i + 1);
+    if(binContent == 0 && puData_hist->GetBinContent(i + 1) != 0) {
+      if(puData_hist->GetBinContent(i + 1) < 1e-4 || i < 4) {
+	std::cerr << "[WARNING] mc bin empty while data not: iBin = " << i + 1 << std::endl;
+	std::cerr << "          data bin = " << puData_hist->GetBinContent(i + 1) << std::endl;
+      } else {
+	std::cerr << "[WARNING] mc bin empty while data not: iBin = " << i + 1 << std::endl;
+	std::cerr << "        data bin = " << puData_hist->GetBinContent(i + 1) << std::endl;
+	puData_hist->SetBinContent(i + 1, 1e-4);
+      }
+    }
+    double weight = binContent > 0 ? puData_hist->GetBinContent(i + 1) / binContent : 0;
+    // the MC normalization should not change, so calculate the
+    // integral of the MC and rescale the weights by that
+    puMCweight_int += weight * binContent;
+    pu_weights[i] = weight;
+  }
+
+  for (int i = 0; i < nBins; i++) {
+    pu_weights[i] /= puMCweight_int;
+  }
+
+
+  return pu_weights;
 }

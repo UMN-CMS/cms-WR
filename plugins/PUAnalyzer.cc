@@ -34,7 +34,7 @@ PUAnalyzer::PUAnalyzer(const edm::ParameterSet& cfg):
 {
   edm::Service<TFileService> fs;
  
-  h_pileup = fs->make<TH1F>("pileup", "pileup", 1000, 0, 100);
+  h_pileup = fs->make<TH1F>("pileup", "pileup", 50, 0, 50);
  }
 
 void PUAnalyzer::analyze(const edm::Event& event, const edm::EventSetup&)

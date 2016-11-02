@@ -115,9 +115,10 @@ public:
 			if(channel == Selector::EE)   dataTag = "DoubleEG";
 			if(channel == Selector::MuMu) dataTag = "SingleMu";
 			TTchainNames.push_back(dataTag + "_RunB");
-			//TTchainNames.push_back(dataTag + "_RunC");
-			//TTchainNames.push_back(dataTag + "_RunD");
-			//TTchainNames.push_back(dataTag + "_RunE");
+			TTchainNames.push_back(dataTag + "_RunC");
+			if(channel != Selector::MuMu) TTchainNames.push_back(dataTag + "_RunD");
+			TTchainNames.push_back(dataTag + "_RunE");
+			//TTchainNames.push_back(dataTag + "_RunF");
 		}
 		if(mode.find("WRto") != _ENDSTRING) {
 			TTchainNames.push_back(mode);
@@ -248,7 +249,7 @@ int main(int ac, char* av[])
 
 	Selector::tag_t cut_channel;
 	if(channel == Selector::EMu) {
-		cut_channel = Selector::getTag(channel_cut_str);
+	  //cut_channel = Selector::getTag(channel_cut_str);
 		//outFileTag += channel_cut_str;
 	} else
 		cut_channel = channel;
@@ -284,6 +285,8 @@ int main(int ac, char* av[])
 
 	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
+	std::string dataPUfn = "MyDataSingleMuonPileupHistogram.root";
+	std::map<float, double> pu_weights = PUreweight(dataPUfn);
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
 	unsigned long long zMass60to120EvtCount = 0;	///<count the number of evts from each dataset with 60 < dilepton_mass < 120 which pass loose selector cuts
@@ -522,7 +525,7 @@ int main(int ac, char* av[])
 
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
-					  selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi * PUreweight(int(selEvent.nPU)); // the weight is the event weight * single object weights
+					  selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi * pu_weights[int(selEvent.nPU)]; // the weight is the event weight * single object weights
 					  
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
@@ -564,7 +567,7 @@ int main(int ac, char* av[])
 
 
 					if(isData == false) {
-					  selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi * PUreweight(int(selEvent.nPU)); // the weight is the event weight * single object weights
+					  selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi * pu_weights[int(selEvent.nPU)]; // the weight is the event weight * single object weights
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
