@@ -29,6 +29,8 @@ miniTreeEvent::miniTreeEvent():
 	JER_sf(new std::vector<Float_t>),
 	JER_sf_up(new std::vector<Float_t>),
 	JER_sf_down(new std::vector<Float_t>),
+	genJetPt(new std::vector<Float_t>),
+	genJetMatch(new std::vector<bool>),
 	_owningMembers(true)
 {
 
@@ -64,6 +66,8 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	JER_sf(new std::vector<Float_t>),
 	JER_sf_up(new std::vector<Float_t>),
 	JER_sf_down(new std::vector<Float_t>),
+	genJetPt(new std::vector<Float_t>),
+	genJetMatch(new std::vector<bool>),
 	_owningMembers(true)
 {
 	clear();
@@ -75,6 +79,8 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*JER_sf = *(otherEvent.JER_sf);
 	*JER_sf_up = *(otherEvent.JER_sf_up);
 	*JER_sf_down = *(otherEvent.JER_sf_down);
+	*genJetPt = *(otherEvent.genJetPt);
+	*genJetMatch = *(otherEvent.genJetMatch);
 	*electron_scale_error = *(otherEvent.electron_scale_error);
 	*electron_smearing_sigma = *(otherEvent.electron_smearing_sigma);
 	*electron_smearing_sigma_phi_up = *(otherEvent.electron_smearing_sigma_phi_up);
@@ -122,6 +128,8 @@ void miniTreeEvent::clear()
 	JER_sf->clear();
 	JER_sf_up->clear();
 	JER_sf_down->clear();
+	genJetPt->clear();
+	genJetMatch->clear();
 	electron_scale_error->clear();
 	electron_smearing_sigma->clear();
 	electron_smearing_sigma_phi_up->clear();
@@ -178,6 +186,8 @@ miniTreeEvent::~miniTreeEvent()
 	delete JER_sf;
 	delete JER_sf_up;
 	delete JER_sf_down;
+	delete genJetPt;
+	delete genJetMatch;
 }
 
 void miniTreeEvent::SetBranches(TTree* tree)
@@ -196,6 +206,8 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("JER_sf", JER_sf);
 	tree->Branch("JER_sf_up", JER_sf_up);
 	tree->Branch("JER_sf_down", JER_sf_down);
+	tree->Branch("genJetPt", genJetPt);
+	tree->Branch("genJetMatch", genJetMatch);
 	tree->Branch("electron_scale_error", electron_scale_error);
 	tree->Branch("electron_smearing_sigma", electron_smearing_sigma);
 	tree->Branch("electron_smearing_sigma_phi_up", electron_smearing_sigma_phi_up);
@@ -229,6 +241,8 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete JER_sf;
 	delete JER_sf_up;
 	delete JER_sf_down;
+	delete genJetPt;
+	delete genJetMatch;
 	delete electron_scale_error;
 	delete electron_smearing_sigma;
 	delete electron_smearing_sigma_phi_up;
@@ -254,6 +268,8 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	JER_sf = 0;
 	JER_sf_up = 0;
 	JER_sf_down = 0;
+	genJetPt = 0;
+	genJetMatch = 0;
 	electron_scale_error = 0;
 	electron_smearing_sigma = 0;
 	electron_smearing_sigma_phi_up = 0;
@@ -282,6 +298,8 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("JER_sf", &JER_sf);
 	tree->SetBranchAddress("JER_sf_up", &JER_sf_up);
 	tree->SetBranchAddress("JER_sf_down", &JER_sf_down);
+	tree->SetBranchAddress("genJetPt", &genJetPt);
+	tree->SetBranchAddress("genJetMatch", &genJetMatch);
 
 	tree->SetBranchAddress("electron_scale_error", &electron_scale_error);
 	tree->SetBranchAddress("electron_smearing_sigma", &electron_smearing_sigma);

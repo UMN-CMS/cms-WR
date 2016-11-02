@@ -40,6 +40,8 @@ private:
 	edm::EDGetToken  JERsf_src;
 	edm::EDGetToken  JERsf_up_src;
 	edm::EDGetToken  JERsf_down_src;
+	edm::EDGetToken  genJetPt_src;
+	edm::EDGetToken  genJetMatch_src;
 
 	edm::EDGetToken  ele_scale_error_src;
 	edm::EDGetToken  ele_smearing_sigma_src;
@@ -73,6 +75,8 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	JERsf_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_src"))),
 	JERsf_up_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_up_src"))),
 	JERsf_down_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("JERsf_down_src"))),
+	genJetPt_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("genJetPt_src"))),
+	genJetMatch_src ( consumes<edm::ValueMap<bool> >(cfg.getParameter<edm::InputTag>("genJetMatch_src"))),
 	ele_scale_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_scale_error_src"))),
 	ele_smearing_sigma_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_src"))),
 	ele_smearing_sigma_phi_up_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("ele_smearing_sigma_phi_up_src"))),
@@ -116,6 +120,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	event.getByToken(JERsf_up_src, JERsf_up);
 	edm::Handle< edm::ValueMap<float> > JERsf_down;
 	event.getByToken(JERsf_down_src, JERsf_down);
+	edm::Handle< edm::ValueMap<float> > genjetPt;
+	event.getByToken(genJetPt_src, genjetPt);
+	edm::Handle< edm::ValueMap<bool> > genjetMatch;
+	event.getByToken(genJetMatch_src, genjetMatch);
 
 	edm::Handle< edm::ValueMap<float> > ele_scale_error;
 	event.getByToken(ele_scale_error_src, ele_scale_error);
@@ -190,6 +198,8 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		myEvent.JER_sf->push_back((*JERsf)[jet]);
 		myEvent.JER_sf_up->push_back((*JERsf_up)[jet]);
 		myEvent.JER_sf_down->push_back((*JERsf_down)[jet]);
+		myEvent.genJetPt->push_back((*genjetPt)[jet]);
+		myEvent.genJetMatch->push_back((*genjetMatch)[jet]);
 	}
 
 	tree->Fill();

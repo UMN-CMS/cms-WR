@@ -57,6 +57,8 @@ public:
 	std::vector<Float_t> * JER_sf;
 	std::vector<Float_t> * JER_sf_up;
 	std::vector<Float_t> * JER_sf_down;
+	std::vector<Float_t> * genJetPt;
+	std::vector<bool> * genJetMatch;
 
 
 	Float_t nPU;
