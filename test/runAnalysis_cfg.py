@@ -33,6 +33,11 @@ options.register('jsonFile',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "path and name of the json file")
+options.register('runHLT',
+                 1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 "")
 
 #default options
 options.maxEvents = -1
@@ -80,9 +85,9 @@ process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.
 
 ### \todo set the global tag in a separate file such that it will be common to all cfg files
 if(options.isMC==0):
-    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v3'
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
 else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2'
 
 
 process.maxEvents = cms.untracked.PSet(
@@ -208,8 +213,12 @@ if (options.isMC==0):
     process.signalHltSequence = cms.Sequence(process.wRHLTFilter_data)
     process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_data)
 else:
-    process.signalHltSequence = cms.Sequence(process.wRHLTFilter_MC)
-    process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_MC)
+    if (options.runHLT==1):
+        process.signalHltSequence = cms.Sequence(process.wRHLTFilter_MC)
+        process.tagAndProbeHLTFilter = cms.Sequence(process.tagAndProbeHLTFilter_MC)
+    else:
+        process.signalHltSequence = cms.Sequence()
+        process.tagAndProbeHLTFilter = cms.Sequence()
 
 process.miniTree_signal_ee   = process.MiniTTree.clone()
 process.miniTree_signal_mumu = process.MiniTTree.clone()
