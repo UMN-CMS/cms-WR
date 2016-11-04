@@ -22,8 +22,8 @@
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
-Selector::tag_t channel = Selector::MuMu;
-//Selector::tag_t channel = Selector::EE;
+//Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 //Selector::tag_t channel = Selector::EMu;
 
 
@@ -40,12 +40,12 @@ void miniPlotter(){
   
   switch (channel) {
   case Selector::EE:
-    chain_DY->Add("../selected_tree_DYEE_lowdileptonsideband0.root");
-    chain_ttbar->Add("../selected_tree_ttbar_lowdileptonsideband0.root"); // 0 - Electrons
-    chain_WJets->Add("../selected_tree_WJets_lowdileptonsideband0.root");
-    chain_WZ->Add("../selected_tree_WZ_lowdileptonsideband0.root");
-    chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsideband0.root");
-    chain_data->Add("../selected_tree_data_EE_lowdileptonsideband0.root");
+    chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEE.root");
+    chain_ttbar->Add("../selected_tree_TT_lowdileptonsidebandEE.root"); // 1 - Muons
+    //chain_WJets->Add("../selected_tree_WJets_lowdileptonsideband1.root");
+    //chain_WZ->Add("../selected_tree_WZ_lowdileptonsideband1.root");
+    //chain_ZZ->Add("../selected_tree_ZZ_lowdileptonsideband1.root");
+    chain_data->Add("../selected_tree_data_lowdileptonsidebandEE.root");
     break;
   case Selector::MuMu:
     chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandMuMu.root");
@@ -56,12 +56,12 @@ void miniPlotter(){
     chain_data->Add("../selected_tree_data_lowdileptonsidebandMuMu.root");
     break;
   case Selector::EMu:
-    chain_DY->Add("../selected_tree_DYMuMu_flavoursideband2.root");
-    chain_ttbar->Add("../selected_tree_ttbar_flavoursideband2.root");
-    chain_WJets->Add("../selected_tree_WJets_flavoursideband2.root");
-    chain_WZ->Add("../selected_tree_WZ_flavoursideband2.root");
-    chain_ZZ->Add("../selected_tree_ZZ_flavoursideband2.root");
-    chain_data->Add("../selected_tree_data_EMu_flavoursideband2.root");
+    chain_DY->Add("../selected_tree_DYAMC_flavoursidebandEMu.root");
+    chain_ttbar->Add("../selected_tree_TT_flavoursidebandEMu.root");
+    //chain_WJets->Add("../selected_tree_WJets_flavoursideband2.root");
+    //chain_WZ->Add("../selected_tree_WZ_flavoursideband2.root");
+    //chain_ZZ->Add("../selected_tree_ZZ_flavoursideband2.root");
+    chain_data->Add("../selected_tree_data_flavoursidebandEMu.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;

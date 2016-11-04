@@ -58,7 +58,7 @@ double NormalizedIntegral(RooAbsPdf * function, RooRealVar& integrationVar, doub
   return normalizedIntegralValue;
 }
 
-std::map<float, double> PUreweight(std::string PileupDataFilename)
+std::map<float, double> PUreweight(TString PileupDataFilename)
 {
   TFile data(PileupDataFilename);
   TFile mc("MCPileup.root");
