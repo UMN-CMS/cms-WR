@@ -56,7 +56,7 @@ SingleTop_tinc	/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/R
 #	##################################
 WRtoEEJJ_800_400	/WR-ToLNu-ToEEJJ_GEN_SIM_13TeV-2016/gnegro-WR-800_ToLNu-400_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-
 WRtoEEJJ_1600_800	/WR-ToLNu-ToEEJJ_GEN_SIM_13TeV-2016/gnegro-WR-1600_ToLNu-800_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-
-WRtoEEJJ_2400_1200	/WR-ToLNu-ToEEJJ_GEN_SIM_13TeV-2016/gnegro-WR-2400_ToLNu-1200_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-
+WRtoEEJJ_2400_1200	/WR-ToLNu_GEN_SIM_13TeV-2016/gnegro-WR-2400_ToLNu-1200_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-
 WRtoEEJJ_3200_1600	/WR-ToLNu-ToEEJJ_GEN_SIM_13TeV-2016/gnegro-WR-3200_ToLNu-1600_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-
 WRtoEEJJ_4000_2000	/WR-ToLNu-ToEEJJ_GEN_SIM_13TeV-2016/gnegro-WR-4000_ToLNu-2000_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-
 WRtoEEJJ_6000_3000	/WR-ToLNu-ToEEJJ_GEN_SIM_13TeV-2016/gnegro-WR-6000_ToLNu-3000_ToEEJJ_miniAOD_13TeV-2016-b59cb78551aff289588aa5c69db4a3a1/USER	5.915e+03	3.414e+01	15000	root://eoscms//eos/cms/store//user/	-

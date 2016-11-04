@@ -30,14 +30,10 @@ for line in f:
         datasets.append(line.split('\t')[1])
 
 json = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON.txt'
-h = str(int(time.time()))
+
 for d,dt in zip(datasets,datasetTags):
-    if "WRto" not in dt:
-        continue
-    #config.Data.unitsPerJob = 1 #tmp
-    #config.Data.totalUnits = 1 #tmp
     config_tmp = config
-    config_tmp.General.requestName = 'runAnalysis_80X_' + dt + '_' + h
+    config_tmp.General.requestName = 'runAnalysis_80X_' + dt
     config_tmp.Data.inputDataset = d
     config_tmp.Data.outLFNDirBase = '/store/user/jchavesb/runAnalysis_80X_'+dt
     if 'Run2016' in d:
@@ -50,3 +46,5 @@ for d,dt in zip(datasets,datasetTags):
     if '/USER' in d:
         config.Data.inputDBS = 'phys03'
     crabCommand('submit', config=config_tmp)
+    config_tmp = 0
+
