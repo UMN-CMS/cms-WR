@@ -27,6 +27,7 @@
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
 #include "ToyThrower.h"
+#include "JetResolution.h"
 #include "analysisTools.h"
 #include "configReader.h"
 
@@ -285,7 +286,7 @@ int main(int ac, char* av[])
 
 	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
-	std::string dataPUfn = "MyDataSingleMuonPileupHistogram.root";
+	TString dataPUfn = "MyDataSingleMuonPileupHistogram.root";
 	std::map<float, double> pu_weights = PUreweight(dataPUfn);
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
@@ -401,6 +402,10 @@ int main(int ac, char* av[])
 			std::cout << "the number of reco electrons in the event =\t" << nEle << std::endl;
 #endif
 
+			//apply JER
+			Rand.SetSeed(seed + 1);
+			JetResolution( &myEvent, Rand, isData);
+
 			if(nEle > 0) {
 				///if there are electrons in the event, then write the electron SF and SF errors into the miniTreeEvent object named myEvent
 				///before calling the Selector constructor
@@ -459,16 +464,19 @@ int main(int ac, char* av[])
 
 		for(int i = 0; i < nToys + 1; ++i, ++seed_i) {
 
-			Rand.SetSeed(seed_i);
+			Rand.SetSeed(seed_i);			
+
 			//for central values, we take the central value of Mu ID/ISO efficiencies and dont smear for JES systematics
-			// Roch and Electron scales are smeared with a pre-defined seed(1), to give conistent results.
+			// Roch and Electron scales are smeared with a pre-defined seed(1), to give consistent results.
 			if(loop_one) {
 				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
-				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Electron Scale(Data)
-				Random_Numbers_for_Systematics_Up_Down[3] = 0.; //Electron Smear(MC)
-				Random_Numbers_for_Systematics_Up_Down[4] = 0.;//JES
-				Random_Numbers_for_Systematics_Up_Down[5] = 0.;//Mu Res
+				Random_Numbers_for_Systematics_Up_Down[2] = 0.;//Mu Res
+				Random_Numbers_for_Systematics_Up_Down[3] = 0.; //Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[4] = 0.; //Electron Smear(MC)
+				Random_Numbers_for_Systematics_Up_Down[5] = 0.;//JES
+				Random_Numbers_for_Systematics_Up_Down[6] = 0.;//JER
+
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
