@@ -11,7 +11,7 @@ DoubleEG_RunG	/DoubleEG/Run2016G-23Sep2016-v1/MINIAOD	-	-	78797031	root://eoscms
 SingleMu_RunB_v1	/SingleMuon/Run2016B-23Sep2016-v1/MINIAOD	-	-	2789243	root://eoscms//eos/cms/store//user/	-
 SingleMu_RunB_v3	/SingleMuon/Run2016B-23Sep2016-v3/MINIAOD	-	-	158145722	root://eoscms//eos/cms/store//user/	-
 SingleMu_RunC	/SingleMuon/Run2016C-23Sep2016-v1/MINIAOD	-	-	67441308	root://eoscms//eos/cms/store//user/	-
-SingleMu_RunD	/SingleMuon/Run2016C-23Sep2016-v1/MINIAOD	-	-	98017996	root://eoscms//eos/cms/store//user/	-
+SingleMu_RunD	/SingleMuon/Run2016D-23Sep2016-v1/MINIAOD	-	-	98017996	root://eoscms//eos/cms/store//user/	-
 SingleMu_RunE	/SingleMuon/Run2016E-23Sep2016-v1/MINIAOD	-	-	90984718	root://eoscms//eos/cms/store//user/	-
 SingleMu_RunF	/SingleMuon/Run2016F-23Sep2016-v1/MINIAOD	-	-	65489554	root://eoscms//eos/cms/store//user/	-
 SingleMu_RunG	/SingleMuon/Run2016G-23Sep2016-v1/MINIAOD	-	-	149916849	root://eoscms//eos/cms/store//user/	-
