@@ -13,5 +13,5 @@ lumi       lnN        1.0270e+00 1.0270e+00 1.0270e+00
 TT_SF      lnN                 - 1.0149e+00          -
 DYAMC_SF   lnN                 -          - 1.0106e+00
 signal_unc gmN   2260 7.0326e-04          -          -
-TT_unc     gmN      0          - 6.5346e-01          -
-DYAMC_unc  gmN      0          -          - 2.8201e-01
+TT_unc     gmN      0          - 6.5352e-01          -
+DYAMC_unc  gmN      0          -          - 1.6698e+00
