@@ -1,6 +1,8 @@
 import ExoAnalysis.cmsWR.combineTools as combineTools
+from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
 
 import argparse
+import ROOT
 
 
 def getRange(hist, perc):
@@ -29,19 +31,40 @@ parser.add_argument('-t', '--tag', dest='tag',
 
 args = parser.parse_args()
 
-minitrees = combineTools.miniTreeInterface(
+minitrees = combineTools.AnalysisResultsInterface(
 			base=args.basedir,
 			tag =args.tag,
 			)
 
+customROOTstyle()
+c = ROOT.TCanvas("c","c",600,600)
+c.SetLeftMargin(.2)
+c.SetRightMargin(.05)
+ROOT.gStyle.SetOptTitle(0)
+ROOT.gStyle.SetTitleYOffset(1.5)
+
 for channel in ["ee", "mumu"]:
-	for mass in combineTools.mass_cut:
+	for mass in combineTools.mass_cut[channel]:
 		try:
 			h = minitrees.getMassHisto(mass, channel, "signal")
-			for p in [.7, .8, .9]:
+			for p in [.9]:
+			#for p in [.7, .8, .9]:
 				low, hi, a_p = getRange(h, p)
 				print channel, p, '%04d' % mass, low, hi, a_p
-		except:
+			h.SetXTitle("M_{lljj} [GeV]")
+			h.SetYTitle("Events/(10 GeV)")
+			h.Draw()
+			hc = h.Clone()
+			for ibin in xrange(1, h.GetNbinsX() + 1):
+				if hc.GetBinCenter(ibin) < low or hc.GetBinCenter(ibin) > hi:
+					hc.SetBinContent(ibin, 0)
+			hc.SetFillColor(ROOT.kRed)
+			hc.SetLineWidth(0)
+			hc.Draw("same")
+			c.SaveAs("plots/mass_cut_%s_%d.png" % (channel , mass))
+
+		except Exception as e:
+			print e
 			pass
 
 

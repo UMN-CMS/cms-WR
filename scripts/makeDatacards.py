@@ -60,8 +60,9 @@ for channel in ["ee", "mumu"]:
 
 			if args.nosyst: systematics = None
 			systematics_list.append(systematics)
-		except (IOError,KeyError) as e:
+		except (IOError,KeyError,TypeError) as e:
 			print mass, "not found"
+			print e
 
 	bg_names = ["TTBar", "DY"]
 
