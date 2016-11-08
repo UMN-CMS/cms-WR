@@ -41,8 +41,9 @@ using namespace std;
 //#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
 //#define nMinusOneCutEffsGenAndReco
-#define studyGenWrKinematicsVsWrAndNuMasses
+//#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
+#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
@@ -2126,11 +2127,11 @@ void macroSandBox(){
 
 		/*
 		TString baseGenMatchedCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<8 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<8 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<8 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<8";
-		TString genMatchedEtaCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<2.5 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<2.5 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<2.5 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<2.5";
+		TString genMatchedEtaCutString = "TMath::Abs(etaGenLeptFromFstHvyPtcl)<2.4 && TMath::Abs(etaGenLeptFromScdHvyPtcl)<2.4 && TMath::Abs(etaGenQuarkOneFromScdHvyPtcl)<2.4 && TMath::Abs(etaGenQuarkTwoFromScdHvyPtcl)<2.4";
 		TString genMatchedPtCutString = "ptGenLeptFromFstHvyPtcl>40 && ptGenLeptFromScdHvyPtcl>40 && ptGenQuarkOneFromScdHvyPtcl>40 && ptGenQuarkTwoFromScdHvyPtcl>40";
 		
 		TString baseGenLeadingCutString = "TMath::Abs(etaLeadGenLepton)<8 && TMath::Abs(etaSubleadGenLepton)<8 && TMath::Abs(etaLeadGenQuark)<8 && TMath::Abs(etaSubleadGenQuark)<8";
-		TString genLeadingEtaCutString = "TMath::Abs(etaLeadGenLepton)<2.5 && TMath::Abs(etaSubleadGenLepton)<2.5 && TMath::Abs(etaLeadGenQuark)<2.5 && TMath::Abs(etaSubleadGenQuark)<2.5";
+		TString genLeadingEtaCutString = "TMath::Abs(etaLeadGenLepton)<2.4 && TMath::Abs(etaSubleadGenLepton)<2.4 && TMath::Abs(etaLeadGenQuark)<2.4 && TMath::Abs(etaSubleadGenQuark)<2.4";
 		TString genLeadingPtCutString = "ptLeadGenLepton>40 && ptSubleadGenLepton>40 && ptLeadGenQuark>40 && ptSubleadGenQuark>40";
 
 		//genMatchedPtEtaEff[i] = (100)*(calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenMatchedCutString, genMatchedEtaCutString+" && "+genMatchedPtCutString));
@@ -2155,6 +2156,61 @@ void macroSandBox(){
 
 #endif
 	//end genAndRecoWrPlotsMinimalCuts
+
+
+// /afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/8TeV/analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_2200_NU_1100_1.root	
+#ifdef privateGenEff
+	//use this ifdef to calculate the fraction of GEN evts in which the GEN WR daughter leptons and quarks pass a certain cut
+	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
+	//string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
+	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/8TeV/";
+	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
+	string fileEnd = "_1.root";
+	string fileMiddle = "_NU_";
+	string genCutEffVsMassFile = "genCutEfficienciesVsMasses.txt";
+	ofstream writeToGenEfficiencyFile(genCutEffVsMassFile.c_str(),ofstream::trunc);
+	gStyle->SetTitleOffset(1.4,"Y");
+	Int_t nBins = 7;
+	Float_t wrMassVals[nBins], genMatchedEtaEff[nBins];
+	gStyle->SetOptStat("");
+
+	int wrMassArr[] = {1000,2000,2200,2400,2600,2800,3000};
+
+	string stdPlotTitle = "CMS Private                      #surds = 13 TeV";
+	
+	for(int i=0; i<nBins ; i++){
+		///loop over WR mass values
+		
+		///define input root file name and add a Float_t to the x axis array used for later TGraph objects
+		string pfn = dir+fileBegin+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2)+fileEnd;
+		wrMassVals[i] = (Float_t) wrMassArr[i];
+		string plotDir = "plotHolder/noCutsGenAndRecoWr_private_MWR-"+to_string(wrMassArr[i])+fileMiddle+to_string(wrMassArr[i]/2);
+
+		//as long as the tree comes from genMatchedParticleAnalyzerOne or a later module defined in checkWRDecay_crabSafe_cfg.py, a cut which
+		//requires the presence of two GEN leptons and quarks whose mothers are the WR and Nu is not needed
+		TChain * wrChain = new TChain("genMatchedParticleAnalyzerOne/genLeptonsAndJetsNoCuts", (to_string(wrMassArr[i]) ).c_str() );
+		wrChain->Add(pfn.c_str());
+		
+		TString baseGenMatchedCutString = "";
+		TString genMatchedEtaCutString = "TMath::Abs(etaEle[0])<2.4 && TMath::Abs(etaEle[1])<2.4 && TMath::Abs(etaJet[0])<2.4 && TMath::Abs(etaJet[1])<2.4";
+	
+		Float_t eff = -1., effUnc = 0.;
+		calculateEfficiencyWithOneChain(wrChain,"evWeight", baseGenMatchedCutString, genMatchedEtaCutString, effUnc, eff);
+		genMatchedEtaEff[i] = 100*eff;
+
+		writeToGenEfficiencyFile << genMatchedEtaEff[i] <<"\tpercent of events with WR mass=\t"<< wrMassArr[i] <<"\tand Nu mass=\t"<< wrMassArr[i]/2 <<"\tpass the requirement that the gen leptons and quarks from WR and Nu decays have |eta| < 2.4"<< endl;
+		writeToGenEfficiencyFile <<" "<< endl;
+
+		wrChain->Delete();
+
+	}///end loop over WR mass values	
+
+	///close txt file
+	writeToGenEfficiencyFile.close();
+
+#endif
+	//end privateGenEff
+
 
 
 #ifdef nMinusOneCutEffsGenAndReco

@@ -20,7 +20,8 @@
 #include <cstdio>
 #include <memory>
 
-#define doNarrowMlljj
+//#define doNarrowMlljj
+#define doNarrowLeadLeptEta
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -115,6 +116,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	nBins = 15;	///use coarse binning when making data MC comparisons in narrow MLLJJ window
 #endif
 
+#ifdef doNarrowLeadLeptEta
+	nBins = 5;
+#endif
+
   TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nBins,0,700);
   TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nBins,-3,3);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nBins,-3.15,3.15);
@@ -129,14 +134,16 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nBins,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nBins,-3.15,3.15);
 
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,200,2500);
- 
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,200,2500);
+
+  /* 
   //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
   Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
   
   ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  */
  
   float dilepton_max = 250.;
   if(channel == Selector::EMu)
@@ -144,15 +151,30 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nBins,50,dilepton_max);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
-  //"nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta"
-  
+  TH1F *h_lead_lept_lead_jet_dr = new TH1F("h_lead_lept_lead_jet_dr","",nBins,-5,5);
+  TH1F *h_lead_lept_sublead_jet_dr = new TH1F("h_lead_lept_sublead_jet_dr","",nBins,-5,5);
+  TH1F *h_sublead_lept_lead_jet_dr = new TH1F("h_sublead_lept_lead_jet_dr","",nBins,-5,5);
+  TH1F *h_sublead_lept_sublead_jet_dr = new TH1F("h_sublead_lept_sublead_jet_dr","",nBins,-5,5);
+  TH1F *h_lead_lept_sublead_lept_dr = new TH1F("h_lead_lept_sublead_lept_dr","",nBins,-5,5);
+
+  TH1F *h_lead_lept_lead_jet_dphi = new TH1F("h_lead_lept_lead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_lead_lept_sublead_jet_dphi = new TH1F("h_lead_lept_sublead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_sublead_lept_lead_jet_dphi = new TH1F("h_sublead_lept_lead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_sublead_lept_sublead_jet_dphi = new TH1F("h_sublead_lept_sublead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_lead_lept_sublead_lept_dphi = new TH1F("h_lead_lept_sublead_lept_dphi","",nBins,-6.5,6.5);
+
+  TH1F *h_lead_lept_lead_jet_deta = new TH1F("h_lead_lept_lead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_lead_lept_sublead_jet_deta = new TH1F("h_lead_lept_sublead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_sublead_lept_lead_jet_deta = new TH1F("h_sublead_lept_lead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_sublead_lept_sublead_jet_deta = new TH1F("h_sublead_lept_sublead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_lead_lept_sublead_lept_deta = new TH1F("h_lead_lept_sublead_lept_deta","",nBins,-5.5,5.5);
+
   TH1F *h_muon_pt = new TH1F("h_muon_pt","",nBins,0,700);
   TH1F *h_muon_eta = new TH1F("h_muon_eta","",nBins,-3,3);
   TH1F *h_muon_phi = new TH1F("h_muon_phi","",nBins,-3.15,3.15);
   TH1F *h_ele_pt = new TH1F("h_ele_pt","",nBins,0,700);
   TH1F *h_ele_eta = new TH1F("h_ele_eta","",nBins,-3,3);
   TH1F *h_ele_phi = new TH1F("h_ele_phi","",nBins,-3.15,3.15);
-
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -171,6 +193,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	if(myEvent->WR_mass < 1350. || myEvent->WR_mass > 1510.) continue;
 #endif
 
+#ifdef doNarrowLeadLeptEta
+	if(myEvent->WR_mass < 1350. || myEvent->WR_mass > 1510.) continue;
+	if(myEvent->lead_lepton_eta < 0. || myEvent->lead_lepton_eta > 1.) continue;
+#endif
+
+
 	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
 	h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
 	h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
@@ -188,6 +216,31 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
     h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
+
+	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, leadJetFourMom, subleadJetFourMom;
+	leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
+	subleadLeptonFourMom.SetPtEtaPhiE(myEvent->sublead_lepton_pt, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi, myEvent->sublead_lepton_pt);
+	//E set here for jets should be updated, but doesn't affect dR deta and dphi
+	leadJetFourMom.SetPtEtaPhiE(myEvent->lead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->lead_jet_pt);
+	subleadJetFourMom.SetPtEtaPhiE(myEvent->sublead_jet_pt, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->sublead_jet_pt);
+	
+	h_lead_lept_sublead_lept_dr->Fill(leadLeptonFourMom.DeltaR(subleadLeptonFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_lead_jet_dr->Fill(myEvent->dR_leadlepton_leadjet,(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_sublead_jet_dr->Fill(myEvent->dR_leadlepton_subleadjet,(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_lead_jet_dr->Fill(myEvent->dR_subleadlepton_leadjet,(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_sublead_jet_dr->Fill(myEvent->dR_subleadlepton_subleadjet,(myEvent->weight)*ttScaleFactor);
+
+	h_lead_lept_sublead_lept_dphi->Fill(leadLeptonFourMom.DeltaPhi(subleadLeptonFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_lead_jet_dphi->Fill(leadLeptonFourMom.DeltaPhi(leadJetFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_sublead_jet_dphi->Fill(leadLeptonFourMom.DeltaPhi(subleadJetFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_lead_jet_dphi->Fill(subleadLeptonFourMom.DeltaPhi(leadJetFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_sublead_jet_dphi->Fill(subleadLeptonFourMom.DeltaPhi(subleadJetFourMom),(myEvent->weight)*ttScaleFactor);
+
+	h_lead_lept_sublead_lept_deta->Fill(myEvent->lead_lepton_eta - myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_lead_jet_deta->Fill(myEvent->lead_lepton_eta - myEvent->lead_jet_eta,(myEvent->weight)*ttScaleFactor);
+   	h_lead_lept_sublead_jet_deta->Fill(myEvent->lead_lepton_eta - myEvent->sublead_jet_eta,(myEvent->weight)*ttScaleFactor);
+   	h_sublead_lept_lead_jet_deta->Fill(myEvent->sublead_lepton_eta - myEvent->lead_jet_eta,(myEvent->weight)*ttScaleFactor);
+   	h_sublead_lept_sublead_jet_deta->Fill(myEvent->sublead_lepton_eta - myEvent->sublead_jet_eta,(myEvent->weight)*ttScaleFactor);
 
 	if(myEvent->lead_lepton_r9 == -1){
 		h_muon_pt->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -224,10 +277,29 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
-
-  //"nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta","mu_eta","mu_phi","mu_pt","ele_eta","ele_phi","ele_pt"
- 
-  /**/
+  hs->push_back(h_lead_lept_lead_jet_dr);
+  hs->push_back(h_lead_lept_sublead_jet_dr);
+  hs->push_back(h_sublead_lept_lead_jet_dr);
+  hs->push_back(h_sublead_lept_sublead_jet_dr);
+  hs->push_back(h_lead_lept_sublead_lept_dr);
+  hs->push_back(h_lead_lept_lead_jet_dphi);
+  hs->push_back(h_lead_lept_sublead_jet_dphi);
+  hs->push_back(h_sublead_lept_lead_jet_dphi);
+  hs->push_back(h_sublead_lept_sublead_jet_dphi);
+  hs->push_back(h_lead_lept_sublead_lept_dphi);
+  hs->push_back(h_lead_lept_lead_jet_deta);
+  hs->push_back(h_lead_lept_sublead_jet_deta);
+  hs->push_back(h_sublead_lept_lead_jet_deta);
+  hs->push_back(h_sublead_lept_sublead_jet_deta);
+  hs->push_back(h_lead_lept_sublead_lept_deta);
+  hs->push_back(h_muon_eta);
+  hs->push_back(h_muon_phi);
+  hs->push_back(h_muon_pt);
+  hs->push_back(h_ele_eta);
+  hs->push_back(h_ele_phi);
+  hs->push_back(h_ele_pt);
+	
+  /*
   //normalize histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -243,8 +315,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
-
- /**/ 
+  */ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
@@ -301,8 +372,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
 #ifdef doNarrowMlljj
-	th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+	th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
 #endif
+
+#ifdef doNarrowLeadLeptEta
+	th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
+#endif
+
 
   Float_t labelSize = 0.25;
   ratio->GetXaxis()->SetTitle(xtitle.Data());
@@ -352,17 +428,21 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
   TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
 #ifdef doNarrowMlljj
-	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjWindow";
+	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjWindowFixedBinWidth";
+#endif
+
+#ifdef doNarrowLeadLeptEta
+	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjAndLeadLeptEtaFixedBinWidth";
 #endif
 
 
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_eta") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_eta")){
+  //if(fname.EqualTo("Mll") || fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_eta") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_eta") || ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  p1->SetLogy();
 	  mycanvas->Print((fn+"_log.pdf").Data());
 	  mycanvas->Print((fn+"_log.png").Data());
-  }
+  //}
 
   mycanvas->Close();
 }

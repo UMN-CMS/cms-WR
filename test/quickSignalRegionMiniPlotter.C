@@ -41,7 +41,7 @@ void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
 void quickSignalRegionMiniPlotter(){
 
-  TChain * chain_DY = new TChain("Tree_Iter0","DY");
+  TChain * chain_DY = new TChain("Tree_Iter0","DYMC");
   //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
@@ -134,7 +134,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,500,3200);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,500,4000);
  
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,150,1600);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
@@ -144,36 +144,40 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   cout<< nEntries << endl;
 
   TString chainTitle(chain->GetTitle());
-  Float_t ttScaleFactor = 1.0;
+  Float_t scaleFactor = 1.0;
   if( chainTitle.EqualTo("TTMC") ){
-	  ttScaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
+	  scaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
   }
   if( chainTitle.EqualTo("TTData") ){
-	  ttScaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
+	  scaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
   }
+  if( chainTitle.EqualTo("DYMC") ){
+	  scaleFactor = (channel == Selector::MuMu) ? 0.9643 : 0.9558;	//to account for slightly higher number of DY MC events relative to data evts
+  }
+ 
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
 	if(myEvent->WR_mass < 600.) continue;
 	if(myEvent->dilepton_mass < 200.) continue;
 
-	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
-    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
-    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
-    h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
-    h_lepton_phi0->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
-    h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*scaleFactor);
+    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*scaleFactor);
+    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*scaleFactor);
+    h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*scaleFactor);
+    h_lepton_phi0->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*scaleFactor);
+    h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*scaleFactor);
 
-    h_jet_pt0->Fill(myEvent->lead_jet_pt,(myEvent->weight)*ttScaleFactor);
-    h_jet_pt1->Fill(myEvent->sublead_jet_pt,(myEvent->weight)*ttScaleFactor);
-    h_jet_eta0->Fill(myEvent->lead_jet_eta,(myEvent->weight)*ttScaleFactor);
-    h_jet_eta1->Fill(myEvent->sublead_jet_eta,(myEvent->weight)*ttScaleFactor);
-    h_jet_phi0->Fill(myEvent->lead_jet_phi,(myEvent->weight)*ttScaleFactor);
-    h_jet_phi1->Fill(myEvent->sublead_jet_phi,(myEvent->weight)*ttScaleFactor);
+    h_jet_pt0->Fill(myEvent->lead_jet_pt,(myEvent->weight)*scaleFactor);
+    h_jet_pt1->Fill(myEvent->sublead_jet_pt,(myEvent->weight)*scaleFactor);
+    h_jet_eta0->Fill(myEvent->lead_jet_eta,(myEvent->weight)*scaleFactor);
+    h_jet_eta1->Fill(myEvent->sublead_jet_eta,(myEvent->weight)*scaleFactor);
+    h_jet_phi0->Fill(myEvent->lead_jet_phi,(myEvent->weight)*scaleFactor);
+    h_jet_phi1->Fill(myEvent->sublead_jet_phi,(myEvent->weight)*scaleFactor);
       
-    h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
-    h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
-    h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
+    h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*scaleFactor);
+    h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*scaleFactor);
+    h_nPV->Fill(myEvent->nPV,(myEvent->weight)*scaleFactor);
   }
 
   hs->push_back(h_lepton_pt0);
@@ -202,8 +206,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
-  leg->AddEntry( hs_data, "W_{R} Signal","l");
-  leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{NuR}=1.1 TeV","");
+  //leg->AddEntry( hs_data, "W_{R} Signal","l");
+  //leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{NuR}=1.1 TeV","");
   leg->SetFillColor( kWhite ) ; 
 
   hs_data->Sumw2();
@@ -243,15 +247,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   th->Draw("histo");
-  hs_data->Draw("histo same");
-  th->Draw("histo same");
-  TString ytitle = "Events/(";
-  ytitle += (th->GetXaxis()->GetNbins());
-  ytitle += ")";
+  //hs_data->Draw("histo same");
+  //th->Draw("histo same");
+  //TString ytitle = "Events/(";
+  //ytitle += (th->GetXaxis()->GetNbins());
+  //ytitle += ")";
+  TString ytitle = "Events";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
-  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
