@@ -21,7 +21,7 @@
 #include <memory>
 
 //#define doNarrowMlljj
-#define doNarrowLeadLeptEta
+//#define doNarrowLeadLeptEta
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -57,7 +57,7 @@ void quickEMuMiniPlotter(){
     wjets = chain_WJets->Add(localDir+"selected_tree_W_flavoursidebandEMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
-    data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+    data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -134,16 +134,16 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nBins,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nBins,-3.15,3.15);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,200,2500);
+  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
 
-  /* 
+  /**/
   //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
   Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
   
   ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
-  */
+  /**/
  
   float dilepton_max = 250.;
   if(channel == Selector::EMu)
@@ -299,7 +299,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_ele_phi);
   hs->push_back(h_ele_pt);
 	
-  /*
+  /**/
   //normalize histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -315,7 +315,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
-  */ 
+  /**/ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
@@ -370,7 +370,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
+  //for variable size bins normalized to bin width
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+  //if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
+
+
 #ifdef doNarrowMlljj
 	th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
 #endif
@@ -408,6 +412,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   	  std::cout<<"bin number\t"<< 6 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(6) <<" and bin error =\t"<< hs_ttbar->GetBinError(6) << std::endl;
 	  std::cout<<"bin number\t"<< 7 <<"has data bin contents=\t" << hs_data->GetBinContent(7) <<" and bin error =\t"<< hs_data->GetBinError(7) << std::endl;
   	  std::cout<<"bin number\t"<< 7 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(7) <<" and bin error =\t"<< hs_ttbar->GetBinError(7) << std::endl;
+
+	  //print actual number of evts in each bin, along with bin lower edge
+	  Int_t lowBin = 15, centBin = 16, highBin = 17;
+	  std::cout<<"bin num\t"<< lowBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(lowBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(lowBin))*(hs_ttbar->GetBinWidth(lowBin)) <<" +/- "<< (hs_ttbar->GetBinError(lowBin))*(hs_ttbar->GetBinWidth(lowBin)) <<" MC events" <<std::endl;
+	  std::cout<<"bin num\t"<< lowBin <<"\thas\t"<< hs_data->GetBinLowEdge(lowBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(lowBin))*(hs_data->GetBinWidth(lowBin)) <<" +/- "<< (hs_data->GetBinError(lowBin))*(hs_data->GetBinWidth(lowBin)) <<" data events" <<std::endl;
+	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" +/- "<< (hs_ttbar->GetBinError(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" MC events" <<std::endl;
+	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_data->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<" +/- "<< (hs_data->GetBinError(centBin))*(hs_data->GetBinWidth(centBin)) <<" data events" <<std::endl;
+	  std::cout<<"bin num\t"<< highBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(highBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(highBin))*(hs_ttbar->GetBinWidth(highBin)) <<" +/- "<< (hs_ttbar->GetBinError(highBin))*(hs_ttbar->GetBinWidth(highBin)) <<" MC events" <<std::endl;
+	  std::cout<<"bin num\t"<< highBin <<"\thas\t"<< hs_data->GetBinLowEdge(highBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(highBin))*(hs_data->GetBinWidth(highBin)) <<" +/- "<< (hs_data->GetBinError(highBin))*(hs_data->GetBinWidth(highBin)) <<" data events" <<std::endl;
+	
   }
 
   ratio->Divide(hs_ttbar);
