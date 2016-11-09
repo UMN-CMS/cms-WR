@@ -28,6 +28,7 @@
 #endif
 
 Selector::tag_t channel = Selector::EMu;
+Float_t mcUnweightedEntriesInExcessBin=0;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -198,6 +199,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	if(myEvent->lead_lepton_eta < 0. || myEvent->lead_lepton_eta > 1.) continue;
 #endif
 
+	if(myEvent->WR_mass >= 1350 && myEvent->WR_mass < 1510 && !(chainTitle.EqualTo("Data")) ) mcUnweightedEntriesInExcessBin++;
 
 	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
 	h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -413,14 +415,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  std::cout<<"bin number\t"<< 7 <<"has data bin contents=\t" << hs_data->GetBinContent(7) <<" and bin error =\t"<< hs_data->GetBinError(7) << std::endl;
   	  std::cout<<"bin number\t"<< 7 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(7) <<" and bin error =\t"<< hs_ttbar->GetBinError(7) << std::endl;
 
-	  //print actual number of evts in each bin, along with bin lower edge
-	  Int_t lowBin = 15, centBin = 16, highBin = 17;
-	  std::cout<<"bin num\t"<< lowBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(lowBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(lowBin))*(hs_ttbar->GetBinWidth(lowBin)) <<" +/- "<< (hs_ttbar->GetBinError(lowBin))*(hs_ttbar->GetBinWidth(lowBin)) <<" MC events" <<std::endl;
-	  std::cout<<"bin num\t"<< lowBin <<"\thas\t"<< hs_data->GetBinLowEdge(lowBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(lowBin))*(hs_data->GetBinWidth(lowBin)) <<" +/- "<< (hs_data->GetBinError(lowBin))*(hs_data->GetBinWidth(lowBin)) <<" data events" <<std::endl;
-	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" +/- "<< (hs_ttbar->GetBinError(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" MC events" <<std::endl;
-	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_data->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<" +/- "<< (hs_data->GetBinError(centBin))*(hs_data->GetBinWidth(centBin)) <<" data events" <<std::endl;
-	  std::cout<<"bin num\t"<< highBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(highBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(highBin))*(hs_ttbar->GetBinWidth(highBin)) <<" +/- "<< (hs_ttbar->GetBinError(highBin))*(hs_ttbar->GetBinWidth(highBin)) <<" MC events" <<std::endl;
-	  std::cout<<"bin num\t"<< highBin <<"\thas\t"<< hs_data->GetBinLowEdge(highBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(highBin))*(hs_data->GetBinWidth(highBin)) <<" +/- "<< (hs_data->GetBinError(highBin))*(hs_data->GetBinWidth(highBin)) <<" data events" <<std::endl;
+	  //print actual number of evts in each bin, raw unweighted events, and bin lower edge
+	  Int_t centBin = 16;
+	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" +/- "<< (hs_ttbar->GetBinError(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" MC events\t" <<"and unweighted entries=\t" << mcUnweightedEntriesInExcessBin <<std::endl;
+	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_data->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<" +/- "<< (hs_data->GetBinError(centBin))*(hs_data->GetBinWidth(centBin)) <<" data events\t" <<"and unweighted entries=\t" << (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<std::endl;
 	
   }
 
