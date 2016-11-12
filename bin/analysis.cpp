@@ -45,6 +45,7 @@ DY TANDP POWHEG AMC MAD POWINCL
 W
 WZ
 ZZ
+WW
 data TANDP
 */
 
@@ -58,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
+	{"TT", "W", "WZ", "ZZ", "WW", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
 	}
 	)
 	{
@@ -93,16 +94,19 @@ public:
 			if(mode.find("AMC") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
-			} else if(mode.find("MAD") != _ENDSTRING) {
-				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
-				TTchainNames.push_back("DYJets_madgraph");
+			// } else if(mode.find("MAD") != _ENDSTRING) {
+			// 	//madgraph inclusive sample gen dilepton mass greater than 50 GeV
+			// 	TTchainNames.push_back("DYJets_madgraph");
 			} else if(mode.find("POWINCL") != _ENDSTRING && channel == Selector::EE) {
 				TTchainNames.push_back("DYToEE_powheg");
 			} else if(mode.find("MADHT") != _ENDSTRING) {
-				TTchainNames.push_back("DYJets_madgraph_ht100to200");
-				TTchainNames.push_back("DYJets_madgraph_ht200to400");
-				TTchainNames.push_back("DYJets_madgraph_ht400to600");
-				TTchainNames.push_back("DYJets_madgraph_ht600toInf");
+				TTchainNames.push_back("DYJets_HT_100to200");
+				TTchainNames.push_back("DYJets_HT_200to400");
+				TTchainNames.push_back("DYJets_HT_400to600");
+				TTchainNames.push_back("DYJets_HT_600to800");
+				TTchainNames.push_back("DYJets_HT_800to1200");
+				TTchainNames.push_back("DYJets_HT_1200to2500");
+				TTchainNames.push_back("DYJets_HT_2500toInf");
 			}
 		} else if(mode == "W") {
 			TTchainNames.push_back("WJetsLNu");
@@ -110,15 +114,17 @@ public:
 			TTchainNames.push_back("WZ");
 		} else if(mode == "ZZ") {
 			TTchainNames.push_back("ZZ");
+		} else if(mode == "WW") {
+			TTchainNames.push_back("WW");
 		} else if(mode == "data") {
 			std::string dataTag = "";
 			if(channel == Selector::EMu)  dataTag = "MuEG";
 			if(channel == Selector::EE)   dataTag = "DoubleEG";
 			if(channel == Selector::MuMu) dataTag = "SingleMu";
-			TTchainNames.push_back(dataTag + "_RunB");
+			//TTchainNames.push_back(dataTag + "_RunB");
 			TTchainNames.push_back(dataTag + "_RunC");
-			if(channel != Selector::MuMu) TTchainNames.push_back(dataTag + "_RunD");
-			TTchainNames.push_back(dataTag + "_RunE");
+			//TTchainNames.push_back(dataTag + "_RunD");
+			//TTchainNames.push_back(dataTag + "_RunE");
 			//TTchainNames.push_back(dataTag + "_RunF");
 		}
 		if(mode.find("WRto") != _ENDSTRING) {
@@ -286,7 +292,7 @@ int main(int ac, char* av[])
 
 	std::map< std::pair<Selector::tag_t,  int>, std::pair<int, int> > mass_cut = getMassCutMap();
 	std::vector<int> mass_vec = getMassVec();
-	TString dataPUfn = "MyDataSingleMuonPileupHistogram.root";
+	TString dataPUfn = "MyDataPileupHistogramSingleMuonC.root";
 	std::map<float, double> pu_weights = PUreweight(dataPUfn);
 
 	std::string treeName = "miniTree" + chainNames_.getTreeName(channel, isTagAndProbe, isLowDiLepton);
