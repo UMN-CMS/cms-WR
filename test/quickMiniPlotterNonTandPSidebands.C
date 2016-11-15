@@ -122,33 +122,37 @@ void quickMiniPlotterNonTandPSidebands(){
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",50,0,500);
-  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",50,-3,3);
-  TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",50,-3.15,3.15);
-  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",50,0,500);
-  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",50,-3,3);
-  TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",50,-3.15,3.15);
+  Int_t nbins = 25;
+  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nbins,0,500);
+  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nbins,-3,3);
+  TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nbins,-3.15,3.15);
+  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",nbins,0,500);
+  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",nbins,-3,3);
+  TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",nbins,-3.15,3.15);
 
-  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",50,0,500);
-  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",50,-3,3);
-  TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",50,-3.15,3.15);
-  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,500);
-  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
-  TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
+  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",nbins,0,500);
+  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",nbins,-3,3);
+  TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",nbins,-3.15,3.15);
+  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",nbins,0,500);
+  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nbins,-3,3);
+  TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nbins,-3.15,3.15);
 
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",nbins,0,2500);
+
+ /* 
   //variable bin widths only for WR mass plot
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};	//original
   Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
-  
-  float dilepton_max = 250.;
+ */
+
+  float dilepton_max = 210.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
-  TH1F *h_nPV = new TH1F("h_nPV","",50,0,50);
-  TH1F *h_nPU = new TH1F("h_nPU","",50,0,50);
+  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nbins,50,dilepton_max);
+  TH1F *h_nPV = new TH1F("h_nPV","",nbins,0,50);
+  TH1F *h_nPU = new TH1F("h_nPU","",nbins,0,50);
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -207,6 +211,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_nPV);
   hs->push_back(h_nPU);
 
+  /*
   //normalize histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -222,6 +227,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
+  */
 
 }
 
@@ -274,9 +280,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   th->Draw("histo");
   hs_data->Draw("epsame");
-  TString ytitle = "Events/(";
-  ytitle += (th->GetXaxis()->GetNbins());
-  ytitle += ")";
+  //TString ytitle = "Events/(";
+  //ytitle += (th->GetXaxis()->GetNbins());
+  //ytitle += ")";
+  TString ytitle = "Events";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")){
@@ -329,21 +336,25 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TString fn = "";
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-  if(channel == Selector::EE) fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";
+  
+  //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  //if(channel == Selector::EE) fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";
+  
+  fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+  if(channel == Selector::EE) fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";
+ 
+
   //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
- 
-  if(fname.EqualTo("Mlljj") == true || fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true){
-	  mycanvas->Print((fn+".pdf").Data());
-	  mycanvas->Print((fn+".png").Data());
-	  p1->SetLogy();	//for ratio plot
-	  //mycanvas->SetLogy();	//only needed when no ratio plot is drawn
-	  mycanvas->Print((fn+"_log.pdf").Data());
-	  mycanvas->Print((fn+"_log.png").Data());
-  }
+
+  mycanvas->Print((fn+".pdf").Data());
+  mycanvas->Print((fn+".png").Data());
+  p1->SetLogy();	//for ratio plot
+  //mycanvas->SetLogy();	//only needed when no ratio plot is drawn
+  mycanvas->Print((fn+"_log.pdf").Data());
+  mycanvas->Print((fn+"_log.png").Data());
 
   mycanvas->Close();
 }
