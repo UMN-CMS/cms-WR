@@ -16,7 +16,7 @@ float dR_TLV(TLorentzVector t1, TLorentzVector t2)
 void goodJets(myJetCollection *evJets, myJetCollection *selJets)
 {
 	for(auto j : *evJets) {
-		if(j.p4.Pt() > 30 && fabs(j.p4.Eta()) < 2.4)
+		if(j.p4.Pt() > 40 && fabs(j.p4.Eta()) < 2.4)
 			selJets->push_back(j);
 	}
 }
@@ -528,7 +528,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 	// check eta and pt cuts
 	if (makeHists) sel::hists("lead_lepton_pt", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
-	if(lead_lepton_p4.Pt() < 60) return false;
+	if(lead_lepton_p4.Pt() < 50) return false;	//default is 60
 	if (makeHists) sel::hists("lead_lepton_pt_cut", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
 	if (makeHists) sel::hists("sublead_lepton_pt", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
 	if(sublead_lepton_p4.Pt() < 50) return false;	//default is 50
