@@ -12,10 +12,11 @@ float dR_TLV(TLorentzVector t1, TLorentzVector t2)
 	return deltaR(t1.Eta(), t1.Phi(), t2.Eta(), t2.Phi());
 }
 
+//default jet pt cut is 40, only other jet cuts in this file are in isPassingPreselect
 void goodJets(myJetCollection *evJets, myJetCollection *selJets)
 {
 	for(auto j : *evJets) {
-		if(j.p4.Pt() > 40 && fabs(j.p4.Eta()) < 2.4)
+		if(j.p4.Pt() > 30 && fabs(j.p4.Eta()) < 2.4)
 			selJets->push_back(j);
 	}
 }
@@ -530,7 +531,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	if(lead_lepton_p4.Pt() < 60) return false;
 	if (makeHists) sel::hists("lead_lepton_pt_cut", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
 	if (makeHists) sel::hists("sublead_lepton_pt", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
-	if(sublead_lepton_p4.Pt() < 50) return false;
+	if(sublead_lepton_p4.Pt() < 50) return false;	//default is 50
 	if (makeHists) sel::hists("sublead_lepton_pt_cut", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
 
 	if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[0].p4));
