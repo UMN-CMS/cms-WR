@@ -587,24 +587,25 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 bool Selector::isPassingPreselect(bool makeHists)
 {
+	//default lepton pT cuts are 54 and 44, default jet pT cut is 30
 	int l54 = 0;
 	int l44 = 0;
 	int j30 = 0;
 	for(auto ele : electrons) {
 		if (makeHists) sel::hists("preselect_ele_pt", 100, 0, 200)->Fill(ele.p4.Pt());
-		if(ele.p4.Pt() > 54) l54 += 1;
-		if(ele.p4.Pt() > 44) l44 += 1;
+		if(ele.p4.Pt() > 40) l54 += 1;
+		if(ele.p4.Pt() > 34) l44 += 1;
 		if(!makeHists && l54 >= 1 && l44 >= 2) break;
 	}
 	for(auto mu : muons) {
 		if (makeHists) sel::hists("preselect_mu_pt", 100, 0, 200)->Fill(mu.p4.Pt());
-		if(mu.p4.Pt() > 54) l54 += 1;
-		if(mu.p4.Pt() > 44) l44 += 1;
+		if(mu.p4.Pt() > 40) l54 += 1;
+		if(mu.p4.Pt() > 34) l44 += 1;
 		if(!makeHists && l54 >= 1 && l44 >= 2) break;
 	}
 	for(auto jet : jets) {
 		if (makeHists) sel::hists("preselect_jet_pt", 100, 0, 200)->Fill(jet.p4.Pt());
-		if(jet.p4.Pt() > 30) j30 += 1;
+		if(jet.p4.Pt() > 25) j30 += 1;
 		if(!makeHists && j30 >= 2) break;
 	}
 	if (makeHists) sel::hists("preselect_count", 1, 0, 1)->Fill(0);
