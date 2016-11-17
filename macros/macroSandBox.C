@@ -43,7 +43,7 @@ using namespace std;
 //#define nMinusOneCutEffsGenAndReco
 //#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
-#define privateGenEff
+//#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
@@ -56,6 +56,7 @@ using namespace std;
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
+#define sOverBsensitivity
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
 
@@ -2448,5 +2449,138 @@ void macroSandBox(){
 #endif
 	//end makeShiftedMCPileupFiles
 	
+	
+#ifdef sOverBsensitivity
+	//calculate S over B using a WR signal sample and DY plus TT after all signal region selections are applied
+	//default SoverB is calculated using default signal region cuts
+	TString treeName = "central_value_tree";
+	int massWindowIndex = 7;	//linked to a specific mass window. change this index if different MWR hypothesis is used
+	Int_t numBkgnds = 2;
+
+
+	//this vector contains all TChains declared below in a specific order. one signal TChain followed by
+	//all relevant bkgnd chains for that channel and set of cuts. this set is repeated for each channel, then
+	//the cuts are changed.
+	std::vector<TChain*> sigAndBkgnds;
+	
+	//default signal region cuts
+	TString defDir = "../analysisCppOutputRootFiles/";
+	TChain * defWrSigEE = new TChain(treeName);
+	defWrSigEE->Add(defDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	TChain * defTTEE = new TChain(treeName);
+	defTTEE->Add(defDir+"selected_tree_TT_signal_eeEE.root");
+	TChain * defDYEE = new TChain(treeName);
+	defDYEE->Add(defDir+"selected_tree_DYAMC_signal_eeEE.root");
+	sigAndBkgnds.push_back(defWrSigEE), sigAndBkgnds.push_back(defTTEE), sigAndBkgnds.push_back(defDYEE);
+
+	TChain * defWrSigMuMu = new TChain(treeName);
+	defWrSigMuMu->Add(defDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * defTTMuMu = new TChain(treeName);
+	defTTMuMu->Add(defDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * defDYMuMu = new TChain(treeName);
+	defDYMuMu->Add(defDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(defWrSigMuMu), sigAndBkgnds.push_back(defTTMuMu), sigAndBkgnds.push_back(defDYMuMu);
+
+	//lower jet pT cut than default
+	TString lowJetDir = "../analysisCppOutputRootFiles/withJetPtThirtyCut/";
+	TChain * lowJetWrSigEE = new TChain(treeName);
+	lowJetWrSigEE->Add(lowJetDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	TChain * lowJetTTEE = new TChain(treeName);
+	lowJetTTEE->Add(lowJetDir+"selected_tree_TT_signal_eeEE.root");
+	TChain * lowJetDYEE = new TChain(treeName);
+	lowJetDYEE->Add(lowJetDir+"selected_tree_DYAMC_signal_eeEE.root");
+	sigAndBkgnds.push_back(lowJetWrSigEE), sigAndBkgnds.push_back(lowJetTTEE), sigAndBkgnds.push_back(lowJetDYEE);
+
+	TChain * lowJetWrSigMuMu = new TChain(treeName);
+	lowJetWrSigMuMu->Add(lowJetDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * lowJetTTMuMu = new TChain(treeName);
+	lowJetTTMuMu->Add(lowJetDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * lowJetDYMuMu = new TChain(treeName);
+	lowJetDYMuMu->Add(lowJetDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(lowJetWrSigMuMu), sigAndBkgnds.push_back(lowJetTTMuMu), sigAndBkgnds.push_back(lowJetDYMuMu);
+
+
+	/**/
+	//lower sublead lepton pT cut than default
+	TString lowSubLeptDir = "../analysisCppOutputRootFiles/withSubleadLeptonPtFortyCut/";
+	TChain * lowSubLeptWrSigEE = new TChain(treeName);
+	lowSubLeptWrSigEE->Add(lowSubLeptDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	TChain * lowSubLeptTTEE = new TChain(treeName);
+	lowSubLeptTTEE->Add(lowSubLeptDir+"selected_tree_TT_signal_eeEE.root");
+	TChain * lowSubLeptDYEE = new TChain(treeName);
+	lowSubLeptDYEE->Add(lowSubLeptDir+"selected_tree_DYAMC_signal_eeEE.root");
+	sigAndBkgnds.push_back(lowSubLeptWrSigEE), sigAndBkgnds.push_back(lowSubLeptTTEE), sigAndBkgnds.push_back(lowSubLeptDYEE);
+
+	TChain * lowSubLeptWrSigMuMu = new TChain(treeName);
+	lowSubLeptWrSigMuMu->Add(lowSubLeptDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * lowSubLeptTTMuMu = new TChain(treeName);
+	lowSubLeptTTMuMu->Add(lowSubLeptDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * lowSubLeptDYMuMu = new TChain(treeName);
+	lowSubLeptDYMuMu->Add(lowSubLeptDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(lowSubLeptWrSigMuMu), sigAndBkgnds.push_back(lowSubLeptTTMuMu), sigAndBkgnds.push_back(lowSubLeptDYMuMu);
+
+
+	//lower lead lepton pT cut than default
+	TString lowLeadLeptDir = "../analysisCppOutputRootFiles/withLeadLeptonPtFiftyCut/";
+	TChain * lowLeadLeptWrSigEE = new TChain(treeName);
+	lowLeadLeptWrSigEE->Add(lowLeadLeptDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	TChain * lowLeadLeptTTEE = new TChain(treeName);
+	lowLeadLeptTTEE->Add(lowLeadLeptDir+"selected_tree_TT_signal_eeEE.root");
+	TChain * lowLeadLeptDYEE = new TChain(treeName);
+	lowLeadLeptDYEE->Add(lowLeadLeptDir+"selected_tree_DYAMC_signal_eeEE.root");
+	sigAndBkgnds.push_back(lowLeadLeptWrSigEE), sigAndBkgnds.push_back(lowLeadLeptTTEE), sigAndBkgnds.push_back(lowLeadLeptDYEE);
+
+	TChain * lowLeadLeptWrSigMuMu = new TChain(treeName);
+	lowLeadLeptWrSigMuMu->Add(lowLeadLeptDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * lowLeadLeptTTMuMu = new TChain(treeName);
+	lowLeadLeptTTMuMu->Add(lowLeadLeptDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * lowLeadLeptDYMuMu = new TChain(treeName);
+	lowLeadLeptDYMuMu->Add(lowLeadLeptDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(lowLeadLeptWrSigMuMu), sigAndBkgnds.push_back(lowLeadLeptTTMuMu), sigAndBkgnds.push_back(lowLeadLeptDYMuMu);
+	/**/
+
+	//loop over elements in vector of TChains, calculate S over B, and write S over B plus a comment about the cuts to a file
+	Int_t vSize = sigAndBkgnds.size();
+	std::string brName = "NEventsInRange";
+	std::string errBrName = "ErrorEventsInRange";
+	//only one entry in every branch of this tree
+	for(Int_t i=0; i<vSize; i+= (numBkgnds+1) ){
+		Float_t sigEvts = 0, bkgndEvts = 0, sOverB = 0;
+		//Float_t sOverSqrtSplusB = 0;
+	
+		//load tree contents
+		for(Int_t j=i; j<(i+numBkgnds+1) ; j++){
+			Float_t tempHolder[64];
+			Float_t tempErrHolder[64];
+			sigAndBkgnds[j]->SetBranchAddress(brName.c_str(), &tempHolder);
+			sigAndBkgnds[j]->SetBranchAddress(errBrName.c_str(), &tempErrHolder);
+			sigAndBkgnds[j]->GetEntry(0);
+			if(tempHolder[massWindowIndex] >= 0){
+				if(j==i) sigEvts += tempHolder[massWindowIndex];
+				else bkgndEvts += tempHolder[massWindowIndex];
+			}
+			if(tempHolder[massWindowIndex] < 0){//the error on the events in range is always positive
+				if(j==i) sigEvts += tempErrHolder[massWindowIndex];
+				else bkgndEvts += tempErrHolder[massWindowIndex];
+			}
+		}//load tree contents, only one entry in each tree
+
+		//calculate S over B
+		if(bkgndEvts > 0) sOverB = sigEvts/bkgndEvts;
+		//if(bkgndEvts > 0) sOverSqrtSplusB = sigEvts/TMath::Sqrt(sigEvts + bkgndEvts);
+		std::cout<<"iteration \t"<< i << std::endl;
+		//std::cout<<"signal =\t"<< sigEvts << std::endl;
+		//std::cout<<"bkgnd =\t"<< bkgndEvts << std::endl;
+		std::cout<<"S/B =\t"<< sOverB << std::endl;
+		//std::cout<<"S/sqrt(S+B) =\t"<< sOverSqrtSplusB << std::endl;
+		std::cout<<" "<< std::endl;
+
+	}//end loop over vector of TChains
+
+
+#endif
+	//end sOverBsensitivity
+
+
 }///end macroSandBox()
 
