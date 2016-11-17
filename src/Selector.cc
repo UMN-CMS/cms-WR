@@ -528,7 +528,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 	// check eta and pt cuts
 	if (makeHists) sel::hists("lead_lepton_pt", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
-	if(lead_lepton_p4.Pt() < 50) return false;	//default is 60
+	if(lead_lepton_p4.Pt() < 60) return false;	//default is 60
 	if (makeHists) sel::hists("lead_lepton_pt_cut", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
 	if (makeHists) sel::hists("sublead_lepton_pt", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
 	if(sublead_lepton_p4.Pt() < 50) return false;	//default is 50
@@ -594,19 +594,19 @@ bool Selector::isPassingPreselect(bool makeHists)
 	int j30 = 0;
 	for(auto ele : electrons) {
 		if (makeHists) sel::hists("preselect_ele_pt", 100, 0, 200)->Fill(ele.p4.Pt());
-		if(ele.p4.Pt() > 40) l54 += 1;
-		if(ele.p4.Pt() > 34) l44 += 1;
+		if(ele.p4.Pt() > 54) l54 += 1;
+		if(ele.p4.Pt() > 44) l44 += 1;
 		if(!makeHists && l54 >= 1 && l44 >= 2) break;
 	}
 	for(auto mu : muons) {
 		if (makeHists) sel::hists("preselect_mu_pt", 100, 0, 200)->Fill(mu.p4.Pt());
-		if(mu.p4.Pt() > 40) l54 += 1;
-		if(mu.p4.Pt() > 34) l44 += 1;
+		if(mu.p4.Pt() > 54) l54 += 1;
+		if(mu.p4.Pt() > 44) l44 += 1;
 		if(!makeHists && l54 >= 1 && l44 >= 2) break;
 	}
 	for(auto jet : jets) {
 		if (makeHists) sel::hists("preselect_jet_pt", 100, 0, 200)->Fill(jet.p4.Pt());
-		if(jet.p4.Pt() > 25) j30 += 1;
+		if(jet.p4.Pt() > 30) j30 += 1;
 		if(!makeHists && j30 >= 2) break;
 	}
 	if (makeHists) sel::hists("preselect_count", 1, 0, 1)->Fill(0);
