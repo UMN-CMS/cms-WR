@@ -17,6 +17,8 @@ parser.add_argument('-t', '--tag', dest='tag',
 parser.add_argument('-o', '--outdir', dest='outdir',
 		default="datacards/",
 		help='where to store the datacards')
+parser.add_argument('-s', dest='scale', action='store_true',
+		help='if present, rescale signal to .001 fb XS')
 
 
 args = parser.parse_args()
@@ -34,7 +36,6 @@ nuisance_params.append(("DYAMC_SF",       "lnN"))
 nuisance_params.append(("signal_unc",  "gmN"))
 nuisance_params.append(("TT_unc",      "gmN"))
 nuisance_params.append(("DYAMC_unc",   "gmN"))
-unscale_by_xs = False
 for channel in ["ee", "mumu"]:
 	sig_name = "WR_" + channel + "jj"
 	MWR = []
@@ -44,7 +45,7 @@ for channel in ["ee", "mumu"]:
 	for mass in sorted(combineTools.mass_cut[channel]):
 		try:
 			systematics = combineTools.Systematics(["signal", "TT", "DYAMC"], nuisance_params)
-			if unscale_by_xs:
+			if args.scale:
 				scale =  .001/xs.WR_jj[channel][mass]
 			else:
 				scale = 1.0
@@ -59,8 +60,9 @@ for channel in ["ee", "mumu"]:
 
 			if args.nosyst: systematics = None
 			systematics_list.append(systematics)
-		except (IOError,KeyError) as e:
+		except (IOError,KeyError,TypeError) as e:
 			print mass, "not found"
+			print e
 
 	bg_names = ["TTBar", "DY"]
 

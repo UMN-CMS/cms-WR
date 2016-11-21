@@ -1,6 +1,7 @@
 import ExoAnalysis.cmsWR.cross_sections as xs
 import os
 import re
+import math
 
 datacards = os.listdir("datacards/")
 
@@ -14,7 +15,7 @@ for datacard in datacards:
 		continue
 	filenames.append(( ch, mass, 'datacards/' + datacard))
 
-print "#CHANNEL MASS XS(fb) SIG_NEVENTS SIG_RATE TT_RATE DY_RATE TT_SF DY_SF SIG_N TT_N DY_N SIG_ALPHA TT_ALPHA DY_ALPHA"
+print "#CHANNEL MASS XS(fb) SIG_NEVENTS SIG_RATE TT_RATE DY_RATE SIG_SD TT_SD DY_SD TT_SF DY_SF SIG_N TT_N DY_N SIG_ALPHA TT_ALPHA DY_ALPHA"
 for ch,mass,fn in sorted(filenames):
 	with open(fn) as f:
 		unc = {}
@@ -34,6 +35,9 @@ for ch,mass,fn in sorted(filenames):
 
 		print ch,mass, xs.WR_jj[ch][int(mass)]/.001, "%.3f" % (float(xs.WR_jj[ch][int(mass)]/.001)*float(sig)), 
 		print sig, tt, dy,
+		print "%.4f" % (math.sqrt((unc["signal_uncN"]+1))*unc["signal_unc"]),
+		print "%.4f" % (math.sqrt((unc["TT_uncN"]    +1))*unc["TT_unc"]    ),
+		print "%.4f" % (math.sqrt((unc["DYAMC_uncN"] +1))*unc["DYAMC_unc"] ),
 		print unc["TT_SF"],
 		print unc["DYAMC_SF"],
 		print unc["signal_uncN"],

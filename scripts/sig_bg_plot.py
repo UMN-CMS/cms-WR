@@ -2,10 +2,13 @@ import ROOT
 import itertools
 import numpy as np
 from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
+import math
 
 customROOTstyle()
 ROOT.gROOT.SetBatch(True)
+ROOT.gStyle.SetHatchesLineWidth(2)
 colors = [ROOT.kGreen, ROOT.kRed, ROOT.kBlue, ROOT.kBlack]
+fillstyle = [1001, 3345, 3354, 3006]
 
 col = ["Signal", "TT", "DY"]
 
@@ -16,102 +19,81 @@ print ele_names, mu_names
 mass = np.ndarray(25)
 ele_results = np.ndarray((3,25))
 mu_results = np.ndarray((3,25))
-linei=0
-with open("datacards/sig_bg.txt","r") as f:
+ele_sigma = np.ndarray((3,25))
+mu_sigma = np.ndarray((3,25))
+ele_linei=0
+mu_linei=0
+with open("datacards/summary.txt","r") as f:
 	for line in f:
 		if line[0] == '#': continue
-		line = map(float,line.split())
-		mass[linei] = line[0]
+		line = line.split()
+		CHANNEL = line[0]
+		MASS, XS,SIG_NEVENTS, SIG_RATE, TT_RATE, DY_RATE, TT_SF, DY_SF, SIG_N, TT_N, DY_N, SIG_ALPHA, TT_ALPHA, DY_ALPHA = map(float, line[1:])
+		if CHANNEL == "ee":
+			mass[ele_linei] = int(MASS)
+			ele_results[:,ele_linei] = SIG_NEVENTS, (TT_N+1)*TT_ALPHA, (DY_N+1)*DY_ALPHA
+			ele_sigma[:,ele_linei] = math.sqrt(SIG_N + 1) * SIG_ALPHA, math.sqrt(TT_N + 1)  * TT_ALPHA, math.sqrt(DY_N + 1)  * DY_ALPHA
 
-		ele_results[:,linei] = line[1:4]
-		mu_results[:,linei]   = line[4:]
-		linei += 1
+			ele_linei += 1
+		elif CHANNEL ==  "mumu":
+			mu_results[:,mu_linei] = SIG_NEVENTS, (TT_N+1)*TT_ALPHA, (DY_N+1)*DY_ALPHA
+			mu_sigma[:,mu_linei] = math.sqrt(SIG_N + 1) * SIG_ALPHA, math.sqrt(TT_N + 1)  * TT_ALPHA, math.sqrt(DY_N + 1)  * DY_ALPHA
 
-h = ROOT.TH1F("h","",1,700, 6200)
+			mu_linei += 1
+
+h = ROOT.TH1F("h","",1,800, 6000)
 h.GetYaxis().SetTitleOffset(1.3)
-h.SetMinimum(.0001)
+h.SetMinimum(.001)
 
 
-#electrons
-c = ROOT.TCanvas("c","c",800,800)
-c.SetLeftMargin(.15)
-c.SetLogy()
-h.Draw()
-h.SetXTitle("W_R Mass [GeV]")
-h.SetYTitle("Events")
-h.SetMaximum(ele_results.max()*2)
+def draw(ch, res, sigma, names):
+	c = ROOT.TCanvas("c","c",800,800)
+	c.SetLeftMargin(.15)
+	c.SetRightMargin(.05)
+	c.SetLogy()
+	h.Draw()
+	h.SetXTitle("W_R Mass [GeV]")
+	h.SetYTitle("Events")
+	h.SetMaximum(res.max()*2)
 
-inset = ROOT.TPad("inset","",.17, .15, .55, .55)
-inset.Draw()
-inset.cd()
-ins = ROOT.TH1F("ins","",1,700, 6200)
-ins.SetMaximum(10)
-ins.Draw()
-
-c.cd()
-
-leg = ROOT.TLegend(.5, .7, .8, .9)
-#leg.SetNColumns(3)
-leg.SetTextFont(42)
-leg.SetTextSize(0.032)
-leg.SetBorderSize(0)
-
-graphs = []
-for n,col in enumerate(ele_results):
-	graphs.append( ROOT.TGraph(len(mass), mass, col))
-	g = graphs[-1]
-	g.SetLineColor(colors[n])
-	g.SetLineWidth(3)
-	c.cd()
-	g.Draw("Lsame")
-	leg.AddEntry(g, ele_names[n], "L")
+	inset = ROOT.TPad("inset","",.57, .57, .93, .93)
+	inset.Draw()
 	inset.cd()
-	g.Draw("Lsame")
+	ins = ROOT.TH1F("ins","",1,700, 6000)
+	ins.SetMaximum(10)
+	ins.Draw()
 
-c.cd()
-leg.Draw("same")
-c.SaveAs("plots/ele_events.png")
-c.SaveAs("plots/ele_events.pdf")
-c.SaveAs("plots/ele_events.C")
-
-#muons
-c = ROOT.TCanvas("c","c",800,800)
-c.SetLeftMargin(.15)
-c.SetLogy()
-h.Draw()
-h.SetXTitle("W_R Mass [GeV]")
-h.SetYTitle("Events")
-h.SetMaximum(mu_results.max()*2)
-
-inset = ROOT.TPad("inset","",.17, .15, .55, .55)
-inset.Draw()
-inset.cd()
-ins = ROOT.TH1F("ins","",1,700, 6200)
-ins.SetMaximum(10)
-ins.Draw()
-
-c.cd()
-
-leg = ROOT.TLegend(.5, .7, .80, .9)
-#leg.SetNColumns(3)
-leg.SetTextFont(42)
-leg.SetTextSize(0.032)
-leg.SetBorderSize(0)
-
-graphs = []
-for n,col in enumerate(mu_results):
-	graphs.append( ROOT.TGraph(len(mass), mass, col))
-	g = graphs[-1]
-	g.SetLineColor(colors[n])
-	g.SetLineWidth(3)
 	c.cd()
-	g.Draw("Lsame")
-	leg.AddEntry(g, mu_names[n], "L")
-	inset.cd()
-	g.Draw("Lsame")
 
-c.cd()
-leg.Draw("same")
-c.SaveAs("plots/mu_events.png")
-c.SaveAs("plots/mu_events.pdf")
-c.SaveAs("plots/mu_events.C")
+	leg = ROOT.TLegend(.3, .8, .5, .94)
+#leg.SetNColumns(3)
+	leg.SetTextFont(42)
+	leg.SetTextSize(0.032)
+	leg.SetBorderSize(0)
+	leg.SetFillStyle(0)
+
+	graphs = []
+	for n,(col,err) in enumerate(zip(res,sigma)):
+		graphs.append( ROOT.TGraphErrors(len(mass), mass, col,ROOT.nullptr,err))
+		g = graphs[-1]
+		g.SetFillColor(colors[n] - 9)
+		g.SetFillStyle(fillstyle[n])
+		g.SetLineColor(colors[n])
+		g.SetLineWidth(3)
+		c.cd()
+		g.Draw("3same")
+		g.Draw("LXsame")
+		leg.AddEntry(g, names[n], "LF")
+		inset.cd()
+		g.Draw("LXsame")
+
+	c.cd()
+	leg.Draw("same")
+	c.RedrawAxis()
+	inset.RedrawAxis()
+	c.SaveAs("plots/%s_events.png" % ch)
+	c.SaveAs("plots/%s_events.pdf" % ch)
+	c.SaveAs("plots/%s_events.C" % ch)
+
+draw("ele", ele_results, ele_sigma, ele_names)
+draw("mu", mu_results, mu_sigma, mu_names)
