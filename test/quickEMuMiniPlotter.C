@@ -97,9 +97,9 @@ void quickEMuMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","#Delta R lead lepton lead jet","#Delta R lead lepton sublead jet","#Delta R sublead lepton lead jet","#Delta R sublead lepton sublead jet","#Delta R lead lepton sublead lepton","#Delta #phi lead lepton lead jet","#Delta #phi lead lepton sublead jet","#Delta #phi sublead lepton lead jet","#Delta #phi sublead lepton sublead jet","#Delta #phi lead lepton sublead lepton","#Delta #eta lead lepton lead jet","#Delta #eta lead lepton sublead jet","#Delta #eta sublead lepton lead jet","#Delta #eta sublead lepton sublead jet","#Delta #eta lead lepton sublead lepton","muon #eta","muon #phi","muon p_{T}","electron #eta","electron #phi","electron p_{T}"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","#Delta R lead lepton lead jet","#Delta R lead lepton sublead jet","#Delta R sublead lepton lead jet","#Delta R sublead lepton sublead jet","#Delta R lead lepton sublead lepton","#Delta #phi lead lepton lead jet","#Delta #phi lead lepton sublead jet","#Delta #phi sublead lepton lead jet","#Delta #phi sublead lepton sublead jet","#Delta #phi lead lepton sublead lepton","#Delta #eta lead lepton lead jet","#Delta #eta lead lepton sublead jet","#Delta #eta sublead lepton lead jet","#Delta #eta sublead lepton sublead jet","#Delta #eta lead lepton sublead lepton","muon #eta","muon #phi","muon p_{T}","electron #eta","electron #phi","electron p_{T}","unweighted M_{LLJJ}"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta","mu_eta","mu_phi","mu_pt","ele_eta","ele_phi","ele_pt"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta","mu_eta","mu_phi","mu_pt","ele_eta","ele_phi","ele_pt","unweightedMLLJJ"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -138,12 +138,15 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
 
   /**/
-  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
-  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
   
   ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  TH1F *h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",binnum, bins);
+
+
   /**/
  
   float dilepton_max = 250.;
@@ -216,7 +219,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_jet_phi1->Fill(myEvent->sublead_jet_phi,(myEvent->weight)*ttScaleFactor);
       
     h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
-    h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
+    h_WR_mass_unweighted->Fill(myEvent->WR_mass,1*ttScaleFactor);
+	h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
 
 	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, leadJetFourMom, subleadJetFourMom;
@@ -300,6 +304,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_ele_eta);
   hs->push_back(h_ele_phi);
   hs->push_back(h_ele_pt);
+  hs->push_back(h_WR_mass_unweighted);
 	
   /**/
   //normalize histo bins
@@ -419,8 +424,22 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  Int_t centBin = 16;
 	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" +/- "<< (hs_ttbar->GetBinError(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" MC events\t" <<"and unweighted entries=\t" << mcUnweightedEntriesInExcessBin <<std::endl;
 	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_data->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<" +/- "<< (hs_data->GetBinError(centBin))*(hs_data->GetBinWidth(centBin)) <<" data events\t" <<"and unweighted entries=\t" << (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<std::endl;
-	
+	  
+	  std::cout<<"\t"<<std::endl;
+	  Int_t nbins = hs_data->GetNbinsX();
+	  for(Int_t i = 1; i<=nbins; i++){
+		  std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" +/- "<< (hs_ttbar->GetBinError(i))*(hs_ttbar->GetBinWidth(i)) <<" weighted MC events and " << (hs_data->GetBinContent(i))*(hs_data->GetBinWidth(i)) <<" data evts" <<std::endl;
+	  }//end loop over bins in MLLJJ
   }
+
+  if(fname.EqualTo("unweightedMLLJJ") ){
+	  std::cout<<"\t"<<std::endl;
+	  Int_t nbins = hs_data->GetNbinsX();
+	  for(Int_t i = 1; i<=nbins; i++){
+		  std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" unweighted MC events" <<std::endl;
+	  }//end loop over bins in unweightedMLLJJ
+  }
+
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
@@ -448,13 +467,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 
-  //if(fname.EqualTo("Mll") || fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_eta") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_eta") || ){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("unweightedMLLJJ")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  p1->SetLogy();
 	  mycanvas->Print((fn+"_log.pdf").Data());
 	  mycanvas->Print((fn+"_log.png").Data());
-  //}
+  }
 
   mycanvas->Close();
 }
