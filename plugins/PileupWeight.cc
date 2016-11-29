@@ -4,7 +4,6 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
-#include "DataFormats/JetReco/interface/Jet.h"
 
 #include <TFile.h>
 #include <TH1F.h>
@@ -16,6 +15,7 @@
 #include <string>
 #include <iostream>
 
+//#define DEBUG
 class producePileupWeight : public edm::EDProducer
 {
 
@@ -121,6 +121,9 @@ producePileupWeight::producePileupWeight(const edm::ParameterSet& cfg):
 
 void producePileupWeight::produce(edm::Event& event, const edm::EventSetup&)
 {
+#ifdef DEBUG
+	std::cout<<"in produce method of PileupWeight.cc"<<std::endl;
+#endif
 	float nPU = 0;
 	float PU_weight = 1.0;
 	if(!event.isRealData()) {
@@ -133,8 +136,17 @@ void producePileupWeight::produce(edm::Event& event, const edm::EventSetup&)
 		}
 		PU_weight = pu_weights[int(nPU)];
 	}
+#ifdef DEBUG
+	std::cout<<"about to put pu_weight vector into event collection, and leave the produce method in PileupWeight.cc"<<std::endl;
+#endif
 	std::auto_ptr<float> PU_weight_ptr(new float(PU_weight));
+#ifdef DEBUG
+	std::cout<<"made ptr to PU_weight val"<<std::endl;
+#endif
 	event.put(PU_weight_ptr, outputCollName);
+#ifdef DEBUG
+	std::cout<<"leaving the produce method in PileupWeight.cc"<<std::endl;
+#endif
 }
 
 void

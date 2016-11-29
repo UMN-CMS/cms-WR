@@ -20,12 +20,15 @@
 #include <cstdio>
 #include <memory>
 
+//#define doNarrowMlljj
+//#define doNarrowLeadLeptEta
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
 
 Selector::tag_t channel = Selector::EMu;
+Float_t mcUnweightedEntriesInExcessBin=0;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -45,17 +48,17 @@ void quickEMuMiniPlotter(){
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
- 
+
+  TString localDir = "../analysisCppOutputRootFiles/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EMu:
-    //dy = chain_DY->Add("../selected_tree_DYAMC_lowdileptonsidebandEMu_withMllWeight.root");
-	dy = chain_DY->Add("../selected_tree_DYAMC_signal_eeEE.root");	//temporary work around, DY will not be plotted
-	tt = chain_ttbar->Add("../selected_tree_TT_flavoursidebandEMu.root");
-    wjets = chain_WJets->Add("../selected_tree_W_flavoursidebandEMu.root");
-    wz = chain_WZ->Add("../selected_tree_WZ_flavoursidebandEMu.root");
-    zz = chain_ZZ->Add("../selected_tree_ZZ_flavoursidebandEMu.root");
-    data = chain_data->Add("../selected_tree_data_flavoursidebandEMu.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_flavoursidebandEMu.root");
+	tt = chain_ttbar->Add(localDir+"selected_tree_TT_flavoursidebandEMu.root");
+    wjets = chain_WJets->Add(localDir+"selected_tree_W_flavoursidebandEMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
+    data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -94,9 +97,9 @@ void quickEMuMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","#Delta R lead lepton lead jet","#Delta R lead lepton sublead jet","#Delta R sublead lepton lead jet","#Delta R sublead lepton sublead jet","#Delta R lead lepton sublead lepton","#Delta #phi lead lepton lead jet","#Delta #phi lead lepton sublead jet","#Delta #phi sublead lepton lead jet","#Delta #phi sublead lepton sublead jet","#Delta #phi lead lepton sublead lepton","#Delta #eta lead lepton lead jet","#Delta #eta lead lepton sublead jet","#Delta #eta sublead lepton lead jet","#Delta #eta sublead lepton sublead jet","#Delta #eta lead lepton sublead lepton","muon #eta","muon #phi","muon p_{T}","electron #eta","electron #phi","electron p_{T}","unweighted M_{LLJJ}"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","l1_j1_dr","l1_j2_dr","l2_j1_dr","l2_j2_dr","l1_l2_dr","l1_j1_dphi","l1_j2_dphi","l2_j1_dphi","l2_j2_dphi","l1_l2_dphi","l1_j1_deta","l1_j2_deta","l2_j1_deta","l2_j2_deta","l1_l2_deta","mu_eta","mu_phi","mu_pt","ele_eta","ele_phi","ele_pt","unweightedMLLJJ"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -108,30 +111,74 @@ void quickEMuMiniPlotter(){
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",50,0,700);
-  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",50,-3,3);
-  TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",50,-3.15,3.15);
-  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",50,0,700);
-  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",50,-3,3);
-  TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",50,-3.15,3.15);
+  Float_t nBins = 50;
 
-  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",50,0,700);
-  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",50,-3,3);
-  TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",50,-3.15,3.15);
-  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
-  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
-  TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
+#ifdef doNarrowMlljj
+	nBins = 15;	///use coarse binning when making data MC comparisons in narrow MLLJJ window
+#endif
 
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//wider bins work better at high WR mass
+#ifdef doNarrowLeadLeptEta
+	nBins = 5;
+#endif
+
+  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nBins,0,700);
+  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nBins,-3,3);
+  TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nBins,-3.15,3.15);
+  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",nBins,0,700);
+  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",nBins,-3,3);
+  TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",nBins,-3.15,3.15);
+
+  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",nBins,0,700);
+  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",nBins,-3,3);
+  TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",nBins,-3.15,3.15);
+  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",nBins,0,700);
+  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nBins,-3,3);
+  TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nBins,-3.15,3.15);
+
+  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
+
+  /**/
+  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  
+  ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,0,2500);
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  TH1F *h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",binnum, bins);
+
+
+  /**/
  
   float dilepton_max = 250.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,50,dilepton_max);
+  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nBins,50,dilepton_max);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
+
+  TH1F *h_lead_lept_lead_jet_dr = new TH1F("h_lead_lept_lead_jet_dr","",nBins,-5,5);
+  TH1F *h_lead_lept_sublead_jet_dr = new TH1F("h_lead_lept_sublead_jet_dr","",nBins,-5,5);
+  TH1F *h_sublead_lept_lead_jet_dr = new TH1F("h_sublead_lept_lead_jet_dr","",nBins,-5,5);
+  TH1F *h_sublead_lept_sublead_jet_dr = new TH1F("h_sublead_lept_sublead_jet_dr","",nBins,-5,5);
+  TH1F *h_lead_lept_sublead_lept_dr = new TH1F("h_lead_lept_sublead_lept_dr","",nBins,-5,5);
+
+  TH1F *h_lead_lept_lead_jet_dphi = new TH1F("h_lead_lept_lead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_lead_lept_sublead_jet_dphi = new TH1F("h_lead_lept_sublead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_sublead_lept_lead_jet_dphi = new TH1F("h_sublead_lept_lead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_sublead_lept_sublead_jet_dphi = new TH1F("h_sublead_lept_sublead_jet_dphi","",nBins,-6.5,6.5);
+  TH1F *h_lead_lept_sublead_lept_dphi = new TH1F("h_lead_lept_sublead_lept_dphi","",nBins,-6.5,6.5);
+
+  TH1F *h_lead_lept_lead_jet_deta = new TH1F("h_lead_lept_lead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_lead_lept_sublead_jet_deta = new TH1F("h_lead_lept_sublead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_sublead_lept_lead_jet_deta = new TH1F("h_sublead_lept_lead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_sublead_lept_sublead_jet_deta = new TH1F("h_sublead_lept_sublead_jet_deta","",nBins,-5.5,5.5);
+  TH1F *h_lead_lept_sublead_lept_deta = new TH1F("h_lead_lept_sublead_lept_deta","",nBins,-5.5,5.5);
+
+  TH1F *h_muon_pt = new TH1F("h_muon_pt","",nBins,0,700);
+  TH1F *h_muon_eta = new TH1F("h_muon_eta","",nBins,-3,3);
+  TH1F *h_muon_phi = new TH1F("h_muon_phi","",nBins,-3.15,3.15);
+  TH1F *h_ele_pt = new TH1F("h_ele_pt","",nBins,0,700);
+  TH1F *h_ele_eta = new TH1F("h_ele_eta","",nBins,-3,3);
+  TH1F *h_ele_phi = new TH1F("h_ele_phi","",nBins,-3.15,3.15);
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -145,10 +192,21 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
+	//if(myEvent->WR_mass < 600.) continue;	///MLLJJ cut
+#ifdef doNarrowMlljj
+	if(myEvent->WR_mass < 1350. || myEvent->WR_mass > 1510.) continue;
+#endif
 
-    h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
-    h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
-    h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+#ifdef doNarrowLeadLeptEta
+	if(myEvent->WR_mass < 1350. || myEvent->WR_mass > 1510.) continue;
+	if(myEvent->lead_lepton_eta < 0. || myEvent->lead_lepton_eta > 1.) continue;
+#endif
+
+	if(myEvent->WR_mass >= 1350 && myEvent->WR_mass < 1510 && !(chainTitle.EqualTo("Data")) ) mcUnweightedEntriesInExcessBin++;
+
+	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+	h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+	h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
     h_lepton_eta1->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
     h_lepton_phi0->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
     h_lepton_phi1->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
@@ -161,9 +219,54 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_jet_phi1->Fill(myEvent->sublead_jet_phi,(myEvent->weight)*ttScaleFactor);
       
     h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*ttScaleFactor);
-    h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
+    h_WR_mass_unweighted->Fill(myEvent->WR_mass,1*ttScaleFactor);
+	h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*ttScaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*ttScaleFactor);
-  }
+
+	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, leadJetFourMom, subleadJetFourMom;
+	leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
+	subleadLeptonFourMom.SetPtEtaPhiE(myEvent->sublead_lepton_pt, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi, myEvent->sublead_lepton_pt);
+	//E set here for jets should be updated, but doesn't affect dR deta and dphi
+	leadJetFourMom.SetPtEtaPhiE(myEvent->lead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->lead_jet_pt);
+	subleadJetFourMom.SetPtEtaPhiE(myEvent->sublead_jet_pt, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->sublead_jet_pt);
+	
+	h_lead_lept_sublead_lept_dr->Fill(leadLeptonFourMom.DeltaR(subleadLeptonFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_lead_jet_dr->Fill(myEvent->dR_leadlepton_leadjet,(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_sublead_jet_dr->Fill(myEvent->dR_leadlepton_subleadjet,(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_lead_jet_dr->Fill(myEvent->dR_subleadlepton_leadjet,(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_sublead_jet_dr->Fill(myEvent->dR_subleadlepton_subleadjet,(myEvent->weight)*ttScaleFactor);
+
+	h_lead_lept_sublead_lept_dphi->Fill(leadLeptonFourMom.DeltaPhi(subleadLeptonFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_lead_jet_dphi->Fill(leadLeptonFourMom.DeltaPhi(leadJetFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_sublead_jet_dphi->Fill(leadLeptonFourMom.DeltaPhi(subleadJetFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_lead_jet_dphi->Fill(subleadLeptonFourMom.DeltaPhi(leadJetFourMom),(myEvent->weight)*ttScaleFactor);
+  	h_sublead_lept_sublead_jet_dphi->Fill(subleadLeptonFourMom.DeltaPhi(subleadJetFourMom),(myEvent->weight)*ttScaleFactor);
+
+	h_lead_lept_sublead_lept_deta->Fill(myEvent->lead_lepton_eta - myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+  	h_lead_lept_lead_jet_deta->Fill(myEvent->lead_lepton_eta - myEvent->lead_jet_eta,(myEvent->weight)*ttScaleFactor);
+   	h_lead_lept_sublead_jet_deta->Fill(myEvent->lead_lepton_eta - myEvent->sublead_jet_eta,(myEvent->weight)*ttScaleFactor);
+   	h_sublead_lept_lead_jet_deta->Fill(myEvent->sublead_lepton_eta - myEvent->lead_jet_eta,(myEvent->weight)*ttScaleFactor);
+   	h_sublead_lept_sublead_jet_deta->Fill(myEvent->sublead_lepton_eta - myEvent->sublead_jet_eta,(myEvent->weight)*ttScaleFactor);
+
+	if(myEvent->lead_lepton_r9 == -1){
+		h_muon_pt->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_muon_eta->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_muon_phi->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+		h_ele_pt->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_ele_eta->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_ele_phi->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+	}//lead lepton is muon
+
+	if(myEvent->lead_lepton_r9 > -1){
+		h_ele_pt->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_ele_eta->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_ele_phi->Fill(myEvent->lead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+		h_muon_pt->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
+		h_muon_eta->Fill(myEvent->sublead_lepton_eta,(myEvent->weight)*ttScaleFactor);
+		h_muon_phi->Fill(myEvent->sublead_lepton_phi,(myEvent->weight)*ttScaleFactor);
+	}//lead lepton is electron
+
+  }//end loop over events
 
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
@@ -180,7 +283,30 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
-
+  hs->push_back(h_lead_lept_lead_jet_dr);
+  hs->push_back(h_lead_lept_sublead_jet_dr);
+  hs->push_back(h_sublead_lept_lead_jet_dr);
+  hs->push_back(h_sublead_lept_sublead_jet_dr);
+  hs->push_back(h_lead_lept_sublead_lept_dr);
+  hs->push_back(h_lead_lept_lead_jet_dphi);
+  hs->push_back(h_lead_lept_sublead_jet_dphi);
+  hs->push_back(h_sublead_lept_lead_jet_dphi);
+  hs->push_back(h_sublead_lept_sublead_jet_dphi);
+  hs->push_back(h_lead_lept_sublead_lept_dphi);
+  hs->push_back(h_lead_lept_lead_jet_deta);
+  hs->push_back(h_lead_lept_sublead_jet_deta);
+  hs->push_back(h_sublead_lept_lead_jet_deta);
+  hs->push_back(h_sublead_lept_sublead_jet_deta);
+  hs->push_back(h_lead_lept_sublead_lept_deta);
+  hs->push_back(h_muon_eta);
+  hs->push_back(h_muon_phi);
+  hs->push_back(h_muon_pt);
+  hs->push_back(h_ele_eta);
+  hs->push_back(h_ele_phi);
+  hs->push_back(h_ele_pt);
+  hs->push_back(h_WR_mass_unweighted);
+	
+  /**/
   //normalize histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -196,14 +322,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  }//end loop over bins in histo
 
   }//end loop over histos in vector
- 
+  /**/ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
-  TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.70 ) ; 
-  //leg->AddEntry( hs_DY, "DY" ) ; 
-  leg->AddEntry( hs_ttbar, "ttbar" ) ;
+  TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
+  leg->AddEntry( hs_DY, "DY" ) ; 
+  leg->AddEntry( hs_ttbar, "TT" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
@@ -216,6 +342,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->Sumw2();
   hs_WZ->Sumw2();
   hs_ZZ->Sumw2();
+  hs_DY->Sumw2();
   
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
   THStack* th = new THStack();
@@ -226,9 +353,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
   th->Add(hs_WJets);
+  th->Add(hs_DY);
   th->Add(hs_ZZ);
   th->Add(hs_ttbar);
-  //th->Add(hs_DY);
   hs_data->SetMarkerStyle(20);
 
   Double_t eps = 0.001;
@@ -239,8 +366,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   p1->cd();
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->Draw("ep");
   th->Draw("histo same");
   hs_data->Draw("epsame");
@@ -250,26 +377,36 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
+  //for variable size bins normalized to bin width
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
- 
+  //if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
+
+
+#ifdef doNarrowMlljj
+	th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
+#endif
+
+#ifdef doNarrowLeadLeptEta
+	th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
+#endif
+
+
+  Float_t labelSize = 0.25;
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
-  ratio->GetXaxis()->SetTitleSize(0.2);
-  ratio->SetLabelSize(0.1,"x");
+  ratio->GetXaxis()->SetTitleSize(labelSize);
+  ratio->SetLabelSize(labelSize - 0.07,"x");
   leg->Draw(); 
   mycanvas->cd();
   p2->cd();
   ratio->Sumw2();
   ratio->SetStats(0);
 
-  //hs_DY->Add(hs_ttbar);
-  //hs_DY->Add(hs_WJets);
-  //hs_DY->Add(hs_WZ);
-  //hs_DY->Add(hs_ZZ);
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);
+  hs_ttbar->Add(hs_DY);
   if(fname.EqualTo("Mlljj") ){
 	  Float_t dataMCratio = (hs_data->Integral()/hs_ttbar->Integral());
 	  Float_t dataEntries = hs_data->GetEntries();
@@ -282,12 +419,32 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   	  std::cout<<"bin number\t"<< 6 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(6) <<" and bin error =\t"<< hs_ttbar->GetBinError(6) << std::endl;
 	  std::cout<<"bin number\t"<< 7 <<"has data bin contents=\t" << hs_data->GetBinContent(7) <<" and bin error =\t"<< hs_data->GetBinError(7) << std::endl;
   	  std::cout<<"bin number\t"<< 7 <<"has ttbar bin contents=\t" << hs_ttbar->GetBinContent(7) <<" and bin error =\t"<< hs_ttbar->GetBinError(7) << std::endl;
+
+	  //print actual number of evts in each bin, raw unweighted events, and bin lower edge
+	  Int_t centBin = 16;
+	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_ttbar->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_ttbar->GetBinContent(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" +/- "<< (hs_ttbar->GetBinError(centBin))*(hs_ttbar->GetBinWidth(centBin)) <<" MC events\t" <<"and unweighted entries=\t" << mcUnweightedEntriesInExcessBin <<std::endl;
+	  std::cout<<"bin num\t"<< centBin <<"\thas\t"<< hs_data->GetBinLowEdge(centBin) <<"\tGeV lower edge and\t"<< (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<" +/- "<< (hs_data->GetBinError(centBin))*(hs_data->GetBinWidth(centBin)) <<" data events\t" <<"and unweighted entries=\t" << (hs_data->GetBinContent(centBin))*(hs_data->GetBinWidth(centBin)) <<std::endl;
+	  
+	  std::cout<<"\t"<<std::endl;
+	  Int_t nbins = hs_data->GetNbinsX();
+	  for(Int_t i = 1; i<=nbins; i++){
+		  std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" +/- "<< (hs_ttbar->GetBinError(i))*(hs_ttbar->GetBinWidth(i)) <<" weighted MC events and " << (hs_data->GetBinContent(i))*(hs_data->GetBinWidth(i)) <<" data evts" <<std::endl;
+	  }//end loop over bins in MLLJJ
   }
+
+  if(fname.EqualTo("unweightedMLLJJ") ){
+	  std::cout<<"\t"<<std::endl;
+	  Int_t nbins = hs_data->GetNbinsX();
+	  for(Int_t i = 1; i<=nbins; i++){
+		  std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" unweighted MC events" <<std::endl;
+	  }//end loop over bins in unweightedMLLJJ
+  }
+
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
-  ratio->SetLabelSize(0.1,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,2.0);
+  ratio->SetLabelSize(labelSize - 0.07,"y");
+  ratio->GetYaxis()->SetRangeUser(0.5,2.4);
   ratio->GetYaxis()->SetNdivisions(505);
   ratio->Draw("p");
   float xmax = ratio->GetXaxis()->GetXmax();
@@ -298,9 +455,19 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->cd();
   mycanvas->Update();
 
-  TString fn = fname + "_sidebandEMuChannelNoDyRescaledTTBarMCNoLLJJCut";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
+  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
+#ifdef doNarrowMlljj
+	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjWindowFixedBinWidth";
+#endif
 
-  if(fname.EqualTo("Mlljj")){
+#ifdef doNarrowLeadLeptEta
+	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjAndLeadLeptEtaFixedBinWidth";
+#endif
+
+
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("unweightedMLLJJ")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  p1->SetLogy();

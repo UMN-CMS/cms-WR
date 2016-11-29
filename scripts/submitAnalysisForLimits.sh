@@ -1,11 +1,10 @@
-arguments="--toys 4000"
+arguments="--toys 3200"
 logdir=$PWD/log
 mass_n=$(seq 1 25)
 
-queue=1nd
-tag=$1
-dir=$2
-finaldir=$dir/$tag/
+queue=2nd
+tag=3200toysAllSyst
+finaldir=/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/$tag/
 
 for mass in $mass_n
 do
@@ -14,8 +13,8 @@ do
 done
 
 #EMu data
-bsub -q $queue -eo $logdir/data_emu_ee_${tag}.err   -oo $logdir/data_emu_ee_${tag}.out   "$PWD/runJob.sh EMu data $finaldir $PWD \"$arguments  --cut_channel EE\""
-bsub -q $queue -eo $logdir/data_emu_mumu_${tag}.err -oo $logdir/data_emu_mumu_${tag}.out "$PWD/runJob.sh EMu data $finaldir $PWD \"$arguments  --cut_channel MuMu\""
+#bsub -q $queue -eo $logdir/data_emu_ee_${tag}.err   -oo $logdir/data_emu_ee_${tag}.out   "$PWD/runJob.sh EMu data $finaldir $PWD \"$arguments  --cut_channel EE\""
+#bsub -q $queue -eo $logdir/data_emu_mumu_${tag}.err -oo $logdir/data_emu_mumu_${tag}.out "$PWD/runJob.sh EMu data $finaldir $PWD \"$arguments  --cut_channel MuMu\""
 
 #EE dy
 bsub -q $queue -eo $logdir/dy_ee_${tag}.err -oo $logdir/dy_ee_${tag}.out "$PWD/runJob.sh EE DYAMC $finaldir $PWD \"$arguments\""

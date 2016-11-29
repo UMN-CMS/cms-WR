@@ -128,7 +128,7 @@ public:
 			etaHigherLevel[i] = -20;
 			phiHigherLevel[i] = -20;
 		}
-
+		
 	}///end resetCounters()
 
 private:
@@ -333,6 +333,10 @@ FindHigherLevelMatchedObject::produce(edm::Event& iEvent, const edm::EventSetup&
 
 	///now put the collection of matched higher level reco::Candidate objects into the event
 	iEvent.put(outputObjColl, outputCollName);
+
+#ifdef DEBUG
+	std::cout<<"put collection of matched reco::Candidate objects into root file"<<std::endl;
+#endif
 
 }
 
