@@ -26,8 +26,12 @@ public:
 	// UInt_t run_time;
 
 	std::vector<TLorentzVector> * electrons_p4;
-	std::vector<Float_t> * electron_scale;
-	std::vector<Float_t> * electron_smearing;
+	std::vector<Float_t> * electron_scale_error;
+	std::vector<Float_t> * electron_smearing_sigma;
+	std::vector<Float_t> * electron_smearing_sigma_phi_up;
+	std::vector<Float_t> * electron_smearing_sigma_phi_down;
+	std::vector<Float_t> * electron_smearing_sigma_rho_up;
+	std::vector<Float_t> * electron_smearing_sigma_rho_down;
 	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
 
@@ -49,6 +53,13 @@ public:
 
 	std::vector<TLorentzVector> * jets_p4;
 	std::vector<Float_t> * jec_uncertainty;
+	std::vector<Float_t> * jetResolution;
+	std::vector<Float_t> * JER_sf;
+	std::vector<Float_t> * JER_sf_up;
+	std::vector<Float_t> * JER_sf_down;
+	std::vector<Float_t> * genJetPt;
+	std::vector<bool> * genJetMatch;
+
 
 	Float_t nPU;
 	Int_t nPV;

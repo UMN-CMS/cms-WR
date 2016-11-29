@@ -66,14 +66,22 @@ public:
 	Float_t lead_lepton_IsoSF_error;
 	Float_t lead_lepton_RecoSF_error;
 	Float_t lead_lepton_HltSF_error;
-	Float_t lead_lepton_ESmearing_error;
 	Float_t lead_lepton_EScaling_error;
+	Float_t lead_lepton_ESmearing_sigma;
+	Float_t lead_lepton_ESmearing_sigma_phi_up;
+	Float_t lead_lepton_ESmearing_sigma_phi_down;
+	Float_t lead_lepton_ESmearing_sigma_rho_up;
+	Float_t lead_lepton_ESmearing_sigma_rho_down;
 	Float_t sublead_lepton_IDSF_error;
 	Float_t sublead_lepton_IsoSF_error;
 	Float_t sublead_lepton_RecoSF_error;
 	Float_t sublead_lepton_HltSF_error;
-	Float_t sublead_lepton_ESmearing_error;
 	Float_t sublead_lepton_EScaling_error;
+	Float_t sublead_lepton_ESmearing_sigma;
+	Float_t sublead_lepton_ESmearing_sigma_phi_up;
+	Float_t sublead_lepton_ESmearing_sigma_phi_down;
+	Float_t sublead_lepton_ESmearing_sigma_rho_up;
+	Float_t sublead_lepton_ESmearing_sigma_rho_down;
 
 	Double_t nPU;	///<positive only for MC
 	Int_t nPV;
@@ -81,6 +89,8 @@ public:
 
 	Float_t weight; ///< this variable takes into accont the product of the global_event_weight and the single object weights   the cross sxn normalization is applied in analysis.cpp
 	Float_t pu_weight;	///< the PU weight, equivalent to the absolute value of the global_event_weight
+
+	Float_t HT;
 
 	bool isPassing(tag_t tag, bool makeHists = false);
 	bool isPassingLooseCuts(tag_t tag);

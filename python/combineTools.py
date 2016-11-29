@@ -10,10 +10,11 @@ import ExoAnalysis.cmsWR.backgroundFits as bgfits
 import ExoAnalysis.cmsWR.cross_sections as xs
 import math
 import datetime
-from os import environ
+import os
+import sys
 
-datafolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data/"
-configfolder = environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/configs/"
+datafolder = os.environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/data/"
+configfolder = os.environ['LOCALRT'] + "/src/ExoAnalysis/cmsWR/configs/"
 ##
 # @brief creates a datacard for combine for signal and background
 #
@@ -40,6 +41,11 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 		bg_rates   += "%.4g" % bg_rate + "  "
 	names = sig_name + "  " + bg_names
 	rates = signal_rate + '  ' + bg_rates
+	try:
+		os.mkdir(os.path.dirname(outfile))
+	except os.error as e:
+		if e.errno != 17:
+			raise
 	with open(outfile, "w") as out:
 		out.write("imax 1  number of channels\n")
 		out.write("jmax %d  number of backgrounds\n" % nBGs)
@@ -83,9 +89,34 @@ class AnalysisResultsInterface:
 
 		self.masses = []
 		self.results = {}
+		self.header = False
 
 	def getUncertainty(self, mode, channel):
 		return 1 + self.SF[mode][channel]["unc"]/self.SF[mode][channel]["SF"]
+
+	def printResultsheader(self):
+		if self.header: return
+		self.header = True
+		print "[RESULTS]","key","mass",
+		ex = self.results[self.results.keys()[0]]
+		for key in ex:
+			if type(ex[key]) == type({}):
+				for nkey in ex[key]:
+					print key+"_"+nkey,
+			else:
+				print key,
+		print
+
+	def printResults(self,key,i):
+		self.printResultsheader()
+		print "[RESULTS]",key,self.masses[i],
+		for ikey in self.results[key]:
+			if type(self.results[key][ikey]) == type({}):
+				for jkey in self.results[key][ikey]:
+					print self.results[key][ikey][jkey][i],
+			else:
+				print self.results[key][ikey][i],
+		print
 
 	def getNEvents(self, MWR, channel, process, systematics, scale = 1.0):
 		""" returns mean, syst, stat """
@@ -124,7 +155,7 @@ class AnalysisResultsInterface:
 
 		global_ratio = self.results[zerokey]["syst"]["mean"][0]*scale/( self.results[zerokey]["syst"]["unweighted_mean"][0] + 1)
 		if syst_unweighted < 3:
-			stat_err = global_ratio*syst_unweighted
+			syst_mean = global_ratio*syst_unweighted
 
 		var = tmp_syst**2 + stat_err**2
 		if syst_mean > 0:
@@ -145,26 +176,17 @@ class AnalysisResultsInterface:
 		else:
 			N=0
 			alpha = global_ratio
+			mean = alpha
 			rate = .0001
 
-		raw = [ syst_mean, rate, central_value, tmp_syst, stat_err,tmp_stat, var, syst_unweighted, ]
 		systematics.add(process, "lumi", 1.027)
-		raw += [1.027]
-
 		systematics.add(process, process + "_unc", (N,alpha))
-		raw +=[N,alpha]
 		
 		if process in ["DYAMC", "TT"]:
 			systematics.add(process,process + "_SF", self.getUncertainty(process, channel))
-			raw += [self.getUncertainty(process, channel)]
-		else:
-			raw += [0.0]
 
-		if "_800" == key[-4:]:
-			key = key[:-3] + "0800"
-		raw = ["%0.4e" % x for x in raw]
-		raw = ["raw", key, "%04d" % MWR] + raw
-		#print " ".join(raw)
+		self.results[key]["mean"][mass_i] = mean
+		self.printResults(key, mass_i)
 
 		return rate
 
@@ -248,19 +270,18 @@ class AnalysisResultsInterface:
 				"central": {
 					"weighted": central_value.tolist(),
 					"unweighted": central_unweighted.tolist(),
-					}
+					},
+				"mean":[0]*len(self.masses)
 				}
 
 
 	def OpenFile(self, channel, process, MWR):
-		oldtag = self.filefmt_dict["tag"]
+		#oldtag = self.filefmt_dict["tag"]
 		if process == "signal":
 			mode = "WRto" + self.chnlName[channel] + "JJ_" + str(MWR) + "_" + str(MWR/2)
-			if MWR == 1800: 
-				mode = "WRto" + self.chnlName[channel] + "JJ_1800_1400"
 			minitreename = "signal_" + channel
 		elif "TT" in process:
-			self.filefmt_dict["tag"] = self.chnlName[channel]
+			#self.filefmt_dict["tag"] = self.chnlName[channel]
 			channel = "emu"
 			mode = "data"
 			minitreename = "flavoursideband"
@@ -275,13 +296,17 @@ class AnalysisResultsInterface:
 		self.filefmt_dict["mode"] = mode
 
 		filename = self.filefmt.format(**self.filefmt_dict)
-		self.filefmt_dict["tag"] = oldtag
+		#self.filefmt_dict["tag"] = oldtag
 		#print "Opening File ", filename
 		f = r.TFile.Open(filename)
-		if not f: raise IOError
+		if not f:
+			if MWR == 1800: 
+				f = r.TFile.Open(filename.replace("900","1400"))
+				if not f: raise IOError(filename)
 		return f
 
 	def GetMasses(self, f):
+		if self.masses: return
 		masses = r.std.vector(int)()
 		f.GetObject("signal_mass", masses)
 		self.masses = [m for m in masses]
