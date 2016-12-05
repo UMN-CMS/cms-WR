@@ -228,7 +228,8 @@ lowFourObjectSidebandFilter  = cms.EDFilter('CandViewCountFilter',
 
 flavourSidebandSelector = cms.EDFilter("CandViewSelector",
                                      src = cms.InputTag("wRdiLeptonCandidate"),
-                                     cut = cms.string(flavourSidebandSelection+" && " + diLeptonSelection),
+                                     #original cut = cms.string(flavourSidebandSelection+" && " + diLeptonSelection),
+									 cut = cms.string(flavourSidebandSelection+" && (mass<180)"),#inverted dilepton mass cut
                                      )
 
 flavourSidebandFilter = cms.EDFilter('CandViewCountFilter',
