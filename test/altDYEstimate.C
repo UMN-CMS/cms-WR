@@ -20,6 +20,8 @@
 #include <cstdio>
 #include <memory>
 
+//#define doDataDrivenTT //ignore TT MC in low dilepton sideband, and subtract data driven TT SR estimate from DY estimate
+
 /**
  * steps to use this macro:
  * 1. process data, TTBar and DY MC with analysis.cpp with low dilepton mass sideband requirements and DY MLL scale factors
@@ -44,17 +46,17 @@ void altDYEstimate(){
   TString treeName = "Tree_Iter0";
 
   //sideband region files
-  TChain * chain_DataMu_CR = new TChain(treeName);
+  TChain * chain_DataMu_CR = new TChain(treeName, "CR");
   chain_DataMu_CR->Add(dir+"selected_tree_data_lowdileptonsidebandMuMu.root");	//mu channel data in sideband
-  TChain * chain_DYMu_CR = new TChain(treeName);
+  TChain * chain_DYMu_CR = new TChain(treeName, "CR");
   chain_DYMu_CR->Add(dir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");	//mu channel DY MC in sideband
-  TChain * chain_DataEle_CR = new TChain(treeName);
+  TChain * chain_DataEle_CR = new TChain(treeName, "CR");
   chain_DataEle_CR->Add(dir+"selected_tree_data_lowdileptonsidebandEE.root");	//ele channel data in sideband
-  TChain * chain_DYEle_CR = new TChain(treeName);
+  TChain * chain_DYEle_CR = new TChain(treeName, "CR");
   chain_DYEle_CR->Add(dir+"selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");	//ele channel DY MC in sideband
-  TChain * chain_TTMu_CR = new TChain(treeName);
+  TChain * chain_TTMu_CR = new TChain(treeName, "CR");
   chain_TTMu_CR->Add(dir+"selected_tree_TT_lowdileptonsidebandMuMu.root");	//mu channel TTBar MC in sideband
-  TChain * chain_TTEle_CR = new TChain(treeName);
+  TChain * chain_TTEle_CR = new TChain(treeName, "CR");
   chain_TTEle_CR->Add(dir+"selected_tree_TT_lowdileptonsidebandEE.root");	//ele channel TTBar MC in sideband
 
   //signal region files
@@ -63,6 +65,9 @@ void altDYEstimate(){
   TChain * chain_DYEle_SR = new TChain(treeName);
   chain_DYEle_SR->Add(dir+"selected_tree_DYAMC_signal_eeEE_withMllWeight.root");	//ele channel DY MC in signal region
 
+  //emu data file for TTBar subtraction
+  TChain * chain_DataEMu_SR = new TChain(treeName, "DataEMu");
+  chain_DataEMu_SR->Add(dir+"selected_tree_data_flavoursidebandEMuEE.root");	//emu channel data
  
   Selector myEvent_DataMu_CR;
   Selector myEvent_DYMu_CR;
@@ -72,6 +77,7 @@ void altDYEstimate(){
   Selector myEvent_DYEle_SR;
   Selector myEvent_TTMu_CR;
   Selector myEvent_TTEle_CR;
+  Selector myEvent_DataEMu_SR;
   
   myEvent_DataMu_CR.SetBranchAddresses(chain_DataMu_CR);
   myEvent_DYMu_CR.SetBranchAddresses(chain_DYMu_CR);
@@ -81,6 +87,7 @@ void altDYEstimate(){
   myEvent_DYEle_SR.SetBranchAddresses(chain_DYEle_SR);
   myEvent_TTMu_CR.SetBranchAddresses(chain_TTMu_CR);
   myEvent_TTEle_CR.SetBranchAddresses(chain_TTEle_CR);
+  myEvent_DataEMu_SR.SetBranchAddresses(chain_DataEMu_SR);
  
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///now declare and fill individual histos, and declare ratio histos made by dividing two or more filled histos
@@ -96,6 +103,9 @@ void altDYEstimate(){
   TH1 *h_WR_mass_DYMuSR = new TH1F("h_WR_mass_DYMuSR","",binnum, bins);
   TH1 *h_WR_mass_TTEleCR = new TH1F("h_WR_mass_TTEleCR","",binnum, bins);
   TH1 *h_WR_mass_TTMuCR = new TH1F("h_WR_mass_TTMuCR","",binnum, bins);
+  TH1 *h_WR_mass_DataTTEESR = new TH1F("h_WR_mass_DataTTEESR","h_WR_mass_DataTTEESR",binnum, bins);
+  TH1 *h_WR_mass_DataTTMuMuSR = new TH1F("h_WR_mass_DataTTMuMuSR","h_WR_mass_DataTTMuMuSR",binnum, bins);
+  
   /**/
 
   /*
@@ -119,6 +129,13 @@ void altDYEstimate(){
   fillHisto(chain_DYMu_SR, &myEvent_DYMu_SR, h_WR_mass_DYMuSR);
   fillHisto(chain_TTEle_CR, &myEvent_TTEle_CR, h_WR_mass_TTEleCR);
   fillHisto(chain_TTMu_CR, &myEvent_TTMu_CR, h_WR_mass_TTMuCR);
+
+#ifdef doDataDrivenTT
+  fillHisto(chain_DataEMu_SR, &myEvent_DataEMu_SR, h_WR_mass_DataTTEESR);
+  fillHisto(chain_DataEMu_SR, &myEvent_DataEMu_SR, h_WR_mass_DataTTMuMuSR);
+  h_WR_mass_DataTTEESR->Sumw2();
+  h_WR_mass_DataTTMuMuSR->Sumw2();
+#endif
   
   h_WR_mass_DataEleCR->Sumw2();
   h_WR_mass_DataMuCR->Sumw2();
@@ -183,13 +200,30 @@ void altDYEstimate(){
   ///to determine the DY background in the SR using collision data in the CR
   
   TH1* h_WR_mass_DataDrivenDYEleSR = (TH1*) h_WR_mass_DataEleCR->Clone();
+
+#ifndef doDataDrivenTT
   h_WR_mass_DataDrivenDYEleSR->Multiply( h_ratio_WR_mass_EleCR_DYtoDYplusTT );	///<this accounts for DY not constituting the entire bkgnd in CR, there is some TTBar
   h_WR_mass_DataDrivenDYEleSR->Multiply( h_ratio_WR_mass_DYEleSRtoCR );	///<this applies the DY SR to CR scale factors to data
+#endif
+
+#ifdef doDataDrivenTT
+  h_WR_mass_DataDrivenDYEleSR->Multiply( h_ratio_WR_mass_DYEleSRtoCR );	///<apply the DY SR to CR scale factors to data
+  h_WR_mass_DataDrivenDYEleSR->Add( ((TH1*) h_WR_mass_DataTTEESR->Clone()), -1);
+#endif
   h_WR_mass_DataDrivenDYEleSR->Sumw2();
 
+
   TH1* h_WR_mass_DataDrivenDYMuSR = (TH1*) h_WR_mass_DataMuCR->Clone();
+
+#ifndef doDataDrivenTT
   h_WR_mass_DataDrivenDYMuSR->Multiply( h_ratio_WR_mass_MuCR_DYtoDYplusTT );	///<this accounts for DY not constituting the entire bkgnd in CR, there is some TTBar
-  h_WR_mass_DataDrivenDYMuSR->Multiply( h_ratio_WR_mass_DYMuSRtoCR );	///<this applies the DY SR to CR scale factors to data
+  h_WR_mass_DataDrivenDYMuSR->Multiply( h_ratio_WR_mass_DYMuSRtoCR );	///<apply the DY SR to CR scale factors to data
+#endif
+
+#ifdef doDataDrivenTT
+  h_WR_mass_DataDrivenDYMuSR->Multiply( h_ratio_WR_mass_DYMuSRtoCR );	///<apply the DY SR to CR scale factors to data
+  h_WR_mass_DataDrivenDYMuSR->Add( ((TH1*) h_WR_mass_DataTTMuMuSR->Clone()), -1);
+#endif
   h_WR_mass_DataDrivenDYMuSR->Sumw2();
 
 
@@ -236,21 +270,21 @@ void altDYEstimate(){
 
   gStyle->SetOptStat("");
   ///plot scale factors which interpolate between DY MC in the sideband to DY MC in the signal region
-  makePlot(h_ratio_WR_mass_DYMuSRtoCR, "M_{MuMuJJ} [GeV]", "DY M_{MuMuJJ} Signal Region / Control Region", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "DYMCMu_SRtoCR_scaleFactors", "DYMuSRtoCR", -1, -2);
-  makePlot(h_ratio_WR_mass_DYEleSRtoCR, "M_{EEJJ} [GeV]", "DY M_{EEJJ} Signal Region / Control Region", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "DYMCEle_SRtoCR_scaleFactors", "DYEleSRtoCR", -1, -2);
+  makePlot(h_ratio_WR_mass_DYMuSRtoCR, "M_{MuMuJJ} [GeV]", "DY M_{MuMuJJ} Signal Region / Control Region", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "DYMCMu_SRtoCR_scaleFactors_withMLLBelow180", "DYMuSRtoCR", -1, -2);
+  makePlot(h_ratio_WR_mass_DYEleSRtoCR, "M_{EEJJ} [GeV]", "DY M_{EEJJ} Signal Region / Control Region", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "DYMCEle_SRtoCR_scaleFactors_withMLLBelow180", "DYEleSRtoCR", -1, -2);
 
   ///plot scale factors which reflect the fraction of the total MC background in the sideband which comes from DY
-  makePlot(h_ratio_WR_mass_MuCR_DYtoDYplusTT, "M_{MuMuJJ} [GeV]", "Control Region DY / DY + TT", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "MC_CRMu_DYoverDYplusTT_scaleFactors", "MuCRDYoverDYplusTT", 1.2, 0.6);
-  makePlot(h_ratio_WR_mass_EleCR_DYtoDYplusTT, "M_{EEJJ} [GeV]", "Control Region DY / DY + TT", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "MC_CREle_DYoverDYplusTT_scaleFactors", "EleCRDYoverDYplusTT", 1.2, 0.6);
+  makePlot(h_ratio_WR_mass_MuCR_DYtoDYplusTT, "M_{MuMuJJ} [GeV]", "Control Region DY / DY + TT", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "MC_CRMu_DYoverDYplusTT_scaleFactors_withMLLBelow180", "MuCRDYoverDYplusTT", 1.2, 0.6);
+  makePlot(h_ratio_WR_mass_EleCR_DYtoDYplusTT, "M_{EEJJ} [GeV]", "Control Region DY / DY + TT", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "MC_CREle_DYoverDYplusTT_scaleFactors_withMLLBelow180", "EleCRDYoverDYplusTT", 1.2, 0.6);
 
   ///plot the net scale factors which are applied to data in the sideband to estimate DY in the signal region
   TH1* MuNetSF = (TH1*) h_ratio_WR_mass_DYMuSRtoCR->Clone();
   MuNetSF->Multiply(h_ratio_WR_mass_MuCR_DYtoDYplusTT);
-  makePlot(MuNetSF, "M_{MuMuJJ} [GeV]", "Scale Factor applied to Mu Data", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "MuData_scaleFactors", "SFappliedToMuData", 0.2, -0.1);
+  makePlot(MuNetSF, "M_{MuMuJJ} [GeV]", "Scale Factor applied to Mu Data", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}", "MuData_scaleFactors_withMLLBelow180", "SFappliedToMuData", 0.2, -0.1);
 
   TH1* EleNetSF = (TH1*) h_ratio_WR_mass_DYEleSRtoCR->Clone();
   EleNetSF->Multiply(h_ratio_WR_mass_EleCR_DYtoDYplusTT);
-  makePlot(EleNetSF, "M_{EEJJ} [GeV]", "Scale Factor applied to Ele Data", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}","EleData_scaleFactors","SFappliedToEleData", 0.3, -0.1);
+  makePlot(EleNetSF, "M_{EEJJ} [GeV]", "Scale Factor applied to Ele Data", "CMS Private   #surds = 13 TeV  #int lumi = 2.6 fb^{-1}","EleData_scaleFactors_withMLLBelow180","SFappliedToEleData", 0.3, -0.1);
 
 
   ///plot DY SR estimate from data overlaid on DY MC in SR
@@ -263,7 +297,10 @@ void altDYEstimate(){
   h_WR_mass_DYMuSR->GetXaxis()->SetTitle("M_{MuMuJJ} [GeV]");
   h_WR_mass_DYMuSR->SetLineColor(kRed);
   h_WR_mass_DYMuSR->SetLineWidth(3);
-  h_WR_mass_DYMuSR->SetMaximum(1.6);
+  h_WR_mass_DYMuSR->SetMaximum(0.8);
+#ifdef doDataDrivenTT
+  h_WR_mass_DYMuSR->SetMinimum(-0.7);
+#endif
   h_WR_mass_DYMuSR->Draw("histo");
   h_WR_mass_DataDrivenDYMuSR->Draw("epsame");
   
@@ -271,8 +308,13 @@ void altDYEstimate(){
   leg_MuMu->AddEntry( h_WR_mass_DataDrivenDYMuSR, "Data Driven" );
   leg_MuMu->AddEntry( h_WR_mass_DYMuSR, "MC" );
   leg_MuMu->Draw();
-  mycanv_DYMu->Print(("DYMuSR_data_driven_and_MC_estimate.pdf"));
-  mycanv_DYMu->Print(("DYMuSR_data_driven_and_MC_estimate.png"));
+  TString outFileNameMuMu = "DYMuSR_data_driven_and_MC_estimate_withMLLBelow180";
+#ifdef doDataDrivenTT
+  outFileNameMuMu = "DYMuSR_data_driven_and_MC_estimate_withMLLBelow180_subtrDataDrivenTTBar";
+#endif
+
+  mycanv_DYMu->Print((outFileNameMuMu+".pdf"));
+  mycanv_DYMu->Print((outFileNameMuMu+".png"));
 
   TCanvas* mycanv_DYEle = new TCanvas( "mycanv_DYEle", "", 0, 0, 600, 600 ) ;
   h_WR_mass_DataDrivenDYEleSR->GetXaxis()->SetTitle("M_{MuMuJJ} [GeV]");
@@ -283,7 +325,10 @@ void altDYEstimate(){
   h_WR_mass_DYEleSR->GetYaxis()->SetTitle("Events normalized to bin width");
   h_WR_mass_DYEleSR->SetLineColor(kRed);
   h_WR_mass_DYEleSR->SetLineWidth(3);
-  h_WR_mass_DYEleSR->SetMaximum(1.6);
+  h_WR_mass_DYEleSR->SetMaximum(0.8);
+#ifdef doDataDrivenTT
+  h_WR_mass_DYEleSR->SetMinimum(-0.5);
+#endif
   h_WR_mass_DYEleSR->Draw("histo");
   h_WR_mass_DataDrivenDYEleSR->Draw("epsame");
   
@@ -291,22 +336,32 @@ void altDYEstimate(){
   leg_EE->AddEntry( h_WR_mass_DataDrivenDYEleSR, "Data Driven" );
   leg_EE->AddEntry( h_WR_mass_DYEleSR, "MC" );
   leg_EE->Draw();
-  mycanv_DYEle->Print(("DYEleSR_data_driven_and_MC_estimate.pdf"));
-  mycanv_DYEle->Print(("DYEleSR_data_driven_and_MC_estimate.png"));
+  TString outFileNameEE = "DYEleSR_data_driven_and_MC_estimate_withMLLBelow180";
+#ifdef doDataDrivenTT
+  outFileNameEE = "DYEleSR_data_driven_and_MC_estimate_withMLLBelow180_subtrDataDrivenTTBar";
+#endif
+  mycanv_DYEle->Print((outFileNameEE+".pdf"));
+  mycanv_DYEle->Print((outFileNameEE+".png"));
 
 
 }//end altDYEstimate()
-
+ 
 void fillHisto(TChain * chain, Selector *myEvent, TH1 * h){
-
   Long64_t nEntries = chain->GetEntries();
-
   cout<< nEntries << endl;
-
+  TString chainTitle(chain->GetTitle());
+  TString hTitle(h->GetTitle());
+  Float_t extraSF = 1.0;
+  if(chainTitle.EqualTo("DataEMu")){
+	  extraSF = (hTitle.EqualTo("h_WR_mass_DataTTMuMuSR")) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
+  }
+  
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
+	if( chainTitle.EqualTo("CR") && myEvent->dilepton_mass > 180.) continue;//skip low dilepton mass sideband evts with dilepton mass above 180 GeV
+	if( chainTitle.EqualTo("DataEMu") && myEvent->dilepton_mass < 200. ) continue;	//skip emu evts with dilepton mass below 200 GeV
     if(myEvent->WR_mass > 600.) 
-      h->Fill(myEvent->WR_mass,myEvent->weight);
+      h->Fill(myEvent->WR_mass,(myEvent->weight)*extraSF);
   }
   std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
 }//end fillHisto()
