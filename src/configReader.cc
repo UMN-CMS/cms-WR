@@ -60,8 +60,7 @@ configReader::configReader(std::string filename)
 TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
-	//chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
-	chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/custom2015Minitrees/muEGminitreesWithLowDileptonReqInFlavourSideband.root");
+	chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
 	chain->GetEntries();
 	return chain;
 }
