@@ -7,5 +7,5 @@ export X509_USER_PROXY=/afs/cern.ch/user/s/skalafut/x509up_u38430
 
 cd $UP/$CMSSW_PROJECT_SRC
 eval `scramv1 runtime -sh`
-eval "cmsRun test/runAnalysis_cfg.py test=2 output=reprocessTTJetsV2MCMinitrees.root >& TTMCOutput.txt &"
+eval "cmsRun test/runAnalysis_cfg.py test=2"
 
