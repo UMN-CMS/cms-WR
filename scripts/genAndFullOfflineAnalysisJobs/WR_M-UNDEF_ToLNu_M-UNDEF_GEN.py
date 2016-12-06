@@ -50,7 +50,7 @@ process.GENRAWoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('file:WR_MWR_MMAASS_ToLNu_MNu_MASSNU_GEN_8TeV_NUM.root'),
+    fileName = cms.untracked.string('file:WR_MWR_MMAASS_ToLNu_MNu_MASSNU_GEN_13TeV_NUM.root'),
     #fileName = cms.untracked.string('file:genwr.root'),
 	outputCommands = process.GENRAWEventContent.outputCommands + cms.untracked.vstring('drop *','keep GenEventInfoProduct_*_*_*','keep recoGenJets_ak4GenJets_*_*','keep recoGenParticles_*_*_*'),
     splitLevel = cms.untracked.int32(0)
@@ -92,7 +92,7 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
             'ParticleDecays:tau0Max = 10', 
             'ParticleDecays:allowPhotonRadiation = on')
     ),
-    comEnergy = cms.double(8000.0),
+    comEnergy = cms.double(13000.0),
     crossSection = cms.untracked.double(0.001843),
     filterEfficiency = cms.untracked.double(1),
     maxEventsToPrint = cms.untracked.int32(0),

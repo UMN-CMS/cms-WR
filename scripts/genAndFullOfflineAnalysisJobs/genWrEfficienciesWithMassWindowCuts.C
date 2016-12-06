@@ -172,14 +172,14 @@ void genWrEfficienciesWithMassWindowCuts(){
 	///also apply the mass window cuts before calculating the efficiency
 
 	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
-	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
+	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/8TeV/";
 	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
 	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
-	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
+	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts_8TeV.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
@@ -234,16 +234,16 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * r1 = new TCanvas("r1","r1",900,700);
 	r1->cd();
 	twoDimAcceptanceHist->Draw("COLZ");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows.png","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows.pdf","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_8TeV.png","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_8TeV.pdf","recreate");
 
 	twoDimMassWindowEfficiencyHist->GetXaxis()->SetTitle("WR Mass [GeV]");
 	twoDimMassWindowEfficiencyHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
 	TCanvas * c1 = new TCanvas("c1","c1",900,700);
 	c1->cd();
 	twoDimMassWindowEfficiencyHist->Draw("COLZ");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts.png","recreate");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts.pdf","recreate");
+	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_8TeV.png","recreate");
+	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_8TeV.pdf","recreate");
 
 }///end genWrEfficienciesWithMassWindowCuts()
 
