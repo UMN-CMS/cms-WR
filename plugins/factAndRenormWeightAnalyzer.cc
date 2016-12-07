@@ -176,6 +176,7 @@ factAndRenormWeightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventS
 
 	if(lheHandle.isValid() && lheHandle->weights().size() >= 9){
 		std::vector<WGT> weightVals = lheHandle->weights();
+		/*
 		std::vector<std::string> weightComments = lheHandle->getComments();
 
 #ifdef DEBUG
@@ -186,6 +187,7 @@ factAndRenormWeightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventS
 		for(unsigned int i = 0; i < elems; i++) {
 			std::cout << "weight number  " << i << "  =  " << weightVals[i].wgt <<"  comment  "<< weightComments[i] << std::endl;
 		}
+		*/
 
 	}//end if handle is valid and has at least 9 different weights
 
