@@ -36,7 +36,7 @@ options.register('jsonFile',
 
 #default options
 options.maxEvents = -1
-defaultFileOutput = "reprocessTTJetsV2MCPartOne.root"
+defaultFileOutput = "reprocessTTJetsV2MCPartNNN.root"
 options.output = defaultFileOutput
 #
 
@@ -52,11 +52,11 @@ elif(options.test==0):
 	options.datasetTag='reprocessMuEGData'
 elif(options.test==2):
 	#original options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
-	options.files=['root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_11_2_n9j.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_10_2_K9s.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_12_2_Jjo.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_13_2_WGG.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_14_2_8So.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_15_2_hhg.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_16_2_ltB.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_17_2_GWQ.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_18_2_GU1.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_19_2_ZXr.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_1_2_Ebe.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_20_2_dK5.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_21_2_zMB.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_22_2_xxx.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_23_2_t1T.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_24_2_6VU.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_25_2_i13.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_26_2_vM5.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_27_2_5dF.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_28_2_Eko.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_29_2_WsC.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_2_2_AFa.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_30_2_8cp.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_31_2_Q9v.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_32_2_4I4.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_33_1_Juk.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_34_2_Yo5.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_35_2_7wE.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_36_2_C8E.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/TTJets_DiLept_v2_SHv12/TTJets_DiLept_v2_37_2_6Ck.root']
+	options.files='INPTFILE'
 	options.maxEvents= -1 
 	options.isMC=1
 	#original options.datasetTag='dyJetsAmcNloInclusive'
-	options.datasetTag='reprocessTTJetsV2MCPartOne'
+	options.datasetTag='reprocessTTJetsV2MCPartNNN'
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
     options.maxEvents=200
