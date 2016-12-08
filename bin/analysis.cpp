@@ -634,7 +634,7 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassing(channel, makeSelectorPlots && loop_one)) {
 
-					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
+					if (channel == Selector::EMu && selEvent.dilepton_mass > 200) continue;
 
 
 					if(isData == false) {
