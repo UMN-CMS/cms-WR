@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <memory>
 
-
+//#define doDataDrivenTT
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
@@ -43,7 +43,9 @@ void quickLowFourObjMassMiniPlotter(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
-  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+#ifdef doDataDrivenTT
+  chain_ttbar = new TChain("Tree_Iter0","TTData");
+#endif 
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
@@ -54,8 +56,12 @@ void quickLowFourObjMassMiniPlotter(){
   switch (channel) {
   case Selector::EE:
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
+#ifndef doDataDrivenTT
 	tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
-    //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+#endif
+#ifdef doDataDrivenTT
+	tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+#endif
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
@@ -63,8 +69,12 @@ void quickLowFourObjMassMiniPlotter(){
     break;
   case Selector::MuMu:
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+#ifndef doDataDrivenTT
 	tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
-    //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
+#endif
+#ifdef doDataDrivenTT
+   	tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
+#endif
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
@@ -155,21 +165,19 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   cout<< nEntries << endl;
 
   Float_t ttScaleFactor = 1.0;
-  /*
   TString chainTitle(chain->GetTitle());
-  if( chainTitle.EqualTo("TTMC") ){
+  /*not used previously, but left here for reference
+   * if( chainTitle.EqualTo("TTMC") ){
 	  ttScaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
-  }
+  }*/
   if( chainTitle.EqualTo("TTData") ){
 	  ttScaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
   }
-  */
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
-	if(myEvent->WR_mass > 600.) continue;
-	if(myEvent->dilepton_mass < 200.) continue;
-
+	if(myEvent->WR_mass > 600.) continue;	//skip evts with four obj mass above 600 GeV
+	if(myEvent->dilepton_mass < 200.) continue; //skip evts with dilepton mass below 200 GeV
 
 	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -228,9 +236,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
+  TString ttbarLegEntry = "TT MC";
+#ifdef doDataDrivenTT
+  ttbarLegEntry = "TT Data Driven";
+#endif
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
-  leg->AddEntry( hs_DY, "DY" ) ; 
-  leg->AddEntry( hs_ttbar, "TT" ) ;
+  leg->AddEntry( hs_DY, "DY MC" ) ; 
+  leg->AddEntry( hs_ttbar, ttbarLegEntry ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
@@ -244,7 +256,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->Sumw2();
   hs_DY->Sumw2();
   
-  TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
+  TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 900, 900 ) ;
   //mycanvas->cd();	//only needed when no ratio plot is drawn
   THStack* th = new THStack();
   hs_DY->SetFillColor(kYellow);
@@ -286,8 +298,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
 
   /*if variable bin widths are used*/
-  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
-  else if(fname.EqualTo("Mll")) hs_data->GetXaxis()->SetTitle("M_{LL} [GeV]"), th->GetXaxis()->SetTitle("M_{LL} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV   ");
+  else if(fname.EqualTo("Mll")) hs_data->GetXaxis()->SetTitle("M_{LL} [GeV]"), th->GetXaxis()->SetTitle("M_{LL} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV   ");
    /**/
   hs_data->Draw("epsame");
   mycanvas->Update();
@@ -296,7 +308,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   else if(fname.EqualTo("Mll")) ratio->GetXaxis()->SetTitle("M_{LL} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
-  ratio->GetXaxis()->SetTitleSize(labelSize);
+  ratio->GetXaxis()->SetTitleSize(labelSize+0.03);
   ratio->SetLabelSize(labelSize - 0.07,"x");
   leg->Draw(); 
   mycanvas->cd();
@@ -311,8 +323,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
+  ratio->GetYaxis()->SetTitle("data/MC    ");
+  ratio->GetYaxis()->SetTitleSize(0.19);
+  ratio->GetYaxis()->SetTitleOffset(0.2);
+  //std::cout<<"y axis ratio title size=\t" << ratio->GetYaxis()->GetTitleSize()<<std::endl;
+  //std::cout<<"y axis ratio title offset=\t" << ratio->GetYaxis()->GetTitleOffset()<<std::endl;
   ratio->SetLabelSize(labelSize - 0.07,"y");
-  Float_t maxYratioRange = 1.9;
+  Float_t maxYratioRange = 1.98;
   if(channel == Selector::EE) maxYratioRange = 2.4;
   ratio->GetYaxis()->SetRangeUser(0.5,maxYratioRange);
   ratio->GetYaxis()->SetNdivisions(505);
@@ -328,8 +345,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
 
   TString fn = fname;
-  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_TTBarMC_VariableBinWidthWithRatio_lowFourObjMass";
-  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_TTBarMC_VariableBinWidthWithRatio_lowFourObjMass";
+  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_VariableBinWidthWithRatio_lowFourObjMass";
+  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_VariableBinWidthWithRatio_lowFourObjMass";
+
+  TString ttbarMode = "_TTBarMC";
+#ifdef doDataDrivenTT
+  ttbarMode = "_TTBarFromData";
+#endif
+  fn += ttbarMode;
 
   if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll")){
 	  mycanvas->Print((fn+".pdf").Data());
