@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <memory>
 
-//#define doDataDrivenTT
+#define doDataDrivenTT
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
@@ -241,7 +241,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ttbarLegEntry = "TT Data Driven";
 #endif
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
-  leg->AddEntry( hs_DY, "DY MC" ) ; 
+  leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
   leg->AddEntry( hs_ttbar, ttbarLegEntry ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
