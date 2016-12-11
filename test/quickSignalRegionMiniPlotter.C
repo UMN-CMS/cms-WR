@@ -35,7 +35,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -149,10 +149,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  scaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
   }
   if( chainTitle.EqualTo("TTData") ){
-	  scaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
+	  scaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
   }
   if( chainTitle.EqualTo("DYMC") ){
-	  scaleFactor = (channel == Selector::MuMu) ? 0.9643 : 0.9558;	//to account for slightly higher number of DY MC events relative to data evts
+	  scaleFactor = (channel == Selector::MuMu) ? 0.9643 : 0.9558;	//slightly more DY MC evts than data in sideband
   }
  
 
@@ -201,8 +201,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
-  leg->AddEntry( hs_DY, "DY" ) ; 
-  leg->AddEntry( hs_ttbar, "TT" ) ;
+  leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
+  leg->AddEntry( hs_ttbar, "TT Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
@@ -274,6 +274,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  std::cout<<"in MLLJJ distribution there are"<<std::endl;
 	  std::cout<< hs_DY->Integral() <<"\tDY weighted evts"<<std::endl;
 	  std::cout<< hs_ttbar->Integral() <<"\tttbar weighted evts"<<std::endl;
+	  std::cout<<"in e chnl 1000 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(3,11) <<std::endl;	//670 to 1210
+	  std::cout<<"in e chnl 2200 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(14,29) <<std::endl;	//1450 to 2450
+	  std::cout<<"in e chnl 3600 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(27,47) <<std::endl;	//2300 to 3870
 	  std::cout<< hs_WJets->Integral() <<"\tWJets weighted evts"<<std::endl;
 	  std::cout<< hs_WZ->Integral() <<"\tWZ weighted evts"<<std::endl;
 	  std::cout<< hs_ZZ->Integral() <<"\tZZ weighted evts"<<std::endl;
