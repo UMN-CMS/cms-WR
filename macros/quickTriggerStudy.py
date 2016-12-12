@@ -193,9 +193,9 @@ recoJetsHandl, recoJetsLabel = Handle("std::vector<pat::Jet>"), "slimmedJets"
 recoLeptonHandl, recoLeptonLabel = Handle("std::vector<pat::Muon>"), "slimmedMuons"
 
 # open one or more miniAOD .root files, and create an iterator to loop over the Event objects in the file(s)
-doMuonChannel = False 
+doMuonChannel = True 
 doRECOCuts = True	#apply cuts on reco objects which are matched to gen particles from WR decay chain
-allEvents = Events("/eos/uscms/store/user/skalafut/WR/13TeV/RunIISpring15_MiniAODSignalSamples/WRToNuMuToMuMuJJ_MW-800_MNu-400_TuneCUETP8M1_pythia8_13TeV_1.root")
+allEvents = Events("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/WR_signal_MC_centralProduction/RunIISpring15/WRToMuMuJJ_MW-3000_MNu-1500_13TeV_1.root")
 
 #dR matching thresholds for leptons and jets
 dRforJets = 0.4
@@ -301,8 +301,8 @@ print "total num evts before any cuts = ", totalNumEvts
 print "total num evts passing GEN cuts = ", totalNumEvtsAfterGenCuts
 print 'total num evts passing gen and reco cuts = ', totalNumEvtsAfterGenRecoMatchingAndRecoCuts
 for keyIter in iter(trigNamesAndNumPassing):
-	if( (trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenRecoMatchingAndRecoCuts) > 0.70):
-		print "HLT path named: ", keyIter," has trigger efficiency = ", 100*(trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenRecoMatchingAndRecoCuts) ,"% +/- ", 100*(calcEffUnc(trigNamesAndNumPassing[keyIter],totalNumEvtsAfterGenRecoMatchingAndRecoCuts)), "% in evts where gen and reco requirements are met"
+	if( (trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenRecoMatchingAndRecoCuts) > 0.85):
+		print "HLT path named: ", keyIter," has trigger efficiency = ", 100*(trigNamesAndNumPassing[keyIter]/totalNumEvtsAfterGenRecoMatchingAndRecoCuts) ,"% +/- ", 100*(calcEffUnc(trigNamesAndNumPassing[keyIter],totalNumEvtsAfterGenRecoMatchingAndRecoCuts)), "% in evts where gen and reco requirements are met with MWR 3000 GeV"
 	
 #end loop over keys in trigNamesAndNumPassing map
 
