@@ -20,8 +20,11 @@
 #include <cstdio>
 #include <memory>
 
-#define fixedBinWidths
-//#define variableBinWidths
+//#define fixedBinWidths
+#define variableBinWidths
+
+//switch btwn DY AMCNLO and DY MADHT samples
+//#define DOAMC
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -56,18 +59,32 @@ void quickMiniPlotterNonTandPSidebands(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
 	  case Selector::MuMu:
+#ifdef DOAMC
 		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
+#endif
+#ifndef DOAMC
+		  dy = chain_DY->Add(localDir+"selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
+#endif
+		  
 		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
 		  //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+		  
 		  wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandMuMu.root");
 		  wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandMuMu.root");
 		  zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandMuMu.root");
 		  data = chain_data->Add(localDir+"selected_tree_data_lowdileptonsidebandMuMu.root");
 		  break;
 	  case Selector::EE:
+#ifdef DOAMC
 		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
+#endif
+#ifndef DOAMC
+		  dy = chain_DY->Add(localDir+"selected_tree_DYMADHT_lowdileptonsidebandEE_withMllWeight.root");
+#endif
+		  
 		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandEE.root");
 		  //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+		  
 		  wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandEE.root");
 		  wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandEE.root");
 		  zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandEE.root");
@@ -150,8 +167,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 #ifdef variableBinWidths
   //variable bin widths only for WR mass plot
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};	//original
-  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500, 6000};	//wider bins, out to 6000 GeV
+  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
+  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500, 6000};	//wider bins, out to 6000 GeV
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
@@ -231,6 +248,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  //get num bins in histo i
 	  Int_t nBins = (hs->at(i))->GetNbinsX();
 	  for(Int_t j=1; j<=nBins; j++){
+		  //include the overflows in the very last bin shown on the plot
+		  if(j==nBins){
+			  Double_t origBinContents = (hs->at(i))->GetBinContent(j);
+			  Double_t overflowContents = (hs->at(i))->GetBinContent(j+1);
+			  std::cout<<"overflow contents =\t"<< overflowContents << std::endl;	//sanity check
+			  (hs->at(i))->SetBinContent(j, origBinContents+overflowContents);
+		  }//end work to include overflows in last bin shown on plot
 		  //in each bin, divide the bin contents by the bin width
 		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
 		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
@@ -254,8 +278,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->Sumw2();
 
   TLegend *leg = new TLegend( 0.6, 0.60, 0.90, 0.90 ) ; 
-  leg->AddEntry( hs_DY, "DY" ) ; 
-  leg->AddEntry( hs_ttbar, "ttbar" ) ;
+#ifdef DOAMC
+  leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
+#endif
+#ifndef DOAMC
+  leg->AddEntry( hs_DY, "DY MadgraphHT" ) ; 
+#endif
+  leg->AddEntry( hs_ttbar, "TTbar MC" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
@@ -291,7 +320,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  th->Draw("histo");
+  th->Draw("ehisto");
   hs_data->Draw("epsame");
   //TString ytitle = "Events/(";
   //ytitle += (th->GetXaxis()->GetNbins());
@@ -409,21 +438,28 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyAmc";	//for ratio plot
  
 #ifdef variableBinWidths  
-  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-  if(channel == Selector::EE) fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";
+  fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidthsLastBinIncludesOverflow_rescaledTTBarMC_lowdileptonMuMuChannel";	//for ratio plot
+  if(channel == Selector::EE) fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidthsLastBinIncludesOverflow_rescaledTTBarMC_lowdileptonEEChannel";
 #endif
 
 #ifdef fixedBinWidths
-  fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonMuMuChannelDyAmc";	//for ratio plot
-  if(channel == Selector::EE) fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonEEChannelDyAmc";
+  fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonMuMuChannel";	//for ratio plot
+  if(channel == Selector::EE) fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonEEChannel";
 #endif 
+
+#ifdef DOAMC
+  fn += "DYAMC";
+#endif
+#ifndef DOAMC
+  fn += "DYMADHT";
+#endif
 
   //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("unweightedMLLJJ")){
+  if(fname.EqualTo("Mlljj") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  p1->SetLogy();	//for ratio plot
