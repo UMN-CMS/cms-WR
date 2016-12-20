@@ -53,7 +53,7 @@ void quickSignalRegionMiniPlotter(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EE:
-	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
@@ -62,7 +62,7 @@ void quickSignalRegionMiniPlotter(){
     data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
     break;
   case Selector::MuMu:
-	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
