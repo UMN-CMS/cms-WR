@@ -2462,8 +2462,9 @@ void macroSandBox(){
 	//all relevant bkgnd chains for that channel and set of cuts. this set is repeated for each channel, then
 	//the cuts are changed.
 	std::vector<TChain*> sigAndBkgnds;
+	std::vector<std::string> comments;
 	
-	//default signal region cuts
+	//electron channel
 	TString defDir = "../analysisCppOutputRootFiles/";
 	TChain * defWrSigEE = new TChain(treeName);
 	defWrSigEE->Add(defDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
@@ -2472,16 +2473,8 @@ void macroSandBox(){
 	TChain * defDYEE = new TChain(treeName);
 	defDYEE->Add(defDir+"selected_tree_DYAMC_signal_eeEE.root");
 	sigAndBkgnds.push_back(defWrSigEE), sigAndBkgnds.push_back(defTTEE), sigAndBkgnds.push_back(defDYEE);
+	comments.push_back("default cuts e chnl");
 
-	TChain * defWrSigMuMu = new TChain(treeName);
-	defWrSigMuMu->Add(defDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
-	TChain * defTTMuMu = new TChain(treeName);
-	defTTMuMu->Add(defDir+"selected_tree_TT_signal_mumuMuMu.root");
-	TChain * defDYMuMu = new TChain(treeName);
-	defDYMuMu->Add(defDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
-	sigAndBkgnds.push_back(defWrSigMuMu), sigAndBkgnds.push_back(defTTMuMu), sigAndBkgnds.push_back(defDYMuMu);
-
-	//lower jet pT cut than default
 	TString lowJetDir = "../analysisCppOutputRootFiles/withJetPtThirtyCut/";
 	TChain * lowJetWrSigEE = new TChain(treeName);
 	lowJetWrSigEE->Add(lowJetDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
@@ -2490,18 +2483,8 @@ void macroSandBox(){
 	TChain * lowJetDYEE = new TChain(treeName);
 	lowJetDYEE->Add(lowJetDir+"selected_tree_DYAMC_signal_eeEE.root");
 	sigAndBkgnds.push_back(lowJetWrSigEE), sigAndBkgnds.push_back(lowJetTTEE), sigAndBkgnds.push_back(lowJetDYEE);
+	comments.push_back("lower jet pT cut e chnl");
 
-	TChain * lowJetWrSigMuMu = new TChain(treeName);
-	lowJetWrSigMuMu->Add(lowJetDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
-	TChain * lowJetTTMuMu = new TChain(treeName);
-	lowJetTTMuMu->Add(lowJetDir+"selected_tree_TT_signal_mumuMuMu.root");
-	TChain * lowJetDYMuMu = new TChain(treeName);
-	lowJetDYMuMu->Add(lowJetDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
-	sigAndBkgnds.push_back(lowJetWrSigMuMu), sigAndBkgnds.push_back(lowJetTTMuMu), sigAndBkgnds.push_back(lowJetDYMuMu);
-
-
-	/**/
-	//lower sublead lepton pT cut than default
 	TString lowSubLeptDir = "../analysisCppOutputRootFiles/withSubleadLeptonPtFortyCut/";
 	TChain * lowSubLeptWrSigEE = new TChain(treeName);
 	lowSubLeptWrSigEE->Add(lowSubLeptDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
@@ -2510,17 +2493,8 @@ void macroSandBox(){
 	TChain * lowSubLeptDYEE = new TChain(treeName);
 	lowSubLeptDYEE->Add(lowSubLeptDir+"selected_tree_DYAMC_signal_eeEE.root");
 	sigAndBkgnds.push_back(lowSubLeptWrSigEE), sigAndBkgnds.push_back(lowSubLeptTTEE), sigAndBkgnds.push_back(lowSubLeptDYEE);
+	comments.push_back("lower sublead lept pT cut e chnl");
 
-	TChain * lowSubLeptWrSigMuMu = new TChain(treeName);
-	lowSubLeptWrSigMuMu->Add(lowSubLeptDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
-	TChain * lowSubLeptTTMuMu = new TChain(treeName);
-	lowSubLeptTTMuMu->Add(lowSubLeptDir+"selected_tree_TT_signal_mumuMuMu.root");
-	TChain * lowSubLeptDYMuMu = new TChain(treeName);
-	lowSubLeptDYMuMu->Add(lowSubLeptDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
-	sigAndBkgnds.push_back(lowSubLeptWrSigMuMu), sigAndBkgnds.push_back(lowSubLeptTTMuMu), sigAndBkgnds.push_back(lowSubLeptDYMuMu);
-
-
-	//lower lead lepton pT cut than default
 	TString lowLeadLeptDir = "../analysisCppOutputRootFiles/withLeadLeptonPtFiftyCut/";
 	TChain * lowLeadLeptWrSigEE = new TChain(treeName);
 	lowLeadLeptWrSigEE->Add(lowLeadLeptDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
@@ -2529,6 +2503,36 @@ void macroSandBox(){
 	TChain * lowLeadLeptDYEE = new TChain(treeName);
 	lowLeadLeptDYEE->Add(lowLeadLeptDir+"selected_tree_DYAMC_signal_eeEE.root");
 	sigAndBkgnds.push_back(lowLeadLeptWrSigEE), sigAndBkgnds.push_back(lowLeadLeptTTEE), sigAndBkgnds.push_back(lowLeadLeptDYEE);
+	comments.push_back("lower lead lept pT cut e chnl");
+
+
+	//muon channel
+	TChain * defWrSigMuMu = new TChain(treeName);
+	defWrSigMuMu->Add(defDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * defTTMuMu = new TChain(treeName);
+	defTTMuMu->Add(defDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * defDYMuMu = new TChain(treeName);
+	defDYMuMu->Add(defDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(defWrSigMuMu), sigAndBkgnds.push_back(defTTMuMu), sigAndBkgnds.push_back(defDYMuMu);
+	comments.push_back("default cuts mu chnl");
+
+	TChain * lowJetWrSigMuMu = new TChain(treeName);
+	lowJetWrSigMuMu->Add(lowJetDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * lowJetTTMuMu = new TChain(treeName);
+	lowJetTTMuMu->Add(lowJetDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * lowJetDYMuMu = new TChain(treeName);
+	lowJetDYMuMu->Add(lowJetDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(lowJetWrSigMuMu), sigAndBkgnds.push_back(lowJetTTMuMu), sigAndBkgnds.push_back(lowJetDYMuMu);
+	comments.push_back("lower jet pT cut mu chnl");
+
+	TChain * lowSubLeptWrSigMuMu = new TChain(treeName);
+	lowSubLeptWrSigMuMu->Add(lowSubLeptDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	TChain * lowSubLeptTTMuMu = new TChain(treeName);
+	lowSubLeptTTMuMu->Add(lowSubLeptDir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * lowSubLeptDYMuMu = new TChain(treeName);
+	lowSubLeptDYMuMu->Add(lowSubLeptDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	sigAndBkgnds.push_back(lowSubLeptWrSigMuMu), sigAndBkgnds.push_back(lowSubLeptTTMuMu), sigAndBkgnds.push_back(lowSubLeptDYMuMu);
+	comments.push_back("lower sublead lept pT cut mu chnl");
 
 	TChain * lowLeadLeptWrSigMuMu = new TChain(treeName);
 	lowLeadLeptWrSigMuMu->Add(lowLeadLeptDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
@@ -2537,6 +2541,7 @@ void macroSandBox(){
 	TChain * lowLeadLeptDYMuMu = new TChain(treeName);
 	lowLeadLeptDYMuMu->Add(lowLeadLeptDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
 	sigAndBkgnds.push_back(lowLeadLeptWrSigMuMu), sigAndBkgnds.push_back(lowLeadLeptTTMuMu), sigAndBkgnds.push_back(lowLeadLeptDYMuMu);
+	comments.push_back("lower lead lept pT cut mu chnl");
 	/**/
 
 	//loop over elements in vector of TChains, calculate S over B, and write S over B plus a comment about the cuts to a file
@@ -2546,7 +2551,7 @@ void macroSandBox(){
 	//only one entry in every branch of this tree
 	for(Int_t i=0; i<vSize; i+= (numBkgnds+1) ){
 		Float_t sigEvts = 0, bkgndEvts = 0, sOverB = 0;
-		//Float_t sOverSqrtSplusB = 0;
+		Float_t sOverSqrtB = 0;
 	
 		//load tree contents
 		for(Int_t j=i; j<(i+numBkgnds+1) ; j++){
@@ -2567,12 +2572,12 @@ void macroSandBox(){
 
 		//calculate S over B
 		if(bkgndEvts > 0) sOverB = sigEvts/bkgndEvts;
-		//if(bkgndEvts > 0) sOverSqrtSplusB = sigEvts/TMath::Sqrt(sigEvts + bkgndEvts);
-		std::cout<<"iteration \t"<< i << std::endl;
-		//std::cout<<"signal =\t"<< sigEvts << std::endl;
-		//std::cout<<"bkgnd =\t"<< bkgndEvts << std::endl;
+		if(bkgndEvts > 0) sOverSqrtB = sigEvts/TMath::Sqrt(bkgndEvts);
+		std::cout<< comments[(Int_t) (i/3)] << std::endl;
+		std::cout<<"signal =\t"<< sigEvts << std::endl;
+		std::cout<<"bkgnd =\t"<< bkgndEvts << std::endl;
 		std::cout<<"S/B =\t"<< sOverB << std::endl;
-		//std::cout<<"S/sqrt(S+B) =\t"<< sOverSqrtSplusB << std::endl;
+		std::cout<<"S/sqrt(B) =\t"<< sOverSqrtB << std::endl;
 		std::cout<<" "<< std::endl;
 
 	}//end loop over vector of TChains
