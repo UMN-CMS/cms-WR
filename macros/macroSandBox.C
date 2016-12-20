@@ -56,7 +56,10 @@ using namespace std;
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
-#define sOverBsensitivity
+//#define sOverBsensitivity
+#define showMassWindows
+
+
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
 
@@ -2459,8 +2462,7 @@ void macroSandBox(){
 
 
 	//this vector contains all TChains declared below in a specific order. one signal TChain followed by
-	//all relevant bkgnd chains for that channel and set of cuts. this set is repeated for each channel, then
-	//the cuts are changed.
+	//all relevant bkgnd chains for that channel and set of cuts
 	std::vector<TChain*> sigAndBkgnds;
 	std::vector<std::string> comments;
 	
@@ -2585,6 +2587,71 @@ void macroSandBox(){
 
 #endif
 	//end sOverBsensitivity
+
+
+#ifdef showMassWindows
+	//make two sets of plots
+	//1 - show MLLJJ stacked backgrounds with different colors assigned to different bkgnds (no error bars or points)
+	//2 - show sum of all MLLJJ backgrounds as data points with a second set of points showing only stat unc, and a third set of pts showing only syst unc
+
+	//identify mass windows to show, and declare labels for them
+	//changes to the mass window indices should be propagated to the mass window labels
+	int massIndices[] = {2,8,15};	//mass windows which will be shown
+	TString massWindowLabel[] = {"1.0 TeV","2.2 TeV","3.6 TeV"};	//labels for mass windows
+	std::vector<TString> massWindowLabelVect(massWindowLabel,massWindowLabel + sizeof(massWindowLabel)/sizeof(TString) );
+	Int_t numMassWindows = massWindowLabelVect.size();
+
+	//declare pointers to input TTrees and emu weights which should be applied to EMu data to estimate TTBar
+	TString treeName = "syst_tree";
+  	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSyst/";
+	Double_t EEWgt = 0.414, MuMuWgt = 0.657;	//weights to apply to EMu data to estimate TTBar
+
+   	//declare number of bkgnds which will be shown
+	TString bkgndNames[] = {"TT Data Driven","DYAMCNLO"};
+	TH1F * EEBkgndOne;
+
+	//electron channel
+	TChain * TTEE = new TChain(treeName);
+	TTEE->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
+	TTEE->SetWeight(EEWgt,"global");	//trick to get EMu data evts to be counted as EE TTBar evts
+	TChain * DYEE = new TChain(treeName);
+	DYEE->Add(localDir+"selected_tree_DYAMC_signal_eeEE_withMllWeight.root");
+	//TChain * WEE = new TChain(treeName);
+	//WEE->Add(localDir+"selected_tree_W_signal_eeEE.root");
+	//TChain * WZEE = new TChain(treeName);
+	//WZEE->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
+	//TChain * ZZEE = new TChain(treeName);
+	//ZZEE->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+	
+	//muon channel
+	TChain * TTMuMu = new TChain(treeName);
+	TTMuMu->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
+	TTMuMu->SetWeight(MuMuWgt,"global");	//trick to get EMu data evts to be counted as MuMu TTBar evts
+	TChain * DYMuMu = new TChain(treeName);
+	DYMuMu->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root");
+	//TChain * WMuMu = new TChain(treeName);
+	//WMuMu->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
+	//TChain * WZMuMu = new TChain(treeName);
+	//WZMuMu->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
+	//TChain * ZZMuMu = new TChain(treeName);
+	//ZZMuMu->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+		
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	//set 1  stacked backgrounds
+	;
+	THStack *EEStack = new THStack();
+	;
+	
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	//set 2
+
+
+#endif
+	//end showMassWindows
 
 
 }///end macroSandBox()
