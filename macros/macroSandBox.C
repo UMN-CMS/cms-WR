@@ -64,6 +64,25 @@ using namespace std;
 //#define DEBUGVECTOR
 
 
+//given a TChain and a branch name, calculate and return the average value of all entries in the branch
+Double_t calculateBranchMean(TChain * chain, std::string branchName){
+	chain->Draw((branchName+">>tempHist()").c_str() );
+	TH1D * tempHist = (TH1D*) gROOT->FindObject("tempHist");
+	Double_t mean = tempHist->GetMean(1);	//1 for x axis, 2 for y axis, 3 for z axis
+	return mean;
+}//end calculateBranchMean()
+
+
+//given a TChain and a branch name, calculate and return the std dev of all entries in the branch
+Double_t calculateBranchStdDev(TChain * chain, std::string branchName){
+	chain->Draw((branchName+">>tempHist()").c_str() );
+	TH1D * tempHist = (TH1D*) gROOT->FindObject("tempHist");
+	Double_t stdDev = tempHist->GetStdDev(1);	//1 for x axis, 2 for y axis, 3 for z axis
+	return stdDev;
+}//end calculateBranchStdDev()
+
+
+
 //calculate four object mass given pt, eta, phi of four objects
 //cannot get this function to work within a TTree Draw call
 Float_t lljj(Float_t ptOne, Float_t etaOne, Float_t phiOne, Float_t ptTwo, Float_t etaTwo, Float_t phiTwo, Float_t ptThree, Float_t etaThree, Float_t phiThree, Float_t ptFour, Float_t etaFour, Float_t phiFour){
@@ -2606,9 +2625,25 @@ void macroSandBox(){
   	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSyst/";
 	Double_t EEWgt = 0.414, MuMuWgt = 0.657;	//weights to apply to EMu data to estimate TTBar
 
-   	//declare number of bkgnds which will be shown
+   	//declare names of bkgnds which will be shown, and histos used in stacking or overlaying
 	TString bkgndNames[] = {"TT Data Driven","DYAMCNLO"};
-	TH1F * EEBkgndOne;
+	TH1D * EEBkgndOneForStack = new TH1D("EEBkgndOneForStack","",numMassWindows,0,numMassWindows-1);
+	TH1D * EEBkgndTwoForStack = new TH1D("EEBkgndTwoForStack","",numMassWindows,0,numMassWindows-1);
+	TH1D * MuMuBkgndOneForStack = new TH1D("MuMuBkgndOneForStack","",numMassWindows,0,numMassWindows-1);
+	TH1D * MuMuBkgndTwoForStack = new TH1D("MuMuBkgndTwoForStack","",numMassWindows,0,numMassWindows-1);
+
+	//syst uncert of each bkgnd
+	TH1D * EEBkgndOneSystUnc = new TH1D("EEBkgndOneSystUnc","",numMassWindows,0,numMassWindows-1);
+	TH1D * EEBkgndTwoSystUnc = new TH1D("EEBkgndTwoSystUnc","",numMassWindows,0,numMassWindows-1);
+	TH1D * MuMuBkgndOneSystUnc = new TH1D("MuMuBkgndOneSystUnc","",numMassWindows,0,numMassWindows-1);
+	TH1D * MuMuBkgndTwoSystUnc = new TH1D("MuMuBkgndTwoSystUnc","",numMassWindows,0,numMassWindows-1);
+
+	//stat uncert of each bkgnd
+	TH1D * EEBkgndOneStatUnc = new TH1D("EEBkgndOneStatUnc","",numMassWindows,0,numMassWindows-1);
+	TH1D * EEBkgndTwoStatUnc = new TH1D("EEBkgndTwoStatUnc","",numMassWindows,0,numMassWindows-1);
+	TH1D * MuMuBkgndOneStatUnc = new TH1D("MuMuBkgndOneStatUnc","",numMassWindows,0,numMassWindows-1);
+	TH1D * MuMuBkgndTwoStatUnc = new TH1D("MuMuBkgndTwoStatUnc","",numMassWindows,0,numMassWindows-1);
+
 
 	//electron channel
 	TChain * TTEE = new TChain(treeName);
@@ -2625,7 +2660,7 @@ void macroSandBox(){
 	
 	//muon channel
 	TChain * TTMuMu = new TChain(treeName);
-	TTMuMu->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
+	TTMuMu->Add(localDir+"selected_tree_data_flavoursidebandEMuCopy.root");
 	TTMuMu->SetWeight(MuMuWgt,"global");	//trick to get EMu data evts to be counted as MuMu TTBar evts
 	TChain * DYMuMu = new TChain(treeName);
 	DYMuMu->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root");
@@ -2635,13 +2670,49 @@ void macroSandBox(){
 	//WZMuMu->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
 	//TChain * ZZMuMu = new TChain(treeName);
 	//ZZMuMu->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
-		
+
+	
+	//fill histos corresponding to individual bkgnds
+	//loop over different mass windows
+	for(Int_t i=0; i<numMassWindows; i++){
+		//TTBar ele chnl
+		EEBkgndOneForStack->SetBinContent(i+1,calculateBranchMean(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndOneForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		EEBkgndOneSystUnc->SetBinContent(i+1,calculateBranchStdDev(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndOneSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		EEBkgndOneStatUnc->SetBinContent(i+1,calculateBranchMean(TTEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndOneStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+	
+		//DY ele chnl
+		EEBkgndTwoForStack->SetBinContent(i+1,calculateBranchMean(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndTwoForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		EEBkgndTwoSystUnc->SetBinContent(i+1,calculateBranchStdDev(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndTwoSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		EEBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndTwoStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+	
+		//TTBar mu chnl
+		MuMuBkgndOneForStack->SetBinContent(i+1,calculateBranchMean(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndOneForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		MuMuBkgndOneSystUnc->SetBinContent(i+1,calculateBranchStdDev(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndOneSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		MuMuBkgndOneStatUnc->SetBinContent(i+1,calculateBranchMean(TTMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndOneStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+	
+		//DY mu chnl
+		MuMuBkgndTwoForStack->SetBinContent(i+1,calculateBranchMean(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndTwoForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		MuMuBkgndTwoSystUnc->SetBinContent(i+1,calculateBranchStdDev(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndTwoSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+		MuMuBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndTwoStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
+	}//end loop over different mass windows
+
+
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//set 1  stacked backgrounds
-	;
-	THStack *EEStack = new THStack();
-	;
+	//THStack *EEStack = new THStack();
 	
 
 
