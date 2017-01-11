@@ -24,7 +24,7 @@
 #define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
-//#define DOAMC
+#define DOAMC
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -32,7 +32,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -320,7 +320,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  th->Draw("ehisto");
+  th->Draw("e1histo");
   hs_data->Draw("epsame");
   //TString ytitle = "Events/(";
   //ytitle += (th->GetXaxis()->GetNbins());
