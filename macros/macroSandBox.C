@@ -34,6 +34,7 @@
 #include <TEntryList.h>
 #include <TEntryListArray.h>
 #include "dumpTreePlots.C"
+#include "printSystStdDevToFile.C"
 
 using namespace std;
 
@@ -57,7 +58,9 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-#define showMassWindows
+//#define showMassWindows
+#define printNewDySyst
+
 
 
 //#define DEBUGEVTWEIGHTMTHD
@@ -65,8 +68,8 @@ using namespace std;
 
 
 //given a TChain and a branch name, calculate and return the average value of all entries in the branch
-Double_t calculateBranchMean(TChain * chain, std::string branchName){
-	chain->Draw((branchName+">>tempHist()").c_str() );
+Double_t calculateBranchMean(TChain * chain, std::string branchName, Double_t weight){
+	chain->Draw((branchName+">>tempHist()").c_str(), (to_string(weight)+"(1>0)").c_str() );
 	TH1D * tempHist = (TH1D*) gROOT->FindObject("tempHist");
 	Double_t mean = tempHist->GetMean(1);	//1 for x axis, 2 for y axis, 3 for z axis
 	return mean;
@@ -74,8 +77,8 @@ Double_t calculateBranchMean(TChain * chain, std::string branchName){
 
 
 //given a TChain and a branch name, calculate and return the std dev of all entries in the branch
-Double_t calculateBranchStdDev(TChain * chain, std::string branchName){
-	chain->Draw((branchName+">>tempHist()").c_str() );
+Double_t calculateBranchStdDev(TChain * chain, std::string branchName, Double_t weight){
+	chain->Draw((branchName+">>tempHist()").c_str(), (to_string(weight)+"(1>0)").c_str() );
 	TH1D * tempHist = (TH1D*) gROOT->FindObject("tempHist");
 	Double_t stdDev = tempHist->GetStdDev(1);	//1 for x axis, 2 for y axis, 3 for z axis
 	return stdDev;
@@ -2676,35 +2679,43 @@ void macroSandBox(){
 	//loop over different mass windows
 	for(Int_t i=0; i<numMassWindows; i++){
 		//TTBar ele chnl
-		EEBkgndOneForStack->SetBinContent(i+1,calculateBranchMean(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndOneForStack->SetBinContent(i+1,calculateBranchMean(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]", EEWgt));
 		EEBkgndOneForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		EEBkgndOneSystUnc->SetBinContent(i+1,calculateBranchStdDev(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		//doesnt work EEBkgndOneForStack->SetLabelSize(0.19,"x");
+		//doesnt work EEBkgndOneForStack->SetTitleSize(0.034,"x");
+		EEBkgndOneForStack->SetFillColor(kGreen);
+		EEBkgndOneSystUnc->SetBinContent(i+1,calculateBranchStdDev(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]", EEWgt));
 		EEBkgndOneSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		EEBkgndOneStatUnc->SetBinContent(i+1,calculateBranchMean(TTEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndOneStatUnc->SetBinContent(i+1,calculateBranchMean(TTEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]", EEWgt));
 		EEBkgndOneStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 	
 		//DY ele chnl
-		EEBkgndTwoForStack->SetBinContent(i+1,calculateBranchMean(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndTwoForStack->SetBinContent(i+1,calculateBranchMean(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1));
 		EEBkgndTwoForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		EEBkgndTwoSystUnc->SetBinContent(i+1,calculateBranchStdDev(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndTwoForStack->SetFillColor(kYellow);
+		//doesnt workEEBkgndTwoForStack->SetLabelSize(0.19,"x");
+		//doesnt work EEBkgndTwoForStack->SetTitleSize(0.034,"x");
+		EEBkgndTwoSystUnc->SetBinContent(i+1,calculateBranchStdDev(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1));
 		EEBkgndTwoSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		EEBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		EEBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1));
 		EEBkgndTwoStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 	
 		//TTBar mu chnl
-		MuMuBkgndOneForStack->SetBinContent(i+1,calculateBranchMean(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndOneForStack->SetBinContent(i+1,calculateBranchMean(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", MuMuWgt));
 		MuMuBkgndOneForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		MuMuBkgndOneSystUnc->SetBinContent(i+1,calculateBranchStdDev(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndOneForStack->SetFillColor(kGreen);
+		MuMuBkgndOneSystUnc->SetBinContent(i+1,calculateBranchStdDev(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", MuMuWgt));
 		MuMuBkgndOneSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		MuMuBkgndOneStatUnc->SetBinContent(i+1,calculateBranchMean(TTMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndOneStatUnc->SetBinContent(i+1,calculateBranchMean(TTMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]", MuMuWgt));
 		MuMuBkgndOneStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 	
 		//DY mu chnl
-		MuMuBkgndTwoForStack->SetBinContent(i+1,calculateBranchMean(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndTwoForStack->SetBinContent(i+1,calculateBranchMean(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1));
 		MuMuBkgndTwoForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		MuMuBkgndTwoSystUnc->SetBinContent(i+1,calculateBranchStdDev(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndTwoForStack->SetFillColor(kYellow);
+		MuMuBkgndTwoSystUnc->SetBinContent(i+1,calculateBranchStdDev(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1));
 		MuMuBkgndTwoSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-		MuMuBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]"));
+		MuMuBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1));
 		MuMuBkgndTwoStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 	}//end loop over different mass windows
 
@@ -2712,8 +2723,51 @@ void macroSandBox(){
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//set 1  stacked backgrounds
-	//THStack *EEStack = new THStack();
-	
+	TLegend *legEE = new TLegend(0.6, 0.68, 0.9, 0.9);
+	legEE->AddEntry(EEBkgndOneForStack, "TTBar Data Driven");
+	legEE->AddEntry(EEBkgndTwoForStack, "DY AMCNLO");
+	TCanvas* canvasEE = new TCanvas("canvasEE","canvasEE",0,0,600,600);
+	canvasEE->cd();
+	THStack *EEStack = new THStack();	//add smallest bkgnds first, and largest bkgnds last
+	EEStack->SetMinimum(-10);
+	//EEStack->Add(EEBkgndTwoForStack);
+	EEStack->Add(EEBkgndOneForStack);
+	EEStack->Draw("histo");
+	EEStack->GetYaxis()->SetTitle("Ele Events per W_{R} mass window");
+	EEStack->GetYaxis()->SetTitleOffset(1.35);
+	legEE->Draw();
+	canvasEE->cd();
+	TString outFileNameStackedBkgndsEE = "EEChnlStackedBkgnds";
+	canvasEE->Print(outFileNameStackedBkgndsEE + ".pdf");
+	canvasEE->Print(outFileNameStackedBkgndsEE + ".png");
+	EEStack->SetMinimum(0.1);
+	canvasEE->SetLogy();
+	canvasEE->Print(outFileNameStackedBkgndsEE + "_log.pdf");
+	canvasEE->Print(outFileNameStackedBkgndsEE + "_log.png");
+	canvasEE->Close();
+
+	TLegend *legMuMu = new TLegend(0.6, 0.68, 0.9, 0.9);
+	legMuMu->AddEntry(MuMuBkgndOneForStack, "TTBar Data Driven");
+	legMuMu->AddEntry(MuMuBkgndTwoForStack, "DY AMCNLO");
+	TCanvas* canvasMuMu = new TCanvas("canvasMuMu","canvasMuMu",0,0,600,600);
+	canvasMuMu->cd();
+	THStack *MuMuStack = new THStack();	//add smallest bkgnds first, and largest bkgnds last
+	MuMuStack->SetMinimum(-10);
+	//MuMuStack->Add(MuMuBkgndTwoForStack);
+	MuMuStack->Add(MuMuBkgndOneForStack);
+	MuMuStack->Draw("histo");
+	MuMuStack->GetYaxis()->SetTitle("Muon Events per W_{R} mass window");
+	MuMuStack->GetYaxis()->SetTitleOffset(1.35);
+	legMuMu->Draw();
+	canvasMuMu->cd();
+	TString outFileNameStackedBkgndsMuMu = "MuMuChnlStackedBkgnds";
+	canvasMuMu->Print(outFileNameStackedBkgndsMuMu + ".pdf");
+	canvasMuMu->Print(outFileNameStackedBkgndsMuMu + ".png");
+	MuMuStack->SetMinimum(0.1);
+	canvasMuMu->SetLogy();
+	canvasMuMu->Print(outFileNameStackedBkgndsMuMu + "_log.pdf");
+	canvasMuMu->Print(outFileNameStackedBkgndsMuMu + "_log.png");
+	canvasMuMu->Close();
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
@@ -2724,6 +2778,67 @@ void macroSandBox(){
 #endif
 	//end showMassWindows
 
+#ifdef printNewDySyst
+	///open the DYMADHT and DYAMC signal region files and print evt count difference btwn them in one
+	///mass window divided by 2 times the DYAMC evt count
+	string pathToMassWindowFile = "../configs/mass_cuts.txt";
+
+	int wrMassPoints[] = {1000,1600,2200,2800,3600};
+	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
+	
+	string pathToDySystFile = "dyAmcMinusMadHtSyst.txt";
+	ofstream writeToDySystFile(pathToDySystFile.c_str(),ofstream::trunc);
+
+	string treeName = "central_value_tree";
+	TChain * dyMuMuAMC = new TChain(treeName.c_str(),"DYMuMuAMC");
+	dyMuMuAMC->Add("../analysisCppOutputRootFiles/selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root" );
+	TChain * dyMuMuMADHT = new TChain(treeName.c_str(),"DYMuMuMADHT");
+	dyMuMuMADHT->Add("../analysisCppOutputRootFiles/selected_tree_DYMADHT_signal_mumuMuMu_withMllWeight.root" );
+
+	TChain * dyEEAMC = new TChain(treeName.c_str(),"DYEEAMC");
+	dyEEAMC->Add("../analysisCppOutputRootFiles/selected_tree_DYAMC_signal_eeEE_withMllWeight.root" );
+	TChain * dyEEMADHT = new TChain(treeName.c_str(),"DYEEMADHT");
+	dyEEMADHT->Add("../analysisCppOutputRootFiles/selected_tree_DYMADHT_signal_eeEE_withMllWeight.root" );
+
+	map<string,TChain*> dyChainMap;
+	dyChainMap["dyMuMuAMC"] = dyMuMuAMC;
+	dyChainMap["dyMuMuMADHT"] = dyMuMuMADHT;
+	dyChainMap["dyEEAMC"] = dyEEAMC;
+	dyChainMap["dyEEMADHT"] = dyEEMADHT;
+
+	int numWrMasses = wrMassVect.size();
+
+	for(int m=0; m<numWrMasses; m++){
+		//loop over each WR mass window
+		map<string,Double_t> means;
+
+		for(map<string,TChain*>::const_iterator chMapIt=dyChainMap.begin(); chMapIt!=dyChainMap.end(); chMapIt++){
+			//loop over each TChain in dyChainMap
+
+			string nEventsIndex = to_string( getIndexForSystematicUncertainty( to_string(wrMassVect[m]), chMapIt->first, pathToMassWindowFile) );
+			string drawArg = "NEventsInRange["+nEventsIndex+"]>>";
+			string histName = (chMapIt->first) + "tempHist";
+			(chMapIt->second)->Draw( (drawArg + histName + "()").c_str() );
+			TH1F* tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
+			if(tempHist->GetMean() > 0.) means[chMapIt->first] = tempHist->GetMean();
+			else{
+				//num weighted entries in dyAMC is negative or zero
+				string statUncDrawArg = "ErrorEventsInRange["+nEventsIndex+"]>>";
+				string statUncHistName = (chMapIt->first) + "StatTempHist";
+				(chMapIt->second)->Draw( (statUncDrawArg + statUncHistName + "()").c_str() );
+				TH1F* statUncTempHist = (TH1F*) gROOT->FindObject(statUncHistName.c_str());
+				means[chMapIt->first] = statUncTempHist->GetMean();
+			}
+		}//end loop over different TChains
+		writeToDySystFile << "EE\t" << wrMassVect[m] << "\t" << (fabs(means["dyEEAMC"] - means["dyEEMADHT"])/(2*means["dyEEAMC"])) << endl;
+		writeToDySystFile << "MuMu\t" << wrMassVect[m] << "\t" << (fabs(means["dyMuMuAMC"] - means["dyMuMuMADHT"])/(2*means["dyMuMuAMC"])) << endl;
+
+	}//end loop over different WR mass points
+
+	writeToDySystFile.close();
+
+#endif
+	//end printNewDySyst
 
 }///end macroSandBox()
 

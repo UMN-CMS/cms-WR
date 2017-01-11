@@ -81,8 +81,8 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	//int wrMassPoints[] = {1000,1600,2200,2800,3600};
-	int wrMassPoints[] = {1600,2200,2800,3600};
+	int wrMassPoints[] = {1000,1600,2200,2800,3600};
+	//int wrMassPoints[] = {1600,2200,2800,3600};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -90,10 +90,10 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/","3200toysAllSyst/"};
-	string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso","all sources"};
-	//string relDirPaths[] = {"3200toysAllSyst/"};
-	//string uncertTagNames[] = {"all sources"};
+	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/","3200toysAllSyst/"};
+	//string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso","all sources"};
+	string relDirPaths[] = {"3200toysAllSyst/"};
+	string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
@@ -130,10 +130,10 @@ void printSystStdDevToFile(){
 				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"Copy.root" ).c_str() );
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
-				//chainPointers["MuMuDY"] = dyMuMu;
-				//chainPointers["MuMuWR"] = wrMuMu;
-				//chainPointers["EEDY"] = dyEE;
-				//chainPointers["EEWR"] = wrEE;
+				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers["MuMuWR"] = wrMuMu;
+				chainPointers["EEDY"] = dyEE;
+				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
 				chainPointers["MuMuTT"] = ttMuMu;
 	
@@ -146,8 +146,8 @@ void printSystStdDevToFile(){
 				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"Copy.root" ).c_str() );
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
-				//chainPointers["EEDY"] = dyEE;
-				//chainPointers["EEWR"] = wrEE;
+				chainPointers["EEDY"] = dyEE;
+				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
 			}
 
@@ -158,8 +158,8 @@ void printSystStdDevToFile(){
 				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +".root" ).c_str() );
 				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
 				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
-				//chainPointers["MuMuDY"] = dyMuMu;
-				//chainPointers["MuMuWR"] = wrMuMu;
+				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers["MuMuWR"] = wrMuMu;
 				chainPointers["MuMuTT"] = ttMuMu;
 			}
 
@@ -178,10 +178,10 @@ void printSystStdDevToFile(){
 	
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
-				//chainPointers["MuMuDY"] = dyMuMu;
-				//chainPointers["MuMuWR"] = wrMuMu;
-				//chainPointers["EEDY"] = dyEE;
-				//chainPointers["EEWR"] = wrEE;
+				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers["MuMuWR"] = wrMuMu;
+				chainPointers["EEDY"] = dyEE;
+				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
 				chainPointers["MuMuTT"] = ttMuMu;
 			}
