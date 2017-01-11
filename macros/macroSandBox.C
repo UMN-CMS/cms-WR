@@ -2620,7 +2620,9 @@ void macroSandBox(){
 #ifdef showMassWindows
 	//make two sets of plots
 	//1 - show MLLJJ stacked backgrounds with different colors assigned to different bkgnds (no error bars or points)
-	//2 - show sum of all MLLJJ backgrounds as data points with a second set of points showing only stat unc, and a third set of pts showing only syst unc
+	//2 - show each MLLJJ background as data points with a second set of points showing only stat unc, and a third set of pts showing only syst unc
+	//    for each bkgnd there should be 5 data points in each bin: 2 showing syst uncert, 2 showing stat unc, and 1 showing nominal value
+	//    for N bkgnds, there should be N bins at each mass point, don't stack the bkgnds
 
 	//identify mass windows to show, and declare labels for them
 	//changes to the mass window indices should be propagated to the mass window labels
@@ -2636,6 +2638,7 @@ void macroSandBox(){
 
    	//declare names of bkgnds which will be shown, and histos used in stacking or overlaying
 	TString bkgndNames[] = {"TT Data Driven","DYAMCNLO"};
+	Int_t numBkgnds = 2;
 	TH1D * EEBkgndOneForStack = new TH1D("EEBkgndOneForStack","",numMassWindows,0,numMassWindows-1);
 	TH1D * EEBkgndTwoForStack = new TH1D("EEBkgndTwoForStack","",numMassWindows,0,numMassWindows-1);
 	TH1D * MuMuBkgndOneForStack = new TH1D("MuMuBkgndOneForStack","",numMassWindows,0,numMassWindows-1);
@@ -2652,6 +2655,21 @@ void macroSandBox(){
 	TH1D * EEBkgndTwoStatUnc = new TH1D("EEBkgndTwoStatUnc","",numMassWindows,0,numMassWindows-1);
 	TH1D * MuMuBkgndOneStatUnc = new TH1D("MuMuBkgndOneStatUnc","",numMassWindows,0,numMassWindows-1);
 	TH1D * MuMuBkgndTwoStatUnc = new TH1D("MuMuBkgndTwoStatUnc","",numMassWindows,0,numMassWindows-1);
+
+	//stat and syst and nominal for all bkgnds at every mass window
+	TH1D * EEAllBkgndsNoUncs = new TH1D("EEAllBkgndsNoUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsNoUncs = new TH1D("MuMuAllBkgndsNoUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	
+	TH1D * EEAllBkgndsPlusSystUncs = new TH1D("EEAllBkgndsPlusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsPlusSystUncs = new TH1D("MuMuAllBkgndsPlusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * EEAllBkgndsMinusSystUncs = new TH1D("EEAllBkgndsMinusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsMinusSystUncs = new TH1D("MuMuAllBkgndsMinusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	
+	TH1D * EEAllBkgndsPlusStatUncs = new TH1D("EEAllBkgndsPlusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsPlusStatUncs = new TH1D("MuMuAllBkgndsPlusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * EEAllBkgndsMinusStatUncs = new TH1D("EEAllBkgndsMinusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsMinusStatUncs = new TH1D("MuMuAllBkgndsMinusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	
 
 
 	//electron channel
@@ -2719,13 +2737,73 @@ void macroSandBox(){
 		MuMuBkgndTwoSystUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 		MuMuBkgndTwoStatUnc->SetBinContent(i+1,calculateBranchMean(DYMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1));
 		MuMuBkgndTwoStatUnc->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
-	}//end loop over different mass windows
 
+		//combined DY and TT with stat and syst uncs
+		//from left to right: TT first, then DY for each mass window
+		//overlay all of these histos, draw them as points without errors
+		Int_t binNum = i*numBkgnds;
+		EEAllBkgndsNoUncs->SetBinContent(binNum+1, EEBkgndOneForStack->GetBinContent(i+1) );//TT
+		EEAllBkgndsNoUncs->SetBinContent(binNum+2, EEBkgndTwoForStack->GetBinContent(i+1) );//DY
+		EEAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+1,"TT " + massWindowLabel[i]);
+		EEAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+2,"DY " + massWindowLabel[i]);
+	
+		EEAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) + EEBkgndOneSystUnc->GetBinContent(i+1) );//TT+syst
+		EEAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) + EEBkgndTwoSystUnc->GetBinContent(i+1) );//DY+syst
+		EEAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+	
+		EEAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) - EEBkgndOneSystUnc->GetBinContent(i+1) );//TT-syst
+		EEAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) - EEBkgndTwoSystUnc->GetBinContent(i+1) );//DY-syst
+		EEAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+	
+	
+		EEAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) + EEBkgndOneStatUnc->GetBinContent(i+1) );//TT+stat
+		EEAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) + EEBkgndTwoStatUnc->GetBinContent(i+1) );//DY+stat
+		EEAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		
+		
+		EEAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) - EEBkgndOneStatUnc->GetBinContent(i+1) );//TT-stat
+		EEAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) - EEBkgndTwoStatUnc->GetBinContent(i+1) );//DY-stat
+		EEAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+
+
+		MuMuAllBkgndsNoUncs->SetBinContent(binNum+1, MuMuBkgndOneForStack->GetBinContent(i+1) );//TT
+		MuMuAllBkgndsNoUncs->SetBinContent(binNum+2, MuMuBkgndTwoForStack->GetBinContent(i+1) );//DY
+		MuMuAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+1,"TT " + massWindowLabel[i]);
+		MuMuAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+2,"DY " + massWindowLabel[i]);
+	
+		MuMuAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) + MuMuBkgndOneSystUnc->GetBinContent(i+1) );//TT+syst
+		MuMuAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) + MuMuBkgndTwoSystUnc->GetBinContent(i+1) );//DY+syst
+		MuMuAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+	
+		MuMuAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) - MuMuBkgndOneSystUnc->GetBinContent(i+1) );//TT-syst
+		MuMuAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) - MuMuBkgndTwoSystUnc->GetBinContent(i+1) );//DY-syst
+		MuMuAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+	
+	
+		MuMuAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) + MuMuBkgndOneStatUnc->GetBinContent(i+1) );//TT+stat
+		MuMuAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) + MuMuBkgndTwoStatUnc->GetBinContent(i+1) );//DY+stat
+		MuMuAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		
+		
+		MuMuAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) - MuMuBkgndOneStatUnc->GetBinContent(i+1) );//TT-stat
+		MuMuAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) - MuMuBkgndTwoStatUnc->GetBinContent(i+1) );//DY-stat
+		MuMuAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+	
+	}//end loop over different mass windows
+	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//set 1  stacked backgrounds
-	TLegend *legEE = new TLegend(0.6, 0.68, 0.9, 0.9);
+	TLegend *legEE = new TLegend(0.6, 0.6, 0.9, 0.9);
 	legEE->AddEntry(EEBkgndOneForStack, "TTBar Data Driven");
 	legEE->AddEntry(EEBkgndTwoForStack, "DY AMCNLO");
 	TCanvas* canvasEE = new TCanvas("canvasEE","canvasEE",0,0,600,600);
@@ -2748,7 +2826,7 @@ void macroSandBox(){
 	canvasEE->Print(outFileNameStackedBkgndsEE + "_log.png");
 	canvasEE->Close();
 
-	TLegend *legMuMu = new TLegend(0.6, 0.68, 0.9, 0.9);
+	TLegend *legMuMu = new TLegend(0.6, 0.6, 0.9, 0.9);
 	legMuMu->AddEntry(MuMuBkgndOneForStack, "TTBar Data Driven");
 	legMuMu->AddEntry(MuMuBkgndTwoForStack, "DY AMCNLO");
 	TCanvas* canvasMuMu = new TCanvas("canvasMuMu","canvasMuMu",0,0,600,600);
@@ -2774,7 +2852,107 @@ void macroSandBox(){
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	//set 2
+	//set 2 individual bkgnds shown as points with a second set of pts representing stat unc, and a third set of pts representing syst unc
+	//each mass bin is shown N times, where N = number of different bkgnds. 5 data points per bin
+	gStyle->SetOptStat("");
+	TCanvas* canvasTotEE = new TCanvas("canvasTotEE","canvasTotEE",0,0,600,600);
+	canvasTotEE->cd();
+	EEAllBkgndsNoUncs->SetLineColor(kBlack);
+	EEAllBkgndsNoUncs->SetLineWidth(2);
+
+
+	EEAllBkgndsPlusSystUncs->SetMarkerColor(kRed);
+	EEAllBkgndsPlusSystUncs->SetMarkerStyle(20);
+	EEAllBkgndsPlusSystUncs->SetMarkerSize(1);
+	
+	EEAllBkgndsMinusSystUncs->SetMarkerColor(kRed);
+	EEAllBkgndsMinusSystUncs->SetMarkerStyle(20);
+	EEAllBkgndsMinusSystUncs->SetMarkerSize(1);
+	
+	EEAllBkgndsPlusStatUncs->SetMarkerColor(kBlue);
+	EEAllBkgndsPlusStatUncs->SetMarkerStyle(20);
+	EEAllBkgndsPlusStatUncs->SetMarkerSize(1);
+	
+	EEAllBkgndsMinusStatUncs->SetMarkerColor(kBlue);
+	EEAllBkgndsMinusStatUncs->SetMarkerStyle(20);
+	EEAllBkgndsMinusStatUncs->SetMarkerSize(1);
+	
+	TLegend *legTotEE = new TLegend(0.6, 0.6, 0.9, 0.9);
+	legTotEE->AddEntry(EEAllBkgndsNoUncs, "Nominal");
+	legTotEE->AddEntry(EEAllBkgndsPlusSystUncs, "Nominal+Syst Unc","p");
+	legTotEE->AddEntry(EEAllBkgndsMinusSystUncs, "Nominal-Syst Unc","p");
+	legTotEE->AddEntry(EEAllBkgndsPlusStatUncs, "Nominal+Stat Unc","p");
+	legTotEE->AddEntry(EEAllBkgndsMinusStatUncs, "Nominal-Stat Unc","p");
+
+
+	EEAllBkgndsNoUncs->Draw("histo");
+	EEAllBkgndsPlusSystUncs->Draw("Psame");
+	EEAllBkgndsMinusSystUncs->Draw("Psame");
+	EEAllBkgndsPlusStatUncs->Draw("Psame");
+	EEAllBkgndsMinusStatUncs->Draw("Psame");
+	EEAllBkgndsNoUncs->GetYaxis()->SetTitle("Ele Events per W_{R} mass window");
+	EEAllBkgndsNoUncs->GetYaxis()->SetTitleOffset(1.35);
+	canvasTotEE->Update();
+	legTotEE->Draw();
+	canvasTotEE->cd();
+	TString outFileNameIndivBkgndsEE = "EEChnlIndivBkgndsWithUncs";
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".pdf");
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".png");
+	EEAllBkgndsNoUncs->SetMinimum(0.1);
+	canvasTotEE->SetLogy();
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.pdf");
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.png");
+	canvasTotEE->Close();
+
+
+	TCanvas* canvasTotMuMu = new TCanvas("canvasTotMuMu","canvasTotMuMu",0,0,600,600);
+	canvasTotMuMu->cd();
+	MuMuAllBkgndsNoUncs->SetLineColor(kBlack);
+	MuMuAllBkgndsNoUncs->SetLineWidth(2);
+
+
+	MuMuAllBkgndsPlusSystUncs->SetMarkerColor(kRed);
+	MuMuAllBkgndsPlusSystUncs->SetMarkerStyle(20);
+	MuMuAllBkgndsPlusSystUncs->SetMarkerSize(1);
+	
+	MuMuAllBkgndsMinusSystUncs->SetMarkerColor(kRed);
+	MuMuAllBkgndsMinusSystUncs->SetMarkerStyle(20);
+	MuMuAllBkgndsMinusSystUncs->SetMarkerSize(1);
+	
+	MuMuAllBkgndsPlusStatUncs->SetMarkerColor(kBlue);
+	MuMuAllBkgndsPlusStatUncs->SetMarkerStyle(20);
+	MuMuAllBkgndsPlusStatUncs->SetMarkerSize(1);
+	
+	MuMuAllBkgndsMinusStatUncs->SetMarkerColor(kBlue);
+	MuMuAllBkgndsMinusStatUncs->SetMarkerStyle(20);
+	MuMuAllBkgndsMinusStatUncs->SetMarkerSize(1);
+	
+	TLegend *legTotMuMu = new TLegend(0.6, 0.6, 0.9, 0.9);
+	legTotMuMu->AddEntry(MuMuAllBkgndsNoUncs, "Nominal");
+	legTotMuMu->AddEntry(MuMuAllBkgndsPlusSystUncs, "Nominal+Syst Unc","p");
+	legTotMuMu->AddEntry(MuMuAllBkgndsMinusSystUncs, "Nominal-Syst Unc","p");
+	legTotMuMu->AddEntry(MuMuAllBkgndsPlusStatUncs, "Nominal+Stat Unc","p");
+	legTotMuMu->AddEntry(MuMuAllBkgndsMinusStatUncs, "Nominal-Stat Unc","p");
+
+
+	MuMuAllBkgndsNoUncs->Draw("histo");
+	MuMuAllBkgndsPlusSystUncs->Draw("Psame");
+	MuMuAllBkgndsMinusSystUncs->Draw("Psame");
+	MuMuAllBkgndsPlusStatUncs->Draw("Psame");
+	MuMuAllBkgndsMinusStatUncs->Draw("Psame");
+	MuMuAllBkgndsNoUncs->GetYaxis()->SetTitle("Mu Events per W_{R} mass window");
+	MuMuAllBkgndsNoUncs->GetYaxis()->SetTitleOffset(1.35);
+	canvasTotMuMu->Update();
+	legTotMuMu->Draw();
+	canvasTotMuMu->cd();
+	TString outFileNameIndivBkgndsMuMu = "MuMuChnlIndivBkgndsWithUncs";
+	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + ".pdf");
+	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + ".png");
+	MuMuAllBkgndsNoUncs->SetMinimum(0.1);
+	canvasTotMuMu->SetLogy();
+	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + "_log.pdf");
+	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + "_log.png");
+	canvasTotMuMu->Close();
 
 
 #endif
