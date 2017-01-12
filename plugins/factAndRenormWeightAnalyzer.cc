@@ -46,6 +46,7 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -68,8 +69,8 @@
 #include <TObjArray.h>
 #include "TCollection.h"
 
-#define DEBUG
-#define NPATHS 30
+//#define DEBUG
+//#define NPATHS 30
 
 //
 // class declaration
@@ -143,7 +144,7 @@ factAndRenormWeightAnalyzer::factAndRenormWeightAnalyzer(const edm::ParameterSet
 	//tree->Branch("namesOfInterestingPaths", namesOfInterestingPaths, "namesOfInterestingPaths[numInterestingPaths]/C");
 
 	///get the tokens
-	lheToken = mayConsume<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("externalLHEProducer"));
+	lheToken = mayConsume<LHEEventProduct>(edm::InputTag("externalLHEProducer"));
 
 }
 
@@ -176,16 +177,23 @@ factAndRenormWeightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventS
 
 	if(lheHandle.isValid() && lheHandle->weights().size() >= 9){
 		std::vector<WGT> weightVals = lheHandle->weights();
-		std::vector<std::string> weightComments = lheHandle->getComments();
+		//std::vector<std::string> weightComments = lheHandle->getComments();
 
 #ifdef DEBUG
 		std::cout << "lheHandle is valid, and there are at least 9 different weights" << std::endl;
+		std::cout<<"\t"<<std::endl;
 #endif
 
-		unsigned int elems = (weightComments.size() <= weightVals.size()) ? weightComments.size() : weightVals.size();
+		unsigned int elems = lheHandle->comments_size();
 		for(unsigned int i = 0; i < elems; i++) {
-			std::cout << "weight number  " << i << "  =  " << weightVals[i].wgt <<"  comment  "<< weightComments[i] << std::endl;
+			std::cout << "weight number  " << i << "  =  " << weightVals[i].wgt <<"  comment  "<< lheHandle->getComment(i) << std::endl;
 		}
+
+		unsigned int elemsWgts = weightVals.size();
+		for(unsigned int i = 0; i < elemsWgts; i++) {
+			std::cout << "weight number  " << i << "  =  " << weightVals[i].wgt << std::endl;
+		}
+
 
 	}//end if handle is valid and has at least 9 different weights
 
