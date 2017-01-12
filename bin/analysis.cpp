@@ -105,17 +105,17 @@ public:
 			} else if(mode.find("AMC") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
-			} else if(mode.find("MAD") != _ENDSTRING) {
-				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
-				TTchainNames.push_back("DYJets_madgraph");
-			} else if(mode.find("POWINCL") != _ENDSTRING && channel == Selector::EE) {
-				TTchainNames.push_back("DYToEE_powheg");
 			} else if(mode.find("MADHT") != _ENDSTRING) {
 				TTchainNames.push_back("DYJets_madgraph_ht100to200");
 				TTchainNames.push_back("DYJets_madgraph_ht200to400");
 				TTchainNames.push_back("DYJets_madgraph_ht400to600");
 				TTchainNames.push_back("DYJets_madgraph_ht600toInf");
-			}
+			} else if(mode.find("MAD") != _ENDSTRING) {
+				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
+				TTchainNames.push_back("DYJets_madgraph");
+			} else if(mode.find("POWINCL") != _ENDSTRING && channel == Selector::EE) {
+				TTchainNames.push_back("DYToEE_powheg");
+			} 
 		} else if(mode == "W") {
 			TTchainNames.push_back("WJetsLNu");
 		} else if(mode == "WZ") {
@@ -634,7 +634,7 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassing(channel, makeSelectorPlots && loop_one)) {
 
-					if (channel == Selector::EMu && selEvent.dilepton_mass > 200) continue;
+					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
 
 
 					if(isData == false) {
@@ -662,6 +662,9 @@ int main(int ac, char* av[])
 			ts.Print();
 			ts.Start();
 
+			///uncomment this Write call only when processing TTJetsMC in EMu channel with low dilepton req
+			//t1[i]->Write();	//needed to process TTJets MC in EMu channel with low dilepton requirement
+
 			if(loop_one) std::cout << zMass60to120EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 61.2 < dilepton_mass < 121.2" << std::endl;
 			if(loop_one) std::cout << zMass65to115EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 66.2 < dilepton_mass < 116.2" << std::endl;
 			if(loop_one) std::cout << zMass70to110EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 71.2 < dilepton_mass < 111.2" << std::endl;
@@ -669,6 +672,8 @@ int main(int ac, char* av[])
 			if(loop_one) std::cout << zMass80to100EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 81.2 < dilepton_mass < 101.2" << std::endl;
 			if(loop_one) std::cout << zMass85to95EvtCount << "\tevents from the dataset named\t" << selEvent.datasetName << "\tpass isPassingLooseCuts and have 86.2 < dilepton_mass < 96.2" << std::endl;
 
+			///comment this block out if processing TTJetsMC in EMu channel with low dilepton mass req
+			/**/
 			///make a permanent RooDataSet which has the same information as tempDataSet, but with events which are weighted according to the var named evtWeight
 			RooDataSet * permanentWeightedDataSet = new RooDataSet("permanentWeightedDataSet", "permanentWeightedDataSet", tempDataSet, Fits::vars, "", Fits::evtWeight.GetName());
 			// Count number of events in each mass range to store in tree.
@@ -789,8 +794,10 @@ int main(int ac, char* av[])
 				sel::hists.Draw("plots", mode);
 				sel::hists.Clear();
 			} else syst_tree->Fill();
+			/**///comment this block out if processing TTJetsMC in EMu channel with low dilepton mass req
 
 			loop_one = false;
+
 		}
 
 		syst_tree->SetDirectory(&f);
