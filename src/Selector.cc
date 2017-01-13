@@ -328,6 +328,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 	zPt = (lead_lepton_p4 + sublead_lepton_p4).Pt();
+	zEta = (lead_lepton_p4 + sublead_lepton_p4).Eta();
+	zPhi = (lead_lepton_p4 + sublead_lepton_p4).Phi();
 	if(dilepton_mass < 60.0 || dilepton_mass > 120.0) return false;
 
 	_isPassingLooseCuts = true;
@@ -574,6 +576,8 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 	dilepton_mass = (lead_lepton_p4 + sublead_lepton_p4).M();
 	zPt = (lead_lepton_p4 + sublead_lepton_p4).Pt();
+	zEta = (lead_lepton_p4 + sublead_lepton_p4).Eta();
+	zPhi = (lead_lepton_p4 + sublead_lepton_p4).Phi();
 	/**/
 	if (makeHists) {
 		sel::hists("global", 4, 0, 4)->Fill(int(pair));
@@ -633,6 +637,8 @@ void Selector::SetBranches(TTree* tree)
 {
 
 	tree->Branch("zPt", &zPt);
+	tree->Branch("zEta", &zEta);
+	tree->Branch("zPhi", &zPhi);
 	tree->Branch("lead_lepton_pt", &lead_lepton_pt);
 	tree->Branch("sublead_lepton_pt", &sublead_lepton_pt);
 	tree->Branch("lead_lepton_eta", &lead_lepton_eta);
@@ -681,6 +687,8 @@ void Selector::SetBranchAddresses(TTree* tree)
 {
 
 	tree->SetBranchAddress("zPt", &zPt);
+	tree->SetBranchAddress("zEta", &zEta);
+	tree->SetBranchAddress("zPhi", &zPhi);
 	tree->SetBranchAddress("lead_lepton_pt", &lead_lepton_pt);
 	tree->SetBranchAddress("lead_lepton_eta", &lead_lepton_eta);
 	tree->SetBranchAddress("lead_lepton_phi", &lead_lepton_phi);

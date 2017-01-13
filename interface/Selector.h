@@ -39,6 +39,8 @@ public:
 	Float_t dilepton_mass;
 
 	Float_t zPt;
+	Float_t zEta;
+	Float_t zPhi;
 	Float_t lead_lepton_pt; // flatten the collections for easy plotting
 	Float_t sublead_lepton_pt;
 	Float_t lead_lepton_eta;
