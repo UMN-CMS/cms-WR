@@ -111,7 +111,7 @@ private:
 // constructors and destructor
 //
 htFilter::htFilter(const edm::ParameterSet& iConfig):
-	_threshold(iConfig.getParameter<double>("cutThreshold")),
+	_threshold(iConfig.getParameter<double>("cutThreshold"))
 
 {
 	//now do what ever initialization is needed
