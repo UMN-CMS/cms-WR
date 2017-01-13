@@ -36,7 +36,7 @@ options.register('jsonFile',
 
 #default options
 options.maxEvents = -1
-defaultFileOutput = "myfile.root"
+defaultFileOutput = "dyJetsMadInclusive1kEvts.root"
 options.output = defaultFileOutput
 #
 
@@ -45,11 +45,19 @@ if(options.test==3):
     options.files="file:skim_test.root"   
     #options.maxEvents=100
     options.isMC=1
+elif(options.test==0):
+	#options.files=['root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunC_SHv12/MuEG_RunC_1_1_n0i.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunC_SHv12/MuEG_RunC_2_1_ZKp.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_10_1_dUq.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_11_1_gsr.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_12_1_tiu.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_13_2_wrN.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_14_1_Wal.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_15_1_q4V.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_16_1_eFY.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_17_1_eB8.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_18_1_Y24.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_1_1_9K5.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_2_1_cbs.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_3_1_lCY.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_4_1_ffI.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_5_1_dp2.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_6_1_NAp.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_7_1_mgH.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_8_1_1fS.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v3_SHv12/MuEG_RunD_v3_9_2_Fza.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_10_1_NsR.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_11_1_lSG.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_12_1_j6L.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_13_1_6k8.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_14_1_R0H.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_15_1_qAG.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_16_1_1yS.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_17_1_CH1.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_18_1_KnO.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_19_1_uxo.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_1_1_sTf.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_20_1_yMq.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_21_1_fqI.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_22_1_DIO.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_23_1_Nht.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_24_1_Xia.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_25_1_60r.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_2_1_LdK.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_3_1_rXd.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_4_1_pFp.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_5_2_usY.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_6_1_vXA.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_7_1_A7n.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_8_1_VKw.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunD_v4_SHv12/MuEG_RunD_v4_9_1_vXW.root']
+	options.maxEvents= -1 
+	options.isMC=0
+	options.datasetTag='reprocessMuEGData'
 elif(options.test==2):
-	options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
-	options.maxEvents= -1
+	#original options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
+	options.files='root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_10_2_KFJ.root'
+	#options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadInclusiveMiniAOD2.root"
+	options.maxEvents= 1000 
 	options.isMC=1
-	options.datasetTag='dyJetsAmcNloInclusive'
+	options.datasetTag='dyJetsMadInclusive1kEvts'
+	#options.datasetTag='reprocessTTJetsV2MCPartOne'
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
     options.maxEvents=200
@@ -141,6 +149,14 @@ process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.load('ExoAnalysis.cmsWR.hltFilters_cff')
 process.load('ExoAnalysis.cmsWR.heepSelector_cfi')
+process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
+
+#################################
+#Filters
+#process.genHTFilter = cms.EDFilter('htFilter',
+#		cutThreshold = cms.double(100.),
+#		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
+#		)
 
 from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
 loadHEEPIDSelector(process)
@@ -151,7 +167,9 @@ process.load('ExoAnalysis.cmsWR.dataMcAnalyzers_cfi')
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
+#process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence * process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter)
 process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
+
 
 process.miniTree_signal_ee   = process.MiniTTree.clone()
 process.miniTree_signal_mumu = process.MiniTTree.clone()
@@ -166,7 +184,9 @@ process.FlavourSideband     = cms.Path(process.signalHltSequence * process.fullS
 process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq                   * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 
+#process.DYtagAndProbe = cms.Path(process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter * process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+
 
 #process.microAODoutput_step = cms.EndPath(process.microAOD_output)
 
@@ -181,6 +201,7 @@ if (options.isMC==0 and options.unblind==0):
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe) #, process.microAODoutput_step)
+	#process.schedule = cms.Schedule(process.FlavourSideband) #, process.microAODoutput_step)
 #    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe, process.microAODoutput_step)
 
 
