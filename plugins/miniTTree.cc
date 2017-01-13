@@ -76,14 +76,14 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	std::cout<<"entered analyze method in miniTTree.cc"<<std::endl;
 #endif
 	myEvent.clear();
-	//myEvent.run = event.id().run();
-	//myEvent.lumi = event.luminosityBlock();
-	//myEvent.event = event.id().event();
+	myEvent.run = event.id().run();
+	myEvent.lumi = event.luminosityBlock();
+	myEvent.event = event.id().event();
 #ifdef DEBUG
 	std::cout<<"called clear on myEvent object, stored run, lumi, and evt number in myEvent"<<std::endl;
 #endif
 
-	/*edm::Handle<edm::View<pat::Electron> > electrons;
+	/**/edm::Handle<edm::View<pat::Electron> > electrons;
 	event.getByToken(electronsMiniAODToken_, electrons);
 	edm::Handle<edm::View<pat::Muon> > muons;
 	event.getByToken(muonsMiniAODToken_, muons);
@@ -100,14 +100,14 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	edm::Handle< edm::ValueMap<float> > muon_IDSF_error;
 	event.getByToken(muon_IDSF_error_src, muon_IDSF_error);
 	edm::Handle< edm::ValueMap<float> > muon_IsoSF_error;
-	event.getByToken(muon_IsoSF_error_src, muon_IsoSF_error);*/
+	event.getByToken(muon_IsoSF_error_src, muon_IsoSF_error);/**/
 
 	edm::Handle<GenEventInfoProduct> evinfo;
 	edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
 	edm::Handle<float > PU_Weights;
 
-	//edm::Handle<edm::View<reco::Vertex> > primary_vertex;
-	//event.getByToken(primaryVertexToken_, primary_vertex);
+	edm::Handle<edm::View<reco::Vertex> > primary_vertex;
+	event.getByToken(primaryVertexToken_, primary_vertex);
 
 	edm::Handle<std::string> datasetName;
 	event.getByToken(datasetNameToken_, datasetName);
@@ -115,12 +115,12 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 #ifdef DEBUG
 	std::cout<<"declared all handles in miniTTree.cc"<<std::endl;
 #endif
-	//sprintf(myEvent.datasetName, "%s", datasetName->c_str());
+	sprintf(myEvent.datasetName, "%s", datasetName->c_str());
 
-	/*if(primary_vertex->size() > 0) {
+	/**/if(primary_vertex->size() > 0) {
 		for(auto pv : *primary_vertex)
 			myEvent.nPV++;
-	}*/
+	}/**/
 
 #ifdef DEBUG
 	std::cout<<"passed primary_vertex size if statement"<<std::endl;
@@ -145,7 +145,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 
 	}
 
-/*
+/**/
 	for (size_t i = 0; i < electrons->size(); ++i) {
 		const auto ele = electrons->ptrAt(i);
 		TLorentzVector p4;
@@ -175,8 +175,8 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		p4.SetPtEtaPhiM(jet->pt(), jet->eta(), jet->phi(), jet->mass());
 		myEvent.jets_p4->push_back(p4);
 		myEvent.jec_uncertainty->push_back((*jec_unc)[jet]);
-	}*/
-
+	}
+/**/
 
 	tree->Fill();
 #ifdef DEBUG
