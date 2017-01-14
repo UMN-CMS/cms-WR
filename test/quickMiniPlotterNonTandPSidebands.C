@@ -24,7 +24,7 @@
 #define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
-#define DOAMC
+//#define DOAMC
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -32,7 +32,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot

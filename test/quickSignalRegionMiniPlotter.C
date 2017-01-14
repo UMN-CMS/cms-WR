@@ -35,7 +35,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -59,8 +59,10 @@ void quickSignalRegionMiniPlotter(){
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
-    data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
-    break;
+	//data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_1400_700_signal_eeEE.root");
+	//data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+    data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_3200_1600_signal_eeEE.root");
+	break;
   case Selector::MuMu:
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
@@ -68,8 +70,10 @@ void quickSignalRegionMiniPlotter(){
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
-    data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
-    break;
+ 	//data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_1400_700_signal_mumuMuMu.root");
+    //data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+    data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_3200_1600_signal_mumuMuMu.root");
+	break;
   default:
     std::cout << "Unknown tag" << std::endl;
   }
@@ -107,9 +111,9 @@ void quickSignalRegionMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -134,10 +138,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",50,500,4000);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",40,500,4000);
  
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,150,1600);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
+
+  TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 40, 0., 600.);
+  TH1F *h_WR_mass_lowZpt = new TH1F("h_WR_mass_lowZpt","",40,500,4000);
+ 
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -161,6 +169,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	if(myEvent->WR_mass < 600.) continue;
 	if(myEvent->dilepton_mass < 200.) continue;
 
+	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
+	leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
+	subleadLeptonFourMom.SetPtEtaPhiE(myEvent->sublead_lepton_pt, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi, myEvent->sublead_lepton_pt);
+	zFourMom = leadLeptonFourMom + subleadLeptonFourMom;
+
+	h_Z_pt->Fill(zFourMom.Pt(), (myEvent->weight)*scaleFactor);
+
 	h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*scaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*scaleFactor);
     h_lepton_eta0->Fill(myEvent->lead_lepton_eta,(myEvent->weight)*scaleFactor);
@@ -178,6 +193,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_WR_mass->Fill(myEvent->WR_mass,(myEvent->weight)*scaleFactor);
     h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*scaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*scaleFactor);
+    if(zFourMom.Pt() < 150.) h_WR_mass_lowZpt->Fill(myEvent->WR_mass,(myEvent->weight)*scaleFactor);
+  
   }
 
   hs->push_back(h_lepton_pt0);
@@ -195,6 +212,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass);
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
+  hs->push_back(h_Z_pt);
+  hs->push_back(h_WR_mass_lowZpt);
 
 }
 
@@ -206,8 +225,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
-  //leg->AddEntry( hs_data, "W_{R} Signal","l");
-  //leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{NuR}=1.1 TeV","");
+  leg->AddEntry( hs_data, "W_{R} Signal","l");
+  leg->AddEntry( (TObject*)0, "M_{WR}=3.2 TeV M_{NuR}=1.6 TeV","");
   leg->SetFillColor( kWhite ) ; 
 
   hs_data->Sumw2();
@@ -247,7 +266,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   th->Draw("histo");
-  //hs_data->Draw("histo same");
+  hs_data->Draw("histo same");
   //th->Draw("histo same");
   //TString ytitle = "Events/(";
   //ytitle += (th->GetXaxis()->GetNbins());
@@ -304,10 +323,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   */
 
   TString fn = fname;
-  if(channel == Selector::EE) fn += "_EEChannelWRandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
-  if(channel == Selector::MuMu) fn += "_MuMuChannelWRandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+  if(channel == Selector::EE) fn += "_EEChannelWR3p2TeVandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+  if(channel == Selector::MuMu) fn += "_MuMuChannelWR3p2TeVandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
 
-  if(fname.EqualTo("Mlljj")){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Z_pt") || fname.EqualTo("Mlljj_lowZpt") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  //p1->SetLogy();	//for ratio plot

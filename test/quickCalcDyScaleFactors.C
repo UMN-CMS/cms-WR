@@ -40,10 +40,10 @@ Int_t OverwriteDySfFile = 1;
 Int_t AppendToDySfFile = 0;
 Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
-Float_t idealLeadJetPt = 1;
-Float_t idealSubleadJetPt = 1;
-Float_t leadJetPtCut = -10;
-Float_t subLeadJetPtCut = -10;
+Float_t idealLeadJetPt = 40;
+Float_t idealSubleadJetPt = 40;
+Float_t leadJetPtCut = 40;
+Float_t subLeadJetPtCut = 40;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -85,13 +85,13 @@ void quickCalculateDyScaleFactors()
 	//chain_DYPowhegInclEE->Add(dir+"selected_tree_DYPOWINCL_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE"+mcFileTag+".root");
 	//chain_DYMadInclEE->Add(dir+"selected_tree_DYMAD_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADHT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADInclAndHT_dytagandprobeEE"+mcFileTag+".root");
 
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
 	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMAD_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADHT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_dataMuMu->Add(dir+"selected_tree_data_dytagandprobeMuMu"+dataFileTag+".root");
 
@@ -159,9 +159,9 @@ void quickCalculateDyScaleFactors()
 	//now the vectors of TH1D pointers are filled with pointers to histos with nonzero entries
 	unsigned int nPlots = hs_DYPowhegEE.size();
 
-	TString xtitles[] = {"leading lepton p_{T}", "subleading lepton p_{T}", "leading jet p_{T}", "subleading jet p_{T}", "leading lepton #eta", "subleading lepton #eta", "leading jet #eta", "subleading jet #eta", "leading lepton #phi", "subleading lepton #phi", "leading jet #phi", "subleading jet #phi", "dilepton mass", "nPV", "Z #phi", "Z rapidity", "Z p_{T}", "dilepton mass both leptons in barrel", "dilepton mass both leptons in endcap", "dilepton mass one lepton in barrel other lepton in endcap","nPV"};
+	TString xtitles[] = {"leading lepton p_{T}", "subleading lepton p_{T}", "leading jet p_{T}", "subleading jet p_{T}", "leading lepton #eta", "subleading lepton #eta", "leading jet #eta", "subleading jet #eta", "leading lepton #phi", "subleading lepton #phi", "leading jet #phi", "subleading jet #phi", "dilepton mass", "nPV", "Z #phi", "Z rapidity", "Z p_{T}", "dilepton mass both leptons in barrel", "dilepton mass both leptons in endcap", "dilepton mass one lepton in barrel other lepton in endcap","nPV","Z P_{T} (GeV)","Z P_{T} (GeV)"};
 
-	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt", "Mll_bothEB","Mll_bothEE","Mll_EBEE","nPU"};
+	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt", "Mll_bothEB","Mll_bothEE","Mll_EBEE","nPU","Z_pt_coarseBinning","Z_pt_variableBinning"};
 
 	int i = 0;
 	for(unsigned int i = 0; i < nPlots; i++) {
@@ -279,7 +279,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TH1D *h_jet_eta1 = new TH1D("h_jet_eta1", "", 50, -3.2, 3.2);
 	TH1D *h_jet_phi1 = new TH1D("h_jet_phi1", "", 50, -3.2, 3.2);
 
-	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);	//default
+	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 80, 70., 110.);	//coarser binning
+	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);	//default
 	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 560, 70., 110.);	//finer binning
 	TH1D *h_nPV = new TH1D("pileup", "nPV distribution", 50., 0, 50.);
 	TH1D *h_nPU = new TH1D("pileup", "true nPU distribution for MC", 50., 0, 50.);
@@ -287,6 +288,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TH1D *h_Z_phi = new TH1D("h_Z_phi", "", 50, -3.2, 3.2);
 	TH1D *h_Z_rapidity = new TH1D("h_Z_rapidity", "", 70, -5., 8.);
 	TH1D *h_Z_pt = new TH1D("h_Z_pt", "", 35, -10., 300.);
+	TH1D *h_Z_ptCoarseBinning = new TH1D("h_Z_ptCoarseBinning", "", 10, -10., 1000.);
+
+	//Z pT with variable bin widths
+	Float_t bins[] = {0,50,100,150,200,300,400,500,600,2000};
+	Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
+	TH1D *h_Z_ptVariableBinning = new TH1D("h_Z_ptVariableBinning", "", binnum, bins);
 
 	TH1D *h_dilepton_massBothEB = new TH1D("h_dilepton_massBothEB", "", 280, 55., 125.);
 	TH1D *h_dilepton_massBothEE = new TH1D("h_dilepton_massBothEE", "", 280, 55., 125.);
@@ -315,6 +322,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 		h_Z_pt->Fill(zFourMom.Pt(), (myEvent->weight)*hltCorrFactor);
 		h_Z_phi->Fill(zFourMom.Phi(), (myEvent->weight)*hltCorrFactor);
 		h_Z_rapidity->Fill(zFourMom.Rapidity(), (myEvent->weight)*hltCorrFactor);
+		h_Z_ptCoarseBinning->Fill(zFourMom.Pt(), (myEvent->weight)*hltCorrFactor);
+		h_Z_ptVariableBinning->Fill(zFourMom.Pt(), (myEvent->weight)*hltCorrFactor);
 
 		h_lepton_pt0->Fill(myEvent->lead_lepton_pt, (myEvent->weight)*hltCorrFactor);
 		h_lepton_pt1->Fill(myEvent->sublead_lepton_pt, (myEvent->weight)*hltCorrFactor);
@@ -338,9 +347,11 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 		if(std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) h_dilepton_massBothEB->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 		if(std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) h_dilepton_massBothEE->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 		if( (std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) || (std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) ) h_dilepton_massEBEE->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
-	
+
 	}
 
+	h_Z_ptCoarseBinning->Scale(normRescale);
+	h_Z_ptVariableBinning->Scale(normRescale);
 	h_Z_pt->Scale(normRescale);
 	h_Z_phi->Scale(normRescale);
 	h_Z_rapidity->Scale(normRescale);
@@ -389,13 +400,35 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	hs->push_back(h_dilepton_massBothEE);
 	hs->push_back(h_dilepton_massEBEE);
 	hs->push_back(h_nPU);
+	hs->push_back(h_Z_ptCoarseBinning);
+
+	//divide bin contents of h_Z_ptVariableBinning by width of each bin
+	//get num bins in histo
+	Int_t nBins = h_Z_ptVariableBinning->GetNbinsX();
+	for(Int_t j=1; j<=nBins; j++){
+		//include the overflows in the very last bin shown on the plot
+		if(j==nBins){
+			Double_t origBinContents = h_Z_ptVariableBinning->GetBinContent(j);
+			Double_t overflowContents = h_Z_ptVariableBinning->GetBinContent(j+1);
+			std::cout<<"overflow contents =\t"<< overflowContents << std::endl;	//sanity check
+			h_Z_ptVariableBinning->SetBinContent(j, origBinContents+overflowContents);
+		}//end work to include overflows in last bin shown on plot
+		//in each bin, divide the bin contents by the bin width
+		Double_t oldBinContents = h_Z_ptVariableBinning->GetBinContent(j);
+		Double_t oldBinErrors = h_Z_ptVariableBinning->GetBinError(j);
+		Double_t binWidth = h_Z_ptVariableBinning->GetBinWidth(j);
+		h_Z_ptVariableBinning->SetBinContent(j, oldBinContents/binWidth);
+		h_Z_ptVariableBinning->SetBinError(j, oldBinErrors/binWidth);
+	}//end loop over bins in histo
+
+	hs->push_back(h_Z_ptVariableBinning);
 
 }
 
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-	//if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 
 	if(fname.EqualTo("nPU") == true && channel == "MuMu" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
 		//write the nPU hsitogram only from data to a file
@@ -419,10 +452,10 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ;
-	//leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
+	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-	//leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY Simulation" ) ;
+	leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY AMC" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -468,8 +501,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	hs_data->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitleOffset(1.5);
 	hs_DYAmcIncl->GetYaxis()->SetTitleOffset(1.5);
-	//hs_DYMadIncl->GetYaxis()->SetTitleOffset(1.5);
-	//hs_DYPowheg->GetYaxis()->SetTitleOffset(1.5);
+	hs_DYMadIncl->GetYaxis()->SetTitleOffset(1.5);
+	hs_DYPowheg->GetYaxis()->SetTitleOffset(1.5);
 	//hs_data->GetYaxis()->SetTitleSize(0.042);
 	//hs_DYAmcIncl->GetYaxis()->SetTitleSize(0.042);
 	
@@ -490,8 +523,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(fname.EqualTo("Z_pt") ) hs_data->GetXaxis()->SetTitle("Z P_{T} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("Z P_{T} [GeV]");
 	
 	hs_data->Draw("ep");
-	//hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
-	//hs_DYMadIncl->Draw("histo same");	//comment if only plotting AMC
+	hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
+	hs_DYMadIncl->Draw("histo same");	//comment if only plotting AMC
 	hs_DYAmcIncl->Draw("histo same");
 	hs_data->Draw("epsame");
 	/*
@@ -545,6 +578,14 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Mad->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
 
+	//loop over bins in Madgraph ratio plot shown in the variable bin width Z pT plot, and print the bin contents to stdout
+	if(fname.EqualTo("Z_pt_variableBinning") == true){
+		Int_t nBins = ratio_Mad->GetNbinsX();
+		for(Int_t i=1; i<=nBins; i++){
+			std::cout<<"bin with lower edge " << ratio_Mad->GetBinLowEdge(i) << " has data/MC =\t" << ratio_Mad->GetBinContent(i) << std::endl;
+		}//end loop over bins
+	}//end if plot is Z pT with variable bin widths
+
 	ratio_Amc->Divide(hs_DYAmcIncl);
 	ratio_Amc->SetMarkerStyle(22);
 	ratio_Amc->SetMarkerColor(kBlue);
@@ -553,29 +594,34 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
 	/*for ratio plot*/
-	//ratio_Mad->Draw("p");	//comment if only plotting AMC
-	ratio_Amc->Draw("p");
+	ratio_Mad->Draw("p");	//comment if only plotting AMC
+	//ratio_Amc->Draw("p");
 	//ratio_Powheg->Draw("p");	//comment if only plotting AMC
 	float xmax = ratio_Amc->GetXaxis()->GetXmax();
 	float xmin = ratio_Amc->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
 	//ratio_Powheg->Draw("p");
-	//ratio_Mad->Draw("psame");
-	ratio_Amc->Draw("p");
+	ratio_Mad->Draw("psame");
+	//ratio_Amc->Draw("p");
 	f1->Draw("same");
 	mycanvas->cd();
 	/**/
 
+	//no Ratio
 	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_noRatioPlot_" + channel;
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyDYAMC_"+ channel;
+
+	//only MadHT ratio
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
+
+	//only AMC ratio
+	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCRatioPlot_" + channel;
 	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
 	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
 	TString fn = fname + cuts;
-	//TString fn = fname + cuts + "_DYMadHTBinned";
 
 	/**/
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true){
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("Z_pt_coarseBinning") == true || fname.EqualTo("Z_pt_variableBinning") == true){
 		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
 		/*
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
@@ -623,10 +669,11 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 		*/
 
 		//reset the Y axis scale on the ratio plot
-		//ratio_Powheg->GetYaxis()->SetRangeUser(0.61, 1.39);
-		//ratio_Mad->GetYaxis()->SetRangeUser(0.61, 1.39);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.61, 1.39);
+		ratio_Powheg->GetYaxis()->SetRangeUser(0.51, 1.99);
+		ratio_Mad->GetYaxis()->SetRangeUser(0.51, 1.99);
+		ratio_Amc->GetYaxis()->SetRangeUser(0.51, 1.99);
 
+		if(fname.EqualTo("Z_pt_variableBinning") == true) fn += "_overflowsAddedToLastBin";
 		mycanvas->Update();
 		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_noZoomRatio.png").Data());

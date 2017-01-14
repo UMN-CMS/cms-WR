@@ -30,7 +30,7 @@
  * data as black dots and all bkgnd MC as one stacked histogram with several fill colors.
  *
  * This macro should be used by itself on minitrees processed by analysis.cpp with -c EE or -c MuMu
- * and signal region requirements (i.e. no additional strings passed to analysis.cpp on the cmd line).
+ * and signal region requirements (i.e. only ignoreDyScaleFactors false passed to analysis.cpp on the cmd line).
  *
  */
 
