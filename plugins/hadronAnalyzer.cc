@@ -78,7 +78,7 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include "TTree.h"
-//#include "TLorentzVector.h"
+#include "TLorentzVector.h"
 #include <TFile.h>
 #include <TBranch.h>
 #include <TChain.h>
@@ -126,6 +126,7 @@ private:
 //first element is leading (highest pT) electron
 //second element is subleading electron
 	Float_t sumPt;
+	Float_t zPt;
 
 };
 
@@ -151,6 +152,7 @@ hadronAnalyzer::hadronAnalyzer(const edm::ParameterSet& iConfig):
 	tree = fs->make<TTree>(tName.c_str(), "event kinematic info");
 
 	tree->Branch("sumPt", &sumPt, "sumPt/F");
+	tree->Branch("zPt", &sumPt, "sumPt/F");
 
 	tree->Branch("runNumber", &runNumber, "runNumber/I");
 	tree->Branch("evtNumber", &evtNumber, "evtNumber/l");
@@ -187,7 +189,7 @@ hadronAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	evtNumber = iEvent.id().event();
 	runNumber = iEvent.id().run();
-	sumPt = 0;
+	sumPt = 0, zPt = 0;
 
 	iEvent.getByToken(inputParticlesToken, inputParticles);
 	nInputParticles = inputParticles->size();
@@ -195,6 +197,17 @@ hadronAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	for(edm::OwnVector<reco::Candidate>::const_iterator it = inputParticles->begin(); it!=inputParticles->end(); it++){
 		sumPt += it->pt();
 	}//end loop over particles in input collection
+
+	if(nInputParticles == 2){
+		edm::OwnVector<reco::Candidate>::const_iterator one = inputParticles->begin();
+		edm::OwnVector<reco::Candidate>::const_iterator two = (inputParticles->begin())++;
+	
+		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
+		leadLeptonFourMom.SetPtEtaPhiE(one->pt(), one->eta(), one->phi(), one->pt());
+		subleadLeptonFourMom.SetPtEtaPhiE(two->pt(), two->eta(), two->phi(), two->pt());
+		zFourMom = leadLeptonFourMom + subleadLeptonFourMom;
+		zPt = zFourMom.Pt();
+	}
 
 	tree->Fill();
 
