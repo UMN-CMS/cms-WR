@@ -58,9 +58,9 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-#define showMassWindows
+//#define showMassWindows
 //#define printNewDySyst
-
+#define DYHTPlot
 
 
 //#define DEBUGEVTWEIGHTMTHD
@@ -3020,5 +3020,147 @@ void macroSandBox(){
 #endif
 	//end printNewDySyst
 
+	// sumPt
+#ifdef DYHTPlot
+	//make a plot of the sum pT of all GEN quarks and gluons leaving the hard pp->Z->ll interaction
+	//the plot will show one curve for the DYMad inclusive dataset, and another curve for the DYMadHT100-200 dataset
+	
+	//chain->AddFriend(friendChain,friendAlias.c_str());
+
+	//chains for hadron sumPt
+	TString treeName = "genMatchedAnalyzerOne/genGluonsAndQuarksNoCuts";
+	TChain * dyMadIncl = new TChain(treeName,"dyMadIncl");
+	dyMadIncl->Add("../hadronAndEleKinematicsGenDYJetsMadIncl.root");
+	TChain * dyMadHT100to200 = new TChain(treeName,"dyMadHT100to200");
+	dyMadHT100to200->Add("../hadronAndEleKinematicsGenDYJetsMadHT100to200.root");
+	TChain * dyMadHT200to400 = new TChain(treeName,"dyMadHT200to400");
+	dyMadHT200to400->Add("../hadronAndEleKinematicsGenDYJetsMadHT200to400.root");
+	TChain * dyMadHT400to600 = new TChain(treeName,"dyMadHT400to600");
+	dyMadHT400to600->Add("../hadronAndEleKinematicsGenDYJetsMadHT400to600.root");
+	TChain * dyMadHT600toInf = new TChain(treeName,"dyMadHT600toInf");
+	dyMadHT600toInf->Add("../hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
+
+
+	//chains for lepton Z pT
+	TString treeNameLepton = "genMatchedAnalyzerTwo/genElectronsNoCuts";
+	TChain * dyMadLeptIncl = new TChain(treeNameLepton,"dyMadLeptIncl");
+	dyMadLeptIncl->Add("../hadronAndEleKinematicsGenDYJetsMadIncl.root");
+	TChain * dyMadLeptHT100to200 = new TChain(treeNameLepton,"dyMadLeptHT100to200");
+	dyMadLeptHT100to200->Add("../hadronAndEleKinematicsGenDYJetsMadHT100to200.root");
+	TChain * dyMadLeptHT200to400 = new TChain(treeNameLepton,"dyMadLeptHT200to400");
+	dyMadLeptHT200to400->Add("../hadronAndEleKinematicsGenDYJetsMadHT200to400.root");
+	TChain * dyMadLeptHT400to600 = new TChain(treeNameLepton,"dyMadLeptHT400to600");
+	dyMadLeptHT400to600->Add("../hadronAndEleKinematicsGenDYJetsMadHT400to600.root");
+	TChain * dyMadLeptHT600toInf = new TChain(treeNameLepton,"dyMadLeptHT600toInf");
+	dyMadLeptHT600toInf->Add("../hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
+
+
+	//add hadron sumPt chains as friends to lepton Z pT chains
+	dyMadLeptIncl->AddFriend(dyMadIncl, "MadInclHadronChain");
+	dyMadLeptHT100to200->AddFriend(dyMadHT100to200, "MadHTBinnedHadronChain");
+	dyMadLeptHT200to400->AddFriend(dyMadHT200to400, "MadHTBinnedHadronChain");
+	dyMadLeptHT400to600->AddFriend(dyMadHT400to600, "MadHTBinnedHadronChain");
+	dyMadLeptHT600toInf->AddFriend(dyMadHT600toInf, "MadHTBinnedHadronChain");
+
+
+	//draw 2D plot of GEN HT and GEN Z pT   yAxis:xAxis
+	/*dyMadLeptIncl->Draw("sumPt:MadInclHadronChain.zPt>>twoDimMadInclHist()");
+	TH2F * twoDimMadInclHist = (TH2F*) gROOT->FindObject("twoDimMadInclHist");
+	gStyle->SetOptStat("");
+	TCanvas * canvTwoDimMadIncl = new TCanvas("twoDimMadIncl","twoDimMadIncl",800,800);
+	canvTwoDimMadIncl->cd();
+	twoDimMadInclHist->GetXaxis()->SetTitle("GEN H_{T} (GeV)");
+	twoDimMadInclHist->GetYaxis()->SetTitle("GEN Z P_{T} (GeV)");
+	twoDimMadInclHist->GetYaxis()->SetTitleOffset(1.4);
+	twoDimMadInclHist->SetTitle("Mad Inclusive GEN Z P_{T} vs H_{T}");
+	twoDimMadInclHist->Draw("colz");
+	TString twoDimMadInclOutFileName = "twoDimMadInclGenHTvsGenZpT";
+	canvTwoDimMadIncl->Print(twoDimMadInclOutFileName + ".pdf");
+	canvTwoDimMadIncl->Print(twoDimMadInclOutFileName + ".png");
+	canvTwoDimMadIncl->Close();*/
+
+	dyMadLeptHT600toInf->Draw("sumPt:MadHTBinnedHadronChain.zPt>>twoDimMadHTBinnedHist()");
+	TH2F * twoDimMadHTBinnedHist = (TH2F*) gROOT->FindObject("twoDimMadHTBinnedHist");
+	gStyle->SetOptStat("");
+	TCanvas * canvTwoDimMadHTBinned = new TCanvas("twoDimMadHTBinned","twoDimMadHTBinned",800,800);
+	canvTwoDimMadHTBinned->cd();
+	twoDimMadHTBinnedHist->GetXaxis()->SetTitle("GEN H_{T} (GeV)");
+	twoDimMadHTBinnedHist->GetYaxis()->SetTitle("GEN Z P_{T} (GeV)");
+	twoDimMadHTBinnedHist->GetYaxis()->SetTitleOffset(1.4);
+	twoDimMadHTBinnedHist->SetTitle("MadHT600toInf GEN Z P_{T} vs H_{T}");
+	twoDimMadHTBinnedHist->Draw("colz");
+	TString twoDimMadHTBinnedOutFileName = "twoDimMadHT600toInfBinnedGenHTvsGenZpT";
+	canvTwoDimMadHTBinned->Print(twoDimMadHTBinnedOutFileName + ".pdf");
+	canvTwoDimMadHTBinned->Print(twoDimMadHTBinnedOutFileName + ".png");
+	canvTwoDimMadHTBinned->Close();
+
+
+
+	/*
+	dyMadHT100to200->Draw("sumPt>>tempHTBinnedSumPtHist()");
+	TH1F * tempHTBinnedHist = (TH1F*) gROOT->FindObject("tempHTBinnedSumPtHist");
+	dyMadIncl->Draw("sumPt>>tempInclSumPtHist()");
+	TH1F * tempInclHist = (TH1F*) gROOT->FindObject("tempInclSumPtHist");
+
+	//now overlay the two histos
+	gStyle->SetOptStat("");
+	TCanvas * c0 = new TCanvas("canv","canv",800,800);
+	c0->cd();
+	tempInclHist->SetLineColor(kBlack);
+	tempInclHist->SetLineWidth(2);
+	tempHTBinnedHist->SetLineColor(kRed);
+	tempHTBinnedHist->SetLineWidth(2);
+
+	*/
+
+	/* example plotting code
+	EEAllBkgndsPlusSystUncs->SetMarkerColor(kRed);
+	EEAllBkgndsPlusSystUncs->SetMarkerStyle(20);
+	EEAllBkgndsPlusSystUncs->SetMarkerSize(1);
+	
+	EEAllBkgndsMinusSystUncs->SetMarkerColor(kRed);
+	EEAllBkgndsMinusSystUncs->SetMarkerStyle(20);
+	EEAllBkgndsMinusSystUncs->SetMarkerSize(1);
+	
+	EEAllBkgndsPlusStatUncs->SetMarkerColor(kBlue);
+	EEAllBkgndsPlusStatUncs->SetMarkerStyle(20);
+	EEAllBkgndsPlusStatUncs->SetMarkerSize(1);
+	
+	EEAllBkgndsMinusStatUncs->SetMarkerColor(kBlue);
+	EEAllBkgndsMinusStatUncs->SetMarkerStyle(20);
+	EEAllBkgndsMinusStatUncs->SetMarkerSize(1);
+	
+	TLegend *legTotEE = new TLegend(0.6, 0.6, 0.9, 0.9);
+	legTotEE->AddEntry(EEAllBkgndsNoUncs, "Nominal");
+	legTotEE->AddEntry(EEAllBkgndsPlusSystUncs, "Nominal+Syst Unc","p");
+	legTotEE->AddEntry(EEAllBkgndsMinusSystUncs, "Nominal-Syst Unc","p");
+	legTotEE->AddEntry(EEAllBkgndsPlusStatUncs, "Nominal+Stat Unc","p");
+	legTotEE->AddEntry(EEAllBkgndsMinusStatUncs, "Nominal-Stat Unc","p");
+
+
+	EEAllBkgndsNoUncs->Draw("histo");
+	EEAllBkgndsPlusSystUncs->Draw("Psame");
+	EEAllBkgndsMinusSystUncs->Draw("Psame");
+	EEAllBkgndsPlusStatUncs->Draw("Psame");
+	EEAllBkgndsMinusStatUncs->Draw("Psame");
+	EEAllBkgndsNoUncs->GetYaxis()->SetTitle("Ele Events per W_{R} mass window");
+	EEAllBkgndsNoUncs->GetYaxis()->SetTitleOffset(1.35);
+	canvasTotEE->Update();
+	legTotEE->Draw();
+	canvasTotEE->cd();
+	TString outFileNameIndivBkgndsEE = "EEChnlIndivBkgndsWithUncs";
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".pdf");
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".png");
+	EEAllBkgndsNoUncs->SetMinimum(0.1);
+	canvasTotEE->SetLogy();
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.pdf");
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.png");
+	canvasTotEE->Close();
+	*/
+
+
+
+#endif
+	//end DYHTPlot
 }///end macroSandBox()
 
