@@ -24,6 +24,11 @@ process.genMatchedAnalyzerOne = cms.EDAnalyzer('hadronAnalyzer',
 		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
 		)
 
+process.genMatchedAnalyzerTwo = cms.EDAnalyzer('hadronAnalyzer',
+		treeName = cms.string("genElectronsNoCuts"),
+		inputCollection = cms.InputTag("dyJetsBareMatchedGenEle")
+		)
+
 #################################
 #Paths
 process.studyDYJetsDecay = cms.Path(
@@ -31,16 +36,23 @@ process.studyDYJetsDecay = cms.Path(
 		process.dyJetsBareMatchedGenGluon
 		*process.dyJetsBareMatchedGenQuark
 		*process.dyJetsMergeGenMatchedPartons #merge gen quark and gen gluon collections
-		*process.genHTFilter
+		#*process.genHTFilter
+		#select electrons from Z then calculate Z pT
+		*process.dyJetsBareMatchedGenEle
+		*process.dyJetsBareMatchedGenEleFilter
 		*process.genMatchedAnalyzerOne
+		*process.genMatchedAnalyzerTwo
 		)
 
 process.schedule = cms.Schedule(process.studyDYJetsDecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		#fileName = cms.string('hadronKinematicsGenDYJetsMadHT100to200.root')
-		fileName = cms.string('hadronKinematicsGenDYJetsMadIncl.root')
+		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT600toInf.root')
+		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT400to600.root')
+		fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT200to400.root')
+		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT100to200.root')
+		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadIncl.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -50,13 +62,25 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source( "PoolSource",
 	#fileNames = cms.untracked.vstring(
-	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadHT100to200MiniAOD1.root',
-	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadHT100to200MiniAOD2.root'
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD0.root',
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD1.root'
+	#	),
+	#fileNames = cms.untracked.vstring(
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT400to600MiniAOD1.root',
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT400to600MiniAOD0.root'
 	#	),
 	fileNames = cms.untracked.vstring(
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadInclusiveMiniAOD1.root',
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadInclusiveMiniAOD2.root',
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT200to400MiniAOD1.root',
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT200to400MiniAOD0.root'
 		),
+	#fileNames = cms.untracked.vstring(
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD1.root',
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD2.root'
+	#	),
+	#fileNames = cms.untracked.vstring(
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD1.root',
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD2.root',
+	#	),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
