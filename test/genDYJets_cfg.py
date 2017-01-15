@@ -1,12 +1,24 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("GenDYJetsHTandInclusive")
+process = cms.Process("GenAndRecoDYJetsHTandInclusive")
 
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load('ExoAnalysis.cmsWR.JEC_cff')
+
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
+
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v4', '')
+
+##jet energy corrections
+#from ExoAnalysis.cmsWR.JEC_cff import *
+#JEC_correction(process, '74X_mcRun2_asymptotic_v4')
+
 
 #################################
 #Filters
@@ -29,30 +41,43 @@ process.genMatchedAnalyzerTwo = cms.EDAnalyzer('hadronAnalyzer',
 		inputCollection = cms.InputTag("dyJetsBareMatchedGenEle")
 		)
 
+process.recoAnalyzerOne = cms.EDAnalyzer('hadronAnalyzer',
+		treeName = cms.string("recoJetsNoCuts"),
+		inputCollection = cms.InputTag("bareRecoJet")
+		)
+
+
 #################################
 #Paths
 process.studyDYJetsDecay = cms.Path(
 		#process.printDYJetsParticleTree
-		process.dyJetsBareMatchedGenGluon
-		*process.dyJetsBareMatchedGenQuark
-		*process.dyJetsMergeGenMatchedPartons #merge gen quark and gen gluon collections
+		#process.dyJetsBareMatchedGenGluon
+		#*process.dyJetsBareMatchedGenQuark
+		#*process.dyJetsMergeGenMatchedPartons #merge gen quark and gen gluon collections
 		#*process.genHTFilter
-		#select electrons from Z then calculate Z pT
-		*process.dyJetsBareMatchedGenEle
-		*process.dyJetsBareMatchedGenEleFilter
-		*process.genMatchedAnalyzerOne
-		*process.genMatchedAnalyzerTwo
+		##select electrons from Z then calculate Z pT
+		#*process.dyJetsBareMatchedGenEle
+		#*process.dyJetsBareMatchedGenEleFilter
+		#*process.genMatchedAnalyzerOne
+		#*process.genMatchedAnalyzerTwo
+		#RECO sumPt of two leading jets
+		process.jecSequence
+		#*process.patJetCorrFactorsReapplyJEC
+		#+process.patJetsReapplyJEC
+		*process.bareRecoJet
+		*process.bareRecoJetFilter
+		*process.recoAnalyzerOne
 		)
 
 process.schedule = cms.Schedule(process.studyDYJetsDecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT600toInf.root')
-		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT400to600.root')
-		fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT200to400.root')
-		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadHT100to200.root')
-		#fileName = cms.string('hadronAndEleKinematicsGenDYJetsMadIncl.root')
+		fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT600toInf.root')
+		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT400to600.root')
+		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT200to400.root')
+		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT100to200.root')
+		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadIncl.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -61,18 +86,18 @@ process.options = cms.untracked.PSet(
 		)
 
 process.source = cms.Source( "PoolSource",
-	#fileNames = cms.untracked.vstring(
-	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD0.root',
-	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD1.root'
-	#	),
+	fileNames = cms.untracked.vstring(
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD0.root',
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD1.root'
+		),
 	#fileNames = cms.untracked.vstring(
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT400to600MiniAOD1.root',
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT400to600MiniAOD0.root'
 	#	),
-	fileNames = cms.untracked.vstring(
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT200to400MiniAOD1.root',
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT200to400MiniAOD0.root'
-		),
+	#fileNames = cms.untracked.vstring(
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT200to400MiniAOD1.root',
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT200to400MiniAOD0.root'
+	#	),
 	#fileNames = cms.untracked.vstring(
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD1.root',
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD2.root'
