@@ -3095,17 +3095,17 @@ void macroSandBox(){
 	*/
 
 	//chains for RECO hadron sumPt
-	TString treeName = "recoAnalyzerOne/recoJetsNoCuts";
+	TString treeName = "recoAnalyzerTwo/recoJetsAndLeptonsNoCuts";
 	TChain * dyMadRecoIncl = new TChain(treeName,"dyMadRecoIncl");
-	dyMadRecoIncl->Add("../recoHadronKinematicsGenDYJetsMadInclAllSkims.root");
+	dyMadRecoIncl->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadInclAllSkims.root");
 	TChain * dyMadRecoHT100to200 = new TChain(treeName,"dyMadRecoHT100to200");
-	dyMadRecoHT100to200->Add("../recoHadronKinematicsGenDYJetsMadHT100to200AllSkims.root");
+	dyMadRecoHT100to200->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT100to200AllSkims.root");
 	TChain * dyMadRecoHT200to400 = new TChain(treeName,"dyMadRecoHT200to400");
-	dyMadRecoHT200to400->Add("../recoHadronKinematicsGenDYJetsMadHT200to400AllSkims.root");
+	dyMadRecoHT200to400->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT200to400AllSkims.root");
 	TChain * dyMadRecoHT400to600 = new TChain(treeName,"dyMadRecoHT400to600");
-	dyMadRecoHT400to600->Add("../recoHadronKinematicsGenDYJetsMadHT400to600AllSkims.root");
+	dyMadRecoHT400to600->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT400to600AllSkims.root");
 	TChain * dyMadRecoHT600toInf = new TChain(treeName,"dyMadRecoHT600toInf");
-	dyMadRecoHT600toInf->Add("../recoHadronKinematicsGenDYJetsMadHT600toInfAllSkims.root");
+	dyMadRecoHT600toInf->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT600toInfAllSkims.root");
 
 	//draw the sumPt of the two leading RECO jets passing tight ID
 	//crossSxn norm for different DYMad samples:
@@ -3141,30 +3141,33 @@ void macroSandBox(){
 
 	//one stacked plot showing DYMadIncl (with GEN HT < 100 filter) + all DYMadHT binned samples
 	gStyle->SetOptStat("");
-	dyMadRecoIncl->Draw("sumPt>>recoJetMadInclHist(75,0.,1500.)");
+	//TString xAxisLabel = "RECO #Sigma P_{T} Two Lead Jets (GeV)";
+	TString xAxisLabel = "RECO M_{EEJJ} (GeV)";
+	TString yAxisLabel = "Events";
+	dyMadRecoIncl->Draw("dileptonMass>>recoJetMadInclHist(75,0.,1200.)");
 	TH1F * recoJetMadInclHist = (TH1F*) gROOT->FindObject("recoJetMadInclHist");
 	recoJetMadInclHist->Scale((5991*lumi)/9042031);
 	recoJetMadInclHist->SetFillColor(kYellow);
-	recoJetMadInclHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
-	recoJetMadInclHist->GetYaxis()->SetTitle("Events");
-	dyMadRecoHT100to200->Draw("sumPt>>recoJetMadHT100to200Hist(75,0.,1500.)");
+	recoJetMadInclHist->GetXaxis()->SetTitle(xAxisLabel);
+	recoJetMadInclHist->GetYaxis()->SetTitle(yAxisLabel);
+	dyMadRecoHT100to200->Draw("dileptonMass>>recoJetMadHT100to200Hist(75,0.,1200.)");
 	TH1F * recoJetMadHT100to200Hist = (TH1F*) gROOT->FindObject("recoJetMadHT100to200Hist");
 	recoJetMadHT100to200Hist->Scale((181.302*lumi)/2725655);
 	recoJetMadHT100to200Hist->SetFillColor(kGreen);
-	dyMadRecoHT200to400->Draw("sumPt>>recoJetMadHT200to400Hist(75,0.,1500.)");
+	dyMadRecoHT200to400->Draw("dileptonMass>>recoJetMadHT200to400Hist(75,0.,1200.)");
 	TH1F * recoJetMadHT200to400Hist = (TH1F*) gROOT->FindObject("recoJetMadHT200to400Hist");
 	recoJetMadHT200to400Hist->Scale((50.4177*lumi)/973937);
 	recoJetMadHT200to400Hist->SetFillColor(kBlue);
-	dyMadRecoHT400to600->Draw("sumPt>>recoJetMadHT400to600Hist(75,0.,1500.)");
+	dyMadRecoHT400to600->Draw("dileptonMass>>recoJetMadHT400to600Hist(75,0.,1200.)");
 	TH1F * recoJetMadHT400to600Hist = (TH1F*) gROOT->FindObject("recoJetMadHT400to600Hist");
 	recoJetMadHT400to600Hist->Scale((6.98394*lumi)/1067758);
 	recoJetMadHT400to600Hist->SetFillColor(kCyan);
-	dyMadRecoHT600toInf->Draw("sumPt>>recoJetMadHT600toInfHist(75,0.,1500.)");
+	dyMadRecoHT600toInf->Draw("dileptonMass>>recoJetMadHT600toInfHist(75,0.,1200.)");
 	TH1F * recoJetMadHT600toInfHist = (TH1F*) gROOT->FindObject("recoJetMadHT600toInfHist");
 	recoJetMadHT600toInfHist->Scale((2.70354*lumi)/998912);
 	recoJetMadHT600toInfHist->SetFillColor(kMagenta);
-	recoJetMadHT600toInfHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
-	recoJetMadHT600toInfHist->GetYaxis()->SetTitle("Events");
+	recoJetMadHT600toInfHist->GetXaxis()->SetTitle(xAxisLabel);
+	recoJetMadHT600toInfHist->GetYaxis()->SetTitle(yAxisLabel);
 
 
 #ifdef DEBUG
@@ -3196,7 +3199,7 @@ void macroSandBox(){
 	stackedDYMadRecoHT->Add(recoJetMadHT200to400Hist);
 	stackedDYMadRecoHT->Add(recoJetMadHT100to200Hist);
 	stackedDYMadRecoHT->Add(recoJetMadInclHist);
-	stackedDYMadRecoHT->SetMinimum(90);
+	stackedDYMadRecoHT->SetMinimum(5);
 	stackedDYMadRecoHT->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
 
 #ifdef DEBUG
@@ -3206,7 +3209,7 @@ void macroSandBox(){
 	stackedDYMadRecoHT->Draw("histo");
 	legStackedMadInclAndHTBinned->Draw();
 
-	TString stackedMadInclAndHTOutFileName = "stackedMadInclAndHTBinnedRecoHTAllSkims";
+	TString stackedMadInclAndHTOutFileName = "stackedMadInclAndHTBinnedRecoDiElectronMassAllSkims";
 	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+".pdf");
 	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+".png");
 	canvStackMadInclAndHT->SetLogy();
