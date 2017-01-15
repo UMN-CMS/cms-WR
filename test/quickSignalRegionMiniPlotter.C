@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <memory>
 
+#define doOnlyDYMadInclAndHT
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -41,9 +42,16 @@ void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
 void quickSignalRegionMiniPlotter(){
 
+#ifndef doOnlyDYMadInclAndHT
   TChain * chain_DY = new TChain("Tree_Iter0","DYMC");
   //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+#endif
+#ifdef doOnlyDYMadInclAndHT
+  TChain * chain_DY = new TChain("Tree_Iter0","DYMAD");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","NOTT");
+#endif
+
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
   TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
@@ -53,26 +61,49 @@ void quickSignalRegionMiniPlotter(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EE:
+#ifndef doOnlyDYMadInclAndHT
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+#endif
+
+#ifdef doOnlyDYMadInclAndHT
+	wjets = chain_DY->Add(localDir+"selected_tree_DYMAD_signal_eeEEInclusiveLowHT.root");
+	dy = chain_ttbar->Add(localDir+"selected_tree_DYMADHT_signal_eeEEOnlyHT100to200.root");
+	tt = chain_WJets->Add(localDir+"selected_tree_DYMADHT_signal_eeEEOnlyHT200to400.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_DYMADHT_signal_eeEEOnlyHT400to600.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_DYMADHT_signal_eeEEOnlyHT600toInf.root");
+#endif
 	//data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_1400_700_signal_eeEE.root");
 	//data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
-    data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_3200_1600_signal_eeEE.root");
+    //data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_3200_1600_signal_eeEE.root");
+	data = chain_data->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
+	//data = chain_data->Add(localDir+"selected_tree_DYPOWHEG_signal_eeEE.root");
 	break;
   case Selector::MuMu:
+#ifndef doOnlyDYMadInclAndHT
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
- 	//data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_1400_700_signal_mumuMuMu.root");
+#endif
+
+#ifdef doOnlyDYMadInclAndHT
+	wjets = chain_DY->Add(localDir+"selected_tree_DYMAD_signal_mumuMuMuInclusiveLowHT.root");
+	dy = chain_ttbar->Add(localDir+"selected_tree_DYMADHT_signal_mumuMuMuOnlyHT100to200.root");
+	tt = chain_WJets->Add(localDir+"selected_tree_DYMADHT_signal_mumuMuMuOnlyHT200to400.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_DYMADHT_signal_mumuMuMuOnlyHT400to600.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_DYMADHT_signal_mumuMuMuOnlyHT600toInf.root");
+#endif
+	
+	//data = chain_data->Add(localDir+"selected_tree_DYPOWHEG_signal_mumuMuMu.root");
+   	data = chain_data->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
     //data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
-    data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_3200_1600_signal_mumuMuMu.root");
 	break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -138,13 +169,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",40,500,4000);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",40,500,3000);
  
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,150,1600);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
 
-  TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 40, 0., 600.);
-  TH1F *h_WR_mass_lowZpt = new TH1F("h_WR_mass_lowZpt","",40,500,4000);
+  TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 40, 0., 1200.);
+  TH1F *h_WR_mass_lowZpt = new TH1F("h_WR_mass_lowZpt","",40,500,3000);
  
 
   Long64_t nEntries = chain->GetEntries();
@@ -159,10 +190,6 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   if( chainTitle.EqualTo("TTData") ){
 	  scaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
   }
-  if( chainTitle.EqualTo("DYMC") ){
-	  scaleFactor = (channel == Selector::MuMu) ? 0.9643 : 0.9558;	//slightly more DY MC evts than data in sideband
-  }
- 
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
@@ -220,13 +247,25 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
+#ifndef doOnlyDYMadInclAndHT
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
   leg->AddEntry( hs_ttbar, "TT Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
   leg->AddEntry( hs_ZZ, "ZZ" ) ; 
-  leg->AddEntry( hs_data, "W_{R} Signal","l");
-  leg->AddEntry( (TObject*)0, "M_{WR}=3.2 TeV M_{NuR}=1.6 TeV","");
+#endif 
+
+#ifdef doOnlyDYMadInclAndHT
+  leg->AddEntry( hs_DY, "DYMadHT100to200" ) ; 
+  leg->AddEntry( hs_ttbar, "DYMadHT200to400" ) ;
+  leg->AddEntry( hs_WJets, "DYMadIncl HT<100" ) ; 
+  leg->AddEntry( hs_WZ, "DYMadHT400to600" ) ; 
+  leg->AddEntry( hs_ZZ, "DYMadHT600toInf" ) ; 
+  leg->AddEntry( hs_data, "DYAMC No MLL Weight");
+#endif
+
+  //leg->AddEntry( hs_data, "W_{R} Signal","l");
+  //leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{NuR}=1.1 TeV","");
   leg->SetFillColor( kWhite ) ; 
 
   hs_data->Sumw2();
@@ -265,9 +304,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  th->Draw("histo");
+  //th->Draw("histo");
+#ifdef doOnlyDYMadInclAndHT
+  hs_data->Draw("histo");	///<draw this first if hs_data has a greater max than th
+#endif 
+  th->Draw("histo same");
   hs_data->Draw("histo same");
-  //th->Draw("histo same");
   //TString ytitle = "Events/(";
   //ytitle += (th->GetXaxis()->GetNbins());
   //ytitle += ")";
@@ -276,7 +318,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
   if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
- 
+  if(fname.EqualTo("Mlljj_lowZpt")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV] for Z P_{T}<150"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV] for Z P_{T}<150");
+
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
@@ -323,12 +366,21 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   */
 
   TString fn = fname;
-  if(channel == Selector::EE) fn += "_EEChannelWR3p2TeVandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
-  if(channel == Selector::MuMu) fn += "_MuMuChannelWR3p2TeVandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+#ifndef doOnlyDYMadInclAndHT
+  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelWR2p2TeVandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelWR2p2TeVandBkgndMC_TTBarFromData_FixedBinWidthNoRatio";
+#endif
 
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Z_pt") || fname.EqualTo("Mlljj_lowZpt") ){
+#ifdef doOnlyDYMadInclAndHT
+  if(channel == Selector::EE) fn += "_SignalRegion_DYMadInclAndDYMadHTBinnedAndDYAMCNLO_EEChannel_FixedBinWidthNoRatio";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_DYMadInclAndDYMadHTBinnedAndDYAMCNLO_MuMuChannel_FixedBinWidthNoRatio";
+#endif
+
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Z_pt") || fname.EqualTo("Mlljj_lowZpt") || fname.EqualTo("Mll")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
+	  th->SetMinimum(0.1);
+	  mycanvas->Update();
 	  //p1->SetLogy();	//for ratio plot
 	  mycanvas->SetLogy();	//only needed when no ratio plot is drawn
 	  mycanvas->Print((fn+"_log.pdf").Data());
