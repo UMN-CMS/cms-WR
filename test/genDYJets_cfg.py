@@ -7,7 +7,7 @@ process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.load('ExoAnalysis.cmsWR.JEC_cff')
-
+process.load('ExoAnalysis.cmsWR.recoElectronChannelSidebandUnmatchedModules_cff')
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
@@ -15,9 +15,9 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v4', '')
 
-##jet energy corrections
-#from ExoAnalysis.cmsWR.JEC_cff import *
-#JEC_correction(process, '74X_mcRun2_asymptotic_v4')
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 
 #################################
@@ -46,6 +46,14 @@ process.recoAnalyzerOne = cms.EDAnalyzer('hadronAnalyzer',
 		inputCollection = cms.InputTag("bareRecoJet")
 		)
 
+process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
+		treeName = cms.string("recoJetsAndLeptonsNoCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		jetsCollection = cms.InputTag("bareRecoJet"),
+		leptonsCollection = cms.InputTag("zeeCheckLepton")
+		)
+
 
 #################################
 #Paths
@@ -67,17 +75,22 @@ process.studyDYJetsDecay = cms.Path(
 		*process.bareRecoJet
 		*process.bareRecoJetFilter
 		*process.recoAnalyzerOne
+		+process.egmGsfElectronIDSequence
+		*process.HEEPIDSequence
+		*process.checkZeeSeq
+		*process.recoAnalyzerTwo
 		)
+
 
 process.schedule = cms.Schedule(process.studyDYJetsDecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT600toInf.root')
-		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT400to600.root')
-		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT200to400.root')
-		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadHT100to200.root')
-		#fileName = cms.string('recoHadronKinematicsGenDYJetsMadIncl.root')
+		fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT600toInf.root')
+		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT400to600.root')
+		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT200to400.root')
+		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT100to200.root')
+		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadIncl.root')
 )
 
 process.options = cms.untracked.PSet(
