@@ -3028,29 +3028,29 @@ void macroSandBox(){
 	//chains for GEN hadron sumPt
 	TString treeName = "genMatchedAnalyzerOne/genGluonsAndQuarksNoCuts";
 	TChain * dyMadIncl = new TChain(treeName,"dyMadIncl");
-	dyMadIncl->Add("../hadronAndEleKinematicsGenDYJetsMadIncl.root");
+	dyMadIncl->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadIncl.root");
 	TChain * dyMadHT100to200 = new TChain(treeName,"dyMadHT100to200");
-	dyMadHT100to200->Add("../hadronAndEleKinematicsGenDYJetsMadHT100to200.root");
+	dyMadHT100to200->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT100to200.root");
 	TChain * dyMadHT200to400 = new TChain(treeName,"dyMadHT200to400");
-	dyMadHT200to400->Add("../hadronAndEleKinematicsGenDYJetsMadHT200to400.root");
+	dyMadHT200to400->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT200to400.root");
 	TChain * dyMadHT400to600 = new TChain(treeName,"dyMadHT400to600");
-	dyMadHT400to600->Add("../hadronAndEleKinematicsGenDYJetsMadHT400to600.root");
+	dyMadHT400to600->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT400to600.root");
 	TChain * dyMadHT600toInf = new TChain(treeName,"dyMadHT600toInf");
-	dyMadHT600toInf->Add("../hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
+	dyMadHT600toInf->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
 
 
 	//chains for GEN lepton Z pT
 	TString treeNameLepton = "genMatchedAnalyzerTwo/genElectronsNoCuts";
 	TChain * dyMadLeptIncl = new TChain(treeNameLepton,"dyMadLeptIncl");
-	dyMadLeptIncl->Add("../hadronAndEleKinematicsGenDYJetsMadIncl.root");
+	dyMadLeptIncl->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadIncl.root");
 	TChain * dyMadLeptHT100to200 = new TChain(treeNameLepton,"dyMadLeptHT100to200");
-	dyMadLeptHT100to200->Add("../hadronAndEleKinematicsGenDYJetsMadHT100to200.root");
+	dyMadLeptHT100to200->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT100to200.root");
 	TChain * dyMadLeptHT200to400 = new TChain(treeNameLepton,"dyMadLeptHT200to400");
-	dyMadLeptHT200to400->Add("../hadronAndEleKinematicsGenDYJetsMadHT200to400.root");
+	dyMadLeptHT200to400->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT200to400.root");
 	TChain * dyMadLeptHT400to600 = new TChain(treeNameLepton,"dyMadLeptHT400to600");
-	dyMadLeptHT400to600->Add("../hadronAndEleKinematicsGenDYJetsMadHT400to600.root");
+	dyMadLeptHT400to600->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT400to600.root");
 	TChain * dyMadLeptHT600toInf = new TChain(treeNameLepton,"dyMadLeptHT600toInf");
-	dyMadLeptHT600toInf->Add("../hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
+	dyMadLeptHT600toInf->Add("../filesForDYMadStudies/hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
 
 
 	//add hadron sumPt chains as friends to lepton Z pT chains
@@ -3097,15 +3097,15 @@ void macroSandBox(){
 	//chains for RECO hadron sumPt
 	TString treeName = "recoAnalyzerTwo/recoJetsAndLeptonsNoCuts";
 	TChain * dyMadRecoIncl = new TChain(treeName,"dyMadRecoIncl");
-	dyMadRecoIncl->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadInclAllSkims.root");
+	dyMadRecoIncl->Add("../filesForDYMadStudies/recoHadronAndLeptonKinematicsGenDYJetsMadInclAllSkims.root");
 	TChain * dyMadRecoHT100to200 = new TChain(treeName,"dyMadRecoHT100to200");
-	dyMadRecoHT100to200->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT100to200AllSkims.root");
+	dyMadRecoHT100to200->Add("../filesForDYMadStudies/recoHadronAndLeptonKinematicsGenDYJetsMadHT100to200AllSkims.root");
 	TChain * dyMadRecoHT200to400 = new TChain(treeName,"dyMadRecoHT200to400");
-	dyMadRecoHT200to400->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT200to400AllSkims.root");
+	dyMadRecoHT200to400->Add("../filesForDYMadStudies/recoHadronAndLeptonKinematicsGenDYJetsMadHT200to400AllSkims.root");
 	TChain * dyMadRecoHT400to600 = new TChain(treeName,"dyMadRecoHT400to600");
-	dyMadRecoHT400to600->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT400to600AllSkims.root");
+	dyMadRecoHT400to600->Add("../filesForDYMadStudies/recoHadronAndLeptonKinematicsGenDYJetsMadHT400to600AllSkims.root");
 	TChain * dyMadRecoHT600toInf = new TChain(treeName,"dyMadRecoHT600toInf");
-	dyMadRecoHT600toInf->Add("../recoHadronAndLeptonKinematicsGenDYJetsMadHT600toInfAllSkims.root");
+	dyMadRecoHT600toInf->Add("../filesForDYMadStudies/recoHadronAndLeptonKinematicsGenDYJetsMadHT600toInfAllSkims.root");
 
 	//draw the sumPt of the two leading RECO jets passing tight ID
 	//crossSxn norm for different DYMad samples:
