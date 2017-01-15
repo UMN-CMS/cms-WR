@@ -330,7 +330,8 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 	zPt = (lead_lepton_p4 + sublead_lepton_p4).Pt();
 	zEta = (lead_lepton_p4 + sublead_lepton_p4).Eta();
 	zPhi = (lead_lepton_p4 + sublead_lepton_p4).Phi();
-	if(dilepton_mass < 60.0 || dilepton_mass > 120.0) return false;
+	//default if(dilepton_mass < 60.0 || dilepton_mass > 120.0) return false;
+	if(dilepton_mass < 60.0) return false;	///<for DYMadIncl and DYMadHT study
 
 	_isPassingLooseCuts = true;
 	return _isPassingLooseCuts;
