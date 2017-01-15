@@ -7,6 +7,7 @@ process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.load('ExoAnalysis.cmsWR.JEC_cff')
+process.load('ExoAnalysis.cmsWR.recoElectronChannelSidebandUnmatchedModules_cff')
 
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -14,6 +15,11 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2000)
 
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '74X_mcRun2_asymptotic_v4', '')
+
+from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+loadHEEPIDSelector(process)
+process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
+
 
 #################################
 #Filters
@@ -41,6 +47,14 @@ process.recoAnalyzerOne = cms.EDAnalyzer('hadronAnalyzer',
 		inputCollection = cms.InputTag("bareRecoJet")
 		)
 
+process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
+		treeName = cms.string("recoJetsAndLeptonsNoCuts"),
+		doDileptonMassCut = cms.bool(False),
+		minDileptonMass = cms.double(-1),
+		jetsCollection = cms.InputTag("bareRecoJet"),
+		leptonsCollection = cms.InputTag("zeeCheckLepton")
+		)
+
 
 #################################
 #Paths
@@ -60,13 +74,17 @@ process.studyDYJetsDecay = cms.Path(
 		*process.bareRecoJet
 		*process.bareRecoJetFilter
 		*process.recoAnalyzerOne
+		+process.egmGsfElectronIDSequence
+		*process.HEEPIDSequence
+		*process.checkZeeSeq
+		*process.recoAnalyzerTwo
 		)
 
 process.schedule = cms.Schedule(process.studyDYJetsDecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('recoHadronKinematicsGenDYJetsMadInclPartNNN.root')
+		fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadInclPartNNN.root')
 )
 
 process.options = cms.untracked.PSet(
