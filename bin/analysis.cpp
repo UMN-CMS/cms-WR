@@ -106,10 +106,10 @@ public:
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
 			} else if(mode.find("MADHT") != _ENDSTRING) {
-				TTchainNames.push_back("DYJets_madgraph_ht100to200");
+				//TTchainNames.push_back("DYJets_madgraph_ht100to200");
 				//TTchainNames.push_back("DYJets_madgraph_ht200to400");
 				//TTchainNames.push_back("DYJets_madgraph_ht400to600");
-				//TTchainNames.push_back("DYJets_madgraph_ht600toInf");
+				TTchainNames.push_back("DYJets_madgraph_ht600toInf");
 			} else if(mode.find("MAD") != _ENDSTRING) {
 				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_madgraph");
