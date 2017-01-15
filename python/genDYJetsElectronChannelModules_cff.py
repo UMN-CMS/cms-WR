@@ -12,9 +12,9 @@ printDYJetsParticleTree = printParticleTree.clone(
 #		)
 #
 #bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
-		src = cms.InputTag("bareRecoJet"),
-		minNumber = cms.uint32(2)
-		)
+#		src = cms.InputTag("bareRecoJet"),
+#		minNumber = cms.uint32(2)
+#		)
 
 ### end modules which select RECO electrons and RECO jets
 
