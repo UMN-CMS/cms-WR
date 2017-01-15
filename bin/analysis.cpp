@@ -107,9 +107,9 @@ public:
 				TTchainNames.push_back("DYJets_amctnlo");
 			} else if(mode.find("MADHT") != _ENDSTRING) {
 				TTchainNames.push_back("DYJets_madgraph_ht100to200");
-				TTchainNames.push_back("DYJets_madgraph_ht200to400");
-				TTchainNames.push_back("DYJets_madgraph_ht400to600");
-				TTchainNames.push_back("DYJets_madgraph_ht600toInf");
+				//TTchainNames.push_back("DYJets_madgraph_ht200to400");
+				//TTchainNames.push_back("DYJets_madgraph_ht400to600");
+				//TTchainNames.push_back("DYJets_madgraph_ht600toInf");
 			} else if(mode.find("MAD") != _ENDSTRING) {
 				//madgraph inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_madgraph");
@@ -597,9 +597,10 @@ int main(int ac, char* av[])
 
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
-						float wgt = (5991*integratedLumi/9042031);
-						selEvent.weight *= wgt; 
-						//selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						//only for DYMadIncl HT<100 minitrees I made
+						//float wgt = (5991*integratedLumi/9042031);
+						//selEvent.weight *= wgt; 
+						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
 						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
@@ -640,9 +641,10 @@ int main(int ac, char* av[])
 
 
 					if(isData == false) {
-						float wgt = (5991*integratedLumi/9042031);
-						selEvent.weight *= wgt;
-						//selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						//only for DYMadIncl HT<100 minitrees I made
+						//float wgt = (5991*integratedLumi/9042031);
+						//selEvent.weight *= wgt;
+						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
