@@ -19,7 +19,7 @@ do
 	eval "chmod u+x runAnalysisDYMC_${startingCount}.sh"
 
 	#submit the job to 1nh queue and request at least 2 GB of disk
-	eval "bsub -R 'pool>2000' -q 1nh -J runAnalysisDYMCPart_${startingCount} < runAnalysisDYMC_${startingCount}.sh"
+	eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMCPart_${startingCount} < runAnalysisDYMC_${startingCount}.sh"
 	
 	let startingCount=startingCount+1
 done
