@@ -5,7 +5,7 @@ import FWCore.ParameterSet.Config as cms
 zeeCheckLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("HEEPIDSelector"),
 		#src = cms.InputTag("slimmedElectrons"),
-		cut = cms.string("")
+		cut = cms.string("pt>35")
 		)
 
 zeeCheckLeptonFilter = cms.EDFilter("CandViewCountFilter",
@@ -21,7 +21,7 @@ checkZeeSeq = cms.Sequence(
 ## transform the objects in slimmedJets and slimmedElectrons into reco::Candidate objects
 bareRecoJet = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("pt>40 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
+		cut = cms.string("pt>1 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
 		)
 
 bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
