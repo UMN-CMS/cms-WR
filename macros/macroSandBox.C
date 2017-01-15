@@ -53,7 +53,6 @@ using namespace std;
 //#define lowMassFlavorSidebandBkgndOnData
 //#define checkWellSeparatedGenPtBins
 //#define PtRatioProfiles
-//#define DEBUG
 //#define RecoGenOverlays
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
@@ -62,7 +61,7 @@ using namespace std;
 //#define printNewDySyst
 #define DYHTPlot
 
-
+//#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
 
@@ -3025,9 +3024,8 @@ void macroSandBox(){
 	//make a plot of the sum pT of all GEN quarks and gluons leaving the hard pp->Z->ll interaction
 	//the plot will show one curve for the DYMad inclusive dataset, and another curve for the DYMadHT100-200 dataset
 	
-	//chain->AddFriend(friendChain,friendAlias.c_str());
-
-	//chains for hadron sumPt
+	/*
+	//chains for GEN hadron sumPt
 	TString treeName = "genMatchedAnalyzerOne/genGluonsAndQuarksNoCuts";
 	TChain * dyMadIncl = new TChain(treeName,"dyMadIncl");
 	dyMadIncl->Add("../hadronAndEleKinematicsGenDYJetsMadIncl.root");
@@ -3041,7 +3039,7 @@ void macroSandBox(){
 	dyMadHT600toInf->Add("../hadronAndEleKinematicsGenDYJetsMadHT600toInf.root");
 
 
-	//chains for lepton Z pT
+	//chains for GEN lepton Z pT
 	TString treeNameLepton = "genMatchedAnalyzerTwo/genElectronsNoCuts";
 	TChain * dyMadLeptIncl = new TChain(treeNameLepton,"dyMadLeptIncl");
 	dyMadLeptIncl->Add("../hadronAndEleKinematicsGenDYJetsMadIncl.root");
@@ -3064,7 +3062,7 @@ void macroSandBox(){
 
 
 	//draw 2D plot of GEN HT and GEN Z pT   yAxis:xAxis
-	/*dyMadLeptIncl->Draw("sumPt:MadInclHadronChain.zPt>>twoDimMadInclHist()");
+	dyMadLeptIncl->Draw("sumPt:MadInclHadronChain.zPt>>twoDimMadInclHist()");
 	TH2F * twoDimMadInclHist = (TH2F*) gROOT->FindObject("twoDimMadInclHist");
 	gStyle->SetOptStat("");
 	TCanvas * canvTwoDimMadIncl = new TCanvas("twoDimMadIncl","twoDimMadIncl",800,800);
@@ -3077,7 +3075,7 @@ void macroSandBox(){
 	TString twoDimMadInclOutFileName = "twoDimMadInclGenHTvsGenZpT";
 	canvTwoDimMadIncl->Print(twoDimMadInclOutFileName + ".pdf");
 	canvTwoDimMadIncl->Print(twoDimMadInclOutFileName + ".png");
-	canvTwoDimMadIncl->Close();*/
+	canvTwoDimMadIncl->Close();
 
 	dyMadLeptHT600toInf->Draw("sumPt:MadHTBinnedHadronChain.zPt>>twoDimMadHTBinnedHist()");
 	TH2F * twoDimMadHTBinnedHist = (TH2F*) gROOT->FindObject("twoDimMadHTBinnedHist");
@@ -3094,6 +3092,127 @@ void macroSandBox(){
 	canvTwoDimMadHTBinned->Print(twoDimMadHTBinnedOutFileName + ".png");
 	canvTwoDimMadHTBinned->Close();
 
+	*/
+
+	//chains for RECO hadron sumPt
+	TString treeName = "recoAnalyzerOne/recoJetsNoCuts";
+	TChain * dyMadRecoIncl = new TChain(treeName,"dyMadRecoIncl");
+	dyMadRecoIncl->Add("../recoHadronKinematicsGenDYJetsMadInclAllSkims.root");
+	TChain * dyMadRecoHT100to200 = new TChain(treeName,"dyMadRecoHT100to200");
+	dyMadRecoHT100to200->Add("../recoHadronKinematicsGenDYJetsMadHT100to200AllSkims.root");
+	TChain * dyMadRecoHT200to400 = new TChain(treeName,"dyMadRecoHT200to400");
+	dyMadRecoHT200to400->Add("../recoHadronKinematicsGenDYJetsMadHT200to400AllSkims.root");
+	TChain * dyMadRecoHT400to600 = new TChain(treeName,"dyMadRecoHT400to600");
+	dyMadRecoHT400to600->Add("../recoHadronKinematicsGenDYJetsMadHT400to600AllSkims.root");
+	TChain * dyMadRecoHT600toInf = new TChain(treeName,"dyMadRecoHT600toInf");
+	dyMadRecoHT600toInf->Add("../recoHadronKinematicsGenDYJetsMadHT600toInfAllSkims.root");
+
+	//draw the sumPt of the two leading RECO jets passing tight ID
+	//crossSxn norm for different DYMad samples:
+	Double_t lumi = 2640.523267;
+	//lumi: 2640.523267
+	//Incl: (5991*lumi)/9042031
+	//ht100to200: (181.302*lumi)/2725655
+	//ht200to400: (50.4177*lumi)/973937
+	//ht400to600: (6.98394*lumi)/1067758
+	//ht600toInf: (2.70354*lumi)/998912
+
+	//single plots
+	/*dyMadRecoIncl->Draw("sumPt>>recoJetMadInclHist()");
+	TH1F * recoJetMadInclHist = (TH1F*) gROOT->FindObject("recoJetMadInclHist");
+	gStyle->SetOptStat("");
+	TCanvas * canvRecoJetMadIncl = new TCanvas("recoJetMadIncl","recoJetMadIncl",800,800);
+	canvRecoJetMadIncl->cd();
+	recoJetMadInclHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
+	recoJetMadInclHist->GetYaxis()->SetTitle("Events");
+	recoJetMadInclHist->GetYaxis()->SetTitleOffset(1.3);
+	recoJetMadInclHist->SetTitle("MadIncl Reco H_{T}");
+	recoJetMadInclHist->SetLineWidth(2);
+	recoJetMadInclHist->Scale((5991*lumi)/9042031);
+	recoJetMadInclHist->Draw("histo");
+	TString recoJetMadInclOutFileName = "MadInclRecoHTAllSkims";
+	canvRecoJetMadIncl->Print(recoJetMadInclOutFileName + ".pdf");
+	canvRecoJetMadIncl->Print(recoJetMadInclOutFileName + ".png");
+	canvRecoJetMadIncl->Close();*/
+
+#ifdef DEBUG
+	std::cout<<"about to call TTree Draw to make histos from all DYMadIncl and HTBinned evts"<<std::endl;
+#endif
+
+	//one stacked plot showing DYMadIncl (with GEN HT < 100 filter) + all DYMadHT binned samples
+	gStyle->SetOptStat("");
+	dyMadRecoIncl->Draw("sumPt>>recoJetMadInclHist(75,0.,1500.)");
+	TH1F * recoJetMadInclHist = (TH1F*) gROOT->FindObject("recoJetMadInclHist");
+	recoJetMadInclHist->Scale((5991*lumi)/9042031);
+	recoJetMadInclHist->SetFillColor(kYellow);
+	recoJetMadInclHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
+	recoJetMadInclHist->GetYaxis()->SetTitle("Events");
+	dyMadRecoHT100to200->Draw("sumPt>>recoJetMadHT100to200Hist(75,0.,1500.)");
+	TH1F * recoJetMadHT100to200Hist = (TH1F*) gROOT->FindObject("recoJetMadHT100to200Hist");
+	recoJetMadHT100to200Hist->Scale((181.302*lumi)/2725655);
+	recoJetMadHT100to200Hist->SetFillColor(kGreen);
+	dyMadRecoHT200to400->Draw("sumPt>>recoJetMadHT200to400Hist(75,0.,1500.)");
+	TH1F * recoJetMadHT200to400Hist = (TH1F*) gROOT->FindObject("recoJetMadHT200to400Hist");
+	recoJetMadHT200to400Hist->Scale((50.4177*lumi)/973937);
+	recoJetMadHT200to400Hist->SetFillColor(kBlue);
+	dyMadRecoHT400to600->Draw("sumPt>>recoJetMadHT400to600Hist(75,0.,1500.)");
+	TH1F * recoJetMadHT400to600Hist = (TH1F*) gROOT->FindObject("recoJetMadHT400to600Hist");
+	recoJetMadHT400to600Hist->Scale((6.98394*lumi)/1067758);
+	recoJetMadHT400to600Hist->SetFillColor(kCyan);
+	dyMadRecoHT600toInf->Draw("sumPt>>recoJetMadHT600toInfHist(75,0.,1500.)");
+	TH1F * recoJetMadHT600toInfHist = (TH1F*) gROOT->FindObject("recoJetMadHT600toInfHist");
+	recoJetMadHT600toInfHist->Scale((2.70354*lumi)/998912);
+	recoJetMadHT600toInfHist->SetFillColor(kMagenta);
+	recoJetMadHT600toInfHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
+	recoJetMadHT600toInfHist->GetYaxis()->SetTitle("Events");
+
+
+#ifdef DEBUG
+	std::cout<<"made individual histos, applied cross sxn scaling, and set fill color"<<std::endl;
+#endif
+
+	//now make a stacked hist, showing all HTBins and the inclusive Mad distribution for RECO HT
+	TLegend *legStackedMadInclAndHTBinned = new TLegend( 0.6, 0.60, 0.90, 0.90 ) ; 
+	legStackedMadInclAndHTBinned->AddEntry(recoJetMadHT600toInfHist , "MadHT600toInf" ) ; 
+	legStackedMadInclAndHTBinned->AddEntry(recoJetMadHT400to600Hist , "MadHT400to600" ) ; 
+	legStackedMadInclAndHTBinned->AddEntry(recoJetMadHT200to400Hist , "MadHT200to400" ) ; 
+	legStackedMadInclAndHTBinned->AddEntry(recoJetMadHT100to200Hist , "MadHT100to200" ) ; 
+	legStackedMadInclAndHTBinned->AddEntry(recoJetMadInclHist , "MadIncl" ) ; 
+	legStackedMadInclAndHTBinned->SetFillColor( kWhite ) ; 
+
+#ifdef DEBUG
+	std::cout<<"made legend"<<std::endl;
+#endif
+
+	TCanvas * canvStackMadInclAndHT = new TCanvas("canvStackMadInclAndHT","canvStackMadInclAndHT",800,800);
+	canvStackMadInclAndHT->cd();
+#ifdef DEBUG
+	std::cout<<"made canvas for stacked bkgnds"<<std::endl;
+#endif
+	
+	THStack* stackedDYMadRecoHT = new THStack();
+	stackedDYMadRecoHT->Add(recoJetMadHT600toInfHist);
+	stackedDYMadRecoHT->Add(recoJetMadHT400to600Hist);
+	stackedDYMadRecoHT->Add(recoJetMadHT200to400Hist);
+	stackedDYMadRecoHT->Add(recoJetMadHT100to200Hist);
+	stackedDYMadRecoHT->Add(recoJetMadInclHist);
+	stackedDYMadRecoHT->SetMinimum(90);
+	stackedDYMadRecoHT->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+
+#ifdef DEBUG
+	std::cout<<"about to draw stacked histo"<<std::endl;
+#endif
+
+	stackedDYMadRecoHT->Draw("histo");
+	legStackedMadInclAndHTBinned->Draw();
+
+	TString stackedMadInclAndHTOutFileName = "stackedMadInclAndHTBinnedRecoHTAllSkims";
+	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+".pdf");
+	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+".png");
+	canvStackMadInclAndHT->SetLogy();
+	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+"_log.pdf");
+	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+"_log.png");
+	
 
 
 	/*

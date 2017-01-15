@@ -100,6 +100,54 @@ public:
 
 	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
+	void findLeadingAndSubleading(edm::OwnVector<reco::Candidate>::const_iterator& first, edm::OwnVector<reco::Candidate>::const_iterator& second, edm::Handle<edm::OwnVector<reco::Candidate> > collection, bool doDileptonMassCut)
+	{
+
+#ifdef DEBUG
+		std::cout << "checking pt of particles in findLeadingAndSubleading fxn" << std::endl;
+#endif
+
+		if(!doDileptonMassCut) {
+
+			for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++) {
+#ifdef DEBUG
+				std::cout << "pT = \t" << genIt->pt() << std::endl;
+#endif
+				if(first == collection->end()) first = genIt;
+				else {
+					if(genIt->pt() > first->pt() && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) {
+						second = first;
+						first = genIt;
+					} else if( (second == collection->end() || genIt->pt() > second->pt() ) && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4  ) second = genIt;
+				}
+			}//end loop over reco::Candidate collection
+
+		}///end if(!doDileptonMassCut)
+
+		/*if(doDileptonMassCut) {
+
+			for(edm::OwnVector<reco::Candidate>::const_iterator genIt = collection->begin(); genIt != collection->end(); genIt++) {
+#ifdef DEBUG
+				std::cout << "pT = \t" << genIt->pt() << std::endl;
+#endif
+				if(first == collection->end()) first = genIt;
+				else {
+					if(genIt->pt() > first->pt() && getDileptonMass(first, genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) {
+						second = first;
+						first = genIt;
+					} else if( (second == collection->end() || genIt->pt() > second->pt()) && getDileptonMass(first, genIt) > minDileptonMass && deltaR(genIt->eta(), genIt->phi(), first->eta(), first->phi() ) > 0.4 ) second = genIt;
+				}
+			}//end loop over reco::Candidate collection
+
+		}///end if(doDileptonMassCut)*/
+
+#ifdef DEBUG
+		std::cout << "leaving findLeadingAndSubleading fxn" << std::endl;
+#endif
+
+	}///end findLeadingAndSubleading()
+
+
 private:
 	virtual void beginJob() override;
 	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -194,10 +242,22 @@ hadronAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	iEvent.getByToken(inputParticlesToken, inputParticles);
 	nInputParticles = inputParticles->size();
 
-	for(edm::OwnVector<reco::Candidate>::const_iterator it = inputParticles->begin(); it!=inputParticles->end(); it++){
-		sumPt += it->pt();
-	}//end loop over particles in input collection
+	//FOR GEN HADRONS ONLY
+	//for(edm::OwnVector<reco::Candidate>::const_iterator it = inputParticles->begin(); it!=inputParticles->end(); it++){
+	//	sumPt += it->pt();
+	//}//end loop over particles in input collection
 
+	//FOR RECO JETS ONLY
+	edm::OwnVector<reco::Candidate>::const_iterator itOne = inputParticles->end();
+	edm::OwnVector<reco::Candidate>::const_iterator itTwo = inputParticles->end();
+	
+	findLeadingAndSubleading(itOne, itTwo, inputParticles, false);
+	if(itOne == inputParticles->end() || itTwo == inputParticles->end() ) return;
+	//now calculate sumPt of the two leading jets
+	sumPt += itOne->pt() + itTwo->pt();
+	//END RECO ONLY
+
+	/* FOR GEN OR RECO LEPTONS ONLY
 	if(nInputParticles == 2){
 		edm::OwnVector<reco::Candidate>::const_iterator one = inputParticles->begin();
 		edm::OwnVector<reco::Candidate>::const_iterator two = (inputParticles->begin())++;
@@ -207,7 +267,7 @@ hadronAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		subleadLeptonFourMom.SetPtEtaPhiE(two->pt(), two->eta(), two->phi(), two->pt());
 		zFourMom = leadLeptonFourMom + subleadLeptonFourMom;
 		zPt = zFourMom.Pt();
-	}
+	}*/
 
 	tree->Fill();
 
