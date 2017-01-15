@@ -597,7 +597,9 @@ int main(int ac, char* av[])
 
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
-						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						float wgt = (5991*integratedLumi/9042031);
+						selEvent.weight *= wgt; 
+						//selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
 						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
@@ -619,7 +621,7 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 					std::cout << "selEvent.weight=\t" << selEvent.weight << std::endl;
 					std::cout << "integratedLumi=\t" << integratedLumi << std::endl;
-					std::cout << "myReader.getNorm1fb(selEvent.datasetName)=\t" << myReader.getNorm1fb(selEvent.datasetName) << std::endl;
+					//std::cout << "myReader.getNorm1fb(selEvent.datasetName)=\t" << myReader.getNorm1fb(selEvent.datasetName) << std::endl;
 					std::cout << "myEventIt.weight=\t" << myEventIt.weight << std::endl;
 #endif
 
@@ -638,7 +640,9 @@ int main(int ac, char* av[])
 
 
 					if(isData == false) {
-						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						float wgt = (5991*integratedLumi/9042031);
+						selEvent.weight *= wgt;
+						//selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
