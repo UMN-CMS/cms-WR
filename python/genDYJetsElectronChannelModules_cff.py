@@ -6,12 +6,12 @@ printDYJetsParticleTree = printParticleTree.clone(
 		)
 
 ### begin modules which select RECO electrons and RECO jets
-bareRecoJet = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("slimmedJets"),
-		cut = cms.string("pt>1 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
-		)
-
-bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
+#bareRecoJet = cms.EDFilter("CandViewSelector",
+#		src = cms.InputTag("slimmedJets"),
+#		cut = cms.string("pt>1 && abs(eta) < 2.5 && (neutralHadronEnergyFraction<0.90 && neutralEmEnergyFraction<0.9 && (chargedMultiplicity+neutralMultiplicity)>1 && muonEnergyFraction<0.8) && ((abs(eta)<=2.4 && chargedHadronEnergyFraction>0 && chargedMultiplicity>0 && chargedEmEnergyFraction<0.90) || abs(eta)>2.4) ")
+#		)
+#
+#bareRecoJetFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("bareRecoJet"),
 		minNumber = cms.uint32(2)
 		)
