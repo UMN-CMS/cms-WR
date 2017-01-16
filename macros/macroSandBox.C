@@ -57,9 +57,9 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-//#define showMassWindows
+#define showMassWindows
 //#define printNewDySyst
-#define DYHTPlot
+//#define DYHTPlot
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -2703,6 +2703,7 @@ void macroSandBox(){
 	for(Int_t i=0; i<numMassWindows; i++){
 		//TTBar ele chnl
 		EEBkgndOneForStack->SetBinContent(i+1, EEWgt*(calculateBranchMean(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1)) );
+		//std::cout<<"in the mass window "<< massWindowLabel[i] <<" there are this many TT EE evts\t" << EEBkgndOneForStack->GetBinContent(i+1) <<std::endl;
 		EEBkgndOneForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 		EEBkgndOneForStack->SetFillColor(kGreen);
 		EEBkgndOneSystUnc->SetBinContent(i+1, EEWgt*(calculateBranchStdDev(TTEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1)) );
@@ -2721,6 +2722,7 @@ void macroSandBox(){
 	
 		//TTBar mu chnl
 		MuMuBkgndOneForStack->SetBinContent(i+1, MuMuWgt*(calculateBranchMean(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1)) );
+		//std::cout<<"in the mass window "<< massWindowLabel[i] <<" there are this many TT MuMu evts\t" << MuMuBkgndOneForStack->GetBinContent(i+1) <<std::endl;
 		MuMuBkgndOneForStack->GetXaxis()->SetBinLabel(i+1, massWindowLabel[i]);
 		MuMuBkgndOneForStack->SetFillColor(kGreen);
 		MuMuBkgndOneSystUnc->SetBinContent(i+1, MuMuWgt*(calculateBranchStdDev(TTMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1)) );
@@ -2814,6 +2816,7 @@ void macroSandBox(){
 	EEStack->Draw("histo");
 	EEStack->GetYaxis()->SetTitle("Ele Events per W_{R} mass window");
 	EEStack->GetYaxis()->SetTitleOffset(1.35);
+	EEStack->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
 	legEE->Draw();
 	canvasEE->cd();
 	TString outFileNameStackedBkgndsEE = "EEChnlStackedBkgnds";
@@ -2837,6 +2840,7 @@ void macroSandBox(){
 	MuMuStack->Draw("histo");
 	MuMuStack->GetYaxis()->SetTitle("Muon Events per W_{R} mass window");
 	MuMuStack->GetYaxis()->SetTitleOffset(1.35);
+	MuMuStack->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
 	legMuMu->Draw();
 	canvasMuMu->cd();
 	TString outFileNameStackedBkgndsMuMu = "MuMuChnlStackedBkgnds";
@@ -2891,6 +2895,7 @@ void macroSandBox(){
 	EEAllBkgndsMinusStatUncs->Draw("Psame");
 	EEAllBkgndsNoUncs->GetYaxis()->SetTitle("Ele Events per W_{R} mass window");
 	EEAllBkgndsNoUncs->GetYaxis()->SetTitleOffset(1.35);
+	EEAllBkgndsNoUncs->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
 	canvasTotEE->Update();
 	legTotEE->Draw();
 	canvasTotEE->cd();
@@ -2941,6 +2946,7 @@ void macroSandBox(){
 	MuMuAllBkgndsMinusStatUncs->Draw("Psame");
 	MuMuAllBkgndsNoUncs->GetYaxis()->SetTitle("Mu Events per W_{R} mass window");
 	MuMuAllBkgndsNoUncs->GetYaxis()->SetTitleOffset(1.35);
+	MuMuAllBkgndsNoUncs->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
 	canvasTotMuMu->Update();
 	legTotMuMu->Draw();
 	canvasTotMuMu->cd();
