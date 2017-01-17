@@ -57,9 +57,9 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-#define showMassWindows
+//#define showMassWindows
 //#define printNewDySyst
-//#define DYHTPlot
+#define DYHTPlot
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -3030,7 +3030,7 @@ void macroSandBox(){
 	//make a plot of the sum pT of all GEN quarks and gluons leaving the hard pp->Z->ll interaction
 	//the plot will show one curve for the DYMad inclusive dataset, and another curve for the DYMadHT100-200 dataset
 	
-	/*
+	/**/
 	//chains for GEN hadron sumPt
 	TString treeName = "genMatchedAnalyzerOne/genGluonsAndQuarksNoCuts";
 	TChain * dyMadIncl = new TChain(treeName,"dyMadIncl");
@@ -3066,6 +3066,36 @@ void macroSandBox(){
 	dyMadLeptHT400to600->AddFriend(dyMadHT400to600, "MadHTBinnedHadronChain");
 	dyMadLeptHT600toInf->AddFriend(dyMadHT600toInf, "MadHTBinnedHadronChain");
 
+	gStyle->SetOptStat("");
+	
+	//draw 1D plot of GEN HT for inclusive DYMadIncl and DYMadHT100to200
+	dyMadIncl->Draw("sumPt>>genSumPtMadInclHist(42,0.,210.)");
+	TH1F * sumPtMadInclHist = (TH1F*) gROOT->FindObject("genSumPtMadInclHist");
+	dyMadHT100to200->Draw("sumPt>>genSumPtMadHT100to200Hist(42,0.,210.)");
+	TH1F * sumPtMadHT100to200Hist = (TH1F*) gROOT->FindObject("genSumPtMadHT100to200Hist");
+	TLegend * sumPtLeg = new TLegend( 0.6, 0.60, 0.90, 0.90);
+	sumPtLeg->AddEntry(sumPtMadInclHist, "DYMadIncl HT<100 filter");
+	sumPtLeg->AddEntry(sumPtMadHT100to200Hist, "DYMadHT100to200");
+	TCanvas * canvMadInclAndHT100to200 = new TCanvas("MadInclAndHT100to200","MadInclAndHT100to200",800,800);
+	canvMadInclAndHT100to200->cd();
+	sumPtMadInclHist->SetLineWidth(2);
+	sumPtMadInclHist->SetLineColor(kBlack);
+	sumPtMadHT100to200Hist->SetLineWidth(2);
+	sumPtMadHT100to200Hist->SetLineColor(kRed);
+	sumPtMadInclHist->GetXaxis()->SetTitle("GEN H_{T} (GeV)");
+	sumPtMadInclHist->GetYaxis()->SetTitle("Events");
+	sumPtMadInclHist->SetTitle("GEN H_{T}");
+	sumPtMadInclHist->Draw("histo");
+	sumPtMadHT100to200Hist->Draw("histo same");
+	sumPtLeg->Draw();
+	canvMadInclAndHT100to200->Update();
+	TString gensumPtFileName = "genHT_DYMadInclAndMadHT100to200";
+	canvMadInclAndHT100to200->Print(gensumPtFileName+".png");
+	canvMadInclAndHT100to200->Print(gensumPtFileName+".pdf");
+	canvMadInclAndHT100to200->SetLogy();
+	canvMadInclAndHT100to200->Print(gensumPtFileName+"_log.png");
+	canvMadInclAndHT100to200->Print(gensumPtFileName+"_log.pdf");
+	canvMadInclAndHT100to200->Close();
 
 	//draw 2D plot of GEN HT and GEN Z pT   yAxis:xAxis
 	dyMadLeptIncl->Draw("sumPt:MadInclHadronChain.zPt>>twoDimMadInclHist()");
@@ -3098,8 +3128,9 @@ void macroSandBox(){
 	canvTwoDimMadHTBinned->Print(twoDimMadHTBinnedOutFileName + ".png");
 	canvTwoDimMadHTBinned->Close();
 
-	*/
+	/**/
 
+	/*
 	//chains for RECO hadron sumPt
 	TString treeName = "recoAnalyzerTwo/recoJetsAndLeptonsNoCuts";
 	TChain * dyMadRecoIncl = new TChain(treeName,"dyMadRecoIncl");
@@ -3124,22 +3155,22 @@ void macroSandBox(){
 	//ht600toInf: (2.70354*lumi)/998912
 
 	//single plots
-	/*dyMadRecoIncl->Draw("sumPt>>recoJetMadInclHist()");
-	TH1F * recoJetMadInclHist = (TH1F*) gROOT->FindObject("recoJetMadInclHist");
-	gStyle->SetOptStat("");
-	TCanvas * canvRecoJetMadIncl = new TCanvas("recoJetMadIncl","recoJetMadIncl",800,800);
-	canvRecoJetMadIncl->cd();
-	recoJetMadInclHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
-	recoJetMadInclHist->GetYaxis()->SetTitle("Events");
-	recoJetMadInclHist->GetYaxis()->SetTitleOffset(1.3);
-	recoJetMadInclHist->SetTitle("MadIncl Reco H_{T}");
-	recoJetMadInclHist->SetLineWidth(2);
-	recoJetMadInclHist->Scale((5991*lumi)/9042031);
-	recoJetMadInclHist->Draw("histo");
-	TString recoJetMadInclOutFileName = "MadInclRecoHTAllSkims";
-	canvRecoJetMadIncl->Print(recoJetMadInclOutFileName + ".pdf");
-	canvRecoJetMadIncl->Print(recoJetMadInclOutFileName + ".png");
-	canvRecoJetMadIncl->Close();*/
+	//dyMadRecoIncl->Draw("sumPt>>recoJetMadInclHist()");
+	//TH1F * recoJetMadInclHist = (TH1F*) gROOT->FindObject("recoJetMadInclHist");
+	//gStyle->SetOptStat("");
+	//TCanvas * canvRecoJetMadIncl = new TCanvas("recoJetMadIncl","recoJetMadIncl",800,800);
+	//canvRecoJetMadIncl->cd();
+	//recoJetMadInclHist->GetXaxis()->SetTitle("RECO #Sigma P_{T} Two Lead Jets (GeV)");
+	//recoJetMadInclHist->GetYaxis()->SetTitle("Events");
+	//recoJetMadInclHist->GetYaxis()->SetTitleOffset(1.3);
+	//recoJetMadInclHist->SetTitle("MadIncl Reco H_{T}");
+	//recoJetMadInclHist->SetLineWidth(2);
+	//recoJetMadInclHist->Scale((5991*lumi)/9042031);
+	//recoJetMadInclHist->Draw("histo");
+	//TString recoJetMadInclOutFileName = "MadInclRecoHTAllSkims";
+	//canvRecoJetMadIncl->Print(recoJetMadInclOutFileName + ".pdf");
+	//canvRecoJetMadIncl->Print(recoJetMadInclOutFileName + ".png");
+	//canvRecoJetMadIncl->Close();
 
 #ifdef DEBUG
 	std::cout<<"about to call TTree Draw to make histos from all DYMadIncl and HTBinned evts"<<std::endl;
@@ -3221,71 +3252,7 @@ void macroSandBox(){
 	canvStackMadInclAndHT->SetLogy();
 	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+"_log.pdf");
 	canvStackMadInclAndHT->Print(stackedMadInclAndHTOutFileName+"_log.png");
-	
-
-
-	/*
-	dyMadHT100to200->Draw("sumPt>>tempHTBinnedSumPtHist()");
-	TH1F * tempHTBinnedHist = (TH1F*) gROOT->FindObject("tempHTBinnedSumPtHist");
-	dyMadIncl->Draw("sumPt>>tempInclSumPtHist()");
-	TH1F * tempInclHist = (TH1F*) gROOT->FindObject("tempInclSumPtHist");
-
-	//now overlay the two histos
-	gStyle->SetOptStat("");
-	TCanvas * c0 = new TCanvas("canv","canv",800,800);
-	c0->cd();
-	tempInclHist->SetLineColor(kBlack);
-	tempInclHist->SetLineWidth(2);
-	tempHTBinnedHist->SetLineColor(kRed);
-	tempHTBinnedHist->SetLineWidth(2);
-
 	*/
-
-	/* example plotting code
-	EEAllBkgndsPlusSystUncs->SetMarkerColor(kRed);
-	EEAllBkgndsPlusSystUncs->SetMarkerStyle(20);
-	EEAllBkgndsPlusSystUncs->SetMarkerSize(1);
-	
-	EEAllBkgndsMinusSystUncs->SetMarkerColor(kRed);
-	EEAllBkgndsMinusSystUncs->SetMarkerStyle(20);
-	EEAllBkgndsMinusSystUncs->SetMarkerSize(1);
-	
-	EEAllBkgndsPlusStatUncs->SetMarkerColor(kBlue);
-	EEAllBkgndsPlusStatUncs->SetMarkerStyle(20);
-	EEAllBkgndsPlusStatUncs->SetMarkerSize(1);
-	
-	EEAllBkgndsMinusStatUncs->SetMarkerColor(kBlue);
-	EEAllBkgndsMinusStatUncs->SetMarkerStyle(20);
-	EEAllBkgndsMinusStatUncs->SetMarkerSize(1);
-	
-	TLegend *legTotEE = new TLegend(0.6, 0.6, 0.9, 0.9);
-	legTotEE->AddEntry(EEAllBkgndsNoUncs, "Nominal");
-	legTotEE->AddEntry(EEAllBkgndsPlusSystUncs, "Nominal+Syst Unc","p");
-	legTotEE->AddEntry(EEAllBkgndsMinusSystUncs, "Nominal-Syst Unc","p");
-	legTotEE->AddEntry(EEAllBkgndsPlusStatUncs, "Nominal+Stat Unc","p");
-	legTotEE->AddEntry(EEAllBkgndsMinusStatUncs, "Nominal-Stat Unc","p");
-
-
-	EEAllBkgndsNoUncs->Draw("histo");
-	EEAllBkgndsPlusSystUncs->Draw("Psame");
-	EEAllBkgndsMinusSystUncs->Draw("Psame");
-	EEAllBkgndsPlusStatUncs->Draw("Psame");
-	EEAllBkgndsMinusStatUncs->Draw("Psame");
-	EEAllBkgndsNoUncs->GetYaxis()->SetTitle("Ele Events per W_{R} mass window");
-	EEAllBkgndsNoUncs->GetYaxis()->SetTitleOffset(1.35);
-	canvasTotEE->Update();
-	legTotEE->Draw();
-	canvasTotEE->cd();
-	TString outFileNameIndivBkgndsEE = "EEChnlIndivBkgndsWithUncs";
-	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".pdf");
-	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".png");
-	EEAllBkgndsNoUncs->SetMinimum(0.1);
-	canvasTotEE->SetLogy();
-	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.pdf");
-	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.png");
-	canvasTotEE->Close();
-	*/
-
 
 
 #endif
