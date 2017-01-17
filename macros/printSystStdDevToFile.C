@@ -81,8 +81,8 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	int wrMassPoints[] = {1000,1600,2200,2800,3600};
 	//int wrMassPoints[] = {1600,2200,2800,3600};
+	int wrMassPoints[] = {1000,2200};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -106,6 +106,7 @@ void printSystStdDevToFile(){
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
 	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tsyst plus stat uncert percent\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
+	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tunweighted evts"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -192,17 +193,28 @@ void printSystStdDevToFile(){
 
 			for(map<string,TChain*>::const_iterator chMapIt=chainPointers.begin(); chMapIt!=chainPointers.end(); chMapIt++){
 				//get the integer corresponding to the correct index position in NEventsInRange
+				//expected num evts and syst uncert
 				string nEventsIndex = to_string( getIndexForSystematicUncertainty( to_string(wrMassVect[m]), chMapIt->first, pathToMassWindowsFile) );
 				string drawArg = "NEventsInRange["+nEventsIndex+"]>>";
 				string histName = (chMapIt->first) + "tempHist";
 				(chMapIt->second)->Draw( (drawArg + histName + "()").c_str() );
 				TH1F* tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
 				Double_t stdDev = tempHist->GetRMS(), stdDevErr = tempHist->GetRMSError(), mean = tempHist->GetMean();
+				
+				//stat uncert
 				string statUncDrawArg = "ErrorEventsInRange["+nEventsIndex+"]>>";
 				string statUncHistName = (chMapIt->first) + "StatTempHist";
 				(chMapIt->second)->Draw( (statUncDrawArg + statUncHistName + "()").c_str() );
 				TH1F* statUncTempHist = (TH1F*) gROOT->FindObject(statUncHistName.c_str());
 				Double_t statUnc = statUncTempHist->GetMean();
+				
+				//num unweighted evts
+				string unweightEvtsDrawArg = "UnweightedNEventsInRange["+nEventsIndex+"]>>";
+				string unweightEvtsHistName = (chMapIt->first) + "UnweightEvtTempHist";
+				(chMapIt->second)->Draw( (unweightEvtsDrawArg + unweightEvtsHistName + "()").c_str() );
+				TH1F* unweightEvtsTempHist = (TH1F*) gROOT->FindObject(unweightEvtsHistName.c_str());
+				Double_t unweightEvts = unweightEvtsTempHist->GetMean();
+	
 #ifdef DEBUG
 				cout<< wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t"<< mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << endl;
 				cout<<"index used in NEventsInRange and ErrorEventsInRange=\t"<< nEventsIndex <<endl;
@@ -216,6 +228,8 @@ void printSystStdDevToFile(){
 					statUnc *= rescale;
 				}
 				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << "\t" << (stdDev*stdDev + statUnc*statUnc)/mean << "\t" << mean*mean/(stdDev*stdDev + statUnc*statUnc) << endl;
+				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< unweightEvts << endl;
+			
 			}//end loop over TChains
 
 			//loop over chainPointers elements, and clear allocated memory
