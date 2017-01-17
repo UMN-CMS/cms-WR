@@ -113,7 +113,7 @@ private:
 //
 htFilter::htFilter(const edm::ParameterSet& iConfig):
 	_threshold(iConfig.getParameter<double>("cutThreshold")),
-	_thresholdIsLowerBound(iConfig.getParameter<double>("isLowerBound"))
+	_thresholdIsLowerBound(iConfig.getParameter<bool>("isLowerBound"))
 
 {
 	//now do what ever initialization is needed
