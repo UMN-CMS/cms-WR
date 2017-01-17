@@ -48,12 +48,12 @@ void quickSignalCompareDYMC()
 
 	//chain_DYPowhegInclEE->Add(dir+"selected_tree_DYPOWINCL_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_signal_eeEE"+mcFileTag+".root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADHT_signal_eeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADInclAndHT_signal_eeEE.root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_signal_eeEE"+mcFileTag+".root");
 	chain_dataEE->Add(dir+"selected_tree_DYAMC_signal_eeEE"+mcFileTag+".root");
 	
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_signal_mumuMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADHT_signal_mumuMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADInclAndHT_signal_mumuMuMu.root");
 	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_signal_mumuMuMu"+mcFileTag+".root");
 	chain_dataMuMu->Add(dir+"selected_tree_DYAMC_signal_mumuMuMu"+mcFileTag+".root");
 
@@ -142,6 +142,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 
 	Long64_t nEntries = chain->GetEntries();
 	cout << nEntries << endl;
+
+  	TString chainTitle(chain->GetTitle());
+	Float_t scaleFactor = 1.0;
+	//apply scale factors to combo of MadHT and MadIncl
+	if(chainTitle.EqualTo("DYMadgraphHTEE") ) scaleFactor = 1.14603;
+	if(chainTitle.EqualTo("DYMadgraphHTMuMu") ) scaleFactor = 1.12849;
 	
 	for(int ev = 0; ev < nEntries; ++ev) {
 		chain->GetEntry(ev);
@@ -153,27 +159,27 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		subleadLeptonFourMom.SetPtEtaPhiE(myEvent->sublead_lepton_pt, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi, myEvent->sublead_lepton_pt);
 		zFourMom = leadLeptonFourMom + subleadLeptonFourMom;
 
-		h_Z_pt->Fill(zFourMom.Pt(), (myEvent->weight));
-		h_Z_phi->Fill(zFourMom.Phi(), (myEvent->weight));
-		h_Z_rapidity->Fill(zFourMom.Rapidity(), (myEvent->weight));
+		h_Z_pt->Fill(zFourMom.Pt(), (myEvent->weight)*scaleFactor);
+		h_Z_phi->Fill(zFourMom.Phi(), (myEvent->weight)*scaleFactor);
+		h_Z_rapidity->Fill(zFourMom.Rapidity(), (myEvent->weight)*scaleFactor);
 
-		h_lepton_pt0->Fill(myEvent->lead_lepton_pt, (myEvent->weight));
-		h_lepton_pt1->Fill(myEvent->sublead_lepton_pt, (myEvent->weight));
-		h_lepton_eta0->Fill(myEvent->lead_lepton_eta, (myEvent->weight));
-		h_lepton_eta1->Fill(myEvent->sublead_lepton_eta, (myEvent->weight));
-		h_lepton_phi0->Fill(myEvent->lead_lepton_phi, (myEvent->weight));
-		h_lepton_phi1->Fill(myEvent->sublead_lepton_phi, (myEvent->weight));
+		h_lepton_pt0->Fill(myEvent->lead_lepton_pt, (myEvent->weight)*scaleFactor);
+		h_lepton_pt1->Fill(myEvent->sublead_lepton_pt, (myEvent->weight)*scaleFactor);
+		h_lepton_eta0->Fill(myEvent->lead_lepton_eta, (myEvent->weight)*scaleFactor);
+		h_lepton_eta1->Fill(myEvent->sublead_lepton_eta, (myEvent->weight)*scaleFactor);
+		h_lepton_phi0->Fill(myEvent->lead_lepton_phi, (myEvent->weight)*scaleFactor);
+		h_lepton_phi1->Fill(myEvent->sublead_lepton_phi, (myEvent->weight)*scaleFactor);
 
-		h_jet_pt0->Fill(myEvent->lead_jet_pt, (myEvent->weight));
-		h_jet_pt1->Fill(myEvent->sublead_jet_pt, (myEvent->weight));
-		h_jet_eta0->Fill(myEvent->lead_jet_eta, (myEvent->weight));
-		h_jet_eta1->Fill(myEvent->sublead_jet_eta, (myEvent->weight));
-		h_jet_phi0->Fill(myEvent->lead_jet_phi, (myEvent->weight));
-		h_jet_phi1->Fill(myEvent->sublead_jet_phi, (myEvent->weight));
+		h_jet_pt0->Fill(myEvent->lead_jet_pt, (myEvent->weight)*scaleFactor);
+		h_jet_pt1->Fill(myEvent->sublead_jet_pt, (myEvent->weight)*scaleFactor);
+		h_jet_eta0->Fill(myEvent->lead_jet_eta, (myEvent->weight)*scaleFactor);
+		h_jet_eta1->Fill(myEvent->sublead_jet_eta, (myEvent->weight)*scaleFactor);
+		h_jet_phi0->Fill(myEvent->lead_jet_phi, (myEvent->weight)*scaleFactor);
+		h_jet_phi1->Fill(myEvent->sublead_jet_phi, (myEvent->weight)*scaleFactor);
 
-		h_dilepton_mass->Fill(myEvent->dilepton_mass, (myEvent->weight));
-		h_nPV->Fill(myEvent->nPV, (myEvent->weight));
-		h_WR_mass->Fill(myEvent->WR_mass, (myEvent->weight));
+		h_dilepton_mass->Fill(myEvent->dilepton_mass, (myEvent->weight)*scaleFactor);
+		h_nPV->Fill(myEvent->nPV, (myEvent->weight)*scaleFactor);
+		h_WR_mass->Fill(myEvent->WR_mass, (myEvent->weight)*scaleFactor);
 	
 	}
 
@@ -228,9 +234,9 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	//data should be set to DYAMC
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.60, 0.9, 0.90 ) ;
-	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MAD HT binned" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY AMC" ) ;
+	leg->AddEntry( hs_DYPowheg, "DY Powheg With MLL SF" ) ;
+	leg->AddEntry( hs_DYMadIncl, "DY MADHT+Incl With MLL SF" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY AMC With MLL SF" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	//leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
