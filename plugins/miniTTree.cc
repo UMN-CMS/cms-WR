@@ -10,6 +10,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "../interface/miniTreeEvent.h"
@@ -34,6 +35,8 @@ private:
 	edm::EDGetToken pileUpReweightToken_;
 	edm::EDGetToken primaryVertexToken_;
 	edm::EDGetToken evinfoToken_;
+	edm::EDGetToken lheEvInfoToken_;
+
 
 	edm::EDGetToken  jec_unc_src;
 	edm::EDGetToken  muon_IDSF_central_src;
@@ -56,6 +59,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	pileUpReweightToken_ ( consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"))),
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
+	lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
@@ -96,6 +100,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	edm::Handle< edm::ValueMap<float> > muon_IsoSF_error;
 	event.getByToken(muon_IsoSF_error_src, muon_IsoSF_error);
 
+	edm::Handle<LHEEventProduct> lheEvInfo;
 	edm::Handle<GenEventInfoProduct> evinfo;
 	edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
 	edm::Handle<float > PU_Weights;
@@ -124,6 +129,12 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		}
 		event.getByToken(pileUpReweightToken_, PU_Weights);
 		myEvent.PU_reweight = *PU_Weights;
+
+		//weights for estimating uncertainties due to pdf, renorm and fact scale variations
+		event.getByToken(lheEvInfoToken_, lheEvInfo);
+		for (size_t i = 0; i < lheEvInfo->weights().size() ; i++) {
+			myEvent.renormFactAndPdfWeights->push_back( lheEvInfo->weights()[i].wgt/lheEvInfo->originalXWGTUP() );
+		}
 
 	}
 
