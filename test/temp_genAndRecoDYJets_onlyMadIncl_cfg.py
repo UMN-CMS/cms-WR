@@ -25,6 +25,7 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 #Filters
 process.genHTFilter = cms.EDFilter('htFilter',
 		cutThreshold = cms.double(100.),
+		isLowerBound = cms.bool(False),
 		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
 		)
 

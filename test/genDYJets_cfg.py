@@ -22,10 +22,18 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 
 #################################
 #Filters
-process.genHTFilter = cms.EDFilter('htFilter',
+process.genHTFilterOne = cms.EDFilter('htFilter',
 		cutThreshold = cms.double(100.),
+		isLowerBound = cms.bool(True),
 		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
 		)
+
+process.genHTFilterTwo = cms.EDFilter('htFilter',
+		cutThreshold = cms.double(200.),
+		isLowerBound = cms.bool(False),
+		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
+		)
+
 
 #################################
 #Analyzers
@@ -59,26 +67,27 @@ process.recoAnalyzerTwo = cms.EDAnalyzer('unmatchedAnalyzer',
 #Paths
 process.studyDYJetsDecay = cms.Path(
 		#process.printDYJetsParticleTree
-		#process.dyJetsBareMatchedGenGluon
-		#*process.dyJetsBareMatchedGenQuark
-		#*process.dyJetsMergeGenMatchedPartons #merge gen quark and gen gluon collections
-		#*process.genHTFilter
+		process.dyJetsBareMatchedGenGluon
+		*process.dyJetsBareMatchedGenQuark
+		*process.dyJetsMergeGenMatchedPartons #merge gen quark and gen gluon collections
+		*process.genHTFilterOne
+		*process.genHTFilterTwo
 		##select electrons from Z then calculate Z pT
 		#*process.dyJetsBareMatchedGenEle
 		#*process.dyJetsBareMatchedGenEleFilter
 		#*process.genMatchedAnalyzerOne
 		#*process.genMatchedAnalyzerTwo
-		#RECO sumPt of two leading jets
-		process.jecSequence
+		###RECO sumPt of two leading jets
+		#process.jecSequence
 		#*process.patJetCorrFactorsReapplyJEC
 		#+process.patJetsReapplyJEC
-		*process.bareRecoJet
-		*process.bareRecoJetFilter
-		*process.recoAnalyzerOne
-		+process.egmGsfElectronIDSequence
-		*process.HEEPIDSequence
-		*process.checkZeeSeq
-		*process.recoAnalyzerTwo
+		#*process.bareRecoJet
+		#*process.bareRecoJetFilter
+		#*process.recoAnalyzerOne
+		#+process.egmGsfElectronIDSequence
+		#*process.HEEPIDSequence
+		#*process.checkZeeSeq
+		#*process.recoAnalyzerTwo
 		)
 
 

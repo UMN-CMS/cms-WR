@@ -96,6 +96,7 @@ private:
 	edm::EDGetTokenT<edm::OwnVector<reco::Candidate> > inputParticlesToken;
 	
 	double _threshold;	//threshold for cut
+	bool _thresholdIsLowerBound;	//threshold indicates lower bound
 
 };
 
@@ -111,7 +112,8 @@ private:
 // constructors and destructor
 //
 htFilter::htFilter(const edm::ParameterSet& iConfig):
-	_threshold(iConfig.getParameter<double>("cutThreshold"))
+	_threshold(iConfig.getParameter<double>("cutThreshold")),
+	_thresholdIsLowerBound(iConfig.getParameter<double>("isLowerBound"))
 
 {
 	//now do what ever initialization is needed
@@ -150,7 +152,12 @@ htFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		sumPt += it->pt();
 	}//end loop over particles in input collection
 
-	if(sumPt > _threshold) return false;
+	if(_thresholdIsLowerBound){
+		if(sumPt < _threshold) return false;
+	} else{
+		if(sumPt > _threshold) return false;
+	}
+
 	return true;
 }
 
