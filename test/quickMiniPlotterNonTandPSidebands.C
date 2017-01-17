@@ -32,7 +32,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -63,7 +63,7 @@ void quickMiniPlotterNonTandPSidebands(){
 		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
 #endif
 #ifndef DOAMC
-		  dy = chain_DY->Add(localDir+"selected_tree_DYMADHT_lowdileptonsidebandMuMu_withMllWeight.root");
+		  dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_lowdileptonsidebandMuMu_withMllWeight.root");
 #endif
 		  
 		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
@@ -79,7 +79,7 @@ void quickMiniPlotterNonTandPSidebands(){
 		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
 #endif
 #ifndef DOAMC
-		  dy = chain_DY->Add(localDir+"selected_tree_DYMADHT_lowdileptonsidebandEE_withMllWeight.root");
+		  dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_lowdileptonsidebandEE_withMllWeight.root");
 #endif
 		  
 		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandEE.root");
@@ -282,7 +282,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
 #ifndef DOAMC
-  leg->AddEntry( hs_DY, "DY MadgraphHT" ) ; 
+  leg->AddEntry( hs_DY, "DY MadHT+Incl" ) ; 
 #endif
   leg->AddEntry( hs_ttbar, "TTbar MC" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
@@ -451,7 +451,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   fn += "DYAMC";
 #endif
 #ifndef DOAMC
-  fn += "DYMADHT";
+  fn += "DYMADHTAndIncl";
 #endif
 
   //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
