@@ -36,7 +36,7 @@ options.register('jsonFile',
 
 #default options
 options.maxEvents = -1
-defaultFileOutput = "dyJetsMadInclPartNNN.root"
+defaultFileOutput = "TAGNAMEPartNNN.root"
 options.output = defaultFileOutput
 #
 
@@ -55,7 +55,7 @@ elif(options.test==2):
 	options.files='INPTFILE'
 	options.maxEvents= -1 
 	options.isMC=1
-	options.datasetTag='dyJetsMadInclPartNNN'
+	options.datasetTag='TAGNAME'
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
     options.maxEvents=200
@@ -63,8 +63,8 @@ elif(options.test==1):
 
 print options
 
-if(options.output == defaultFileOutput and options.datasetTag!=''):
-    options.output = options.datasetTag + '.root'
+#if(options.output == defaultFileOutput and options.datasetTag!=''):
+#    options.output = options.datasetTag + '.root'
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
