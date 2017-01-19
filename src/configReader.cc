@@ -60,8 +60,13 @@ configReader::configReader(std::string filename)
 TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
-	chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
-	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/unmerged-allRange_madIncl.root");
+	//chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
+	chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_amctnloMinitrees.root");
+	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraphInclLowHTMinitrees.root");
+	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht100to200Minitrees.root");
+	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht200to400Minitrees.root");
+	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht400to600Minitrees.root");
+	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht600toInfMinitrees.root");
 	chain->GetEntries();
 	return chain;
 }
