@@ -42,7 +42,7 @@ using namespace std;
 //#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
 //#define nMinusOneCutEffsGenAndReco
-#define studyGenWrKinematicsVsWrAndNuMasses
+//#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
 //#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
@@ -57,7 +57,7 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-//#define showMassWindows
+#define showMassWindows
 //#define printNewDySyst
 //#define DYHTPlot
 
@@ -2902,6 +2902,7 @@ void macroSandBox(){
 	TString outFileNameIndivBkgndsEE = "EEChnlIndivBkgndsWithUncs";
 	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".pdf");
 	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".png");
+	canvasTotEE->Print(outFileNameIndivBkgndsEE + ".C");
 	EEAllBkgndsNoUncs->SetMinimum(0.1);
 	canvasTotEE->SetLogy();
 	canvasTotEE->Print(outFileNameIndivBkgndsEE + "_log.pdf");
@@ -2953,6 +2954,7 @@ void macroSandBox(){
 	TString outFileNameIndivBkgndsMuMu = "MuMuChnlIndivBkgndsWithUncs";
 	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + ".pdf");
 	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + ".png");
+	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + ".C");
 	MuMuAllBkgndsNoUncs->SetMinimum(0.1);
 	canvasTotMuMu->SetLogy();
 	canvasTotMuMu->Print(outFileNameIndivBkgndsMuMu + "_log.pdf");
