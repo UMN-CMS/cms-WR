@@ -69,16 +69,16 @@ void flavorSideband(){
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
   //fixed bin width MLLJJ plots with standard domain
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
   
   //variable bin width MLLJJ plots
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
+  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
+  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
+  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
+  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
