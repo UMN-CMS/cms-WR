@@ -51,7 +51,7 @@ void flavorSideband(){
   chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMu.root");
   chain_EE->Add(dir+"selected_tree_TT_signal_eeEE.root");
   chain_MuMu->Add(dir+"selected_tree_TT_signal_mumuMuMu.root");
-  chain_EMuData->Add(dir+"selected_tree_data_flavoursidebandEMu.root");
+  chain_EMuData->Add(dir+"selected_tree_data_flavoursidebandEMuEE.root");
  
   Selector myEvent_EMu;
   Selector myEvent_EMuData;
@@ -69,16 +69,16 @@ void flavorSideband(){
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
   //fixed bin width MLLJJ plots with standard domain
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
+  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
+  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
+  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
+  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
   
   //variable bin width MLLJJ plots
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
@@ -172,15 +172,20 @@ void flavorSideband(){
   f_EE->Draw("same");
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.pdf"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.png"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.pdf"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.C"));
   mycanvas_ratio_EE->SetLogx(1);
   //chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");
   //chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax 2000
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx_largeXmax.pdf"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx_largeXmax.png"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.png"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.pdf"));
+  //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.png"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.pdf"));
+  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.png"));
 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
@@ -198,15 +203,20 @@ void flavorSideband(){
   f_MuMu->Draw("same");
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.pdf"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.png"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.png"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.pdf"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.C"));
   mycanvas_ratio_MuMu->SetLogx(1);
   //chiSqdBoxMuMu->DrawPave(300.,0.74,1100.,0.79,4,"same");
   //chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax 2000
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.pdf"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.png"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.png"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.pdf"));
+  //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.png"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.pdf"));
+  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.png"));
 
 
   gStyle->SetOptStat("nemr");
@@ -378,6 +388,7 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->Update();
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_fixedbinwidth.pdf","recreate");
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_fixedbinwidth.png","recreate");
+  canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_fixedbinwidth.C","recreate");
 
   p1->SetLogy();
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_fixedbinwidth.pdf","recreate");
