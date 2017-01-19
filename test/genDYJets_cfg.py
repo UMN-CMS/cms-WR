@@ -95,11 +95,11 @@ process.schedule = cms.Schedule(process.studyDYJetsDecay)
 
 
 process.TFileService = cms.Service("TFileService",
-		fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT600toInf.root')
+		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT600toInf.root')
 		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT400to600.root')
 		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT200to400.root')
 		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT100to200.root')
-		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadIncl.root')
+		fileName = cms.string('genHadronKinematicsGenDYJetsMadIncl_HT100to200.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -108,10 +108,10 @@ process.options = cms.untracked.PSet(
 		)
 
 process.source = cms.Source( "PoolSource",
-	fileNames = cms.untracked.vstring(
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD0.root',
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD1.root'
-		),
+	#fileNames = cms.untracked.vstring(
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD0.root',
+	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT600toInfMiniAOD1.root'
+	#	),
 	#fileNames = cms.untracked.vstring(
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT400to600MiniAOD1.root',
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT400to600MiniAOD0.root'
@@ -124,10 +124,11 @@ process.source = cms.Source( "PoolSource",
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD1.root',
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD2.root'
 	#	),
-	#fileNames = cms.untracked.vstring(
-	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD1.root',
-	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD2.root',
-	#	),
+	fileNames = cms.untracked.vstring(
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD1.root',
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD2.root',
+		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD3.root',
+		),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
     #)
