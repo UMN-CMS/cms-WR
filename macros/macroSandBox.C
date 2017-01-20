@@ -57,13 +57,25 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-#define showMassWindows
+//#define showMassWindows
 //#define printNewDySyst
 //#define DYHTPlot
+#define DYPdfUnc
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
+
+//calculate the total number of weighted evts in a chain, given a branch name to draw and a weight branch name for weighting evts which are drawn
+Double_t calcTotalNumWeightedEvts(TChain * chain){
+	chain->Draw("dilepton_mass>>tempHist(10,0.,200.)", "(weight)*(dilepton_mass>0)" );	///<draw evts with weights, save to histo
+	TH1F * tempHist = (TH1F*) gROOT->FindObject("tempHist");	///<get histo
+	Double_t numWgtEvts = tempHist->Integral();	///<get num weighted evts from histo
+	delete tempHist;
+	tempHist = 0;
+	return numWgtEvts;
+
+}//end calcTotalNumWeightedEvts()
 
 
 //given a TChain and a branch name, calculate and return the average value of all entries in the branch
@@ -3259,5 +3271,60 @@ void macroSandBox(){
 
 #endif
 	//end DYHTPlot
+
+#ifdef DYPdfUnc
+	///calculate the PDF uncertainty for DY given 1 tree with weighted evts made using the default PDF, and
+	///100 trees with weighted evts made from 100 other PDFs
+	///calculate the number of weighted evts in every tree, Tree_Iter0, and sum the difference btwn each tree
+	///and the default tree squared.  The square root of this sum is the PDF uncertainty, in number of evts
+	
+	int numDiffPdfs = 100;
+	Double_t numPdfs = 100;
+	TString treeName = "Tree_Iter0";
+	std::string leptChnl = "MuMu";
+	//std::string leptChnl = "EE";
+	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
+	std::string defaultPdfFileBegin = "selected_tree_DYAMC_lowdileptonsideband";
+	std::string defaultPdfFileEnd = "_withMllWeight.root";
+	//use std::string to facilitate use of to_string() method
+	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/forDYAMCPdfUncert/";
+	std::string nonDefaultPdfFileBegin = "selected_tree_DYAMC_lowdileptonsideband";
+	std::string nonDefaultPdfFileMiddle = "_withMllWeight_pdfWeight_";
+	std::string nonDefaultPdfFileEnd = ".root";
+
+	TChain * defaultPdfChain = new TChain(treeName);
+	defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+leptChnl+defaultPdfFileEnd).c_str() );
+	Double_t numDefaultEvts = calcTotalNumWeightedEvts(defaultPdfChain);
+	//std::cout<<"numEntries in default chain =\t"<< defaultPdfChain->GetEntries() << std::endl;
+	//std::cout<<"numWeightedEvts in default chain =\t"<< numDefaultEvts << std::endl;
+	
+	std::vector<Double_t> numWeightedEvtsDiffPdfs;
+	Double_t meanNumEvts = 0;
+	//loop over different pdf files, calculate the total number of weighted evts, and put that number into a vector
+	for(int i=0; i<numDiffPdfs ; i++){
+		TChain * nonDefaultPdfChain = new TChain(treeName);
+		nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+nonDefaultPdfFileBegin+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+nonDefaultPdfFileEnd).c_str() );
+		numWeightedEvtsDiffPdfs.push_back( calcTotalNumWeightedEvts(nonDefaultPdfChain) );
+		meanNumEvts += numWeightedEvtsDiffPdfs[i];
+
+		delete nonDefaultPdfChain;
+		nonDefaultPdfChain = 0;
+	}//end loop over different pdfs
+
+	meanNumEvts = meanNumEvts/(numPdfs-1);
+
+	Double_t sumOfSqdDiffs = 0;
+	//now calculate uncertainty
+	for(int i=0; i<numDiffPdfs ; i++){
+		sumOfSqdDiffs += (meanNumEvts - numWeightedEvtsDiffPdfs[i])*(meanNumEvts - numWeightedEvtsDiffPdfs[i]);
+	}//end calculating uncertainty
+
+	Double_t uncert = sqrt(sumOfSqdDiffs/(numPdfs-1));
+	std::cout<<"uncertainty =\t"<< uncert <<" percentage uncertainty =\t" << 100*uncert/meanNumEvts <<std::endl;
+
+
+#endif
+	//end DYPdfUnc
+	
 }///end macroSandBox()
 

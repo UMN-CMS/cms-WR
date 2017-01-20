@@ -198,6 +198,7 @@ int main(int ac, char* av[])
 	bool isTagAndProbe, isLowDiLepton, saveToys, ignoreDyScaleFactors;
 	int nStatToys;
 	int signalN;
+	int pdfWeight;
 	int seed;
 	bool makeSelectorPlots;
 	// Declare the supported options.
@@ -224,6 +225,7 @@ int main(int ac, char* av[])
 	("signalN", po::value<int>(&signalN)->default_value(0), "pick one signal mass to process")
 	("makeSelectorPlots", po::bool_switch(&makeSelectorPlots)->default_value(false), "Turn on plot making in Selector")
 	("cut_channel", po::value<std::string>(&channel_cut_str)->default_value(""), "if channel is EMu choose which Mass cut to apply")
+	("pdfWeight", po::value<int>(&pdfWeight)->default_value(-1), "pick one weight tied to a non-default PDF")
 	;
 
 	po::variables_map vm;
@@ -259,6 +261,10 @@ int main(int ac, char* av[])
 	Selector::tag_t channel = Selector::getTag(channel_str);
 
 	Selector::tag_t cut_channel;
+	if(pdfWeight != -1 && modes[0].find("DY") != _ENDSTRING){
+		outFileTag += "_pdfWeight_";
+		outFileTag += std::to_string(pdfWeight);
+	}
 	if(channel == Selector::EMu) {
 		cut_channel = Selector::getTag(channel_cut_str);
 		outFileTag += channel_cut_str;
@@ -594,13 +600,16 @@ int main(int ac, char* av[])
 				// 	for(auto m : * (myEventIt.jets_p4))
 				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				// }
-
+				
 				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
 					if(isData == false) {
 						//only for DYMadIncl HT<100 minitrees I made
 						//float wgt = (5991*integratedLumi/9042031);
 						//selEvent.weight *= wgt; 
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
+							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
+						}
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
 						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
@@ -645,6 +654,10 @@ int main(int ac, char* av[])
 						//float wgt = (5991*integratedLumi/9042031);
 						//selEvent.weight *= wgt;
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
+						
+						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
+							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
+						}
 
 						//multiply by an additional weight when processing DY samples
 						if(mode.find("DY") != _ENDSTRING && !ignoreDyScaleFactors) {
