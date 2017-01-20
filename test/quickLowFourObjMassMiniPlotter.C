@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <memory>
 
-#define doDataDrivenTT
+//#define doDataDrivenTT
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
@@ -35,7 +35,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -361,6 +361,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  //mycanvas->SetLogy();	//only needed when no ratio plot is drawn
 	  mycanvas->Print((fn+"_log.pdf").Data());
 	  mycanvas->Print((fn+"_log.png").Data());
+	  mycanvas->Print((fn+"_log.C").Data());
   }
 
   mycanvas->Close();
