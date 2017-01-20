@@ -42,7 +42,7 @@ using namespace std;
 //#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
 //#define nMinusOneCutEffsGenAndReco
-//#define studyGenWrKinematicsVsWrAndNuMasses
+#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
 //#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
@@ -60,7 +60,7 @@ using namespace std;
 //#define showMassWindows
 //#define printNewDySyst
 //#define DYHTPlot
-#define DYPdfUnc
+//#define DYPdfUnc
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -977,7 +977,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 		}
 	}///end loop over elements in overlayHistoMap
 	
-	string outputFile, outputFilePdf;
+	string outputFile, outputFilePdf, outputFileC;
 	for(cMapIt hIt=overlayHistoMap.begin(); hIt!=overlayHistoMap.end(); hIt++){
 		if(hIt==overlayHistoMap.begin()){
 			(hIt->second)->Draw();
@@ -987,8 +987,10 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			if(badFwdSlash != string::npos) outputFile.replace(badFwdSlash,1,"Over");
 			outputFile += outputFileNameModifier;
 			outputFilePdf += outputFile;
+			outputFileC += outputFile;
 			outputFile += ".png";
 			outputFilePdf += ".pdf";
+			outputFileC += ".C";
 #ifdef DEBUG
 			cout<<"outputFile = \t"<< outputFile <<endl;
 #endif
@@ -1000,6 +1002,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 	canv->Update();
 	canv->SaveAs(outputFile.c_str(),"recreate");
 	canv->SaveAs(outputFilePdf.c_str(),"recreate");
+	canv->SaveAs(outputFileC.c_str(),"recreate");
 	//canv->Clear();
 	canv->Close();
 	delete canv;
@@ -1687,8 +1690,8 @@ void macroSandBox(){
 	//string histoEndings[] = {"_genLeptPtFromWR(70,0.,450.)","_genLeptPtFromNu(50,0.,450.)","_genQrkOnePtFromNu(50,0.,450.)","_genQrkTwoPtFromNu(50,0.,450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,850.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//low mass
 	//string histoBeginnings[] = {"800 GeV WR  150 GeV Nu","800 GeV WR  400 GeV Nu","800 GeV WR  700 GeV Nu"};	//low mass
 	
-	string histoEndings[] = {"_genLeptPtFromWR(100,0.,1450.)","_genLeptPtFromNu(100,0.,1450.)","_genQrkOnePtFromNu(100,0.,1450.)","_genQrkTwoPtFromNu(100,0.,1450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,2600.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//medium mass
-	string histoBeginnings[] = {"MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500"};	//medium mass
+	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,1450.)","_genLeptPtFromNu(100,0.,1450.)","_genQrkOnePtFromNu(100,0.,1450.)","_genQrkTwoPtFromNu(100,0.,1450.)","_dileptonMassGenLeptsFromWRandNu(100,0.,2600.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//medium mass
+	//string histoBeginnings[] = {"MWR 2600 MNu 300","MWR 2600 MNu 1300","MWR 2600 MNu 2500"};	//medium mass
 
 	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,2500.)","_genLeptPtFromNu(100,0.,2500.)","_genQrkOnePtFromNu(100,0.,2500.)","_genQrkTwoPtFromNu(100,0.,2500.)","_dileptonMassGenLeptsFromWRandNu(100,0.,5000.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//high mass
 	//string histoBeginnings[] = {"MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700"};	//high mass
@@ -1696,8 +1699,8 @@ void macroSandBox(){
 	//string histoEndings[] = {"_genLeptPtFromWR(80,0.,1800.)","_genLeptPtFromNu(50,0.,1800.)","_genQrkOnePtFromNu(50,0.,1800.)","_genQrkTwoPtFromNu(50,0.,1800.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
 	//string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2400 GeV WR  800 GeV Nu","3400 GeV WR  800 GeV Nu"};	//fixed Nu mass
 	
-	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,3000.)","_genLeptPtFromNu(70,0.,3000.)","_genQrkOnePtFromNu(70,0.,3000.)","_genQrkTwoPtFromNu(70,0.,3000.)","_dileptonMassGenLeptsFromWRandNu(70,0.,4800.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
-	//string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2600 GeV WR  1300 GeV Nu","5000 GeV WR  2500 GeV Nu"};	//several MWR up to 5000 GeV, MNu is half MWR
+	string histoEndings[] = {"_genLeptPtFromWR(100,0.,3000.)","_genLeptPtFromNu(70,0.,3000.)","_genQrkOnePtFromNu(70,0.,3000.)","_genQrkTwoPtFromNu(70,0.,3000.)","_dileptonMassGenLeptsFromWRandNu(70,0.,4800.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
+	string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2600 GeV WR  1300 GeV Nu","5000 GeV WR  2500 GeV Nu"};	//several MWR up to 5000 GeV, MNu is half MWR
 	
 	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
 	map<string,TChain*> placeHolderMap;
@@ -1708,9 +1711,9 @@ void macroSandBox(){
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR800MNu400Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR800MNu700Private;
 
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2600MNu300Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2600MNu2500Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2600MNu300Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2600MNu2500Private;
 
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR5000MNu400Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
@@ -1720,11 +1723,11 @@ void macroSandBox(){
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR3400MNu800Private;
 
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
-		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
 
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.55,0.90,0.90,true,title,xAxisLabels[i],"_MWR_2600_several_MNu_private",true,cutVals[i]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.55,0.90,0.90,true,title,xAxisLabels[i],"_several_MNu_and_MWR_private",true,cutVals[i]);
 		placeHolderMap.clear();
 	}///end loop over branchNames
 	

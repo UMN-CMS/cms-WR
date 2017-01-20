@@ -42,8 +42,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 40;
 Float_t idealSubleadJetPt = 40;
-Float_t leadJetPtCut = 40;
-Float_t subLeadJetPtCut = 40;
+Float_t leadJetPtCut = -10;
+Float_t subLeadJetPtCut = -10;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -279,8 +279,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TH1D *h_jet_eta1 = new TH1D("h_jet_eta1", "", 50, -3.2, 3.2);
 	TH1D *h_jet_phi1 = new TH1D("h_jet_phi1", "", 50, -3.2, 3.2);
 
-	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 80, 70., 110.);	//coarser binning
-	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);	//default
+	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 80, 70., 110.);	//coarser binning
+	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);	//default
 	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 560, 70., 110.);	//finer binning
 	TH1D *h_nPV = new TH1D("pileup", "nPV distribution", 50., 0, 50.);
 	TH1D *h_nPU = new TH1D("pileup", "true nPU distribution for MC", 50., 0, 50.);
@@ -452,10 +452,11 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ;
-	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
+	//leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY AMC" ) ;
+	//leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
+	//leg->AddEntry( hs_DYAmcIncl, "DY AMC" ) ;
+	leg->AddEntry( hs_DYAmcIncl, "DY Simulation" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -594,15 +595,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
 	/*for ratio plot*/
-	ratio_Mad->Draw("p");	//comment if only plotting AMC
-	//ratio_Amc->Draw("p");
+	//ratio_Mad->Draw("p");	//comment if only plotting AMC
+	ratio_Amc->Draw("p");
 	//ratio_Powheg->Draw("p");	//comment if only plotting AMC
 	float xmax = ratio_Amc->GetXaxis()->GetXmax();
 	float xmin = ratio_Amc->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
 	//ratio_Powheg->Draw("p");
-	ratio_Mad->Draw("psame");
-	//ratio_Amc->Draw("p");
+	//ratio_Mad->Draw("psame");
+	ratio_Amc->Draw("p");
 	f1->Draw("same");
 	mycanvas->cd();
 	/**/
@@ -611,10 +612,10 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_noRatioPlot_" + channel;
 
 	//only MadHT ratio
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
+	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
 
 	//only AMC ratio
-	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCRatioPlot_" + channel;
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCRatioPlot_" + channel;
 	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
 	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
@@ -669,15 +670,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 		*/
 
 		//reset the Y axis scale on the ratio plot
-		ratio_Powheg->GetYaxis()->SetRangeUser(0.51, 1.99);
-		ratio_Mad->GetYaxis()->SetRangeUser(0.51, 1.99);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.51, 1.99);
+		ratio_Powheg->GetYaxis()->SetRangeUser(0.61, 1.39);
+		ratio_Mad->GetYaxis()->SetRangeUser(0.61, 1.39);
+		ratio_Amc->GetYaxis()->SetRangeUser(0.61, 1.39);
 
 		if(fname.EqualTo("Z_pt_variableBinning") == true) fn += "_overflowsAddedToLastBin";
 		mycanvas->Update();
 		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_noZoomRatio.png").Data());
-		//mycanvas->Print((fn + "_noZoomRatio.root").Data());
+		mycanvas->Print((fn + "_noZoomRatio.C").Data());
 
 		p1->SetLogy();	//for plotting ratio plot
 		//mycanvas->SetLogy();	//when not plotting ratio plot
