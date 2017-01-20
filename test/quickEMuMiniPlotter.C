@@ -138,8 +138,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
 
   /**/
-  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
-  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
   
   ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
@@ -307,20 +307,23 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass_unweighted);
 	
   /**/
-  //normalize histo bins
+  //normalize histo bins of WR mass histos
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
 	  //get num bins in histo i
 	  Int_t nBins = (hs->at(i))->GetNbinsX();
-	  for(Int_t j=1; j<=nBins; j++){
-		  //in each bin, divide the bin contents by the bin width
-		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
-		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
-		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
-		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
-		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
-	  }//end loop over bins in histo
+	  TString histName = hs->at(i)->GetName();
+	  if( histName.Contains("WR_mass") ){
+		  for(Int_t j=1; j<=nBins; j++){
+			  //in each bin, divide the bin contents by the bin width
+			  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+			  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
+			  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
+			  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+			  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
+		  }//end loop over bins in histo
 
+	  }
   }//end loop over histos in vector
   /**/ 
 }
@@ -459,8 +462,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->Update();
 
   //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
-  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
-  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
+  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
 #ifdef doNarrowMlljj
 	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjWindowFixedBinWidth";
 #endif
@@ -473,9 +476,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
+	  mycanvas->Print((fn+".C").Data());
 	  p1->SetLogy();
 	  mycanvas->Print((fn+"_log.pdf").Data());
 	  mycanvas->Print((fn+"_log.png").Data());
+	  mycanvas->Print((fn+"_log.C").Data());
   }
 
   mycanvas->Close();
