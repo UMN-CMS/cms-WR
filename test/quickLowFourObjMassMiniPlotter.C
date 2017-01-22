@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <memory>
 
+#define useDYMAD
 //#define doDataDrivenTT
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -55,7 +56,14 @@ void quickLowFourObjMassMiniPlotter(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EE:
-	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
+#ifndef useDYMAD
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_eeEE_withMllWeight.root");
+#endif
+
+#ifdef useDYMAD
+	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_signal_eeEE_withMllWeight.root");
+#endif
+
 #ifndef doDataDrivenTT
 	tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
 #endif
@@ -68,7 +76,14 @@ void quickLowFourObjMassMiniPlotter(){
     data = chain_data->Add(localDir+"selected_tree_data_signal_eeEE.root");
     break;
   case Selector::MuMu:
-	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+#ifndef useDYMAD
+	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu_withMllWeight.root");
+#endif
+
+#ifdef useDYMAD
+	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_signal_mumuMuMu_withMllWeight.root");
+#endif
+
 #ifndef doDataDrivenTT
 	tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
 #endif
@@ -214,7 +229,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_dilepton_mass);
   hs->push_back(h_nPV);
 
-  /**/
+  /*shouldn't do this for all histos, just the variable bin width MLLJJ and MLL plots*/
   //normalize histo bins when using variable bin widths
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -241,7 +256,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ttbarLegEntry = "TT Data Driven";
 #endif
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
-  leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
+#ifndef useDYMAD
+  leg->AddEntry( hs_DY, "DY AMCNLO" ) ;
+#endif
+#ifdef useDYMAD
+  leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ;
+#endif 
   leg->AddEntry( hs_ttbar, ttbarLegEntry ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
@@ -345,8 +365,15 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
 
   TString fn = fname;
-  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_VariableBinWidthWithRatio_lowFourObjMass";
-  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_VariableBinWidthWithRatio_lowFourObjMass";
+#ifndef useDYMAD
+  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_DYAMC_VariableBinWidthWithRatio_lowFourObjMass";
+  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_DYAMC_VariableBinWidthWithRatio_lowFourObjMass";
+#endif
+
+#ifdef useDYMAD
+  if(channel == Selector::EE) fn += "_EEChannelDataAndBkgndMC_DYMadHTAndIncl_VariableBinWidthWithRatio_lowFourObjMass";
+  if(channel == Selector::MuMu) fn += "_MuMuChannelDataAndBkgndMC_DYMadHTAndIncl_VariableBinWidthWithRatio_lowFourObjMass";
+#endif
 
   TString ttbarMode = "_TTBarMC";
 #ifdef doDataDrivenTT
@@ -357,6 +384,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
+	  mycanvas->Print((fn+".C").Data());
 	  p1->SetLogy();	//for ratio plot
 	  //mycanvas->SetLogy();	//only needed when no ratio plot is drawn
 	  mycanvas->Print((fn+"_log.pdf").Data());
