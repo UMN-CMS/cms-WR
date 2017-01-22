@@ -22,6 +22,7 @@
 
 //#define doNarrowMlljj
 //#define doNarrowLeadLeptEta
+#define useDYMAD
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -53,7 +54,12 @@ void quickEMuMiniPlotter(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EMu:
+#ifndef useDYMAD
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_flavoursidebandEMu.root");
+#endif
+#ifdef useDYMAD
+	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_flavoursidebandEMu_withMllWeight.root");
+#endif
 	tt = chain_ttbar->Add(localDir+"selected_tree_TT_flavoursidebandEMu.root");
     wjets = chain_WJets->Add(localDir+"selected_tree_W_flavoursidebandEMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
@@ -138,8 +144,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   //TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
 
   /**/
-  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
-  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
+  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
   
   ////Float_t bins[] = { 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 2500};	//standard bins with 600 GeV mass cut
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
@@ -331,7 +337,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
+#ifndef useDYMAD 
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
+#endif
+#ifdef useDYMAD
+  leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
+#endif
   leg->AddEntry( hs_ttbar, "TT MC" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "WZ" ) ; 
@@ -462,8 +473,15 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->Update();
 
   //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
-  TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
-  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidth";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
+#ifndef useDYMAD
+  TString fn = fname + "_eMuChannelRescaledTTBarMC_DYAMC_NoLLJJCutVariableBinWidth";
+#endif
+
+#ifdef useDYMAD
+  TString fn = fname + "_eMuChannelRescaledTTBarMC_DYMadHTAndIncl_NoLLJJCutVariableBinWidth";
+#endif
+
 #ifdef doNarrowMlljj
 	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjWindowFixedBinWidth";
 #endif
