@@ -68,7 +68,7 @@ using namespace std;
 
 //calculate the total number of weighted evts in a chain, given a branch name to draw and a weight branch name for weighting evts which are drawn
 Double_t calcTotalNumWeightedEvts(TChain * chain){
-	chain->Draw("dilepton_mass>>tempHist(10,0.,200.)", "(weight)*(dilepton_mass>0)" );	///<draw evts with weights, save to histo
+	chain->Draw("dilepton_mass>>tempHist(10,200.,4000.)", "(weight)*(dilepton_mass>0)" );	///<draw evts with weights, save to histo
 	TH1F * tempHist = (TH1F*) gROOT->FindObject("tempHist");	///<get histo
 	Double_t numWgtEvts = tempHist->Integral();	///<get num weighted evts from histo
 	delete tempHist;
@@ -1677,10 +1677,23 @@ void macroSandBox(){
 	string link=">>";
 	
 	//the arrays branchNames, cutVals, and xAxisLabels must have the same number of elements
-	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl"};
+
+	/////////////////////////////////////////////////////////////
+	//only for MNu = 800 and MWR = 1600, 2400 and 3400
+	/*
+	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl","dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
 	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
-	Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions, synched with branchNames array
-	string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother"};
+	Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
+	string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta","#DeltaR quarks from Nu"};
+	*/
+
+
+	/////////////////////////////////////////////////////////////
+	//works for everything
+	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl"};
+	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
+	Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
+	string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta"};
 	
 	//string histoEndingsMaster[] = {};
 	//TChain * chains[] = {genWRtoEEJJMWR800MNu150Private, genWRtoEEJJMWR800MNu400Private, genWRtoEEJJMWR800MNu700Private, genWRtoEEJJMWR2600MNu300Private, genWRtoEEJJMWR2600MNu1300Private, genWRtoEEJJMWR2600MNu2500Private, genWRtoEEJJMWR5000MNu400Private, genWRtoEEJJMWR5000MNu2500Private, genWRtoEEJJMWR5000MNu4700Private, genWRtoEEJJMWR1600MNu800Private, genWRtoEEJJMWR2400MNu800Private, genWRtoEEJJMWR3400MNu800Private};
@@ -1697,8 +1710,8 @@ void macroSandBox(){
 	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,2500.)","_genLeptPtFromNu(100,0.,2500.)","_genQrkOnePtFromNu(100,0.,2500.)","_genQrkTwoPtFromNu(100,0.,2500.)","_dileptonMassGenLeptsFromWRandNu(100,0.,5000.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//high mass
 	//string histoBeginnings[] = {"MWR 5000 MNu 400","MWR 5000 MNu 2500","MWR 5000 MNu 4700"};	//high mass
 
-	string histoEndings[] = {"_genLeptPtFromWR(80,0.,1800.)","_genLeptPtFromNu(50,0.,1800.)","_genQrkOnePtFromNu(50,0.,1800.)","_genQrkTwoPtFromNu(50,0.,1800.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//fixed Nu mass
-	string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2400 GeV WR  800 GeV Nu","3400 GeV WR  800 GeV Nu"};	//fixed Nu mass
+	//string histoEndings[] = {"_genLeptPtFromWR(80,0.,1800.)","_genLeptPtFromNu(40,0.,1200.)","_genQrkOnePtFromNu(40,0.,1200.)","_genQrkTwoPtFromNu(40,0.,1200.)","_dileptonMassGenLeptsFromWRandNu(100,0.,3400.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)","_genLeptEtaFromWR(40,-2.5,2.5)","_genLeptEtaFromNu(40,-2.5,2.5)","_deltaRgenQrkOneAndQrkTwoFromNu(100,0.,4.5)"};	//fixed Nu mass
+	//string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2400 GeV WR  800 GeV Nu","3400 GeV WR  800 GeV Nu"};	//fixed Nu mass
 	
 	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,3000.)","_genLeptPtFromNu(70,0.,3000.)","_genQrkOnePtFromNu(70,0.,3000.)","_genQrkTwoPtFromNu(70,0.,3000.)","_dileptonMassGenLeptsFromWRandNu(70,0.,4800.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//several MWR, MNu is half MWR
 	//string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2600 GeV WR  1300 GeV Nu","5000 GeV WR  2500 GeV Nu"};	//several MWR up to 5000 GeV, MNu is half MWR
@@ -1720,15 +1733,15 @@ void macroSandBox(){
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu4700Private;
 
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR3400MNu800Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR3400MNu800Private;
 
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
 
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.55,0.90,0.90,true,title,xAxisLabels[i],"_MNu_800_several_MWR_private",true,cutVals[i]);
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.65,0.90,0.90,true,title,xAxisLabels[i],"_MNu_800_several_MWR_private",true,cutVals[i]);
 		placeHolderMap.clear();
 	}///end loop over branchNames
 	
@@ -3283,16 +3296,16 @@ void macroSandBox(){
 	///and the default tree squared.  The square root of this sum is the PDF uncertainty, in number of evts
 	
 	int numDiffPdfs = 100;
-	Double_t numPdfs = 100;
+	Double_t numPdfs = 100;	//equal to numDiffPdfs
 	TString treeName = "Tree_Iter0";
-	std::string leptChnl = "MuMu";
-	//std::string leptChnl = "EE";
+	//std::string leptChnl = "mumuMuMu";
+	std::string leptChnl = "eeEE";
 	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
-	std::string defaultPdfFileBegin = "selected_tree_DYAMC_lowdileptonsideband";
+	std::string defaultPdfFileBegin = "selected_tree_DYAMC_signal_";
 	std::string defaultPdfFileEnd = "_withMllWeight.root";
 	//use std::string to facilitate use of to_string() method
 	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/forDYAMCPdfUncert/";
-	std::string nonDefaultPdfFileBegin = "selected_tree_DYAMC_lowdileptonsideband";
+	std::string nonDefaultPdfFileBegin = "selected_tree_DYAMC_signal_";
 	std::string nonDefaultPdfFileMiddle = "_withMllWeight_pdfWeight_";
 	std::string nonDefaultPdfFileEnd = ".root";
 
@@ -3309,6 +3322,7 @@ void macroSandBox(){
 		TChain * nonDefaultPdfChain = new TChain(treeName);
 		nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+nonDefaultPdfFileBegin+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+nonDefaultPdfFileEnd).c_str() );
 		numWeightedEvtsDiffPdfs.push_back( calcTotalNumWeightedEvts(nonDefaultPdfChain) );
+		//std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;
 		meanNumEvts += numWeightedEvtsDiffPdfs[i];
 
 		delete nonDefaultPdfChain;
