@@ -24,7 +24,7 @@
 #define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
-#define DOAMC
+//#define DOAMC
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -420,8 +420,15 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(labelSize - 0.07,"y");
-  Float_t maxYratioRange = 2.95;
-  if(channel == Selector::EE) maxYratioRange = 1.9;
+  Float_t maxYratioRange = 3.2;
+#ifdef DOAMC
+  if(channel == Selector::EE) maxYratioRange = 1.62;
+#endif
+
+#ifndef DOAMC
+  maxYratioRange = 1.13;
+#endif
+
   ratio->GetYaxis()->SetRangeUser(0.51,maxYratioRange);	//upper limit 3. for mu, 2. for ele
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
@@ -467,6 +474,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  //mycanvas->SetLogy();	//only needed when no ratio plot is drawn
 	  mycanvas->Print((fn+"_log.pdf").Data());
 	  mycanvas->Print((fn+"_log.png").Data());
+  	  mycanvas->Print((fn+"_log.C").Data());
   }
 
   mycanvas->Close();
