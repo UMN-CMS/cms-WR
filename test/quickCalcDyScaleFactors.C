@@ -31,6 +31,9 @@
  *
  */
 
+#define useDYMAD
+#define doReweight
+
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
@@ -42,8 +45,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 40;
 Float_t idealSubleadJetPt = 40;
-Float_t leadJetPtCut = -10;
-Float_t subLeadJetPtCut = -10;
+Float_t leadJetPtCut = 40;
+Float_t subLeadJetPtCut = 40;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -62,7 +65,7 @@ TFile fMCEle("MCElePileup.root","recreate");
 bool separatedLeptonsAndJets(Float_t leadJetPt, Float_t subleadJetPt, Float_t leadJetEta, Float_t leadJetPhi, Float_t & subleadJetEta, Float_t & subleadJetPhi, Float_t leadLeptonEta, Float_t leadLeptonPhi, Float_t subleadLeptonEta, Float_t subleadLeptonPhi);
 Float_t calculateIntegralRatio(TH1D* hs_data, TH1D* hs_mc);
 void writeScaleFactorsToFile(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, Int_t writeAction, std::string channel);
-void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1D*> *hs, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Float_t normRescale, bool applyHltCorr);
+void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1D*> *hs, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Float_t normRescale, bool applyCorr);
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel);
 void quickCalculateDyScaleFactors()
 {
@@ -129,6 +132,7 @@ void quickCalculateDyScaleFactors()
 	MakeHistos(chain_DYMadInclMuMu, &myEvent_DYMadInclMuMu, &hs_DYMadInclMuMu, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1.0, false);
 	std::vector<TH1D*> hs_DYAmcInclMuMu;
 	MakeHistos(chain_DYAmcInclMuMu, &myEvent_DYAmcInclMuMu, &hs_DYAmcInclMuMu, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1.0, false);
+
 
 	std::vector<TH1D*> hs_dataEE;
 	MakeHistos(chain_dataEE, &myEvent_dataEE, &hs_dataEE, minLeadLeptonPt, minSubleadLeptonPt, maxMll, minMll, maxLeptonEta, 1.0, false);
@@ -263,7 +267,7 @@ void writeScaleFactorsToFile(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYA
 
 }//end writeScaleFactorsToFile()
 
-void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Float_t normRescale, bool applyHltCorr)
+void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float_t leadLeptonPtCut, Float_t subleadLeptonPtCut, Float_t upperMllCut, Float_t lowerMllCut, Float_t leptonEtaCut, Float_t normRescale, bool applyCorr)
 {
 	TH1D *h_lepton_pt0 = new TH1D("h_lepton_pt0", "", 100, -20, 600);
 	TH1D *h_lepton_eta0 = new TH1D("h_lepton_eta0", "", 50, -3.2, 3.2);
@@ -306,13 +310,25 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TString chTitle(chain->GetTitle());
 	//std::cout<<"chTitle=\t"<< chTitle << std::endl;
 	Double_t hltCorrFactor=1.0;
+#ifdef doReweight
+	if(chTitle.Contains("AMC") ){
+		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.964348 : 0.938398;
+		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.990071 : 0.93932;
+		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.00925 : 0.95735;
+	}
+
+	if(chTitle.Contains("Madgraph") ){
+		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.12849 : 1.14603;
+		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.10363 : 1.10642;
+		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.984198 : 0.964684;
+	}
+#endif
 	for(int ev = 0; ev < nEntries; ++ev) {
 		chain->GetEntry(ev);
 		if(myEvent->dilepton_mass > upperMllCut || myEvent->dilepton_mass < lowerMllCut) continue;
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subLeadJetPtCut) continue;
 		if(!separatedLeptonsAndJets(myEvent->lead_jet_pt, myEvent->sublead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi) && requireSeparatedLeptonsAndJets) continue;	///< separatedLeptonsAndJets() returns false if the two leading jets are not separated from the two leading leptons
-		hltCorrFactor=1.0;
 	
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
@@ -428,35 +444,21 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+	//if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 
-	if(fname.EqualTo("nPU") == true && channel == "MuMu" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
-		//write the nPU hsitogram only from data to a file
-		fData.cd();
-		hs_data->Write();
-		fMC.cd();
-		hs_DYAmcIncl->Write();
-	}
-	if(fname.EqualTo("nPU") == true && channel == "EE" && leadJetPtCut < -1 && subLeadJetPtCut < -1){
-		//write the nPU hsitogram only from data to a file
-		fDataEle.cd();
-		hs_data->Write();
-		fMCEle.cd();
-		hs_DYAmcIncl->Write();
-	}
-
-	Float_t dataOvrAmc = calculateIntegralRatio(hs_data, hs_DYAmcIncl);
-	Float_t dataOvrMad = calculateIntegralRatio(hs_data, hs_DYMadIncl);
-	Float_t dataOvrPowhegMassBinned = calculateIntegralRatio(hs_data, hs_DYPowheg);
-	
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ;
 	//leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-	//leg->AddEntry( hs_DYMadIncl, "DY MAD HTBinned" ) ;
-	//leg->AddEntry( hs_DYAmcIncl, "DY AMC" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY Simulation" ) ;
+#ifdef useDYMAD	
+	leg->AddEntry( hs_DYMadIncl, "DYMadHT+Incl" ) ;
+#endif
+
+#ifndef useDYMAD
+	leg->AddEntry( hs_DYAmcIncl, "DY AMCNLO" ) ;
+#endif
+	//leg->AddEntry( hs_DYAmcIncl, "DY Simulation" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
 	leg->AddEntry( hs_data, "Data");
 	leg->SetFillColor( kWhite ) ;
@@ -524,21 +526,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(fname.EqualTo("Z_pt") ) hs_data->GetXaxis()->SetTitle("Z P_{T} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("Z P_{T} [GeV]");
 	
 	hs_data->Draw("ep");
-	hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
+	//hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
+#ifdef useDYMAD	
 	hs_DYMadIncl->Draw("histo same");	//comment if only plotting AMC
+#endif
+
+#ifndef useDYMAD	
 	hs_DYAmcIncl->Draw("histo same");
+#endif
 	hs_data->Draw("epsame");
-	/*
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("Mll_bothEE") == true || fname.EqualTo("Mll_bothEB") == true || fname.EqualTo("Mll_EBEE") == true){
-		//show the data over MC ratio on each Mll and Z_pt plot
-		xtitle += " dataOvrAMC = ";
-		xtitle += (to_string(dataOvrAmc)).c_str();
-		xtitle += " dataOvrPow = ";
-		xtitle += (to_string(dataOvrPowhegMassBinned)).c_str();
-		xtitle += " dataOvrMad = ";
-		xtitle += (to_string(dataOvrMad)).c_str();
-	}
-	*/
 	hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Amc->GetXaxis()->SetTitle(xtitle.Data());
 	if(fname.EqualTo("Mll")) ratio_Amc->GetXaxis()->SetTitle("M_{LL} [GeV]");
@@ -556,7 +552,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Powheg->GetXaxis()->SetTitleSize(labelSize);
 	ratio_Powheg->SetLabelSize(labelSize - 0.07, "x");
 	leg->Draw();
-	mycanvas->cd();
+	//mycanvas->cd();
 	p2->cd();	//for ratio plot
 	ratio_Powheg->Sumw2();
 	ratio_Powheg->SetStats(0);
@@ -595,15 +591,26 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
 	/*for ratio plot*/
-	//ratio_Mad->Draw("p");	//comment if only plotting AMC
+
+#ifdef useDYMAD	
+	ratio_Mad->Draw("p");	//comment if only plotting AMC
+#endif
+
+#ifndef useDYMAD	
 	ratio_Amc->Draw("p");
+#endif
 	//ratio_Powheg->Draw("p");	//comment if only plotting AMC
 	float xmax = ratio_Amc->GetXaxis()->GetXmax();
 	float xmin = ratio_Amc->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
 	//ratio_Powheg->Draw("p");
-	//ratio_Mad->Draw("psame");
-	ratio_Amc->Draw("p");
+#ifdef useDYMAD	
+	ratio_Mad->Draw("psame");
+#endif
+
+#ifndef useDYMAD	
+	ratio_Amc->Draw("psame");
+#endif
 	f1->Draw("same");
 	mycanvas->cd();
 	/**/
@@ -611,18 +618,28 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	//no Ratio
 	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_noRatioPlot_" + channel;
 
+#ifdef useDYMAD
 	//only MadHT ratio
-	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
+	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
+#endif
 
+#ifndef useDYMAD
 	//only AMC ratio
 	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCRatioPlot_" + channel;
+#endif
+
 	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
 	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
+
+#ifdef doReweight
+	cuts += "_mcIsMllReweighted";
+#endif
+
 	TString fn = fname + cuts;
 
 	/**/
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("Z_pt_coarseBinning") == true || fname.EqualTo("Z_pt_variableBinning") == true){
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt_coarseBinning") == true || fname.EqualTo("Z_pt") == true ){
 		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
 		/*
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
@@ -684,6 +701,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 		//mycanvas->SetLogy();	//when not plotting ratio plot
 		mycanvas->Print((fn + "_log.pdf").Data());
 		mycanvas->Print((fn + "_log.png").Data());
+		mycanvas->Print((fn + "_log.C").Data());
 
 	}
 	/**/
