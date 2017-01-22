@@ -30,7 +30,7 @@ if (options.channel=='EE'):
 	recoLeptons="slimmedElectrons"
 	chargedLeptonId=11
 	hvyNuId=9900012
-	matchedReco=True
+	matchedReco=False
 #
 if (options.channel=='MuMu'):
 	recoLeptons="slimmedMuons"

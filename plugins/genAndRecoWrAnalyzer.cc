@@ -235,6 +235,7 @@ public:
 		dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl = -9;
 		dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl = -9;
 		dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = -9;
+		dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = -9;
 
 		fourObjMassFromRecoObjsMatchedToGenWrAndNuDaus = -9;
 		dileptonMassFromRecoLeptonsMatchedToGenWrAndNuDaus = -9;
@@ -320,6 +321,7 @@ private:
 	Float_t dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl;
 	Float_t dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl;
 	Float_t dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl;
+	Float_t dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl;
 	Float_t threeObjMassFromGenObjsFromScdHvyPtcl;
 
 
@@ -440,6 +442,9 @@ genAndRecoWrAnalyzer::genAndRecoWrAnalyzer(const edm::ParameterSet& iConfig):
 	tree->Branch("dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl/F");
 	tree->Branch("dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
+	tree->Branch("dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl", &dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl, "dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl/F");
+	
+
 	tree->Branch("threeObjMassFromGenObjsFromScdHvyPtcl", &threeObjMassFromGenObjsFromScdHvyPtcl, "threeObjMassFromGenObjsFromScdHvyPtcl/F");
 
 	tree->Branch("etaLeadGenLepton", &etaLeadGenLepton, "etaLeadGenLepton/F");
@@ -710,6 +715,7 @@ genAndRecoWrAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl = deltaR(genLeptFromFstHvyPtclFourMom.Eta(), genLeptFromFstHvyPtclFourMom.Phi(), genQuarkTwoFromScdHvyPtclFourMom.Eta(), genQuarkTwoFromScdHvyPtclFourMom.Phi());
 	dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl = deltaR(genLeptFromScdHvyPtclFourMom.Eta(), genLeptFromScdHvyPtclFourMom.Phi(), genQuarkOneFromScdHvyPtclFourMom.Eta(), genQuarkOneFromScdHvyPtclFourMom.Phi());
 	dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = deltaR(genLeptFromScdHvyPtclFourMom.Eta(), genLeptFromScdHvyPtclFourMom.Phi(), genQuarkTwoFromScdHvyPtclFourMom.Eta(), genQuarkTwoFromScdHvyPtclFourMom.Phi());
+	dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl = deltaR(genQuarkOneFromScdHvyPtclFourMom.Eta(), genQuarkOneFromScdHvyPtclFourMom.Phi(), genQuarkTwoFromScdHvyPtclFourMom.Eta(), genQuarkTwoFromScdHvyPtclFourMom.Phi());
 	threeObjMassFromGenObjsFromScdHvyPtcl = (genLeptFromScdHvyPtclFourMom + genQuarkOneFromScdHvyPtclFourMom + genQuarkTwoFromScdHvyPtclFourMom).M();
 
 #ifdef DEBUG
