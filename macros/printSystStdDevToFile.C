@@ -74,6 +74,43 @@ int getIndexForSystematicUncertainty(string wrMass, string inputLeptonChannel, s
 	return indexToReturn;
 }//end getIndexForSystematicUncertainty()
 
+///this method is designed to read evts from one index of NEventsInRange from two TChains for many toys, divide
+///the evts for each toy, then make a distribution of the ratio vs the number of toys (NOT vs LLJJ mass)
+///divide entries from chainOne by entries from chainTwo
+void calcAndDrawRatio(TChain * chainOne, TChain * chainTwo, string userIndex, string tagOne, TString outFileName, TString plotTitle, TString xAxisTitle, TString yAxisTitle, Float_t minX, Float_t maxX){
+
+	string aliasTwo = "chTwo";
+	///declare chainTwo as a friend of chainOne
+	chainOne->AddFriend(chainTwo, aliasTwo.c_str());
+
+	///first draw weighted evts vs toys from both chains
+	string drawArg = "(NEventsInRange["+userIndex+"]/"+aliasTwo+".NEventsInRange["+userIndex+"])>>";
+	//cout<<"drawArg= "<< drawArg << endl;
+	string histName = tagOne + "tempHist";
+	chainOne->Draw( (drawArg + histName + "(1000,0.,1.)").c_str() );
+	//chainOne->Draw( ("(NEventsInRange[0]/chTwo.NEventsInRange[0])>>" + histName + "(500,0.,1.)").c_str() );
+	TH1F* tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
+
+	//now draw ratio of the two histos
+	gStyle->SetOptStat("emrou");
+	TCanvas * cRatio = new TCanvas("cRatio","",800,800);
+	cRatio->cd();
+	tempHist->SetLineColor(kBlack);
+	tempHist->SetLineWidth(3);
+	tempHist->SetTitle(plotTitle);
+	tempHist->GetXaxis()->SetRangeUser(minX, maxX);
+	tempHist->GetYaxis()->SetTitle(yAxisTitle);
+	tempHist->GetYaxis()->SetTitleOffset(1.3);
+	tempHist->GetXaxis()->SetTitle(xAxisTitle);
+	tempHist->Draw();
+	cRatio->Print((outFileName+".pdf").Data());
+	cRatio->Print((outFileName+".png").Data());
+	cRatio->Print((outFileName+".C").Data());
+	cRatio->Close();
+
+}//end calcAndDrawRatio()
+
+
 void getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(Double_t & expEvts, Double_t & unwgtEvts, Double_t & statUncSqd, Double_t & systUncSqd, string processAndChannel, TChain * chain, string userIndex){
 	
 	string nEventsIndex = userIndex;

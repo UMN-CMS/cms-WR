@@ -3387,7 +3387,8 @@ void macroSandBox(){
 
 	//no need for vector of WR mass points, only interested in the total number of TTBar evts passing selection
 	//not looking for the number of TTBar evts passing selection in individual mass windows
-
+  	TString stdTitle = "CMS Private           #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
+ 
 	//ingredients to write SFs to txt file
 	string pathToTTSFfile = "ttSFsWithLeptonSystUncerts.txt";
 	ofstream writeToTTSFfile(pathToTTSFfile.c_str(),ofstream::trunc);
@@ -3406,10 +3407,13 @@ void macroSandBox(){
 	getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(meanEE, unwgtEvtsEE, statDevSqdEE, systDevSqdEE, "EE", EEMCChain, "0");
 	getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(meanMuMu, unwgtEvtsMuMu, statDevSqdMuMu, systDevSqdMuMu, "MuMu", MuMuMCChain, "0");
 
-	//now calculate the ratio and write it to a file
+	//now calculate the avg ratio and write it to a file
 	writeToTTSFfile << eeToEMuRatioTag << "\t" << (meanEE/meanEMuEE) << endl;
 	writeToTTSFfile <<	mumuToEMuRatioTag << "\t" << (meanMuMu/meanEMuMuMu) << endl;
 
+	//now plot the ratio for all toys, and save it to a file
+	calcAndDrawRatio(MuMuMCChain, EMuMCChainMuWindows, "0", "TTMuMuOvrEMu", "flavor_ratio_MuMutoEMuMC_3200toys", stdTitle, "M_{MuMuJJ} / M_{EMuJJ}", "N_{toys}", 0.645, 0.715);
+	calcAndDrawRatio(EEMCChain, EMuMCChainEWindows, "0", "TTEEOvrEMu", "flavor_ratio_EEtoEMuMC_3200toys", stdTitle, "M_{EEJJ} / M_{EMuJJ}", "N_{toys}", 0.39, 0.43);
 
 	//close write stream to file
 	writeToTTSFfile.close();
