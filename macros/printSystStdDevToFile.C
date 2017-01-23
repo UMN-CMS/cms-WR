@@ -24,6 +24,7 @@
 #include <map>
 #include <utility>
 
+#define useDYMAD
 //#define DEBUG
 
 using namespace std;
@@ -73,6 +74,36 @@ int getIndexForSystematicUncertainty(string wrMass, string inputLeptonChannel, s
 	return indexToReturn;
 }//end getIndexForSystematicUncertainty()
 
+void getExpEvtsUnwgtEvtsAndUncsSqd(Double_t & expEvts, Double_t & unwgtEvts, Double_t & statUncSqd, Double_t & systUncSqd, int wrMassPoint, string processAndChannel, string pathToMassWindowsDef, TChain * chain){
+	
+	string nEventsIndex = to_string( getIndexForSystematicUncertainty( to_string(wrMassPoint), processAndChannel, pathToMassWindowsDef) );
+	
+	//syst uncert
+	string drawArg = "NEventsInRange["+nEventsIndex+"]>>";
+	string histName = processAndChannel + "tempHist";
+	chain->Draw( (drawArg + histName + "()").c_str() );
+	TH1F* tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
+	expEvts = tempHist->GetMean();
+	Double_t systUnc = tempHist->GetRMS(), stdDevErr = tempHist->GetRMSError();
+	systUncSqd = systUnc*systUnc;
+
+	//stat uncert
+	string statUncDrawArg = "ErrorEventsInRange["+nEventsIndex+"]>>";
+	string statUncHistName = processAndChannel + "StatTempHist";
+	chain->Draw( (statUncDrawArg + statUncHistName + "()").c_str() );
+	TH1F* statUncTempHist = (TH1F*) gROOT->FindObject(statUncHistName.c_str());
+	Double_t statUnc = statUncTempHist->GetMean();
+	statUncSqd = statUnc*statUnc;
+
+	//num unweighted evts
+	string unweightEvtsDrawArg = "UnweightedNEventsInRange["+nEventsIndex+"]>>";
+	string unweightEvtsHistName = processAndChannel + "UnweightEvtTempHist";
+	chain->Draw( (unweightEvtsDrawArg + unweightEvtsHistName + "()").c_str() );
+	TH1F* unweightEvtsTempHist = (TH1F*) gROOT->FindObject(unweightEvtsHistName.c_str());
+	unwgtEvts = unweightEvtsTempHist->GetMean();
+
+}//end getExpEvtsUnwgtEvtsAndUncs()
+
 void printSystStdDevToFile(){
 
 	///user defined path to txt file which lists WR mass window ranges
@@ -81,8 +112,8 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	//int wrMassPoints[] = {1600,2200,2800,3600};
-	int wrMassPoints[] = {1000,2200};
+	int wrMassPoints[] = {1600,2200,2800,3600};
+	//int wrMassPoints[] = {1000,2200};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -97,7 +128,16 @@ void printSystStdDevToFile(){
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
-	string dyFileName = "selected_tree_DYAMC_signal_";
+	string dyFileName = "selected_tree_DYAMC_signal_", dyFileNameTwo = "";
+	string dyEETagName="EEDYAMC", dyEETwoTagName="";
+	string dyMuMuTagName="MuMuDYAMC", dyMuMuTwoTagName="";
+#ifdef useDYMAD
+	dyFileName = "selected_tree_DYMADHT_signal_";
+	dyFileNameTwo = "selected_tree_DYMAD_signal_";
+	dyEETagName="EEDYHT", dyEETwoTagName="EEDYIncl";
+	dyMuMuTagName="MuMuDYHT", dyMuMuTwoTagName="MuMuDYIncl";
+#endif
+	
 	string emuDataFileName = "selected_tree_data_flavoursidebandEMu";
 
 	///user defined path to output txt file created by this macro, which lists systematic uncertainties for different processes
@@ -105,8 +145,8 @@ void printSystStdDevToFile(){
 	string pathToSystUncOutputFile = "systUncertaintiesFromAnalysisCpp.txt";
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
-	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tsyst plus stat uncert percent\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
-	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\tstat uncert\tunweighted evts"<< endl;
+	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tsyst plus stat uncert percent\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
+	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -164,9 +204,14 @@ void printSystStdDevToFile(){
 				chainPointers["MuMuTT"] = ttMuMu;
 			}
 
-			else{
+			else{ //all systematics enabled
 				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
 				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + mumuChannelInFileNames +"_withMllWeight.root" ).c_str() );
+#ifdef useDYMAD
+				TChain * dyMuMuTwo = new TChain(treeName.c_str(),"DYMuMuTwo");
+				dyMuMuTwo->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileNameTwo + mumuChannelInFileNames +"_withMllWeight.root" ).c_str() );
+#endif
+
 				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
 				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +".root" ).c_str() );
 	
@@ -174,63 +219,81 @@ void printSystStdDevToFile(){
 				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
 				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
 				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + eeChannelInFileNames +"_withMllWeight.root" ).c_str() );
+
+#ifdef useDYMAD	
+				TChain * dyEETwo = new TChain(treeName.c_str(),"DYEETwo");
+				dyEETwo->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileNameTwo + eeChannelInFileNames +"_withMllWeight.root" ).c_str() );
+#endif
+				
 				TChain * ttEE = new TChain(treeName.c_str(),"TTEE");
 				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"Copy.root" ).c_str() );
 	
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
-				chainPointers["MuMuDY"] = dyMuMu;
+				chainPointers[dyMuMuTagName] = dyMuMu;
 				chainPointers["MuMuWR"] = wrMuMu;
-				chainPointers["EEDY"] = dyEE;
+				chainPointers[dyEETagName] = dyEE;
 				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
 				chainPointers["MuMuTT"] = ttMuMu;
+#ifdef useDYMAD
+				chainPointers[dyMuMuTwoTagName] = dyMuMuTwo;
+				chainPointers[dyEETwoTagName] = dyEETwo;
+#endif
 			}
 
 #ifdef DEBUG
-			cout<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst uncert\t stat uncert\tsyst and stat uncert percent\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
+			cout<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\t syst uncert\tsyst and stat uncert percent\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
 #endif
 
 			for(map<string,TChain*>::const_iterator chMapIt=chainPointers.begin(); chMapIt!=chainPointers.end(); chMapIt++){
 				//get the integer corresponding to the correct index position in NEventsInRange
 				//expected num evts and syst uncert
-				string nEventsIndex = to_string( getIndexForSystematicUncertainty( to_string(wrMassVect[m]), chMapIt->first, pathToMassWindowsFile) );
-				string drawArg = "NEventsInRange["+nEventsIndex+"]>>";
-				string histName = (chMapIt->first) + "tempHist";
-				(chMapIt->second)->Draw( (drawArg + histName + "()").c_str() );
-				TH1F* tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
-				Double_t stdDev = tempHist->GetRMS(), stdDevErr = tempHist->GetRMSError(), mean = tempHist->GetMean();
-				
-				//stat uncert
-				string statUncDrawArg = "ErrorEventsInRange["+nEventsIndex+"]>>";
-				string statUncHistName = (chMapIt->first) + "StatTempHist";
-				(chMapIt->second)->Draw( (statUncDrawArg + statUncHistName + "()").c_str() );
-				TH1F* statUncTempHist = (TH1F*) gROOT->FindObject(statUncHistName.c_str());
-				Double_t statUnc = statUncTempHist->GetMean();
-				
-				//num unweighted evts
-				string unweightEvtsDrawArg = "UnweightedNEventsInRange["+nEventsIndex+"]>>";
-				string unweightEvtsHistName = (chMapIt->first) + "UnweightEvtTempHist";
-				(chMapIt->second)->Draw( (unweightEvtsDrawArg + unweightEvtsHistName + "()").c_str() );
-				TH1F* unweightEvtsTempHist = (TH1F*) gROOT->FindObject(unweightEvtsHistName.c_str());
-				Double_t unweightEvts = unweightEvtsTempHist->GetMean();
-	
-#ifdef DEBUG
-				cout<< wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t"<< mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << endl;
-				cout<<"index used in NEventsInRange and ErrorEventsInRange=\t"<< nEventsIndex <<endl;
-				cout<<"\t"<<endl;
+#ifdef useDYMAD
+				if((chMapIt->first).find("DY") != string::npos) continue;
+
 #endif
+				Double_t mean, statDevSqd, systDevSqd, evtsNoWgts;
+
+				getExpEvtsUnwgtEvtsAndUncsSqd(mean, evtsNoWgts, statDevSqd, systDevSqd, wrMassVect[m], chMapIt->first, pathToMassWindowsFile, chMapIt->second);
+
+
 				if((chMapIt->first).find("TT") != string::npos){
-					//rescale mean, stdDev and statUnc by the emu data scale factor
+					//rescale mean, unweighted evts and uncertainties by the emu data scale factor
 					Double_t rescale = ((chMapIt->first).find("EE") != string::npos) ? 0.414 : 0.657;
 					mean *= rescale;
-					stdDev *= rescale;
-					statUnc *= rescale;
+					systDevSqd *= (rescale*rescale);
+					statDevSqd *= (rescale*rescale);
+					evtsNoWgts *= rescale;
 				}
-				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << "\t" << (stdDev*stdDev + statUnc*statUnc)/mean << "\t" << mean*mean/(stdDev*stdDev + statUnc*statUnc) << endl;
-				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << stdDev << "\t"<< statUnc <<"\t"<< unweightEvts << endl;
-			
-			}//end loop over TChains
+				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << statUnc << "\t"<< stdDev <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << "\t" << (stdDev*stdDev + statUnc*statUnc)/mean << "\t" << mean*mean/(stdDev*stdDev + statUnc*statUnc) << endl;
+				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
+
+
+			}//end loop over TChains at one mass point and both lepton channels
+#ifdef useDYMAD
+
+			//sum expected evts and unweighted evts, add stat and syst uncertainties in quadrature
+			//do electron channel first
+			Double_t meanEEDYIncl, statUncSqdEEDYIncl, systUncSqdEEDYIncl, unweightEvtsEEDYIncl;
+			Double_t meanEEDYHT, statUncSqdEEDYHT, systUncSqdEEDYHT, unweightEvtsEEDYHT;
+
+			getExpEvtsUnwgtEvtsAndUncsSqd(meanEEDYHT, unweightEvtsEEDYHT, statUncSqdEEDYHT, systUncSqdEEDYHT, wrMassVect[m], dyEETagName, pathToMassWindowsFile, chainPointers[dyEETagName]);
+			getExpEvtsUnwgtEvtsAndUncsSqd(meanEEDYIncl, unweightEvtsEEDYIncl, statUncSqdEEDYIncl, systUncSqdEEDYIncl, wrMassVect[m], dyEETwoTagName, pathToMassWindowsFile, chainPointers[dyEETwoTagName]);
+
+			writeToSystFile << wrMassVect[m] << "\t" << "DYTotEE" << "\t" << uncertTagNamesVect[s] << "\t" << (meanEEDYHT+meanEEDYIncl) << "\t" << sqrt(statUncSqdEEDYHT+statUncSqdEEDYIncl) << "\t"<< sqrt(systUncSqdEEDYHT+systUncSqdEEDYIncl) <<"\t"<< (unweightEvtsEEDYHT+unweightEvtsEEDYIncl) << endl;
+
+			///////////////////////////////////////////
+			//now do muon channel
+			Double_t meanMuMuDYIncl, statUncSqdMuMuDYIncl, systUncSqdMuMuDYIncl, unweightEvtsMuMuDYIncl;
+			Double_t meanMuMuDYHT, statUncSqdMuMuDYHT, systUncSqdMuMuDYHT, unweightEvtsMuMuDYHT;
+
+			getExpEvtsUnwgtEvtsAndUncsSqd(meanMuMuDYHT, unweightEvtsMuMuDYHT, statUncSqdMuMuDYHT, systUncSqdMuMuDYHT, wrMassVect[m], dyMuMuTagName, pathToMassWindowsFile, chainPointers[dyMuMuTagName]);
+			getExpEvtsUnwgtEvtsAndUncsSqd(meanMuMuDYIncl, unweightEvtsMuMuDYIncl, statUncSqdMuMuDYIncl, systUncSqdMuMuDYIncl, wrMassVect[m], dyMuMuTwoTagName, pathToMassWindowsFile, chainPointers[dyMuMuTwoTagName]);
+
+			writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << sqrt(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl) << "\t"<< sqrt(systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) <<"\t"<< (unweightEvtsMuMuDYHT+unweightEvtsMuMuDYIncl) << endl;
+
+#endif
 
 			//loop over chainPointers elements, and clear allocated memory
 			for(map<string,TChain*>::const_iterator mapIt=chainPointers.begin(); mapIt!=chainPointers.end(); mapIt++){ (mapIt->second)->Delete();}
