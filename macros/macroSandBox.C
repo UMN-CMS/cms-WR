@@ -42,7 +42,7 @@ using namespace std;
 //#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
 //#define nMinusOneCutEffsGenAndReco
-#define studyGenWrKinematicsVsWrAndNuMasses
+//#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
 //#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
@@ -61,6 +61,8 @@ using namespace std;
 //#define printNewDySyst
 //#define DYHTPlot
 //#define DYPdfUnc
+#define TTScaleFactorSystematic
+
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -3361,6 +3363,59 @@ void macroSandBox(){
 
 #endif
 	//end DYPdfUnc
-	
+
+
+#ifdef TTScaleFactorSystematic
+	//calculate the variation (systematic uncertainty) on the TTBar emu:ee and emu:mumu SF as a function of WR mass
+	//when the lepton systematics are turned on. what range do these two SFs fall into when shape based systematic 
+	//uncertainties are enabled?
+	//these SFs are calculated as the ratio of (only TTBarMC) EE/EMu and MuMu/EMu in the LLJJ mass, so to calculate the SF
+	//variation I simply need to extract the mean number of evts in each mass window and divide them
+	//use methods defined in printSystStdDevToFile.C to do this quickly
+
+	//initialize chains to input files
+	TString dir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysEleMuScaleSmearingSyst/";
+	TString treeName = "syst_tree";
+	TChain * EMuMCChainMuWindows = new TChain(treeName);
+	EMuMCChainMuWindows->Add(dir+"selected_tree_TT_flavoursidebandEMuMuMu.root");
+	TChain * EMuMCChainEWindows = new TChain(treeName);
+	EMuMCChainEWindows->Add(dir+"selected_tree_TT_flavoursidebandEMuEE.root");
+	TChain * MuMuMCChain = new TChain(treeName);
+	MuMuMCChain->Add(dir+"selected_tree_TT_signal_mumuMuMu.root");
+	TChain * EEMCChain = new TChain(treeName);
+	EEMCChain->Add(dir+"selected_tree_TT_signal_eeEE.root");
+
+	//no need for vector of WR mass points, only interested in the total number of TTBar evts passing selection
+	//not looking for the number of TTBar evts passing selection in individual mass windows
+
+	//ingredients to write SFs to txt file
+	string pathToTTSFfile = "ttSFsWithLeptonSystUncerts.txt";
+	ofstream writeToTTSFfile(pathToTTSFfile.c_str(),ofstream::trunc);
+	writeToTTSFfile << "#SFChnl\tSFValue" << endl;
+	string eeToEMuRatioTag = "EE:EMu", mumuToEMuRatioTag = "MuMu:EMu";
+
+	//declare dummy vars to hold mean, uncerts squared and unweighted evts. only care about mean
+	Double_t meanEMuMuMu, unwgtEvtsEMuMuMu, statDevSqdEMuMuMu, systDevSqdEMuMuMu;
+	Double_t meanEMuEE, unwgtEvtsEMuEE, statDevSqdEMuEE, systDevSqdEMuEE;
+	Double_t meanEE, unwgtEvtsEE, statDevSqdEE, systDevSqdEE;
+	Double_t meanMuMu, unwgtEvtsMuMu, statDevSqdMuMu, systDevSqdMuMu;
+
+	//extract the mean num of evts from this window for all TT final states (EMu with Mu mass windows, EMu with E mass windows, EE, MuMu)
+	getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(meanEMuMuMu, unwgtEvtsEMuMuMu, statDevSqdEMuMuMu, systDevSqdEMuMuMu, "EMuMuMu", EMuMCChainMuWindows, "0");
+	getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(meanEMuEE, unwgtEvtsEMuEE, statDevSqdEMuEE, systDevSqdEMuEE, "EMuEE", EMuMCChainEWindows, "0");
+	getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(meanEE, unwgtEvtsEE, statDevSqdEE, systDevSqdEE, "EE", EEMCChain, "0");
+	getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(meanMuMu, unwgtEvtsMuMu, statDevSqdMuMu, systDevSqdMuMu, "MuMu", MuMuMCChain, "0");
+
+	//now calculate the ratio and write it to a file
+	writeToTTSFfile << eeToEMuRatioTag << "\t" << (meanEE/meanEMuEE) << endl;
+	writeToTTSFfile <<	mumuToEMuRatioTag << "\t" << (meanMuMu/meanEMuMuMu) << endl;
+
+
+	//close write stream to file
+	writeToTTSFfile.close();
+
+#endif
+	//end TTScaleFactorSystematic ifdef
+
 }///end macroSandBox()
 

@@ -74,6 +74,37 @@ int getIndexForSystematicUncertainty(string wrMass, string inputLeptonChannel, s
 	return indexToReturn;
 }//end getIndexForSystematicUncertainty()
 
+void getExpEvtsUnwgtEvtsAndUncsSqdUserIndex(Double_t & expEvts, Double_t & unwgtEvts, Double_t & statUncSqd, Double_t & systUncSqd, string processAndChannel, TChain * chain, string userIndex){
+	
+	string nEventsIndex = userIndex;
+	
+	//syst uncert
+	string drawArg = "NEventsInRange["+nEventsIndex+"]>>";
+	string histName = processAndChannel + "tempHist";
+	chain->Draw( (drawArg + histName + "()").c_str() );
+	TH1F* tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
+	expEvts = tempHist->GetMean();
+	Double_t systUnc = tempHist->GetRMS(), stdDevErr = tempHist->GetRMSError();
+	systUncSqd = systUnc*systUnc;
+
+	//stat uncert
+	string statUncDrawArg = "ErrorEventsInRange["+nEventsIndex+"]>>";
+	string statUncHistName = processAndChannel + "StatTempHist";
+	chain->Draw( (statUncDrawArg + statUncHistName + "()").c_str() );
+	TH1F* statUncTempHist = (TH1F*) gROOT->FindObject(statUncHistName.c_str());
+	Double_t statUnc = statUncTempHist->GetMean();
+	statUncSqd = statUnc*statUnc;
+
+	//num unweighted evts
+	string unweightEvtsDrawArg = "UnweightedNEventsInRange["+nEventsIndex+"]>>";
+	string unweightEvtsHistName = processAndChannel + "UnweightEvtTempHist";
+	chain->Draw( (unweightEvtsDrawArg + unweightEvtsHistName + "()").c_str() );
+	TH1F* unweightEvtsTempHist = (TH1F*) gROOT->FindObject(unweightEvtsHistName.c_str());
+	unwgtEvts = unweightEvtsTempHist->GetMean();
+
+}//end getExpEvtsUnwgtEvtsAndUncsSqdUserIndex()
+
+
 void getExpEvtsUnwgtEvtsAndUncsSqd(Double_t & expEvts, Double_t & unwgtEvts, Double_t & statUncSqd, Double_t & systUncSqd, int wrMassPoint, string processAndChannel, string pathToMassWindowsDef, TChain * chain){
 	
 	string nEventsIndex = to_string( getIndexForSystematicUncertainty( to_string(wrMassPoint), processAndChannel, pathToMassWindowsDef) );
