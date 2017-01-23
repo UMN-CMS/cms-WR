@@ -24,7 +24,7 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 #Filters
 process.genHTFilterOne = cms.EDFilter('htFilter',
 		cutThreshold = cms.double(100.),
-		isLowerBound = cms.bool(True),
+		isLowerBound = cms.bool(False),
 		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
 		)
 
@@ -71,7 +71,7 @@ process.studyDYJetsDecay = cms.Path(
 		*process.dyJetsBareMatchedGenQuark
 		*process.dyJetsMergeGenMatchedPartons #merge gen quark and gen gluon collections
 		*process.genHTFilterOne
-		*process.genHTFilterTwo
+		#*process.genHTFilterTwo
 		##select electrons from Z then calculate Z pT
 		#*process.dyJetsBareMatchedGenEle
 		#*process.dyJetsBareMatchedGenEleFilter
@@ -99,7 +99,8 @@ process.TFileService = cms.Service("TFileService",
 		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT400to600.root')
 		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT200to400.root')
 		#fileName = cms.string('recoHadronAndLeptonKinematicsGenDYJetsMadHT100to200.root')
-		fileName = cms.string('genHadronKinematicsGenDYJetsMadIncl_HT100to200.root')
+		#fileName = cms.string('genHadronKinematicsGenDYJetsMadIncl_HT100to200.root')
+		fileName = cms.string('discard.root')
 )
 
 process.options = cms.untracked.PSet(
@@ -125,9 +126,10 @@ process.source = cms.Source( "PoolSource",
 	#	'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadHT100to200MiniAOD2.root'
 	#	),
 	fileNames = cms.untracked.vstring(
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD1.root',
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD2.root',
-		'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD3.root',
+		#'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD1.root',
+		#'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD2.root',
+		#'file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYMadInclusiveMiniAOD3.root',
+		'root://xrootd-cms.infn.it//store/mc/RunIISpring15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/60000/04A311B8-5D6D-E511-A052-00266CFCC490.root'
 		),
 	#inputCommands = cms.untracked.vstring(
     #    'keep *'
