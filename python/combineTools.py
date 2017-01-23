@@ -63,7 +63,7 @@ class AnalysisResultsInterface:
 			base="./",
 			tag = "",
 			SFfilename = configfolder + "/MCScaleFactors.txt",
-			makeplots = False,
+			makeplots = True, #default is False
 			):
 
 		self.makeplots = makeplots
