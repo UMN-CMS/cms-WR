@@ -1672,6 +1672,14 @@ void macroSandBox(){
 	genWRtoEEJJMWR2400MNu800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2400_MNu_800.root");
 	TChain * genWRtoEEJJMWR3400MNu800Private = new TChain(dirAndTreeName,"");
 	genWRtoEEJJMWR3400MNu800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_3400_MNu_800.root");
+	
+	TChain * genWRtoEEJJMWR2200MNu1100Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2200MNu1100Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2200_MNu_1100.root");
+	TChain * genWRtoEEJJMWR2200MNu300Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2200MNu300Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2200_MNu_300.root");
+	TChain * genWRtoEEJJMWR2200MNu1800Private = new TChain(dirAndTreeName,"");
+	genWRtoEEJJMWR2200MNu1800Private->Add(privateDirName + "analyzed_private_WREEJJ_MWR_2200_MNu_1800.root");
+
 
 	string title = "CMS Private                          #surds = 13 TeV";
 	string link=">>";
@@ -1680,20 +1688,21 @@ void macroSandBox(){
 
 	/////////////////////////////////////////////////////////////
 	//only for MNu = 800 and MWR = 1600, 2400 and 3400
-	/*
+	//and MWR = 2200 with several MNu
+	/**/
 	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl","dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
 	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
 	Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
 	string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta","#DeltaR quarks from Nu"};
-	*/
+	/**/
 
 
 	/////////////////////////////////////////////////////////////
 	//works for everything
-	string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl"};
-	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
-	Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
-	string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta"};
+	//string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl"};
+	//vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
+	//Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
+	//string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta"};
 	
 	//string histoEndingsMaster[] = {};
 	//TChain * chains[] = {genWRtoEEJJMWR800MNu150Private, genWRtoEEJJMWR800MNu400Private, genWRtoEEJJMWR800MNu700Private, genWRtoEEJJMWR2600MNu300Private, genWRtoEEJJMWR2600MNu1300Private, genWRtoEEJJMWR2600MNu2500Private, genWRtoEEJJMWR5000MNu400Private, genWRtoEEJJMWR5000MNu2500Private, genWRtoEEJJMWR5000MNu4700Private, genWRtoEEJJMWR1600MNu800Private, genWRtoEEJJMWR2400MNu800Private, genWRtoEEJJMWR3400MNu800Private};
@@ -1715,7 +1724,11 @@ void macroSandBox(){
 	
 	//string histoEndings[] = {"_genLeptPtFromWR(100,0.,3000.)","_genLeptPtFromNu(70,0.,3000.)","_genQrkOnePtFromNu(70,0.,3000.)","_genQrkTwoPtFromNu(70,0.,3000.)","_dileptonMassGenLeptsFromWRandNu(70,0.,4800.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)"};	//several MWR, MNu is half MWR
 	//string histoBeginnings[] = {"1600 GeV WR  800 GeV Nu","2600 GeV WR  1300 GeV Nu","5000 GeV WR  2500 GeV Nu"};	//several MWR up to 5000 GeV, MNu is half MWR
-	
+		
+	string histoEndings[] = {"_genLeptPtFromWR(80,0.,1200.)","_genLeptPtFromNu(80,0.,1200.)","_genQrkOnePtFromNu(80,0.,1200.)","_genQrkTwoPtFromNu(80,0.,1200.)","_dileptonMassGenLeptsFromWRandNu(80,0.,2200.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)","_genLeptEtaFromWR(40,-2.5,2.5)","_genLeptEtaFromNu(40,-2.5,2.5)","_deltaRgenQrkOneAndQrkTwoFromNu(100,0.,4.5)"};	//medium mass
+	string histoBeginnings[] = {"MWR 2200 MNu 300","MWR 2200 MNu 1100","MWR 2200 MNu 1800"};	//medium mass
+
+
 	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
 	map<string,TChain*> placeHolderMap;
 	unsigned int maxI = brNamesVect.size();
@@ -1741,7 +1754,12 @@ void macroSandBox(){
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2600MNu1300Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR5000MNu2500Private;
 
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.65,0.90,0.90,true,title,xAxisLabels[i],"_MNu_800_several_MWR_private",true,cutVals[i]);
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2200MNu300Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1100Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1800Private;
+
+
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.42,0.65,0.90,0.90,true,title,xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i]);
 		placeHolderMap.clear();
 	}///end loop over branchNames
 	
