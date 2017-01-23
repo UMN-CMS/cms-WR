@@ -9,5 +9,6 @@ cd $UP/$CMSSW_PROJECT_SRC
 eval `scramv1 runtime -sh`
 eval "make"
 #output file size is too large with tagandprobe eval "./bin/analysis -m MODE -c CHNL --isTagAndProbe true --pdfWeight WGTNUM"
-eval "./bin/analysis -m MODE -c CHNL --ignoreDyScaleFactors false --isLowDiLepton true --pdfWeight WGTNUM"
+#eval "./bin/analysis -m MODE -c CHNL --ignoreDyScaleFactors false --isLowDiLepton true --pdfWeight WGTNUM"
+eval "./bin/analysis -m MODE -c CHNL --ignoreDyScaleFactors false --pdfWeight WGTNUM"
 
