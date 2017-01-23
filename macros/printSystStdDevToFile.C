@@ -112,7 +112,8 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	int wrMassPoints[] = {1600,2200,2800,3600};
+	int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
+	//int wrMassPoints[] = {1600,2200,2800,3600};
 	//int wrMassPoints[] = {1000,2200};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
@@ -145,8 +146,8 @@ void printSystStdDevToFile(){
 	string pathToSystUncOutputFile = "systUncertaintiesFromAnalysisCpp.txt";
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
-	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tsyst plus stat uncert percent\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
-	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
+	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
+	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -266,9 +267,9 @@ void printSystStdDevToFile(){
 					statDevSqd *= (rescale*rescale);
 					evtsNoWgts *= rescale;
 				}
-				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << statUnc << "\t"<< stdDev <<"\t"<< 100*sqrt(stdDev*stdDev + statUnc*statUnc)/mean << "\t" << (stdDev*stdDev + statUnc*statUnc)/mean << "\t" << mean*mean/(stdDev*stdDev + statUnc*statUnc) << endl;
-				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
-
+				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << (statDevSqd + systDevSqd)/mean << "\t" << mean*mean/(statDevSqd + systDevSqd) << endl;
+				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
+	
 
 			}//end loop over TChains at one mass point and both lepton channels
 #ifdef useDYMAD
@@ -281,7 +282,9 @@ void printSystStdDevToFile(){
 			getExpEvtsUnwgtEvtsAndUncsSqd(meanEEDYHT, unweightEvtsEEDYHT, statUncSqdEEDYHT, systUncSqdEEDYHT, wrMassVect[m], dyEETagName, pathToMassWindowsFile, chainPointers[dyEETagName]);
 			getExpEvtsUnwgtEvtsAndUncsSqd(meanEEDYIncl, unweightEvtsEEDYIncl, statUncSqdEEDYIncl, systUncSqdEEDYIncl, wrMassVect[m], dyEETwoTagName, pathToMassWindowsFile, chainPointers[dyEETwoTagName]);
 
-			writeToSystFile << wrMassVect[m] << "\t" << "DYTotEE" << "\t" << uncertTagNamesVect[s] << "\t" << (meanEEDYHT+meanEEDYIncl) << "\t" << sqrt(statUncSqdEEDYHT+statUncSqdEEDYIncl) << "\t"<< sqrt(systUncSqdEEDYHT+systUncSqdEEDYIncl) <<"\t"<< (unweightEvtsEEDYHT+unweightEvtsEEDYIncl) << endl;
+			//writeToSystFile << wrMassVect[m] << "\t" << "DYTotEE" << "\t" << uncertTagNamesVect[s] << "\t" << (meanEEDYHT+meanEEDYIncl) << "\t" << sqrt(statUncSqdEEDYHT+statUncSqdEEDYIncl) << "\t"<< sqrt(systUncSqdEEDYHT+systUncSqdEEDYIncl) <<"\t"<< (unweightEvtsEEDYHT+unweightEvtsEEDYIncl) << endl;
+			writeToSystFile << wrMassVect[m] << "\t" << "DYTotEE" << "\t" << uncertTagNamesVect[s] << "\t" << (meanEEDYHT+meanEEDYIncl) << "\t" << (statUncSqdEEDYHT+statUncSqdEEDYIncl+systUncSqdEEDYHT+systUncSqdEEDYIncl)/(meanEEDYHT+meanEEDYIncl) <<"\t"<< (meanEEDYHT+meanEEDYIncl)*(meanEEDYHT+meanEEDYIncl)/(statUncSqdEEDYHT+statUncSqdEEDYIncl+systUncSqdEEDYHT+systUncSqdEEDYIncl) << endl;
+
 
 			///////////////////////////////////////////
 			//now do muon channel
@@ -291,7 +294,8 @@ void printSystStdDevToFile(){
 			getExpEvtsUnwgtEvtsAndUncsSqd(meanMuMuDYHT, unweightEvtsMuMuDYHT, statUncSqdMuMuDYHT, systUncSqdMuMuDYHT, wrMassVect[m], dyMuMuTagName, pathToMassWindowsFile, chainPointers[dyMuMuTagName]);
 			getExpEvtsUnwgtEvtsAndUncsSqd(meanMuMuDYIncl, unweightEvtsMuMuDYIncl, statUncSqdMuMuDYIncl, systUncSqdMuMuDYIncl, wrMassVect[m], dyMuMuTwoTagName, pathToMassWindowsFile, chainPointers[dyMuMuTwoTagName]);
 
-			writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << sqrt(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl) << "\t"<< sqrt(systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) <<"\t"<< (unweightEvtsMuMuDYHT+unweightEvtsMuMuDYIncl) << endl;
+			//writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << sqrt(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl) << "\t"<< sqrt(systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) <<"\t"<< (unweightEvtsMuMuDYHT+unweightEvtsMuMuDYIncl) << endl;
+			writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << (statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl+systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl)/(meanMuMuDYHT+meanMuMuDYIncl) <<"\t"<< (meanMuMuDYHT+meanMuMuDYIncl)*(meanMuMuDYHT+meanMuMuDYIncl)/(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl+systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) << endl;
 
 #endif
 
