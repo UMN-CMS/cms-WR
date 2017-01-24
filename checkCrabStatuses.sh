@@ -7,7 +7,7 @@ space='  '
 
 for i in ${!jobDirs[*]}
 do
-	eval "crab status -d "
+	eval "crab status -d ${jobDirs[$i]}/${subDirs[$i]}"
 	#echo "crab status -d ${jobDirs[$i]}/${subDirs[$i]}"
 	eval "echo $space"
 done
