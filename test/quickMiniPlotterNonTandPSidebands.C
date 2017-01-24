@@ -20,6 +20,8 @@
 #include <cstdio>
 #include <memory>
 
+#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
+
 //#define fixedBinWidths
 #define variableBinWidths
 
@@ -32,7 +34,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -199,7 +201,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     chain->GetEntry(ev);
 	//if(myEvent->dR_leadlepton_leadjet < 1.2 || myEvent->dR_leadlepton_subleadjet < 1.2 || myEvent->dR_subleadlepton_leadjet < 1.2 || myEvent->dR_subleadlepton_subleadjet < 1.2) continue;
 	//if(myEvent->lead_jet_pt < 100 || myEvent->sublead_jet_pt < 100) continue;
-
+#ifdef doMllAboveZpeak
+	if(myEvent->dilepton_mass < 120. || myEvent->dilepton_mass > 200.) continue;
+#endif
 
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -242,7 +246,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass_unweighted);
 
 #ifdef variableBinWidths
-  //normalize histo bins
+  //normalize Mlljj histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
 	  //get num bins in histo i
@@ -369,10 +373,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  std::cout<<"MC evts\tData evts"<<std::endl;
 	  for(Int_t i = 1; i<=nbins; i++){
 		  std::cout<< (hs_DY->GetBinContent(i))*(hs_DY->GetBinWidth(i)) <<"\t" << (hs_data->GetBinContent(i))*(hs_data->GetBinWidth(i)) <<std::endl;
+		  std::cout<<"low bin edge\t" << hs_DY->GetBinLowEdge(i) <<"\thas data/MC=\t"<< hs_data->GetBinContent(i)/hs_DY->GetBinContent(i) <<std::endl;
 	  }//end loop over bins in MLLJJ
 	  std::cout<<"\t"<<std::endl;
   }
-	
+
+  /*
   if(fname.EqualTo("unweightedMLLJJ") ){
 	  std::cout<<"\t"<<std::endl;
 	  Int_t nbins = hs_data->GetNbinsX();
@@ -383,7 +389,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  }//end loop over bins in unweightedMLLJJ
 	  
 	  std::cout<<"\t"<<std::endl;
-  }
+  }*/
   ////////////////////variable bin widths
 #endif
 
@@ -400,7 +406,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  std::cout<<"\t"<<std::endl;
   }
 
-/**/  
+/*  
   if(fname.EqualTo("unweightedMLLJJ") ){
 	  std::cout<<"\t"<<std::endl;
 	  std::cout<<"unweighted MC evts"<<std::endl;
@@ -411,7 +417,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  
 	  std::cout<<"\t"<<std::endl;
   }
-  /**/
+  */
   ////////////////////constant bin widths
 #endif
 
@@ -460,6 +466,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifndef DOAMC
   fn += "DYMADHTAndIncl";
 #endif
+
+#ifdef doMllAboveZpeak
+	fn += "_MLL120to200";
+#endif
+
 
   //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
