@@ -37,7 +37,7 @@ for res in results:
 		#plotters[channel].addObserved(mass, ret)
 
 plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title="Limit on XS(pb)", y_limits = (4e-5,7e-2), leg_y = .68 )
+	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
 plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title="Limit on XS(pb)", y_limits = (4e-5,7e-2), leg_y = .68 )
+	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
 #plotters.plot("plots/limWR" + channel + ".png", x_title = "M_{W_{R}} [GeV]", y_title="#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mu) [fb]", y_range = (1e-3,10))
