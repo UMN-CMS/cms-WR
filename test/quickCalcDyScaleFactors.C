@@ -163,9 +163,9 @@ void quickCalculateDyScaleFactors()
 	//now the vectors of TH1D pointers are filled with pointers to histos with nonzero entries
 	unsigned int nPlots = hs_DYPowhegEE.size();
 
-	TString xtitles[] = {"leading lepton p_{T}", "subleading lepton p_{T}", "leading jet p_{T}", "subleading jet p_{T}", "leading lepton #eta", "subleading lepton #eta", "leading jet #eta", "subleading jet #eta", "leading lepton #phi", "subleading lepton #phi", "leading jet #phi", "subleading jet #phi", "dilepton mass", "nPV", "Z #phi", "Z rapidity", "Z p_{T}", "dilepton mass both leptons in barrel", "dilepton mass both leptons in endcap", "dilepton mass one lepton in barrel other lepton in endcap","nPV","Z P_{T} (GeV)","Z P_{T} (GeV)"};
+	TString xtitles[] = {"leading lepton p_{T}", "subleading lepton p_{T}", "leading jet p_{T}", "subleading jet p_{T}", "leading lepton #eta", "subleading lepton #eta", "leading jet #eta", "subleading jet #eta", "leading lepton #phi", "subleading lepton #phi", "leading jet #phi", "subleading jet #phi", "dilepton mass", "nPV", "Z #phi", "Z rapidity", "Z p_{T}", "dilepton mass both leptons in barrel", "dilepton mass both leptons in endcap", "dilepton mass one lepton in barrel other lepton in endcap","nPV","Z P_{T} (GeV)","Z P_{T} (GeV)","M_{LLJJ} (GeV)"};
 
-	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt", "Mll_bothEB","Mll_bothEE","Mll_EBEE","nPU","Z_pt_coarseBinning","Z_pt_variableBinning"};
+	TString fnames[] = {"l1_pt", "l2_pt", "j1_pt", "j2_pt", "l1_eta", "l2_eta", "j1_eta", "j2_eta", "l1_phi", "l2_phi", "j1_phi", "j2_phi", "Mll", "nPV", "Z_phi", "Z_rapidity", "Z_pt", "Mll_bothEB","Mll_bothEE","Mll_EBEE","nPU","Z_pt_coarseBinning","Z_pt_variableBinning", "Mlljj"};
 
 	int i = 0;
 	for(unsigned int i = 0; i < nPlots; i++) {
@@ -283,8 +283,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TH1D *h_jet_eta1 = new TH1D("h_jet_eta1", "", 50, -3.2, 3.2);
 	TH1D *h_jet_phi1 = new TH1D("h_jet_phi1", "", 50, -3.2, 3.2);
 
-	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 80, 70., 110.);	//coarser binning
-	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);	//default
+	TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 80, 70., 110.);	//coarser binning
+	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 280, 70., 110.);	//default
 	//TH1D *h_dilepton_mass = new TH1D("h_dilepton_mass", "", 560, 70., 110.);	//finer binning
 	TH1D *h_nPV = new TH1D("pileup", "nPV distribution", 50., 0, 50.);
 	TH1D *h_nPU = new TH1D("pileup", "true nPU distribution for MC", 50., 0, 50.);
@@ -302,6 +302,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TH1D *h_dilepton_massBothEB = new TH1D("h_dilepton_massBothEB", "", 280, 55., 125.);
 	TH1D *h_dilepton_massBothEE = new TH1D("h_dilepton_massBothEE", "", 280, 55., 125.);
 	TH1D *h_dilepton_massEBEE = new TH1D("h_dilepton_massEBEE", "", 280, 55., 125.);
+	
+	Float_t binsWR[] = { 100, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider binsWR work better at high WR mass, include overflow evts in last bin shown on plot
+	Int_t  binnumWR = sizeof(binsWR)/sizeof(Float_t) - 1;
+	TH1D * h_WR_mass = new TH1D("h_WR_mass","",binnumWR, binsWR);
 	
 	Long64_t nEntries = chain->GetEntries();
 
@@ -329,7 +333,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
 		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subLeadJetPtCut) continue;
 		if(!separatedLeptonsAndJets(myEvent->lead_jet_pt, myEvent->sublead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi) && requireSeparatedLeptonsAndJets) continue;	///< separatedLeptonsAndJets() returns false if the two leading jets are not separated from the two leading leptons
-	
+
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
 		subleadLeptonFourMom.SetPtEtaPhiE(myEvent->sublead_lepton_pt, myEvent->sublead_lepton_eta, myEvent->sublead_lepton_phi, myEvent->sublead_lepton_pt);
@@ -364,6 +368,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 		if(std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) h_dilepton_massBothEE->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 		if( (std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) || (std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) ) h_dilepton_massEBEE->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 
+		TLorentzVector leadJetFourMom, subleadJetFourMom, wrCandFourMom;
+		leadJetFourMom.SetPtEtaPhiE(myEvent->lead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->lead_jet_pt);
+		subleadJetFourMom.SetPtEtaPhiE(myEvent->sublead_jet_pt, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->sublead_jet_pt);
+		wrCandFourMom = leadJetFourMom + subleadJetFourMom + leadLeptonFourMom + subleadLeptonFourMom;
+		h_WR_mass->Fill(wrCandFourMom.M(), (myEvent->weight)*hltCorrFactor);
+	
 	}
 
 	h_Z_ptCoarseBinning->Scale(normRescale);
@@ -394,6 +404,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	h_dilepton_massBothEE->Scale(normRescale);
 	h_dilepton_massEBEE->Scale(normRescale);
 
+	h_WR_mass->Scale(normRescale);
+
 	///this order of push_back calls should not be changed
 	hs->push_back(h_lepton_pt0);
 	hs->push_back(h_lepton_pt1);
@@ -417,7 +429,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	hs->push_back(h_dilepton_massEBEE);
 	hs->push_back(h_nPU);
 	hs->push_back(h_Z_ptCoarseBinning);
-
+	
 	//divide bin contents of h_Z_ptVariableBinning by width of each bin
 	//get num bins in histo
 	Int_t nBins = h_Z_ptVariableBinning->GetNbinsX();
@@ -437,8 +449,28 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 		h_Z_ptVariableBinning->SetBinError(j, oldBinErrors/binWidth);
 	}//end loop over bins in histo
 
-	hs->push_back(h_Z_ptVariableBinning);
+	//add overflow events from h_WR_mass into last bin shown on plot, and divide bin contents and bin errors by bin widths
+	Int_t nBinsWR = h_WR_mass->GetNbinsX();
+	for(Int_t j=1; j<=nBinsWR; j++){
+		//include the overflows in the very last bin shown on the plot
+		if(j==nBinsWR){
+			Double_t origBinContents = h_WR_mass->GetBinContent(j);
+			Double_t overflowContents = h_WR_mass->GetBinContent(j+1);
+			//std::cout<<"overflow contents =\t"<< overflowContents << std::endl;	//sanity check
+			h_WR_mass->SetBinContent(j, origBinContents+overflowContents);
+		}//end including overflows in last bin shown on plot
 
+		//in each bin, divide the bin contents by the bin width
+		Double_t oldBinContents = h_WR_mass->GetBinContent(j);
+		Double_t oldBinErrors = h_WR_mass->GetBinError(j);
+		Double_t binWidth = h_WR_mass->GetBinWidth(j);
+		h_WR_mass->SetBinContent(j, oldBinContents/binWidth);
+		h_WR_mass->SetBinError(j, oldBinErrors/binWidth);
+	}//end loop over bins in h_WR_mass
+
+	hs->push_back(h_Z_ptVariableBinning);
+	hs->push_back(h_WR_mass);
+	
 }
 
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
@@ -503,6 +535,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	hs_DYMadIncl->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitleOffset(1.5);
+	if(fname.EqualTo("Mlljj")) hs_DYMadIncl->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
 	hs_DYAmcIncl->GetYaxis()->SetTitleOffset(1.5);
 	hs_DYMadIncl->GetYaxis()->SetTitleOffset(1.5);
 	hs_DYPowheg->GetYaxis()->SetTitleOffset(1.5);
@@ -537,15 +570,20 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	hs_data->Draw("epsame");
 	hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Amc->GetXaxis()->SetTitle(xtitle.Data());
-	if(fname.EqualTo("Mll")) ratio_Amc->GetXaxis()->SetTitle("M_{LL} [GeV]");
-	if(fname.EqualTo("Z_pt")) ratio_Amc->GetXaxis()->SetTitle("Z P_{T} [GeV]");
+	if(fname.EqualTo("Mll")) ratio_Amc->GetXaxis()->SetTitle("M_{LL} [GeV]"), ratio_Mad->GetXaxis()->SetTitle("M_{LL} [GeV]");
+	if(fname.EqualTo("Z_pt")) ratio_Amc->GetXaxis()->SetTitle("Z P_{T} [GeV]"), ratio_Mad->GetXaxis()->SetTitle("Z P_{T} [GeV]");
 	if(fname.EqualTo("nPV")) ratio_Amc->GetXaxis()->SetTitle("nPV");
 	if(fname.EqualTo("nPU")) ratio_Amc->GetXaxis()->SetTitle("nPU");
-
+	if(fname.EqualTo("Mlljj")) ratio_Amc->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), ratio_Mad->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+	
 	Float_t labelSize = 0.25;
 	ratio_Amc->GetXaxis()->SetTickSize(0.40);
 	ratio_Amc->GetXaxis()->SetTitleSize(labelSize);
 	ratio_Amc->SetLabelSize(labelSize - 0.07, "x");
+	
+	ratio_Mad->GetXaxis()->SetTickSize(0.40);
+	ratio_Mad->GetXaxis()->SetTitleSize(labelSize);
+	ratio_Mad->SetLabelSize(labelSize - 0.07, "x");
 	
 	ratio_Powheg->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Powheg->GetXaxis()->SetTickSize(0.40);
@@ -576,12 +614,22 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
 
 	//loop over bins in Madgraph ratio plot shown in the variable bin width Z pT plot, and print the bin contents to stdout
+	/*
 	if(fname.EqualTo("Z_pt_variableBinning") == true){
 		Int_t nBins = ratio_Mad->GetNbinsX();
 		for(Int_t i=1; i<=nBins; i++){
 			std::cout<<"bin with lower edge " << ratio_Mad->GetBinLowEdge(i) << " has data/MC =\t" << ratio_Mad->GetBinContent(i) << std::endl;
 		}//end loop over bins
 	}//end if plot is Z pT with variable bin widths
+	*/
+
+	if(fname.EqualTo("Mlljj") == true){
+		Int_t nBins = ratio_Mad->GetNbinsX();
+		for(Int_t i=1; i<=nBins; i++){
+			std::cout<<"MLLJJ bin with lower edge " << ratio_Mad->GetBinLowEdge(i) << " has data/MC =\t" << ratio_Mad->GetBinContent(i) << std::endl;
+		}//end loop over bins
+	}//end if plot is Z pT with variable bin widths
+
 
 	ratio_Amc->Divide(hs_DYAmcIncl);
 	ratio_Amc->SetMarkerStyle(22);
@@ -639,7 +687,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	TString fn = fname + cuts;
 
 	/**/
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt_coarseBinning") == true || fname.EqualTo("Z_pt") == true ){
+	if(fname.EqualTo("Mll") == true || fname.EqualTo("Mlljj") == true ){
 		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
 		/*
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
