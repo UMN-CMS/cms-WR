@@ -48,12 +48,12 @@ void quickSignalCompareDYMC()
 
 	//chain_DYPowhegInclEE->Add(dir+"selected_tree_DYPOWINCL_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_signal_eeEE"+mcFileTag+".root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADInclAndHT_signal_eeEE.root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADInclAndHT_signal_eeEE" + mcFileTag +".root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_signal_eeEE"+mcFileTag+".root");
 	chain_dataEE->Add(dir+"selected_tree_DYAMC_signal_eeEE"+mcFileTag+".root");
 	
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_signal_mumuMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADInclAndHT_signal_mumuMuMu.root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADInclAndHT_signal_mumuMuMu"+mcFileTag+".root");
 	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_signal_mumuMuMu"+mcFileTag+".root");
 	chain_dataMuMu->Add(dir+"selected_tree_DYAMC_signal_mumuMuMu"+mcFileTag+".root");
 
@@ -138,16 +138,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 	TH1F *h_Z_rapidity = new TH1F("h_Z_rapidity", "", 15, -5., 8.);
 	TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 10, 0., 800.);
 
-  	TH1F *h_WR_mass = new TH1F("h_WR_mass","",20,400,3000);	//fixed bin width
+  	TH1F *h_WR_mass = new TH1F("h_WR_mass","",20,500,3000);	//fixed bin width
 
 	Long64_t nEntries = chain->GetEntries();
 	cout << nEntries << endl;
 
   	TString chainTitle(chain->GetTitle());
 	Float_t scaleFactor = 1.0;
-	//apply scale factors to combo of MadHT and MadIncl
-	if(chainTitle.EqualTo("DYMadgraphHTEE") ) scaleFactor = 1.14603;
-	if(chainTitle.EqualTo("DYMadgraphHTMuMu") ) scaleFactor = 1.12849;
 	
 	for(int ev = 0; ev < nEntries; ++ev) {
 		chain->GetEntry(ev);
@@ -234,14 +231,15 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	//data should be set to DYAMC
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.60, 0.9, 0.90 ) ;
-	leg->AddEntry( hs_DYPowheg, "DY Powheg With MLL SF" ) ;
-	leg->AddEntry( hs_DYMadIncl, "DY MADHT+Incl With MLL SF" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DY AMC With MLL SF" ) ;
+	//leg->AddEntry( hs_DYPowheg, "DY Powheg With MLL SF" ) ;
+	leg->AddEntry( hs_DYMadIncl, "DYMADHT+Incl" ) ;
+	//leg->AddEntry( hs_DYAmcIncl, "DYAMC" ) ;
 	//leg->AddEntry( histos[2][0], "10 x WR 2600" ) ;
-	//leg->AddEntry( hs_data, "Data");
+	leg->AddEntry( hs_data, "DYAMC");
 	leg->SetFillColor( kWhite ) ;
 
 	TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
+	mycanvas->cd();	//only needed when no ratio plot is drawn
 	hs_DYPowheg->SetLineColor(kRed);
 	hs_DYPowheg->SetLineWidth(3);
 	hs_DYMadIncl->SetLineColor(kBlack);
@@ -252,6 +250,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	hs_data->SetMarkerSize(1);
 	hs_data->SetMarkerColor(kBlack);
 
+	/*for ratio plot
 	Double_t eps = 0.001;
 	TPad* p1 = new TPad("p1", "p1", 0, 0.25, 1, 1, 0);
 	p1->Draw();
@@ -260,6 +259,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	p1->SetBottomMargin(0);
 	p2->SetTopMargin(0);
 	p1->cd();
+	*/
 	hs_data->SetStats(1);
 	hs_DYPowheg->SetStats(1);
 	TH1F *ratio_Powheg = (TH1F*)hs_data->Clone();
@@ -268,11 +268,11 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	TString plotTitle = "CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
 	hs_DYPowheg->SetTitle(plotTitle);
 	hs_data->SetTitle(plotTitle);
-	//hs_data->Draw("ep");
-	hs_DYPowheg->Draw("histo");
-	hs_DYMadIncl->Draw("histo same");
-	hs_DYAmcIncl->Draw("histo same");
-	//hs_data->Draw("epsame");
+	hs_data->Draw("ep");
+	//hs_DYPowheg->Draw("e1histo");
+	hs_DYMadIncl->Draw("e1histo same");	//e1histo shows stat errors as error bars on each bin
+	//hs_DYAmcIncl->Draw("e1histo same");
+	hs_data->Draw("epsame");
 	TString ytitle = "Events";
 	//TString ytitle = "Events/(";
 	//ytitle += (hs_data->GetXaxis()->GetNbins());
@@ -297,7 +297,7 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	ratio_Powheg->SetLabelSize(0.18, "x");
 	leg->Draw();
 	mycanvas->cd();
-	p2->cd();	///<change to ratio TPad
+	//p2->cd();	///<change to ratio TPad, for ratio plot
 	ratio_Powheg->Sumw2();
 	ratio_Powheg->SetStats(0);
 	ratio_Mad->Sumw2();
@@ -326,25 +326,29 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 	ratio_Amc->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
+	/*for ratio plot
 	ratio_Mad->Draw("p");
-	ratio_Amc->Draw("p");
-	ratio_Powheg->Draw("p");
+	//ratio_Amc->Draw("p");
+	//ratio_Powheg->Draw("p");
 	float xmax = ratio_Powheg->GetXaxis()->GetXmax();
 	float xmin = ratio_Powheg->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
-	ratio_Powheg->Draw("p");
-	ratio_Mad->Draw("psame");
-	ratio_Amc->Draw("psame");
+	//ratio_Powheg->Draw("p");
+	//ratio_Mad->Draw("psame");
+	//ratio_Amc->Draw("psame");
 	f1->Draw("same");
 	mycanvas->cd();
+	*/
 
-	TString fn = fname + "_" + channel.c_str() + "_signalRegionWithMllWeight_ratioWRTDYAMC";
+	TString fn = fname + "_" + channel.c_str() + "_signalRegionWithMllWeight_ratioDYAMCtoDYMadHTAndIncl";
 
-	mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
-	mycanvas->Print((fn + "_highestZoomRatio.png").Data());
-
-	/*
 	if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("Mlljj") == true){
+
+		//mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
+		//mycanvas->Print((fn + "_highestZoomRatio.png").Data());
+
+		/*
+		   if(fname.EqualTo("Mll") == true || fname.EqualTo("Z_pt") == true || fname.EqualTo("Mlljj") == true){
 		//reset the Y axis scale on the ratio plot
 		ratio_Powheg->GetYaxis()->SetRangeUser(0.9, 1.1);
 		ratio_Mad->GetYaxis()->SetRangeUser(0.9, 1.1);
@@ -380,22 +384,27 @@ void drawPlots(TH1F* hs_DYPowheg, TH1F* hs_DYMadIncl, TH1F* hs_DYAmcIncl, TH1F* 
 		mycanvas->Update();
 		mycanvas->Print((fn + "_lowestZoomRatio.pdf").Data());
 		mycanvas->Print((fn + "_lowestZoomRatio.png").Data());
-	}///end zoom ratio plots for Mll and Zpt distributions
-	*/
+		}///end zoom ratio plots for Mll and Zpt distributions
+		*/
 
-	//reset the Y axis scale on the ratio plot
-	ratio_Powheg->GetYaxis()->SetRangeUser(0.6, 1.4);
-	ratio_Mad->GetYaxis()->SetRangeUser(0.6, 1.4);
-	ratio_Amc->GetYaxis()->SetRangeUser(0.6, 1.4);
+		//reset the Y axis scale on the ratio plot
+		ratio_Powheg->GetYaxis()->SetRangeUser(0.6, 1.4);
+		ratio_Mad->GetYaxis()->SetRangeUser(0.6, 1.4);
+		ratio_Amc->GetYaxis()->SetRangeUser(0.6, 1.4);
 
-	mycanvas->Update();
-	mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
-	mycanvas->Print((fn + "_noZoomRatio.png").Data());
-	
-	p1->SetLogy();
-	mycanvas->Print((fn + "_log.pdf").Data());
-	mycanvas->Print((fn + "_log.png").Data());
- 
+		mycanvas->Update();
+		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
+		mycanvas->Print((fn + "_noZoomRatio.png").Data());
+		mycanvas->Print((fn + "_noZoomRatio.C").Data());
+
+		//p1->SetLogy();	//for ratio plot
+  		mycanvas->SetLogy();	//only needed when no ratio plot is drawn
+		mycanvas->Print((fn + "_log.pdf").Data());
+		mycanvas->Print((fn + "_log.png").Data());
+		mycanvas->Print((fn + "_log.C").Data());
+
+	}
+
 	mycanvas->Close();
 
 }
