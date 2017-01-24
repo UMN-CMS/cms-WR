@@ -34,7 +34,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -434,6 +434,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifndef DOAMC
   maxYratioRange = 1.13;
 #endif
+
+#ifdef doMllAboveZpeak
+	maxYratioRange = 2.15;
+#endif
+
 
   ratio->GetYaxis()->SetRangeUser(0.51,maxYratioRange);	//upper limit 3. for mu, 2. for ele
   ratio->GetYaxis()->SetNdivisions(505);
