@@ -12,6 +12,6 @@ rate  2733  168.8  46.74
 lumi       lnN        1.0270e+00 1.0270e+00 1.0270e+00
 TT_SF      lnN                 - 1.0154e+00          -
 DYAMC_SF   lnN                 -          - 1.0211e+00
-signal_unc gmN   3968 6.8870e-01          -          -
+signal_unc gmN   3968 6.887e-01         -          -
 TT_unc     gmN    319          - 5.2989e-01          -
 DYAMC_unc  gmN    114          -          - 4.0957e-01
