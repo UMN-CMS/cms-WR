@@ -4,6 +4,7 @@ import re
 import subprocess
 import sys
 
+#tag should be a dir name ending in /, while toys should be written as ABCtoys, where ABC is a number like 900
 tag, toys = sys.argv[1:]
 
 thisdir = os.getcwd()
@@ -34,7 +35,7 @@ for datacard in datacards:
 	datacard_file = datacardfolder + datacard
 
 	jobname = channel + "_" + MWR + "_"
-	systematics = False
+	systematics = True
 #TODO: Make hybrid new work for observed
 	if "Hybrid" in mode:
 		jobid = jobname + "EXPECTED"

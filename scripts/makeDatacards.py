@@ -34,7 +34,7 @@ nuisance_params.append(("DYAMC_SF",       "lnN"))
 nuisance_params.append(("signal_unc",  "gmN"))
 nuisance_params.append(("TT_unc",      "gmN"))
 nuisance_params.append(("DYAMC_unc",   "gmN"))
-unscale_by_xs = False
+unscale_by_xs = False	#set to true to allow 800 GeV and 1.0 TeV MWR limit jobs to finish successfully
 for channel in ["ee", "mumu"]:
 	sig_name = "WR_" + channel + "jj"
 	MWR = []
