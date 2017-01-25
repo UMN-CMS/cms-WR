@@ -15,6 +15,7 @@ proddir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/limitSetting/" + 
 
 
 datacardfolder = thisdir + "/datacards/"
+#if I move datacards out of the datacard folder, then the limit jobs will not be run
 datacards = os.listdir(datacardfolder)
 pattern = re.compile("WR(.*)jj_MASS(.*).txt")
 
