@@ -60,9 +60,15 @@ configReader::configReader(std::string filename)
 TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
+	//////////standard minitrees stored in shervin's user area
 	//chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
+	
+	///////////other bkgnd minitrees (WW, single top, t+W, QCD) stored in WR group space on EOS
+	chain->Add(("root://eoscms.cern.ch//store/group/phys_exotica/leptonsPlusJets/WR/tuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
+	
+	/////////DY minitrees with pdf and other weights saved
 	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_amctnloMinitrees.root");
-	chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraphInclLowHTMinitrees.root");
+	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraphInclLowHTMinitrees.root");
 	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht100to200Minitrees.root");
 	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht200to400Minitrees.root");
 	//chain->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_madgraph_ht400to600Minitrees.root");
