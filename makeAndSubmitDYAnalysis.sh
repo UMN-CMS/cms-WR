@@ -1,4 +1,8 @@
 #!/bin/bash
+
+#import productionTAG, skimProductionTAG and datasetFile
+source configs/2015-v1.conf
+
 #all input files to process
 #DYMadIncl
 #mcIdentifier='DYJets_madgraph'
@@ -21,8 +25,8 @@
 #inputFiles=('root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht400to600_SHv12/DYJets_madgraph_ht400to600_1_1_NYr.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht400to600_SHv12/DYJets_madgraph_ht400to600_2_1_263.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht400to600_SHv12/DYJets_madgraph_ht400to600_3_1_vfG.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht400to600_SHv12/DYJets_madgraph_ht400to600_4_1_Mtb.root')
 
 ##DYMadHT600toInf
-mcIdentifier=('DYJets_madgraph_ht600toInf' 'DYJets_madgraph_ht600toInf' 'DYJets_madgraph_ht600toInf' 'DYJets_madgraph_ht600toInf')
-inputFiles=('root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_1_1_d7e.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_2_1_2RV.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_3_1_5Uz.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_4_1_oeT.root')
+#mcIdentifier=('DYJets_madgraph_ht600toInf' 'DYJets_madgraph_ht600toInf' 'DYJets_madgraph_ht600toInf' 'DYJets_madgraph_ht600toInf')
+#inputFiles=('root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_1_1_d7e.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_2_1_2RV.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_3_1_5Uz.root' 'root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_madgraph_ht600toInf_SHv12/DYJets_madgraph_ht600toInf_4_1_oeT.root')
 
 
 #all WREEJJ, only one file per skim
@@ -33,30 +37,49 @@ inputFiles=('root://eoscms.cern.ch//eos/cms/store/caf/user/shervin/skims/DYJets_
 #mcIdentifier=('WRtoMuMuJJ_800_400' 'WRtoMuMuJJ_1000_500' 'WRtoMuMuJJ_1200_600' 'WRtoMuMuJJ_1400_700' 'WRtoMuMuJJ_1600_800' 'WRtoMuMuJJ_1800_1400' 'WRtoMuMuJJ_2000_1000' 'WRtoMuMuJJ_2200_1100' 'WRtoMuMuJJ_2400_1200' 'WRtoMuMuJJ_2600_1300' 'WRtoMuMuJJ_2800_1400' 'WRtoMuMuJJ_3000_1500' 'WRtoMuMuJJ_3200_1600' 'WRtoMuMuJJ_3600_1800' 'WRtoMuMuJJ_3800_1900' 'WRtoMuMuJJ_4000_2000')
 #inputFiles=('root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_800_400_SHv12/WRtoEEJJ_800_400_1_1_EnO.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_1000_500_SHv12/WRtoEEJJ_1000_500_1_1_E1f.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_1200_600_SHv12/WRtoEEJJ_1200_600_1_1_zZN.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_1400_700_SHv12/WRtoEEJJ_1400_700_1_1_PwB.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_1600_800_SHv12/WRtoEEJJ_1600_800_1_1_J7N.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_1800_1400_SHv12/WRtoEEJJ_1800_1400_1_1_561.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_2000_1000_SHv12/WRtoEEJJ_2000_1000_1_1_hmG.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_2200_1100_SHv12/WRtoEEJJ_2200_1100_1_1_wPE.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_2400_1200_SHv12/WRtoEEJJ_2400_1200_1_1_XeT.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_2600_1300_SHv12/WRtoEEJJ_2600_1300_1_1_5Kb.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_2800_1400_SHv12/WRtoEEJJ_2800_1400_1_2_Jo9.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_3000_1500_SHv12/WRtoEEJJ_3000_1500_1_2_2El.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_3200_1600_SHv12/WRtoEEJJ_3200_1600_1_2_ji7.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_3600_1800_SHv12/WRtoEEJJ_3600_1800_1_2_XeQ.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_3800_1900_SHv12/WRtoEEJJ_3800_1900_1_2_0fx.root' 'root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_4000_2000_SHv12/WRtoEEJJ_4000_2000_1_2_Mjq.root')
 
+##for all datasets in configs/missing_datasets.dat
+##first get all the dataset short names, and save them to a vector
+mcIdentifier=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
+eosSkimPath='/eos/cms/store/group/phys_exotica/leptonsPlusJets/WR/skims/'
+eosReadingTag='root://eoscms.cern.ch/'
 
-
-#number used to distinguish different jobs
-startingCount=1
-
-for i in ${!inputFiles[*]}
+#now loop over all elements in mcIdentifier
+for j in ${!mcIdentifier[*]}
 do
-	#replace NNN by a number and INPTFILE with a file path name from inputFiles in temp_runAnalysis_cfg.py
-	eval "cd test"
-	eval "sed 's@NNN@$startingCount@g' temp_runAnalysis_cfg.py > tempOne.py"
-	eval "sed 's@TAGNAME@${mcIdentifier[$i]}@g' tempOne.py > tempTwo.py"
-	eval "sed 's@INPTFILE@${inputFiles[$i]}@g' tempTwo.py > runAnalysis_cfg_${mcIdentifier[$i]}_${startingCount}.py"
-	rm tempOne.py tempTwo.py
-	eval "cd .."
+	#number used to distinguish different jobs processing the same dataset
+	startingCount=1
 
-	#replace NNN by a number in runAnalysisDYMC.sh
-	eval "sed 's@NNN@$startingCount@g' runAnalysisDYMC.sh > tempOne.sh"
-	eval "sed 's@TAGNAME@${mcIdentifier[$i]}@g' tempOne.sh > runAnalysisDYMC_${mcIdentifier[$i]}_${startingCount}.sh"
-	eval "chmod u+x runAnalysisDYMC_${mcIdentifier[$i]}_${startingCount}.sh"
-	rm tempOne.sh
+	#now get all the skim files from the dataset linked to mcIdentifier
+	inputFiles=(`eos ls $eosSkimPath${mcIdentifier[$j]}$skimProductionTAG/`)
 
-	#submit the job to 1nh queue and request at least 2 GB of disk
-	eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$i]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$i]}_${startingCount}.sh"
-	
-	let startingCount=startingCount+1
+	for i in ${!inputFiles[*]}
+	do
+		#echo $eosSkimPath${mcIdentifier[$j]}$skimProductionTAG/${inputFiles[$i]}
+		#replace NNN by a number and INPTFILE with a file path name from inputFiles in temp_runAnalysis_cfg.py
+		eval "cd test"
+		eval "sed 's@NNN@$startingCount@g' temp_runAnalysis_cfg.py > tempOne.py"
+		eval "sed 's@TAGNAME@${mcIdentifier[$j]}@g' tempOne.py > tempTwo.py"
+		eval "sed 's@INPTFILE@$eosReadingTag$eosSkimPath${mcIdentifier[$j]}$skimProductionTAG/${inputFiles[$i]}@g' tempTwo.py > runAnalysis_cfg_${mcIdentifier[$j]}_${startingCount}.py"
+		#eval "sed 's@TAGNAME@$mcIdentifier@g' tempOne.py > tempTwo.py"
+		#eval "sed 's@INPTFILE@${inputFiles[$i]}@g' tempTwo.py > runAnalysis_cfg_${mcIdentifier}_${startingCount}.py"
+		rm tempOne.py tempTwo.py
+		eval "cd .."
+
+		#replace NNN by a number in runAnalysisDYMC.sh
+		eval "sed 's@NNN@$startingCount@g' runAnalysisDYMC.sh > tempOne.sh"
+		eval "sed 's@TAGNAME@${mcIdentifier[$j]}@g' tempOne.sh > runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		eval "chmod u+x runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		#eval "sed 's@TAGNAME@$mcIdentifier@g' tempOne.sh > runAnalysisDYMC_${mcIdentifier}_${startingCount}.sh"
+		#eval "chmod u+x runAnalysisDYMC_${mcIdentifier}_${startingCount}.sh"
+		rm tempOne.sh
+
+		#submit the job to 1nh queue and request at least 2 GB of disk
+		#echo "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		#eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier}_${startingCount}.sh"
+
+		let startingCount=startingCount+1
+	done
+
 done
 

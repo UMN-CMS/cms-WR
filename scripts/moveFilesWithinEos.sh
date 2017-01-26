@@ -59,4 +59,17 @@ newDirsToMake=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
 #done
 
 
+##only need to run this once
+##make new directories in WR/tuples/ where the minitrees will be stored
+eosTuplePath='/eos/cms/store/group/phys_exotica/leptonsPlusJets/WR/tuples/'
+for j in ${!newDirsToMake[*]}
+do
+	#make a new directory with the shortened dataset name plus productionTAG defined in 2015-v1.conf
+	eos mkdir -p $eosTuplePath${newDirsToMake[$j]}$productionTAG
+	#echo "eos mkdir -p $eosTuplePath${newDirsToMake[$j]}$productionTAG"
+
+done
+
+
+
 
