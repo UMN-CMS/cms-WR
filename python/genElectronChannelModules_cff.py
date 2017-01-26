@@ -47,8 +47,8 @@ bareGenJetFilter = cms.EDFilter("CandViewCountFilter",
 		)
 
 bareGenEle = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("prunedGenParticles"),
-		#src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 11")
 		)
 
@@ -108,8 +108,8 @@ bareMatchedNuSeq = cms.Sequence(bareMatchedNu*bareMatchedNuFilter)
 
 ## filters to select the generated WR
 bareMatchedWR = cms.EDFilter("CandViewSelector",
-		src = cms.InputTag("prunedGenParticles"),
-		#src = cms.InputTag("genParticles"),
+		#src = cms.InputTag("prunedGenParticles"),
+		src = cms.InputTag("genParticles"),
 		cut = cms.string("abs(pdgId) == 9900024 && abs(mother(0).pdgId) == 9900024 && abs(status) == 62")
 		)
 
