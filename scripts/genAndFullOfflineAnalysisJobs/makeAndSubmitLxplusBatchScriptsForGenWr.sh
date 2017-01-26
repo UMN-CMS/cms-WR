@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#run this script from the scripts/genAndFullOfflineAnalysis/. directory
+
 #lowest values for WR and Nu masses
 #minNuMass and nuMass should be equal
 #nuMass is used as an iterator which is frequently changed, while minNuMass is used
