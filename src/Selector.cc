@@ -535,7 +535,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	if(lead_lepton_p4.Pt() < 60) return false;	//default is 60
 	if (makeHists) sel::hists("lead_lepton_pt_cut", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
 	if (makeHists) sel::hists("sublead_lepton_pt", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
-	if(sublead_lepton_p4.Pt() < 50) return false;	//default is 50
+	if(sublead_lepton_p4.Pt() < 53) return false;	//default changed to 53 from 50 on January 26 2017, after request from conveners to be above trigger threshold
 	if (makeHists) sel::hists("sublead_lepton_pt_cut", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
 
 	if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[0].p4));
