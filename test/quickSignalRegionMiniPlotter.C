@@ -37,7 +37,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -208,7 +208,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",40,500,3000);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",15,600,3000);
  
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",50,150,1600);
   TH1F *h_nPV = new TH1F("h_nPV","",100,0,100);
