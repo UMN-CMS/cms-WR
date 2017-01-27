@@ -32,7 +32,7 @@ class limit1d:
 
 	def plot(self, filename, x_title="", y_title="",
 			x_limits=(600,6000), y_limits=(1e-3, 1e-1), 
-			leg_x = .55, leg_y=.66, SetLogx=False):
+			leg_x = .55, leg_y=.66, SetLogx=False, scale=1):
 		customROOTstyle()
 		#ROOT.gROOT.LoadMacro("scripts/tdrStyle.C")
 		c1 = ROOT.TCanvas("c1","c1",800,800);
@@ -62,6 +62,10 @@ class limit1d:
 			#onesig_array *= self.xs
 			#twosig_array *= self.xs
 
+		#rescale expected limits and sigma bands
+		expected_limit_array *= scale
+		onesig_array *= scale
+		twosig_array *= scale
 		dummy = ROOT.TH1F("dummy","",30,x_limits[0], x_limits[1])
 		dummy.SetMinimum(y_limits[0])
 		dummy.SetMaximum(y_limits[1])
@@ -107,6 +111,8 @@ class limit1d:
 			ntheory = len(self.theory)
 			theory_mass = np.array(sorted(self.theory.keys()), dtype=float)
 			theory_limit = np.array( [ self.theory[mass] for mass in theory_mass], dtype=float)
+			#rescale theory limit
+			theory_limit *= scale
 			g_theory = ROOT.TGraph(ntheory, theory_mass, theory_limit)
 			g_theory.SetLineWidth(3);
 			g_theory.SetLineColor(ROOT.kRed+2);
@@ -121,6 +127,8 @@ class limit1d:
 			if self.theory:
 				#observed_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, observed_limit_array)], dtype=float)
 				observed_limit_array *= self.xs
+			#rescale observed limit and sigma bands
+			observed_limit_array *= scale
 			g_obs = ROOT.TGraph(nobs, mass_array, observed_limit_array)
 			g_obs.SetLineWidth(3);
 			g_obs.SetLineColor(ROOT.kBlue+2);
