@@ -59,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "signal"
 	}
 	)
 	{
@@ -118,6 +118,61 @@ public:
 			} 
 		} else if(mode == "W") {
 			TTchainNames.push_back("WJetsLNu");
+		} else if(mode == "singleTop") {
+			TTchainNames.push_back("singleTop");
+			TTchainNames.push_back("singleAntiTop");
+		} else if(mode == "topW") {
+			TTchainNames.push_back("topW");
+			TTchainNames.push_back("antiTopW");
+		} else if(mode == "WW") {
+			TTchainNames.push_back("WW");
+		} else if(mode == "QCD") {
+			if(channel == Selector::EE){
+				TTchainNames.push_back("QCD_emenr_pt120to170");
+				TTchainNames.push_back("QCD_emenr_pt15to20");
+				TTchainNames.push_back("QCD_emenr_pt20to30");
+				TTchainNames.push_back("QCD_emenr_pt300toInf");
+				TTchainNames.push_back("QCD_emenr_pt30to50");
+				TTchainNames.push_back("QCD_emenr_pt50to80");
+				TTchainNames.push_back("QCD_emenr_pt80to120");
+			}//EE channel QCD
+			
+			if(channel == Selector::MuMu){
+				TTchainNames.push_back("QCD_muenr_pt120to170");
+				TTchainNames.push_back("QCD_muenr_pt15to20");
+				TTchainNames.push_back("QCD_muenr_pt20to30");
+				TTchainNames.push_back("QCD_muenr_pt1000toInf");
+				TTchainNames.push_back("QCD_muenr_pt30to50");
+				TTchainNames.push_back("QCD_muenr_pt170to300");
+				TTchainNames.push_back("QCD_muenr_pt80to120");
+				TTchainNames.push_back("QCD_muenr_pt300to470");
+				TTchainNames.push_back("QCD_muenr_pt470to600");
+				TTchainNames.push_back("QCD_muenr_pt600to800");
+				TTchainNames.push_back("QCD_muenr_pt800to1000");
+			}//MuMu channel QCD
+
+			if(channel == Selector::EMu){
+				TTchainNames.push_back("QCD_emenr_pt120to170");
+				TTchainNames.push_back("QCD_emenr_pt15to20");
+				TTchainNames.push_back("QCD_emenr_pt20to30");
+				TTchainNames.push_back("QCD_emenr_pt300toInf");
+				TTchainNames.push_back("QCD_emenr_pt30to50");
+				TTchainNames.push_back("QCD_emenr_pt50to80");
+				TTchainNames.push_back("QCD_emenr_pt80to120");
+	
+				TTchainNames.push_back("QCD_muenr_pt120to170");
+				TTchainNames.push_back("QCD_muenr_pt15to20");
+				TTchainNames.push_back("QCD_muenr_pt20to30");
+				TTchainNames.push_back("QCD_muenr_pt1000toInf");
+				TTchainNames.push_back("QCD_muenr_pt30to50");
+				TTchainNames.push_back("QCD_muenr_pt170to300");
+				TTchainNames.push_back("QCD_muenr_pt80to120");
+				TTchainNames.push_back("QCD_muenr_pt300to470");
+				TTchainNames.push_back("QCD_muenr_pt470to600");
+				TTchainNames.push_back("QCD_muenr_pt600to800");
+				TTchainNames.push_back("QCD_muenr_pt800to1000");
+			}//EMu channel QCD
+
 		} else if(mode == "WZ") {
 			TTchainNames.push_back("WZ");
 		} else if(mode == "ZZ") {
@@ -608,7 +663,7 @@ int main(int ac, char* av[])
 						//selEvent.weight *= wgt; 
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
-							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
+							//selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
 						}
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
@@ -656,7 +711,7 @@ int main(int ac, char* av[])
 						selEvent.weight *= myReader.getNorm1fb(selEvent.datasetName) * integratedLumi; // the weight is the event weight * single object weights
 						
 						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
-							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
+							//selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
 						}
 
 						//multiply by an additional weight when processing DY samples
