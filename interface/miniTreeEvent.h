@@ -50,7 +50,7 @@ public:
 	std::vector<TLorentzVector> * jets_p4;
 	std::vector<Float_t> * jec_uncertainty;
 
-	std::vector<Float_t> * renormFactAndPdfWeights;
+	//std::vector<Float_t> * renormFactAndPdfWeights;
 
 	Float_t nPU;
 	Int_t nPV;

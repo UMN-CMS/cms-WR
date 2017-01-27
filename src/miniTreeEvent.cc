@@ -21,7 +21,7 @@ miniTreeEvent::miniTreeEvent():
 	muon_IsoSF_error(new std::vector<Float_t>),
 	jets_p4(new std::vector<TLorentzVector>),
 	jec_uncertainty(new std::vector<Float_t>),
-	renormFactAndPdfWeights(new std::vector<Float_t>),
+	//renormFactAndPdfWeights(new std::vector<Float_t>),
 	_owningMembers(true)
 {
 
@@ -49,14 +49,14 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	muon_IsoSF_error(new std::vector<Float_t>),
 	jets_p4(new std::vector<TLorentzVector>),
 	jec_uncertainty(new std::vector<Float_t>),
-	renormFactAndPdfWeights(new std::vector<Float_t>),
+	//renormFactAndPdfWeights(new std::vector<Float_t>),
 	_owningMembers(true)
 {
 	clear();
 	*electrons_p4 = *(otherEvent.electrons_p4);
 	*muons_p4 = *(otherEvent.muons_p4);
 	*jets_p4 = *(otherEvent.jets_p4);
-	*renormFactAndPdfWeights = *(otherEvent.renormFactAndPdfWeights);
+	//*renormFactAndPdfWeights = *(otherEvent.renormFactAndPdfWeights);
 	*jec_uncertainty = *(otherEvent.jec_uncertainty);
 	*electron_scale = *(otherEvent.electron_scale);
 	*electron_smearing = *(otherEvent.electron_smearing);
@@ -97,7 +97,7 @@ void miniTreeEvent::clear()
 	jets_p4->clear();
 
 	jec_uncertainty->clear();
-	renormFactAndPdfWeights->clear();
+	//renormFactAndPdfWeights->clear();
 	electron_scale->clear();
 	electron_smearing->clear();
 	electron_r9->clear();
@@ -142,7 +142,7 @@ miniTreeEvent::~miniTreeEvent()
 	delete muon_IsoSF_error;
 	delete jets_p4;
 	delete jec_uncertainty;
-	delete renormFactAndPdfWeights;
+	//delete renormFactAndPdfWeights;
 }
 
 void miniTreeEvent::SetBranches(TTree* tree)
@@ -156,7 +156,7 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("muons_p4", muons_p4, 32000, -1);
 	tree->Branch("jets_p4", jets_p4, 32000, -1);
 
-	tree->Branch("renormFactAndPdfWeights", renormFactAndPdfWeights);
+	//tree->Branch("renormFactAndPdfWeights", renormFactAndPdfWeights);
 	tree->Branch("jec_uncertainty", jec_uncertainty);
 	tree->Branch("electron_scale", electron_scale);
 	tree->Branch("electron_smearing", electron_smearing);
@@ -182,7 +182,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete muons_p4;
 	delete jets_p4;
 
-	delete renormFactAndPdfWeights;
+	//delete renormFactAndPdfWeights;
 	delete jec_uncertainty;
 	delete electron_scale;
 	delete electron_smearing;
@@ -200,7 +200,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	muons_p4 = 0;
 	jets_p4 = 0;
 
-	renormFactAndPdfWeights = 0;
+	//renormFactAndPdfWeights = 0;
 	jec_uncertainty = 0;
 	electron_scale = 0;
 	electron_smearing = 0;
@@ -221,7 +221,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("muons_p4", &muons_p4);
 	tree->SetBranchAddress("jets_p4", &jets_p4);
 
-	tree->SetBranchAddress("renormFactAndPdfWeights", &renormFactAndPdfWeights);
+	//tree->SetBranchAddress("renormFactAndPdfWeights", &renormFactAndPdfWeights);
 	tree->SetBranchAddress("jec_uncertainty", &jec_uncertainty);
 	tree->SetBranchAddress("electron_scale", &electron_scale);
 	tree->SetBranchAddress("electron_smearing", &electron_smearing);
