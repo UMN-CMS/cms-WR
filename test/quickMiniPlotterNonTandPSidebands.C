@@ -196,7 +196,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  ttScaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
   }
   if( chainTitle.EqualTo("TTData") ){
-	  ttScaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
+	  ttScaleFactor = (channel == Selector::MuMu) ? 0.655 : 0.416;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
   }
 
   for(int ev = 0; ev<nEntries; ++ev){
