@@ -192,7 +192,7 @@ void printSystStdDevToFile(){
 	//relDirPathsVect and uncertTagNamesVect must have the same size
 	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/","3200toysAllSyst/"};
 	//string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso","all sources"};
-	string relDirPaths[] = {"3200toysAllSyst/"};
+	string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
 	string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
@@ -282,7 +282,7 @@ void printSystStdDevToFile(){
 #endif
 
 				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
-				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +".root" ).c_str() );
+				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"MuMu.root" ).c_str() );
 	
 				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
 				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
@@ -295,7 +295,7 @@ void printSystStdDevToFile(){
 #endif
 				
 				TChain * ttEE = new TChain(treeName.c_str(),"TTEE");
-				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"Copy.root" ).c_str() );
+				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"EE.root" ).c_str() );
 	
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );

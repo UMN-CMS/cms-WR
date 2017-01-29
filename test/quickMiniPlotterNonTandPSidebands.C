@@ -201,6 +201,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     chain->GetEntry(ev);
 	//if(myEvent->dR_leadlepton_leadjet < 1.2 || myEvent->dR_leadlepton_subleadjet < 1.2 || myEvent->dR_subleadlepton_leadjet < 1.2 || myEvent->dR_subleadlepton_subleadjet < 1.2) continue;
 	//if(myEvent->lead_jet_pt < 100 || myEvent->sublead_jet_pt < 100) continue;
+	if(myEvent->sublead_lepton_pt < 53.) continue;
 #ifdef doMllAboveZpeak
 	if(myEvent->dilepton_mass < 120. || myEvent->dilepton_mass > 200.) continue;
 #endif

@@ -135,8 +135,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   cout<< nEntries << endl;
 
   for(int ev = 0; ev<nEntries; ++ev){
-    chain->GetEntry(ev);
-
+	chain->GetEntry(ev);
+	if(myEvent->sublead_lepton_pt < 53.) continue;
+	
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,myEvent->weight);
     h_lepton_pt1->Fill(myEvent->sublead_lepton_pt,myEvent->weight);
     h_lepton_eta0->Fill(myEvent->lead_lepton_eta,myEvent->weight);

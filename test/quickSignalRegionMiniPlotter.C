@@ -1,8 +1,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
+#include "TTree.h" #include "TChain.h"
 #include "TCanvas.h"
 #include "THStack.h"
 #include "TLegend.h"
@@ -57,8 +56,8 @@ void quickSignalRegionMiniPlotter(){
   //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
-  TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
-  TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
+  TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFiles/";
@@ -88,7 +87,8 @@ void quickSignalRegionMiniPlotter(){
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
 #endif
 
 #ifdef useDYMAD
@@ -97,7 +97,8 @@ void quickSignalRegionMiniPlotter(){
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
 #endif
 	//data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_1400_700_signal_eeEE.root");
 	data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
@@ -129,7 +130,8 @@ void quickSignalRegionMiniPlotter(){
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_mumuMuMu.root");
 #endif
 
 #ifdef useDYMAD
@@ -138,7 +140,8 @@ void quickSignalRegionMiniPlotter(){
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_mumuMuMu.root");
 #endif	
 	//data = chain_data->Add(localDir+"selected_tree_DYPOWHEG_signal_mumuMuMu.root");
    	//data = chain_data->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
@@ -181,9 +184,9 @@ void quickSignalRegionMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt","Mlljj_varBins","Mlljj_2012Bins"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -234,6 +237,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     chain->GetEntry(ev);
 	if(myEvent->WR_mass < 600.) continue;
 	if(myEvent->dilepton_mass < 200.) continue;
+	if(myEvent->sublead_lepton_pt < 53.) continue;
 
 	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 	leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
@@ -307,16 +311,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
   leg->AddEntry( hs_ttbar, "TT Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
-  leg->AddEntry( hs_WZ, "WZ" ) ; 
-  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
+  leg->AddEntry( hs_WZ, "Diboson" ) ; 
+  leg->AddEntry( hs_ZZ, "Other" ) ; 
 #endif 
 
 #ifdef useDYMAD
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
   leg->AddEntry( hs_ttbar, "TT Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
-  leg->AddEntry( hs_WZ, "WZ" ) ; 
-  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
+  leg->AddEntry( hs_WZ, "Diboson" ) ; 
+  leg->AddEntry( hs_ZZ, "Other" ) ; 
 #endif 
 
 
@@ -339,8 +343,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->SetFillColor(kBlue);
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
-  th->Add(hs_WZ);
   th->Add(hs_ZZ);
+  th->Add(hs_WZ);
   th->Add(hs_WJets);
   th->Add(hs_DY);
   th->Add(hs_ttbar);
@@ -443,8 +447,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_FixedBinWidthNoRatio";
 #endif
 
-
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Z_pt") || fname.EqualTo("Mll")){
+  
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());

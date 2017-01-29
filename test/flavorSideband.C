@@ -63,8 +63,8 @@ void flavorSideband(){
   myEvent_EE.SetBranchAddresses(chain_EE);
   myEvent_MuMu.SetBranchAddresses(chain_MuMu);
 
-  Float_t bins[] = { 410, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
-  //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
+  //Float_t bins[] = { 410, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
+  Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
@@ -404,6 +404,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
+	if(myEvent->sublead_lepton_pt < 53.) continue;
     if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }

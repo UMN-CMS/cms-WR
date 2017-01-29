@@ -150,6 +150,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs, Float
 		chain->GetEntry(ev);
 		if(myEvent->WR_mass < 600) continue;
 		if(myEvent->dilepton_mass < 200) continue;
+		if(myEvent->sublead_lepton_pt < 53.) continue;
 
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
