@@ -12,8 +12,6 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/SelectorHist.cc"
 #include "../src/miniTreeEvent.cc"
@@ -36,7 +34,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -48,8 +46,8 @@ void quickLowFourObjMassMiniPlotter(){
   chain_ttbar = new TChain("Tree_Iter0","TTData");
 #endif 
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
-  TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
-  TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
+  TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFiles/";
@@ -72,7 +70,8 @@ void quickLowFourObjMassMiniPlotter(){
 #endif
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+  	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
     data = chain_data->Add(localDir+"selected_tree_data_signal_eeEE.root");
     break;
   case Selector::MuMu:
@@ -92,7 +91,8 @@ void quickLowFourObjMassMiniPlotter(){
 #endif
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_mumuMuMu.root");
     data = chain_data->Add(localDir+"selected_tree_data_signal_mumuMuMu.root");
     break;
   default:
@@ -167,11 +167,11 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   /*variable bin widths  dont forget to enable the bin division by its width in the lines below*/
   Float_t bins[] = { 150, 300, 350, 375, 400, 425, 450, 475, 500, 525, 550, 600, 800};
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass_varBins","",binnum, bins);
 
   Float_t mllBins[] = { 155, 200, 210, 225, 240, 255, 275, 300, 330, 375, 550};
   Int_t  mllBinnum = sizeof(mllBins)/sizeof(Float_t) - 1;
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",mllBinnum, mllBins);
+  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass_varBins","",mllBinnum, mllBins);
   /**/
 
 
@@ -186,7 +186,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  ttScaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
   }*/
   if( chainTitle.EqualTo("TTData") ){
-	  ttScaleFactor = (channel == Selector::MuMu) ? 0.657 : 0.414;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
+	  ttScaleFactor = (channel == Selector::MuMu) ? 0.655 : 0.416;	//to rescale emu data evts to estimates of ttbar in electron and muon channels
   }
 
   for(int ev = 0; ev<nEntries; ++ev){
@@ -235,16 +235,27 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   //normalize histo bins when using variable bin widths
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
-	  //get num bins in histo i
-	  Int_t nBins = (hs->at(i))->GetNbinsX();
-	  for(Int_t j=1; j<=nBins; j++){
-		  //in each bin, divide the bin contents by the bin width
-		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
-		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
-		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
-		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
-		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
-	  }//end loop over bins in histo
+	  TString histName = (hs->at(i))->GetName();
+	  if(histName.Contains("varBins")){
+		  //get num bins in histo i
+		  Int_t nBins = (hs->at(i))->GetNbinsX();
+		  for(Int_t j=1; j<=nBins; j++){
+			  if(j==nBins){
+				  Double_t origBinContents = (hs->at(i))->GetBinContent(j);
+				  Double_t overflowContents = (hs->at(i))->GetBinContent(j+1);
+				  std::cout<<"overflow contents =\t"<< overflowContents << std::endl;	//sanity check
+				  (hs->at(i))->SetBinContent(j, origBinContents+overflowContents);
+			  }//end work to include overflows in last bin shown on plot
+
+			  //in each bin, divide the bin contents by the bin width
+			  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+			  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
+			  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
+			  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+			  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
+		  }//end loop over bins in histo
+
+	  }//end filter which selects histos which have variable bin widths
 
   }//end loop over histos in vector
   /**/
@@ -253,7 +264,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
-  TString ttbarLegEntry = "TT MC";
+  TString ttbarLegEntry = "TTbar MC";
 #ifdef doDataDrivenTT
   ttbarLegEntry = "TT Data Driven";
 #endif
@@ -266,8 +277,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif 
   leg->AddEntry( hs_ttbar, ttbarLegEntry ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
-  leg->AddEntry( hs_WZ, "WZ" ) ; 
-  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
+  leg->AddEntry( hs_WZ, "Diboson" ) ; 
+  leg->AddEntry( hs_ZZ, "Other" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
 
@@ -287,8 +298,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
-  th->Add(hs_ZZ);
   th->Add(hs_WJets);
+  th->Add(hs_ZZ);
   th->Add(hs_DY);
   th->Add(hs_ttbar);
   hs_data->SetMarkerStyle(20);
