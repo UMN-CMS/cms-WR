@@ -1,7 +1,8 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
-#include "TTree.h" #include "TChain.h"
+#include "TTree.h"
+#include "TChain.h"
 #include "TCanvas.h"
 #include "THStack.h"
 #include "TLegend.h"
@@ -11,8 +12,6 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-// #include "ExoAnalysis/cmsWR/src/Selector.cc"
-// #include "ExoAnalysis/cmsWR/src/miniTreeEvent.cc"
 #include "../src/Selector.cc"
 #include "../src/SelectorHist.cc"
 #include "../src/miniTreeEvent.cc"
@@ -218,7 +217,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 40, 0., 1200.);
   TH1F *h_WR_mass_lowZpt = new TH1F("h_WR_mass_lowZpt","",40,500,3000);
- 
+
+  Float_t runOneBins[] = { 600, 800, 1000, 1200, 1400, 1600, 1800, 2200, 3000};	//MLLJJ bins used in 2012 search
+  Int_t  runOneBinnum = sizeof(runOneBins)/sizeof(Float_t) - 1;
+  TH1F *h_WR_mass_2012bins = new TH1F("h_WR_mass_2012bins","", runOneBinnum, runOneBins);
+
+  Float_t bins[] = { 600, 750, 900, 1050, 1200, 1500, 1800, 2100, 3000};	//MLLJJ variable bins
+  Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
+  TH1F *h_WR_mass_varBins = new TH1F("h_WR_mass_varBins","",binnum, bins);
 
   Long64_t nEntries = chain->GetEntries();
 
@@ -264,7 +270,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     h_dilepton_mass->Fill(myEvent->dilepton_mass,(myEvent->weight)*scaleFactor);
     h_nPV->Fill(myEvent->nPV,(myEvent->weight)*scaleFactor);
     if(zFourMom.Pt() < 150.) h_WR_mass_lowZpt->Fill(myEvent->WR_mass,(myEvent->weight)*scaleFactor);
-  
+	h_WR_mass_2012bins->Fill(myEvent->WR_mass,(myEvent->weight)*scaleFactor);
+	h_WR_mass_varBins->Fill(myEvent->WR_mass,(myEvent->weight)*scaleFactor);
+
   }
 
   hs->push_back(h_lepton_pt0);
@@ -284,7 +292,38 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_nPV);
   hs->push_back(h_Z_pt);
   hs->push_back(h_WR_mass_lowZpt);
+  hs->push_back(h_WR_mass_varBins);
+  hs->push_back(h_WR_mass_2012bins);
+ 
 
+  //rescale bin contents by bin width, and add overflow evts to last bin in two WR mass histos with variable bin widths
+  unsigned int max = hs->size();
+  for(unsigned int i=0; i<max; i++){
+	  TString histName = (hs->at(i))->GetName();
+	  std::cout<<"hist name\t"<< histName <<std::endl;
+	  if(histName.Contains("varBins") || histName.Contains("2012bins")){
+		  //get num bins in histo i
+		  Int_t nBins = (hs->at(i))->GetNbinsX();
+		  for(Int_t j=1; j<=nBins; j++){
+			  //include the overflows in the very last bin shown on the plot
+			  if(j==nBins){
+				  Double_t origBinContents = (hs->at(i))->GetBinContent(j);
+				  Double_t overflowContents = (hs->at(i))->GetBinContent(j+1);
+				  std::cout<<"overflow contents =\t"<< overflowContents << std::endl;	//sanity check
+				  (hs->at(i))->SetBinContent(j, origBinContents+overflowContents);
+			  }//end work to include overflows in last bin shown on plot
+			  //in each bin, divide the bin contents by the bin width
+			  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+			  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
+			  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
+			  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+			  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
+		  }//end loop over bins in histo
+
+	  }//end filter to select the hists with variable bin widths
+
+  }//end loop over histos in vector
+ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
@@ -343,9 +382,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->SetFillColor(kBlue);
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
-  th->Add(hs_ZZ);
   th->Add(hs_WZ);
   th->Add(hs_WJets);
+  th->Add(hs_ZZ);
   th->Add(hs_DY);
   th->Add(hs_ttbar);
   hs_data->SetLineColor(kRed);
@@ -377,11 +416,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   hs_data->GetYaxis()->SetTitle(ytitle.Data());
-  if(fname.EqualTo("Mlljj")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins") ) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   if(fname.EqualTo("Mlljj_lowZpt")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV] for Z P_{T}<150"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV] for Z P_{T}<150");
-
+  if(fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins") ) hs_data->GetYaxis()->SetTitle("Events/GeV"), th->GetYaxis()->SetTitle("Events/GeV");
+ 
   ratio->GetXaxis()->SetTitle(xtitle.Data());
-  if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins") ) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
   ratio->GetXaxis()->SetTitleSize(0.2);
   ratio->SetLabelSize(0.1,"x");
@@ -438,21 +478,33 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif*/
 
 #ifndef useDYMAD
-  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYAMC_TTBarFromData_FixedBinWidthNoRatio";
-  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYAMC_TTBarFromData_FixedBinWidthNoRatio";
+  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYAMC_TTBarFromData";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYAMC_TTBarFromData";
 #endif
 
 #ifdef useDYMAD
-  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_FixedBinWidthNoRatio";
-  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_FixedBinWidthNoRatio";
+  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
 #endif
 
-  
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins")){
+  if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
 	  th->SetMinimum(0.1);
+	  mycanvas->Update();
+	  //p1->SetLogy();	//for ratio plot
+	  mycanvas->SetLogy();	//only needed when no ratio plot is drawn
+	  mycanvas->Print((fn+"_log.pdf").Data());
+	  mycanvas->Print((fn+"_log.png").Data());
+	  mycanvas->Print((fn+"_log.C").Data());
+  }
+
+  if(fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins")){
+	  mycanvas->Print((fn+".pdf").Data());
+	  mycanvas->Print((fn+".png").Data());
+	  mycanvas->Print((fn+".C").Data());
+	  th->SetMinimum(0.0005);
 	  mycanvas->Update();
 	  //p1->SetLogy();	//for ratio plot
 	  mycanvas->SetLogy();	//only needed when no ratio plot is drawn
