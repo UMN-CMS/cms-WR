@@ -35,8 +35,7 @@ private:
 	edm::EDGetToken pileUpReweightToken_;
 	edm::EDGetToken primaryVertexToken_;
 	edm::EDGetToken evinfoToken_;
-	edm::EDGetToken lheEvInfoToken_;
-
+	//edm::EDGetToken lheEvInfoToken_;
 
 	edm::EDGetToken  jec_unc_src;
 	edm::EDGetToken  muon_IDSF_central_src;
@@ -59,7 +58,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	pileUpReweightToken_ ( consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"))),
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
-	lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
+	//lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
@@ -130,11 +129,26 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		event.getByToken(pileUpReweightToken_, PU_Weights);
 		myEvent.PU_reweight = *PU_Weights;
 
-		//weights for estimating uncertainties due to pdf, renorm and fact scale variations
+		/**/
+		///wgts only for WR signal samples
+		edm::InputTag pdfWgtTag("wrPdfWeights:NNPDF30");
+		edm::Handle<std::vector<double> > pdfWgtHandle;
+		event.getByLabel(pdfWgtTag, pdfWgtHandle);
+
+		std::vector<double> wgts = *(pdfWgtHandle);
+		std::cout<<"evt wgt for central pdf: "<< wgts[0] << std::endl;
+		unsigned int nwgts = wgts.size();
+		for(unsigned int i=1; i<nwgts; i++){
+			myEvent.renormFactAndPdfWeights->push_back( wgts[i]/wgts[0] );
+		}
+		/**/
+
+		///weights for estimating uncertainties due to pdf, renorm and fact scale variations only for DY, TTBar and WJets MC
+		/*
 		event.getByToken(lheEvInfoToken_, lheEvInfo);
 		for (size_t i = 0; i < lheEvInfo->weights().size() ; i++) {
 			myEvent.renormFactAndPdfWeights->push_back( lheEvInfo->weights()[i].wgt/lheEvInfo->originalXWGTUP() );
-		}
+		}*/
 
 	}
 
