@@ -59,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYMadInclAndHT", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "signal"
 	}
 	)
 	{
@@ -105,6 +105,12 @@ public:
 			} else if(mode.find("AMC") != _ENDSTRING) {
 				//amc at nlo inclusive sample gen dilepton mass greater than 50 GeV
 				TTchainNames.push_back("DYJets_amctnlo");
+			} else if(mode == "DYMadInclAndHT") {
+				TTchainNames.push_back("DYJets_madgraph");
+				TTchainNames.push_back("DYJets_madgraph_ht100to200");
+				TTchainNames.push_back("DYJets_madgraph_ht200to400");
+				TTchainNames.push_back("DYJets_madgraph_ht400to600");
+				TTchainNames.push_back("DYJets_madgraph_ht600toInf");
 			} else if(mode.find("MADHT") != _ENDSTRING) {
 				TTchainNames.push_back("DYJets_madgraph_ht100to200");
 				TTchainNames.push_back("DYJets_madgraph_ht200to400");
