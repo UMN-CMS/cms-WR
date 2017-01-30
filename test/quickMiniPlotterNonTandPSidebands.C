@@ -34,7 +34,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -175,8 +175,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500, 6000};	//wider bins, out to 6000 GeV
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
-  h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",binnum, bins);
+  h_WR_mass = new TH1F("h_WR_mass_varBins","",binnum, bins);
+  h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted_varBins","",binnum, bins);
 #endif 
 
   float dilepton_max = 210.;
@@ -203,9 +203,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
     chain->GetEntry(ev);
 	//if(myEvent->dR_leadlepton_leadjet < 1.2 || myEvent->dR_leadlepton_subleadjet < 1.2 || myEvent->dR_subleadlepton_leadjet < 1.2 || myEvent->dR_subleadlepton_subleadjet < 1.2) continue;
 	//if(myEvent->lead_jet_pt < 100 || myEvent->sublead_jet_pt < 100) continue;
+	if(myEvent->dilepton_mass > 180.) continue;
 	if(myEvent->sublead_lepton_pt < 53.) continue;
 #ifdef doMllAboveZpeak
-	if(myEvent->dilepton_mass < 120. || myEvent->dilepton_mass > 200.) continue;
+	if(myEvent->dilepton_mass < 120. || myEvent->dilepton_mass > 180.) continue;
 #endif
 
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -252,23 +253,26 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   //normalize Mlljj histo bins
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
-	  //get num bins in histo i
-	  Int_t nBins = (hs->at(i))->GetNbinsX();
-	  for(Int_t j=1; j<=nBins; j++){
-		  //include the overflows in the very last bin shown on the plot
-		  if(j==nBins){
-			  Double_t origBinContents = (hs->at(i))->GetBinContent(j);
-			  Double_t overflowContents = (hs->at(i))->GetBinContent(j+1);
-			  std::cout<<"overflow contents =\t"<< overflowContents << std::endl;	//sanity check
-			  (hs->at(i))->SetBinContent(j, origBinContents+overflowContents);
-		  }//end work to include overflows in last bin shown on plot
-		  //in each bin, divide the bin contents by the bin width
-		  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
-		  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
-		  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
-		  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
-		  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
-	  }//end loop over bins in histo
+	  TString histName = (hs->at(i))->GetName();
+	  if(histName.Contains("varBins") || histName.Contains("2012bins")){
+		  //get num bins in histo i
+		  Int_t nBins = (hs->at(i))->GetNbinsX();
+		  for(Int_t j=1; j<=nBins; j++){
+			  //include the overflows in the very last bin shown on the plot
+			  if(j==nBins){
+				  Double_t origBinContents = (hs->at(i))->GetBinContent(j);
+				  Double_t overflowContents = (hs->at(i))->GetBinContent(j+1);
+				  (hs->at(i))->SetBinContent(j, origBinContents+overflowContents);
+			  }//end work to include overflows in last bin shown on plot
+			  //in each bin, divide the bin contents by the bin width
+			  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
+			  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
+			  Double_t binWidth = (hs->at(i))->GetBinWidth(j);
+			  (hs->at(i))->SetBinContent(j, oldBinContents/binWidth);
+			  (hs->at(i))->SetBinError(j, oldBinErrors/binWidth);
+		  }//end loop over bins in histo
+
+	  }//end filter which selects plots with variable bin widths
 
   }//end loop over histos in vector
 #endif
@@ -344,6 +348,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+  if(fname.EqualTo("Mll")) ratio->GetXaxis()->SetTitle("M_{LL} [GeV]");
   ratio->GetXaxis()->SetTickSize(0.40);
   ratio->GetXaxis()->SetTitleSize(labelSize);
   ratio->SetLabelSize(labelSize - 0.07,"x");
@@ -476,7 +481,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef doMllAboveZpeak
-	fn += "_MLL120to200";
+  if(fname.EqualTo("Mll")){
+	  fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonMuMuChannel_DYMADHTAndIncl";
+	  if(channel == Selector::EE) fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonEEChannel_DYMADHTAndIncl";
+  }
+  fn += "_MLL120to200";
 #endif
 
 
@@ -485,7 +494,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 
-  if(fname.EqualTo("Mlljj") ){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
