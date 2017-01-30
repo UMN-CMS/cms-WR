@@ -29,6 +29,7 @@
  */
 
 //#define PRINTRATIOS
+#define PRINT
 
 std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
@@ -275,6 +276,12 @@ void flavorSideband(){
   ratio_RescaledData_MuMu->SetStats(0);
 
   ratio_RescaledData_MuMu->Divide(h_WR_mass_MuMu);
+#ifdef PRINT
+  Int_t nBinsMuMu = ratio_RescaledData_MuMu->GetNbinsX();
+  for(Int_t n=1; n<=nBinsMuMu ; n++){
+	  std::cout<< "in ratio of rescaled emujj data to MuMu MC, bin # " << n << " has ratio=\t" << ratio_RescaledData_MuMu->GetBinContent(n) << std::endl;
+  }//end loop over bins in ratio plot
+#endif 
   ratio_RescaledData_MuMu->SetMarkerStyle(20);
   ratio_RescaledData_MuMu->SetMarkerColor(kBlack);
   ratio_RescaledData_MuMu->SetLabelSize(0.25, "y");
@@ -349,6 +356,12 @@ void flavorSideband(){
   ratio_RescaledData_EE->SetStats(0);
 
   ratio_RescaledData_EE->Divide(h_WR_mass_EE);
+#ifdef PRINT
+  Int_t nBinsEE = ratio_RescaledData_EE->GetNbinsX();
+  for(Int_t n=1; n<=nBinsEE ; n++){
+	  std::cout<< "in ratio of rescaled emujj data to EE MC, bin # " << n << " has ratio=\t" << ratio_RescaledData_EE->GetBinContent(n) << std::endl;
+  }//end loop over bins in ratio plot
+#endif 
   ratio_RescaledData_EE->SetMarkerStyle(20);
   ratio_RescaledData_EE->SetMarkerColor(kBlack);
   ratio_RescaledData_EE->SetLabelSize(0.25, "y");
