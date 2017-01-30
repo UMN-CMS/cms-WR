@@ -299,6 +299,13 @@ void printSystStdDevToFile(){
 	
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
+	
+				if(wrMassVect[m] == 1800 ){
+					wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_1400"  + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
+					wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_1400" + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
+	
+				}
+				
 				chainPointers[dyMuMuTagName] = dyMuMu;
 				chainPointers["MuMuWR"] = wrMuMu;
 				chainPointers[dyEETagName] = dyEE;
