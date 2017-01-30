@@ -68,16 +68,16 @@ void flavorSideband(){
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
   ////fixed bin width MLLJJ plots with standard domain
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
+  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",21,530,2000);
+  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
+  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
+  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
   
   ////variable bin width MLLJJ plots
-  //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
-  //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
-  //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
-  //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
@@ -239,7 +239,8 @@ void flavorSideband(){
   h_WR_mass_MuMu->SetLineWidth(3);
   h_WR_mass_MuMu->SetLineColor(kBlack);
   h_WR_mass_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  h_WR_mass_MuMu->GetYaxis()->SetTitle("Events");
+  //h_WR_mass_MuMu->GetYaxis()->SetTitle("Events");	///fixed bin widths
+  h_WR_mass_MuMu->GetYaxis()->SetTitle("Events/GeV");	///variable bin widths
   TLegend * legMuMuEMuData = new TLegend(0.72,0.65,0.98,0.9);
   legMuMuEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
   legMuMuEMuData->AddEntry(h_WR_mass_MuMu,"MuMu MC");
@@ -263,7 +264,9 @@ void flavorSideband(){
   
   canvMuMuEMuData->cd();
   p2MuMu->cd();	///<change to ratio TPad
-  Float_t minYratio = 0.41, maxYratio = 1.99;
+  //Float_t minYratio = 0.41, maxYratio = 1.99;	///fixed bin width
+  Float_t minYratio = 0.61, maxYratio = 1.35;	///variable bin width
+ 
   Float_t xLabelSize = 0.25, xTitleSize = 0.25;
   ratio_RescaledData_MuMu->SetTitle("");
   ratio_RescaledData_MuMu->GetXaxis()->SetTitleSize(xTitleSize);
@@ -287,9 +290,12 @@ void flavorSideband(){
   canvMuMuEMuData->cd();
   canvMuMuEMuData->Update();
  
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.pdf","recreate");
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.png","recreate");
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.C","recreate");
+  //canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.pdf","recreate");
+  //canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.png","recreate");
+  //canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.C","recreate");
+  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_variablebinwidth_overflowsInLastBin.pdf","recreate");
+  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_variablebinwidth_overflowsInLastBin.png","recreate");
+  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_variablebinwidth_overflowsInLastBin.C","recreate");
 
 
   TCanvas* canvEEEMu = new TCanvas("canvEEEMu","",600,600);
@@ -303,47 +309,14 @@ void flavorSideband(){
   canvEEEMu->SaveAs("emujj_and_eejj_signal_region_fixedbinwidth.pdf","recreate");
   canvEEEMu->SaveAs("emujj_and_eejj_signal_region_fixedbinwidth.png","recreate");
 
-  /*
- 
-  canvMuMuEMuData->cd();
-  p2MuMu->cd();	///<change to ratio TPad
-  Float_t minYratio = 0.41, maxYratio = 1.99;
-  Float_t xLabelSize = 0.25, xTitleSize = 0.25;
-  ratio_RescaledData_MuMu->SetTitle("");
-  ratio_RescaledData_MuMu->GetXaxis()->SetTitleSize(xTitleSize);
-  ratio_RescaledData_MuMu->SetLabelSize(xLabelSize,"x");
-  ratio_RescaledData_MuMu->Sumw2();
-  ratio_RescaledData_MuMu->SetStats(0);
-
-  ratio_RescaledData_MuMu->Divide(h_WR_mass_MuMu);
-  ratio_RescaledData_MuMu->SetMarkerStyle(20);
-  ratio_RescaledData_MuMu->SetMarkerColor(kBlack);
-  ratio_RescaledData_MuMu->SetLabelSize(0.25, "y");
-  ratio_RescaledData_MuMu->GetYaxis()->SetRangeUser(minYratio, maxYratio);
-  ratio_RescaledData_MuMu->GetYaxis()->SetNdivisions(505);
-  ratio_RescaledData_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-
-  ratio_RescaledData_MuMu->Draw("p");
-  float xmax = ratio_RescaledData_MuMu->GetXaxis()->GetXmax();
-  float xmin = ratio_RescaledData_MuMu->GetXaxis()->GetXmin();
-  TF1 *f1 = new TF1("f1","1", xmin, xmax);
-  f1->Draw("same");
-  canvMuMuEMuData->cd();
-  canvMuMuEMuData->Update();
- 
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.pdf","recreate");
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.png","recreate");
-  canvMuMuEMuData->SaveAs("rescaled_emujj_data_and_mumujj_MC_signal_region_fixedbinwidth.C","recreate");
-
-
-	 */
 
   TCanvas* canvEEEMuData = new TCanvas("canvEEEMuData","",600,600);
   canvEEEMuData->cd();
   h_WR_mass_EE->SetLineColor(kBlack);
   h_WR_mass_EE->SetLineWidth(3);
   h_WR_mass_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  h_WR_mass_EE->GetYaxis()->SetTitle("Events");
+  //h_WR_mass_EE->GetYaxis()->SetTitle("Events");	///fixed bin widths
+  h_WR_mass_EE->GetYaxis()->SetTitle("Events/GeV");	///variable bin widths
   h_WR_mass_EMuData->Scale(1/mumuEmuSF);	///<undo the scaling which was done earlier
   h_WR_mass_EMuData->Scale(eeEmuSF);
   TLegend * legEEEMuData = new TLegend(0.72,0.65,0.98,0.9);
@@ -387,10 +360,12 @@ void flavorSideband(){
   f1->Draw("same");
   canvEEEMuData->cd();
   canvEEEMuData->Update();
-  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.pdf","recreate");
-  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.png","recreate");
-  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.C","recreate");
-
+  //canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.pdf","recreate");
+  //canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.png","recreate");
+  //canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_fixedbinwidth.C","recreate");
+  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth_overflowsInLastBin.pdf","recreate");
+  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth_overflowsInLastBin.png","recreate");
+  canvEEEMuData->SaveAs("rescaled_emujj_data_and_eejj_MC_signal_region_variablebinwidth_overflowsInLastBin.C","recreate");
 
 
   ///rescale the EEJJ and MuMuJJ MC and compare it to the EMu data and EMuJJ MC
@@ -519,6 +494,25 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
   std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
+
+  /*for variable bin widths*/
+  //rescale bin contents by bin widths
+  Int_t nBins = h->GetNbinsX();
+  for(Int_t j=1; j<=nBins; j++){
+	  //include the overflows in the very last bin shown on the plot
+	  if(j==nBins){
+		  Double_t origBinContents = h->GetBinContent(j);
+		  Double_t overflowContents = h->GetBinContent(j+1);
+		  h->SetBinContent(j, origBinContents+overflowContents);
+	  }//end work to include overflows in last bin shown on plot
+	  //in each bin, divide the bin contents by the bin width
+	  Double_t oldBinContents = h->GetBinContent(j);
+	  Double_t oldBinErrors = h->GetBinError(j);
+	  Double_t binWidth = h->GetBinWidth(j);
+	  h->SetBinContent(j, oldBinContents/binWidth);
+	  h->SetBinError(j, oldBinErrors/binWidth);
+  }//end loop over bins in histo
+  /**/
 }
 
 //call this fxn once TF1 is fitted to distribution
