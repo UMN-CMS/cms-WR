@@ -57,10 +57,10 @@ using namespace std;
 //#define StudyEffectOfMassPairs
 //#define bkgndOverlaidOnMatchedSignal
 //#define sOverBsensitivity
-#define showMassWindows
+//#define showMassWindows
 //#define printNewDySyst
 //#define DYHTPlot
-//#define DYPdfUnc
+#define DYPdfUnc
 //#define TTScaleFactorSystematic
 
 
@@ -3332,18 +3332,19 @@ void macroSandBox(){
 	///100 trees with weighted evts made from 100 other PDFs
 	///calculate the number of weighted evts in every tree, Tree_Iter0, and sum the difference btwn each tree
 	///and the default tree squared.  The square root of this sum is the PDF uncertainty, in number of evts
+	///just change the input files (which have already been processed with signal region requirements) to switch DY samples
 	
 	int numDiffPdfs = 100;
 	Double_t numPdfs = 100;	//equal to numDiffPdfs
 	TString treeName = "Tree_Iter0";
-	//std::string leptChnl = "mumuMuMu";
-	std::string leptChnl = "eeEE";
+	std::string leptChnl = "mumuMuMu";
+	//std::string leptChnl = "eeEE";
 	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
-	std::string defaultPdfFileBegin = "selected_tree_DYAMC_signal_";
+	std::string defaultPdfFileBegin = "selected_tree_DYMadInclAndHT_signal_";
 	std::string defaultPdfFileEnd = "_withMllWeight.root";
 	//use std::string to facilitate use of to_string() method
-	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/forDYAMCPdfUncert/";
-	std::string nonDefaultPdfFileBegin = "selected_tree_DYAMC_signal_";
+	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/forDYMadInclAndHTPdfUncert/";
+	std::string nonDefaultPdfFileBegin = "selected_tree_DYMadInclAndHT_signal_";
 	std::string nonDefaultPdfFileMiddle = "_withMllWeight_pdfWeight_";
 	std::string nonDefaultPdfFileEnd = ".root";
 
@@ -3376,7 +3377,11 @@ void macroSandBox(){
 	}//end calculating uncertainty
 
 	Double_t uncert = sqrt(sumOfSqdDiffs/(numPdfs-1));
-	std::cout<<"uncertainty =\t"<< uncert <<" percentage uncertainty =\t" << 100*uncert/meanNumEvts <<std::endl;
+	std::cout<<"\t"<<std::endl;
+	std::cout<<"lepton channel =\t"<< leptChnl <<std::endl;
+	std::cout<<"uncertainty =\t"<< uncert <<" | percentage uncertainty =\t" << 100*uncert/meanNumEvts <<std::endl;
+	std::cout<<"\t"<<std::endl;
+
 
 
 #endif
