@@ -23,11 +23,11 @@ increment=100
 #nevts=500
 ###end temp
 
-label="genWrToMuMuJJFullOfflineAnalysis_WR"
+label="genWrToEEJJFullOfflineAnalysis_WR"
 masterBatchSubDir="batchSubmFilesAndLogDirs"
 jobStartingDir="$PWD/../.."
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
-leptonChannel="MuMu"
+leptonChannel="EE"
 outputFileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter"	#do not add a fwd slash at the end of this string
 
 eval "mkdir -p $outputFileDir"
@@ -100,26 +100,6 @@ while [ $wrMass -le $maxWrMass ]; do
 		if [ $currentSubmittedJobs -ge $maxRunning ]; then
 			let currentSubmittedJobs=0
 			eval "sleep 40m"
-		#	while :
-		#	do
-		#		eval "bjobs > numRunningJobs.txt"
-		#		eval "wc -l < numRunningJobs.txt > numlines.txt"
-		#		tempVar=$(cat numlines.txt)
-		#		one=1
-		#		if [ $tempVar -eq $one ]; then
-		#			echo "breaking out of loop because there are no unfinished jobs"
-		#			break
-		#		fi
-		#		rm numlines.txt numRunningJobs.txt
-		#		let tempRunningJobs=tempRunningJobs+$tempVar
-		#		#now tempRunningJobs equals the number of running jobs plus one
-		#		if [ $tempRunningJobs -le $safeLowerBoundNumRunningJobs ]; then
-		#			let currentSubmittedJobs=tempRunningJobs
-		#			let tempRunningJobs=0
-		#			echo "the number of running jobs is low enough for new jobs to be submitted"
-		#			break
-		#		fi
-		#	done
 		fi
 
 	done
