@@ -150,6 +150,14 @@ process.load('ExoAnalysis.cmsWR.heepSelector_cfi')
 process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
 
 #################################
+#Producers
+process.wrPdfWeights = cms.EDProducer("PdfWeightProducer",
+		GenTag = cms.untracked.InputTag("prunedGenParticles"),
+		PdfInfoTag = cms.untracked.InputTag("generator"),
+		PdfSetNames = cms.untracked.vstring("PDF4LHC15_100.LHgrid","NNPDF30_100.LHgrid")
+		)
+
+#################################
 #Filters
 process.genHTFilter = cms.EDFilter('htFilter',
 		cutThreshold = cms.double(100.),
@@ -166,7 +174,8 @@ process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 #process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence * process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter)
-process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
+process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence * process.wrPdfWeights)
+#process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
 
 
 process.miniTree_signal_ee   = process.MiniTTree.clone()
@@ -183,7 +192,8 @@ process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullS
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 
 #process.DYtagAndProbe = cms.Path(process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter * process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer * process.wrPdfWeights)
+#process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
 
 #process.microAODoutput_step = cms.EndPath(process.microAOD_output)
