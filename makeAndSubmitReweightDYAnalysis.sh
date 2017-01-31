@@ -8,7 +8,7 @@ workingDir=$PWD
 ##MadIncl LowHT and MadHT all bins
 mode='DYMadInclAndHT'
 
-
+#for DYMAD and DYAMC
 for i in {0..100}
 do
 	#replace WGTNUM by an integer, MODE by a string, and CHNL by a string
