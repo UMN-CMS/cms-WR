@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 import os, sys, imp, re
 
-process = cms.Process('SELECTION')
+process = cms.Process('TESTSELECTION')
 
 ############################################################ OPTIONS
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -154,7 +154,7 @@ process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
 process.wrPdfWeights = cms.EDProducer("PdfWeightProducer",
 		GenTag = cms.untracked.InputTag("prunedGenParticles"),
 		PdfInfoTag = cms.untracked.InputTag("generator"),
-		PdfSetNames = cms.untracked.vstring("PDF4LHC15_100.LHgrid","NNPDF30_100.LHgrid")
+		PdfSetNames = cms.untracked.vstring("NNPDF30_lo_as_0130.LHgrid")
 		)
 
 #################################
@@ -192,7 +192,7 @@ process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullS
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 
 #process.DYtagAndProbe = cms.Path(process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter * process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer * process.wrPdfWeights)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.wrPdfWeights * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 #process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
 
@@ -208,7 +208,7 @@ if (options.isMC==0 and options.unblind==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe) #, process.microAODoutput_step)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu) #, process.DYtagAndProbe) #, process.microAODoutput_step)
 	#process.schedule = cms.Schedule(process.FlavourSideband) #, process.microAODoutput_step)
 #    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe, process.microAODoutput_step)
 

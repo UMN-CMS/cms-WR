@@ -39,8 +39,15 @@ source configs/2015-v1.conf
 
 ##for all datasets in configs/missing_datasets.dat
 ##first get all the dataset short names, and save them to a vector
-mcIdentifier=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
-eosSkimPath='/eos/cms/store/group/phys_exotica/leptonsPlusJets/WR/skims/'
+
+#for other bkgnd skims
+#mcIdentifier=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
+#eosSkimPath='/eos/cms/store/group/phys_exotica/leptonsPlusJets/WR/skims/'
+
+#for WR skims
+mcIdentifier=(`cat $datasetFile | grep -v '#' | grep 'WR' | awk '{print $1}'`)
+eosSkimPath='/eos/cms/store/user/shervin/skims/'
+
 eosReadingTag='root://eoscms.cern.ch/'
 
 #now loop over all elements in mcIdentifier
@@ -74,8 +81,8 @@ do
 		rm tempOne.sh
 
 		#submit the job to 1nh queue and request at least 2 GB of disk
-		#echo "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
-		eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		echo "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		#eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
 		#eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier}_${startingCount}.sh"
 
 		let startingCount=startingCount+1
