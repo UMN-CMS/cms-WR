@@ -63,7 +63,8 @@ TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 	//////////standard minitrees stored in shervin's user area
 	//chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
 	
-	///////////other bkgnd minitrees (WW, single top, t+W, QCD), DYMadIncl gen HT < 100 with pdf weights, and DYMadHT and DYAMC with pdf weights all stored in WR group space on EOS
+	///////////other bkgnd minitrees (WW, single top, t+W, QCD), DYMadIncl gen HT < 100 with pdf (uncert) weights, and DYMadHT and DYAMC with pdf (uncert) weights all stored in WR group space on EOS
+	///////////also WR minitrees with pdf (uncertainty) weights
 	chain->Add(("root://eoscms.cern.ch//store/group/phys_exotica/leptonsPlusJets/WR/tuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
 	chain->GetEntries();
 	return chain;

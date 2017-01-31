@@ -322,7 +322,7 @@ int main(int ac, char* av[])
 	Selector::tag_t channel = Selector::getTag(channel_str);
 
 	Selector::tag_t cut_channel;
-	if(pdfWeight != -1 && modes[0].find("DY") != _ENDSTRING){
+	if(pdfWeight != -1 && (modes[0].find("DY") != _ENDSTRING || modes[0].find("signal") != _ENDSTRING) ){
 		outFileTag += "_pdfWeight_";
 		outFileTag += std::to_string(pdfWeight);
 	}
@@ -671,6 +671,9 @@ int main(int ac, char* av[])
 						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
 							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
 						}
+						if(mode.find("signal") != _ENDSTRING && pdfWeight != -1){
+							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[pdfWeight];
+						}
 #ifdef DEBUGG
 						std::cout << "PU weight=\t" << selEvent.pu_weight << std::endl;
 						std::cout << "num vertices=\t" << selEvent.nPV << std::endl;
@@ -718,6 +721,10 @@ int main(int ac, char* av[])
 						
 						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
 							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
+						}
+
+						if(mode.find("signal") != _ENDSTRING && pdfWeight != -1){
+							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[pdfWeight];
 						}
 
 						//multiply by an additional weight when processing DY samples
