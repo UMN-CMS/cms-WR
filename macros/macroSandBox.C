@@ -60,9 +60,9 @@ using namespace std;
 //#define showMassWindows
 //#define printNewDySyst
 //#define DYHTPlot
-#define DYPdfUnc
+//#define DYPdfUnc
 //#define TTScaleFactorSystematic
-
+#define WRPdfUnc
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -3443,6 +3443,85 @@ void macroSandBox(){
 
 #endif
 	//end TTScaleFactorSystematic ifdef
+
+#ifdef WRPdfUnc
+	
+	int numDiffPdfs = 100;
+	Double_t numPdfs = 100;	//equal to numDiffPdfs
+	TString treeName = "Tree_Iter0";
+	std::string fileMiddle = "_signal_";
+	
+	//std::string leptChnl = "mumuMuMu";
+	//std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
+	
+	std::string leptChnl = "eeEE";
+	std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
+	
+	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
+	std::string fileEnd = ".root";
+	//use std::string to facilitate use of to_string() method
+	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/wrPdfUncertFiles/";
+	std::string nonDefaultPdfFileMiddle = "_pdfWeight_";
+
+	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,5000,5200,5600,5800,6000};
+	int wrMassArr[] = {800,1000,2600,2800,3000,4000};
+	
+	vector<int> wrMassVect(wrMassArr, wrMassArr + sizeof(wrMassArr)/sizeof(int) );
+	unsigned int wrPts = wrMassVect.size();
+
+	//loop over different WR mass points
+	for(unsigned int m=0; m<wrPts; m++){
+		TChain * defaultPdfChain = new TChain(treeName);
+		defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+to_string(wrMassVect[m])+"_"+to_string(wrMassVect[m]/2)+fileMiddle+leptChnl+fileEnd).c_str() );
+		if(wrMassVect[m] == 1800) defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+fileEnd).c_str() );
+		Double_t numDefaultEvts = calcTotalNumWeightedEvts(defaultPdfChain);
+
+		std::vector<Double_t> numWeightedEvtsDiffPdfs;
+		Double_t meanNumEvts = 0;
+		//loop over different pdf files, calculate the total number of weighted evts, and put that number into a vector
+		for(int i=0; i<numDiffPdfs ; i++){
+			if((i==55 || i==70 || i==81 ) && wrMassVect[m]==3000 && leptChnl=="mumuMuMu") continue;
+			if((i==44 || i==94) && wrMassVect[m]==4000 && leptChnl=="mumuMuMu") continue;
+			if((i==23 || i==94) && wrMassVect[m]==4000 && leptChnl=="eeEE") continue;
+			if((i==33 || i==48 || i==96 ) && wrMassVect[m]==3000 && leptChnl=="eeEE") continue;
+
+
+			TChain * nonDefaultPdfChain = new TChain(treeName);
+			nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+to_string(wrMassVect[m])+"_"+to_string(wrMassVect[m]/2)+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
+			if(wrMassVect[m] == 1800) nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
+
+			numWeightedEvtsDiffPdfs.push_back( calcTotalNumWeightedEvts(nonDefaultPdfChain) );
+			//std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;
+			meanNumEvts += numWeightedEvtsDiffPdfs[i];
+
+			delete nonDefaultPdfChain;
+			nonDefaultPdfChain = 0;
+		}//end loop over different pdfs
+
+		meanNumEvts = meanNumEvts/(numPdfs-1);
+
+		Double_t sumOfSqdDiffs = 0;
+		//now calculate uncertainty
+		for(int i=0; i<numDiffPdfs ; i++){
+			sumOfSqdDiffs += (meanNumEvts - numWeightedEvtsDiffPdfs[i])*(meanNumEvts - numWeightedEvtsDiffPdfs[i]);
+		}//end calculating uncertainty
+
+		Double_t uncert = sqrt(sumOfSqdDiffs/(numPdfs-1));
+		std::cout<<"\t"<<std::endl;
+		std::cout<<"lepton channel =\t"<< leptChnl << "\tWR mass=\t" << wrMassVect[m] << std::endl;
+		std::cout<<"uncertainty =\t"<< uncert <<" | percentage uncertainty =\t" << 100*uncert/meanNumEvts <<std::endl;
+		std::cout<<"\t"<<std::endl;
+
+
+		numWeightedEvtsDiffPdfs.clear();
+		delete defaultPdfChain;
+		defaultPdfChain = 0;
+	}//end loop over WR mass points
+
+
+#endif
+	//end WRPdfUnc
+
 
 }///end macroSandBox()
 
