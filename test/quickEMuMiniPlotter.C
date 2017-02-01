@@ -46,8 +46,8 @@ void quickEMuMiniPlotter(){
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
-  TChain * chain_WZ = new TChain("Tree_Iter0","WZ");
-  TChain * chain_ZZ = new TChain("Tree_Iter0","ZZ");
+  TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFiles/";
@@ -63,7 +63,8 @@ void quickEMuMiniPlotter(){
 	tt = chain_ttbar->Add(localDir+"selected_tree_TT_flavoursidebandEMu.root");
     wjets = chain_WJets->Add(localDir+"selected_tree_W_flavoursidebandEMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
+  	zz = chain_ZZ->Add(localDir+"selected_tree_topW_flavoursidebandEMuEE.root");
     data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
     break;
   default:
@@ -347,8 +348,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
   leg->AddEntry( hs_ttbar, "TT MC" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
-  leg->AddEntry( hs_WZ, "WZ" ) ; 
-  leg->AddEntry( hs_ZZ, "ZZ" ) ; 
+  leg->AddEntry( hs_WZ, "Diboson" ) ; 
+  leg->AddEntry( hs_ZZ, "Other MC" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
