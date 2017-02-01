@@ -70,13 +70,14 @@ using namespace std;
 
 //calculate the total number of weighted evts in a chain, given a branch name to draw and a weight branch name for weighting evts which are drawn
 Double_t calcTotalNumWeightedEvts(TChain * chain){
-	chain->Draw("dilepton_mass>>tempHist(10,200.,4000.)", "(weight)*(dilepton_mass>0)" );	///<draw evts with weights, save to histo
-	TH1F * tempHist = (TH1F*) gROOT->FindObject("tempHist");	///<get histo
-	Double_t numWgtEvts = tempHist->Integral();	///<get num weighted evts from histo
+	Double_t numWgtEvts = 0;
+	chain->Draw("NEventsInRange[0]>>tempHist(1000,0.,4500.)");	///<draw weighted evts
+	TH1D * tempHist = (TH1D*) gROOT->FindObject("tempHist");	///<get histo
+	numWgtEvts = tempHist->GetMean();	///<get num weighted evts from histo
+	//std::cout<<"num wgt evts =\t" << numWgtEvts << std::endl;	///<sanity check
 	delete tempHist;
 	tempHist = 0;
 	return numWgtEvts;
-
 }//end calcTotalNumWeightedEvts()
 
 
@@ -3336,7 +3337,7 @@ void macroSandBox(){
 	
 	int numDiffPdfs = 100;
 	Double_t numPdfs = 100;	//equal to numDiffPdfs
-	TString treeName = "Tree_Iter0";
+	TString treeName = "central_value_tree";
 	std::string leptChnl = "mumuMuMu";
 	//std::string leptChnl = "eeEE";
 	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
@@ -3446,16 +3447,16 @@ void macroSandBox(){
 
 #ifdef WRPdfUnc
 	
-	int numDiffPdfs = 100;
-	Double_t numPdfs = 100;	//equal to numDiffPdfs
-	TString treeName = "Tree_Iter0";
+	int numDiffPdfs = 99;
+	Double_t numPdfs = 99;	//equal to numDiffPdfs
+	TString treeName = "central_value_tree";
 	std::string fileMiddle = "_signal_";
 	
-	//std::string leptChnl = "mumuMuMu";
-	//std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
+	std::string leptChnl = "mumuMuMu";
+	std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
 	
-	std::string leptChnl = "eeEE";
-	std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
+	//std::string leptChnl = "eeEE";
+	//std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
 	
 	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
 	std::string fileEnd = ".root";
@@ -3464,34 +3465,36 @@ void macroSandBox(){
 	std::string nonDefaultPdfFileMiddle = "_pdfWeight_";
 
 	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,5000,5200,5600,5800,6000};
-	int wrMassArr[] = {800,1000,2600,2800,3000,4000};
+	int wrMassArr[] = {800,1000,2600,2800,3000,3800,4000};
 	
 	vector<int> wrMassVect(wrMassArr, wrMassArr + sizeof(wrMassArr)/sizeof(int) );
 	unsigned int wrPts = wrMassVect.size();
 
 	//loop over different WR mass points
 	for(unsigned int m=0; m<wrPts; m++){
-		TChain * defaultPdfChain = new TChain(treeName);
-		defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+to_string(wrMassVect[m])+"_"+to_string(wrMassVect[m]/2)+fileMiddle+leptChnl+fileEnd).c_str() );
-		if(wrMassVect[m] == 1800) defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+fileEnd).c_str() );
-		Double_t numDefaultEvts = calcTotalNumWeightedEvts(defaultPdfChain);
+		//TChain * defaultPdfChain = new TChain(treeName);
+		//defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+to_string(wrMassVect[m])+"_"+to_string(wrMassVect[m]/2)+fileMiddle+leptChnl+fileEnd).c_str() );
+		//if(wrMassVect[m] == 1800) defaultPdfChain->Add( (defaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+fileEnd).c_str() );
+		//Double_t numDefaultEvts = calcTotalNumWeightedEvts(defaultPdfChain);
 
-		std::vector<Double_t> numWeightedEvtsDiffPdfs;
+		Double_t numWeightedEvtsDiffPdfs[numDiffPdfs];
 		Double_t meanNumEvts = 0;
 		//loop over different pdf files, calculate the total number of weighted evts, and put that number into a vector
 		for(int i=0; i<numDiffPdfs ; i++){
 			if((i==55 || i==70 || i==81 ) && wrMassVect[m]==3000 && leptChnl=="mumuMuMu") continue;
 			if((i==44 || i==94) && wrMassVect[m]==4000 && leptChnl=="mumuMuMu") continue;
+			if(i==71 && wrMassVect[m]==3800 && leptChnl=="mumuMuMu") continue;
 			if((i==23 || i==94) && wrMassVect[m]==4000 && leptChnl=="eeEE") continue;
 			if((i==33 || i==48 || i==96 ) && wrMassVect[m]==3000 && leptChnl=="eeEE") continue;
 
 
+			Int_t addResult;
 			TChain * nonDefaultPdfChain = new TChain(treeName);
-			nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+to_string(wrMassVect[m])+"_"+to_string(wrMassVect[m]/2)+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
-			if(wrMassVect[m] == 1800) nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
+			addResult = nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+to_string(wrMassVect[m])+"_"+to_string(wrMassVect[m]/2)+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
+			if(wrMassVect[m] == 1800) addResult = nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
 
-			numWeightedEvtsDiffPdfs.push_back( calcTotalNumWeightedEvts(nonDefaultPdfChain) );
-			//std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;
+			numWeightedEvtsDiffPdfs[i] = calcTotalNumWeightedEvts(nonDefaultPdfChain);
+			//std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;	///<sanity check
 			meanNumEvts += numWeightedEvtsDiffPdfs[i];
 
 			delete nonDefaultPdfChain;
@@ -3513,9 +3516,9 @@ void macroSandBox(){
 		std::cout<<"\t"<<std::endl;
 
 
-		numWeightedEvtsDiffPdfs.clear();
-		delete defaultPdfChain;
-		defaultPdfChain = 0;
+		for(int j=0; j<numDiffPdfs; j++){ numWeightedEvtsDiffPdfs[j] = 0.; }
+		//delete defaultPdfChain;
+		//defaultPdfChain = 0;
 	}//end loop over WR mass points
 
 
