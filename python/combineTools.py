@@ -127,9 +127,15 @@ class AnalysisResultsInterface:
 			mean = .0001
 
 		raw = [ syst_mean, mean, central_value, tmp_syst, tmp_stat, var, central_unweighted, ]
-		systematics.add(process, "lumi", 1.027)
-		raw += [1.027]
+		#lump the WR pdf uncertainty in with the lumi uncertainty, but don't change the lumi uncertainty for DY or TT
+		if process in ["DYAMC", "TT"]:
+			systematics.add(process, "lumi", 1.027)
+			raw += [1.027]
+		else:
+			systematics.add(process, "lumi", 1.029)
+			raw += [1.029]
 
+		
 		systematics.add(process, process + "_unc", (N,alpha))
 		raw +=[N,alpha]
 		
