@@ -19,6 +19,7 @@ datacardfolder = thisdir + "/datacards/"
 datacards = os.listdir(datacardfolder)
 pattern = re.compile("WR(.*)jj_MASS(.*).txt")
 
+#configfile needed for list of datasets, which is used to extract the WR cross sections later shown in 1D limit plots
 configfile = open("configs/2015-v1.conf")
 config = dict( [ line.strip().split('=') for line in configfile])
 
@@ -36,7 +37,7 @@ for datacard in datacards:
 	datacard_file = datacardfolder + datacard
 
 	jobname = channel + "_" + MWR + "_"
-	systematics = True
+	systematics = True	#disable systematics evaluation by setting this to False
 #TODO: Make hybrid new work for observed
 	if "Hybrid" in mode:
 		jobid = jobname + "EXPECTED"

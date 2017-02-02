@@ -4,13 +4,13 @@ import ExoAnalysis.cmsWR.cross_sections as xs
 import os 
 import sys
 
+#tag is just the name of a directory in the dir shown in prodSpace below. no forward slash is needed at the end
 tag = sys.argv[1] 
 
+#configfile used to read WR signal cross sections from datasets list 
 configfile = open("configs/2015-v1.conf")
 config = dict( [ line.strip().split('=') for line in configfile])
 
-#prodSpace = "/local/cms/user/phansen/limits/"
-#prodSpace = "/afs/cern.ch/work/p/phansen/public/wr/limits/" + tag + "/"
 prodSpace = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/limitSetting/" + tag + "/"
 name = config["productionTAG"]
 
@@ -40,8 +40,8 @@ for res in results:
 #	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
 #plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
 #	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
-plotters["ee"].plot("plots/limWReejjInfb" + name + tag, x_title = "M_{W_{R}} [GeV]",
+plotters["ee"].plot("plots/limWReejjInfbOnly2sigma" + name + tag, x_title = "M_{W_{R}} [GeV]",
 	y_title="Limit on XS(fb)", y_limits = (2e+0,4e+2), x_limits = (800, 4000), leg_y = .68 , scale = 1000)
-plotters["mumu"].plot("plots/limWRmumujjInfb" + name + tag, x_title = "M_{W_{R}} [GeV]",
+plotters["mumu"].plot("plots/limWRmumujjInfbOnly2sigma" + name + tag, x_title = "M_{W_{R}} [GeV]",
 	y_title="Limit on XS(fb)", y_limits = (2e+0,4e+2), x_limits = (800, 4000), leg_y = .68 , scale = 1000)
 #plotters.plot("plots/limWR" + channel + ".png", x_title = "M_{W_{R}} [GeV]", y_title="#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mu) [fb]", y_range = (1e-3,10))

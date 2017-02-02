@@ -62,7 +62,7 @@ class limit1d:
 			#onesig_array *= self.xs
 			#twosig_array *= self.xs
 
-		#rescale expected limits and sigma bands
+		#rescale expected limits and expected limit sigma bands
 		expected_limit_array *= scale
 		onesig_array *= scale
 		twosig_array *= scale
@@ -93,14 +93,17 @@ class limit1d:
 		n = len(self.masses)
 
 		g_twosig = ROOT.TGraph(n*2+1, mass_band_array, twosig_array)
-		g_twosig.SetFillColor(ROOT.kYellow)
-		g_twosig.SetLineWidth(0)
-		g_twosig.Draw("F SAME")
+		g_twosig.SetLineWidth(2)
+		g_twosig.SetLineColor(ROOT.kBlack)
+		g_twosig.Draw("L SAME")
+		#g_twosig.SetFillColor(ROOT.kYellow)
+		#g_twosig.Draw("F SAME")
 
-		g_onesig = ROOT.TGraph(n*2+1, mass_band_array, onesig_array)
-		g_onesig.SetFillColor(ROOT.kGreen)
-		g_onesig.SetLineWidth(0)
-		g_onesig.Draw("F SAME")
+		#comment this to remove 1sigma band
+		#g_onesig = ROOT.TGraph(n*2+1, mass_band_array, onesig_array)
+		#g_onesig.SetFillColor(ROOT.kGreen)
+		#g_onesig.SetLineWidth(0)
+		#g_onesig.Draw("F SAME")
 
 		g_exp = ROOT.TGraph(n,mass_array, expected_limit_array);
 		g_exp.SetLineWidth(2);
@@ -113,13 +116,15 @@ class limit1d:
 			theory_limit = np.array( [ self.theory[mass] for mass in theory_mass], dtype=float)
 			#rescale theory limit
 			theory_limit *= scale
-			g_theory = ROOT.TGraph(ntheory, theory_mass, theory_limit)
+			theory_mass_unc = onesig_array*0
+			theory_limit_unc = np.array( [ self.theory[mass]*1.010 for mass in theory_mass ], dtype=float)
+			g_theory = ROOT.TGraphErrors(ntheory, theory_mass, theory_limit, theory_mass_unc, theory_limit_unc)  #TGraphErrors assumes errors are symmetric in X and Y at each point
 			g_theory.SetLineWidth(3);
 			g_theory.SetLineColor(ROOT.kRed+2);
 			g_theory.SetLineStyle(0);
 			g_theory.SetFillStyle(3002);
 			g_theory.SetFillColor(ROOT.kRed);
-			g_theory.Draw("L SAME")
+			g_theory.Draw("F SAME")
 
 		if self.observed:
 			nobs = len(self.observed)
@@ -140,7 +145,7 @@ class limit1d:
 		if self.observed:
 			leg.AddEntry(g_obs,"Observed limit","L")
 		leg.AddEntry(g_exp, "Expected limit","L")
-		leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
+		#leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
 		leg.AddEntry(g_twosig, "Expected #pm 2 #sigma", "F")
 		if self.theory:
 			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")

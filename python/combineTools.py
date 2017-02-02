@@ -127,8 +127,8 @@ class AnalysisResultsInterface:
 			mean = .0001
 
 		raw = [ syst_mean, mean, central_value, tmp_syst, tmp_stat, var, central_unweighted, ]
-		#lump the WR pdf uncertainty in with the lumi uncertainty, but don't change the lumi uncertainty for DY or TT
-		if process in ["DYAMC", "TT"]:
+		#lump the WR pdf uncertainty in with the lumi uncertainty, but don't change the lumi uncertainty for DY or TT or OTHER
+		if process in ["DYAMC", "TT", "OTHER"]:
 			systematics.add(process, "lumi", 1.027)
 			raw += [1.027]
 		else:
@@ -139,7 +139,7 @@ class AnalysisResultsInterface:
 		systematics.add(process, process + "_unc", (N,alpha))
 		raw +=[N,alpha]
 		
-		if process in ["DYAMC", "TT"]:
+		if process in ["DYAMC", "TT", "OTHER"]:
 			systematics.add(process,process + "_SF", self.getUncertainty(process, channel))
 			raw += [self.getUncertainty(process, channel)]
 		else:
@@ -207,6 +207,7 @@ class AnalysisResultsInterface:
 		if "TT" in key or "DYAMC" in key:
 			if "TT" in key: mode = "TT"
 			elif "DYAMC" in key: mode = "DYAMC"
+			elif "OTHER" in key: mode = "OTHER"
 			if "ee" in key: channel = "ee"
 			elif "mumu" in key: channel = "mumu"
 			scale = self.SF[mode][channel]["SF"]
@@ -242,6 +243,9 @@ class AnalysisResultsInterface:
 			minitreename = "flavoursideband"
 		elif "DY" in process:
 			mode = process
+			minitreename = "signal_" + channel
+		elif "OTHER" in process:
+			mode = "topW"
 			minitreename = "signal_" + channel
 		else:
 			return None
