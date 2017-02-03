@@ -11,6 +11,12 @@ SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	root://
 MuEG_RunC	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
 MuEG_RunD_v3	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
 MuEG_RunD_v4	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v4_SHv12/	-
+#####
+singleAntiTop	/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	80.95	-	1680200	-	-
+singleTop	/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	136.02	-	3299800	-	-
+antiTopW	/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	35.85	-	988500	-	-
+topW	/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM	35.85	-	995600	-	-
+WW	/WW_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.138e+02	-	993640	-	-
 #	##################################################
 WJetsLNu	/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	5.027e+04	1.782e+02	72207128	root://eoscms//eos/cms/store//user/shervin/skims/WJetsLNu_SHv12/	-
 WZ	/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	2.340e+01	4.670e-02	978512	root://eoscms//eos/cms/store//user/shervin/skims/WZ_SHv12/	-
