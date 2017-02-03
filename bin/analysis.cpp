@@ -420,7 +420,7 @@ int main(int ac, char* av[])
 
 		TRandom3 Rand;
 		const int Total_Number_of_Systematics_Smear = 1;// electron scale(MC)
-		const int Total_Number_of_Systematics_Up_Down = 4;// muon id, muon iso, electron scale(data) and jet energy scale
+		const int Total_Number_of_Systematics_Up_Down = 5;// muon id, muon iso, electron scale(data), mu energy res (MC) and jet energy scale
 		float Random_Numbers_for_Systematics_Smear[Total_Number_of_Systematics_Smear] = {0.};
 		float Random_Numbers_for_Systematics_Up_Down[Total_Number_of_Systematics_Up_Down] = {0.};
 
@@ -564,8 +564,9 @@ int main(int ac, char* av[])
 			if(loop_one) {
 				Random_Numbers_for_Systematics_Up_Down[0] = 0.;//Mu Eff ID
 				Random_Numbers_for_Systematics_Up_Down[1] = 0.;//Mu Eff ISO
-				Random_Numbers_for_Systematics_Up_Down[2] = 0.; //Rand.Gaus(0.0, 1.);// Electron Scale(Data)
-				Random_Numbers_for_Systematics_Up_Down[3] = 0.;//JES
+				Random_Numbers_for_Systematics_Up_Down[2] = 0.; // Electron Scale(Data)
+				Random_Numbers_for_Systematics_Up_Down[3] = 0.; // Mu E res (MC)
+				Random_Numbers_for_Systematics_Up_Down[4] = 0.;//JES
 			} else {
 				for(int Rand_Up_Down_Iter = 0; Rand_Up_Down_Iter < Total_Number_of_Systematics_Up_Down; Rand_Up_Down_Iter++)
 					Random_Numbers_for_Systematics_Up_Down[Rand_Up_Down_Iter] = Rand.Gaus(0.0, 1.);
