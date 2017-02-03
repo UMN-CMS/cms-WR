@@ -116,15 +116,17 @@ class limit1d:
 			theory_limit = np.array( [ self.theory[mass] for mass in theory_mass], dtype=float)
 			#rescale theory limit
 			theory_limit *= scale
-			theory_mass_unc = onesig_array*0
-			theory_limit_unc = np.array( [ self.theory[mass]*1.010 for mass in theory_mass ], dtype=float)
-			g_theory = ROOT.TGraphErrors(ntheory, theory_mass, theory_limit, theory_mass_unc, theory_limit_unc)  #TGraphErrors assumes errors are symmetric in X and Y at each point
+			#theory_mass_unc = onesig_array*0
+			#theory_limit_unc = np.array( [ self.theory[mass]*1.010 for mass in theory_mass ], dtype=float)
+			#g_theory = ROOT.TGraphErrors(ntheory, theory_mass, theory_limit, theory_mass_unc, theory_limit_unc)  #TGraphErrors assumes errors are symmetric in X and Y at each point
+			g_theory = ROOT.TGraph(ntheory, theory_mass, theory_limit)
 			g_theory.SetLineWidth(3);
 			g_theory.SetLineColor(ROOT.kRed+2);
 			g_theory.SetLineStyle(0);
 			g_theory.SetFillStyle(3002);
 			g_theory.SetFillColor(ROOT.kRed);
-			g_theory.Draw("F SAME")
+			#g_theory.Draw("F SAME")
+			g_theory.Draw("L SAME")
 
 		if self.observed:
 			nobs = len(self.observed)
