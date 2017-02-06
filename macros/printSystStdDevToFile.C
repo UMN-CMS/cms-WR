@@ -24,7 +24,7 @@
 #include <map>
 #include <utility>
 
-#define useDYMAD
+//#define useDYMAD
 //#define DEBUG
 
 using namespace std;
@@ -180,8 +180,8 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
-	//int wrMassPoints[] = {1600,2200,2800,3600};
+	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
+	int wrMassPoints[] = {1600,2200,2800,3600};
 	//int wrMassPoints[] = {1000,2200,3600};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
@@ -190,18 +190,19 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuScaleIdSyst/","3200toysAllSyst/"};
-	//string uncertTagNames[] = {"jet energy scale","electron energy scale","muon energy scale and ID Iso","all sources"};
-	string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
-	string uncertTagNames[] = {"all sources"};
+	string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/"};
+	string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources"};
+	//string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
+	//string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
-	string dyFileName = "selected_tree_DYAMC_signal_", dyFileNameTwo = "";
-	string dyEETagName="EEDYAMC", dyEETwoTagName="";
-	string dyMuMuTagName="MuMuDYAMC", dyMuMuTwoTagName="";
+	string topWFileName = "selected_tree_topW_signal_";
+	string dyFileName = "selected_tree_DYMadInclAndHT_signal_", dyFileNameTwo = "";
+	string dyEETagName="EEDYMadInclAndHT", dyEETwoTagName="";
+	string dyMuMuTagName="MuMuDYMadInclAndHT", dyMuMuTwoTagName="";
 #ifdef useDYMAD
-	dyFileName = "selected_tree_DYMADHT_signal_";
+	dyFileName = "selected_tree_DYMadInclAndHT_signal_";
 	dyFileNameTwo = "selected_tree_DYMAD_signal_";
 	dyEETagName="EEDYHT", dyEETwoTagName="EEDYIncl";
 	dyMuMuTagName="MuMuDYHT", dyMuMuTwoTagName="MuMuDYIncl";
@@ -214,8 +215,8 @@ void printSystStdDevToFile(){
 	string pathToSystUncOutputFile = "systUncertaintiesFromAnalysisCpp.txt";
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
-	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
-	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
+	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
+	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -228,16 +229,21 @@ void printSystStdDevToFile(){
 			//for each WR mass and source of uncertainty, determine the systematic uncertainty and write it to a txt file
 			map<string,TChain*> chainPointers;
 			if(uncertTagNamesVect[s].find("jet") != string::npos){
+				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
+				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
+				topWEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + eeChannelInFileNames +".root" ).c_str() );
+				
 				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
 				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + mumuChannelInFileNames +"_withMllWeight.root" ).c_str() );
 				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
-				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +".root" ).c_str() );
+				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"MuMu.root" ).c_str() );
 				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
 				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
 				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
 				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + eeChannelInFileNames +"_withMllWeight.root" ).c_str() );
 				TChain * ttEE = new TChain(treeName.c_str(),"TTEE");
-				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"Copy.root" ).c_str() );
+				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"EE.root" ).c_str() );
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
 				chainPointers["MuMuDY"] = dyMuMu;
@@ -246,40 +252,48 @@ void printSystStdDevToFile(){
 				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
 				chainPointers["MuMuTT"] = ttMuMu;
-	
+				chainPointers["EETopW"] = topWEE;
+				chainPointers["MuMuTopW"] = topWMuMu;
 			}
 
 			if(uncertTagNamesVect[s].find("electron") != string::npos){
+				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
+				topWEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + eeChannelInFileNames +".root" ).c_str() );
 				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
 				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + eeChannelInFileNames +"_withMllWeight.root" ).c_str() );
 				TChain * ttEE = new TChain(treeName.c_str(),"TTEE");
-				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"Copy.root" ).c_str() );
+				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"EE.root" ).c_str() );
 				TChain * wrEE = new TChain(treeName.c_str(),"WREE");
 				wrEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoEEJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + eeChannelInFileNames +".root" ).c_str() );
 				chainPointers["EEDY"] = dyEE;
 				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
+				chainPointers["EETopW"] = topWEE;
 			}
 
 			if(uncertTagNamesVect[s].find("muon") != string::npos){
+				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
+				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
 				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
 				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + mumuChannelInFileNames +"_withMllWeight.root" ).c_str() );
 				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
-				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +".root" ).c_str() );
+				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"MuMu.root" ).c_str() );
 				TChain * wrMuMu = new TChain(treeName.c_str(),"WRMuMu");
 				wrMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + "selected_tree_WRtoMuMuJJ_" + to_string(wrMassVect[m]) + "_" + to_string(wrMassVect[m]/2) + "_signal_" + mumuChannelInFileNames +".root" ).c_str() );
 				chainPointers["MuMuDY"] = dyMuMu;
 				chainPointers["MuMuWR"] = wrMuMu;
 				chainPointers["MuMuTT"] = ttMuMu;
+				chainPointers["MuMuTopW"] = topWMuMu;
 			}
 
 			else{ //all systematics enabled
+				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
+				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
+				topWEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + eeChannelInFileNames +".root" ).c_str() );
+
 				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
 				dyMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + mumuChannelInFileNames +"_withMllWeight.root" ).c_str() );
-#ifdef useDYMAD
-				TChain * dyMuMuTwo = new TChain(treeName.c_str(),"DYMuMuTwo");
-				dyMuMuTwo->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileNameTwo + mumuChannelInFileNames +"_withMllWeight.root" ).c_str() );
-#endif
 
 				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
 				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"MuMu.root" ).c_str() );
@@ -289,11 +303,6 @@ void printSystStdDevToFile(){
 				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
 				dyEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileName + eeChannelInFileNames +"_withMllWeight.root" ).c_str() );
 
-#ifdef useDYMAD	
-				TChain * dyEETwo = new TChain(treeName.c_str(),"DYEETwo");
-				dyEETwo->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + dyFileNameTwo + eeChannelInFileNames +"_withMllWeight.root" ).c_str() );
-#endif
-				
 				TChain * ttEE = new TChain(treeName.c_str(),"TTEE");
 				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"EE.root" ).c_str() );
 	
@@ -306,16 +315,14 @@ void printSystStdDevToFile(){
 	
 				}
 				
-				chainPointers[dyMuMuTagName] = dyMuMu;
+				chainPointers["MuMuDY"] = dyMuMu;
 				chainPointers["MuMuWR"] = wrMuMu;
-				chainPointers[dyEETagName] = dyEE;
+				chainPointers["EEDY"] = dyEE;
 				chainPointers["EEWR"] = wrEE;
 				chainPointers["EETT"] = ttEE;
 				chainPointers["MuMuTT"] = ttMuMu;
-#ifdef useDYMAD
-				chainPointers[dyMuMuTwoTagName] = dyMuMuTwo;
-				chainPointers[dyEETwoTagName] = dyEETwo;
-#endif
+				chainPointers["EETopW"] = topWEE;
+				chainPointers["MuMuTopW"] = topWMuMu;
 			}
 
 #ifdef DEBUG
@@ -342,11 +349,15 @@ void printSystStdDevToFile(){
 					statDevSqd *= (rescale*rescale);
 					evtsNoWgts *= rescale;
 				}
-				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << (statDevSqd + systDevSqd)/mean << "\t" << mean*mean/(statDevSqd + systDevSqd) << endl;
-				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
+				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << (statDevSqd + systDevSqd)/mean << "\t" << mean*mean/(statDevSqd + systDevSqd) << endl;
+				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
 	
 
 			}//end loop over TChains at one mass point and both lepton channels
+			writeToSystFile << "\t" << endl;
+			writeToSystFile << "\t" << endl;
+
+
 #ifdef useDYMAD
 
 			//sum expected evts and unweighted evts, add stat and syst uncertainties in quadrature
@@ -369,8 +380,8 @@ void printSystStdDevToFile(){
 			getExpEvtsUnwgtEvtsAndUncsSqd(meanMuMuDYHT, unweightEvtsMuMuDYHT, statUncSqdMuMuDYHT, systUncSqdMuMuDYHT, wrMassVect[m], dyMuMuTagName, pathToMassWindowsFile, chainPointers[dyMuMuTagName]);
 			getExpEvtsUnwgtEvtsAndUncsSqd(meanMuMuDYIncl, unweightEvtsMuMuDYIncl, statUncSqdMuMuDYIncl, systUncSqdMuMuDYIncl, wrMassVect[m], dyMuMuTwoTagName, pathToMassWindowsFile, chainPointers[dyMuMuTwoTagName]);
 
-			//writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << sqrt(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl) << "\t"<< sqrt(systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) <<"\t"<< (unweightEvtsMuMuDYHT+unweightEvtsMuMuDYIncl) << endl;
-			writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << (statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl+systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl)/(meanMuMuDYHT+meanMuMuDYIncl) <<"\t"<< (meanMuMuDYHT+meanMuMuDYIncl)*(meanMuMuDYHT+meanMuMuDYIncl)/(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl+systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) << endl;
+			writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << sqrt(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl) << "\t"<< sqrt(systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) <<"\t"<< (unweightEvtsMuMuDYHT+unweightEvtsMuMuDYIncl) << endl;
+			//writeToSystFile << wrMassVect[m] << "\t" << "DYTotMuMu" << "\t" << uncertTagNamesVect[s] << "\t" << (meanMuMuDYHT+meanMuMuDYIncl) << "\t" << (statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl+systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl)/(meanMuMuDYHT+meanMuMuDYIncl) <<"\t"<< (meanMuMuDYHT+meanMuMuDYIncl)*(meanMuMuDYHT+meanMuMuDYIncl)/(statUncSqdMuMuDYHT+statUncSqdMuMuDYIncl+systUncSqdMuMuDYHT+systUncSqdMuMuDYIncl) << endl;
 
 #endif
 
