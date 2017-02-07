@@ -93,17 +93,17 @@ class limit1d:
 		n = len(self.masses)
 
 		g_twosig = ROOT.TGraph(n*2+1, mass_band_array, twosig_array)
-		g_twosig.SetLineWidth(2)
-		g_twosig.SetLineColor(ROOT.kBlack)
-		g_twosig.Draw("L SAME")
-		#g_twosig.SetFillColor(ROOT.kYellow)
-		#g_twosig.Draw("F SAME")
+		#g_twosig.SetLineWidth(2)
+		#g_twosig.SetLineColor(ROOT.kBlack)
+		#g_twosig.Draw("L SAME")
+		g_twosig.SetFillColor(ROOT.kYellow)
+		g_twosig.Draw("F SAME")
 
 		#comment this to remove 1sigma band
-		#g_onesig = ROOT.TGraph(n*2+1, mass_band_array, onesig_array)
-		#g_onesig.SetFillColor(ROOT.kGreen)
-		#g_onesig.SetLineWidth(0)
-		#g_onesig.Draw("F SAME")
+		g_onesig = ROOT.TGraph(n*2+1, mass_band_array, onesig_array)
+		g_onesig.SetFillColor(ROOT.kGreen)
+		g_onesig.SetLineWidth(0)
+		g_onesig.Draw("F SAME")
 
 		g_exp = ROOT.TGraph(n,mass_array, expected_limit_array);
 		g_exp.SetLineWidth(2);
@@ -147,7 +147,7 @@ class limit1d:
 		if self.observed:
 			leg.AddEntry(g_obs,"Observed limit","L")
 		leg.AddEntry(g_exp, "Expected limit","L")
-		#leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
+		leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
 		leg.AddEntry(g_twosig, "Expected #pm 2 #sigma", "F")
 		if self.theory:
 			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
