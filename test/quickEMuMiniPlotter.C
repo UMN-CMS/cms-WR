@@ -405,7 +405,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	th->GetYaxis()->SetTitle("Events"), hs_data->GetYaxis()->SetTitle("Events");
 #endif
 
-
   Float_t labelSize = 0.25;
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")) ratio->GetXaxis()->SetTitle("M_{EMuJJ} [GeV]");
@@ -447,12 +446,15 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  }//end loop over bins in MLLJJ
   }
 
-  if(fname.EqualTo("unweightedMLLJJ") ){
+  if(fname.EqualTo("Mlljj") ){
 	  std::cout<<"\t"<<std::endl;
 	  Int_t nbins = hs_data->GetNbinsX();
 	  for(Int_t i = 1; i<=nbins; i++){
-		  std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" unweighted MC events" <<std::endl;
-	  }//end loop over bins in unweightedMLLJJ
+		  //std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" unweighted MC events" <<std::endl;
+		  std::cout<<"bin num "<< i <<" has "<< hs_ttbar->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ttbar->GetBinContent(i))*(hs_ttbar->GetBinWidth(i)) <<" weighted TTBar MC events" <<std::endl;
+		  std::cout<<"bin num "<< i <<" has "<< hs_ZZ->GetBinLowEdge(i) <<" GeV lower edge and "<< (hs_ZZ->GetBinContent(i))*(hs_ZZ->GetBinWidth(i)) <<" weighted topW MC events" <<std::endl;
+		  std::cout<<"\t"<<std::endl;
+	  }//end loop over bins in Mlljj
   }
 
 
