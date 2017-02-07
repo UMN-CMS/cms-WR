@@ -181,8 +181,8 @@ void printSystStdDevToFile(){
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
-	int wrMassPoints[] = {1600,2200,2800,3600};
-	//int wrMassPoints[] = {1000,2200,3600};
+	//int wrMassPoints[] = {1600,2200,2800,3600};
+	int wrMassPoints[] = {1600,2200,2800};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -236,8 +236,15 @@ void printSystStdDevToFile(){
 				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
 				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"MuMu.root" ).c_str() );
 		
+				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
+				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
+				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
+				topWEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + eeChannelInFileNames +".root" ).c_str() );
+		
 				chainPointers["EETT"] = ttEE;
 				chainPointers["MuMuTT"] = ttMuMu;
+				chainPointers["EETopW"] = topWEE;
+				chainPointers["MuMuTopW"] = topWMuMu;
 			}
 		
 			else if(uncertTagNamesVect[s].find("jet") != string::npos){
