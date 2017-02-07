@@ -190,10 +190,12 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/"};
-	string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources"};
+	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/"};
+	//string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources"};
 	//string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
 	//string uncertTagNames[] = {"all sources"};
+	string relDirPaths[] = {"3200toysEleMuScaleSmearingSyst/"};
+	string uncertTagNames[] = {"mixed lepton"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
@@ -228,7 +230,17 @@ void printSystStdDevToFile(){
 		for(int s=0; s<numSystematics; s++){
 			//for each WR mass and source of uncertainty, determine the systematic uncertainty and write it to a txt file
 			map<string,TChain*> chainPointers;
-			if(uncertTagNamesVect[s].find("jet") != string::npos){
+			if(uncertTagNamesVect[s].find("mixed") != string::npos){
+				TChain * ttEE = new TChain(treeName.c_str(),"TTEE");
+				ttEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"EE.root" ).c_str() );
+				TChain * ttMuMu = new TChain(treeName.c_str(),"TTMuMu");
+				ttMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + emuDataFileName +"MuMu.root" ).c_str() );
+		
+				chainPointers["EETT"] = ttEE;
+				chainPointers["MuMuTT"] = ttMuMu;
+			}
+		
+			else if(uncertTagNamesVect[s].find("jet") != string::npos){
 				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
 				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
 				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
@@ -256,7 +268,7 @@ void printSystStdDevToFile(){
 				chainPointers["MuMuTopW"] = topWMuMu;
 			}
 
-			if(uncertTagNamesVect[s].find("electron") != string::npos){
+			else if(uncertTagNamesVect[s].find("electron") != string::npos){
 				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
 				topWEE->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + eeChannelInFileNames +".root" ).c_str() );
 				TChain * dyEE = new TChain(treeName.c_str(),"DYEE");
@@ -271,7 +283,7 @@ void printSystStdDevToFile(){
 				chainPointers["EETopW"] = topWEE;
 			}
 
-			if(uncertTagNamesVect[s].find("muon") != string::npos){
+			else if(uncertTagNamesVect[s].find("muon") != string::npos){
 				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
 				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
 				TChain * dyMuMu = new TChain(treeName.c_str(),"DYMuMu");
@@ -286,7 +298,7 @@ void printSystStdDevToFile(){
 				chainPointers["MuMuTopW"] = topWMuMu;
 			}
 
-			else{ //all systematics enabled
+			else if(uncertTagNamesVect[s].find("all") != string::npos){ //all systematics enabled
 				TChain * topWMuMu = new TChain(treeName.c_str(),"TopWMuMu");
 				topWMuMu->Add( (absPathToMainRootFileDir + relDirPathsVect[s] + topWFileName + mumuChannelInFileNames +".root" ).c_str() );
 				TChain * topWEE = new TChain(treeName.c_str(),"TopWEE");
