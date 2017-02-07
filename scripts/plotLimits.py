@@ -95,16 +95,16 @@ for res in results:
 
 ytitle = "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" 
 #full plot
-plotters["ee"].plot("plots/limWReejj" + name + tag + "_full", x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_y = .56 )
-plotters["mumu"].plot("plots/limWRmumujj" + name + tag + "_full", x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_y = .56 )
+#plotters["ee"].plot("plots/limWReejj" + name + tag + "_full", x_title = "M_{W_{R}} [GeV]",
+#	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_y = .56 )
+#plotters["mumu"].plot("plots/limWRmumujj" + name + tag + "_full", x_title = "M_{W_{R}} [GeV]",
+#	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_y = .56 )
 
 #zoomed plot
-plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
-plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
+#plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
+#	y_title=ytitle % "ee", y_limits = (1e-3,1e-1), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
+#plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
+#	y_title=ytitle % "#mu#mu", y_limits = (1e-3,1e-1), leg_x = .62, leg_h = .22, leg_y = .63, x_limits = (600,4000))
 
 #plot with obs lines
 #plotters["ee"].addObsLines(obs_limits["ee"])

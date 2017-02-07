@@ -58,12 +58,13 @@ class limit1d:
 		mass_band_array = np.array(self.masses + self.masses[::-1] + [self.masses[0]], dtype=float)
 
 		if self.theory:
-			#expected_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, expected_limit_array)], dtype=float)
-			#onesig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, onesig_array)   ], dtype=float) 
-			#twosig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, twosig_array)   ], dtype=float) 
-			expected_limit_array *= self.xs
-			onesig_array *= self.xs
-			twosig_array *= self.xs
+			#uncomment the next three lines if the limits were calculated with unscale_by_xs in makeDatacards.py is False
+			expected_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, expected_limit_array)], dtype=float)
+			onesig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, onesig_array)   ], dtype=float) 
+			twosig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, twosig_array)   ], dtype=float) 
+			#expected_limit_array *= self.xs
+			#onesig_array *= self.xs
+			#twosig_array *= self.xs
 
 		dummy = ROOT.TH1F("dummy","",30,x_limits[0], x_limits[1])
 		dummy.SetMinimum(y_limits[0])
