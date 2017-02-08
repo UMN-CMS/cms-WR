@@ -33,10 +33,9 @@
 
 std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
-void flavorSideband(){
+void topWFlavorSideband(){
 
-  Float_t mumuEmuSF = 0.655, eeEmuSF = 0.416;	///<used for plotting and chi^2 calculation
-  Float_t fractionTopWinEMuSideband = 0.07903;
+  Float_t mumuEmuSF = 0.6729, eeEmuSF = 0.4563;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
   std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
@@ -44,31 +43,27 @@ void flavorSideband(){
   std::string shortEEEmuSF = longEEEmuSF.substr(0,4);
   gStyle->SetOptFit(0);	///<show nothing
   TChain * chain_EMu = new TChain("Tree_Iter0");
-  TChain * chain_TopW_EMu = new TChain("Tree_Iter0");
   TChain * chain_EE = new TChain("Tree_Iter0");
   TChain * chain_MuMu = new TChain("Tree_Iter0");
   TChain * chain_EMuData = new TChain("Tree_Iter0");
  
   TString dir = "../analysisCppOutputRootFiles/";
-  chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMu.root");
-  chain_EE->Add(dir+"selected_tree_TT_signal_eeEE.root");
-  chain_MuMu->Add(dir+"selected_tree_TT_signal_mumuMuMu.root");
+  chain_EMu->Add(dir+"selected_tree_topW_flavoursidebandEMuEE.root");
+  chain_EE->Add(dir+"selected_tree_topW_signal_eeEE.root");
+  chain_MuMu->Add(dir+"selected_tree_topW_signal_mumuMuMu.root");
   chain_EMuData->Add(dir+"selected_tree_data_flavoursidebandEMuEE.root");
-  chain_TopW_EMu->Add(dir+"selected_tree_topW_flavoursidebandEMuEE.root");
  
   Selector myEvent_EMu;
   Selector myEvent_EMuData;
-  Selector myEvent_TopW_EMu;
   Selector myEvent_EE;
   Selector myEvent_MuMu;
 
   myEvent_EMu.SetBranchAddresses(chain_EMu);
-  myEvent_TopW_EMu.SetBranchAddresses(chain_TopW_EMu);
   myEvent_EMuData.SetBranchAddresses(chain_EMuData);
   myEvent_EE.SetBranchAddresses(chain_EE);
   myEvent_MuMu.SetBranchAddresses(chain_MuMu);
 
-  Float_t bins[] = { 410, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
+  Float_t bins[] = {600, 730, 850, 1100, 2000 };	//for xMax of 2000
   //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
@@ -84,64 +79,51 @@ void flavorSideband(){
   TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
   TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
   TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
-  TH1F *h_WR_mass_TopW_EMu = new TH1F("h_WR_mass_TopW_EMu","",binnum, bins);
   
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
-  fillHisto(chain_TopW_EMu, &myEvent_TopW_EMu, h_WR_mass_TopW_EMu);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
   
-  Double_t MuMuMCIntegral = h_WR_mass_MuMu->Integral();
-  Double_t EEMCIntegral = h_WR_mass_EE->Integral();
-  Double_t EMuMCIntegral = h_WR_mass_EMu->Integral();
+  //Double_t MuMuMCIntegral = h_WR_mass_MuMu->Integral();
+  //Double_t EEMCIntegral = h_WR_mass_EE->Integral();
+  //Double_t EMuMCIntegral = h_WR_mass_EMu->Integral(); 
+  //std::cout<<"\t"<<std::endl;
+  //std::cout<<"\t"<<std::endl;
+  //std::cout<<"topW EE/EMu ratio =\t"<< (EEMCIntegral/EMuMCIntegral) << std::endl;
+  //std::cout<<"topW MuMu/EMu ratio =\t"<< (MuMuMCIntegral/EMuMCIntegral) << std::endl;
+  //std::cout<<"\t"<<std::endl;
+  //std::cout<<"\t"<<std::endl;
 
-  //std::cout<<"\t"<<std::endl;
-  //std::cout<<"\t"<<std::endl;
-  //std::cout<<"ttbarMC EE/EMu ratio =\t"<< (EEMCIntegral/EMuMCIntegral) << std::endl;
-  //std::cout<<"ttbarMC MuMu/EMu ratio =\t"<< (MuMuMCIntegral/EMuMCIntegral) << std::endl;
-  //std::cout<<"\t"<<std::endl;
-  //std::cout<<"\t"<<std::endl;
-  //std::string ttScaleFactorFile = "../data/2015-v1/ttScaleFactors.txt";
-  //ofstream writeToTTFile(ttScaleFactorFile.c_str(), ofstream::trunc);
-  //writeToTTFile << "#Channel\tSF" << std::endl;
-  //writeToTTFile << "EE\t" << (EEMCIntegral/EMuMCIntegral) << std::endl;
-  //writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
-  
+  /*
+  Int_t numBins = h_WR_mass_EMu->GetNbinsX();
+  for(Int_t i=1; i<=numBins; i++){
+	  std::cout<<"bin number  "<< i <<"  has topW EE/EMu ratio  "<< h_WR_mass_EE->GetBinContent(i)/h_WR_mass_EMu->GetBinContent(i) << std::endl;
+	  std::cout<<"bin number  "<< i <<"  has topW EE evts  "<< (h_WR_mass_EE->GetBinContent(i))*(h_WR_mass_EE->GetBinWidth(i)) << "  and topW EMu evts  " << (h_WR_mass_EMu->GetBinContent(i))*(h_WR_mass_EMu->GetBinWidth(i)) << std::endl;
+	  std::cout<<"\t"<<std::endl;
+	  std::cout<<"bin number  "<< i <<"  has topW MuMu/EMu ratio  "<< h_WR_mass_MuMu->GetBinContent(i)/h_WR_mass_EMu->GetBinContent(i) << std::endl;
+	  std::cout<<"bin number  "<< i <<"  has topW MuMu evts  "<< (h_WR_mass_MuMu->GetBinContent(i))*(h_WR_mass_MuMu->GetBinWidth(i)) << "  and topW EMu evts  " << (h_WR_mass_EMu->GetBinContent(i))*(h_WR_mass_EMu->GetBinWidth(i)) << std::endl;
+	  std::cout<<"\t"<<std::endl;
+  }//end loop over bins in topW Mlljj plots
+ */
+
+  /*
+  std::string ttScaleFactorFile = "../data/2015-v1/ttScaleFactors.txt";
+  ofstream writeToTTFile(ttScaleFactorFile.c_str(), ofstream::trunc);
+  writeToTTFile << "#Channel\tSF" << std::endl;
+  writeToTTFile << "EE\t" << (EEMCIntegral/EMuMCIntegral) << std::endl;
+  writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
+  */
+
   ///use this title for all plots
   TString stdTitle = "CMS Private           #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
   h_WR_mass_EMu->SetTitle(stdTitle);
   h_WR_mass_EMuData->SetTitle(stdTitle);
-  h_WR_mass_TopW_EMu->SetTitle(stdTitle);
   h_WR_mass_EE->SetTitle(stdTitle);
   h_WR_mass_MuMu->SetTitle(stdTitle);
 
-  gStyle->SetOptStat("");
-  TCanvas* canvasTT_to_TopW = new TCanvas("canvasTT_to_TopW","",0,0,600,600);
-  TH1F* h_WR_mass_EMu_clone = (TH1F*) h_WR_mass_EMu->Clone();
-  //h_WR_mass_EMu_clone->Divide((TH1*) h_WR_mass_TopW_EMu->Add(h_WR_mass_EMu) );
-  Int_t emuBins = h_WR_mass_EMu_clone->GetNbinsX();
-  std::cout<<"\t"<<std::endl;
-  for(Int_t i=1; i<=emuBins; i++){
-	  Float_t topWcontent = h_WR_mass_TopW_EMu->GetBinContent(i);
-	  Float_t TTcontent = h_WR_mass_EMu_clone->GetBinContent(i);
-	  if(i<5) h_WR_mass_EMu_clone->SetBinContent(i, 0.);
-	  else h_WR_mass_EMu_clone->SetBinContent(i, TTcontent/(TTcontent + topWcontent));
-	  std::cout<<"bin number  "<< i <<"  has TT fraction  "<< h_WR_mass_EMu_clone->GetBinContent(i) << std::endl;
-  }
-  std::cout<<"\t"<<std::endl;
-  h_WR_mass_EMu_clone->GetXaxis()->SetTitle("M_{EMuJJ} [GeV]");
-  h_WR_mass_EMu_clone->GetYaxis()->SetRangeUser(0.75,1.1);
-  h_WR_mass_EMu_clone->GetYaxis()->SetTitle("TTBar fraction in EMu Sideband");
-  h_WR_mass_EMu_clone->GetYaxis()->SetTitleOffset(1.55);
-  h_WR_mass_EMu_clone->SetLineColor(kRed);
-  h_WR_mass_EMu_clone->SetLineWidth(3);
-  h_WR_mass_EMu_clone->Draw();
-  canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.pdf"));
-  canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.png"));
-  canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.C"));
 
-
+  /*
   TCanvas* mycanvas_EE = new TCanvas( "mycanvas_EE", "", 0, 0, 600, 600 ) ;
   h_WR_mass_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_WR_mass_EMu->DrawNormalized();
@@ -166,6 +148,8 @@ void flavorSideband(){
   mycanvas_MuMu->Print(("flavor_MuMu_fixedbinwidth.pdf"));
   mycanvas_MuMu->Print(("flavor_MuMu_fixedbinwidth.png"));
 
+  */
+
 #ifdef PRINTRATIOS
   std::cout<<"number of overflow events in h_WR_mass_EE histo =\t"<< h_WR_mass_EE->GetBinContent(h_WR_mass_EE->GetNbinsX() + 1) <<std::endl;
   std::cout<<"number of overflow events in h_WR_mass_MuMu histo =\t"<< h_WR_mass_MuMu->GetBinContent(h_WR_mass_MuMu->GetNbinsX() + 1) <<std::endl;
@@ -177,7 +161,7 @@ void flavorSideband(){
   TH1F *h_ratio_MuMu = (TH1F*)h_WR_mass_MuMu->Clone();
   h_ratio_EE->Divide(h_WR_mass_EMu);
   h_ratio_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  h_ratio_EE->GetYaxis()->SetRangeUser(0.31,0.59);
+  h_ratio_EE->GetYaxis()->SetRangeUser(0.25,0.75);
   h_ratio_EE->GetYaxis()->SetTitle("ratio M_{EEJJ} / M_{EMuJJ}");
   h_ratio_EE->SetTitleOffset(1.55,"Y");
   h_ratio_EE->SetTitle(stdTitle);
@@ -185,14 +169,14 @@ void flavorSideband(){
   h_ratio_MuMu->Divide(h_WR_mass_EMu);
   h_ratio_MuMu->SetTitle(stdTitle);
   h_ratio_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
-  h_ratio_MuMu->GetYaxis()->SetRangeUser(0.51,0.79);
+  h_ratio_MuMu->GetYaxis()->SetRangeUser(0.4,1.25);
   h_ratio_MuMu->GetYaxis()->SetTitle("ratio M_{MuMuJJ} / M_{EMuJJ}");
   h_ratio_MuMu->SetTitleOffset(1.55,"Y");
   h_ratio_MuMu->SetFillColor(kWhite);
   
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);
-  TPaveText* chiSqdBoxEE = new TPaveText(475.,0.54,1975.,0.585);	///< for xmax 2000
+  TPaveText* chiSqdBoxEE = new TPaveText(1150.,0.69,1975.,0.74);	///< for xmax 2000
   chiSqdBoxEE->SetFillColorAlpha(kWhite, 1.0);
   TF1 *f_EE = new TF1("f_EE","[0]",600,1500);
   f_EE->FixParameter(0,eeEmuSF);
@@ -207,9 +191,9 @@ void flavorSideband(){
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.pdf"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.png"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.png"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth.C"));
+  mycanvas_ratio_EE->Print(("topW_flavor_ratio_EE_variablebinwidth.pdf"));
+  mycanvas_ratio_EE->Print(("topW_flavor_ratio_EE_variablebinwidth.png"));
+  mycanvas_ratio_EE->Print(("topW_flavor_ratio_EE_variablebinwidth.C"));
   mycanvas_ratio_EE->SetLogx(1);
   //chiSqdBoxEE->DrawPave(500.,0.54,1000.,0.58,4,"same");
   //chiSqdBoxEE->DrawPave(300.,0.5,1100.,0.54,4,"same");	//for xmax 2000
@@ -217,13 +201,13 @@ void flavorSideband(){
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth_logx_largeXmax.png"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.pdf"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.png"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.pdf"));
-  mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.png"));
+  mycanvas_ratio_EE->Print(("topW_flavor_ratio_EE_variablebinwidth_logx.pdf"));
+  mycanvas_ratio_EE->Print(("topW_flavor_ratio_EE_variablebinwidth_logx.png"));
 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);
-  TPaveText* chiSqdBoxMuMu = new TPaveText(475.,0.74,1975.,0.785);	///< for xmax 2000
+  TPaveText* chiSqdBoxMuMu = new TPaveText(1150.,1.14,1975.,1.24);	///< for xmax 2000
   chiSqdBoxMuMu->SetFillColorAlpha(kWhite, 1.0);
   TF1 *f_MuMu = new TF1("f_MuMu","[0]",600,1500);
   f_MuMu->FixParameter(0,mumuEmuSF);
@@ -238,9 +222,9 @@ void flavorSideband(){
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.png"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.pdf"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.png"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.png"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth.C"));
+  mycanvas_ratio_MuMu->Print(("topW_flavor_ratio_MuMu_variablebinwidth.pdf"));
+  mycanvas_ratio_MuMu->Print(("topW_flavor_ratio_MuMu_variablebinwidth.png"));
+  mycanvas_ratio_MuMu->Print(("topW_flavor_ratio_MuMu_variablebinwidth.C"));
   mycanvas_ratio_MuMu->SetLogx(1);
   //chiSqdBoxMuMu->DrawPave(300.,0.74,1100.,0.79,4,"same");
   //chiSqdBoxMuMu->DrawPave(300.,0.70,1100.,0.74,4,"same");	//for xmax 2000
@@ -248,10 +232,11 @@ void flavorSideband(){
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth_logx.png"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.pdf"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx_largeXmax.png"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.pdf"));
-  mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_logx.png"));
+  mycanvas_ratio_MuMu->Print(("topW_flavor_ratio_MuMu_variablebinwidth_logx.pdf"));
+  mycanvas_ratio_MuMu->Print(("topW_flavor_ratio_MuMu_variablebinwidth_logx.png"));
 
 
+  /*
   gStyle->SetOptStat("");
   TCanvas* canvMuMuEMu = new TCanvas("canvMuMuEMu","",600,600);
   canvMuMuEMu->cd();
@@ -278,7 +263,7 @@ void flavorSideband(){
   TLegend * legMuMuEMuData = new TLegend(0.72,0.65,0.98,0.9);
   legMuMuEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
   legMuMuEMuData->AddEntry(h_WR_mass_MuMu,"MuMu MC");
-  h_WR_mass_EMuData->Scale(mumuEmuSF*(1-fractionTopWinEMuSideband));
+  h_WR_mass_EMuData->Scale(mumuEmuSF);
  
   //for ratio plot
   Double_t epsMuMu = 0.001;
@@ -357,8 +342,8 @@ void flavorSideband(){
   h_WR_mass_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   //h_WR_mass_EE->GetYaxis()->SetTitle("Events");	///fixed bin widths
   h_WR_mass_EE->GetYaxis()->SetTitle("Events/GeV");	///variable bin widths
-  h_WR_mass_EMuData->Scale(1/(mumuEmuSF*(1-fractionTopWinEMuSideband)));	///<undo the scaling which was done earlier
-  h_WR_mass_EMuData->Scale(eeEmuSF*(1-fractionTopWinEMuSideband));
+  h_WR_mass_EMuData->Scale(1/mumuEmuSF);	///<undo the scaling which was done earlier
+  h_WR_mass_EMuData->Scale(eeEmuSF);
   TLegend * legEEEMuData = new TLegend(0.72,0.65,0.98,0.9);
   legEEEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
   legEEEMuData->AddEntry(h_WR_mass_EE,"EE MC");
@@ -427,10 +412,9 @@ void flavorSideband(){
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_MuMu,"Rescaled TTBar MuMu MC");
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMu,"TTBar EMu MC");
   legEMuDataTwoRescaledMCs->SetTextSize(0.027);
-  h_WR_mass_EE->Scale(1/(eeEmuSF*(1-fractionTopWinEMuSideband)));
-  h_WR_mass_MuMu->Scale(1/(mumuEmuSF*(1-fractionTopWinEMuSideband)));
-  h_WR_mass_EMuData->Scale(1/(eeEmuSF*(1-fractionTopWinEMuSideband)));	///<undo the scaling which was done earlier
-  h_WR_mass_EMu->Scale(1/(1-fractionTopWinEMuSideband));
+  h_WR_mass_EE->Scale(1/eeEmuSF);
+  h_WR_mass_MuMu->Scale(1/mumuEmuSF);
+  h_WR_mass_EMuData->Scale(1/eeEmuSF);	///<undo the scaling which was done earlier
   h_WR_mass_EE->SetLineColor(kRed);
   h_WR_mass_EE->SetLineWidth(3);
   h_WR_mass_EMu->SetLineColor(kBlue);
@@ -526,7 +510,9 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_fixedbinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
 
-}
+  */
+
+}//end topWFlavorSideband()
 
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
 
