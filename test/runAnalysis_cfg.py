@@ -35,8 +35,8 @@ options.register('jsonFile',
                  "path and name of the json file")
 
 #default options
-options.maxEvents = -1
-defaultFileOutput = "DYJets_amctnlo.root"
+options.maxEvents = 50
+defaultFileOutput = "topW.root"
 options.output = defaultFileOutput
 #
 
@@ -51,12 +51,13 @@ elif(options.test==0):
 	options.isMC=0
 	options.datasetTag='reprocessMuEGData'
 elif(options.test==2):
-	options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_amctnlo_skimFile.root"
+	#options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAODandMinitrees2015/DYJets_amctnlo_skimFile.root"
+	options.files="root://eoscms.cern.ch//eos/cms/store/group/phys_exotica/leptonsPlusJets/WR/skims/topW_SHv12/output_1.root"
 	#options.files=['root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_10_2_KFJ.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_11_2_PR1.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_12_2_DuM.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_13_2_yHC.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_14_2_bWL.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_15_2_rK5.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_16_2_yJp.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_17_2_Gff.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_18_2_KEW.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_19_2_3FO.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_1_2_7zA.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_20_2_hc0.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_21_2_nur.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_22_1_SSm.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_2_2_89c.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_3_2_yNe.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_4_2_aL0.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_5_2_RDU.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_6_2_wPy.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_7_2_YMG.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_8_2_xNp.root','root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/DYJets_madgraph_SHv12/DYJets_madgraph_9_2_EMH.root']
 	#options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadInclusiveMiniAOD2.root"
-	options.maxEvents= -1 
+	options.maxEvents= 50 
 	options.isMC=1
-	options.datasetTag='DYJets_amctnlo'
+	options.datasetTag='topW'
 	#options.datasetTag='reprocessTTJetsV2MCPartOne'
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
@@ -200,7 +201,7 @@ if (options.isMC==0 and options.unblind==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe) #, process.microAODoutput_step)
+    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu) #, process.DYtagAndProbe) #, process.microAODoutput_step)
 	#process.schedule = cms.Schedule(process.FlavourSideband) #, process.microAODoutput_step)
 #    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe, process.microAODoutput_step)
 

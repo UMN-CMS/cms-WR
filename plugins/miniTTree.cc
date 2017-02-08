@@ -11,6 +11,7 @@
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "../interface/miniTreeEvent.h"
@@ -27,7 +28,8 @@ public:
 
 private:
 	virtual void analyze(const edm::Event&, const edm::EventSetup&);
-
+	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+	
 	edm::EDGetToken electronsMiniAODToken_;
 	edm::EDGetToken muonsMiniAODToken_;
 	edm::EDGetToken jetsMiniAODToken_;
@@ -36,6 +38,7 @@ private:
 	edm::EDGetToken primaryVertexToken_;
 	edm::EDGetToken evinfoToken_;
 	edm::EDGetToken lheEvInfoToken_;
+	//edm::EDGetToken lheRunInfoToken_;
 
 
 	edm::EDGetToken  jec_unc_src;
@@ -60,6 +63,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
 	lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
+	//lheRunInfoToken_ ( consumes<LHERunInfoProduct>(edm::InputTag("externalLHEProducer"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
@@ -71,6 +75,32 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	tree = fs->make<TTree>("t", "");
 
 	myEvent.SetBranches(tree);
+
+}
+
+// ------------ method called when starting to processes a run  ------------
+void
+miniTTree::beginRun(edm::Run const& iRun, edm::EventSetup const&)
+{
+	//edm::Handle<LHERunInfoProduct> lheRunInfo; 
+	//iRun.getByToken(lheRunInfoToken_ , lheRunInfo);
+	//int pdfidx = lheRunInfo->heprup().PDFSUP.first;
+	//std::cout<<"pdf id used to generate sample = " << pdfidx << std::endl;
+
+	edm::Handle<LHERunInfoProduct> run; 
+	typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
+
+	iRun.getByLabel( "externalLHEProducer", run );
+	LHERunInfoProduct myLHERunInfoProduct = *(run.product());
+
+	for (headers_const_iterator iter=myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++){
+		std::cout << iter->tag() << std::endl;
+		std::vector<std::string> lines = iter->lines();
+		for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {
+			std::cout << lines.at(iLine);
+		}
+	}
+
 
 }
 
@@ -132,7 +162,11 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 
 		//weights for estimating uncertainties due to pdf, renorm and fact scale variations
 		event.getByToken(lheEvInfoToken_, lheEvInfo);
+		//std::cout<<"GenEventInfoProduct weights size = " << evinfo->weights().size() <<std::endl;
+		//std::cout<<"LHEEventProduct weights size = " << lheEvInfo->weights().size() <<std::endl;
+		
 		for (size_t i = 0; i < lheEvInfo->weights().size() ; i++) {
+			//std::cout<<"weight " << i << " = " << lheEvInfo->weights()[i].wgt << std::endl;
 			myEvent.renormFactAndPdfWeights->push_back( lheEvInfo->weights()[i].wgt/lheEvInfo->originalXWGTUP() );
 		}
 
