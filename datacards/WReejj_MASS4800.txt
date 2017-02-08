@@ -10,9 +10,9 @@ process  0  1  2  3
 rate  0.1887  0.0001  0.2543  0.002434  
 ------------
 lumi       lnN        1.0290e+00 1.0270e+00 1.0270e+00 1.0270e+00
-TT_SF      lnN                 - 1.0031e+00          -          -
-DYAMC_SF   lnN                 -          - 1.0478e+00          -
+TT_SF      lnN                 - 1.1166e+00          -          -
+DYAMC_SF   lnN                 -          - 1.4028e+00          -
 signal_unc gmN  10526 1.7929e-05          -          -          -
-TT_unc     gmN      0          - 4.1617e-01          -          -
+TT_unc     gmN      0          - 3.8339e-01          -          -
 DYAMC_unc  gmN     11          -          - 2.2147e-02          -
 OTHER_unc  gmN      0          -          -          - 2.4335e-03
