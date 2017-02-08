@@ -35,8 +35,14 @@ std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
 void flavorSideband(){
 
-  Float_t mumuEmuSF = 0.655, eeEmuSF = 0.416;	///<used for plotting and chi^2 calculation
-  Float_t fractionTopWinEMuSideband = 0.07903;
+  //default SFs with chi^2/nDOF near 1
+  //Float_t mumuEmuSF = 0.6563, eeEmuSF = 0.4194;	///<used for plotting and chi^2 calculation
+  //if eeEmuSF = 0.441 then chi^2/nDOF =  32.0/10
+  //if eeEmuSF = 0.3905 then chi^2/nDOF =  31.9/10
+  //if mumuEmuSF = 0.6942 then chi^2/nDOF =  31.9/10
+  //if mumuEmuSF = 0.6145 then chi^2/nDOF =  32.1/10
+  
+  Float_t mumuEmuSF = 0.6563, eeEmuSF = 0.4194;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
   std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
@@ -51,8 +57,11 @@ void flavorSideband(){
  
   TString dir = "../analysisCppOutputRootFiles/";
   chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMu.root");
+  chain_EMu->Add(dir+"selected_tree_topW_flavoursidebandEMuEE.root");
   chain_EE->Add(dir+"selected_tree_TT_signal_eeEE.root");
+  chain_EE->Add(dir+"selected_tree_topW_signal_eeEE.root");
   chain_MuMu->Add(dir+"selected_tree_TT_signal_mumuMuMu.root");
+  chain_MuMu->Add(dir+"selected_tree_topW_signal_mumuMuMu.root");
   chain_EMuData->Add(dir+"selected_tree_data_flavoursidebandEMuEE.root");
   chain_TopW_EMu->Add(dir+"selected_tree_topW_flavoursidebandEMuEE.root");
  
@@ -78,6 +87,7 @@ void flavorSideband(){
   //TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",21,530,2000);
   //TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",21,530,2000);
   //TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",21,530,2000);
+  //TH1F *h_WR_mass_TopW_EMu = new TH1F("h_WR_mass_TopW_EMu","",21,530,2000);
   
   ////variable bin width MLLJJ plots
   TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
@@ -91,23 +101,7 @@ void flavorSideband(){
   fillHisto(chain_TopW_EMu, &myEvent_TopW_EMu, h_WR_mass_TopW_EMu);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
-  
-  Double_t MuMuMCIntegral = h_WR_mass_MuMu->Integral();
-  Double_t EEMCIntegral = h_WR_mass_EE->Integral();
-  Double_t EMuMCIntegral = h_WR_mass_EMu->Integral();
-
-  //std::cout<<"\t"<<std::endl;
-  //std::cout<<"\t"<<std::endl;
-  //std::cout<<"ttbarMC EE/EMu ratio =\t"<< (EEMCIntegral/EMuMCIntegral) << std::endl;
-  //std::cout<<"ttbarMC MuMu/EMu ratio =\t"<< (MuMuMCIntegral/EMuMCIntegral) << std::endl;
-  //std::cout<<"\t"<<std::endl;
-  //std::cout<<"\t"<<std::endl;
-  //std::string ttScaleFactorFile = "../data/2015-v1/ttScaleFactors.txt";
-  //ofstream writeToTTFile(ttScaleFactorFile.c_str(), ofstream::trunc);
-  //writeToTTFile << "#Channel\tSF" << std::endl;
-  //writeToTTFile << "EE\t" << (EEMCIntegral/EMuMCIntegral) << std::endl;
-  //writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
-  
+ 
   ///use this title for all plots
   TString stdTitle = "CMS Private           #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
   h_WR_mass_EMu->SetTitle(stdTitle);
@@ -116,6 +110,7 @@ void flavorSideband(){
   h_WR_mass_EE->SetTitle(stdTitle);
   h_WR_mass_MuMu->SetTitle(stdTitle);
 
+  /*
   gStyle->SetOptStat("");
   TCanvas* canvasTT_to_TopW = new TCanvas("canvasTT_to_TopW","",0,0,600,600);
   TH1F* h_WR_mass_EMu_clone = (TH1F*) h_WR_mass_EMu->Clone();
@@ -140,7 +135,7 @@ void flavorSideband(){
   canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.pdf"));
   canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.png"));
   canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.C"));
-
+  */
 
   TCanvas* mycanvas_EE = new TCanvas( "mycanvas_EE", "", 0, 0, 600, 600 ) ;
   h_WR_mass_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -148,8 +143,8 @@ void flavorSideband(){
   h_WR_mass_EE->SetLineColor(kRed);
   h_WR_mass_EE->DrawNormalized("same histo");
   TLegend *leg_EE = new TLegend( 0.72, 0.50, 0.98, 0.70 );
-  leg_EE->AddEntry( h_WR_mass_EMu, "EMu" );
-  leg_EE->AddEntry( h_WR_mass_EE, "EE" );
+  leg_EE->AddEntry( h_WR_mass_EMu, "TTBar+TopW EMu" );
+  leg_EE->AddEntry( h_WR_mass_EE, "TTBar+TopW EE" );
   leg_EE->Draw();
   mycanvas_EE->Print(("flavor_EE_fixedbinwidth.pdf"));
   mycanvas_EE->Print(("flavor_EE_fixedbinwidth.png"));
@@ -160,8 +155,8 @@ void flavorSideband(){
   h_WR_mass_MuMu->SetLineColor(kRed);
   h_WR_mass_MuMu->DrawNormalized("same histo");
   TLegend *leg_MuMu = new TLegend( 0.72, 0.50, 0.98, 0.70 );
-  leg_MuMu->AddEntry( h_WR_mass_EMu, "EMu" );
-  leg_MuMu->AddEntry( h_WR_mass_MuMu, "MuMu" );
+  leg_MuMu->AddEntry( h_WR_mass_EMu, "TTBar+TopW EMu" );
+  leg_MuMu->AddEntry( h_WR_mass_MuMu, "TTBar+TopW MuMu" );
   leg_MuMu->Draw();
   mycanvas_MuMu->Print(("flavor_MuMu_fixedbinwidth.pdf"));
   mycanvas_MuMu->Print(("flavor_MuMu_fixedbinwidth.png"));
@@ -256,8 +251,8 @@ void flavorSideband(){
   TCanvas* canvMuMuEMu = new TCanvas("canvMuMuEMu","",600,600);
   canvMuMuEMu->cd();
   TLegend * legMuMuEMu = new TLegend(0.72,0.6,0.98,0.8);
-  legMuMuEMu->AddEntry(h_WR_mass_EMu,"EMu");
-  legMuMuEMu->AddEntry(h_WR_mass_MuMu,"MuMu");
+  legMuMuEMu->AddEntry(h_WR_mass_EMu,"TTBar+TopW EMu");
+  legMuMuEMu->AddEntry(h_WR_mass_MuMu,"TTBar+TopW MuMu");
   h_WR_mass_EMu->Draw("histo");
   h_WR_mass_MuMu->Draw("Psame");
   legMuMuEMu->Draw();
@@ -277,8 +272,8 @@ void flavorSideband(){
   h_WR_mass_MuMu->GetYaxis()->SetTitle("Events/GeV");	///variable bin widths
   TLegend * legMuMuEMuData = new TLegend(0.72,0.65,0.98,0.9);
   legMuMuEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
-  legMuMuEMuData->AddEntry(h_WR_mass_MuMu,"MuMu MC");
-  h_WR_mass_EMuData->Scale(mumuEmuSF*(1-fractionTopWinEMuSideband));
+  legMuMuEMuData->AddEntry(h_WR_mass_MuMu,"TTBar+TopW MuMu MC");
+  h_WR_mass_EMuData->Scale(mumuEmuSF);
  
   //for ratio plot
   Double_t epsMuMu = 0.001;
@@ -357,11 +352,11 @@ void flavorSideband(){
   h_WR_mass_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   //h_WR_mass_EE->GetYaxis()->SetTitle("Events");	///fixed bin widths
   h_WR_mass_EE->GetYaxis()->SetTitle("Events/GeV");	///variable bin widths
-  h_WR_mass_EMuData->Scale(1/(mumuEmuSF*(1-fractionTopWinEMuSideband)));	///<undo the scaling which was done earlier
-  h_WR_mass_EMuData->Scale(eeEmuSF*(1-fractionTopWinEMuSideband));
+  h_WR_mass_EMuData->Scale(1/(mumuEmuSF));	///<undo the scaling which was done earlier
+  h_WR_mass_EMuData->Scale(eeEmuSF);
   TLegend * legEEEMuData = new TLegend(0.72,0.65,0.98,0.9);
   legEEEMuData->AddEntry(h_WR_mass_EMuData,"Rescaled EMu Data");
-  legEEEMuData->AddEntry(h_WR_mass_EE,"EE MC");
+  legEEEMuData->AddEntry(h_WR_mass_EE,"TTBar+TopW EE MC");
   
   //for ratio plot
   Double_t epsEE = 0.001;
@@ -423,14 +418,13 @@ void flavorSideband(){
   //TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.15,0.94,0.45);	//for variable bin widths
   TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.55,0.94,0.9);	//for fixed bin widths
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMuData,"EMu Data");	
-  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EE,"Rescaled TTBar EE MC");
-  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_MuMu,"Rescaled TTBar MuMu MC");
-  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMu,"TTBar EMu MC");
+  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EE,"Rescaled TTBar+TopW EE MC");
+  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_MuMu,"Rescaled TTBar+TopW MuMu MC");
+  legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMu,"TTBar+TopW EMu MC");
   legEMuDataTwoRescaledMCs->SetTextSize(0.027);
-  h_WR_mass_EE->Scale(1/(eeEmuSF*(1-fractionTopWinEMuSideband)));
-  h_WR_mass_MuMu->Scale(1/(mumuEmuSF*(1-fractionTopWinEMuSideband)));
-  h_WR_mass_EMuData->Scale(1/(eeEmuSF*(1-fractionTopWinEMuSideband)));	///<undo the scaling which was done earlier
-  h_WR_mass_EMu->Scale(1/(1-fractionTopWinEMuSideband));
+  h_WR_mass_EE->Scale(1/(eeEmuSF));
+  h_WR_mass_MuMu->Scale(1/(mumuEmuSF));
+  h_WR_mass_EMuData->Scale(1/(eeEmuSF));	///<undo the scaling which was done earlier
   h_WR_mass_EE->SetLineColor(kRed);
   h_WR_mass_EE->SetLineWidth(3);
   h_WR_mass_EMu->SetLineColor(kBlue);
@@ -570,6 +564,7 @@ std::string chiSquaredNdofString(TF1 * fit){
   tempchiSqd += chiSqdVal.substr(0,4);
   tempchiSqd += " / ";
   tempchiSqd += ndof.substr(0,2);
+  std::cout<< tempchiSqd << std::endl;
   return tempchiSqd;
 }
 

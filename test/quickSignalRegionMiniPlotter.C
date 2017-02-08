@@ -236,7 +236,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  scaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
   }
   if( chainTitle.EqualTo("TTData") ){
-	  scaleFactor = (channel == Selector::MuMu) ? 0.655 : 0.416;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
+	  scaleFactor = (channel == Selector::MuMu) ? 0.6563 : 0.4194;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
   }
 
   for(int ev = 0; ev<nEntries; ++ev){
@@ -348,18 +348,18 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
 #ifndef useDYMAD
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
-  leg->AddEntry( hs_ttbar, "TT Data Driven" ) ;
+  leg->AddEntry( hs_ttbar, "TT+TopW Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_ZZ, "Other" ) ; 
+  //leg->AddEntry( hs_ZZ, "Other" ) ; 
 #endif 
 
 #ifdef useDYMAD
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
-  leg->AddEntry( hs_ttbar, "TT Data Driven" ) ;
+  leg->AddEntry( hs_ttbar, "TT+TopW Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_ZZ, "Other" ) ; 
+  //leg->AddEntry( hs_ZZ, "Other" ) ; 
 #endif 
 
 
@@ -384,7 +384,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
   th->Add(hs_WJets);
-  th->Add(hs_ZZ);
+  //th->Add(hs_ZZ);
   th->Add(hs_DY);
   th->Add(hs_ttbar);
   hs_data->SetLineColor(kRed);
@@ -446,7 +446,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
-  hs_ttbar->Add(hs_ZZ);
+  //hs_ttbar->Add(hs_ZZ);
   hs_ttbar->Add(hs_DY);
 
   ratio->Divide(hs_ttbar);
