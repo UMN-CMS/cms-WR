@@ -34,7 +34,7 @@ nuisance_params.append(("DYAMC_SF",       "lnN"))
 nuisance_params.append(("signal_unc",  "gmN"))
 nuisance_params.append(("TT_unc",      "gmN"))
 nuisance_params.append(("DYAMC_unc",   "gmN"))
-nuisance_params.append(("OTHER_unc",   "gmN"))
+#nuisance_params.append(("OTHER_unc",   "gmN"))
 unscale_by_xs = False	#set to true to allow 800 GeV and 1.0 TeV MWR limit jobs to finish successfully
 for channel in ["ee", "mumu"]:
 	sig_name = "WR_" + channel + "jj"
@@ -44,7 +44,7 @@ for channel in ["ee", "mumu"]:
 	systematics_list = []
 	for mass in sorted(combineTools.mass_cut[channel]):
 		try:
-			systematics = combineTools.Systematics(["signal", "TT", "DYAMC", "OTHER"], nuisance_params)
+			systematics = combineTools.Systematics(["signal", "TT", "DYAMC"], nuisance_params)
 			if unscale_by_xs:
 				scale =  .001/xs.WR_jj[channel][mass]
 			else:
@@ -53,18 +53,18 @@ for channel in ["ee", "mumu"]:
 
 			TTBar = minitrees.getNEvents(mass, channel, "TT", systematics)
 			DY = minitrees.getNEvents(mass, channel, "DYAMC", systematics)
-			Other = minitrees.getNEvents(mass, channel, "OTHER", systematics)
+			#Other = minitrees.getNEvents(mass, channel, "OTHER", systematics)
 
 			MWR.append(mass)
 			signal.append(signalNevents)
-			bg.append([TTBar, DY, Other])
+			bg.append([TTBar, DY])
 
 			if args.nosyst: systematics = None
 			systematics_list.append(systematics)
 		except (IOError,KeyError) as e:
 			print mass, "not found"
 
-	bg_names = ["TTBar", "DY", "Other"]   #names shown in the expected evt columns of each datacard
+	bg_names = ["TTBar", "DY"]   #names shown in the expected evt columns of each datacard
 
 	for i in range(len(MWR)):
 		print channel, MWR[i], signal[i]/sum(bg[i])
