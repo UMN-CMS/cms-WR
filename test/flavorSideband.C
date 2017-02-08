@@ -20,7 +20,7 @@
 #include <memory>
 
 /**
- * this macro runs on EMu data and TTBar MC minitrees which have been processed by analysis.cpp
+ * this macro runs on EMu data and TTBar and topW MC minitrees which have been processed by analysis.cpp
  * with -c EMu or -c EE or -c MuMu and signal region requirements.  This macro can be modified, and
  * should be run by itself.  Currently it is not used in wrValidation.sh.
  *
@@ -35,7 +35,7 @@ std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
 void flavorSideband(){
 
-  Float_t mumuEmuSF = 0.655, eeEmuSF = 0.416;	///<used for plotting and chi^2 calculation
+  Float_t mumuEmuSF = 0.6563, eeEmuSF = 0.4194;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
   std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
@@ -49,8 +49,11 @@ void flavorSideband(){
  
   TString dir = "../analysisCppOutputRootFiles/";
   chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMu.root");
+  chain_EMu->Add(dir+"selected_tree_topW_flavoursidebandEMuEE.root");
   chain_EE->Add(dir+"selected_tree_TT_signal_eeEE.root");
+  chain_EE->Add(dir+"selected_tree_topW_signal_eeEE.root");
   chain_MuMu->Add(dir+"selected_tree_TT_signal_mumuMuMu.root");
+  chain_MuMu->Add(dir+"selected_tree_topW_signal_mumuMuMu.root");
   chain_EMuData->Add(dir+"selected_tree_data_flavoursidebandEMuEE.root");
  
   Selector myEvent_EMu;
@@ -84,23 +87,7 @@ void flavorSideband(){
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
-  
-  Double_t MuMuMCIntegral = h_WR_mass_MuMu->Integral();
-  Double_t EEMCIntegral = h_WR_mass_EE->Integral();
-  Double_t EMuMCIntegral = h_WR_mass_EMu->Integral();
 
-  std::cout<<"\t"<<std::endl;
-  std::cout<<"\t"<<std::endl;
-  std::cout<<"ttbarMC EE/EMu ratio =\t"<< (EEMCIntegral/EMuMCIntegral) << std::endl;
-  std::cout<<"ttbarMC MuMu/EMu ratio =\t"<< (MuMuMCIntegral/EMuMCIntegral) << std::endl;
-  std::cout<<"\t"<<std::endl;
-  std::cout<<"\t"<<std::endl;
-  std::string ttScaleFactorFile = "../data/2015-v1/ttScaleFactors.txt";
-  ofstream writeToTTFile(ttScaleFactorFile.c_str(), ofstream::trunc);
-  writeToTTFile << "#Channel\tSF" << std::endl;
-  writeToTTFile << "EE\t" << (EEMCIntegral/EMuMCIntegral) << std::endl;
-  writeToTTFile << "MuMu\t" << (MuMuMCIntegral/EMuMCIntegral) << std::endl;
-  
   ///use this title for all plots
   TString stdTitle = "CMS Private           #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
   h_WR_mass_EMu->SetTitle(stdTitle);
@@ -492,6 +479,7 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_fixedbinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
 
+
 }
 
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
@@ -506,6 +494,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
     if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
+
   std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
 
   /*for variable bin widths*/
@@ -526,6 +515,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
 	  h->SetBinError(j, oldBinErrors/binWidth);
   }//end loop over bins in histo
   /**/
+
 }
 
 //call this fxn once TF1 is fitted to distribution
