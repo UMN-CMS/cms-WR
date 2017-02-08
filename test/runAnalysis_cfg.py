@@ -36,7 +36,7 @@ options.register('jsonFile',
 
 #default options
 options.maxEvents = -1
-defaultFileOutput = "WRtest.root"
+defaultFileOutput = "topWTest.root"
 options.output = defaultFileOutput
 #
 
@@ -51,11 +51,11 @@ elif(options.test==0):
 	options.isMC=0
 	options.datasetTag='reprocessMuEGData'
 elif(options.test==2):
-	options.files="root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoEEJJ_1000_500_SHv12/WRtoEEJJ_1000_500_1_1_E1f.root"
+	options.files="root://eoscms.cern.ch//eos/cms/store/group/phys_exotica/leptonsPlusJets/WR/skims/topW_SHv12/output_1.root"
 	#options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/DYMiniAOD2015/DYMadInclusiveMiniAOD2.root"
-	options.maxEvents= -1 
+	options.maxEvents= -1
 	options.isMC=1
-	options.datasetTag='WRtest'
+	options.datasetTag='topWTest'
 	#options.datasetTag='reprocessTTJetsV2MCPartOne'
 elif(options.test==1):
     options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
@@ -155,7 +155,7 @@ process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
 process.wrPdfWeights = cms.EDProducer("PdfWeightProducer",
 		GenTag = cms.untracked.InputTag("prunedGenParticles"),
 		PdfInfoTag = cms.untracked.InputTag("generator"),
-		PdfSetNames = cms.untracked.vstring("NNPDF30_lo_as_0130.LHgrid")
+		PdfSetNames = cms.untracked.vstring("NNPDF30_nlo_nf_5_pdfas.LHgrid")
 		)
 
 #################################

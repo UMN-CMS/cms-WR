@@ -138,7 +138,9 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		std::vector<double> wgts = *(pdfWgtHandle);
 		unsigned int nwgts = wgts.size();
 		for(unsigned int i=1; i<nwgts; i++){
-			myEvent.renormFactAndPdfWeights->push_back( wgts[i]/wgts[0] );
+			//myEvent.renormFactAndPdfWeights->push_back( wgts[i]/wgts[0] );
+			std::cout<<"wgt element 0 = " << wgts[0] << std::endl;
+			std::cout<<"wgt element "<< i <<"  =  " << wgts[i] << std::endl;
 		}
 		/**/
 
