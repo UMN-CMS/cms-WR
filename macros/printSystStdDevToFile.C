@@ -190,12 +190,12 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/"};
-	//string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources"};
+	string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/","3200toysEleMuScaleSmearingSyst/"};
+	string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources","mixed lepton"};
 	//string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
 	//string uncertTagNames[] = {"all sources"};
-	string relDirPaths[] = {"3200toysEleMuScaleSmearingSyst/"};
-	string uncertTagNames[] = {"mixed lepton"};
+	//string relDirPaths[] = {"3200toysEleMuScaleSmearingSyst/"};
+	//string uncertTagNames[] = {"mixed lepton"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
@@ -362,7 +362,7 @@ void printSystStdDevToFile(){
 
 				if((chMapIt->first).find("TT") != string::npos){
 					//rescale mean, unweighted evts and uncertainties by the emu data scale factor
-					Double_t rescale = ((chMapIt->first).find("EE") != string::npos) ? 0.416 : 0.655;
+					Double_t rescale = ((chMapIt->first).find("EE") != string::npos) ? 0.4194 : 0.6563;
 					mean *= rescale;
 					systDevSqd *= (rescale*rescale);
 					statDevSqd *= (rescale*rescale);
