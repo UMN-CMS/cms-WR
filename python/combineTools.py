@@ -100,13 +100,13 @@ class AnalysisResultsInterface:
 			self.ProcessFile(key, f)
 
 		#default mass_i = self.masses.index(MWR)
-		if MWR == 2600:
-			MWR = 2800
-		if MWR == 4600:
-			MWR = 4800
+		if MWR == 2800:
+			MWR = 3600
+		if MWR == 4800:
+			MWR = 5600
 		if MWR > 5200:
-			MWR -= 800
-		mass_i = self.masses.index(MWR+800)
+			MWR -= 600
+		mass_i = self.masses.index(MWR+600)
 
 
 		syst_mean = self.results[key]["syst"]["mean"][mass_i]*scale
