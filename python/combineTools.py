@@ -99,7 +99,15 @@ class AnalysisResultsInterface:
 			if not self.masses: self.GetMasses(f)
 			self.ProcessFile(key, f)
 
-		mass_i = self.masses.index(MWR)
+		#default mass_i = self.masses.index(MWR)
+		if MWR == 2600:
+			MWR = 2800
+		if MWR == 4600:
+			MWR = 4800
+		if MWR > 5200:
+			MWR -= 800
+		mass_i = self.masses.index(MWR+800)
+
 
 		syst_mean = self.results[key]["syst"]["mean"][mass_i]*scale
 		tmp_syst  = self.results[key]["syst"]["std"] [mass_i]*scale
@@ -163,8 +171,11 @@ class AnalysisResultsInterface:
 
 		if self.makeplots: c = r.TCanvas("c", "c", 600, 600)
 		for mass_i in range(len(self.masses)):
+			#print "num elements in self.masses list is ", len(self.masses)
+			#print "self.masses entry is ", self.masses[mass_i]
 			ms = str(self.masses[mass_i])
 			if "signal" in self.currentkey and self.currentkey.split("_")[2] != ms: continue
+
 
 			tree.Draw(draw_str % mass_i, "", "goff")
 			h = r.gDirectory.Get("htemp")

@@ -182,7 +182,7 @@ void printSystStdDevToFile(){
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
 	//int wrMassPoints[] = {1600,2200,2800,3600};
-	int wrMassPoints[] = {1600,2200,2800};
+	int wrMassPoints[] = {2000,2200,2400,2600,2800,3000};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -190,10 +190,10 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/","3200toysEleMuScaleSmearingSyst/"};
-	string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources","mixed lepton"};
-	//string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
-	//string uncertTagNames[] = {"all sources"};
+	//string relDirPaths[] = {"3200toysOnlyJetScaleSyst/", "3200toysSmearEleScaleSyst/", "3200toysOnlyMuSyst/","3200toysAllSystNewSubleadLeptPtCut/","3200toysEleMuScaleSmearingSyst/"};
+	//string uncertTagNames[] = {"jet syst","electron syst","muon syst","all sources","mixed lepton"};
+	string relDirPaths[] = {"3200toysAllSystNewSubleadLeptPtCut/"};
+	string uncertTagNames[] = {"all sources"};
 	//string relDirPaths[] = {"3200toysEleMuScaleSmearingSyst/"};
 	//string uncertTagNames[] = {"mixed lepton"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
@@ -217,8 +217,8 @@ void printSystStdDevToFile(){
 	string pathToSystUncOutputFile = "systUncertaintiesFromAnalysisCpp.txt";
 	ofstream writeToSystFile(pathToSystUncOutputFile.c_str(),ofstream::trunc);
 	
-	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
-	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
+	writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tsyst sqd plus stat sqd over nEvts\tmean sqd over syst sqd plus stat sqd"<< endl;
+	//writeToSystFile<<"#WR mass\tprocess channel\tsyst source\tmean\tstat uncert\tsyst uncert\tunweighted evts"<< endl;
 	
 	///now that all the user defined vars have been declared, calculate the systematic uncertainty for the specified mass windows for WR and DY in both lepton channels
 	int numWrMasses = wrMassVect.size(), numSystematics = relDirPathsVect.size();
@@ -368,8 +368,8 @@ void printSystStdDevToFile(){
 					statDevSqd *= (rescale*rescale);
 					evtsNoWgts *= rescale;
 				}
-				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << (statDevSqd + systDevSqd)/mean << "\t" << mean*mean/(statDevSqd + systDevSqd) << endl;
-				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
+				writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << (statDevSqd + systDevSqd)/mean << "\t" << mean*mean/(statDevSqd + systDevSqd) << endl;
+				//writeToSystFile << wrMassVect[m] << "\t"<< chMapIt->first << "\t" << uncertTagNamesVect[s] << "\t" << mean << "\t" << sqrt(statDevSqd) << "\t"<< sqrt(systDevSqd) <<"\t"<< evtsNoWgts << endl;
 	
 
 			}//end loop over TChains at one mass point and both lepton channels
