@@ -57,6 +57,28 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 			out.write(str(systematics))
 	return signal_rate, tuple(bg_rates.split())
 
+#getMassHistoTwo is just for limit window scan script
+def getMassHistoTwo(treename, process, binsize=100):
+	histname, filename = process
+	infile = r.TFile.Open(filename)
+	tree = infile.Get(treename)
+	r.gROOT.cd()
+	nbins = 10000/int(binsize)
+	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
+	if "TT" not in histname:
+		tree.Draw("WR_mass>>" + histname, "weight*(WR_mass>600 && dilepton_mass>200)", "goff")
+
+	#if the histo corresponds to TT, then weight the events with the appropriate SF
+	if "TT_ee" in histname:
+		tree.Draw("WR_mass>>" + histname, "0.4194*(WR_mass>600 && dilepton_mass>200)", "goff")
+	if "TT_mumu" in histname:
+		tree.Draw("WR_mass>>" + histname, "0.6563*(WR_mass>600 && dilepton_mass>200)", "goff")
+
+	return h
+
+
+##end getMassHistoTwo
+
 class AnalysisResultsInterface:
 	chnlName = {"ee":"EE", "mumu":"MuMu", "emu":"EMu"}
 	def __init__(self,
@@ -269,6 +291,24 @@ class AnalysisResultsInterface:
 	def setTag(self, tag):
 		self.filefmt_dict["tag"] = tag
 
+	#def getMassHistoTwo(treename, process, binsize=100):
+	#	histname, filename = process
+	#	infile = r.TFile.Open(filename)
+	#	tree = infile.Get(treename)
+	#	r.gROOT.cd()
+	#	nbins = 10000/int(binsize)
+	#	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
+	#	if "TT" not in histname:
+	#		tree.Draw("WR_mass>>" + histname, "weight*(WR_mass>600 && dilepton_mass>200)", "goff")
+
+	#	#if the histo corresponds to TT, then weight the events with the appropriate SF
+	#	if "TT_ee" in histname:
+	#		tree.Draw("WR_mass>>" + histname, "0.4194*(WR_mass>600 && dilepton_mass>200)", "goff")
+	#	if "TT_mumu" in histname:
+	#		tree.Draw("WR_mass>>" + histname, "0.6563*(WR_mass>600 && dilepton_mass>200)", "goff")
+
+	#	return h
+
 	def getMassHisto(self, MWR, channel, process):
 		r.gROOT.SetBatch(True)
 		key = channel + "_" + process
@@ -287,6 +327,7 @@ class AnalysisResultsInterface:
 		mass_histo.SetDirectory(0)
 		return mass_histo
 
+##end class AnalysisResultsInterface
 		
 class Systematics:
 	#for formatting. if a string format as string otherwise use fmt_spec
