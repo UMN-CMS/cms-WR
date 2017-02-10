@@ -6,10 +6,10 @@ import sys
 
 
 #MWRs = [ 800, 1000, 1200, 1400, 1600, 1800, 2000, 2400, 2600, 2800, 3000, 3200, 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5600, 5800, 6000]
-MWRs = [ 2000]
-chnl = "mumu"
-#MWRs = [ WRMASS]
-#chnl = "CHNL"
+#MWRs = [ 6000]
+#chnl = "mumu"
+MWRs = [ WRMASS]
+chnl = "CHNL"
 
 
 from itertools import combinations, product
@@ -44,7 +44,7 @@ for MWR in MWRs:
 		if high_m < MWR: continue
 		if (high_m - low_m) < 200: continue
 		if (high_m - low_m) > (MWR*0.5): continue
-		if (high_m - low_m) > 2000: continue
+		if (high_m - low_m) > 2500: continue
 		low_bin = signal.FindBin(low_m)
 		hi_bin = signal.FindBin(high_m) - 1
 		
@@ -66,11 +66,11 @@ for MWR in MWRs:
 		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, identifier+"jj", nBG, signal_tuple, bg_tuples, False)
 		method = "ProfileLikelihood"
 		ntoys = "300"
-		#in command defined below: "-S0" disables evaluation of systematics, "-M %s" sets the combine run mode to the string 
-		#stored in method, "-n %s" sets the job name equal to the string datacard
-		#command = "combine -M %s -S0 %s -n %s --toys %s" %(method, datacard_file, datacard, ntoys)
-		#ret = combineTools.runCombine(command,datacard)
-		#mean, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = ret
-		#
-		#print MWR, MWR/2, low_m, high_m, sig, ("%s "*len(bgs)) % bgs , twosig_minus, onesig_minus, mean, onesig_plus, twosig_plus
-		#subprocess.check_output(["rm", "higgsCombine" + datacard + "." + method + ".mH120.123456.root"])
+		##in command defined below: "-S0" disables evaluation of systematics, "-M %s" sets the combine run mode to the string 
+		##stored in method, "-n %s" sets the job name equal to the string datacard
+		command = "combine -M %s -S0 %s -n %s --toys %s" %(method, datacard_file, datacard, ntoys)
+		ret = combineTools.runCombine(command,datacard)
+		mean, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = ret
+		
+		print MWR, MWR/2, low_m, high_m, sig, ("%s "*len(bgs)) % bgs , twosig_minus, onesig_minus, mean, onesig_plus, twosig_plus
+		subprocess.check_output(["rm", "higgsCombine" + datacard + "." + method + ".mH120.123456.root"])
