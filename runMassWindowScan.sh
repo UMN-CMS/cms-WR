@@ -4,5 +4,5 @@
 
 cd WORKDIR
 eval `scramv1 runtime -sh`
-eval "python scripts/limit_window_scan_MWR_WRMASS_CHNL.py"
+eval "python scripts/limit_window_scan_MWR_WRMASS_CHNL.py > limitResults_MWR_WRMASS_CHNL.txt"
 
