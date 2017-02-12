@@ -37,8 +37,8 @@ for MWR in MWRs:
 	
 	#np.linspace returns a numpy array of evenly spaced numbers which span the interval specified by the first two arguments
 	#the third arg specifies the number of elements in the array
-	low_mass_bins = np.linspace(.4,1, 21)*MWR
-	hi_mass_bins = np.linspace(1,1.4, 21)*MWR
+	low_mass_bins = np.linspace(.5,1, 17)*MWR
+	hi_mass_bins = np.linspace(1,1.3, 17)*MWR
 	for low_m, high_m in product(low_mass_bins, hi_mass_bins):
 		if low_m > MWR: continue
 		if high_m < MWR: continue
@@ -65,7 +65,7 @@ for MWR in MWRs:
 		#last arg decides whether or not systematics are added to the datacard
 		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, identifier+"jj", nBG, signal_tuple, bg_tuples, False)
 		method = "ProfileLikelihood"
-		ntoys = "300"
+		ntoys = "200"
 		##in command defined below: "-S0" disables evaluation of systematics, "-M %s" sets the combine run mode to the string 
 		##stored in method, "-n %s" sets the job name equal to the string datacard
 		command = "combine -M %s -S0 %s -n %s --toys %s" %(method, datacard_file, datacard, ntoys)
