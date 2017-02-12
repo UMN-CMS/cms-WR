@@ -45,6 +45,7 @@ for MWR in MWRs:
 		if (high_m - low_m) < 200: continue
 		if (high_m - low_m) > (MWR*0.5): continue
 		if (high_m - low_m) > 2500: continue
+		if low_m < 600: continue
 		low_bin = signal.FindBin(low_m)
 		hi_bin = signal.FindBin(high_m) - 1
 		
