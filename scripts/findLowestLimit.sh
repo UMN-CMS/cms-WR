@@ -11,15 +11,15 @@
 #this script parses txt files which contain lines of strings, in the format of the line above, and
 #finds the mass window (lower and upper bound) which minimizes the expected cross sxn limit
 
-chnl='ee'
-CHNL='EE'
+chnl='mumu'
+CHNL='MuMu'
 
 #make a file which will hold the new mass windows
 eval "echo -n '#' > newMassWindows.txt"
 eval "echo chnl MWR low hi  >> newMassWindows.txt"
 
 #get the list of files which contain the mass windows and limits
-inputFiles=(`ls|grep limitResul|grep -v '1000'|grep -v '1200'|grep $chnl`)
+inputFiles=(`ls|grep limitResul|grep $chnl`)
 
 for i in ${!inputFiles[*]}
 do
