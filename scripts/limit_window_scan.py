@@ -30,6 +30,7 @@ if "mu" in chnl:
 treename = "Tree_Iter0"
 dy = combineTools.getMassHistoTwo(treename, ("DY_"+identifier, "analysisCppOutputRootFiles/selected_tree_DYMadInclAndHT_signal_" + channeltag + "_withMllWeight.root"), binsize=binsize)
 top = combineTools.getMassHistoTwo(treename, ("TT_"+identifier, "analysisCppOutputRootFiles/selected_tree_data_flavoursidebandEMuEE.root"), binsize=binsize)
+scale=1.0   #reduced below 1 for low MWR signal events only
 
 for MWR in MWRs:
 	#binsize =MWR*.02
@@ -50,7 +51,8 @@ for MWR in MWRs:
 		hi_bin = signal.FindBin(high_m) - 1
 		
 		#events in signal and bkgnd histos are already weighted
-		signal_tuple = ("WR_"+identifier+"jj", signal.Integral(low_bin, hi_bin))
+		if MWR < 1300: scale = 0.1
+		signal_tuple = ("WR_"+identifier+"jj", (signal.Integral(low_bin, hi_bin))*scale)
 		bg_tuples = []
 		bg_tuples.append(("TTBar", top.Integral(low_bin, hi_bin) ))
 		bg_tuples.append(("DY", dy.Integral(low_bin, hi_bin) ))
