@@ -7,7 +7,7 @@ observation 0
 bin    eejj    eejj    eejj
 process  WR_eejj  TTBar  DY  
 process  0  1  2
-rate  0.9629  0.007413  0.4105  
+rate  0.9629  0.0001  0.4105  
 ------------
 lumi       lnN        1.2020e+00 1.0270e+00 1.0270e+00
 TT_SF      lnN                 - 1.0255e+00          -
