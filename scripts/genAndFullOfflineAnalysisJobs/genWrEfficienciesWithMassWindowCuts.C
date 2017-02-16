@@ -173,13 +173,13 @@ void genWrEfficienciesWithMassWindowCuts(){
 
 	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
 	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
-	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
+	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
 	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
-	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
+	string cutEfficiencyVsMassFile = "offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
@@ -207,13 +207,13 @@ void genWrEfficienciesWithMassWindowCuts(){
 			afterOfflineCuts->Add(pfn.c_str());
 
 			///calculate percentage of evts which pass GEN cuts and mass window cuts, and store this percentage along with the nu and wr mass values in a txt file
-			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
+			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "EE","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
 			
 			///calculate percentage of evts which pass mass window cut, given events passing full offline selection including MLLJJ>600 cut
-			//passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/afterOfflineCuts->GetEntries());
+			//passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "EE","../../configs/mass_cuts.txt")).c_str() )/afterOfflineCuts->GetEntries());
 
 			///calculate percentage of evts which pass mass window cut and all GEN cuts
-			passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
+			passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "EE","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
 
 	
 			writeToEfficiencyFile << wrMass <<"\t"<< nuMass <<"\t"<< passingMassWindow << endl;
@@ -237,9 +237,9 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * r1 = new TCanvas("r1","r1",900,700);
 	r1->cd();
 	twoDimAcceptanceHist->Draw("COLZ");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.png","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.pdf","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.C","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.png","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.pdf","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.C","recreate");
 
 
 	twoDimMassWindowEfficiencyHist->GetXaxis()->SetTitle("WR Mass [GeV]");
@@ -247,9 +247,9 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * c1 = new TCanvas("c1","c1",900,700);
 	c1->cd();
 	twoDimMassWindowEfficiencyHist->Draw("COLZ");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_13TeV.png","recreate");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_13TeV.pdf","recreate");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_13TeV.C","recreate");
+	c1->SaveAs("twoDimMassWindowEfficiencyEE_afterFourObjMassAndOtherCuts_13TeV.png","recreate");
+	c1->SaveAs("twoDimMassWindowEfficiencyEE_afterFourObjMassAndOtherCuts_13TeV.pdf","recreate");
+	c1->SaveAs("twoDimMassWindowEfficiencyEE_afterFourObjMassAndOtherCuts_13TeV.C","recreate");
 
 }///end genWrEfficienciesWithMassWindowCuts()
 
