@@ -44,12 +44,12 @@ for channel in ["ee", "mumu"]:
 	systematics_list = []
 	for mass in sorted(combineTools.mass_cut[channel]):
 		try:
-			systematics = combineTools.Systematics(["signal", "TT", "DYAMC"], nuisance_params)
+			systematics = combineTools.Systematics(["signal", "TT", "DYAMC"], nuisance_params)   #create systematics objects for signal and bkgnds
 			if unscale_by_xs:
 				scale =  .001/xs.WR_jj[channel][mass]
 			else:
 				scale = 1.0
-			signalNevents = minitrees.getNEvents(mass, channel, "signal", systematics, scale = scale)
+			signalNevents = minitrees.getNEvents(mass, channel, "signal", systematics, scale = scale)	#fill systematic object for signal
 
 			TTBar = minitrees.getNEvents(mass, channel, "TT", systematics)
 			DY = minitrees.getNEvents(mass, channel, "DYAMC", systematics)
