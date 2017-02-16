@@ -11,8 +11,8 @@
 #this script parses txt files which contain lines of strings, in the format of the line above, and
 #finds the mass window (lower and upper bound) which minimizes the expected cross sxn limit
 
-chnl='mumu'
-CHNL='MuMu'
+chnl='ee'
+CHNL='EE'
 
 #make a file which will hold the new mass windows
 eval "echo -n '#' > newMassWindows.txt"
@@ -25,10 +25,10 @@ for i in ${!inputFiles[*]}
 do
 	#for each limit result file, make four lists. one containing the WR mass (constant for every entry),
 	#one for the window lower bound, one for the window upper bound, and one for the expected limit
-	massHypothesis=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $1}'`)
-	lowerBound=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $3}'`)
-	upperBound=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $4}'`)
-	limit=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $10}'`)
+	massHypothesis=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $1}'`)
+	lowerBound=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $3}'`)
+	upperBound=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $4}'`)
+	limit=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $10}'`)
 	
 	#now go through the limit list and find the lowest value
 	bestLimitIndex=-1
