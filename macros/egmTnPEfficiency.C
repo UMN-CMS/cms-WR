@@ -46,12 +46,12 @@ void calculateEffAndSFwithTwoChains(TChain * numerCh, TChain * denomCh, TString 
 	numerPlottingChainMap[branch+">>dataBeforeCut_dileptonMass(50,70.,110.),("+baseCut+")"] = numerCh;
 	numerPlottingChainMap[branch+">>dataPassingCut_dileptonMass(50,70.,110.),("+tightCut+")"] = numerCh;
 	
-	makeAndSaveMultipleCurveOverlayHisto(numerPlottingChainMap,"c1",0.7,0.6,0.98,0.9,false,title,xLabel,outFileTag+"_Data",false);
+	makeAndSaveMultipleCurveOverlayHisto(numerPlottingChainMap,"c1",0.7,0.6,0.98,0.9,false,title,xLabel,outFileTag+"_Data",false, -10);
 
 	denomPlottingChainMap[branch+">>DYMCBeforeCut_dileptonMass(50,70.,110.),("+baseCut+")"] = denomCh;
 	denomPlottingChainMap[branch+">>DYMCPassingCut_dileptonMass(50,70.,110.),("+tightCut+")"] = denomCh;
 	
-	makeAndSaveMultipleCurveOverlayHisto(denomPlottingChainMap,"c2",0.7,0.6,0.98,0.9,false,title,xLabel,outFileTag+"_DYMC",false);
+	makeAndSaveMultipleCurveOverlayHisto(denomPlottingChainMap,"c2",0.7,0.6,0.98,0.9,false,title,xLabel,outFileTag+"_DYMC",false, -10);
 	
 }//end calculateSFwithTwoChains()
 
@@ -76,12 +76,17 @@ void egmTnPEfficiency(){
 	inclusiveHltEtEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfHighETUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
 	inclusiveHltIdEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfWP60IdUsingSC4path_tagPassesTightLegProbePassesHighET_allWrSkims.root");
 	inclusiveDblEle33HltIdEffData->Add(pathToFiles+"TnPTree_data_efficiencyOfUnseededDoubleEle33CaloTrkIdCuts_tagEt50PassesL1SeededDblEle33LegProbeEt40PassesEtUnseeded_allWrSkims.root");
-	
+
+	//DYAMC Incl files
 	inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
 	inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
 	inclusiveHltEtEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHighETUsingSC4path_tagPassesHighETProbePassesLowET_allWrSkims.root");
 	inclusiveHltIdEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfWP60IdUsingSC4path_tagPassesTightLegProbePassesHighET_allWrSkims.root");
 	inclusiveDblEle33HltIdEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfUnseededDoubleEle33CaloTrkIdCuts_tagEt50PassesL1SeededDblEle33LegProbeEt40PassesEtUnseeded_allWrSkims.root");
+
+	//DYMadIncl files
+	//inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadInclSkims.root");
+	//inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadInclSkims.root");
 	
 	///calculate inclusive efficiencies and SFs which do not depend on ET
 	string inclusiveEfficiencyFile = "inclusiveEleRecoHeepHltEfficiency.txt";
