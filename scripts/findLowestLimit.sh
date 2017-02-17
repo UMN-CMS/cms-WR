@@ -11,8 +11,8 @@
 #this script parses txt files which contain lines of strings, in the format of the line above, and
 #finds the mass window (lower and upper bound) which minimizes the expected cross sxn limit
 
-chnl='ee'
-CHNL='EE'
+chnl='mumu'
+CHNL='MuMu'
 
 #make a file which will hold the new mass windows
 eval "echo -n '#' > newMassWindows.txt"
@@ -32,7 +32,7 @@ do
 	
 	#now go through the limit list and find the lowest value
 	bestLimitIndex=-1
-	bestLimit=185.1
+	bestLimit=400.1
 	for n in ${!limit[*]}
 	do
 		currLim=${limit[$n]}
