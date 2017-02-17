@@ -57,6 +57,33 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 			out.write(str(systematics))
 	return signal_rate, tuple(bg_rates.split())
 
+#getMassHistoTwo allows an individual root file containing a TTree to be opened and read
+def getMassHistoTwo(applyWeight, treename, process, binsize=100):
+	histname, filename = process
+	infile = r.TFile.Open(filename)
+	tree = infile.Get(treename)
+	r.gROOT.cd()
+	nbins = 10000/int(binsize)
+	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
+	if "TT" not in histname:
+		if applyWeight: tree.Draw("WR_mass>>" + histname, "weight*(WR_mass>600 && dilepton_mass>200)", "goff")
+		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+
+	#if the histo corresponds to TT, then weight the events with the appropriate SF
+	if "TT_ee" in histname:
+		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.4194*(WR_mass>600 && dilepton_mass>200)", "goff")
+		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+	if "TT_mumu" in histname:
+		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.6563*(WR_mass>600 && dilepton_mass>200)", "goff")
+		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+
+	return h
+
+
+##end getMassHistoTwo
+
+
+
 class AnalysisResultsInterface:
 	chnlName = {"ee":"EE", "mumu":"MuMu", "emu":"EMu"}
 	def __init__(self,
