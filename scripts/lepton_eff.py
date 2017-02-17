@@ -20,12 +20,12 @@ linei=0
 with open("lepton_eff.txt","r") as f:
 	for line in f:
 		if line[0] == '#': continue
-			line = map(float,line.split())
-			mass[linei] = line[0]
+		line = map(float,line.split())
+		mass[linei] = line[0]
 
-			ele_results[:,linei] = line[1:5]
-			mu_results[:,linei]   = line[5:]
-			linei += 1
+		ele_results[:,linei] = line[1:5]
+		mu_results[:,linei]   = line[5:]
+		linei += 1
 
 
 															
@@ -49,13 +49,13 @@ leg.SetBorderSize(0)
 
 graphs = []
 for n,col in enumerate(ele_results):
-print ele_names[n]
-graphs.append( ROOT.TGraph(len(mass), mass, col))
-g = graphs[-1]
-g.SetLineColor(colors[n])
-g.SetLineWidth(3)
-g.Draw("Lsame")
-leg.AddEntry(g, ele_names[n], "L")
+	print ele_names[n]
+	graphs.append( ROOT.TGraph(len(mass), mass, col))
+	g = graphs[-1]
+	g.SetLineColor(colors[n])
+	g.SetLineWidth(3)
+	g.Draw("Lsame")
+	leg.AddEntry(g, ele_names[n], "L")
 
 leg.Draw("same")
 c.SaveAs("plots/ele_eff.png")
