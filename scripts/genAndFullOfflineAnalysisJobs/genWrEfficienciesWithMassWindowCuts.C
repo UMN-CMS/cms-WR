@@ -62,19 +62,19 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 			//hard code the mass window cut for those mass points here
 			//calculate the upper and lower bounds by hand using a linear interpolation between the point below and point above the desired wr mass point
 			if(desiredChannel == "MuMu" && desiredWrMass == "3400"){
-				cutStringToReturn = branchNameForCut + " > " + "2836" + " && " + branchNameForCut + " < " + "4296";
+				cutStringToReturn = branchNameForCut + " > " + "2900" + " && " + branchNameForCut + " < " + "4300";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 3400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "MuMu" && desiredWrMass == "5400"){
-				cutStringToReturn = branchNameForCut + " > " + "3378" + " && " + branchNameForCut + " < " + "5832";
+				cutStringToReturn = branchNameForCut + " > " + "3100" + " && " + branchNameForCut + " < " + "5950";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "EE" && desiredWrMass == "3400"){
-				cutStringToReturn = branchNameForCut + " > " + "2626" + " && " + branchNameForCut + " < " + "4308";
+				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4350";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "EE" && desiredWrMass == "5400"){
-				cutStringToReturn = branchNameForCut + " > " + "3384" + " && " + branchNameForCut + " < " + "5780";
+				cutStringToReturn = branchNameForCut + " > " + "3000" + " && " + branchNameForCut + " < " + "5850";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 5400 case, which does not exist in the mass_cuts.txt file
 
@@ -92,36 +92,36 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 
 			//if the desired wr mass is 3300, 3500, 5300, or 5500 then the cut string will need to be made by hand
 			if(desiredChannel == "MuMu" && desiredWrMass == "3300"){
-				cutStringToReturn = branchNameForCut + " > " + "2778" + " && " + branchNameForCut + " < " + "4068";
+				cutStringToReturn = branchNameForCut + " > " + "2850" + " && " + branchNameForCut + " < " + "4200";
 				return cutStringToReturn;
 			}
 			if(desiredChannel == "MuMu" && desiredWrMass == "3500"){
-				cutStringToReturn = branchNameForCut + " > " + "2894" + " && " + branchNameForCut + " < " + "4524";
+				cutStringToReturn = branchNameForCut + " > " + "2900" + " && " + branchNameForCut + " < " + "4400";
 				return cutStringToReturn;
 			}
 			if(desiredChannel == "MuMu" && desiredWrMass == "5300"){
-				cutStringToReturn = branchNameForCut + " > " + "3275" + " && " + branchNameForCut + " < " + "5274";
+				cutStringToReturn = branchNameForCut + " > " + "3100" + " && " + branchNameForCut + " < " + "5900";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5300 case
 			if(desiredChannel == "MuMu" && desiredWrMass == "5500"){
-				cutStringToReturn = branchNameForCut + " > " + "3481" + " && " + branchNameForCut + " < " + "5940";
+				cutStringToReturn = branchNameForCut + " > " + "3100" + " && " + branchNameForCut + " < " + "6050";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5500 case
 
 			if(desiredChannel == "EE" && desiredWrMass == "3300"){
-				cutStringToReturn = branchNameForCut + " > " + "2625" + " && " + branchNameForCut + " < " + "4266";
+				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4300";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3300 case
 			if(desiredChannel == "EE" && desiredWrMass == "3500"){
-				cutStringToReturn = branchNameForCut + " > " + "2627" + " && " + branchNameForCut + " < " + "4350";
+				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4400";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3500 case
 			if(desiredChannel == "EE" && desiredWrMass == "5300"){
-				cutStringToReturn = branchNameForCut + " > " + "3200" + " && " + branchNameForCut + " < " + "5646";
+				cutStringToReturn = branchNameForCut + " > " + "3000" + " && " + branchNameForCut + " < " + "5800";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 5300 case
 			if(desiredChannel == "EE" && desiredWrMass == "5500"){
-				cutStringToReturn = branchNameForCut + " > " + "3568" + " && " + branchNameForCut + " < " + "5914";
+				cutStringToReturn = branchNameForCut + " > " + "3000" + " && " + branchNameForCut + " < " + "5900";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 5500 case
 
