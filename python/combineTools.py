@@ -57,8 +57,10 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 			out.write(str(systematics))
 	return signal_rate, tuple(bg_rates.split())
 
-#getMassHistoTwo allows an individual root file containing a TTree to be opened and read
-def getMassHistoTwo(applyWeight, treename, process, binsize=100):
+#getOtherMassHisto allows an individual root file containing a TTree to be opened and read
+#this currently draws unweighted evts as it is used to determine the total efficiency of
+#online + offline + mass window cuts in the signal region, assuming 50k generated evts in the dataset
+def getOtherMassHisto(cutstring, treename, process, binsize=100):
 	histname, filename = process
 	infile = r.TFile.Open(filename)
 	tree = infile.Get(treename)
@@ -66,21 +68,18 @@ def getMassHistoTwo(applyWeight, treename, process, binsize=100):
 	nbins = 10000/int(binsize)
 	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
 	if "TT" not in histname:
-		if applyWeight: tree.Draw("WR_mass>>" + histname, "weight*(WR_mass>600 && dilepton_mass>200)", "goff")
-		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+		tree.Draw("WR_mass>>" + histname, "1*("+cutstring+")", "goff")
 
 	#if the histo corresponds to TT, then weight the events with the appropriate SF
 	if "TT_ee" in histname:
-		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.4194*(WR_mass>600 && dilepton_mass>200)", "goff")
-		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+		tree.Draw("WR_mass>>" + histname, "0.4194*("+cutstring+")", "goff")
 	if "TT_mumu" in histname:
-		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.6563*(WR_mass>600 && dilepton_mass>200)", "goff")
-		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+		tree.Draw("WR_mass>>" + histname, "0.6563*("+cutstring+")", "goff")
 
 	return h
 
 
-##end getMassHistoTwo
+##end getOtherMassHisto
 
 
 
