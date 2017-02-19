@@ -494,12 +494,6 @@ int main(int ac, char* av[])
 						(*myEvent.electron_HltSF_error).push_back(0.);
 					}//end if(isData)
 					else {
-						if(amcDatasetName.Contains(myEvent.datasetName) ){
-							(*myEvent.electron_IDSF_central).push_back(0.990493);
-							(*myEvent.electron_IDSF_error).push_back(0.001685);
-							(*myEvent.electron_RecoSF_central).push_back(0.983581);
-							(*myEvent.electron_RecoSF_error).push_back(0.001686);
-						}
 						if(madInclDatasetName.Contains(myEvent.datasetName) ){
 							(*myEvent.electron_IDSF_central).push_back(0.98928);
 							(*myEvent.electron_IDSF_error).push_back(0.001685);
@@ -517,6 +511,12 @@ int main(int ac, char* av[])
 							(*myEvent.electron_IDSF_error).push_back(0.0049);
 							(*myEvent.electron_RecoSF_central).push_back(0.9988);
 							(*myEvent.electron_RecoSF_error).push_back(0.0054);
+						}
+						if(!madInclDatasetName.Contains(myEvent.datasetName) && !madHt100to200Name.Contains(myEvent.datasetName) && !madHt200to400Name.Contains(myEvent.datasetName) && !madHt400to600Name.Contains(myEvent.datasetName) && !madHt600toInfName.Contains(myEvent.datasetName) ){
+							(*myEvent.electron_IDSF_central).push_back(0.990493);
+							(*myEvent.electron_IDSF_error).push_back(0.001685);
+							(*myEvent.electron_RecoSF_central).push_back(0.983581);
+							(*myEvent.electron_RecoSF_error).push_back(0.001686);
 						}
 						if(isTagAndProbe == true && channel_str == "EE") {
 							///only apply non unity HltSF to DY MC used for ee tagandprobe
