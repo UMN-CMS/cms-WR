@@ -478,7 +478,9 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 			std::cout << "the number of reco electrons in the event =\t" << nEle << std::endl;
 #endif
-
+				TString amcDatasetName = "DYJets_amctnlo", madInclDatasetName = "DYJets_madgraph", madHt100to200Name = "DYJets_madgraph_ht100to200";
+				TString madHt200to400Name = "DYJets_madgraph_ht200to400", madHt400to600Name = "DYJets_madgraph_ht400to600", madHt600toInfName = "DYJets_madgraph_ht600toInf";
+	
 			if(nEle > 0) {
 				///if there are electrons in the event, then write the electron SF and SF errors into the miniTreeEvent object named myEvent
 				///before calling the Selector constructor
@@ -490,13 +492,32 @@ int main(int ac, char* av[])
 						(*myEvent.electron_RecoSF_error).push_back(0.);
 						(*myEvent.electron_HltSF_central).push_back(1.0);
 						(*myEvent.electron_HltSF_error).push_back(0.);
-
 					}//end if(isData)
 					else {
-						(*myEvent.electron_IDSF_central).push_back(0.990493);
-						(*myEvent.electron_IDSF_error).push_back(0.001685);
-						(*myEvent.electron_RecoSF_central).push_back(0.983581);
-						(*myEvent.electron_RecoSF_error).push_back(0.001686);
+						if(amcDatasetName.Contains(myEvent.datasetName) ){
+							(*myEvent.electron_IDSF_central).push_back(0.990493);
+							(*myEvent.electron_IDSF_error).push_back(0.001685);
+							(*myEvent.electron_RecoSF_central).push_back(0.983581);
+							(*myEvent.electron_RecoSF_error).push_back(0.001686);
+						}
+						if(madInclDatasetName.Contains(myEvent.datasetName) ){
+							(*myEvent.electron_IDSF_central).push_back(0.98928);
+							(*myEvent.electron_IDSF_error).push_back(0.001685);
+							(*myEvent.electron_RecoSF_central).push_back(0.98236);
+							(*myEvent.electron_RecoSF_error).push_back(0.001686);
+						}
+						if(madHt100to200Name.Contains(myEvent.datasetName) ){
+							(*myEvent.electron_IDSF_central).push_back(1.0032);
+							(*myEvent.electron_IDSF_error).push_back(0.0034);
+							(*myEvent.electron_RecoSF_central).push_back(0.9938);
+							(*myEvent.electron_RecoSF_error).push_back(0.0036);
+						}
+						if(madHt200to400Name.Contains(myEvent.datasetName) || madHt400to600Name.Contains(myEvent.datasetName) || madHt600toInfName.Contains(myEvent.datasetName)){
+							(*myEvent.electron_IDSF_central).push_back(1.0198);
+							(*myEvent.electron_IDSF_error).push_back(0.0049);
+							(*myEvent.electron_RecoSF_central).push_back(0.9988);
+							(*myEvent.electron_RecoSF_error).push_back(0.0054);
+						}
 						if(isTagAndProbe == true && channel_str == "EE") {
 							///only apply non unity HltSF to DY MC used for ee tagandprobe
 							(*myEvent.electron_HltSF_central).push_back(0.960473);
