@@ -93,8 +93,16 @@ void egmTnPEfficiency(){
 	//inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT100to200Skims.root");
 
 	////DYMadHT200to400 files
-	inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT200to400Skims.root");
-	inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT200to400Skims.root");
+	//inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT200to400Skims.root");
+	//inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT200to400Skims.root");
+	
+	///DYMadHT400to600 files
+	//inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT400to600Skims.root");
+	//inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT400to600Skims.root");
+	
+	///DYMadHT600toInf files
+	inclusiveRecoEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfRecoUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT600toInfSkims.root");
+	inclusiveHeepEffDYMC->Add(pathToFiles+"TnPTree_mc_efficiencyOfHeepUsingSC4path_tagPassesHighETProbePassesLowET_allDyMadHT600toInfSkims.root");
 	
 	///calculate inclusive efficiencies and SFs which do not depend on ET
 	string inclusiveEfficiencyFile = "inclusiveEleRecoHeepHltEfficiency.txt";
