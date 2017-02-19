@@ -32,7 +32,7 @@
  */
 
 #define useDYMAD
-#define doReweight
+//#define doReweight
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -45,8 +45,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 40;
 Float_t idealSubleadJetPt = 40;
-Float_t leadJetPtCut = -10;
-Float_t subLeadJetPtCut = -10;
+Float_t leadJetPtCut = 40;
+Float_t subLeadJetPtCut = 40;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -75,7 +75,6 @@ void quickCalculateDyScaleFactors()
 	if(useMllReweighted == true) mcFileTag = "_withMllWeight", OverwriteDySfFile = -1, AppendToDySfFile = -1;
 	
 	TString treeName = "treeDyCheck";
-	//TChain * chain_DYPowhegInclEE = new TChain(treeName,"DYPowhegInclusiveEE");
 	TChain * chain_DYPowhegEE = new TChain(treeName,"DYPowhegMassBinnedEE");
 	TChain * chain_DYMadInclEE = new TChain(treeName,"DYMadgraphInclusiveEE");
 	TChain * chain_DYAmcInclEE = new TChain(treeName,"DYAMCInclusiveEE");
@@ -85,20 +84,21 @@ void quickCalculateDyScaleFactors()
 	TChain * chain_DYAmcInclMuMu = new TChain(treeName,"DYAMCInclusiveMuMu");
 	TChain * chain_dataMuMu = new TChain(treeName,"DataMuMu");
 
-	//chain_DYPowhegInclEE->Add(dir+"selected_tree_DYPOWINCL_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE"+mcFileTag+".root");
-	//chain_DYMadInclEE->Add(dir+"selected_tree_DYMAD_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMADInclAndHT_dytagandprobeEE"+mcFileTag+".root");
-
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
 	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
-	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
-	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMAD_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMADInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
+	
+	//chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
+	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
+	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	
+	//temporary change just to extract SFs for DYMadInclAndHT EE
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
 	chain_dataMuMu->Add(dir+"selected_tree_data_dytagandprobeMuMu"+dataFileTag+".root");
 
-	//Selector myEvent_DYPowhegInclEE;
 	Selector myEvent_DYPowhegEE;
 	Selector myEvent_DYMadInclEE;
 	Selector myEvent_DYAmcInclEE;
@@ -108,7 +108,6 @@ void quickCalculateDyScaleFactors()
 	Selector myEvent_DYAmcInclMuMu;
 	Selector myEvent_dataMuMu;
 
-	//myEvent_DYPowhegInclEE.SetBranchAddresses(chain_DYPowhegInclEE);
 	myEvent_DYPowhegEE.SetBranchAddresses(chain_DYPowhegEE);
 	myEvent_DYMadInclEE.SetBranchAddresses(chain_DYMadInclEE);
 	myEvent_DYAmcInclEE.SetBranchAddresses(chain_DYAmcInclEE);
@@ -214,13 +213,6 @@ void writeScaleFactorsToFile(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYA
 	///writeAction = 959 --> only append to secondary file
 	///writeAction != 0 or 1 or 959 --> do nothing
 	
-	Double_t zCentr = 91.1876, halfRange = 20.0000;
-	Int_t lowBin = hs_data->GetXaxis()->FindBin(zCentr - halfRange);
-	Int_t highBin = hs_data->GetXaxis()->FindBin(zCentr + halfRange);
-	//Double_t dataIntegral = hs_data->Integral(lowBin, highBin);
-	//Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral(lowBin, highBin);
-	//Double_t dyPowhegIntegral = hs_DYPowheg->Integral(lowBin, highBin);
-	//Double_t dyMadInclIntegral = hs_DYMadIncl->Integral(lowBin, highBin);
 	Double_t dataIntegral = hs_data->Integral();
 	Double_t dyAmcInclIntegral = hs_DYAmcIncl->Integral();
 	Double_t dyPowhegIntegral = hs_DYPowheg->Integral();
@@ -242,6 +234,7 @@ void writeScaleFactorsToFile(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYA
 	std::string dyScaleFactorFile = "../data/2015-v1/dyScaleFactors.txt";
 	std::string secondaryDyScaleFactorFile = "../data/2015-v1/allDyScaleFactors.txt";
 	std::string amcName = "DYAMC", madhtName = "DYMADHT", powName = "DYPOWHEG";
+	/*
 	if(writeAction == 1){
 		ofstream writeToDyFile(dyScaleFactorFile.c_str(), ofstream::trunc);
 		writeToDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << DYAmcInclSfUncert << std::endl;
@@ -256,6 +249,7 @@ void writeScaleFactorsToFile(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYA
 		writeToDyFile << channel << "\t" << madhtName << "\t"<< DYMadInclSf << DYMadInclSfUncert << std::endl;
 		writeToDyFile.close();
 	}
+	*/
 	if(writeAction == 959 || writeAction == 0 || writeAction == 1){
 		ofstream writeToSecondaryDyFile(secondaryDyScaleFactorFile.c_str(), ofstream::app);
 		writeToSecondaryDyFile << channel << "\t" << amcName << "\t"<< DYAmcInclSf << "\t" << DYAmcInclSfUncert << "\t"<< globalLeadingLeptonPtCut << "\t" << globalSubLeadingLeptonPtCut << "\t"<< leadJetPtCut << "\t"<< subLeadJetPtCut << std::endl;
@@ -322,9 +316,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	}
 
 	if(chTitle.Contains("Madgraph") ){
-		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.12849 : 1.14603;
-		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.10363 : 1.10642;
-		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.984198 : 0.964684;
+		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.12849 : 1.09673;
+		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.10363 : 1.060322;
+		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.984198 : 0.943194;
 	}
 #endif
 	for(int ev = 0; ev < nEntries; ++ev) {
@@ -476,7 +470,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-	//if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+	if(fname.EqualTo("Mll") == true && channel=="EE") writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
