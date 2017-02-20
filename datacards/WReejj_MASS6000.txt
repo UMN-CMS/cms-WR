@@ -7,11 +7,11 @@ observation 0
 bin    eejj    eejj    eejj
 process  WR_eejj  TTBar  DY  
 process  0  1  2
-rate  0.01699  0.0001  0.2541  
+rate  0.01489  0.0001  0.4441  
 ------------
 lumi       lnN        1.2020e+00 1.0270e+00 1.0270e+00
 TT_SF      lnN                 - 1.0255e+00          -
 DYAMC_SF   lnN                 -          - 1.4028e+00
-signal_unc gmN   7799 2.1789e-06          -          -
+signal_unc gmN   1067 1.3951e-05          -          -
 TT_unc     gmN      0          - 4.1917e-01          -
-DYAMC_unc  gmN     12          -          - 2.2048e-02
+DYAMC_unc  gmN     17          -          - 2.5748e-02
