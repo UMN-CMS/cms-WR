@@ -9,8 +9,7 @@ customROOTstyle()
 ROOT.gROOT.SetBatch(True)   #disable visual rendering of plots
 
 #declare numpy arrays which hold WR mass points, and the efficiency of WR events at each mass point to pass the entire online and offline selection including mass window cuts
-binsize = 50
-nGeneratedEvents = 50000.
+binsize = 10
 mass = []   #holds WR mass points as strings without decimal point
 floatMass = np.ndarray(25)   #holds WR mass points as floats, with decimal point
 floatNEvtsMuSignalMinitree = np.ndarray(25)
@@ -134,32 +133,32 @@ else:
 
 
 
-#h.Draw()
-#h.SetXTitle("M_{MuMuJJ} [GeV]")
+h.Draw()
+h.SetXTitle("M_{MuMuJJ} [GeV]")
 
-###muons
-#leg = ROOT.TLegend(.5, .8, .85, .9)
-##if withoutMassCuts == False: leg = ROOT.TLegend(0.5,0.8,0.85,0.9)
-#leg.SetTextFont(42)
-#leg.SetTextSize(0.032)
-#leg.SetBorderSize(0)
-#
-#graphs.append( ROOT.TGraph(len(floatMass), floatMass, mu_results))
-#g = graphs[-1]
-#g.SetLineColor(ROOT.kBlack)
-#g.SetLineWidth(3)
-#g.Draw("Lsame")
-#leg.AddEntry(g, "Global", "L")
-#
-#
-#leg.Draw("same")
-#if withoutMassCuts == False:
-#	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithMassWindowCuts.png")
-#	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithMassWindowCuts.pdf")
-#	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithMassWindowCuts.C")
-#else:
-#	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithoutMassWindowCuts.png")
-#	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithoutMassWindowCuts.pdf")
-#	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithoutMassWindowCuts.C")
+##muons
+leg = ROOT.TLegend(.5, .8, .85, .9)
+#if withoutMassCuts == False: leg = ROOT.TLegend(0.5,0.8,0.85,0.9)
+leg.SetTextFont(42)
+leg.SetTextSize(0.032)
+leg.SetBorderSize(0)
+
+graphs.append( ROOT.TGraph(len(floatMass), floatMass, mu_results))
+g = graphs[-1]
+g.SetLineColor(ROOT.kBlack)
+g.SetLineWidth(3)
+g.Draw("Lsame")
+leg.AddEntry(g, "Global", "L")
+
+
+leg.Draw("same")
+if withoutMassCuts == False:
+	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithMassWindowCuts.png")
+	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithMassWindowCuts.pdf")
+	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithMassWindowCuts.C")
+else:
+	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithoutMassWindowCuts.png")
+	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithoutMassWindowCuts.pdf")
+	c.SaveAs("plots/muChnlWrSignalEffDiagonalMNuWithoutMassWindowCuts.C")
 
 
