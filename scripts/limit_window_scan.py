@@ -63,8 +63,8 @@ for MWR in MWRs:
 	
 	#np.linspace returns a numpy array of evenly spaced numbers which span the interval specified by the first two arguments
 	#the third arg specifies the number of elements in the array
-	low_mass_bins = np.linspace(.4,1, 14)*MWR
-	hi_mass_bins = np.linspace(1,1.4, 14)*MWR
+	low_mass_bins = np.linspace(.4,1, 10)*MWR
+	hi_mass_bins = np.linspace(1,1.4, 10)*MWR
 	for low_m, high_m in product(low_mass_bins, hi_mass_bins):
 		if low_m > MWR: continue
 		if high_m < MWR: continue

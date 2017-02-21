@@ -15,8 +15,8 @@ chnl='mumu'
 CHNL='MuMu'
 
 #make a file which will hold the new mass windows
-eval "echo -n '#' > newMassWindows.txt"
-eval "echo chnl MWR low hi  >> newMassWindows.txt"
+eval "echo -n '#' > newMassWindows_${chnl}.txt"
+eval "echo chnl MWR low hi  >> newMassWindows_${chnl}.txt"
 
 #get the list of files which contain the mass windows and limits
 inputFiles=(`ls|grep limitResul|grep $chnl`)
@@ -25,14 +25,14 @@ for i in ${!inputFiles[*]}
 do
 	#for each limit result file, make four lists. one containing the WR mass (constant for every entry),
 	#one for the window lower bound, one for the window upper bound, and one for the expected limit
-	massHypothesis=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $1}'`)
-	lowerBound=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $3}'`)
-	upperBound=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $4}'`)
-	limit=(`cat ${inputFiles[$i]}|grep -v 'Bayesian' |awk '{print $10}'`)
+	massHypothesis=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $1}'`)
+	lowerBound=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $3}'`)
+	upperBound=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $4}'`)
+	limit=(`cat ${inputFiles[$i]}|grep -v 'Profile' |awk '{print $10}'`)
 	
 	#now go through the limit list and find the lowest value
 	bestLimitIndex=-1
-	bestLimit=400.1
+	bestLimit=500.1
 	for n in ${!limit[*]}
 	do
 		currLim=${limit[$n]}
@@ -48,7 +48,7 @@ do
 
 	#now that the best limit has been found, use bestLimitIndex to print the WR mass, channel, the window lower and upper bound
 	#MuMu MWR low hi
-	eval "echo $CHNL ${massHypothesis[$bestLimitIndex]} ${lowerBound[$bestLimitIndex]} ${upperBound[$bestLimitIndex]} >> newMassWindows.txt"
+	eval "echo $CHNL ${massHypothesis[$bestLimitIndex]} ${lowerBound[$bestLimitIndex]} ${upperBound[$bestLimitIndex]} >> newMassWindows_${chnl}.txt"
 
 done
 
