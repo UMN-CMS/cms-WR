@@ -158,8 +158,8 @@ class AnalysisResultsInterface:
 			systematics.add(process, "lumi", 1.027)
 			raw += [1.027]
 		else:
-			systematics.add(process, "lumi", 1.202)
-			raw += [1.202]
+			systematics.add(process, "lumi", 1.027)
+			raw += [1.027]
 
 		
 		systematics.add(process, process + "_unc", (N,alpha))
