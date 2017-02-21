@@ -70,7 +70,7 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "EE" && desiredWrMass == "3400"){
-				cutStringToReturn = branchNameForCut + " > " + "2650" + " && " + branchNameForCut + " < " + "4150";
+				cutStringToReturn = branchNameForCut + " > " + "2650" + " && " + branchNameForCut + " < " + "4600";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "EE" && desiredWrMass == "5400"){
@@ -109,11 +109,11 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 			}//end if to handle MuMu channel MWR 5500 case
 
 			if(desiredChannel == "EE" && desiredWrMass == "3300"){
-				cutStringToReturn = branchNameForCut + " > " + "2600" + " && " + branchNameForCut + " < " + "4050";
+				cutStringToReturn = branchNameForCut + " > " + "2600" + " && " + branchNameForCut + " < " + "4450";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3300 case
 			if(desiredChannel == "EE" && desiredWrMass == "3500"){
-				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4250";
+				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4750";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3500 case
 			if(desiredChannel == "EE" && desiredWrMass == "5300"){
