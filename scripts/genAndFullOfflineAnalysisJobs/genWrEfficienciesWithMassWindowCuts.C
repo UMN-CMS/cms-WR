@@ -62,19 +62,19 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 			//hard code the mass window cut for those mass points here
 			//calculate the upper and lower bounds by hand using a linear interpolation between the point below and point above the desired wr mass point
 			if(desiredChannel == "MuMu" && desiredWrMass == "3400"){
-				cutStringToReturn = branchNameForCut + " > " + "2900" + " && " + branchNameForCut + " < " + "4300";
+				cutStringToReturn = branchNameForCut + " > " + "2850" + " && " + branchNameForCut + " < " + "4250";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 3400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "MuMu" && desiredWrMass == "5400"){
-				cutStringToReturn = branchNameForCut + " > " + "3100" + " && " + branchNameForCut + " < " + "5950";
+				cutStringToReturn = branchNameForCut + " > " + "3200" + " && " + branchNameForCut + " < " + "6000";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "EE" && desiredWrMass == "3400"){
-				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4350";
+				cutStringToReturn = branchNameForCut + " > " + "2650" + " && " + branchNameForCut + " < " + "4150";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "EE" && desiredWrMass == "5400"){
-				cutStringToReturn = branchNameForCut + " > " + "3000" + " && " + branchNameForCut + " < " + "5850";
+				cutStringToReturn = branchNameForCut + " > " + "2950" + " && " + branchNameForCut + " < " + "5800";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 5400 case, which does not exist in the mass_cuts.txt file
 
@@ -92,36 +92,36 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 
 			//if the desired wr mass is 3300, 3500, 5300, or 5500 then the cut string will need to be made by hand
 			if(desiredChannel == "MuMu" && desiredWrMass == "3300"){
-				cutStringToReturn = branchNameForCut + " > " + "2850" + " && " + branchNameForCut + " < " + "4200";
+				cutStringToReturn = branchNameForCut + " > " + "2800" + " && " + branchNameForCut + " < " + "4150";
 				return cutStringToReturn;
 			}
 			if(desiredChannel == "MuMu" && desiredWrMass == "3500"){
-				cutStringToReturn = branchNameForCut + " > " + "2900" + " && " + branchNameForCut + " < " + "4400";
+				cutStringToReturn = branchNameForCut + " > " + "2900" + " && " + branchNameForCut + " < " + "4350";
 				return cutStringToReturn;
 			}
 			if(desiredChannel == "MuMu" && desiredWrMass == "5300"){
-				cutStringToReturn = branchNameForCut + " > " + "3100" + " && " + branchNameForCut + " < " + "5900";
+				cutStringToReturn = branchNameForCut + " > " + "3200" + " && " + branchNameForCut + " < " + "5950";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5300 case
 			if(desiredChannel == "MuMu" && desiredWrMass == "5500"){
-				cutStringToReturn = branchNameForCut + " > " + "3100" + " && " + branchNameForCut + " < " + "6050";
+				cutStringToReturn = branchNameForCut + " > " + "3200" + " && " + branchNameForCut + " < " + "6050";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 5500 case
 
 			if(desiredChannel == "EE" && desiredWrMass == "3300"){
-				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4300";
+				cutStringToReturn = branchNameForCut + " > " + "2600" + " && " + branchNameForCut + " < " + "4050";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3300 case
 			if(desiredChannel == "EE" && desiredWrMass == "3500"){
-				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4400";
+				cutStringToReturn = branchNameForCut + " > " + "2700" + " && " + branchNameForCut + " < " + "4250";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 3500 case
 			if(desiredChannel == "EE" && desiredWrMass == "5300"){
-				cutStringToReturn = branchNameForCut + " > " + "3000" + " && " + branchNameForCut + " < " + "5800";
+				cutStringToReturn = branchNameForCut + " > " + "2950" + " && " + branchNameForCut + " < " + "5700";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 5300 case
 			if(desiredChannel == "EE" && desiredWrMass == "5500"){
-				cutStringToReturn = branchNameForCut + " > " + "3000" + " && " + branchNameForCut + " < " + "5900";
+				cutStringToReturn = branchNameForCut + " > " + "2950" + " && " + branchNameForCut + " < " + "5850";
 				return cutStringToReturn;
 			}//end if to handle EE channel MWR 5500 case
 
@@ -173,19 +173,19 @@ void genWrEfficienciesWithMassWindowCuts(){
 
 	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
 	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
-	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
+	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
 	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
-	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
+	string cutEfficiencyVsMassFile = "offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
-	Float_t passingMassWindow=-1;
+	Float_t passingAllGenCuts=-1;
 	TH2F * twoDimAcceptanceHist = new TH2F("twoDimAccHist","Percentage of events passing all GEN and mass window cuts",32,800,4000,39,100,4000);
-	TH2F * twoDimMassWindowEfficiencyHist = new TH2F("twoDimMassWindowEfficiencyHist","Percentage of events passing mass window cuts given events passing MLLJJ>600 cut",32,800,4000,38,100,4000);
+	TH2F * twoDimAccHistNoWindows = new TH2F("twoDimAccHistNoWindows","Percentage of events passing all GEN cuts without mass windows",32,800,4000,38,100,4000);
 
 
 	int maxWrMass = 4000, increment = 100, minWrMass = 800, minNuMass = 100;
@@ -207,20 +207,19 @@ void genWrEfficienciesWithMassWindowCuts(){
 			afterOfflineCuts->Add(pfn.c_str());
 
 			///calculate percentage of evts which pass GEN cuts and mass window cuts, and store this percentage along with the nu and wr mass values in a txt file
-			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
+			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "EE","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
 			
-			///calculate percentage of evts which pass mass window cut, given events passing full offline selection including MLLJJ>600 cut
-			//passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/afterOfflineCuts->GetEntries());
+			///calculate percentage of evts which pass all GEN cuts before mass window cut
+			passingAllGenCuts = (100)*((Float_t) afterOfflineCuts->GetEntries()/genInfo->GetEntries());
 
-			///calculate percentage of evts which pass mass window cut and all GEN cuts
-			passingMassWindow = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
 
-	
-			writeToEfficiencyFile << wrMass <<"\t"<< nuMass <<"\t"<< passingMassWindow << endl;
+			//write the efficiency of all GEN cuts + mass window cuts to a txt file
+			//this txt file will be used for the 2D limit exclusion plot
+			writeToEfficiencyFile << wrMass <<"\t"<< nuMass <<"\t"<< passingPercentage << endl;
 	
 			///fill a bin in the 2D histo with a weight equal to passingPercentage
 			twoDimAcceptanceHist->Fill((Double_t) wrMass, (Double_t) nuMass,passingPercentage);
-			twoDimMassWindowEfficiencyHist->Fill((Double_t) wrMass, (Double_t) nuMass, passingMassWindow);
+			twoDimAccHistNoWindows->Fill((Double_t) wrMass, (Double_t) nuMass, passingAllGenCuts);
 			genInfo->Delete();
 			afterOfflineCuts->Delete();
 
@@ -237,19 +236,20 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * r1 = new TCanvas("r1","r1",900,700);
 	r1->cd();
 	twoDimAcceptanceHist->Draw("COLZ");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.png","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.pdf","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.C","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.png","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.pdf","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.C","recreate");
 
 
-	twoDimMassWindowEfficiencyHist->GetXaxis()->SetTitle("WR Mass [GeV]");
-	twoDimMassWindowEfficiencyHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
+	twoDimAccHistNoWindows->GetXaxis()->SetTitle("WR Mass [GeV]");
+	twoDimAccHistNoWindows->GetYaxis()->SetTitle("Nu Mass [GeV]");
 	TCanvas * c1 = new TCanvas("c1","c1",900,700);
 	c1->cd();
-	twoDimMassWindowEfficiencyHist->Draw("COLZ");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_13TeV.png","recreate");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_13TeV.pdf","recreate");
-	c1->SaveAs("twoDimMassWindowEfficiencyMuMu_afterFourObjMassAndOtherCuts_13TeV.C","recreate");
+	twoDimAccHistNoWindows->Draw("COLZ");
+	c1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsWithoutMassWindows_13TeV.png","recreate");
+	c1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsWithoutMassWindows_13TeV.pdf","recreate");
+	c1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsWithoutMassWindows_13TeV.C","recreate");
+
 
 }///end genWrEfficienciesWithMassWindowCuts()
 
