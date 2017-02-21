@@ -3,7 +3,7 @@ import numpy as np
 from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
 import ExoAnalysis.cmsWR.combineTools as combineTools
 
-withoutMassCuts = False
+withoutMassCuts = True
 
 customROOTstyle()
 ROOT.gROOT.SetBatch(True)   #disable visual rendering of plots
@@ -13,9 +13,7 @@ binsize = 50
 nGeneratedEvents = 50000.
 mass = []   #holds WR mass points as strings without decimal point
 floatMass = np.ndarray(25)   #holds WR mass points as floats, with decimal point
-nEvtsMuSignalMinitree = []
 floatNEvtsMuSignalMinitree = np.ndarray(25)
-nEvtsEleSignalMinitree = []
 floatNEvtsEleSignalMinitree = np.ndarray(25)
 eleLowBound = np.ndarray(25)
 eleUpBound = np.ndarray(25)
@@ -51,20 +49,17 @@ with open("configs/mass_cuts.txt","r") as c:
 #end loop over lines in mass_cuts.txt
 
 linei=0
-#nEvtsMuSignalMinitree = []
 #floatNEvtsMuSignalMinitree = np.ndarray(25)
-#nEvtsEleSignalMinitree = []
 #floatNEvtsEleSignalMinitree = np.ndarray(25)
-#fill the arrays named nEvts and floatNEvts for ele and mu channels with the number of minitree events obtained
+#fill the arrays named floatNEvts for ele and mu channels with the number of minitree events obtained
 #from data/2015-v1/miniTreeEntries.dat 
-with open("data/2015-v1/miniTreeEntries.dat","r") as c:
+with open("configs/datasets.dat","r") as c:
 	for line in c:
 		if line[0] == '#': continue
 		line = map(str,line.split())
 		#now line is split into a 4 element array, and each element is a string NOT a float or int
 		if 'WRtoEEJJ' in line[0]:
-			#nEvtsEleSignalMini.append(line[3])
-			floatNEvtsEleSignalMinitree[linei] = float(line[3])
+			floatNEvtsEleSignalMinitree[linei] = float(line[4])
 			linei += 1
 		if 'WRtoMuMuJJ' in line[0]:
 			if '800_400' in line[0]: linei=0
@@ -109,12 +104,12 @@ h.SetMaximum(1)
 ##electrons
 c = ROOT.TCanvas("c","c",800,800)
 h.Draw()
-h.SetXTitle("M_{EEJJ} [GeV]")
-if withoutMassCuts == False: h.SetYTitle("Selection+Window Eff*Accept | HLT")
-else: h.SetYTitle("Selection Eff*Accept | HLT")
+h.SetXTitle("W_{R} Mass [GeV]")
+if withoutMassCuts == False: h.SetYTitle("Selection+Window Eff*Accept | GEN")
+else: h.SetYTitle("Selection Eff*Accept | GEN")
 
-leg = ROOT.TLegend(.5, .7, .85, .8)
-if withoutMassCuts == False: leg = ROOT.TLegend(0.5,0.8,0.85,0.9)
+leg = ROOT.TLegend(.5, .8, .85, .9)
+#if withoutMassCuts == False: leg = ROOT.TLegend(0.5,0.8,0.85,0.9)
 leg.SetTextFont(42)
 leg.SetTextSize(0.032)
 leg.SetBorderSize(0)
@@ -143,8 +138,8 @@ h.Draw()
 h.SetXTitle("M_{MuMuJJ} [GeV]")
 
 ##muons
-leg = ROOT.TLegend(.5, .7, .85, .8)
-if withoutMassCuts == False: leg = ROOT.TLegend(0.5,0.8,0.85,0.9)
+leg = ROOT.TLegend(.5, .8, .85, .9)
+#if withoutMassCuts == False: leg = ROOT.TLegend(0.5,0.8,0.85,0.9)
 leg.SetTextFont(42)
 leg.SetTextSize(0.032)
 leg.SetBorderSize(0)
