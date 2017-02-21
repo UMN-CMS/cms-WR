@@ -67,16 +67,17 @@ def getMassHistoTwo(applyWeight, treename, process, binsize=100):
 	nbins = 10000/int(binsize)
 	h = r.TH1F(histname, histname, nbins, 0, nbins * binsize)
 	if "TT" not in histname:
-		if applyWeight: tree.Draw("WR_mass>>" + histname, "weight*(WR_mass>600 && dilepton_mass>200)", "goff")
-		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+		if applyWeight: tree.Draw("WR_mass>>" + histname, "weight*(WR_mass>600. && dilepton_mass>200.)", "goff")
+		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600. && dilepton_mass>200.", "goff")
 
 	#if the histo corresponds to TT, then weight the events with the appropriate SF
+	#now using TT MC with this function, so Xsxn weight is needed
 	if "TT_ee" in histname:
-		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.4194*(WR_mass>600 && dilepton_mass>200)", "goff")
-		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.4194*weight*(WR_mass>600. && dilepton_mass>200.)", "goff")
+		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600. && dilepton_mass>200.", "goff")
 	if "TT_mumu" in histname:
-		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.6563*(WR_mass>600 && dilepton_mass>200)", "goff")
-		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600 && dilepton_mass>200", "goff")
+		if applyWeight: tree.Draw("WR_mass>>" + histname, "0.6563*weight*(WR_mass>600. && dilepton_mass>200.)", "goff")
+		else: tree.Draw("WR_mass>>" + histname, "WR_mass>600. && dilepton_mass>200.", "goff")
 
 	return h
 
