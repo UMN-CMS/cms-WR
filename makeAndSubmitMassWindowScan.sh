@@ -2,8 +2,8 @@
 ##ONLY run this script in cmsWR/ directory, not a subdirectory
 workingDir=$PWD
 
-#mass=(800 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3200 3600 3800 4000 4200 4400 4600 4800 5000 5200 5600 5800 6000)
-mass=(800 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3200 3600 3800 4000)
+mass=(800 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3200 3600 3800 4000 4200 4400 4600 4800 5000 5200 5600 5800 6000)
+#mass=(800 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3200 3600 3800 4000)
 
 
 
@@ -32,8 +32,8 @@ do
 	#submit the job(s)
 	#echo "bsub -R 'pool>1500' -q 1nd -J scanMassWindows_ee_MWR_${mass[$i]} < runMassWindowScan_MWR_${mass[$i]}_ee.sh"
 	#echo "bsub -R 'pool>1500' -q 1nd -J scanMassWindows_mumu_MWR_${mass[$i]} < runMassWindowScan_MWR_${mass[$i]}_mumu.sh"
-	#eval "bsub -R 'pool>1500' -q 1nd -J scanMassWindows_ee_MWR_${mass[$i]} < runMassWindowScan_MWR_${mass[$i]}_ee.sh"
-	eval "bsub -R 'pool>1500' -q 1nd -J scanMassWindows_mumu_MWR_${mass[$i]} < runMassWindowScan_MWR_${mass[$i]}_mumu.sh"
+	#eval "bsub -R 'pool>1500' -q 8nh -J scanMassWindows_ee_MWR_${mass[$i]} < runMassWindowScan_MWR_${mass[$i]}_ee.sh"
+	eval "bsub -R 'pool>1500' -q 8nh -J scanMassWindows_mumu_MWR_${mass[$i]} < runMassWindowScan_MWR_${mass[$i]}_mumu.sh"
 	
 done
 
