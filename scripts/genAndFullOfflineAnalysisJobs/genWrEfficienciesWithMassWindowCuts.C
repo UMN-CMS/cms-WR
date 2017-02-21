@@ -62,7 +62,7 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 			//hard code the mass window cut for those mass points here
 			//calculate the upper and lower bounds by hand using a linear interpolation between the point below and point above the desired wr mass point
 			if(desiredChannel == "MuMu" && desiredWrMass == "3400"){
-				cutStringToReturn = branchNameForCut + " > " + "2850" + " && " + branchNameForCut + " < " + "4250";
+				cutStringToReturn = branchNameForCut + " > " + "2800" + " && " + branchNameForCut + " < " + "4550";
 				return cutStringToReturn;
 			}//end if to handle MuMu channel MWR 3400 case, which does not exist in the mass_cuts.txt file
 			if(desiredChannel == "MuMu" && desiredWrMass == "5400"){
@@ -92,11 +92,11 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 
 			//if the desired wr mass is 3300, 3500, 5300, or 5500 then the cut string will need to be made by hand
 			if(desiredChannel == "MuMu" && desiredWrMass == "3300"){
-				cutStringToReturn = branchNameForCut + " > " + "2800" + " && " + branchNameForCut + " < " + "4150";
+				cutStringToReturn = branchNameForCut + " > " + "2750" + " && " + branchNameForCut + " < " + "4400";
 				return cutStringToReturn;
 			}
 			if(desiredChannel == "MuMu" && desiredWrMass == "3500"){
-				cutStringToReturn = branchNameForCut + " > " + "2900" + " && " + branchNameForCut + " < " + "4350";
+				cutStringToReturn = branchNameForCut + " > " + "2850" + " && " + branchNameForCut + " < " + "4700";
 				return cutStringToReturn;
 			}
 			if(desiredChannel == "MuMu" && desiredWrMass == "5300"){
@@ -173,13 +173,13 @@ void genWrEfficienciesWithMassWindowCuts(){
 
 	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
 	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
-	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
+	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
 	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
-	string cutEfficiencyVsMassFile = "offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
+	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
@@ -207,7 +207,10 @@ void genWrEfficienciesWithMassWindowCuts(){
 			afterOfflineCuts->Add(pfn.c_str());
 
 			///calculate percentage of evts which pass GEN cuts and mass window cuts, and store this percentage along with the nu and wr mass values in a txt file
-			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "EE","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
+			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
+			
+			//only for MuMu channel
+			if(wrMass > 3050 && wrMass < 3150) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 2600.000000 && fourObjectMass < 4100.000000000" )/genInfo->GetEntries());
 			
 			///calculate percentage of evts which pass all GEN cuts before mass window cut
 			passingAllGenCuts = (100)*((Float_t) afterOfflineCuts->GetEntries()/genInfo->GetEntries());
@@ -236,9 +239,9 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * r1 = new TCanvas("r1","r1",900,700);
 	r1->cd();
 	twoDimAcceptanceHist->Draw("COLZ");
-	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.png","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.pdf","recreate");
-	r1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsIncludingMassWindows_13TeV.C","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.png","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.pdf","recreate");
+	r1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsIncludingMassWindows_13TeV.C","recreate");
 
 
 	twoDimAccHistNoWindows->GetXaxis()->SetTitle("WR Mass [GeV]");
@@ -246,9 +249,9 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TCanvas * c1 = new TCanvas("c1","c1",900,700);
 	c1->cd();
 	twoDimAccHistNoWindows->Draw("COLZ");
-	c1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsWithoutMassWindows_13TeV.png","recreate");
-	c1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsWithoutMassWindows_13TeV.pdf","recreate");
-	c1->SaveAs("twoDimGenWrAcceptancesEE_afterAllCutsWithoutMassWindows_13TeV.C","recreate");
+	c1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsWithoutMassWindows_13TeV.png","recreate");
+	c1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsWithoutMassWindows_13TeV.pdf","recreate");
+	c1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsWithoutMassWindows_13TeV.C","recreate");
 
 
 }///end genWrEfficienciesWithMassWindowCuts()
