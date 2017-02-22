@@ -208,9 +208,21 @@ void genWrEfficienciesWithMassWindowCuts(){
 
 			///calculate percentage of evts which pass GEN cuts and mass window cuts, and store this percentage along with the nu and wr mass values in a txt file
 			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
-			
+
+			////////////////////////////////////
 			//only for MuMu channel
 			if(wrMass > 3050 && wrMass < 3150) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 2600.000000 && fourObjectMass < 4100.000000000" )/genInfo->GetEntries());
+			if(wrMass > 1250 && wrMass < 1350) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 1200.000000 && fourObjectMass < 1750.000000000" )/genInfo->GetEntries());
+			if(wrMass > 1450 && wrMass < 1550) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 1400.000000 && fourObjectMass < 1975.000000000" )/genInfo->GetEntries());
+			////////////////////////////////////
+	
+
+			/*
+			if(wrMass > 1150 && wrMass < 1650 && nuMass > 450){
+				std::cout<<"wrMass "<< wrMass <<" nuMass "<< nuMass <<"   mass window cut   "<< getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt") <<std::endl;
+
+			}
+			*/
 			
 			///calculate percentage of evts which pass all GEN cuts before mass window cut
 			passingAllGenCuts = (100)*((Float_t) afterOfflineCuts->GetEntries()/genInfo->GetEntries());
