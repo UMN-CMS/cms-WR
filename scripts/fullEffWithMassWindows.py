@@ -134,7 +134,7 @@ else:
 
 
 h.Draw()
-h.SetXTitle("M_{MuMuJJ} [GeV]")
+h.SetXTitle("W_{R} Mass [GeV]")
 
 ##muons
 leg = ROOT.TLegend(.5, .8, .85, .9)
