@@ -7,11 +7,11 @@ observation 62
 bin    mumujj    mumujj    mumujj
 process  WR_mumujj  TTBar  DY  
 process  0  1  2
-rate  887.1  38.33  23.94  
+rate  887.6  38.33  23.97  
 ------------
 lumi       lnN        1.0270e+00 1.0270e+00 1.0270e+00
 TT_SF      lnN                 - 1.0502e+00          -
 DYAMC_SF   lnN                 -          - 1.4034e+00
-signal_unc gmN    850 1.0435e+00          -          -
-TT_unc     gmN     57          - 6.7652e-01          -
-DYAMC_unc  gmN     74          -          - 3.2300e-01
+signal_unc gmN    830 1.0700e+00          -          -
+TT_unc     gmN     57          - 6.7618e-01          -
+DYAMC_unc  gmN     74          -          - 3.2494e-01
