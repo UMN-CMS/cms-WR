@@ -188,10 +188,10 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	//string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/", "3200toysJetSystNewMassWindows/","3200toysAllLeptSystNewMassWindows/"};
-	//string uncertTagNames[] = {"all sources","jet syst","mixed lepton"};
-	string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/"};
-	string uncertTagNames[] = {"all sources"};
+	string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/", "3200toysJetSystNewMassWindows/","3200toysAllLeptSystNewMassWindows/"};
+	string uncertTagNames[] = {"all sources","jet syst","mixed lepton"};
+	//string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/"};
+	//string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
