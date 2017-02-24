@@ -33,16 +33,17 @@ nuisance_params.append(("TT_SF",       "lnN"))
 nuisance_params.append(("DYAMC_SF",       "lnN"))
 
 #omit the signal_unc nuisance parameter when making datacards to calculate the observed limit
-#nuisance_params.append(("signal_unc",  "gmN"))
+nuisance_params.append(("signal_unc",  "gmN"))
 
 nuisance_params.append(("TT_unc",      "gmN"))
 nuisance_params.append(("DYAMC_unc",   "gmN"))
 #nuisance_params.append(("OTHER_unc",   "gmN"))
-unscale_by_xs = False	#set to true to allow 800 GeV and 1.0 TeV MWR limit jobs to finish successfully
+unscale_by_xs = True	#set to true to allow 800 GeV and 1.0 TeV MWR limit jobs to finish successfully
 for channel in ["ee", "mumu"]:
 	sig_name = "WR_" + channel + "jj"
 	MWR = []
 	signal = []
+	obs = []
 	bg = []
 	systematics_list = []
 	for mass in sorted(combineTools.mass_cut[channel]):
@@ -69,8 +70,10 @@ for channel in ["ee", "mumu"]:
 			
 			#add the number of events observed in data to the list named signal so that the datacard
 			#lists the number of obs events in data in both the observation field and the signal events field, next to the expected TT and DY events
-			#signal.append(signalNevents)
-			signal.append(data)
+			signal.append(signalNevents)
+			#signal.append(data)
+
+			obs.append(data)
 			
 			bg.append([TTBar, DY])
 
@@ -86,7 +89,7 @@ for channel in ["ee", "mumu"]:
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
-		nObs = signal[i]
+		nObs = obs[i]
 
 		datacard = "WR%sjj_MASS%04d" % (channel, MWR[i])
 		datacard_file = args.outdir + "/" + datacard + ".txt"

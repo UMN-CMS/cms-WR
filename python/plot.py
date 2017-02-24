@@ -134,7 +134,7 @@ class limit1d:
 			if self.theory:
 				#observed_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, observed_limit_array)], dtype=float)
 				observed_limit_array *= self.xs
-			#rescale observed limit and sigma bands
+			#rescale observed limit
 			observed_limit_array *= scale
 			g_obs = ROOT.TGraph(nobs, mass_array, observed_limit_array)
 			g_obs.SetLineWidth(3);

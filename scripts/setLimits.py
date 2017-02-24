@@ -48,10 +48,10 @@ for datacard in datacards:
 		jobid = jobname + "OBSERVED"
 		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s " %(systematics, datacard_file, datacard)
 		prefix  = thisdir + "/python/combineTools.py " + jobid
-		#job.addJob( prefix + " " + command, jobid)
+		job.addJob( prefix + " " + command, jobid)
 		jobid = jobname + "EXPECTED"
 		command = "combine -M BayesianToyMC -H ProfileLikelihood -S%d %s -n %s --toys %s" %(systematics, datacard_file, datacard, toys)
 		prefix  = thisdir + "/python/combineTools.py " + jobid
-		job.addJob( prefix + " " + command, jobid)
+		#job.addJob( prefix + " " + command, jobid)
 
 job.submit(mode = "lsf")

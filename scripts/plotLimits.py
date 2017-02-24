@@ -33,8 +33,8 @@ for res in results:
 	channel,mass,mode = m.split('_')
 	if mode == "EXPECTED":
 		plotters[channel].add(mass, ret)
-	#elif mode == "OBSERVED":
-		#plotters[channel].addObserved(mass, ret)
+	elif mode == "OBSERVED":
+		plotters[channel].addObserved(mass, ret)
 
 #plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
 #	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
