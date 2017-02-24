@@ -183,7 +183,8 @@ class limit2d:
 		self.exclusion = ROOT.TH2F(name + "_exc", name + " exclusion", *(mwr_range + mnu_range))
 		self.crosssection = ROOT.TH2F(name + "_xs", name + " xs", *(mwr_range + mnu_range))
 		self.channelname = channelname
-
+		self.obslines = None
+	
 		with open(ratio_file,"r") as inf:
 			for line in inf:
 				line = line.strip()
@@ -196,6 +197,25 @@ class limit2d:
 
 	def addTheory(self, theory):
 		self.theory = theory
+	
+	def addObserved(self, mwr, point):
+		mwr = int(mwr)
+		median = float(point)
+		#median *= self.xs
+		for mnu in self.eff[mwr]:
+
+			ratio = self.eff[mwr][mnu]/self.eff[mwr][mwr/2]
+			if np.isnan(ratio): continue
+			if ratio == 0:
+				ratio = .00001
+
+			limit = median * self.xs / ratio
+			self.effratio.Fill(mwr, mnu, ratio)
+			self.limits.Fill(mwr, mnu, limit)
+			#self.r.Fill(mwr, mnu, median * self.xs)
+			self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
+			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
+
 	def add(self, mwr, point):
 		mwr = int(mwr)
 		median, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = point

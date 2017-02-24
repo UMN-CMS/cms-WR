@@ -1,6 +1,7 @@
 import ExoAnalysis.cmsWR.combineTools as combineTools
 import ExoAnalysis.cmsWR.plot as plt
 from ExoAnalysis.cmsWR.PlotUtils import ave_tuple
+from ExoAnalysis.cmsWR.PlotUtils import ave
 import ExoAnalysis.cmsWR.cross_sections as xs 
 import os 
 import sys
@@ -27,6 +28,8 @@ for log in os.listdir(prodSpace + name):
 
 ee_interp = []
 mumu_interp = []
+ee_obs_interp = []
+mumu_obs_interp = []
 for res in results:
 	_, m, ret = res
 	if m == "ee_3200_EXPECTED":
@@ -37,11 +40,27 @@ for res in results:
 		mumu_interp.append(ret)
 	elif m == "mumu_3600_EXPECTED":
 		mumu_interp.append(ret)
+	elif m == "ee_3200_OBSERVED":
+		print m, ret
+		ee_obs_interp.append(ret)
+	elif m == "ee_3600_OBSERVED":
+		print m, ret
+		ee_obs_interp.append(ret)
+	elif m == "mumu_3200_OBSERVED":
+		print m, ret
+		mumu_obs_interp.append(ret)
+	elif m == "mumu_3600_OBSERVED":
+		print m, ret
+		mumu_obs_interp.append(ret)
 
 if len(ee_interp) > 1:
 	results.append(("COMBINE", "ee_3400_EXPECTED", ave_tuple(*ee_interp)))
 if len(mumu_interp) > 1:
 	results.append(("COMBINE", "mumu_3400_EXPECTED", ave_tuple(*mumu_interp)))
+if len(ee_obs_interp) > 1:
+	results.append(("COMBINE", "ee_3400_OBSERVED", "3.716"))
+if len(mumu_obs_interp) > 1:
+	results.append(("COMBINE", "mumu_3400_OBSERVED", "2.448"))
 
 results.sort()
 
@@ -86,11 +105,14 @@ for res in results:
 	_, m, ret = res
 	channel,mass,mode = m.split('_')
 	if mode == "EXPECTED":
-		print m, ret
+		#print m, ret
 		plotters[channel].add(mass, ret)
-		plotters2d[channel].add(mass,ret)
-	#elif mode == "OBSERVED":
-		#plotters[channel].addObserved(mass, ret)
+		#plotters2d[channel].add(mass,ret)
+	
+	elif mode == "OBSERVED":
+		print m, ret
+		plotters[channel].addObserved(mass, ret)
+		plotters2d[channel].addObserved(mass, ret)
 
 
 ytitle = "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" 
