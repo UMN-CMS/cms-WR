@@ -31,10 +31,7 @@ nuisance_params = []
 nuisance_params.append(("lumi",        "lnN"))
 nuisance_params.append(("TT_SF",       "lnN"))
 nuisance_params.append(("DYAMC_SF",       "lnN"))
-
-#omit the signal_unc nuisance parameter when making datacards to calculate the observed limit
 nuisance_params.append(("signal_unc",  "gmN"))
-
 nuisance_params.append(("TT_unc",      "gmN"))
 nuisance_params.append(("DYAMC_unc",   "gmN"))
 #nuisance_params.append(("OTHER_unc",   "gmN"))
@@ -67,14 +64,8 @@ for channel in ["ee", "mumu"]:
 
 
 			MWR.append(mass)
-			
-			#add the number of events observed in data to the list named signal so that the datacard
-			#lists the number of obs events in data in both the observation field and the signal events field, next to the expected TT and DY events
 			signal.append(signalNevents)
-			#signal.append(data)
-
 			obs.append(data)
-			
 			bg.append([TTBar, DY])
 
 			if args.nosyst: systematics = None
@@ -89,12 +80,12 @@ for channel in ["ee", "mumu"]:
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
-		#nObs = obs[i]
+		nObs = obs[i]
 
 		datacard = "WR%sjj_MASS%04d" % (channel, MWR[i])
 		datacard_file = args.outdir + "/" + datacard + ".txt"
 		
 		#the third argument in makeDataCardSingleBin sets the number of observed events in the datacard
 		#use nObs for observed limits, and nBG for expected limits
-		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
+		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nObs,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])
