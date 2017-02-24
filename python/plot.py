@@ -54,13 +54,13 @@ class limit1d:
 
 		if self.theory:
 			#uncomment the following three lines if unscale_by_xs in scripts/makeDatacards.py is False
-			expected_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, expected_limit_array)], dtype=float)
-			onesig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, onesig_array)   ], dtype=float) 
-			twosig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, twosig_array)   ], dtype=float) 
+			#expected_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, expected_limit_array)], dtype=float)
+			#onesig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, onesig_array)   ], dtype=float) 
+			#twosig_array         = np.array([ l*self.theory[mass] for mass, l in zip(mass_band_array, twosig_array)   ], dtype=float) 
 			#uncomment the following three lines if unscale_by_xs in scripts/makeDatacards.py is True
-			#expected_limit_array *= self.xs
-			#onesig_array *= self.xs
-			#twosig_array *= self.xs
+			expected_limit_array *= self.xs
+			onesig_array *= self.xs
+			twosig_array *= self.xs
 
 		#rescale expected limits and expected limit sigma bands
 		expected_limit_array *= scale
@@ -134,7 +134,7 @@ class limit1d:
 			if self.theory:
 				#observed_limit_array = np.array([ l*self.theory[mass] for mass, l in zip(mass_array, observed_limit_array)], dtype=float)
 				observed_limit_array *= self.xs
-			#rescale observed limit and sigma bands
+			#rescale observed limit
 			observed_limit_array *= scale
 			g_obs = ROOT.TGraph(nobs, mass_array, observed_limit_array)
 			g_obs.SetLineWidth(3);

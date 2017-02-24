@@ -33,15 +33,15 @@ for res in results:
 	channel,mass,mode = m.split('_')
 	if mode == "EXPECTED":
 		plotters[channel].add(mass, ret)
-	#elif mode == "OBSERVED":
-		#plotters[channel].addObserved(mass, ret)
+	elif mode == "OBSERVED":
+		plotters[channel].addObserved(mass, ret)
 
 #plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
 #	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
 #plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
 #	y_title="Limit on XS(pb)", y_limits = (2e-3,6e-2), x_limits = (800, 4000), leg_y = .68 )
 plotters["ee"].plot("plots/limWReejj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title="Limit on XS(fb)", y_limits = (2e+0,4e+2), x_limits = (800, 4000), leg_y = .68 , scale = 1000)
+	y_title="Limit on XS(fb)", y_limits = (1.5e+0,4e+2), x_limits = (800, 4000), leg_y = .68 , scale = 1000)
 plotters["mumu"].plot("plots/limWRmumujj" + name + tag, x_title = "M_{W_{R}} [GeV]",
-	y_title="Limit on XS(fb)", y_limits = (2e+0,4e+2), x_limits = (800, 4000), leg_y = .68 , scale = 1000)
+	y_title="Limit on XS(fb)", y_limits = (1.5e+0,4e+2), x_limits = (800, 4000), leg_y = .68 , scale = 1000)
 #plotters.plot("plots/limWR" + channel + ".png", x_title = "M_{W_{R}} [GeV]", y_title="#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow #mu#mu) [fb]", y_range = (1e-3,10))

@@ -35,11 +35,12 @@ nuisance_params.append(("signal_unc",  "gmN"))
 nuisance_params.append(("TT_unc",      "gmN"))
 nuisance_params.append(("DYAMC_unc",   "gmN"))
 #nuisance_params.append(("OTHER_unc",   "gmN"))
-unscale_by_xs = False	#set to true to allow 800 GeV and 1.0 TeV MWR limit jobs to finish successfully
+unscale_by_xs = True	#set to true to allow 800 GeV and 1.0 TeV MWR limit jobs to finish successfully
 for channel in ["ee", "mumu"]:
 	sig_name = "WR_" + channel + "jj"
 	MWR = []
 	signal = []
+	obs = []
 	bg = []
 	systematics_list = []
 	for mass in sorted(combineTools.mass_cut[channel]):
@@ -53,10 +54,18 @@ for channel in ["ee", "mumu"]:
 
 			TTBar = minitrees.getNEvents(mass, channel, "TT", systematics)
 			DY = minitrees.getNEvents(mass, channel, "DYAMC", systematics)
+			
+			#this data value is the number of events observed in data in a specific mass window
+			#only needed when making datacards to calculate the observed limit
+			data = minitrees.getNEvents(mass, channel, "data", systematics)
+			
+			#saved for reference, in case another process needs to be added to the datacard
 			#Other = minitrees.getNEvents(mass, channel, "OTHER", systematics)
+
 
 			MWR.append(mass)
 			signal.append(signalNevents)
+			obs.append(data)
 			bg.append([TTBar, DY])
 
 			if args.nosyst: systematics = None
@@ -71,8 +80,12 @@ for channel in ["ee", "mumu"]:
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
+		nObs = obs[i]
 
 		datacard = "WR%sjj_MASS%04d" % (channel, MWR[i])
 		datacard_file = args.outdir + "/" + datacard + ".txt"
-		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
+		
+		#the third argument in makeDataCardSingleBin sets the number of observed events in the datacard
+		#use nObs for observed limits, and nBG for expected limits
+		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nObs,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])

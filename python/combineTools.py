@@ -267,7 +267,7 @@ class AnalysisResultsInterface:
 			channel = "emu"
 			mode = "data"
 			minitreename = "flavoursideband"
-		elif "DY" in process:
+		elif "DY" or "data" in process:
 			mode = process
 			minitreename = "signal_" + channel
 		#elif "OTHER" in process:
