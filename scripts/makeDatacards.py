@@ -89,12 +89,12 @@ for channel in ["ee", "mumu"]:
 		signal_tuple = (sig_name, signal[i])
 		bg_tuples = zip(bg_names, bg[i])
 		nBG = sum(bg[i])
-		nObs = obs[i]
+		#nObs = obs[i]
 
 		datacard = "WR%sjj_MASS%04d" % (channel, MWR[i])
 		datacard_file = args.outdir + "/" + datacard + ".txt"
 		
 		#the third argument in makeDataCardSingleBin sets the number of observed events in the datacard
 		#use nObs for observed limits, and nBG for expected limits
-		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nObs,
+		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])
