@@ -64,7 +64,7 @@ int getIndexForSystematicUncertainty(string wrMass, string inputLeptonChannel, s
 		string copyInputWrMass = wrMass;
 		
 		//WR mass read in from mass cuts file has a leading zero on 800 GeV mass, 0800
-		if(wrMass == "800") copyInputWrMass = "0800";
+		//if(wrMass == "800") copyInputWrMass = "800";
 		if(inputLeptonChannel.find(channelFromFile) != string::npos && wrMassForMassWindow == copyInputWrMass) break;	///<leave the loop once a match is found
 
 		indexToReturn++;
@@ -180,8 +180,9 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
+	int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
 	//int wrMassPoints[] = {1600,2200,2800};
-	int wrMassPoints[] = {1400,2000};
+	//int wrMassPoints[] = {1400,2000};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
