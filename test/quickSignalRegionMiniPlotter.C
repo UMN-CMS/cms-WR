@@ -35,7 +35,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -53,7 +53,7 @@ void quickSignalRegionMiniPlotter(){
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EE:
-	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_signal_eeEE_withMllWeight.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
@@ -74,7 +74,7 @@ void quickSignalRegionMiniPlotter(){
 	break;
   case Selector::MuMu:
 
-	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_signal_mumuMuMu_withMllWeight.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_mumuMuMu_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
@@ -127,9 +127,9 @@ void quickSignalRegionMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LJJ} using lead lepton [GeV]","M_{LJJ} using sublead lepton [GeV]"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LJJ} using lead lepton [GeV]","M_{LJJ} using sublead lepton [GeV]","M_{LLJJ}"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt","Mlljj_varBins","Mlljj_2012Bins","Mljj_leadLept","Mljj_subleadLept"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt","Mlljj_varBins","Mlljj_2012Bins","Mljj_leadLept","Mljj_subleadLept","Mlljj_thinBins"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -155,6 +155,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
   TH1F *h_WR_mass = new TH1F("h_WR_mass_fixedBinWidth","",17,600,4000);	//200 GeV wide bins
+  TH1F *h_WR_mass_thinBins = new TH1F("h_WR_mass_thinBins_fixedBinWidth","",68,600,4000);	//50 GeV wide bins
   TH1F *h_Nu_mass_leadLept = new TH1F("h_Nu_mass_leadLept_fixedBinWidth","",11,200,2400);	//200 GeV wide bins
   TH1F *h_Nu_mass_subleadLept = new TH1F("h_Nu_mass_subleadLept_fixedBinWidth","",10,200,2200);	//200 GeV wide bins
  
@@ -228,6 +229,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	//plot lepton + dijet mass using leading or subleading lepton
 	h_Nu_mass_leadLept->Fill(leadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
   	h_Nu_mass_subleadLept->Fill(subleadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
+   
+	h_WR_mass_thinBins->Fill(myEvent->WR_mass, (myEvent->weight)*scaleFactor);
   
   }
 
@@ -252,6 +255,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_WR_mass_2012bins);
   hs->push_back(h_Nu_mass_leadLept);
   hs->push_back(h_Nu_mass_subleadLept);
+  hs->push_back(h_WR_mass_thinBins);
  
 
   //rescale bin contents by bin width, and add overflow evts to last bin in two WR mass histos with variable bin widths
@@ -317,6 +321,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef unblindedData 
   leg->AddEntry( hs_data, "Unblinded data");
 #endif
+  leg->AddEntry( (TObject*)0, "Overflows in last bin","");
+
 
   leg->SetFillColor( kWhite ) ; 
 
@@ -455,7 +461,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   
   //plots with fixed bin widths
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept")){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
