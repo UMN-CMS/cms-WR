@@ -60,9 +60,10 @@ using namespace std;
 //#define showMassWindows
 //#define printNewDySyst
 //#define DYHTPlot
-#define DYPdfUnc
+//#define DYPdfUnc
 //#define TTScaleFactorSystematic
 //#define WRPdfUnc
+#define expAndObsInMassWindows
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -2671,6 +2672,7 @@ void macroSandBox(){
 	//    for each bkgnd there should be 5 data points in each bin: 2 showing syst uncert, 2 showing stat unc, and 1 showing nominal value
 	//    for N bkgnds, there should be N bins at each mass point, don't stack the bkgnds
 
+
 	//identify mass windows to show, and declare labels for them
 	//changes to the mass window indices should be propagated to the mass window labels
 	int massIndices[] = {2,8,15};	//mass windows which will be shown
@@ -2680,12 +2682,10 @@ void macroSandBox(){
 
 	//declare pointers to input TTrees and emu weights which should be applied to EMu data to estimate TTBar
 	TString treeName = "syst_tree";
-  	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystNewSubleadLeptPtCut/";
-	Double_t EEWgt = 0.416, MuMuWgt = 0.655;	//weights to apply to EMu data to estimate TTBar
+  	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystSmoothedWindowsFebrTwentyOne/";
+	Double_t EEWgt = 0.4194, MuMuWgt = 0.6563;	//weights to apply to EMu data to estimate top bkgnd
 
-   	//declare names of bkgnds which will be shown, and histos used in stacking or overlaying
-	TString bkgndNames[] = {"TT Data Driven","DYMadHT+Incl"};
-	Int_t numBkgnds = 2;
+	Int_t numProcesses = 2;
 	TH1D * EEBkgndOneForStack = new TH1D("EEBkgndOneForStack","",numMassWindows,0,numMassWindows-1);
 	TH1D * EEBkgndTwoForStack = new TH1D("EEBkgndTwoForStack","",numMassWindows,0,numMassWindows-1);
 	TH1D * MuMuBkgndOneForStack = new TH1D("MuMuBkgndOneForStack","",numMassWindows,0,numMassWindows-1);
@@ -2704,46 +2704,36 @@ void macroSandBox(){
 	TH1D * MuMuBkgndTwoStatUnc = new TH1D("MuMuBkgndTwoStatUnc","",numMassWindows,0,numMassWindows-1);
 
 	//stat and syst and nominal for all bkgnds at every mass window
-	TH1D * EEAllBkgndsNoUncs = new TH1D("EEAllBkgndsNoUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * MuMuAllBkgndsNoUncs = new TH1D("MuMuAllBkgndsNoUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * EEAllBkgndsNoUncs = new TH1D("EEAllBkgndsNoUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsNoUncs = new TH1D("MuMuAllBkgndsNoUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
 	
-	TH1D * EEAllBkgndsPlusSystUncs = new TH1D("EEAllBkgndsPlusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * MuMuAllBkgndsPlusSystUncs = new TH1D("MuMuAllBkgndsPlusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * EEAllBkgndsMinusSystUncs = new TH1D("EEAllBkgndsMinusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * MuMuAllBkgndsMinusSystUncs = new TH1D("MuMuAllBkgndsMinusSystUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * EEAllBkgndsPlusSystUncs = new TH1D("EEAllBkgndsPlusSystUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsPlusSystUncs = new TH1D("MuMuAllBkgndsPlusSystUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * EEAllBkgndsMinusSystUncs = new TH1D("EEAllBkgndsMinusSystUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsMinusSystUncs = new TH1D("MuMuAllBkgndsMinusSystUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
 	
-	TH1D * EEAllBkgndsPlusStatUncs = new TH1D("EEAllBkgndsPlusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * MuMuAllBkgndsPlusStatUncs = new TH1D("MuMuAllBkgndsPlusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * EEAllBkgndsMinusStatUncs = new TH1D("EEAllBkgndsMinusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
-	TH1D * MuMuAllBkgndsMinusStatUncs = new TH1D("MuMuAllBkgndsMinusStatUncs","",numBkgnds*numMassWindows,0,(numBkgnds*numMassWindows)-1);
+	TH1D * EEAllBkgndsPlusStatUncs = new TH1D("EEAllBkgndsPlusStatUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsPlusStatUncs = new TH1D("MuMuAllBkgndsPlusStatUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * EEAllBkgndsMinusStatUncs = new TH1D("EEAllBkgndsMinusStatUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
+	TH1D * MuMuAllBkgndsMinusStatUncs = new TH1D("MuMuAllBkgndsMinusStatUncs","",numProcesses*numMassWindows,0,(numProcesses*numMassWindows)-1);
 	
 
 
 	//electron channel
 	TChain * TTEE = new TChain(treeName);
 	TTEE->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
-	//TTEE->SetWeight(EEWgt,"global");	//trick to get EMu data evts to be counted as EE TTBar evts
 	TChain * DYEE = new TChain(treeName);
 	DYEE->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
-	//TChain * WEE = new TChain(treeName);
-	//WEE->Add(localDir+"selected_tree_W_signal_eeEE.root");
-	//TChain * WZEE = new TChain(treeName);
-	//WZEE->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
-	//TChain * ZZEE = new TChain(treeName);
-	//ZZEE->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
-	
+	TChain * obsEE = new TChain(treeName);
+	obsEE->Add(localDir+"selected_tree_data_signal_eeEE.root");
+
 	//muon channel
 	TChain * TTMuMu = new TChain(treeName);
 	TTMuMu->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
-	//TTMuMu->SetWeight(MuMuWgt,"global");	//trick to get EMu data evts to be counted as MuMu TTBar evts
 	TChain * DYMuMu = new TChain(treeName);
 	DYMuMu->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
-	//TChain * WMuMu = new TChain(treeName);
-	//WMuMu->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
-	//TChain * WZMuMu = new TChain(treeName);
-	//WZMuMu->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
-	//TChain * ZZMuMu = new TChain(treeName);
-	//ZZMuMu->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+	TChain * obsMuMu = new TChain(treeName);
+	obsMuMu->Add(localDir+"selected_tree_data_signal_mumuMuMu.root");
 
 	
 	//fill histos corresponding to individual bkgnds
@@ -2808,33 +2798,33 @@ void macroSandBox(){
 		//combined DY and TT with stat and syst uncs
 		//from left to right: TT first, then DY for each mass window
 		//overlay all of these histos, draw them as points without errors
-		Int_t binNum = i*numBkgnds;
+		Int_t binNum = i*numProcesses;
 		EEAllBkgndsNoUncs->SetBinContent(binNum+1, EEBkgndOneForStack->GetBinContent(i+1) );//TT
 		EEAllBkgndsNoUncs->SetBinContent(binNum+2, EEBkgndTwoForStack->GetBinContent(i+1) );//DY
 		EEAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+1,"TT " + massWindowLabel[i]);
 		EEAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+2,"DY " + massWindowLabel[i]);
 	
-		EEAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) + EEBkgndOneSystUnc->GetBinContent(i+1) );//TT+syst
-		EEAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) + EEBkgndTwoSystUnc->GetBinContent(i+1) );//DY+syst
-		EEAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		EEAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		EEAllBkgndsPlusSystUncs->SetBinContent(i*numProcesses+1, EEBkgndOneForStack->GetBinContent(i+1) + EEBkgndOneSystUnc->GetBinContent(i+1) );//TT+syst
+		EEAllBkgndsPlusSystUncs->SetBinContent(i*numProcesses+2, EEBkgndTwoForStack->GetBinContent(i+1) + EEBkgndTwoSystUnc->GetBinContent(i+1) );//DY+syst
+		EEAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 	
-		EEAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) - EEBkgndOneSystUnc->GetBinContent(i+1) );//TT-syst
-		EEAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) - EEBkgndTwoSystUnc->GetBinContent(i+1) );//DY-syst
-		EEAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		EEAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		EEAllBkgndsMinusSystUncs->SetBinContent(i*numProcesses+1, EEBkgndOneForStack->GetBinContent(i+1) - EEBkgndOneSystUnc->GetBinContent(i+1) );//TT-syst
+		EEAllBkgndsMinusSystUncs->SetBinContent(i*numProcesses+2, EEBkgndTwoForStack->GetBinContent(i+1) - EEBkgndTwoSystUnc->GetBinContent(i+1) );//DY-syst
+		EEAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 	
 	
-		EEAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) + EEBkgndOneStatUnc->GetBinContent(i+1) );//TT+stat
-		EEAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) + EEBkgndTwoStatUnc->GetBinContent(i+1) );//DY+stat
-		EEAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		EEAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		EEAllBkgndsPlusStatUncs->SetBinContent(i*numProcesses+1, EEBkgndOneForStack->GetBinContent(i+1) + EEBkgndOneStatUnc->GetBinContent(i+1) );//TT+stat
+		EEAllBkgndsPlusStatUncs->SetBinContent(i*numProcesses+2, EEBkgndTwoForStack->GetBinContent(i+1) + EEBkgndTwoStatUnc->GetBinContent(i+1) );//DY+stat
+		EEAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 		
 		
-		EEAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+1, EEBkgndOneForStack->GetBinContent(i+1) - EEBkgndOneStatUnc->GetBinContent(i+1) );//TT-stat
-		EEAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+2, EEBkgndTwoForStack->GetBinContent(i+1) - EEBkgndTwoStatUnc->GetBinContent(i+1) );//DY-stat
-		EEAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		EEAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		EEAllBkgndsMinusStatUncs->SetBinContent(i*numProcesses+1, EEBkgndOneForStack->GetBinContent(i+1) - EEBkgndOneStatUnc->GetBinContent(i+1) );//TT-stat
+		EEAllBkgndsMinusStatUncs->SetBinContent(i*numProcesses+2, EEBkgndTwoForStack->GetBinContent(i+1) - EEBkgndTwoStatUnc->GetBinContent(i+1) );//DY-stat
+		EEAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		EEAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 
 
 		MuMuAllBkgndsNoUncs->SetBinContent(binNum+1, MuMuBkgndOneForStack->GetBinContent(i+1) );//TT
@@ -2842,27 +2832,27 @@ void macroSandBox(){
 		MuMuAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+1,"TT " + massWindowLabel[i]);
 		MuMuAllBkgndsNoUncs->GetXaxis()->SetBinLabel(binNum+2,"DY " + massWindowLabel[i]);
 	
-		MuMuAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) + MuMuBkgndOneSystUnc->GetBinContent(i+1) );//TT+syst
-		MuMuAllBkgndsPlusSystUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) + MuMuBkgndTwoSystUnc->GetBinContent(i+1) );//DY+syst
-		MuMuAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		MuMuAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		MuMuAllBkgndsPlusSystUncs->SetBinContent(i*numProcesses+1, MuMuBkgndOneForStack->GetBinContent(i+1) + MuMuBkgndOneSystUnc->GetBinContent(i+1) );//TT+syst
+		MuMuAllBkgndsPlusSystUncs->SetBinContent(i*numProcesses+2, MuMuBkgndTwoForStack->GetBinContent(i+1) + MuMuBkgndTwoSystUnc->GetBinContent(i+1) );//DY+syst
+		MuMuAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsPlusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 	
-		MuMuAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) - MuMuBkgndOneSystUnc->GetBinContent(i+1) );//TT-syst
-		MuMuAllBkgndsMinusSystUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) - MuMuBkgndTwoSystUnc->GetBinContent(i+1) );//DY-syst
-		MuMuAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		MuMuAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		MuMuAllBkgndsMinusSystUncs->SetBinContent(i*numProcesses+1, MuMuBkgndOneForStack->GetBinContent(i+1) - MuMuBkgndOneSystUnc->GetBinContent(i+1) );//TT-syst
+		MuMuAllBkgndsMinusSystUncs->SetBinContent(i*numProcesses+2, MuMuBkgndTwoForStack->GetBinContent(i+1) - MuMuBkgndTwoSystUnc->GetBinContent(i+1) );//DY-syst
+		MuMuAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsMinusSystUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 	
 	
-		MuMuAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) + MuMuBkgndOneStatUnc->GetBinContent(i+1) );//TT+stat
-		MuMuAllBkgndsPlusStatUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) + MuMuBkgndTwoStatUnc->GetBinContent(i+1) );//DY+stat
-		MuMuAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		MuMuAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		MuMuAllBkgndsPlusStatUncs->SetBinContent(i*numProcesses+1, MuMuBkgndOneForStack->GetBinContent(i+1) + MuMuBkgndOneStatUnc->GetBinContent(i+1) );//TT+stat
+		MuMuAllBkgndsPlusStatUncs->SetBinContent(i*numProcesses+2, MuMuBkgndTwoForStack->GetBinContent(i+1) + MuMuBkgndTwoStatUnc->GetBinContent(i+1) );//DY+stat
+		MuMuAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsPlusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 		
 		
-		MuMuAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+1, MuMuBkgndOneForStack->GetBinContent(i+1) - MuMuBkgndOneStatUnc->GetBinContent(i+1) );//TT-stat
-		MuMuAllBkgndsMinusStatUncs->SetBinContent(i*numBkgnds+2, MuMuBkgndTwoForStack->GetBinContent(i+1) - MuMuBkgndTwoStatUnc->GetBinContent(i+1) );//DY-stat
-		MuMuAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+1, "TT " + massWindowLabel[i]);
-		MuMuAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numBkgnds+2,"DY " + massWindowLabel[i]);
+		MuMuAllBkgndsMinusStatUncs->SetBinContent(i*numProcesses+1, MuMuBkgndOneForStack->GetBinContent(i+1) - MuMuBkgndOneStatUnc->GetBinContent(i+1) );//TT-stat
+		MuMuAllBkgndsMinusStatUncs->SetBinContent(i*numProcesses+2, MuMuBkgndTwoForStack->GetBinContent(i+1) - MuMuBkgndTwoStatUnc->GetBinContent(i+1) );//DY-stat
+		MuMuAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+1, "TT " + massWindowLabel[i]);
+		MuMuAllBkgndsMinusStatUncs->GetXaxis()->SetBinLabel(i*numProcesses+2,"DY " + massWindowLabel[i]);
 	
 	}//end loop over different mass windows
 	
@@ -3520,6 +3510,137 @@ void macroSandBox(){
 
 #endif
 	//end WRPdfUnc
+
+
+#ifdef expAndObsInMassWindows
+	//make plots showing nBins = 2*(number of mass windows to show). each pair of bins will show the expected bkgnd events
+	//with the total uncertainty (normalization, jet and lepton energy unc, stat) and the observed events in collision data
+	//use TGraphErrors objects here, instead of using the overlaid TH1D histo approach used in the ifdef showMassWindows
+
+	//identify mass windows to show, and declare labels for them
+	//changes to the mass window indices must be propagated to the mass window labels
+	int massIndices[] = {2,8,15};	//mass windows which will be shown
+	TString massWindowLabel[] = {"1.0 TeV","2.2 TeV","3.6 TeV"};	//labels for mass windows
+	std::vector<TString> massWindowLabelVect(massWindowLabel,massWindowLabel + sizeof(massWindowLabel)/sizeof(TString) );
+	Int_t numMassWindows = massWindowLabelVect.size();
+	Int_t numProcesses = 2;	///<number of bins to show per WR mass point
+
+	//declare pointers to input TTrees and emu weights which should be applied to EMu data to estimate TTBar
+	TString treeName = "syst_tree";
+  	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystSmoothedWindowsFebrTwentyOne/";
+	Double_t EEWgt = 0.4194, MuMuWgt = 0.6563;	//weights to apply to EMu data to estimate top bkgnd
+
+	//electron channel
+	TChain * TopEE = new TChain(treeName);
+	TopEE->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+	TChain * DYEE = new TChain(treeName);
+	DYEE->Add(localDir+"selected_tree_DYAMC_signal_eeEE.root");
+	TChain * obsEE = new TChain(treeName);
+	obsEE->Add(localDir+"selected_tree_data_signal_eeEE.root");
+
+	//muon channel
+	TChain * TopMuMu = new TChain(treeName);
+	TopMuMu->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
+	TChain * DYMuMu = new TChain(treeName);
+	DYMuMu->Add(localDir+"selected_tree_DYAMC_signal_mumuMuMu.root");
+	TChain * obsMuMu = new TChain(treeName);
+	obsMuMu->Add(localDir+"selected_tree_data_signal_mumuMuMu.root");
+
+	//arrays used to fill TGraphErrors object.  the xEle and xMuon are just placeholders, and can be 1, 2, 3, ...
+	//all elements of xErr arrays should equal 0.0
+	Double_t xMuon[numProcesses*numMassWindows], yMuon[numProcesses*numMassWindows], xErrMuon[numProcesses*numMassWindows], yErrMuon[numProcesses*numMassWindows];
+	Double_t xEle[numProcesses*numMassWindows], yEle[numProcesses*numMassWindows], xErrEle[numProcesses*numMassWindows], yErrEle[numProcesses*numMassWindows];
+	Double_t initial = 0.0;
+	for(Int_t i=0; i<(numProcesses*numMassWindows) ; i++){
+		yEle[i] = 0.0, yErrEle[i] = 0.0;
+		xEle[i] = initial++;
+		xErrEle[i] = 0.0;
+		yMuon[i] = 0.0, yErrMuon[i] = 0.0;
+		xMuon[i] = initial;
+		xErrMuon[i] = 0.0;
+	}//end loop which initializes x and y array elements
+
+
+	Int_t increment = 0;
+	//loop over different mass windows and set bin contents corresponding to expected bkgnds and observed data
+	for(Int_t i=0; i<numMassWindows; i++){
+
+		//now set the y array elements to the expected and obs number of events, and their uncertainties (0.0 uncertainty for observed)
+		//electron channel
+		Double_t expectedDYEEevents = calculateBranchMean(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//saved to compute uncertainties
+		Double_t expectedTopEEevents = EEWgt*(calculateBranchMean(TopEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1));	//saved to compute uncertainties
+		Double_t topEEStatUnc = EEWgt*(calculateBranchMean(TopEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1));
+		Double_t topEEShapeUnc = EEWgt*(calculateBranchStdDev(TopEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1));
+		Double_t dyEEStatUnc = calculateBranchMean(DYEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1);
+		Double_t dyEEShapeUnc = calculateBranchStdDev(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);
+
+		yEle[increment] = expectedTopEEevents + expectedDYEEevents;	//expected bkgnds
+		yErrEle[increment] = sqrt((expectedTopEEevents*.05)*(expectedTopEEevents*.05) + (expectedDYEEevents*.4)*(expectedDYEEevents*.4) + topEEStatUnc*topEEStatUnc + topEEShapeUnc*topEEShapeUnc + dyEEStatUnc*dyEEStatUnc + dyEEShapeUnc*dyEEShapeUnc);	//total uncertainty on expected bkgnds
+		yEle[increment+1] = calculateBranchMean(obsEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
+
+		//muon channel
+		Double_t expectedDYMuMuevents = calculateBranchMean(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//saved to compute uncertainties
+		Double_t expectedTopMuMuevents = MuMuWgt*(calculateBranchMean(TopMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1));	//saved to compute uncertainties
+		Double_t topMuMuStatUnc = MuMuWgt*(calculateBranchMean(TopMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1));
+		Double_t topMuMuShapeUnc = MuMuWgt*(calculateBranchStdDev(TopMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1));
+		Double_t dyMuMuStatUnc = calculateBranchMean(DYMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1);
+		Double_t dyMuMuShapeUnc = calculateBranchStdDev(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);
+
+		yMuon[increment] = expectedTopMuMuevents + expectedDYMuMuevents;	//expected bkgnds
+		yErrMuon[increment] = sqrt((expectedTopMuMuevents*.05)*(expectedTopMuMuevents*.05) + (expectedDYMuMuevents*.4)*(expectedDYMuMuevents*.4) + topMuMuStatUnc*topMuMuStatUnc + topMuMuShapeUnc*topMuMuShapeUnc + dyMuMuStatUnc*dyMuMuStatUnc + dyMuMuShapeUnc*dyMuMuShapeUnc);	//total uncertainty on expected bkgnds
+		yMuon[increment+1] = calculateBranchMean(obsMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
+
+
+		increment += numProcesses;
+	}//end loop over different mass windows
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	//make and plot graphs
+	gStyle->SetOptStat("");
+	TCanvas* canvasTotEE = new TCanvas("canvasTotEE","canvasTotEE",0,0,600,600);
+	canvasTotEE->cd();
+	TGraphErrors * grEle = new TGraphErrors(numMassWindows*numProcesses, xEle, yEle, xErrEle, yErrEle);
+	grEle->SetMarkerStyle(20);
+	grEle->SetMarkerSize(1);
+	grEle->SetMarkerColor(kBlack);
+	grEle->SetTitle("Ele Channel Mass Windows Expected Background and Observed Events");
+	grEle->Draw("AP");
+	
+	TString outFileNameEE = "EleChnlObsAndExpectedWithUnc";
+	canvasTotEE->Print(outFileNameEE + ".pdf");
+	canvasTotEE->Print(outFileNameEE + ".png");
+	canvasTotEE->Print(outFileNameEE + ".C");
+	grEle->SetMinimum(0.1);
+	canvasTotEE->SetLogy();
+	canvasTotEE->Print(outFileNameEE + "_log.pdf");
+	canvasTotEE->Print(outFileNameEE + "_log.png");
+	canvasTotEE->Print(outFileNameEE + "_log.C");
+	canvasTotEE->Close();
+
+
+	TCanvas* canvasTotMuMu = new TCanvas("canvasTotMuMu","canvasTotMuMu",0,0,600,600);
+	canvasTotMuMu->cd();
+	TGraphErrors * grMuon = new TGraphErrors(numMassWindows*numProcesses, xMuon, yMuon, xErrMuon, yErrMuon);
+	grMuon->SetMarkerStyle(20);
+	grMuon->SetMarkerSize(1);
+	grMuon->SetMarkerColor(kBlack);
+	grMuon->SetTitle("Expected Background and Observed Events in Mass Windows");
+	grMuon->Draw("AP");
+	
+	
+	TString outFileNameMuMu = "MuonChnlObsAndExpectedWithUnc";
+	canvasTotMuMu->Print(outFileNameMuMu + ".pdf");
+	canvasTotMuMu->Print(outFileNameMuMu + ".png");
+	canvasTotMuMu->Print(outFileNameMuMu + ".C");
+	grMuon->SetMinimum(0.1);
+	canvasTotMuMu->SetLogy();
+	canvasTotMuMu->Print(outFileNameMuMu + "_log.pdf");
+	canvasTotMuMu->Print(outFileNameMuMu + "_log.png");
+	canvasTotMuMu->Print(outFileNameMuMu + "_log.C");
+	canvasTotMuMu->Close();
+
+#endif
+	//end expAndObsInMassWindows
 
 
 }///end macroSandBox()
