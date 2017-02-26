@@ -3519,8 +3519,8 @@ void macroSandBox(){
 
 	//identify mass windows to show, and declare labels for them
 	//changes to the mass window indices must be propagated to the mass window labels
-	int massIndices[] = {2,8,15};	//mass windows which will be shown
-	TString massWindowLabel[] = {"1.0 TeV","2.2 TeV","3.6 TeV"};	//labels for mass windows
+	int massIndices[] = {4,7,12,13,16};	//mass windows which will be shown
+	TString massWindowLabel[] = {"1.4 TeV","2.0 TeV","3.0 TeV","3.2 TeV","4.0 TeV"};	//labels for mass windows
 	std::vector<TString> massWindowLabelVect(massWindowLabel,massWindowLabel + sizeof(massWindowLabel)/sizeof(TString) );
 	Int_t numMassWindows = massWindowLabelVect.size();
 	Int_t numProcesses = 2;	///<number of bins to show per WR mass point
@@ -3600,17 +3600,52 @@ void macroSandBox(){
 	TCanvas* canvasTotEE = new TCanvas("canvasTotEE","canvasTotEE",0,0,600,600);
 	canvasTotEE->cd();
 	TGraphErrors * grEle = new TGraphErrors(numMassWindows*numProcesses, xEle, yEle, xErrEle, yErrEle);
+
+	//set the bin labels
+	//Int_t index = 8;	//works for 3 mass windows
+	Int_t index = 5;
+	increment = 2*index;	//increment should always be the nearest integer to 100 divided by numProcesses*numMassWindows
+	//std::cout<<"num bins in ele graph "<< grEle->GetXaxis()->GetNbins() << std::endl;
+	for(Int_t i=0; i<numMassWindows; i++){
+		if(i==0){
+			//shift bin labels towards down (towards origin) by 6 bins
+			grEle->GetXaxis()->SetBinLabel(index-3, massWindowLabel[i]);
+			grEle->GetXaxis()->SetBinLabel(index, "Exp");
+	
+			grEle->GetXaxis()->SetBinLabel(index+increment-3, massWindowLabel[i]);
+			grEle->GetXaxis()->SetBinLabel(index+increment, "Obs");
+		}
+		if(i==(numMassWindows-1) ){
+			//shift bin labels up by a few bins
+			grEle->GetXaxis()->SetBinLabel(index-3, massWindowLabel[i]);
+			grEle->GetXaxis()->SetBinLabel(index, "Exp");
+	
+			grEle->GetXaxis()->SetBinLabel(index+increment-3, massWindowLabel[i]);
+			grEle->GetXaxis()->SetBinLabel(index+increment, "Obs");
+		}
+		if(i !=0 && i !=(numMassWindows-1) ){
+			grEle->GetXaxis()->SetBinLabel(index-4, massWindowLabel[i]);
+			grEle->GetXaxis()->SetBinLabel(index-1, "Exp");
+	
+			grEle->GetXaxis()->SetBinLabel(index+increment-4, massWindowLabel[i]);
+			grEle->GetXaxis()->SetBinLabel(index+increment-1, "Obs");
+		}
+
+		index += 2*increment;
+	}
+
+	
 	grEle->SetMarkerStyle(20);
 	grEle->SetMarkerSize(1);
 	grEle->SetMarkerColor(kBlack);
-	grEle->SetTitle("Ele Channel Mass Windows Expected Background and Observed Events");
+	grEle->SetTitle("Ele Channel Expected and Observed Events in Mass Windows");
 	grEle->Draw("AP");
 	
 	TString outFileNameEE = "EleChnlObsAndExpectedWithUnc";
 	canvasTotEE->Print(outFileNameEE + ".pdf");
 	canvasTotEE->Print(outFileNameEE + ".png");
 	canvasTotEE->Print(outFileNameEE + ".C");
-	grEle->SetMinimum(0.1);
+	grEle->SetMinimum(0.4);
 	canvasTotEE->SetLogy();
 	canvasTotEE->Print(outFileNameEE + "_log.pdf");
 	canvasTotEE->Print(outFileNameEE + "_log.png");
@@ -3621,10 +3656,43 @@ void macroSandBox(){
 	TCanvas* canvasTotMuMu = new TCanvas("canvasTotMuMu","canvasTotMuMu",0,0,600,600);
 	canvasTotMuMu->cd();
 	TGraphErrors * grMuon = new TGraphErrors(numMassWindows*numProcesses, xMuon, yMuon, xErrMuon, yErrMuon);
+	
+	//set the bin labels
+	//index = 8;	//works well when showing 3 mass windows
+	index = 5;
+	for(Int_t i=0; i<numMassWindows; i++){
+		if(i==0){
+			//shift bin labels towards down (towards origin) by 6 bins
+			grMuon->GetXaxis()->SetBinLabel(index, massWindowLabel[i]);
+			grMuon->GetXaxis()->SetBinLabel(index+3, "Exp");
+	
+			grMuon->GetXaxis()->SetBinLabel(index+increment, massWindowLabel[i]);
+			grMuon->GetXaxis()->SetBinLabel(index+increment+3, "Obs");
+		}
+		if(i==(numMassWindows-1) ){
+			//shift bin labels up by a few bins
+			grMuon->GetXaxis()->SetBinLabel(index-2, massWindowLabel[i]);
+			grMuon->GetXaxis()->SetBinLabel(index+1, "Exp");
+	
+			grMuon->GetXaxis()->SetBinLabel(index+increment-2, massWindowLabel[i]);
+			grMuon->GetXaxis()->SetBinLabel(index+increment+1, "Obs");
+		}
+		if(i !=0 && i !=(numMassWindows-1) ){
+			grMuon->GetXaxis()->SetBinLabel(index-1, massWindowLabel[i]);
+			grMuon->GetXaxis()->SetBinLabel(index+2, "Exp");
+	
+			grMuon->GetXaxis()->SetBinLabel(index+increment-1, massWindowLabel[i]);
+			grMuon->GetXaxis()->SetBinLabel(index+increment+2, "Obs");
+		}
+
+		index += 2*increment;
+	}
+
+
 	grMuon->SetMarkerStyle(20);
 	grMuon->SetMarkerSize(1);
 	grMuon->SetMarkerColor(kBlack);
-	grMuon->SetTitle("Expected Background and Observed Events in Mass Windows");
+	grMuon->SetTitle("Muon Channel Expected and Observed Events in Mass Windows");
 	grMuon->Draw("AP");
 	
 	
@@ -3632,7 +3700,7 @@ void macroSandBox(){
 	canvasTotMuMu->Print(outFileNameMuMu + ".pdf");
 	canvasTotMuMu->Print(outFileNameMuMu + ".png");
 	canvasTotMuMu->Print(outFileNameMuMu + ".C");
-	grMuon->SetMinimum(0.1);
+	grMuon->SetMinimum(0.6);
 	canvasTotMuMu->SetLogy();
 	canvasTotMuMu->Print(outFileNameMuMu + "_log.pdf");
 	canvasTotMuMu->Print(outFileNameMuMu + "_log.png");
