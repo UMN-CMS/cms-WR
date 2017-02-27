@@ -1587,7 +1587,7 @@ void macroSandBox(){
 		placeHolderMap.clear();
 	}///end loop over branchNames
 
-	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel){
+	//makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel)
 	
 #endif
 
@@ -1629,7 +1629,7 @@ void macroSandBox(){
 		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.65,0.6,0.95,0.90,true,titles[0],xAxisLabels[i],"_MWR_800_MNu_400_centralVsPrivate",false,-1);
 		placeHolderMap.clear();
 	}///end loop over branchNames
-	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal){
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal)
 
 
 
@@ -1640,7 +1640,7 @@ void macroSandBox(){
 
 	//compare distributions of the gen WR mass using the WR particle itself between centrally produced WR->eejj datasets
 	//and privately produced WR->eejj datasets
-	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping){
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping)
 
 	TString dirAndTreeName = "wrDecayChainAnalyzer/genAndMatchedRecoWrDecayNoCuts";
 	TString privateDirName = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/";
@@ -1783,7 +1783,7 @@ void macroSandBox(){
 
 	}///end loop over branchNames
 	*/
-	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal){
+	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping,Float_t cutVal)
 
 
 
@@ -3517,13 +3517,17 @@ void macroSandBox(){
 	//with the total uncertainty (normalization, jet and lepton energy unc, stat) and the observed events in collision data
 	//use TGraphErrors objects here, instead of using the overlaid TH1D histo approach used in the ifdef showMassWindows
 
+	/////////////////////////////////////////////////////////////////////
+	//only update these two arrays, and plots will change accordingly
 	//identify mass windows to show, and declare labels for them
 	//changes to the mass window indices must be propagated to the mass window labels
 	int massIndices[] = {4,7,12,13,16};	//mass windows which will be shown
 	TString massWindowLabel[] = {"1.4 TeV","2.0 TeV","3.0 TeV","3.2 TeV","4.0 TeV"};	//labels for mass windows
+	/////////////////////////////////////////////////////////////////////
+	
+
 	std::vector<TString> massWindowLabelVect(massWindowLabel,massWindowLabel + sizeof(massWindowLabel)/sizeof(TString) );
 	Int_t numMassWindows = massWindowLabelVect.size();
-	Int_t numProcesses = 2;	///<number of bins to show per WR mass point
 
 	//declare pointers to input TTrees and emu weights which should be applied to EMu data to estimate TTBar
 	TString treeName = "syst_tree";
@@ -3548,20 +3552,29 @@ void macroSandBox(){
 
 	//arrays used to fill TGraphErrors object.  the xEle and xMuon are just placeholders, and can be 1, 2, 3, ...
 	//all elements of xErr arrays should equal 0.0
-	Double_t xMuon[numProcesses*numMassWindows], yMuon[numProcesses*numMassWindows], xErrMuon[numProcesses*numMassWindows], yErrMuon[numProcesses*numMassWindows];
-	Double_t xEle[numProcesses*numMassWindows], yEle[numProcesses*numMassWindows], xErrEle[numProcesses*numMassWindows], yErrEle[numProcesses*numMassWindows];
+	Double_t xExpMuon[numMassWindows], yExpMuon[numMassWindows], xErrExpMuon[numMassWindows], yErrExpMuon[numMassWindows];
+	Double_t xExpEle[numMassWindows], yExpEle[numMassWindows], xErrExpEle[numMassWindows], yErrExpEle[numMassWindows];
+	Double_t xObsMuon[numMassWindows], yObsMuon[numMassWindows], xErrObsMuon[numMassWindows], yErrObsMuon[numMassWindows];
+	Double_t xObsEle[numMassWindows], yObsEle[numMassWindows], xErrObsEle[numMassWindows], yErrObsEle[numMassWindows];
 	Double_t initial = 0.0;
-	for(Int_t i=0; i<(numProcesses*numMassWindows) ; i++){
-		yEle[i] = 0.0, yErrEle[i] = 0.0;
-		xEle[i] = initial++;
-		xErrEle[i] = 0.0;
-		yMuon[i] = 0.0, yErrMuon[i] = 0.0;
-		xMuon[i] = initial;
-		xErrMuon[i] = 0.0;
+	for(Int_t i=0; i<numMassWindows ; i++){
+		yExpEle[i] = 0.0, yErrExpEle[i] = 0.0;
+		xExpEle[i] = initial++;
+		xErrExpEle[i] = 0.0;
+		yExpMuon[i] = 0.0, yErrExpMuon[i] = 0.0;
+		xExpMuon[i] = initial;
+		xErrExpMuon[i] = 0.0;
+
+		yObsEle[i] = 0.0, yErrObsEle[i] = 0.0;
+		xObsEle[i] = initial++;
+		xErrObsEle[i] = 0.0;
+		yObsMuon[i] = 0.0, yErrObsMuon[i] = 0.0;
+		xObsMuon[i] = initial;
+		xErrObsMuon[i] = 0.0;
+
 	}//end loop which initializes x and y array elements
 
 
-	Int_t increment = 0;
 	//loop over different mass windows and set bin contents corresponding to expected bkgnds and observed data
 	for(Int_t i=0; i<numMassWindows; i++){
 
@@ -3574,9 +3587,9 @@ void macroSandBox(){
 		Double_t dyEEStatUnc = calculateBranchMean(DYEE, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1);
 		Double_t dyEEShapeUnc = calculateBranchStdDev(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);
 
-		yEle[increment] = expectedTopEEevents + expectedDYEEevents;	//expected bkgnds
-		yErrEle[increment] = sqrt((expectedTopEEevents*.05)*(expectedTopEEevents*.05) + (expectedDYEEevents*.4)*(expectedDYEEevents*.4) + topEEStatUnc*topEEStatUnc + topEEShapeUnc*topEEShapeUnc + dyEEStatUnc*dyEEStatUnc + dyEEShapeUnc*dyEEShapeUnc);	//total uncertainty on expected bkgnds
-		yEle[increment+1] = calculateBranchMean(obsEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
+		yExpEle[i] = expectedTopEEevents + expectedDYEEevents;	//expected bkgnds
+		yErrExpEle[i] = sqrt((expectedTopEEevents*.05)*(expectedTopEEevents*.05) + (expectedDYEEevents*.4)*(expectedDYEEevents*.4) + topEEStatUnc*topEEStatUnc + topEEShapeUnc*topEEShapeUnc + dyEEStatUnc*dyEEStatUnc + dyEEShapeUnc*dyEEShapeUnc);	//total uncertainty on expected bkgnds
+		yObsEle[i] = calculateBranchMean(obsEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
 
 		//muon channel
 		Double_t expectedDYMuMuevents = calculateBranchMean(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//saved to compute uncertainties
@@ -3586,66 +3599,75 @@ void macroSandBox(){
 		Double_t dyMuMuStatUnc = calculateBranchMean(DYMuMu, "ErrorEventsInRange["+to_string(massIndices[i])+"]", 1);
 		Double_t dyMuMuShapeUnc = calculateBranchStdDev(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);
 
-		yMuon[increment] = expectedTopMuMuevents + expectedDYMuMuevents;	//expected bkgnds
-		yErrMuon[increment] = sqrt((expectedTopMuMuevents*.05)*(expectedTopMuMuevents*.05) + (expectedDYMuMuevents*.4)*(expectedDYMuMuevents*.4) + topMuMuStatUnc*topMuMuStatUnc + topMuMuShapeUnc*topMuMuShapeUnc + dyMuMuStatUnc*dyMuMuStatUnc + dyMuMuShapeUnc*dyMuMuShapeUnc);	//total uncertainty on expected bkgnds
-		yMuon[increment+1] = calculateBranchMean(obsMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
+		yExpMuon[i] = expectedTopMuMuevents + expectedDYMuMuevents;	//expected bkgnds
+		yErrExpMuon[i] = sqrt((expectedTopMuMuevents*.05)*(expectedTopMuMuevents*.05) + (expectedDYMuMuevents*.4)*(expectedDYMuMuevents*.4) + topMuMuStatUnc*topMuMuStatUnc + topMuMuShapeUnc*topMuMuShapeUnc + dyMuMuStatUnc*dyMuMuStatUnc + dyMuMuShapeUnc*dyMuMuShapeUnc);	//total uncertainty on expected bkgnds
+		yObsMuon[i] = calculateBranchMean(obsMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
 
-
-		increment += numProcesses;
 	}//end loop over different mass windows
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//make and plot graphs
+	//make one graph for expected bkgnds, and draw it with option AB such that a bar chart is drawn
+	//make a second graph for observed events, and draw it on top of the expected bkgnd graph with option AP such that the observed data is shown as points
+	
 	gStyle->SetOptStat("");
 	TCanvas* canvasTotEE = new TCanvas("canvasTotEE","canvasTotEE",0,0,600,600);
 	canvasTotEE->cd();
-	TGraphErrors * grEle = new TGraphErrors(numMassWindows*numProcesses, xEle, yEle, xErrEle, yErrEle);
+	TH1F * grExpEle = new TH1F("ExpEle","CMS Preliminary   #surds = 13 TeV #int lumi = 2.6 fb^{-1}", numMassWindows, 0., (Float_t) numMassWindows);
+	TH1F * grObsEle = new TH1F("ObsEle","CMS Preliminary   #surds = 13 TeV #int lumi = 2.6 fb^{-1}", numMassWindows, 0., (Float_t) numMassWindows);
+	TH1F * grExpMuon = new TH1F("ExpMuon","CMS Preliminary   #surds = 13 TeV #int lumi = 2.6 fb^{-1}", numMassWindows, 0., (Float_t) numMassWindows);
+	TH1F * grObsMuon = new TH1F("ObsMuon","CMS Preliminary   #surds = 13 TeV #int lumi = 2.6 fb^{-1}", numMassWindows, 0., (Float_t) numMassWindows);
 
-	//set the bin labels
-	//Int_t index = 8;	//works for 3 mass windows
-	Int_t index = 5;
-	increment = 2*index;	//increment should always be the nearest integer to 100 divided by numProcesses*numMassWindows
-	//std::cout<<"num bins in ele graph "<< grEle->GetXaxis()->GetNbins() << std::endl;
-	for(Int_t i=0; i<numMassWindows; i++){
-		if(i==0){
-			//shift bin labels towards down (towards origin) by 6 bins
-			grEle->GetXaxis()->SetBinLabel(index-3, massWindowLabel[i]);
-			grEle->GetXaxis()->SetBinLabel(index, "Exp");
-	
-			grEle->GetXaxis()->SetBinLabel(index+increment-3, massWindowLabel[i]);
-			grEle->GetXaxis()->SetBinLabel(index+increment, "Obs");
-		}
-		if(i==(numMassWindows-1) ){
-			//shift bin labels up by a few bins
-			grEle->GetXaxis()->SetBinLabel(index-3, massWindowLabel[i]);
-			grEle->GetXaxis()->SetBinLabel(index, "Exp");
-	
-			grEle->GetXaxis()->SetBinLabel(index+increment-3, massWindowLabel[i]);
-			grEle->GetXaxis()->SetBinLabel(index+increment, "Obs");
-		}
-		if(i !=0 && i !=(numMassWindows-1) ){
-			grEle->GetXaxis()->SetBinLabel(index-4, massWindowLabel[i]);
-			grEle->GetXaxis()->SetBinLabel(index-1, "Exp");
-	
-			grEle->GetXaxis()->SetBinLabel(index+increment-4, massWindowLabel[i]);
-			grEle->GetXaxis()->SetBinLabel(index+increment-1, "Obs");
-		}
 
-		index += 2*increment;
+	//set bin contents, errors and labels
+	for(Int_t i=1; i<=numMassWindows; i++){
+		grExpEle->SetBinContent(i, yExpEle[i-1]);
+		grExpEle->SetBinError(i, yErrExpEle[i-1]);
+		grObsEle->SetBinContent(i, yObsEle[i-1]);
+		grObsEle->SetBinError(i, yErrObsEle[i-1]);
+		grExpEle->GetXaxis()->SetBinLabel(i, massWindowLabel[i-1]);
+		grObsEle->GetXaxis()->SetBinLabel(i, massWindowLabel[i-1]);
+		grExpEle->GetYaxis()->SetTitle("Electron Events");
+		grObsEle->GetYaxis()->SetTitle("Electron Events");
+		grExpEle->GetYaxis()->SetTitleOffset(1.1);
+		grObsEle->GetYaxis()->SetTitleOffset(1.1);
+
+		grExpMuon->SetBinContent(i, yExpMuon[i-1]);
+		grExpMuon->SetBinError(i, yErrExpMuon[i-1]);
+		grObsMuon->SetBinContent(i, yObsMuon[i-1]);
+		grObsMuon->SetBinError(i, yErrObsMuon[i-1]);
+		grExpMuon->GetXaxis()->SetBinLabel(i, massWindowLabel[i-1]);
+		grObsMuon->GetXaxis()->SetBinLabel(i, massWindowLabel[i-1]);
+		grExpMuon->GetYaxis()->SetTitle("Muon Events");
+		grObsMuon->GetYaxis()->SetTitle("Muon Events");
+		grExpMuon->GetYaxis()->SetTitleOffset(1.1);
+		grObsMuon->GetYaxis()->SetTitleOffset(1.1);
+
 	}
 
+
+
+	TLegend * legTotEE = new TLegend(0.6, 0.6, 0.9, 0.9);
+	legTotEE->AddEntry( grExpEle, "Expected");
+	legTotEE->AddEntry( grObsEle, "Observed");
+
+	grObsEle->SetMarkerStyle(20);
+	grObsEle->SetMarkerSize(1);
+	grObsEle->SetMarkerColor(kBlack);
 	
-	grEle->SetMarkerStyle(20);
-	grEle->SetMarkerSize(1);
-	grEle->SetMarkerColor(kBlack);
-	grEle->SetTitle("Ele Channel Expected and Observed Events in Mass Windows");
-	grEle->Draw("AP");
+	grExpEle->SetLineColor(kRed);
+	grExpEle->SetLineWidth(2);
+	grExpEle->SetFillColor(kWhite);
+	grExpEle->Draw("e1histo");
+	grObsEle->Draw("epsame");
+	legTotEE->Draw();
 	
 	TString outFileNameEE = "EleChnlObsAndExpectedWithUnc";
 	canvasTotEE->Print(outFileNameEE + ".pdf");
 	canvasTotEE->Print(outFileNameEE + ".png");
 	canvasTotEE->Print(outFileNameEE + ".C");
-	grEle->SetMinimum(0.4);
+	grExpEle->SetMinimum(0.4);
+	grObsEle->SetMinimum(0.4);
 	canvasTotEE->SetLogy();
 	canvasTotEE->Print(outFileNameEE + "_log.pdf");
 	canvasTotEE->Print(outFileNameEE + "_log.png");
@@ -3655,52 +3677,27 @@ void macroSandBox(){
 
 	TCanvas* canvasTotMuMu = new TCanvas("canvasTotMuMu","canvasTotMuMu",0,0,600,600);
 	canvasTotMuMu->cd();
-	TGraphErrors * grMuon = new TGraphErrors(numMassWindows*numProcesses, xMuon, yMuon, xErrMuon, yErrMuon);
-	
-	//set the bin labels
-	//index = 8;	//works well when showing 3 mass windows
-	index = 5;
-	for(Int_t i=0; i<numMassWindows; i++){
-		if(i==0){
-			//shift bin labels towards down (towards origin) by 6 bins
-			grMuon->GetXaxis()->SetBinLabel(index, massWindowLabel[i]);
-			grMuon->GetXaxis()->SetBinLabel(index+3, "Exp");
-	
-			grMuon->GetXaxis()->SetBinLabel(index+increment, massWindowLabel[i]);
-			grMuon->GetXaxis()->SetBinLabel(index+increment+3, "Obs");
-		}
-		if(i==(numMassWindows-1) ){
-			//shift bin labels up by a few bins
-			grMuon->GetXaxis()->SetBinLabel(index-2, massWindowLabel[i]);
-			grMuon->GetXaxis()->SetBinLabel(index+1, "Exp");
-	
-			grMuon->GetXaxis()->SetBinLabel(index+increment-2, massWindowLabel[i]);
-			grMuon->GetXaxis()->SetBinLabel(index+increment+1, "Obs");
-		}
-		if(i !=0 && i !=(numMassWindows-1) ){
-			grMuon->GetXaxis()->SetBinLabel(index-1, massWindowLabel[i]);
-			grMuon->GetXaxis()->SetBinLabel(index+2, "Exp");
-	
-			grMuon->GetXaxis()->SetBinLabel(index+increment-1, massWindowLabel[i]);
-			grMuon->GetXaxis()->SetBinLabel(index+increment+2, "Obs");
-		}
+	TLegend * legTotMuMu = new TLegend(0.6, 0.6, 0.9, 0.9);
+	legTotMuMu->AddEntry( grExpMuon, "Expected");
+	legTotMuMu->AddEntry( grObsMuon, "Observed");
 
-		index += 2*increment;
-	}
-
-
-	grMuon->SetMarkerStyle(20);
-	grMuon->SetMarkerSize(1);
-	grMuon->SetMarkerColor(kBlack);
-	grMuon->SetTitle("Muon Channel Expected and Observed Events in Mass Windows");
-	grMuon->Draw("AP");
+	grObsMuon->SetMarkerStyle(20);
+	grObsMuon->SetMarkerSize(1);
+	grObsMuon->SetMarkerColor(kBlack);
 	
+	grExpMuon->SetLineColor(kRed);
+	grExpMuon->SetLineWidth(2);
+	grExpMuon->SetFillColor(kWhite);
+	grExpMuon->Draw("e1histo");
+	grObsMuon->Draw("epsame");
+	legTotMuMu->Draw();
 	
 	TString outFileNameMuMu = "MuonChnlObsAndExpectedWithUnc";
 	canvasTotMuMu->Print(outFileNameMuMu + ".pdf");
 	canvasTotMuMu->Print(outFileNameMuMu + ".png");
 	canvasTotMuMu->Print(outFileNameMuMu + ".C");
-	grMuon->SetMinimum(0.6);
+	grExpMuon->SetMinimum(0.6);
+	grObsMuon->SetMinimum(0.6);
 	canvasTotMuMu->SetLogy();
 	canvasTotMuMu->Print(outFileNameMuMu + "_log.pdf");
 	canvasTotMuMu->Print(outFileNameMuMu + "_log.png");
