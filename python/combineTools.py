@@ -62,6 +62,7 @@ def makeDataCardSingleBin(outfile, bin_name, nObs, signal_tuple, background_tupl
 #online + offline + mass window cuts in the signal region, assuming 50k generated evts in the dataset
 def getOtherMassHisto(cutstring, treename, process, binsize=100):
 	histname, filename = process
+	r.gROOT.SetBatch(True)
 	infile = r.TFile.Open(filename)
 	tree = infile.Get(treename)
 	r.gROOT.cd()
@@ -81,7 +82,25 @@ def getOtherMassHisto(cutstring, treename, process, binsize=100):
 
 ##end getOtherMassHisto
 
+##functions imported from macroSandBox.C, useful for working with NEventsInRange and ErrorEventsInRange branches of syst_tree
+def getBranchMean(fileName, treeName, branchName):
+	r.gROOT.SetBatch(True)
+	infile = r.TFile.Open(fileName)
+	tree = infile.Get(treeName)
+	r.gROOT.cd()
+	tree.Draw(branchName + ">>tempHist()")
+	h = r.gROOT.FindObject("tempHist")
+	return h.GetMean(1)
+##end getBranchMean
 
+def getBranchStdDev(fileName, treeName, branchName):
+	r.gROOT.SetBatch(True)
+	infile = r.TFile.Open(fileName)
+	tree = infile.Get(treeName)
+	r.gROOT.cd()
+	tree.Draw(branchName + ">>tempHist()")
+	h = r.gROOT.FindObject("tempHist")
+	return h.GetStdDev(1)
 
 class AnalysisResultsInterface:
 	chnlName = {"ee":"EE", "mumu":"MuMu", "emu":"EMu"}
