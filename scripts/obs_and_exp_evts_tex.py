@@ -54,7 +54,7 @@ with open("configs/mass_cuts.txt") as f:
 		
 		#now add a new key and value to the dictionary. the key is a pair containing the mass and lepton channel, and the value is a string containing the number of expected and observed events
 		#the numbers 6 and 7 control how many digits and white space are shown in each dict value
-		table[(mass , ch)] = "& {low:<6} & {hi:<7}".format(low=str(numExpEvts), hi=str(numObsEvts))
+		table[(mass , ch)] = "& {low:<6} & {hi:<7}".format(low=str(round(numExpEvts,2)), hi=str(numObsEvts))
 		masses.add(mass)
 #end reading mass_cuts.txt
 
