@@ -235,6 +235,110 @@ class limit2d:
 			#self.r.Fill(mwr, mnu, median * self.xs)
 			self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
 			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
+	#end add method
+
+	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, contOne=None, contTwo=None):
+		customROOTstyle()
+		ROOT.gStyle.SetOptTitle(0)
+		
+		c1 = ROOT.TCanvas("c1","c1",800,800);
+		c1.SetTopMargin(0.05);
+		c1.SetLeftMargin(0.2);
+		c1.SetRightMargin(0.2);
+		c1.SetBottomMargin(0.13);
+		c1.SetTicks(1,1);
+		#c1.SetLogz()
+
+		c1.SetLogz(logz)
+		hOne.Draw("colz")
+		hOne.SetAxisRange(zrange[0], zrange[1],"Z")
+		hOne.SetXTitle("W_{R} Mass [GeV]")
+		hOne.SetYTitle("N_{l} Mass [GeV]")
+		hOne.SetZTitle(ztitle)
+		hOne.GetYaxis().SetTitleOffset(2)
+		hOne.GetZaxis().SetTitleOffset(1.7)
+		
+		hTwo.Draw("colzsame")
+		hTwo.SetAxisRange(zrange[0], zrange[1],"Z")
+		hTwo.SetXTitle("W_{R} Mass [GeV]")
+		hTwo.SetYTitle("N_{l} Mass [GeV]")
+		hTwo.SetZTitle(ztitle)
+		hTwo.GetYaxis().SetTitleOffset(2)
+		hTwo.GetZaxis().SetTitleOffset(1.7)
+
+		x1 = 900
+		y1 = 3600
+		xw = 1200
+		yw = 300
+
+		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
+	
+		if contOne:
+			#x = np.array([700,4050,700,700],dtype=float)
+			#y = np.array([700,4050,4050,700],dtype=float)
+			##this is the area which cannot be excluded by this analysis, where MNu is greater than MWR
+			#area = ROOT.TPolyLine(4,x,y)
+			#area.SetFillColorAlpha(ROOT.kYellow, 0.99)
+			
+			#area.SetLineWidth(0)
+			#area.Draw("F")
+			contOne.SetLineStyle(7)  #small dashes
+			contOne.SetLineColor(ROOT.kRed)
+			contOne.SetLineWidth(2)
+			contOne.Draw("L")
+
+			leg.AddEntry(contOne, "Expected","l")
+			
+			#leg.Draw()
+		#end if contOne
+	
+		if contTwo:
+			x = np.array([700,4050,700,700],dtype=float)
+			y = np.array([700,4050,4050,700],dtype=float)
+			#this is the area which cannot be excluded by this analysis, where MNu is greater than MWR
+			area = ROOT.TPolyLine(4,x,y)
+			area.SetFillColorAlpha(ROOT.kYellow, 0.99)
+			
+			area.SetLineWidth(0)
+			area.Draw("Fsame")
+			latex2 = ROOT.TLatex()
+			latex2.SetTextSize(0.05)
+			#specify the lower left corner in x, y coordinates
+			latex2.DrawLatex(1400,3200, "M_{N_{l}} > M_{W_{R}} ")
+			contTwo.SetLineStyle(1)  #solid
+			contTwo.SetLineColor(ROOT.kBlack)
+			contTwo.SetLineWidth(2)
+			contTwo.Draw("Lsame")
+
+			leg.AddEntry(contTwo, "Observed","l")
+			leg.SetTextFont(42);
+			leg.SetTextSize(0.032);
+			leg.SetFillStyle(0);
+			leg.SetBorderSize(0);
+			
+			leg.Draw()
+		#end if contTwo
+
+
+		latex = ROOT.TLatex()
+		latex.SetNDC(True)
+		latex.SetTextSize(0.03)
+		latex.SetTextFont(42)
+		latex.DrawLatex(0.62, 0.96, "2.64 fb^{-1} (13 TeV)")
+
+		text = ROOT.TText(0.2,0.96,"CMS Preliminary")
+		text.SetNDC();
+		text.SetTextFont(42);
+		text.SetTextSize(0.03);
+		text.Draw()
+		c1.RedrawAxis()
+		c1.SaveAs(filename + ".png")
+		c1.SaveAs(filename + ".pdf")
+		c1.SaveAs(filename + ".C")
+
+
+	#end drawOverlay method
+	
 	def draw(self, h, filename, zrange, ztitle, logz=False, cont=None, isObserved=False):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
@@ -259,8 +363,6 @@ class limit2d:
 		if cont:
 			x = np.array([700,4050,700,700],dtype=float)
 			y = np.array([700,4050,4050,700],dtype=float)
-			#x = np.array([700,3700,700,700],dtype=float)
-			#y = np.array([700,3700,3700,700],dtype=float)
 			area = ROOT.TPolyLine(4,x,y)
 			area.SetFillColor(ROOT.kYellow)
 			area.SetLineWidth(0)
@@ -302,6 +404,7 @@ class limit2d:
 		c1.SaveAs(filename + ".png")
 		c1.SaveAs(filename + ".pdf")
 		c1.SaveAs(filename + ".C")
+	#end draw method
 
 	def plot(self,filename):
 
@@ -332,8 +435,14 @@ class limit2d:
 		graphsTwo = contourFromTH2(self.exclusionTwo, 1)
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 
-		self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0], isObserved=False)
-		self.draw(self.exclusionTwo,     filename + "_exclusionTwo", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphsTwo[0], isObserved=True)
+		#self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0], isObserved=False)
+		#self.draw(self.exclusionTwo,     filename + "_exclusionTwo", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphsTwo[0], isObserved=True)
+
+		#draw two exclusion limits overlaid on each other
+		#the first histo arg must be the expected curve, and the second must be the observed limit curve (exclusionTwo)
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
+	
+	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
 		#self.draw(self.effratio,     filename + "_effratio",  (0   , 2), "efficiency #times acceptance (W_{R}, N_{l}) / (W_{R}, W_{R}/2) ",                         logz=False )
 		#self.draw(self.crosssection, filename + "_xs",        (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(%sjj) [pb]" % self.channelname,                     logz=True  )
