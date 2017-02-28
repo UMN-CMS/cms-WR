@@ -185,7 +185,11 @@ class limit2d:
 		self.exclusion = ROOT.TH2F(name + "_exc", name + " exclusion", *(mwr_range + mnu_range))
 		self.crosssection = ROOT.TH2F(name + "_xs", name + " xs", *(mwr_range + mnu_range))
 		self.channelname = channelname
+		#these TH2Fs are made only for the 2D WR mass exclusion plot
+		#exclusionTwo is only for the observed mass exclusion limit, the others are for the expected limit plus/minus one sigma
 		self.exclusionTwo = ROOT.TH2F(name + "_excTwo", name + " exclusionTwo", *(mwr_range + mnu_range))
+		self.exclusionExpMinusOneSigma = ROOT.TH2F(name + "_excExpMinusOneSigma", name + " exclusionExpMinusOneSigma", *(mwr_range + mnu_range))
+		self.exclusionExpPlusOneSigma = ROOT.TH2F(name + "_excExpPlusOneSigma", name + " exclusionExpPlusOneSigma", *(mwr_range + mnu_range))
 	
 		with open(ratio_file,"r") as inf:
 			for line in inf:
@@ -201,6 +205,7 @@ class limit2d:
 		self.theory = theory
 	
 	def addObserved(self, mwr, point):
+		#this method is only for the observed 2D limit
 		mwr = int(mwr)
 		median = float(point)
 		#median *= self.xs
@@ -220,6 +225,7 @@ class limit2d:
 			#self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
 
 	def add(self, mwr, point):
+		#this method is only for the expected 2D limit
 		mwr = int(mwr)
 		median, (onesig_minus,onesig_plus), (twosig_minus,twosig_plus) = point
 		for mnu in self.eff[mwr]:
@@ -235,11 +241,16 @@ class limit2d:
 			#self.r.Fill(mwr, mnu, median * self.xs)
 			self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
 			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
-	#end add method
+			self.exclusionExpMinusOneSigma.Fill(mwr, mnu, limit*onesig_minus/(median*self.theory[(mwr,mnu)]))
+			self.exclusionExpPlusOneSigma.Fill(mwr, mnu, limit*onesig_plus/(median*self.theory[(mwr,mnu)]))
+	
+	#end add method, only for expected 2D limits
 
-	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, contOne=None, contTwo=None):
+	#draw multiple 2D limit curves on one canvas
+	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, contOne=None, contTwo=None, contExpMinusOneSigma=None, contExpPlusOneSigma=None, hExpMinusOneSigma=None, hExpPlusOneSigma=None):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
+		ROOT.gROOT.SetBatch(True)
 
 		#set palette color to grey scale
 		ROOT.gStyle.SetPalette(52)
@@ -260,6 +271,24 @@ class limit2d:
 		hOne.SetZTitle(ztitle)
 		hOne.GetYaxis().SetTitleOffset(2)
 		hOne.GetZaxis().SetTitleOffset(1.7)
+	
+		if hExpMinusOneSigma:
+			hExpMinusOneSigma.Draw("colzsame")
+			hExpMinusOneSigma.SetAxisRange(zrange[0], zrange[1],"Z")
+			hExpMinusOneSigma.SetXTitle("W_{R} Mass [GeV]")
+			hExpMinusOneSigma.SetYTitle("N_{l} Mass [GeV]")
+			hExpMinusOneSigma.SetZTitle(ztitle)
+			hExpMinusOneSigma.GetYaxis().SetTitleOffset(2)
+			hExpMinusOneSigma.GetZaxis().SetTitleOffset(1.7)
+		
+		if hExpPlusOneSigma:
+			hExpPlusOneSigma.Draw("colzsame")
+			hExpPlusOneSigma.SetAxisRange(zrange[0], zrange[1],"Z")
+			hExpPlusOneSigma.SetXTitle("W_{R} Mass [GeV]")
+			hExpPlusOneSigma.SetYTitle("N_{l} Mass [GeV]")
+			hExpPlusOneSigma.SetZTitle(ztitle)
+			hExpPlusOneSigma.GetYaxis().SetTitleOffset(2)
+			hExpPlusOneSigma.GetZaxis().SetTitleOffset(1.7)
 		
 		hTwo.Draw("colzsame")
 		hTwo.SetAxisRange(zrange[0], zrange[1],"Z")
@@ -269,10 +298,11 @@ class limit2d:
 		hTwo.GetYaxis().SetTitleOffset(2)
 		hTwo.GetZaxis().SetTitleOffset(1.7)
 
+		#set the legend box size
 		x1 = 900
-		y1 = 3600
+		y1 = 3400
 		xw = 1200
-		yw = 300
+		yw = 550
 
 		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
 	
@@ -284,9 +314,29 @@ class limit2d:
 
 			leg.AddEntry(contOne, "Expected","l")
 			
-			#leg.Draw()
 		#end if contOne
-	
+
+		if contExpMinusOneSigma:
+			contExpMinusOneSigma.SetLineStyle(7)   #small dashes
+			contExpMinusOneSigma.SetLineColor(ROOT.kViolet)
+			contExpMinusOneSigma.SetLineWidth(3)
+			contExpMinusOneSigma.Draw("Lsame")
+
+			leg.AddEntry(contExpMinusOneSigma, "Expected-1#sigma","l")
+
+		#end if contExpMinusOneSigma
+
+		if contExpPlusOneSigma:
+			contExpPlusOneSigma.SetLineStyle(7)   #small dashes
+			contExpPlusOneSigma.SetLineColor(ROOT.kGreen)
+			contExpPlusOneSigma.SetLineWidth(3)
+			contExpPlusOneSigma.Draw("Lsame")
+
+			leg.AddEntry(contExpPlusOneSigma, "Expected+1#sigma","l")
+
+		#end if contExpPlusOneSigma
+
+		#draw contTwo, the observed limit contour, last
 		if contTwo:
 			x = np.array([700,4050,700,700],dtype=float)
 			y = np.array([700,4050,4050,700],dtype=float)
@@ -299,7 +349,7 @@ class limit2d:
 			latex2 = ROOT.TLatex()
 			latex2.SetTextSize(0.05)
 			#specify the lower left corner in x, y coordinates
-			latex2.DrawLatex(1400,3200, "M_{N_{l}} > M_{W_{R}} ")
+			latex2.DrawLatex(1300,3100, "M_{N_{l}} > M_{W_{R}} ")
 			contTwo.SetLineStyle(1)  #solid
 			contTwo.SetLineColor(ROOT.kBlue)
 			contTwo.SetLineWidth(3)
@@ -319,7 +369,7 @@ class limit2d:
 		latex.SetNDC(True)
 		latex.SetTextSize(0.03)
 		latex.SetTextFont(42)
-		latex.DrawLatex(0.62, 0.96, "2.64 fb^{-1} (13 TeV)")
+		latex.DrawLatex(0.62, 0.96, "2.6 fb^{-1} (13 TeV)")
 
 		text = ROOT.TText(0.2,0.96,"CMS Preliminary")
 		text.SetNDC();
@@ -337,6 +387,10 @@ class limit2d:
 	def draw(self, h, filename, zrange, ztitle, logz=False, cont=None, isObserved=False):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
+		ROOT.gROOT.SetBatch(True)
+		
+		#set palette color to grey scale
+		ROOT.gStyle.SetPalette(52)
 	
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 		c1.SetTopMargin(0.05);
@@ -366,6 +420,9 @@ class limit2d:
 			latex2.SetTextSize(0.05)
 			#specify the lower left corner in x, y coordinates
 			latex2.DrawLatex(1400,3200, "M_{N_{l}} > M_{W_{R}} ")
+			cont.SetLineStyle(1)  #solid
+			cont.SetLineColor(ROOT.kBlue)
+			cont.SetLineWidth(3)
 			cont.Draw("L")
 
 			x1 = 900
@@ -403,7 +460,7 @@ class limit2d:
 
 	def plot(self,filename):
 
-		#exclusion and exclusionTwo have the same binning structure
+		#exclusion, exclusionTwo, and exclusionExp... all have the same binning structure
 		nx = self.exclusion.GetNbinsX()
 		ny = self.exclusion.GetNbinsY()
 		for ix in range(1, nx+1):
@@ -418,8 +475,12 @@ class limit2d:
 				mnrTwo = self.exclusionTwo.GetYaxis().GetBinCenter(iy)
 				if mnr > mwr:
 					self.exclusion.SetBinContent(ix, iy, 2);
+					self.exclusionExpMinusOneSigma.SetBinContent(ix, iy, 2);
+					self.exclusionExpPlusOneSigma.SetBinContent(ix, iy, 2);
 				elif mnr == mwr:
 					self.exclusion.SetBinContent(ix, iy, 1.5);
+					self.exclusionExpMinusOneSigma.SetBinContent(ix, iy, 1.5);
+					self.exclusionExpPlusOneSigma.SetBinContent(ix, iy, 1.5);
 				if mnrTwo > mwrTwo:
 					self.exclusionTwo.SetBinContent(ix, iy, 2);
 				elif mnrTwo == mwrTwo:
@@ -428,14 +489,19 @@ class limit2d:
 		
 		graphs = contourFromTH2(self.exclusion, 1)
 		graphsTwo = contourFromTH2(self.exclusionTwo, 1)
+		graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
+		graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 
 		#self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0], isObserved=False)
 		#self.draw(self.exclusionTwo,     filename + "_exclusionTwo", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphsTwo[0], isObserved=True)
-
-		#draw two exclusion limits overlaid on each other
+		
+		#self.draw(self.exclusionExpMinusOneSigma,   filename + "_exclusionExpMinusOneSigma", (0    , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphsExpMinusOneSigma[0], isObserved=False)
+	
+		#draw several exclusion limits overlaid on each other
 		#the first histo arg must be the expected curve, and the second must be the observed limit curve (exclusionTwo)
-		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
+		
 	
 	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
@@ -447,6 +513,7 @@ class limit2d:
 
 
 def contourFromTH2(h2in, threshold, minPoints=20):
+	ROOT.gROOT.SetBatch(True)   #dont render plots in GUI
 	print "Getting contour at threshold ", threshold, " from ", h2in.GetName()
 	#http://root.cern.ch/root/html/tutorials/hist/ContourList.C.html
 	contours = np.array([threshold], dtype=float)
@@ -454,8 +521,11 @@ def contourFromTH2(h2in, threshold, minPoints=20):
 	if (h2in.GetNbinsX() * h2in.GetNbinsY() > 10000): minPoints = 50;
 	if (h2in.GetNbinsX() * h2in.GetNbinsY() <= 100): minPoints = 10;
 	
+	#frameTH2D returns a TH2D object whose bins are all set to the same, very high content (order 1000)
 	h2 = frameTH2D(h2in,threshold);
 	
+	#make 1 contour on h2 (first arg), and set the value of the contour to the one element stored in the numpy array
+	#named contours
 	h2.SetContour(1, contours);
 	
 	# Draw contours as filled regions, and Save points
