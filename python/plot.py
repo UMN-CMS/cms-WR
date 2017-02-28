@@ -240,6 +240,9 @@ class limit2d:
 	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, contOne=None, contTwo=None):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
+
+		#set palette color to grey scale
+		ROOT.gStyle.SetPalette(52)
 		
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 		c1.SetTopMargin(0.05);
@@ -274,17 +277,9 @@ class limit2d:
 		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
 	
 		if contOne:
-			#x = np.array([700,4050,700,700],dtype=float)
-			#y = np.array([700,4050,4050,700],dtype=float)
-			##this is the area which cannot be excluded by this analysis, where MNu is greater than MWR
-			#area = ROOT.TPolyLine(4,x,y)
-			#area.SetFillColorAlpha(ROOT.kYellow, 0.99)
-			
-			#area.SetLineWidth(0)
-			#area.Draw("F")
 			contOne.SetLineStyle(7)  #small dashes
 			contOne.SetLineColor(ROOT.kRed)
-			contOne.SetLineWidth(2)
+			contOne.SetLineWidth(3)
 			contOne.Draw("L")
 
 			leg.AddEntry(contOne, "Expected","l")
@@ -306,8 +301,8 @@ class limit2d:
 			#specify the lower left corner in x, y coordinates
 			latex2.DrawLatex(1400,3200, "M_{N_{l}} > M_{W_{R}} ")
 			contTwo.SetLineStyle(1)  #solid
-			contTwo.SetLineColor(ROOT.kBlack)
-			contTwo.SetLineWidth(2)
+			contTwo.SetLineColor(ROOT.kBlue)
+			contTwo.SetLineWidth(3)
 			contTwo.Draw("Lsame")
 
 			leg.AddEntry(contTwo, "Observed","l")
