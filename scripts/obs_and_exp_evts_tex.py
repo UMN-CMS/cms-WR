@@ -1,7 +1,7 @@
 import subprocess
 import ExoAnalysis.cmsWR.combineTools as combineTools
 import numpy as np
-
+import math
 
 #change fileDir to point to the directory from which expected bkgnd and signal, and observed files should be read
 treeName="syst_tree"
@@ -32,6 +32,7 @@ with open("configs/mass_cuts.txt") as f:
 		#initialize two floating point variables which will hold the number of expected and observed evts in one mass window
 		numObsEvts = 0.0
 		numExpEvts = 0.0
+		expEvtUnc = 0.0
 		
 		#based on the string named ch, fill the two num Evts vars declared immediately above
 		#the mass_cuts.txt file is ordered from lowest mass to highest mass, so a simple index which increments after each
@@ -40,11 +41,13 @@ with open("configs/mass_cuts.txt") as f:
 			numObsEvts = combineTools.getBranchMean(fileDir+obsEEFile, treeName, "NEventsInRange["+str(index)+"]")
 			numExpEvts += combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
 			numExpEvts += (0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
+			expEvtUnc += math.sqrt(pow(0.4*combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "ErrorEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchStdDev(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(0.05*(0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]")), 2)  + pow((0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "ErrorEventsInRange["+str(index)+"]")), 2) + pow((0.4194)*(combineTools.getBranchStdDev(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
 		if ch == 'MuMu':
 			numObsEvts = combineTools.getBranchMean(fileDir+obsMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
 			numExpEvts += combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
 			numExpEvts += (0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
-
+			expEvtUnc += math.sqrt(pow(0.4*combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchStdDev(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(0.05*(0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]")), 2)  + pow((0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]")), 2) + pow((0.6563)*(combineTools.getBranchStdDev(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
+	
 
 		index += 1
 		
@@ -54,7 +57,7 @@ with open("configs/mass_cuts.txt") as f:
 		
 		#now add a new key and value to the dictionary. the key is a pair containing the mass and lepton channel, and the value is a string containing the number of expected and observed events
 		#the numbers 6 and 7 control how many digits and white space are shown in each dict value
-		table[(mass , ch)] = "& {low:<6} & {hi:<7}".format(low=str(round(numExpEvts,2)), hi=str(numObsEvts))
+		table[(mass , ch)] = "& {low:<6} & {hi:<7}".format(low = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtUnc,2))), hi=str(numObsEvts))
 		masses.add(mass)
 #end reading mass_cuts.txt
 
