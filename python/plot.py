@@ -141,6 +141,8 @@ class limit1d:
 			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
 
 		if self.obslines:
+			#this makes several lines on the 1D expected limit plot showing
+			#the observed limit from 3.8 to 6.0 TeV for different numbers (d) of observed events
 			lines = []
 			for i in range(len(self.obslines)):
 				obs = self.obslines[i]
@@ -183,7 +185,7 @@ class limit2d:
 		self.exclusion = ROOT.TH2F(name + "_exc", name + " exclusion", *(mwr_range + mnu_range))
 		self.crosssection = ROOT.TH2F(name + "_xs", name + " xs", *(mwr_range + mnu_range))
 		self.channelname = channelname
-		self.obslines = None
+		self.exclusionTwo = ROOT.TH2F(name + "_excTwo", name + " exclusionTwo", *(mwr_range + mnu_range))
 	
 		with open(ratio_file,"r") as inf:
 			for line in inf:
@@ -210,11 +212,12 @@ class limit2d:
 				ratio = .00001
 
 			limit = median * self.xs / ratio
-			self.effratio.Fill(mwr, mnu, ratio)
-			self.limits.Fill(mwr, mnu, limit)
+			#self.effratio.Fill(mwr, mnu, ratio)
+			#self.limits.Fill(mwr, mnu, limit)
 			#self.r.Fill(mwr, mnu, median * self.xs)
-			self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
-			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
+			#self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
+			self.exclusionTwo.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
+			#self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
 
 	def add(self, mwr, point):
 		mwr = int(mwr)
@@ -232,10 +235,10 @@ class limit2d:
 			#self.r.Fill(mwr, mnu, median * self.xs)
 			self.exclusion.Fill(mwr, mnu, limit/self.theory[(mwr,mnu)])
 			self.crosssection.Fill(mwr, mnu, self.theory[(mwr,mnu)])
-	def draw(self, h, filename, zrange, ztitle, logz=False, cont=None):
+	def draw(self, h, filename, zrange, ztitle, logz=False, cont=None, isObserved=False):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
-
+	
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 		c1.SetTopMargin(0.05);
 		c1.SetLeftMargin(0.2);
@@ -256,12 +259,15 @@ class limit2d:
 		if cont:
 			x = np.array([700,4050,700,700],dtype=float)
 			y = np.array([700,4050,4050,700],dtype=float)
+			#x = np.array([700,3700,700,700],dtype=float)
+			#y = np.array([700,3700,3700,700],dtype=float)
 			area = ROOT.TPolyLine(4,x,y)
 			area.SetFillColor(ROOT.kYellow)
 			area.SetLineWidth(0)
 			area.Draw("F")
 			latex2 = ROOT.TLatex()
 			latex2.SetTextSize(0.05)
+			#specify the lower left corner in x, y coordinates
 			latex2.DrawLatex(1400,3200, "M_{N_{l}} > M_{W_{R}} ")
 			cont.Draw("L")
 
@@ -271,7 +277,8 @@ class limit2d:
 			yw = 200
 
 			leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
-			leg.AddEntry(cont, "Expected","l")
+			if not isObserved: leg.AddEntry(cont, "Expected","l")
+			if isObserved: leg.AddEntry(cont, "Observed","l")
 			leg.SetTextFont(42);
 			leg.SetTextSize(0.032);
 			leg.SetFillStyle(0);
@@ -298,27 +305,38 @@ class limit2d:
 
 	def plot(self,filename):
 
+		#exclusion and exclusionTwo have the same binning structure
 		nx = self.exclusion.GetNbinsX()
 		ny = self.exclusion.GetNbinsY()
 		for ix in range(1, nx+1):
 			for iy in range(1,ny+1):
+				if not self.exclusionTwo.GetBinContent(ix,iy):
+					self.exclusionTwo.SetBinContent(ix, iy, 1000);
 				if not self.exclusion.GetBinContent(ix,iy):
 					self.exclusion.SetBinContent(ix, iy, 1000);
 				mwr = self.exclusion.GetXaxis().GetBinCenter(ix)
 				mnr = self.exclusion.GetYaxis().GetBinCenter(iy)
+				mwrTwo = self.exclusionTwo.GetXaxis().GetBinCenter(ix)
+				mnrTwo = self.exclusionTwo.GetYaxis().GetBinCenter(iy)
 				if mnr > mwr:
 					self.exclusion.SetBinContent(ix, iy, 2);
 				elif mnr == mwr:
 					self.exclusion.SetBinContent(ix, iy, 1.5);
+				if mnrTwo > mwrTwo:
+					self.exclusionTwo.SetBinContent(ix, iy, 2);
+				elif mnrTwo == mwrTwo:
+					self.exclusionTwo.SetBinContent(ix, iy, 1.5);
 
 		
 		graphs = contourFromTH2(self.exclusion, 1)
+		graphsTwo = contourFromTH2(self.exclusionTwo, 1)
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 
-		self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0])
-		self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
-		self.draw(self.effratio,     filename + "_effratio",  (0   , 2), "efficiency #times acceptance (W_{R}, N_{l}) / (W_{R}, W_{R}/2) ",                         logz=False )
-		self.draw(self.crosssection, filename + "_xs",        (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(%sjj) [pb]" % self.channelname,                     logz=True  )
+		self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0], isObserved=False)
+		self.draw(self.exclusionTwo,     filename + "_exclusionTwo", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphsTwo[0], isObserved=True)
+		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
+		#self.draw(self.effratio,     filename + "_effratio",  (0   , 2), "efficiency #times acceptance (W_{R}, N_{l}) / (W_{R}, W_{R}/2) ",                         logz=False )
+		#self.draw(self.crosssection, filename + "_xs",        (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(%sjj) [pb]" % self.channelname,                     logz=True  )
 
 
 

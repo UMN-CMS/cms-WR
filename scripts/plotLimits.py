@@ -107,12 +107,12 @@ for res in results:
 	if mode == "EXPECTED":
 		#print m, ret
 		plotters[channel].add(mass, ret)
-		#plotters2d[channel].add(mass,ret)
+		plotters2d[channel].add(mass,ret)
 	
 	elif mode == "OBSERVED":
 		print m, ret
 		plotters[channel].addObserved(mass, ret)
-		plotters2d[channel].addObserved(mass, ret)
+		#plotters2d[channel].addObserved(mass, ret)
 
 
 ytitle = "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" 
