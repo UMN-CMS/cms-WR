@@ -17,7 +17,7 @@ obsEEFile = "selected_tree_data_signal_eeEE.root"
 
 ##now make a LaTex table with one column showing the WR mass hypothesis, two columns showing the number of expected and obs events in the ele channel
 ##and two columns showing the number of expected and obs events in the muon channel
-tex= "\\begin{{tabular}}{{{col}}}\\hline\n{table}\\end{{tabular}}\n"
+tex= "\n\\begin{{tabular}}{{{col}}}\\hline\n{table}\\end{{tabular}}"
 header = " & \\multicolumn{2}{c|}{Electrons}  & \\multicolumn{2}{c|}{Muons}  \\\\  \\hline\nMass(GeV) & Expected(Evts) & Observed(Evts) & Expected(Evts) & Observed(Evts) \\\\  \\hline\n"
 table = {}  #dictionary named table
 masses = set()	#unordered sequence which cannot be indexed, and does not record order of insertion or element position
