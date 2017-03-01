@@ -11,12 +11,16 @@ import math
 
 #change fileDir to point to the directory from which expected bkgnd and signal, and observed files should be read
 treeName="syst_tree"
+
+#these three directories are needed to estimate the uncertainty from all shape systematics (jets and leptons), only jet syst, and only lept syst
 fileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystSmoothedWindowsFebrTwentyOne/"
+jetShapeSystDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysJetSystNewMassWindows/"
+leptShapeSystDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllLeptSystNewMassWindows/"
 
 expTopMuMuFile = "selected_tree_data_flavoursidebandEMuMuMu.root"
-expDyMuMuFile = "selected_tree_DYAMC_signal_mumuMuMu.root"
+expDyMuMuFile = "selected_tree_DYMadInclAndHT_signal_mumuMuMu_withMllWeight.root"
 expTopEEFile = "selected_tree_data_flavoursidebandEMuEE.root"
-expDyEEFile = "selected_tree_DYAMC_signal_eeEE.root"
+expDyEEFile = "selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root"
 
 
 #final version tex= "\\centering\n\\begin{{tabular}}{{{col}}}\n{table}\\end{{tabular}}"
@@ -42,45 +46,81 @@ header = "\\multirow{3}{1cm}{\MWR (GeV)} & \\multirow{3}{*}{} & \\multicolumn{5}
 
 table = {}  #dictionary named table
 masses = set()	#unordered sequence which cannot be indexed, and does not record order of insertion or element position
-#index = 0   #mass window index used to read correct element in an array branch from root file
-#with open("configs/mass_cuts.txt") as f:
-#	for line in f:
-#		if line[0] == "#": continue
-#		
-#		#now split the iterator named line into four strings, two of which (low and hi) will not be used
-#		ch, mass, low, hi = line.split()
-#		
-#		#initialize two floating point variables which will hold the number of expected and observed evts in one mass window
-#		numObsEvts = 0.0
-#		numExpEvts = 0.0
-#		expEvtUnc = 0.0
-#		
-#		#based on the string named ch, fill the two num Evts vars declared immediately above
-#		#the mass_cuts.txt file is ordered from lowest mass to highest mass, so a simple index which increments after each
-#		#iteration of this loop will allow the correct array element to be read from the input root files
-#		if ch == 'EE':
-#			numObsEvts = combineTools.getBranchMean(fileDir+obsEEFile, treeName, "NEventsInRange["+str(index)+"]")
-#			numExpEvts += combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
-#			numExpEvts += (0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
-#			expEvtUnc += math.sqrt(pow(0.4*combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "ErrorEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchStdDev(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(0.05*(0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]")), 2)  + pow((0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "ErrorEventsInRange["+str(index)+"]")), 2) + pow((0.4194)*(combineTools.getBranchStdDev(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
-#		if ch == 'MuMu':
-#			numObsEvts = combineTools.getBranchMean(fileDir+obsMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
-#			numExpEvts += combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
-#			numExpEvts += (0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
-#			expEvtUnc += math.sqrt(pow(0.4*combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]"), 2) + pow(combineTools.getBranchStdDev(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) + pow(0.05*(0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]")), 2)  + pow((0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]")), 2) + pow((0.6563)*(combineTools.getBranchStdDev(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
-#	
-#
-#		index += 1
-#		
-#		#mass_cuts.txt begins with EE channel, then changes to MuMu channel
-#		#reset index to 1 when line[1] equals 6000
-#		if mass == "6000": index = 0
-#		
-#		#now add a new key and value to the dictionary. the key is a pair containing the mass and lepton channel, and the value is a string containing the number of expected and observed events
-#		#the numbers 6 and 7 control how many digits and white space are shown in each dict value
-#		table[(mass , ch)] = "& {low:<6} & {hi:<7}".format(low = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtUnc,2))), hi=str(numObsEvts))
-#		masses.add(mass)
-##end reading mass_cuts.txt
+index = 0   #mass window index used to read correct element in an array branch from root file
+
+#read mass_cuts.txt file and only write contents to the table when specific WR mass hypotheses are read from mass_cuts.txt
+with open("configs/mass_cuts.txt") as f:
+	for line in f:
+		if line[0] == "#": continue
+		
+		#now split the iterator named line into four strings, two of which (low and hi) will not be used
+		ch, mass, low, hi = line.split()
+		
+		#initialize floating point variables which will hold the number of expected evts and their uncertainties in one mass window
+		dyEvts = 0.0
+		dyStatUnc = 0.0
+		dyShapeUncFromAll = 0.0
+		dyShapeUncFromJets = 0.0
+		dyShapeUncFromLepts = 0.0
+		topEvts = 0.0
+		topStatUnc = 0.0
+		topShapeUncFromAll = 0.0
+		topShapeUncFromJets = 0.0
+		topShapeUncFromLepts = 0.0
+		wrEvts = 0.0
+		wrStatUnc = 0.0
+		wrShapeUncFromAll = 0.0
+		wrShapeUncFromJets = 0.0
+		wrShapeUncFromLepts = 0.0
+		
+		#the mass_cuts.txt file is ordered from lowest mass to highest mass, so a simple index which increments after each
+		#iteration of this loop will allow the correct array element to be read from the input root files
+		if mass == "1600" or mass == "2200" or mass == "2800":
+			if ch == 'EE':
+				dyEvts += combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
+				dyStatUnc += combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "ErrorEventsInRange["+str(index)+"]")
+				dyShapeUncFromAll += combineTools.getBranchStdDev(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
+				dyShapeUncFromJets += combineTools.getBranchStdDev(jetShapeSystDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
+				dyShapeUncFromLepts += combineTools.getBranchStdDev(leptShapeSystDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
+				
+				topEvts += (0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
+				topStatUnc += (0.4194)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "ErrorEventsInRange["+str(index)+"]"))
+				topShapeUncFromAll += (0.4194)*(combineTools.getBranchStdDev(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
+				topShapeUncFromJets += (0.4194)*(combineTools.getBranchStdDev(jetShapeSystDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
+				topShapeUncFromLepts += (0.4194)*(combineTools.getBranchStdDev(leptShapeSystDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
+				
+				wrEvts +=
+				
+			
+			if ch == 'MuMu':
+				dyEvts += combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
+				dyStatUnc += combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]")
+				dyShapeUncFromAll += combineTools.getBranchStdDev(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
+				dyShapeUncFromJets += combineTools.getBranchStdDev(jetShapeSystDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
+				dyShapeUncFromLepts += combineTools.getBranchStdDev(leptShapeSystDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
+				
+				topEvts += (0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
+				topStatUnc += (0.6563)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]"))
+				topShapeUncFromAll += (0.6563)*(combineTools.getBranchStdDev(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
+				topShapeUncFromJets += (0.6563)*(combineTools.getBranchStdDev(jetShapeSystDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
+				topShapeUncFromLepts += (0.6563)*(combineTools.getBranchStdDev(leptShapeSystDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
+				
+	
+		#end if mass == 1600, 2200 or 2800 selection
+	
+
+		#increment the index even if nothing is added to the table. this index is only used to access the correct mass window in various branches of the input tree
+		index += 1
+		
+		#mass_cuts.txt begins with EE channel, then changes to MuMu channel
+		#reset index to 1 when line[1] equals 6000
+		if mass == "6000": index = 0
+		
+		#now add a new key and value to the dictionary. the key is a pair containing the mass and lepton channel, and the value is a string containing the number of expected and observed events
+		#the numbers 6 and 7 control how many digits and white space are shown in each dict value
+		table[(mass , ch)] = "& {low:<6} & {hi:<7}".format(low = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtUnc,2))), hi=str(numObsEvts))
+		masses.add(mass)
+#end reading mass_cuts.txt
 
 #define the table structure (number of columns and column titles)
 tex_table = header
