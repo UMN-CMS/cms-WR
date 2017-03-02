@@ -101,6 +101,18 @@ def getBranchStdDev(fileName, treeName, branchName):
 	tree.Draw(branchName + ">>tempHist()")
 	h = r.gROOT.FindObject("tempHist")
 	return h.GetStdDev(1)
+##end getBranchStdDev
+
+def getBranchSkewness(fileName, treeName, branchName):
+	r.gROOT.SetBatch(True)
+	infile = r.TFile.Open(fileName)
+	tree = infile.Get(treeName)
+	r.gROOT.cd()
+	tree.Draw(branchName + ">>tempHist()")
+	h = r.gROOT.FindObject("tempHist")
+	return h.GetSkewness(1)
+##end getBranchSkewness
+
 
 class AnalysisResultsInterface:
 	chnlName = {"ee":"EE", "mumu":"MuMu", "emu":"EMu"}
