@@ -20,6 +20,11 @@
 
 #define unblindedData
 #define plotRatio
+#define showRescaledRunOneEEJJExcess
+
+//if showRescaledRunOneEEJJExcess is defined, this Float_t will be the new integral of
+//the WRtoEEJJ signal with MWR 2.0 TeV and MNu 1.0 TeV
+Float_t desiredRunOneEEJJExcessNorm = 10.0;
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -59,7 +64,10 @@ void quickSignalRegionMiniPlotter(){
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
+
+#ifndef showRescaledRunOneEEJJExcess
+	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
+#endif
 
 	//there must be a file linked with the data chain, otherwise this macro will not produce any plots.
 	//if unblindedData is not defined, then a histogram will not be made with the TChain named chain_data
@@ -70,7 +78,13 @@ void quickSignalRegionMiniPlotter(){
 #ifdef unblindedData	
 	data = chain_data->Add(localDir+"selected_tree_data_signal_eeEE.root");
 #endif
-	
+
+	//use the ZZ chain to show the WRtoEEJJ signal rescaled to match the normalization of the expected RunI EEJJ excess in 2015 operating conditions
+	//show nothing if showRescaledRunOneEEJJExcess is not defined
+#ifdef showRescaledRunOneEEJJExcess
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2000_1000_signal_eeEE.root");
+#endif
+
 	break;
   case Selector::MuMu:
 
@@ -89,6 +103,8 @@ void quickSignalRegionMiniPlotter(){
 #ifdef unblindedData
 	data = chain_data->Add(localDir+"selected_tree_data_signal_mumuMuMu.root");
 #endif
+
+
 	break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -154,7 +170,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
-  TH1F *h_WR_mass = new TH1F("h_WR_mass_fixedBinWidth","",17,600,4000);	//200 GeV wide bins
+  TH1F *h_WR_mass = new TH1F("h_WR_mass_fixedBinWidth","",17,600,4000);	//200 GeV wide bins. DO NOT change this binning
   TH1F *h_WR_mass_thinBins = new TH1F("h_WR_mass_thinBins_fixedBinWidth","",68,600,4000);	//50 GeV wide bins
   TH1F *h_Nu_mass_leadLept = new TH1F("h_Nu_mass_leadLept_fixedBinWidth","",11,200,2400);	//200 GeV wide bins
   TH1F *h_Nu_mass_subleadLept = new TH1F("h_Nu_mass_subleadLept_fixedBinWidth","",10,200,2200);	//200 GeV wide bins
@@ -185,6 +201,16 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   if( chainTitle.EqualTo("TTData") ){
 	  scaleFactor = (channel == Selector::MuMu) ? 0.6563 : 0.4194;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
   }
+
+#ifdef showRescaledRunOneEEJJExcess
+  //this scale factor is set such that the integral of the MLLJJ distribution with linear binning
+  //for WRtoEEJJ (MWR 2.0 TeV, MNu 1.0 TeV) is equal to 10.0
+  //if a different WR mass point is used, reset scaleFactor to 1.0, find the integral of the MLLJJ distribution
+  //with linear binning, and change the denominator value of scaleFactor to match the new MLLJJ distribution integral
+  if( chainTitle.EqualTo("Other") && channel == Selector::EE ) scaleFactor = desiredRunOneEEJJExcessNorm/58.5372;
+  //if( chainTitle.EqualTo("Other") && channel == Selector::EE ) scaleFactor = 1.0;
+#endif
+
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
@@ -256,14 +282,21 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_Nu_mass_leadLept);
   hs->push_back(h_Nu_mass_subleadLept);
   hs->push_back(h_WR_mass_thinBins);
- 
+
+#ifdef showRescaledRunOneEEJJExcess
+  if( chainTitle.EqualTo("Other") && channel == Selector::EE ){
+	  Int_t lowBin = h_WR_mass->FindBin(1800.);
+	  Int_t highBin = h_WR_mass->FindBin(2200.);
+	  std::cout <<"the MLLJJ integral between 1.8 and 2.2 TeV for WRtoEEJJ signal with MWR 2.0 TeV and MNu 1.0 TeV = " << h_WR_mass->Integral(lowBin, highBin) << std::endl;
+  }
+#endif
 
   //rescale bin contents by bin width, and add overflow evts to last bin in two WR mass histos with variable bin widths
   //also add overflow events to last bin in fixed-bin-width MLLJJ and M_LJJ plots
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
 	  TString histName = (hs->at(i))->GetName();
-	  std::cout<<"hist name\t"<< histName <<std::endl;
+	  //std::cout<<"hist name\t"<< histName <<std::endl;
 	  if(histName.Contains("fixedBin")){
 		  Int_t nBins = (hs->at(i))->GetNbinsX();
 		  for(Int_t j=1; j<=nBins; j++){
@@ -312,19 +345,22 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_ttbar, "TT+TopW Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  //leg->AddEntry( hs_ZZ, "Other" ) ; 
-
-  //the "data" histogram was previously used to show a WR signal curve overlaid on a stacked histo containing expected SM backgrounds
-  //leg->AddEntry( hs_data, "W_{R} Signal","l");
-  //leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{NuR}=1.1 TeV","");
+  //leg->AddEntry( hs_ZZ, "Other" ) ;
+#ifdef showRescaledRunOneEEJJExcess
+  if(channel == Selector::EE){
+	  leg->AddEntry( hs_ZZ, "RunI Excess");
+	  leg->AddEntry( (TObject*)0, "M_{WR}=2.0 TeV M_{Nu}=1.0 TeV","");	//R is illegible on drawn legend if it is a subscript of W
+  }
+#endif
 
 #ifdef unblindedData 
   leg->AddEntry( hs_data, "Unblinded data");
 #endif
   leg->AddEntry( (TObject*)0, "Overflows in last bin","");
+  leg->SetFillColor( kWhite );
 
-
-  leg->SetFillColor( kWhite ) ; 
+  //NOTE. if showRescaledRunOneEEJJExcess is defined, then the hs_ZZ histo should not be added to the THStack of all SM
+  //backgrounds, nor should it be used in any way in the ratio plot
 
   hs_data->Sumw2();
   hs_ttbar->Sumw2();
@@ -351,7 +387,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->SetMarkerStyle(20);
   hs_data->SetMarkerSize(1);
   hs_data->SetMarkerColor(kBlack);
-
+#ifdef showRescaledRunOneEEJJExcess
+  hs_ZZ->SetLineColor(kRed);
+  hs_ZZ->SetLineWidth(3);
+  hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
+#endif
 
   Double_t eps = 0.001;
   TPad* p1 = new TPad("p1","p1",0,0.25,1,1,0);
@@ -373,11 +413,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef unblindedData
   hs_data->Draw("EPsame");
 #endif
-  //th->Draw("histo same");
-  //hs_data->Draw("histo same");
-  //TString ytitle = "Events/(";
-  //ytitle += (th->GetXaxis()->GetNbins());
-  //ytitle += ")";
+
+#ifdef showRescaledRunOneEEJJExcess
+  if(channel == Selector::EE) hs_ZZ->Draw("HIST same");
+#endif
+ 
   TString ytitle = "Events";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
@@ -421,7 +461,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
-  //hs_ttbar->Add(hs_ZZ);
   hs_ttbar->Add(hs_DY);
 
   ratio->Divide(hs_ttbar);
@@ -459,9 +498,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   fn += "_withRatio";
 #endif
 
+#ifdef showRescaledRunOneEEJJExcess
+  if(channel == Selector::EE) fn += "_withRescaledRunOneEEJJExcess";
+#endif
   
   //plots with fixed bin widths
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
+  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
+  if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
@@ -478,7 +521,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  mycanvas->Print((fn+"_log.C").Data());
   }
 
-  //plots with variable bin widths (thus the bin contents are divided by the bin widths)
+  //plots with variable bin widths (the bin contents are divided by the bin widths)
   if(fname.EqualTo("Mlljj_2012Bins")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
