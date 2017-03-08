@@ -473,24 +473,22 @@ class limit2d:
 				mnr = self.exclusion.GetYaxis().GetBinCenter(iy)
 				mwrTwo = self.exclusionTwo.GetXaxis().GetBinCenter(ix)
 				mnrTwo = self.exclusionTwo.GetYaxis().GetBinCenter(iy)
-				if mnr > mwr:
-					self.exclusion.SetBinContent(ix, iy, 2);
-					self.exclusionExpMinusOneSigma.SetBinContent(ix, iy, 2);
-					self.exclusionExpPlusOneSigma.SetBinContent(ix, iy, 2);
-				elif mnr == mwr:
-					self.exclusion.SetBinContent(ix, iy, 1.5);
-					self.exclusionExpMinusOneSigma.SetBinContent(ix, iy, 1.5);
-					self.exclusionExpPlusOneSigma.SetBinContent(ix, iy, 1.5);
-				if mnrTwo > mwrTwo:
-					self.exclusionTwo.SetBinContent(ix, iy, 2);
-				elif mnrTwo == mwrTwo:
-					self.exclusionTwo.SetBinContent(ix, iy, 1.5);
+				if mnr > mwr:  #default bin content is 2
+					self.exclusion.SetBinContent(ix, iy, 3);
+					self.exclusionExpMinusOneSigma.SetBinContent(ix, iy, 3);
+					self.exclusionExpPlusOneSigma.SetBinContent(ix, iy, 3);
+				elif mnr == mwr:  #default bin content is 1.5
+					self.exclusion.SetBinContent(ix, iy, 3);
+					self.exclusionExpMinusOneSigma.SetBinContent(ix, iy, 3);
+					self.exclusionExpPlusOneSigma.SetBinContent(ix, iy, 3);
+				if mnrTwo > mwrTwo:  #default bin content is 2
+					self.exclusionTwo.SetBinContent(ix, iy, 3);
+				elif mnrTwo == mwrTwo:  #default bin content is 1.5
+					self.exclusionTwo.SetBinContent(ix, iy, 3);
 
 		
 		graphs = contourFromTH2(self.exclusion, 1)
 		graphsTwo = contourFromTH2(self.exclusionTwo, 1)
-		graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
-		graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
 		c1 = ROOT.TCanvas("c1","c1",800,800);
 
 		#self.draw(self.exclusion,    filename + "_exclusion", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, cont = graphs[0], isObserved=False)
@@ -500,9 +498,15 @@ class limit2d:
 	
 		#draw several exclusion limits overlaid on each other
 		#the first histo arg must be the expected curve, and the second must be the observed limit curve (exclusionTwo)
-		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
 		
-	
+		#with +/- 1sigma expected limit curves
+		#graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
+		#graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
+		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
+		
+		#without +/- 1sigma expected limit curves
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
+		
 	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
 		#self.draw(self.effratio,     filename + "_effratio",  (0   , 2), "efficiency #times acceptance (W_{R}, N_{l}) / (W_{R}, W_{R}/2) ",                         logz=False )
