@@ -93,9 +93,10 @@ plotters = {"ee":plt.limit1d("e",.001), "mumu":plt.limit1d("#mu",.001)}
 plotters["ee"].addTheory(xs.WR_jj["ee"])
 plotters["mumu"].addTheory(xs.WR_jj["mumu"])
 
+#set x and y ranges in 2D plots such that each bin is 200 GeV wide in x, and 100 GeV tall in y
 plotters2d = {
-		"ee"  : plt.limit2d("data/offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt",    "ee2d" , "ee",     (17, 700, 4100), (40, 50, 4050), xs=.001),
-		"mumu": plt.limit2d("data/offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt", "mumu2d", "#mu#mu", (17, 700, 4100), (40, 50, 4050), xs=.001)
+		"ee"  : plt.limit2d("data/offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt",    "ee2d" , "ee",     (15, 700, 3700), (29, 50, 2950), xs=.001),
+		"mumu": plt.limit2d("data/offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt", "mumu2d", "#mu#mu", (15, 700, 3700), (29, 50, 2950), xs=.001)
 		}
 
 plotters2d["ee"].addTheory(xs.WR_jj_offdiagonal["ee"])

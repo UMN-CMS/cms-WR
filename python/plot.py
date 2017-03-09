@@ -299,18 +299,36 @@ class limit2d:
 		hTwo.GetZaxis().SetTitleOffset(1.7)
 
 		#set the legend box size
+		#yw of 550 worked well when showing expected limit, observed limit, and expected +/- 1 sigma limit curves
 		x1 = 900
-		y1 = 3400
+		y1 = 2600
 		xw = 1200
-		yw = 550
+		yw = 200
 
 		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
 	
 		if contOne:
+			#draw kinematic region which cannot be probed, MNu > MWR, before any 2D limit curves
+			#these two arrays define the four points of an area which will be colored yellow
+			x = np.array([700,2950,700,700],dtype=float)   #original high value was 4050 when X and Y axes extended to 4.0 TeV
+			y = np.array([700,2950,2950,700],dtype=float)   #original high values were 4050 when X and Y axes extended to 4.0 TeV
+			#this is the area which cannot be excluded by this analysis, where MNu is greater than MWR
+			area = ROOT.TPolyLine(4,x,y)
+			#area.SetFillColorAlpha(ROOT.kYellow, 0.99)
+			area.SetFillColor(ROOT.kYellow)
+			
+			area.SetLineWidth(0)
+			area.Draw("F")
+			latex2 = ROOT.TLatex()
+			latex2.SetTextSize(0.045)  #original value was 0.05 when X and Y axes extended to 4.0 TeV
+			#specify the lower left corner in x, y coordinates
+			latex2.DrawLatex(1000,2400, "M_{N_{l}} > M_{W_{R}} ")
+			
+			#update style of expected limit line, then draw it
 			contOne.SetLineStyle(7)  #small dashes
 			contOne.SetLineColor(ROOT.kRed)
 			contOne.SetLineWidth(3)
-			contOne.Draw("L")
+			contOne.Draw("Lsame")
 
 			leg.AddEntry(contOne, "Expected","l")
 			
@@ -338,18 +356,6 @@ class limit2d:
 
 		#draw contTwo, the observed limit contour, last
 		if contTwo:
-			x = np.array([700,4050,700,700],dtype=float)
-			y = np.array([700,4050,4050,700],dtype=float)
-			#this is the area which cannot be excluded by this analysis, where MNu is greater than MWR
-			area = ROOT.TPolyLine(4,x,y)
-			area.SetFillColorAlpha(ROOT.kYellow, 0.99)
-			
-			area.SetLineWidth(0)
-			area.Draw("Fsame")
-			latex2 = ROOT.TLatex()
-			latex2.SetTextSize(0.05)
-			#specify the lower left corner in x, y coordinates
-			latex2.DrawLatex(1300,3100, "M_{N_{l}} > M_{W_{R}} ")
 			contTwo.SetLineStyle(1)  #solid
 			contTwo.SetLineColor(ROOT.kBlue)
 			contTwo.SetLineWidth(3)
