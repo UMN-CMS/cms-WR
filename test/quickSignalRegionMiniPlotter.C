@@ -1,6 +1,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
+#include "TPaveText.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TCanvas.h"
@@ -21,10 +22,6 @@
 #define unblindedData
 #define plotRatio
 #define showRescaledRunOneEEJJExcess
-
-//if showRescaledRunOneEEJJExcess is defined, this Float_t will be the new integral of
-//the WRtoEEJJ signal with MWR 2.0 TeV and MNu 1.0 TeV
-Float_t desiredRunOneEEJJExcessNorm = 10.0;
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -202,15 +199,6 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  scaleFactor = (channel == Selector::MuMu) ? 0.6563 : 0.4194;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
   }
 
-#ifdef showRescaledRunOneEEJJExcess
-  //this scale factor is set such that the integral of the MLLJJ distribution with linear binning
-  //for WRtoEEJJ (MWR 2.0 TeV, MNu 1.0 TeV) is equal to 10.0
-  //if a different WR mass point is used, reset scaleFactor to 1.0, find the integral of the MLLJJ distribution
-  //with linear binning, and change the denominator value of scaleFactor to match the new MLLJJ distribution integral
-  if( chainTitle.EqualTo("Other") && channel == Selector::EE ) scaleFactor = desiredRunOneEEJJExcessNorm/58.5372;
-  //if( chainTitle.EqualTo("Other") && channel == Selector::EE ) scaleFactor = 1.0;
-#endif
-
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
@@ -260,6 +248,84 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   
   }
 
+#ifdef showRescaledRunOneEEJJExcess
+  if( chainTitle.EqualTo("Other") && channel == Selector::EE ){
+	  //first reset the bin contents of all Meejj plots (fixed bin width which are wide or narrow, or variable bin width) to zero
+	  Int_t numWideFixedBins = h_WR_mass->GetNbinsX();
+	  for(Int_t n=1; n<=numWideFixedBins; n++){h_WR_mass->SetBinContent(n,0.0);}
+	  Int_t numThinFixedBins = h_WR_mass_thinBins->GetNbinsX();
+	  for(Int_t n=1; n<=numThinFixedBins; n++){h_WR_mass_thinBins->SetBinContent(n,0.0);}
+	  Int_t numVarWidthBins = h_WR_mass_2012bins->GetNbinsX();
+	  for(Int_t n=1; n<=numVarWidthBins; n++){h_WR_mass_2012bins->SetBinContent(n,0.0);}
+	  
+	  //then create a Gaussian (via TF1) with mean 2000, integral equal to 10.0, and 3sigma = 200
+	  //the integral of this Gaussian over different ranges will be used to update the bin contents of each Meejj histogram
+	  Float_t minX = 1800.;
+	  Float_t maxDomain = 400.;
+	  Float_t desiredTotalIntegral = 10.;	//this is equal to the integral of the gaussian TF1 over its entire domain
+	  Float_t desiredSigma = (maxDomain/2)/3.;
+	  Float_t gausRenorm = sqrt(2*3.14159);
+	  TF1 *excess = new TF1("excess","gaus(0)",minX,minX+maxDomain);	//a Gaussian has 3 variable parameters, and the first one (norm) will be labeled parameter 0
+	  excess->SetParameter(0, desiredTotalIntegral/(gausRenorm*desiredSigma));	//set normalization.
+	  excess->SetParameter(1, minX + (maxDomain/2));	//set mean of Gaussian
+	  excess->SetParameter(2, desiredSigma);	//set std deviation of Gaussian
+
+	  ///just to show the shape of the Gaussian
+	  TCanvas * cGaus = new TCanvas("cGaus","cGaus", 800, 800);
+	  cGaus->cd();
+	  //make a text box which shows the Gaussian parameters
+	  TPaveText *fitBox = new TPaveText(2075,0.05,2200,0.06);
+	  fitBox->SetFillColor(kWhite);
+	  fitBox->AddText("mean = " + TString( (to_string(excess->GetParameter(1))).substr(0,6) ) );
+	  fitBox->AddText(" ");
+	  fitBox->AddText("#sigma = " + TString( (to_string(excess->GetParameter(2))).substr(0,4) ) );
+	  fitBox->AddText(" ");
+	  fitBox->AddText("#int gaus = " + TString( (to_string(excess->Integral(1800.,2200.))).substr(0,4) ) );
+	  excess->GetXaxis()->SetTitle("M_{EEJJ} [GeV]");
+	  excess->GetYaxis()->SetTitle("Events");
+	  excess->GetYaxis()->SetTitleOffset(1.45);
+	  excess->SetTitle("");
+	  excess->Draw();
+	  fitBox->Draw("same");
+	  TString gausFileName = "gaussianEmulationOfRunOneExcess";
+	  cGaus->Print((gausFileName+".png").Data());
+	  cGaus->Print((gausFileName+".pdf").Data());
+	  cGaus->Print((gausFileName+".C").Data());
+
+	  //now integrate the Gaussian over the bin ranges, and update the histogram entries accordingly
+	  //for all three histograms, loop over all bins and update the bin contents for bins with lower edge
+	  //greater than 1799 GeV, and less than 2199 GeV
+	  //wide, fixed width bins
+	  for(Int_t n=1; n<=numWideFixedBins; n++){
+		  Double_t binLowEdge = h_WR_mass->GetBinLowEdge(n);
+		  if(binLowEdge > 1799. && binLowEdge < 2199.){
+		  Double_t binWidth = h_WR_mass->GetBinWidth(n);
+		  h_WR_mass->SetBinContent(n, excess->Integral(binLowEdge, binLowEdge+binWidth));
+		  }//end bin selection
+	  }//end loop over all bins
+
+	  //wide, variable width bins
+	  for(Int_t n=1; n<=numVarWidthBins; n++){
+		  Double_t binLowEdge = h_WR_mass_2012bins->GetBinLowEdge(n);
+		  if(binLowEdge > 1799. && binLowEdge < 2199.){
+		  Double_t binWidth = h_WR_mass_2012bins->GetBinWidth(n);
+		  h_WR_mass_2012bins->SetBinContent(n, excess->Integral(binLowEdge, binLowEdge+binWidth));
+		  }//end bin selection
+	  }//end loop over all bins
+	  
+	  //thin, fixed width bins
+	  for(Int_t n=1; n<=numThinFixedBins; n++){
+		  Double_t binLowEdge = h_WR_mass_thinBins->GetBinLowEdge(n);
+		  if(binLowEdge > 1799. && binLowEdge < 2199.){
+		  Double_t binWidth = h_WR_mass_thinBins->GetBinWidth(n);
+		  h_WR_mass_thinBins->SetBinContent(n, excess->Integral(binLowEdge, binLowEdge+binWidth));
+		  }//end bin selection
+	  }//end loop over all bins
+	  
+  }//end selection of Other chain and electron channel
+#endif
+
+
   hs->push_back(h_lepton_pt0);
   hs->push_back(h_lepton_pt1);
   hs->push_back(h_jet_pt0);
@@ -282,14 +348,6 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_Nu_mass_leadLept);
   hs->push_back(h_Nu_mass_subleadLept);
   hs->push_back(h_WR_mass_thinBins);
-
-#ifdef showRescaledRunOneEEJJExcess
-  if( chainTitle.EqualTo("Other") && channel == Selector::EE ){
-	  Int_t lowBin = h_WR_mass->FindBin(1800.);
-	  Int_t highBin = h_WR_mass->FindBin(2200.);
-	  std::cout <<"the MLLJJ integral between 1.8 and 2.2 TeV for WRtoEEJJ signal with MWR 2.0 TeV and MNu 1.0 TeV = " << h_WR_mass->Integral(lowBin, highBin) << std::endl;
-  }
-#endif
 
   //rescale bin contents by bin width, and add overflow evts to last bin in two WR mass histos with variable bin widths
   //also add overflow events to last bin in fixed-bin-width MLLJJ and M_LJJ plots
@@ -338,18 +396,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
-
-  //"Other" was formerly used to represent topW background MC
-  //"Other" was removed once emu data was used to estimate TTBar and topW
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
   leg->AddEntry( hs_ttbar, "TT+TopW Data Driven" ) ;
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  //leg->AddEntry( hs_ZZ, "Other" ) ;
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE){
-	  leg->AddEntry( hs_ZZ, "RunI Excess");
-	  leg->AddEntry( (TObject*)0, "M_{WR}=2.0 TeV M_{Nu}=1.0 TeV","");	//R is illegible on drawn legend if it is a subscript of W
+	  leg->AddEntry( hs_ZZ, "RunI Excess+Backgrounds");
+	  //leg->AddEntry( (TObject*)0, "M_{WR}=2.0 TeV M_{Nu}=1.0 TeV","");	//R is illegible on drawn legend if it is a subscript of W
   }
 #endif
 
@@ -381,13 +435,17 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
   th->Add(hs_WJets);
-  //th->Add(hs_ZZ);
   th->Add(hs_DY);
   th->Add(hs_ttbar);
   hs_data->SetMarkerStyle(20);
   hs_data->SetMarkerSize(1);
   hs_data->SetMarkerColor(kBlack);
 #ifdef showRescaledRunOneEEJJExcess
+  //add all of the expected backgrounds to the Run1 excess which has been rescaled based on integrated lumi and WR cross sxn
+  hs_ZZ->Add(hs_DY);
+  hs_ZZ->Add(hs_ttbar);
+  hs_ZZ->Add(hs_WJets);
+  hs_ZZ->Add(hs_WZ);
   hs_ZZ->SetLineColor(kRed);
   hs_ZZ->SetLineWidth(3);
   hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
