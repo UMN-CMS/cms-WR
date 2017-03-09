@@ -274,7 +274,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  TCanvas * cGaus = new TCanvas("cGaus","cGaus", 800, 800);
 	  cGaus->cd();
 	  //make a text box which shows the Gaussian parameters
-	  TPaveText *fitBox = new TPaveText(2075,0.05,2200,0.06);
+	  TPaveText *fitBox = new TPaveText(2075,0.04,2200,0.06);
 	  fitBox->SetFillColor(kWhite);
 	  fitBox->AddText("mean = " + TString( (to_string(excess->GetParameter(1))).substr(0,6) ) );
 	  fitBox->AddText(" ");
