@@ -252,11 +252,11 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   if( chainTitle.EqualTo("Other") && channel == Selector::EE ){
 	  //first reset the bin contents of all Meejj plots (fixed bin width which are wide or narrow, or variable bin width) to zero
 	  Int_t numWideFixedBins = h_WR_mass->GetNbinsX();
-	  for(Int_t n=1; n<=numWideFixedBins; n++){h_WR_mass->SetBinContent(n,0.0);}
+	  for(Int_t n=1; n<=numWideFixedBins+1; n++){h_WR_mass->SetBinContent(n,0.0);}
 	  Int_t numThinFixedBins = h_WR_mass_thinBins->GetNbinsX();
-	  for(Int_t n=1; n<=numThinFixedBins; n++){h_WR_mass_thinBins->SetBinContent(n,0.0);}
+	  for(Int_t n=1; n<=numThinFixedBins+1; n++){h_WR_mass_thinBins->SetBinContent(n,0.0);}
 	  Int_t numVarWidthBins = h_WR_mass_2012bins->GetNbinsX();
-	  for(Int_t n=1; n<=numVarWidthBins; n++){h_WR_mass_2012bins->SetBinContent(n,0.0);}
+	  for(Int_t n=1; n<=numVarWidthBins+1; n++){h_WR_mass_2012bins->SetBinContent(n,0.0);}
 	  
 	  //then create a Gaussian (via TF1) with mean 2000, integral equal to 10.0, and 3sigma = 200
 	  //the integral of this Gaussian over different ranges will be used to update the bin contents of each Meejj histogram
