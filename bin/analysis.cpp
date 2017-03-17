@@ -494,36 +494,40 @@ int main(int ac, char* av[])
 						(*myEvent.electron_HltSF_error).push_back(0.);
 					}//end if(isData)
 					else {
-						if(madInclDatasetName.Contains(myEvent.datasetName) ){
+						//apply the DYMadIncl SF to DYMadIncl and HT binned samples
+						if(madInclDatasetName.Contains(myEvent.datasetName) || madHt100to200Name.Contains(myEvent.datasetName)  || madHt200to400Name.Contains(myEvent.datasetName)  || madHt400to600Name.Contains(myEvent.datasetName)  || madHt600toInfName.Contains(myEvent.datasetName) ){
 							(*myEvent.electron_IDSF_central).push_back(0.98928);
 							(*myEvent.electron_IDSF_error).push_back(0.001685);
 							(*myEvent.electron_RecoSF_central).push_back(0.98236);
 							(*myEvent.electron_RecoSF_error).push_back(0.001686);
 						}
-						if(madHt100to200Name.Contains(myEvent.datasetName) ){
-							(*myEvent.electron_IDSF_central).push_back(1.0032);
-							(*myEvent.electron_IDSF_error).push_back(0.0034);
-							(*myEvent.electron_RecoSF_central).push_back(0.9938);
-							(*myEvent.electron_RecoSF_error).push_back(0.0036);
-						}
-						if(madHt200to400Name.Contains(myEvent.datasetName)){
-							(*myEvent.electron_IDSF_central).push_back(1.0198);
-							(*myEvent.electron_IDSF_error).push_back(0.0049);
-							(*myEvent.electron_RecoSF_central).push_back(0.9988);
-							(*myEvent.electron_RecoSF_error).push_back(0.0054);
-						}
-						if(madHt400to600Name.Contains(myEvent.datasetName)){
-							(*myEvent.electron_IDSF_central).push_back(1.04608);
-							(*myEvent.electron_IDSF_error).push_back(0.00446);
-							(*myEvent.electron_RecoSF_central).push_back(1.00214);
-							(*myEvent.electron_RecoSF_error).push_back(0.00514);
-						}
-						if(madHt600toInfName.Contains(myEvent.datasetName)){
-							(*myEvent.electron_IDSF_central).push_back(1.09028);
-							(*myEvent.electron_IDSF_error).push_back(0.00470);
-							(*myEvent.electron_RecoSF_central).push_back(1.00726);
-							(*myEvent.electron_RecoSF_error).push_back(0.00542);
-						}
+						//if(madHt100to200Name.Contains(myEvent.datasetName) ){
+						//	(*myEvent.electron_IDSF_central).push_back(1.0032);
+						//	(*myEvent.electron_IDSF_error).push_back(0.0034);
+						//	(*myEvent.electron_RecoSF_central).push_back(0.9938);
+						//	(*myEvent.electron_RecoSF_error).push_back(0.0036);
+						//}
+						//if(madHt200to400Name.Contains(myEvent.datasetName)){
+						//	(*myEvent.electron_IDSF_central).push_back(1.0198);
+						//	(*myEvent.electron_IDSF_error).push_back(0.0049);
+						//	(*myEvent.electron_RecoSF_central).push_back(0.9988);
+						//	(*myEvent.electron_RecoSF_error).push_back(0.0054);
+						//}
+						//if(madHt400to600Name.Contains(myEvent.datasetName)){
+						//	(*myEvent.electron_IDSF_central).push_back(1.04608);
+						//	(*myEvent.electron_IDSF_error).push_back(0.00446);
+						//	(*myEvent.electron_RecoSF_central).push_back(1.00214);
+						//	(*myEvent.electron_RecoSF_error).push_back(0.00514);
+						//}
+						//if(madHt600toInfName.Contains(myEvent.datasetName)){
+						//	(*myEvent.electron_IDSF_central).push_back(1.09028);
+						//	(*myEvent.electron_IDSF_error).push_back(0.00470);
+						//	(*myEvent.electron_RecoSF_central).push_back(1.00726);
+						//	(*myEvent.electron_RecoSF_error).push_back(0.00542);
+						//}
+						
+						
+						//for AMC and Powheg
 						if(!madInclDatasetName.Contains(myEvent.datasetName) && !madHt100to200Name.Contains(myEvent.datasetName) && !madHt200to400Name.Contains(myEvent.datasetName) && !madHt400to600Name.Contains(myEvent.datasetName) && !madHt600toInfName.Contains(myEvent.datasetName) ){
 							(*myEvent.electron_IDSF_central).push_back(0.990493);
 							(*myEvent.electron_IDSF_error).push_back(0.001685);
