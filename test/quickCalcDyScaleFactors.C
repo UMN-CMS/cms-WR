@@ -33,6 +33,7 @@
 
 #define useDYMAD
 //#define doReweight
+//#define includeOtherBkgnds
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -86,17 +87,52 @@ void quickCalculateDyScaleFactors()
 
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYMadInclEE->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
 	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
+#ifdef includeOtherBkgnds
+	//add other SM backgrounds to TChains
+	chain_DYPowhegEE->Add(dir+"selected_tree_TT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYPowhegEE->Add(dir+"selected_tree_W_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYPowhegEE->Add(dir+"selected_tree_WZ_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYPowhegEE->Add(dir+"selected_tree_ZZ_dytagandprobeEE"+mcFileTag+".root");
+
+	chain_DYMadInclEE->Add(dir+"selected_tree_TT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_W_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_WZ_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_ZZ_dytagandprobeEE"+mcFileTag+".root");
+
+	chain_DYAmcInclEE->Add(dir+"selected_tree_TT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYAmcInclEE->Add(dir+"selected_tree_W_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYAmcInclEE->Add(dir+"selected_tree_WZ_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYAmcInclEE->Add(dir+"selected_tree_ZZ_dytagandprobeEE"+mcFileTag+".root");
+#endif
 	
 	//chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	
-	//temporary change just to extract SFs for DYMadInclAndHT EE
-	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
+	//temporary change to save disk space
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+#ifdef includeOtherBkgnds
+	//add other SM backgrounds to TChains
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_TT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_W_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_WZ_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_ZZ_dytagandprobeMuMu"+mcFileTag+".root");
+
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_TT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_W_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_WZ_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_ZZ_dytagandprobeMuMu"+mcFileTag+".root");
+
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_TT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_W_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_WZ_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_ZZ_dytagandprobeMuMu"+mcFileTag+".root");
+#endif
 	chain_dataMuMu->Add(dir+"selected_tree_data_dytagandprobeMuMu"+dataFileTag+".root");
 
 	Selector myEvent_DYPowhegEE;
@@ -470,15 +506,22 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-	if(fname.EqualTo("Mll") == true && channel=="EE") writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+#ifndef includeOtherBkgnds
+	if(fname.EqualTo("Mll") == true && channel == "MuMu" ) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+#endif
 
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
 	TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ;
 	//leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
 	//leg->AddEntry( hs_DYMadIncl, "DY MAD Incl" ) ;
-#ifdef useDYMAD	
+
+#ifndef includeOtherBkgnds
 	leg->AddEntry( hs_DYMadIncl, "DYMadHT+Incl" ) ;
+#endif
+
+#ifdef includeOtherBkgnds
+	leg->AddEntry( hs_DYMadIncl, "DYMadHT+Incl And Other Bkgnds" ) ;
 #endif
 
 #ifndef useDYMAD
@@ -553,9 +596,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(fname.EqualTo("Z_pt") ) hs_data->GetXaxis()->SetTitle("Z P_{T} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("Z P_{T} [GeV]");
 	
 	hs_data->Draw("ep");
-	//hs_DYPowheg->Draw("histo same");	//comment if only plotting AMC
 #ifdef useDYMAD	
-	hs_DYMadIncl->Draw("histo same");	//comment if only plotting AMC
+	hs_DYMadIncl->Draw("histo same");
 #endif
 
 #ifndef useDYMAD	
@@ -606,16 +648,6 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Mad->SetLabelSize(labelSize - 0.07, "y");
 	ratio_Mad->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
-
-	//loop over bins in Madgraph ratio plot shown in the variable bin width Z pT plot, and print the bin contents to stdout
-	/*
-	if(fname.EqualTo("Z_pt_variableBinning") == true){
-		Int_t nBins = ratio_Mad->GetNbinsX();
-		for(Int_t i=1; i<=nBins; i++){
-			std::cout<<"bin with lower edge " << ratio_Mad->GetBinLowEdge(i) << " has data/MC =\t" << ratio_Mad->GetBinContent(i) << std::endl;
-		}//end loop over bins
-	}//end if plot is Z pT with variable bin widths
-	*/
 
 	if(fname.EqualTo("Mlljj") == true){
 		Int_t nBins = ratio_Mad->GetNbinsX();
@@ -678,10 +710,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	cuts += "_mcIsMllReweighted";
 #endif
 
+#ifdef  includeOtherBkgnds
+	cuts += "_includeTopDibosonWJetBkgnds";
+
+#endif
+
 	TString fn = fname + cuts;
 
 	/**/
-	if(fname.EqualTo("Mll") == true || fname.EqualTo("Mlljj") == true ){
+	if(fname.EqualTo("Mll") == true){
 		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
 		/*
 		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
