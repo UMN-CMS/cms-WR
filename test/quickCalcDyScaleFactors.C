@@ -33,7 +33,7 @@
 
 #define useDYMAD
 //#define doReweight
-//#define includeOtherBkgnds
+#define includeOtherBkgnds
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -46,8 +46,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 40;
 Float_t idealSubleadJetPt = 40;
-Float_t leadJetPtCut = -10;
-Float_t subLeadJetPtCut = -10;
+Float_t leadJetPtCut = 40;
+Float_t subLeadJetPtCut = 40;
 //Float_t leadJetPtCut = LEADJETPT;
 //Float_t subLeadJetPtCut = SUBJETPT;
 //Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
@@ -647,14 +647,6 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Mad->SetLabelSize(labelSize - 0.07, "y");
 	ratio_Mad->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Mad->GetYaxis()->SetNdivisions(505);
-
-	if(fname.EqualTo("Mlljj") == true){
-		Int_t nBins = ratio_Mad->GetNbinsX();
-		for(Int_t i=1; i<=nBins; i++){
-			std::cout<<"MLLJJ bin with lower edge " << ratio_Mad->GetBinLowEdge(i) << " has data/MC =\t" << ratio_Mad->GetBinContent(i) << std::endl;
-		}//end loop over bins
-	}//end if plot is Z pT with variable bin widths
-
 
 	ratio_Amc->Divide(hs_DYAmcIncl);
 	ratio_Amc->SetMarkerStyle(22);
