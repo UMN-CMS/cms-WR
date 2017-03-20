@@ -426,7 +426,6 @@ int main(int ac, char* av[])
 
 
 		std::vector<std::string> List_Systematics;
-		//List_Systematics.push_back("smear");
 		std::string word;
 		std::ifstream Syst_File;
 
@@ -527,7 +526,7 @@ int main(int ac, char* av[])
 						//}
 						
 						
-						//for AMC and Powheg
+						//for AMC, Powheg and other electron channel datasets
 						if(!madInclDatasetName.Contains(myEvent.datasetName) && !madHt100to200Name.Contains(myEvent.datasetName) && !madHt200to400Name.Contains(myEvent.datasetName) && !madHt400to600Name.Contains(myEvent.datasetName) && !madHt600toInfName.Contains(myEvent.datasetName) ){
 							(*myEvent.electron_IDSF_central).push_back(0.990493);
 							(*myEvent.electron_IDSF_error).push_back(0.001685);
@@ -648,7 +647,7 @@ int main(int ac, char* av[])
 //#endif
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
-				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
+				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData, loop_one);
 
 
 				unsigned int nEle = myEventIt.electrons_p4->size();

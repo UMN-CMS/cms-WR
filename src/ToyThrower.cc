@@ -17,7 +17,7 @@
 #include <iostream>
 #endif
 
-void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<std::string> list, bool isData)
+void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[], int random_seed, std::vector<std::string> list, bool isData, bool firstLoop)
 {
 
 	float qter = 1.0;
@@ -83,7 +83,7 @@ void ToyThrower(miniTreeEvent *myEvent,  float rand_smear[], float rand_up_down[
 
 		if(Flag_Smear_Jet_Scale){
 			//Smear_Jet_Scale is a random number pulled from a standard normal distribution with mean 0.0 and variance 1.0
-			if(isData){
+			if(isData || firstLoop){
 				//smear resolution of jets in data based on jet energy correction uncertainty
 				(*(myEvent->jets_p4))[Iterator] = (1 + (Smear_Jet_Scale) * (*(myEvent->jec_uncertainty))[Iterator]) * (*(myEvent->jets_p4))[Iterator];
 			}
