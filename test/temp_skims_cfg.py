@@ -27,7 +27,7 @@ options.register('GT',
 
 #default options
 options.maxEvents = -1
-options.files='INPTFILE'
+options.files='root://xrootd-cms.infn.it/INPTFILE'
 options.output = "TAGNAME_skimPartNNN.root"
 #
 
