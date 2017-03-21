@@ -21,7 +21,8 @@
 
 #define unblindedData
 #define plotRatio
-#define showRescaledRunOneEEJJExcess
+//#define showRescaledRunOneEEJJExcess
+#define useHtBinnedWJets
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -37,7 +38,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -58,9 +59,20 @@ void quickSignalRegionMiniPlotter(){
 	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+#ifndef useHtBinnedWJets
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
+#endif
+#ifdef useHtBinnedWJets
+	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_eeEE.root");
+#endif
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+
+	//use the ZZ chain to show the WRtoEEJJ signal rescaled to match the normalization of the expected RunI EEJJ excess in 2015 operating conditions
+	//show nothing if showRescaledRunOneEEJJExcess is not defined
+#ifdef showRescaledRunOneEEJJExcess
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2000_1000_signal_eeEE.root");
+#endif
 
 #ifndef showRescaledRunOneEEJJExcess
 	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
@@ -76,19 +88,20 @@ void quickSignalRegionMiniPlotter(){
 	data = chain_data->Add(localDir+"selected_tree_data_signal_eeEE.root");
 #endif
 
-	//use the ZZ chain to show the WRtoEEJJ signal rescaled to match the normalization of the expected RunI EEJJ excess in 2015 operating conditions
-	//show nothing if showRescaledRunOneEEJJExcess is not defined
-#ifdef showRescaledRunOneEEJJExcess
-	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2000_1000_signal_eeEE.root");
-#endif
-
 	break;
   case Selector::MuMu:
 
 	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_mumuMuMu_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+
+#ifndef useHtBinnedWJets
 	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
+#endif
+#ifdef useHtBinnedWJets
+	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_mumuMuMu.root");
+#endif
+
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
     zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_mumuMuMu.root");
@@ -398,7 +411,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
   leg->AddEntry( hs_ttbar, "TT+TopW Data Driven" ) ;
+
+#ifndef useHtBinnedWJets
   leg->AddEntry( hs_WJets, "WJets" ) ; 
+#endif
+#ifdef useHtBinnedWJets
+  leg->AddEntry( hs_WJets, "WJets H_{T} binned" ) ; 
+#endif
+
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE){
@@ -554,6 +574,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
 #ifdef plotRatio
   fn += "_withRatio";
+#endif
+
+#ifdef useHtBinnedWJets
+  fn += "_withHTBinnedWJets"; 
 #endif
 
 #ifdef showRescaledRunOneEEJJExcess

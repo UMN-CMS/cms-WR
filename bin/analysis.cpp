@@ -59,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYMadInclAndHT", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYMadInclAndHT", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "WInclAndHT", "signal"
 	}
 	)
 	{
@@ -123,13 +123,22 @@ public:
 				TTchainNames.push_back("DYToEE_powheg");
 			} 
 		} else if(mode == "W") {
-			TTchainNames.push_back("WJetsLNu");
+			TTchainNames.push_back("WJetsLNu");	//no GEN HT cut applied to this dataset. make sure src/configReader.cc is configured properly
 		} else if(mode == "singleTop") {
 			TTchainNames.push_back("singleTop");
 			TTchainNames.push_back("singleAntiTop");
 		} else if(mode == "topW") {
 			TTchainNames.push_back("topW");
 			TTchainNames.push_back("antiTopW");
+		} else if(mode == "WInclAndHT") {
+			TTchainNames.push_back("WJetsLNu");	//this WJetsLNu dataset has been cut such that it has GEN HT below 100 GeV. make sure src/configReader.cc is configured properly
+			TTchainNames.push_back("WJetsLNu_ht100to200");
+			TTchainNames.push_back("WJetsLNu_ht200to400");
+			TTchainNames.push_back("WJetsLNu_ht400to600");
+			TTchainNames.push_back("WJetsLNu_ht600to800");
+			TTchainNames.push_back("WJetsLNu_ht800to1200");
+			TTchainNames.push_back("WJetsLNu_ht1200to2500");
+			TTchainNames.push_back("WJetsLNu_ht2500toInf");
 		} else if(mode == "WW") {
 			TTchainNames.push_back("WW");
 		} else if(mode == "QCD") {
