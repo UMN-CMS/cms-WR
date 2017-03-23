@@ -70,10 +70,19 @@ wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
                                    )
 
 #wRHEEPElectron = 
+#in the QCD from data minitrees, indicate for each electron whether or not it passed HEEP ID
+#in the QCD from data minitrees, apply a different set of ID requirements (HEEP ID v5.1), and modify these ID requirements by hand to match the loose "fake rate" ele ID defined in the Zprime to diele 2015 analysis note
 wRHEEPElectron = cms.EDProducer('HEEPIDSelector',
                                 electrons= cms.InputTag("slimmedElectrons"),
                                 eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
                                 )
+
+#HEEP ID v6.0
+#wRHEEPElectron = cms.EDProducer('HEEPIDSelector',
+#                                electrons= cms.InputTag("slimmedElectrons"),
+#                                eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
+#                                )
+
 
 #### this is to change the type of the collection for the analyzer
 wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
@@ -82,6 +91,8 @@ wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
 		)
 
 
+#DEFAULT fill wRminiTreeElectron with objects after applying HEEP ID
+#the requirement that two objects pass HEEP ID is applied later, when a di-electron object must be found with mass greater than 0 GeV
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
                                     src = cms.InputTag("wRHEEPElectron"), 
                                     cut = cms.string(''),

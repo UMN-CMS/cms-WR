@@ -12,10 +12,18 @@ process.load("ExoAnalysis.cmsWR.heepSelector_cfi")
 then run the module named egmGsfElectronIDSequence before running HEEPIDSequence in the path
 """
 
+#default HEEP v6.0
 def loadHEEPIDSelector(process):
 	dataFormat = DataFormat.MiniAOD
 	switchOnVIDElectronIdProducer(process, dataFormat)
 	setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff',setupVIDElectronSelection)
+
+#this doesn't work
+##HEEP v5.1
+#def loadHEEPIDSelector(process):
+#	dataFormat = DataFormat.MiniAOD
+#	switchOnVIDElectronIdProducer(process, dataFormat)
+#	setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff',setupVIDElectronSelection)
 
 
 

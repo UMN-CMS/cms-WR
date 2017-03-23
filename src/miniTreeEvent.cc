@@ -7,6 +7,7 @@ miniTreeEvent::miniTreeEvent():
 	electron_smearing(new std::vector<Float_t>),
 	electron_r9(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
+	electron_passedHEEP(new std::vector<Int_t>),
 	electron_IDSF_central(new std::vector<Float_t>),
 	electron_IDSF_error(new std::vector<Float_t>),
 	electron_RecoSF_central(new std::vector<Float_t>),
@@ -35,6 +36,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	electron_smearing(new std::vector<Float_t>),
 	electron_r9(new std::vector<Float_t>),
 	electron_charge(new std::vector<Int_t>),
+	electron_passedHEEP(new std::vector<Int_t>),
 	electron_IDSF_central(new std::vector<Float_t>),
 	electron_IDSF_error(new std::vector<Float_t>),
 	electron_RecoSF_central(new std::vector<Float_t>),
@@ -62,6 +64,7 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*electron_smearing = *(otherEvent.electron_smearing);
 	*electron_r9 = *(otherEvent.electron_r9);
 	*electron_charge = *(otherEvent.electron_charge);
+	*electron_passedHEEP = *(otherEvent.electron_passedHEEP);
 	*electron_IDSF_central = *(otherEvent.electron_IDSF_central);
 	*electron_IDSF_error = *(otherEvent.electron_IDSF_error);
 	*electron_RecoSF_central = *(otherEvent.electron_RecoSF_central);
@@ -102,6 +105,7 @@ void miniTreeEvent::clear()
 	electron_smearing->clear();
 	electron_r9->clear();
 	electron_charge->clear();
+	electron_passedHEEP->clear();
 	electron_IDSF_central->clear();
 	electron_IDSF_error->clear();
 	electron_RecoSF_central->clear();
@@ -128,6 +132,7 @@ miniTreeEvent::~miniTreeEvent()
 	delete electron_smearing;
 	delete electron_r9;
 	delete electron_charge;
+	delete electron_passedHEEP;
 	delete electron_IDSF_central;
 	delete electron_IDSF_error;
 	delete electron_RecoSF_central;
@@ -162,6 +167,7 @@ void miniTreeEvent::SetBranches(TTree* tree)
 	tree->Branch("electron_smearing", electron_smearing);
 	tree->Branch("electron_r9", electron_r9);
 	tree->Branch("electron_charge", electron_charge);
+	tree->Branch("electron_passedHEEP", electron_passedHEEP);
 	tree->Branch("muon_charge", muon_charge);
 	tree->Branch("muon_IDSF_central", muon_IDSF_central);
 	tree->Branch("muon_IsoSF_central", muon_IsoSF_central);
@@ -188,6 +194,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	delete electron_smearing;
 	delete electron_r9;
 	delete electron_charge;
+	delete electron_passedHEEP;
 	delete muon_charge;
 	delete muon_IDSF_central;
 	delete muon_IsoSF_central;
@@ -206,6 +213,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	electron_smearing = 0;
 	electron_r9 = 0;
 	electron_charge = 0;
+	electron_passedHEEP = 0;
 	muon_charge = 0;
 	muon_IDSF_central = 0;
 	muon_IsoSF_central = 0;
@@ -227,6 +235,7 @@ void miniTreeEvent::SetBranchAddresses(TChain* tree)
 	tree->SetBranchAddress("electron_smearing", &electron_smearing);
 	tree->SetBranchAddress("electron_r9", &electron_r9);
 	tree->SetBranchAddress("electron_charge", &electron_charge);
+	tree->SetBranchAddress("electron_passedHEEP", &electron_passedHEEP);
 
 	tree->SetBranchAddress("muon_charge", &muon_charge);
 	tree->SetBranchAddress("muon_IDSF_central", &muon_IDSF_central);

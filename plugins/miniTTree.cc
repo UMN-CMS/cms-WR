@@ -39,6 +39,7 @@ private:
 	edm::EDGetToken evinfoToken_;
 	edm::EDGetToken lheEvInfoToken_;
 	//edm::EDGetToken lheRunInfoToken_;
+	edm::EDGetToken rhoToken_;
 
 
 	edm::EDGetToken  jec_unc_src;
@@ -64,6 +65,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
 	lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
 	//lheRunInfoToken_ ( consumes<LHERunInfoProduct>(edm::InputTag("externalLHEProducer"))),
+	rhoToken_ (consumes<double >(edm::InputTag("fixedGridRhoFastjetAll"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
@@ -86,7 +88,11 @@ miniTTree::beginRun(edm::Run const& iRun, edm::EventSetup const&)
 	//iRun.getByToken(lheRunInfoToken_ , lheRunInfo);
 	//int pdfidx = lheRunInfo->heprup().PDFSUP.first;
 	//std::cout<<"pdf id used to generate sample = " << pdfidx << std::endl;
+	
 
+
+	/*
+	//comment this out when processing collision data
 	edm::Handle<LHERunInfoProduct> run; 
 	typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
 
@@ -100,6 +106,7 @@ miniTTree::beginRun(edm::Run const& iRun, edm::EventSetup const&)
 			std::cout << lines.at(iLine);
 		}
 	}
+	*/
 
 
 }
@@ -134,6 +141,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	edm::Handle<GenEventInfoProduct> evinfo;
 	edm::Handle<edm::View<PileupSummaryInfo> > PU_Info;
 	edm::Handle<float > PU_Weights;
+	edm::Handle<double > rho;
 
 	edm::Handle<edm::View<reco::Vertex> > primary_vertex;
 	event.getByToken(primaryVertexToken_, primary_vertex);
@@ -173,6 +181,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	}
 
 
+	event.getByToken(rhoToken_, rho);
 	for (size_t i = 0; i < electrons->size(); ++i) {
 		const auto ele = electrons->ptrAt(i);
 		TLorentzVector p4;
@@ -182,6 +191,34 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		myEvent.electron_smearing->push_back(0.01);
 		myEvent.electron_charge->push_back(ele->charge());
 		myEvent.electron_r9->push_back(ele->full5x5_r9());
+		//determine if HEEP ID is passed
+		Int_t passedHeep = 0;	//change this to 1 only if all HEEP ID cuts are passed
+		if(std::fabs(ele->eta()) < 1.4222){ //barrel ele
+			if(ele->ecalDriven() && ele->full5x5_hcalOverEcal() < (0.05 + ( 1/((ele->pt())*(std::cosh(ele->eta())) ) ) ) ){
+				if(ele->full5x5_e1x5() > 0.83 || ele->full5x5_e2x5Max() > 0.94){
+					if(ele->dr03TkSumPt() < 5.0){
+						if( (ele->dr03EcalRecHitSumEt() + ele->dr03HcalDepth1TowerSumEt()) < (2+(0.03)*(ele->pt())+(*rho)*(0.28) ) ){
+							if(std::fabs(ele->deltaEtaSeedClusterTrackAtVtx()) < 0.004 && std::fabs(ele->deltaPhiSuperClusterTrackAtVtx()) < 0.06){
+								passedHeep = 1;
+							}//delta eta and delta phi cuts using track and SC seed
+
+						}//EM iso + had depth 1 iso
+
+					}//tracker iso
+
+				}//E1x5 or E2x5
+
+			}//ecalDriven, HoverE and sigmaIetaIeta cuts
+
+		}
+		else if(std::fabs(ele->eta()) > 1.566){
+			//endcap ele, outside EB EE dead zone
+
+
+		}
+		myEvent.electron_passedHEEP->push_back(passedHeep);
+
+
 	}
 
 	for (size_t i = 0; i < muons->size(); ++i) {

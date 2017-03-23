@@ -30,6 +30,8 @@ public:
 	std::vector<Float_t> * electron_smearing;
 	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
+	std::vector<Int_t> * electron_passedHEEP;	//1 if HEEP is passed, 0 if HEEP is not passed
+	
 
 	///none of these electron central values or errors are stored in the minitrees, so dont try to read them from minitrees
 	std::vector<Float_t> * electron_IDSF_central;

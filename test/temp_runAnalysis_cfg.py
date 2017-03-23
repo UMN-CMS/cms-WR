@@ -47,9 +47,10 @@ if(options.test==3):
     options.isMC=1
 elif(options.test==0):
 	#options.files=['root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunC_SHv12/MuEG_RunC_1_1_n0i.root']
+	options.files='INPTFILE'
 	options.maxEvents= -1 
 	options.isMC=0
-	options.datasetTag='reprocessMuEGData'
+	options.datasetTag='TAGNAME'
 elif(options.test==2):
 	#original options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
 	options.files='INPTFILE'
@@ -165,10 +166,15 @@ process.load('ExoAnalysis.cmsWR.dataMcAnalyzers_cfi')
 process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
+
+#standard producer and filter sequence for signal ee and mumu, flavoursideband, lowdileptonmasssideband, and dytagandprobe minitrees WITH GEN HT filter. only applicable to MC
 #process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence * process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter)
+
+#standard producer and filter sequence for signal ee and mumu, flavoursideband, lowdileptonmasssideband, and dytagandprobe minitrees WITH NO GEN HT filter
 process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
 
 
+#standard five minitrees. lepton information is only saved if an event has two leptons passing ID and preselection pT cuts
 process.miniTree_signal_ee   = process.MiniTTree.clone()
 process.miniTree_signal_mumu = process.MiniTTree.clone()
 process.miniTree_flavoursideband = process.MiniTTree.clone()
@@ -182,7 +188,9 @@ process.FlavourSideband     = cms.Path(process.signalHltSequence * process.fullS
 process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullSeq                   * ~process.signalRegionFilter * process.lowDiLeptonSidebandFilter * process.miniTree_lowdileptonsideband)
 #process.LowMassSideband    = cms.Path(process.signalHltSequence * process.fullSeq * process.blindSeq * process.signalRegionFilter * process.miniTree_signal)
 
+#use this path to make dytagandprobe minitree with a GEN HT cut applied, only applicable to MC
 #process.DYtagAndProbe = cms.Path(process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter * process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+
 process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
 
@@ -198,7 +206,8 @@ if (options.isMC==0 and options.unblind==0):
 
     process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.DYtagAndProbe)
 else:
-    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu)#, process.DYtagAndProbe) #, process.microAODoutput_step)
+    #process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe) #, process.microAODoutput_step)
+	process.schedule = cms.Schedule(process.SignalRegionEE, process.SignalRegionMuMu) #, process.microAODoutput_step)
 	#process.schedule = cms.Schedule(process.FlavourSideband) #, process.microAODoutput_step)
 #    process.schedule = cms.Schedule(process.FlavourSideband, process.LowDiLeptonSideband, process.SignalRegionEE, process.SignalRegionMuMu, process.DYtagAndProbe, process.microAODoutput_step)
 
