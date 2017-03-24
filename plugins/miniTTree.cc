@@ -194,7 +194,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		//determine if HEEP ID is passed
 		Int_t passedHeep = 0;	//change this to 1 only if all HEEP ID cuts are passed
 		if(std::fabs(ele->eta()) < 1.4222){ //barrel ele
-			if(ele->ecalDriven() && ele->full5x5_hcalOverEcal() < (0.05 + ( 1/((ele->pt())*(std::cosh(ele->eta())) ) ) ) ){
+			if(ele->ecalDriven() && ele->full5x5_hcalOverEcal() < (0.05 + ( 1/((ele->pt())*(std::cosh(ele->eta())) ) ) ) ){//no sigmaIetaIeta cut for barrel eles
 				if(ele->full5x5_e1x5() > 0.83 || ele->full5x5_e2x5Max() > 0.94){
 					if(ele->dr03TkSumPt() < 5.0){
 						if( (ele->dr03EcalRecHitSumEt() + ele->dr03HcalDepth1TowerSumEt()) < (2+(0.03)*(ele->pt())+(*rho)*(0.28) ) ){
@@ -213,6 +213,33 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		}
 		else if(std::fabs(ele->eta()) > 1.566){
 			//endcap ele, outside EB EE dead zone
+			if(ele->ecalDriven() && ele->full5x5_hcalOverEcal() < (0.05 + ( 5/((ele->pt())*(std::cosh(ele->eta())) ) ) ) && ele->full5x5_sigmaIetaIeta() < 0.03 ){
+				if(1){//no cut on E1x5 or E2x5 for endcap eles
+					if(ele->dr03TkSumPt() < 5.0){
+
+						if( ele->pt() < 50.0 && (ele->dr03EcalRecHitSumEt() + ele->dr03HcalDepth1TowerSumEt()) < (2.5+(*rho)*(0.28) ) ){
+							
+							if(std::fabs(ele->deltaEtaSeedClusterTrackAtVtx()) < 0.006 && std::fabs(ele->deltaPhiSuperClusterTrackAtVtx()) < 0.06){
+								passedHeep = 1;
+							}//delta eta and delta phi cuts using track and SC seed
+
+						}//EM iso + had depth 1 iso for ET below 50 GeV
+
+						else if( ele->pt() >= 50.0 && (ele->dr03EcalRecHitSumEt() + ele->dr03HcalDepth1TowerSumEt()) < (2.5+(0.03)*(ele->pt() - 50.0)+(*rho)*(0.28) ) ){
+							
+							if(std::fabs(ele->deltaEtaSeedClusterTrackAtVtx()) < 0.006 && std::fabs(ele->deltaPhiSuperClusterTrackAtVtx()) < 0.06){
+								passedHeep = 1;
+							}//delta eta and delta phi cuts using track and SC seed
+
+						}//EM iso + had depth 1 iso for ET at or above 50 GeV
+
+
+					}//tracker iso
+
+				}//E1x5 or E2x5
+
+			}//ecalDriven, HoverE and sigmaIetaIeta cuts
+
 
 
 		}
