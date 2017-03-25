@@ -7,7 +7,7 @@ source configs/2015-v1.conf
 ##first get all the dataset short names, and save them to a list named mcIdentifier
 mcIdentifier=(`cat $datasetFile | grep -v '#' | awk '{print $1}'`)
 eosReadingTag='root://eoscms.cern.ch/'
-extraTag='NoLeptId'
+extraTag='_NoLeptId'
 
 #path to skim files
 eosSkimPath='/eos/cms/store/user/shervin/skims/'
