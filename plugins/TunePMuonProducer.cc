@@ -49,7 +49,17 @@ void TunePMuonProducer::produce(edm::Event& event, const edm::EventSetup&)
 			mu.addUserInt("highPtID", 0);
 
 		mu.setP4(tmp_muon);
-		mus->push_back(mu);
+		//require the muon to pass loose track only ID before adding it to output collection
+		//dxy < 0.2 (mm), |dz| < 1.0 (cm), num tracker layers with measurement > 5
+		//and more than 0 valid hits in pixel detector
+		if(mu.innerTrack().isAvailable() ){
+			if(std::fabs(mu.innerTrack()->dxy(primary_vertex->at(0).position())) < 0.2 && std::fabs(mu.innerTrack()->dz(primary_vertex->at(0).position())) < 1.0 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 ){
+
+				mus->push_back(mu);
+			}//end loose track ID requirements
+
+		}//end if innerTrack is available
+		//else mus->push_back(mu);
 	}
 	event.put(mus);
 }

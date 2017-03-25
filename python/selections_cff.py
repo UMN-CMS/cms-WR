@@ -71,18 +71,10 @@ wRIsolatedElectrons = cms.EDFilter( "DeltaROverlapExclusionSelector",
 
 #wRHEEPElectron = 
 #in the QCD from data minitrees, indicate for each electron whether or not it passed HEEP ID
-#in the QCD from data minitrees, apply a different set of ID requirements (HEEP ID v5.1), and modify these ID requirements by hand to match the loose "fake rate" ele ID defined in the Zprime to diele 2015 analysis note
 wRHEEPElectron = cms.EDProducer('HEEPIDSelector',
                                 electrons= cms.InputTag("slimmedElectrons"),
                                 eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
                                 )
-
-#HEEP ID v6.0
-#wRHEEPElectron = cms.EDProducer('HEEPIDSelector',
-#                                electrons= cms.InputTag("slimmedElectrons"),
-#                                eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
-#                                )
-
 
 #### this is to change the type of the collection for the analyzer
 wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
@@ -151,12 +143,12 @@ scaleCorrectedMuonsRefiner = cms.EDFilter("CandViewSelector",
 		cut = cms.string('')
 		)
 
-### add here the trigger matching
 
-
+#apply Roch corrs when minitrees are being analyzed
+#dont require ID or iso here, but store an extra integer in minitree indicating
+#if muon passed combined isHighPt ID and iso cut
 wRminiTreeMuon = cms.EDFilter("PATMuonSelector",
-#                                src = cms.InputTag("scaleCorrectedMuons"), #tunePIsolatedMuons"),
-                              src = cms.InputTag("tunePIDIsoMuons"),
+                              src = cms.InputTag("tunePMuons"),
                                 cut = wRminiTreeElectron.cut,
                                 )
 
