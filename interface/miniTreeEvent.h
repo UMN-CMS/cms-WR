@@ -30,6 +30,8 @@ public:
 	std::vector<Float_t> * electron_smearing;
 	std::vector<Float_t> * electron_r9;
 	std::vector<Int_t> * electron_charge;
+	std::vector<Int_t> * electron_passedHEEP;	//1 if HEEP is passed, 0 if HEEP is not passed
+	
 
 	///none of these electron central values or errors are stored in the minitrees, so dont try to read them from minitrees
 	std::vector<Float_t> * electron_IDSF_central;
@@ -42,6 +44,7 @@ public:
 
 	std::vector<TLorentzVector> * muons_p4;
 	std::vector<Int_t> * muon_charge;
+	std::vector<Int_t> * muon_passedIDIso;
 	std::vector<Float_t> * muon_IDSF_central;
 	std::vector<Float_t> * muon_IsoSF_central;
 	std::vector<Float_t> * muon_IDSF_error;
@@ -50,7 +53,7 @@ public:
 	std::vector<TLorentzVector> * jets_p4;
 	std::vector<Float_t> * jec_uncertainty;
 
-	//std::vector<Float_t> * renormFactAndPdfWeights;
+	std::vector<Float_t> * renormFactAndPdfWeights;
 
 	Float_t nPU;
 	Int_t nPV;
