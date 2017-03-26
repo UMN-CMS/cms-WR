@@ -44,4 +44,4 @@
 #####
 #SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1341179	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
 SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	31822683	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
-#SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v4_SHv12/	-
+SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v4_SHv12/	-
