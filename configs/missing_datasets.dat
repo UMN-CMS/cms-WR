@@ -36,3 +36,11 @@ WJetsLNu_ht600to800	/WJetsToLNu_HT-600To800_TuneCUETP8M1_13TeV-madgraphMLM-pythi
 WJetsLNu_ht800to1200	/WJetsToLNu_HT-800To1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	6.7	-	1574633	-	-
 WJetsLNu_ht1200to2500	/WJetsToLNu_HT-1200To2500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	1.6	-	255637	-	-
 WJetsLNu_ht2500toInf	/WJetsToLNu_HT-2500ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	0.04	-	253036	-	-
+#####
+#DoubleEG_RunC	/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	2127090	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunC_SHv12/	-
+#DoubleEG_RunD_v3	/DoubleEG/Run2015D-PromptReco-v3/MINIAOD	-	-	37909900	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v3_SHv12/	-
+#DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	55019948	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v4_SHv12/	-
+#####
+#SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1341179	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
+SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	31822683	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
+#SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v4_SHv12/	-
