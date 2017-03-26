@@ -31,9 +31,9 @@
  *
  */
 
-#define useDYMAD
+#define showAMC
 //#define doReweight
-#define includeOtherBkgnds
+//#define includeOtherBkgnds
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -46,15 +46,10 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 40;
 Float_t idealSubleadJetPt = 40;
-Float_t leadJetPtCut = 40;
-Float_t subLeadJetPtCut = 40;
-//Float_t leadJetPtCut = LEADJETPT;
-//Float_t subLeadJetPtCut = SUBJETPT;
-//Float_t globalLeadingLeptonPtCut = LEADLEPTPT;
-//Float_t globalSubLeadingLeptonPtCut = SUBLEPTPT;
+Float_t leadJetPtCut = -10;
+Float_t subLeadJetPtCut = -10;
 Float_t globalLeadingLeptonPtCut = 35;
 Float_t globalSubLeadingLeptonPtCut = 35;
-//TString dir = "../rootFiles/treesV14WithToyThrowerDisabled/", mcFileTag = "", dataFileTag = "";
 TString dir = "../analysisCppOutputRootFiles/", mcFileTag = "", dataFileTag = "";
 
 TFile fData("DataPileup.root","recreate");
@@ -107,12 +102,12 @@ void quickCalculateDyScaleFactors()
 	chain_DYAmcInclEE->Add(dir+"selected_tree_ZZ_dytagandprobeEE"+mcFileTag+".root");
 #endif
 	
-	//chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	
 	//temporary change to save disk space
-	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	//chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 #ifdef includeOtherBkgnds
@@ -523,7 +518,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	leg->AddEntry( hs_DYMadIncl, "DYMadHT+Incl And Other Bkgnds" ) ;
 #endif
 
-#ifndef useDYMAD
+#ifdef showAMC
 	leg->AddEntry( hs_DYAmcIncl, "DY AMCNLO" ) ;
 #endif
 	//leg->AddEntry( hs_DYAmcIncl, "DY Simulation" ) ;
@@ -595,11 +590,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(fname.EqualTo("Z_pt") ) hs_data->GetXaxis()->SetTitle("Z P_{T} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("Z P_{T} [GeV]");
 	
 	hs_data->Draw("ep");
-#ifdef useDYMAD	
 	hs_DYMadIncl->Draw("histo same");
-#endif
-
-#ifndef useDYMAD	
+#ifdef showAMC	
 	hs_DYAmcIncl->Draw("histo same");
 #endif
 	hs_data->Draw("epsame");
@@ -655,13 +647,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
-	/*for ratio plot*/
-
-#ifdef useDYMAD	
-	ratio_Mad->Draw("p");	//comment if only plotting AMC
-#endif
-
-#ifndef useDYMAD	
+	ratio_Mad->Draw("p");
+#ifdef showAMC	
 	ratio_Amc->Draw("p");
 #endif
 	//ratio_Powheg->Draw("p");	//comment if only plotting AMC
@@ -669,11 +656,9 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	float xmin = ratio_Amc->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
 	//ratio_Powheg->Draw("p");
-#ifdef useDYMAD	
 	ratio_Mad->Draw("psame");
-#endif
 
-#ifndef useDYMAD	
+#ifdef showAMC	
 	ratio_Amc->Draw("psame");
 #endif
 	f1->Draw("same");
@@ -683,14 +668,12 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	//no Ratio
 	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_noRatioPlot_" + channel;
 
-#ifdef useDYMAD
 	//only MadHT ratio
 	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
-#endif
 
-#ifndef useDYMAD
-	//only AMC ratio
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCRatioPlot_" + channel;
+#ifdef showAMC
+	//only MadHT and AMC ratios
+	cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCandMadHtRatioPlots_" + channel;
 #endif
 
 	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
@@ -703,7 +686,6 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 
 #ifdef  includeOtherBkgnds
 	cuts += "_includeTopDibosonWJetBkgnds";
-
 #endif
 
 	TString fn = fname + cuts;
