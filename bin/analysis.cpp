@@ -59,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYMadInclAndHT", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "WInclAndHT", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYMadInclAndHT", "DYPOWINCL", "singleTop", "topW", "WW", "QCD", "WInclAndHT","qcdData", "signal"
 	}
 	)
 	{
@@ -187,6 +187,22 @@ public:
 				TTchainNames.push_back("QCD_muenr_pt600to800");
 				TTchainNames.push_back("QCD_muenr_pt800to1000");
 			}//EMu channel QCD
+
+		} else if(mode == "qcdData") {
+			std::string qcdDataTag = "";
+			if(channel == Selector::EE){
+				qcdDataTag = "DoubleEG";
+				TTchainNames.push_back(dataTag + "_RunCNoLeptId");
+				TTchainNames.push_back(dataTag + "_RunD_v3NoLeptId");
+				TTchainNames.push_back(dataTag + "_RunD_v4NoLeptId");
+			}//EE channel data driven QCD
+
+			if(channel == Selector::MuMu){
+				qcdDataTag = "SingleMu";
+				TTchainNames.push_back(dataTag + "_RunC_NoLeptId");
+				TTchainNames.push_back(dataTag + "_RunD_v3_NoLeptId");
+				TTchainNames.push_back(dataTag + "_RunD_v4_NoLeptId");
+			}//MuMu channel data driven QCD
 
 		} else if(mode == "WZ") {
 			TTchainNames.push_back("WZ");
