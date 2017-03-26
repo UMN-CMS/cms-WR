@@ -81,6 +81,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.HltSF = myEvent.electron_HltSF_central->at(i);
 		ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
 		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
+		ele.passedID = myEvent.electron_passedHEEP->at(i);
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -93,6 +94,7 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
 		mu.charge = myEvent.muon_charge->at(i);
 		mu.weight = mu.IDSF * mu.IsoSF;
+		mu.passedID = myEvent.muon_passedIDIso->at(i);
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
@@ -431,8 +433,27 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		lead_lepton_p4 = electrons[0].p4;
 		sublead_lepton_p4 = electrons[1].p4;
 
+		lead_lepton_passedID = electrons[0].passedID;
+		sublead_lepton_passedID = electrons[1].passedID;
+		if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
+
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
+
+		//update lepton weights to account for probability of jet which passes very loose ID
+		//to fake a lepton which passes full ID
+		if(lead_lepton_passedID > 0){
+			//sublead lepton is a jet reconstructed as a lepton
+
+		}
+		else if(sublead_lepton_passedID > 0){
+			//lead lepton is a jet reconstructed as a lepton
+
+		}
+		else{
+			//lead and sublead leptons are jets reco'd as leptons
+
+		}
 
 		lead_lepton_IDSF_error = electrons[0].IDSF_error;
 		lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
@@ -458,6 +479,10 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 		lead_lepton_p4 = muons[0].p4;
 		sublead_lepton_p4 = muons[1].p4;
+
+		lead_lepton_passedID = muons[0].passedID;
+		sublead_lepton_passedID = muons[1].passedID;
+		if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
 
 		lead_lepton_IDSF_error = muons[0].IDSF_error;
 		lead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -497,7 +522,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			sublead_lepton_weight = muons[0].weight;
 
 			lead_lepton_r9 = electrons[0].r9;
-		} else {
+		} else { // mu > e
 
 			sublead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_weight = electrons[0].weight;
@@ -515,7 +540,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 			sublead_lepton_r9 = electrons[0].r9;
 		}
-	}
+	}//end EMu channel
 	/**/
 	if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
 	else if(fabs(lead_lepton_p4.Eta()) > 1.4222) lead_det = DET_GAP;
