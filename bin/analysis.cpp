@@ -67,7 +67,7 @@ public:
 
 	bool isData(std::string mode)
 	{
-		if(mode == "data") return true;
+		if(mode == "data" || mode == "qcdData") return true;
 		return false;
 	}
 
@@ -724,7 +724,7 @@ int main(int ac, char* av[])
 				// 		std::cout << m.Pt() << " " << m.Eta() << std::endl;
 				// }
 				
-				if(loop_one && selEvent.isPassingLooseCuts(channel)) {
+				if(loop_one && selEvent.isPassingLooseCuts(channel) && mode.find("qcdData") != _ENDSTRING) {
 					if(isData == false) {
 						//only for DYMadIncl HT<100 minitrees I made
 						//float wgt = (5991*integratedLumi/9042031);
@@ -769,7 +769,9 @@ int main(int ac, char* av[])
 
 				if(selEvent.isPassing(channel, makeSelectorPlots && loop_one)) {
 
-					if (channel == Selector::EMu && selEvent.dilepton_mass < 200) continue;
+					//adding this cut to EE and MuMu channels is ok here because this branch only works with unblinded data minitrees
+					//in the signal region
+					if (selEvent.dilepton_mass < 200) continue;
 
 
 					if(isData == false) {
@@ -787,8 +789,11 @@ int main(int ac, char* av[])
 							selEvent.weight *= myReader.getDyMllScaleFactor(channel_str, mode);
 						}
 					} else {
-						selEvent.weight = 1;
-						assert(selEvent.weight == 1);
+						if(mode.find("qcdData") == _ENDSTRING){
+							selEvent.weight = 1;
+							assert(selEvent.weight == 1);
+						}//if not estimating QCD from collision data
+						//std::cout<<"evt weight = "<< selEvent.weight << std::endl;
 					}
 
 					Fits::massWR.setVal(selEvent.WR_mass);
