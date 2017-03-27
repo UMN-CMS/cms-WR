@@ -39,6 +39,8 @@ void Selector::updateLeptIdWeight(TLorentzVector leptp4, tag_t tag, Float_t & le
 		if(fabs(eta) >= 1.422 && et > 110.0) leptWeight *= (-2.91 + exp(1.09 + 0.000132*et));	//high ET endcap
 	}//end MuMu channel
 
+	leptWeight *= 1/(1.0 - leptWeight);
+
 }//end updateLeptIdWeight()
 
 float dR_TLV(TLorentzVector t1, TLorentzVector t2)
@@ -133,8 +135,8 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		//mu.weight = mu.IDSF * mu.IsoSF;
 		mu.weight = 1.0;
 		//disable reading of muon_passedIDIso when processing DoubleEG minitrees which lack this vector
-		//mu.passedID = myEvent.muon_passedIDIso->at(i);
-		mu.passedID = 1;
+		mu.passedID = myEvent.muon_passedIDIso->at(i);
+		//mu.passedID = 1;
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
