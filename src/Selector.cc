@@ -65,7 +65,7 @@ void goodJetsLooseCuts(myJetCollection *evJets, myJetCollection *selJets)
 void goodEles(myElectronCollection *evEles, myElectronCollection *selEles)
 {
 	for(auto e : *evEles) {
-		if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
+		if(e.p4.Pt() > 50 && fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
 			selEles->push_back(e);
 	}
 }
@@ -80,7 +80,7 @@ void goodElesLooseCuts(myElectronCollection *evEles, myElectronCollection *selEl
 void goodMuons(myMuonCollection *evMuons, myMuonCollection *selMuons)
 {
 	for(auto m : *evMuons) {
-		if(m.p4.Pt() > 40 && fabs(m.p4.Eta()) < 2.4)
+		if(m.p4.Pt() > 50 && fabs(m.p4.Eta()) < 2.4)
 			selMuons->push_back(m);
 	}
 }
@@ -114,7 +114,9 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.RecoSF_error = myEvent.electron_RecoSF_error->at(i);
 		ele.HltSF = myEvent.electron_HltSF_central->at(i);
 		ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
-		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
+		//temporary
+		//ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
+		ele.weight = 1.0;
 		ele.passedID = myEvent.electron_passedHEEP->at(i);
 		electrons.push_back(ele);
 	}
@@ -127,8 +129,12 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
 		mu.charge = myEvent.muon_charge->at(i);
-		mu.weight = mu.IDSF * mu.IsoSF;
-		mu.passedID = myEvent.muon_passedIDIso->at(i);
+		//temporary
+		//mu.weight = mu.IDSF * mu.IsoSF;
+		mu.weight = 1.0;
+		//disable reading of muon_passedIDIso when processing DoubleEG minitrees which lack this vector
+		//mu.passedID = myEvent.muon_passedIDIso->at(i);
+		mu.passedID = 1;
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
@@ -142,7 +148,9 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 
 	nPV = myEvent.nPV;
 	nPU = myEvent.nPU;
-	global_event_weight = (myEvent.weight > 0 ? 1 : -1) * myEvent.PU_reweight;
+	//this branch will only ever be used for processing real data, for which there is no xsxn, GEN MC, or PU weight
+	//global_event_weight = (myEvent.weight > 0 ? 1 : -1) * myEvent.PU_reweight;
+	global_event_weight = 1.0;
 #ifdef DEBUGG
 	std::cout << "global_event_weight=\t" << global_event_weight << std::endl;
 #endif
@@ -456,6 +464,8 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	sublead_jet_phi = jets[1].p4.Phi();
 	lead_jet_weight = 1.0;
 
+	Int_t sumPassingID = 0;	//skip evt if this is greater than 1
+	
 	if(tag == EE) { // EEJJ Channel
 		// Assert at least 2 good leptons
 		if (makeHists) sel::hists("nlep", 10, 0, 10)->Fill(electrons.size());
@@ -463,6 +473,11 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			return false;
 		}
 		if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(electrons.size());
+
+		for(unsigned int n=0; n<electrons.size(); n++){
+			if(electrons[n].passedID > 0) sumPassingID++;	//increment sumPassingID for each lepton passing ID with pt>50
+		}
+		if(sumPassingID > 1) return false;
 
 		lead_lepton_p4 = electrons[0].p4;
 		sublead_lepton_p4 = electrons[1].p4;
@@ -496,9 +511,16 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		}
 		if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(muons.size());
 
+		for(unsigned int n=0; n<muons.size(); n++){
+			if(muons[n].passedID > 0) sumPassingID++;	//increment sumPassingID for each lepton passing ID with pt>50
+		}
+		if(sumPassingID > 1) return false;
+
+
 		lead_lepton_p4 = muons[0].p4;
 		sublead_lepton_p4 = muons[1].p4;
 
+		//temp comment to work with DoubleEG minitrees which dont have this info saved
 		lead_lepton_passedID = muons[0].passedID;
 		sublead_lepton_passedID = muons[1].passedID;
 		if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
@@ -563,10 +585,12 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	
 	//update lepton weights to account for probability of jet which passes very loose ID
 	//to fake a lepton which passes full ID
-	if(lead_lepton_passedID > 0) updateLeptIdWeight(sublead_lepton_p4, tag, sublead_lepton_weight);
-	else if(sublead_lepton_passedID > 0) updateLeptIdWeight(lead_lepton_p4, tag, lead_lepton_weight);
+	//dont count evts which have 1 lepton passing ID, these are likely WJets evts in data
+	//only count evts which have 0 leptons passing default, full ID
+	if(lead_lepton_passedID > 0) sublead_lepton_weight = 0.;
+	else if(sublead_lepton_passedID > 0) lead_lepton_weight = 0.;
 	else{
-		//lead and sublead leptons were reconstructed from jets which passed loose ID but failed full ID
+		//lead and sublead leptons were reconstructed from jets which passed loose ID but failed default, full ID
 		updateLeptIdWeight(sublead_lepton_p4, tag, sublead_lepton_weight);
 		updateLeptIdWeight(lead_lepton_p4, tag, lead_lepton_weight);
 	}
