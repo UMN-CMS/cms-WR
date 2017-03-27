@@ -8,6 +8,7 @@ public:
 	Float_t scale;
 	Float_t smearing;
 	Int_t charge;
+	Int_t passedID;
 	Float_t r9;
 	Float_t weight;
 	Float_t IDSF;
@@ -35,6 +36,7 @@ public:
 	Float_t IDSF_error;
 	Float_t IsoSF_error;
 	Int_t charge;
+	Int_t passedID;
 	Float_t weight;
 
 	myMuon() {}; ///< default contructor (empty)

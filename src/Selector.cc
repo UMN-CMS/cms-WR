@@ -7,6 +7,40 @@
 #include "../interface/SelectorHist.h"
 //#define DEBUGG
 
+//calculate and assign the weight to a jet which was incorrectly reconstructed as a lepton
+//use two formulas (one for mu, one for ele) which are pT and eta dependent
+void Selector::updateLeptIdWeight(TLorentzVector leptp4, tag_t tag, Float_t & leptWeight)
+{
+	Float_t et = leptp4.Pt();
+	Float_t eta = leptp4.Eta();
+	if(tag == EE){
+		if(fabs(eta) < 1.422){
+			if(et >= 35 && et < 76.1) leptWeight *= (0.0524 - 0.000589*et);	//low ET
+			if(et >= 76.1 && et < 145.6) leptWeight *= (0.0124 - 0.0000638*et);	//medium ET
+			if(et >= 145.6) leptWeight *= 0.00315;	//high ET
+		}//end barrel ele
+		else if(fabs(eta) > 1.566 && fabs(eta) < 2.0){
+			if(et >= 35 && et < 75.8) leptWeight *= (0.0953 - 0.000815*et);	//low ET
+			if(et >= 75.8 && et < 186.9) leptWeight *= (0.0377 - 0.0000558*et);	//medium ET
+			if(et >= 186.9) leptWeight *= 0.0273;	//high ET
+		}//end low eta endcap ele
+		else{
+			if(et >= 35 && et < 88.6) leptWeight *= (0.0824 - 0.000492*et);	//low ET
+			if(et >= 88.6 && et < 245.7) leptWeight *= (0.0321 + 0.0000752*et);	//medium ET
+			if(et >= 245.7) leptWeight *= 0.0506;	//high ET
+		}//end high eta endcap ele
+
+	}//end EE channel
+	
+	else{
+		//MuMu channel
+		if(fabs(eta) < 1.422 && et > 50.0) leptWeight *= (0.0222 + exp(-3.16 + 0.0028*et));	//low ET barrel
+		if(fabs(eta) >= 1.422 && et <= 110.0) leptWeight *= (0.0883 + exp(5.93 - 0.133*et));	//low ET endcap
+		if(fabs(eta) >= 1.422 && et > 110.0) leptWeight *= (-2.91 + exp(1.09 + 0.000132*et));	//high ET endcap
+	}//end MuMu channel
+
+}//end updateLeptIdWeight()
+
 float dR_TLV(TLorentzVector t1, TLorentzVector t2)
 {
 	return deltaR(t1.Eta(), t1.Phi(), t2.Eta(), t2.Phi());
@@ -440,21 +474,6 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
 
-		//update lepton weights to account for probability of jet which passes very loose ID
-		//to fake a lepton which passes full ID
-		if(lead_lepton_passedID > 0){
-			//sublead lepton is a jet reconstructed as a lepton
-
-		}
-		else if(sublead_lepton_passedID > 0){
-			//lead lepton is a jet reconstructed as a lepton
-
-		}
-		else{
-			//lead and sublead leptons are jets reco'd as leptons
-
-		}
-
 		lead_lepton_IDSF_error = electrons[0].IDSF_error;
 		lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
 		lead_lepton_HltSF_error = electrons[0].HltSF_error;
@@ -541,6 +560,18 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			sublead_lepton_r9 = electrons[0].r9;
 		}
 	}//end EMu channel
+	
+	//update lepton weights to account for probability of jet which passes very loose ID
+	//to fake a lepton which passes full ID
+	if(lead_lepton_passedID > 0) updateLeptIdWeight(sublead_lepton_p4, tag, sublead_lepton_weight);
+	else if(sublead_lepton_passedID > 0) updateLeptIdWeight(lead_lepton_p4, tag, lead_lepton_weight);
+	else{
+		//lead and sublead leptons were reconstructed from jets which passed loose ID but failed full ID
+		updateLeptIdWeight(sublead_lepton_p4, tag, sublead_lepton_weight);
+		updateLeptIdWeight(lead_lepton_p4, tag, lead_lepton_weight);
+	}
+
+
 	/**/
 	if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
 	else if(fabs(lead_lepton_p4.Eta()) > 1.4222) lead_det = DET_GAP;
