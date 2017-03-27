@@ -192,16 +192,16 @@ public:
 			std::string qcdDataTag = "";
 			if(channel == Selector::EE){
 				qcdDataTag = "DoubleEG";
-				TTchainNames.push_back(dataTag + "_RunCNoLeptId");
-				TTchainNames.push_back(dataTag + "_RunD_v3NoLeptId");
-				TTchainNames.push_back(dataTag + "_RunD_v4NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunCNoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunD_v3NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunD_v4NoLeptId");
 			}//EE channel data driven QCD
 
 			if(channel == Selector::MuMu){
 				qcdDataTag = "SingleMu";
-				TTchainNames.push_back(dataTag + "_RunC_NoLeptId");
-				TTchainNames.push_back(dataTag + "_RunD_v3_NoLeptId");
-				TTchainNames.push_back(dataTag + "_RunD_v4_NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunC_NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunD_v3_NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunD_v4_NoLeptId");
 			}//MuMu channel data driven QCD
 
 		} else if(mode == "WZ") {
