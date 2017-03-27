@@ -22,8 +22,8 @@
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
 
-//#define fixedBinWidths
-#define variableBinWidths
+#define fixedBinWidths
+//#define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
 //#define DOAMC
@@ -34,7 +34,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -147,25 +147,25 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   Int_t nbins = 20;
   TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nbins,0,500);
-  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nbins,-3,3);
+  TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nbins,-3,4);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nbins,-3.15,3.15);
   TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",nbins,0,500);
-  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",nbins,-3,3);
+  TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",nbins,-3,4);
   TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",nbins,-3.15,3.15);
 
   TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",nbins,0,500);
-  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",nbins,-3,3);
+  TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",nbins,-3,4);
   TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",nbins,-3.15,3.15);
   TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",nbins,0,500);
-  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nbins,-3,3);
+  TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nbins,-3,4);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nbins,-3.15,3.15);
 
   TH1F *h_WR_mass;
   TH1F *h_WR_mass_unweighted;
   
 #ifdef fixedBinWidths
-  h_WR_mass = new TH1F("h_WR_mass","",nbins,550,1050);
-  h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",nbins,550,1050);
+  h_WR_mass = new TH1F("h_WR_mass","",nbins,550,1850);
+  h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",nbins,550,1850);
 #endif
 
 #ifdef variableBinWidths
@@ -288,7 +288,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->Sumw2();
   hs_data->Sumw2();
 
-  TLegend *leg = new TLegend( 0.6, 0.60, 0.90, 0.90 ) ; 
+  TLegend *leg = new TLegend( 0.63, 0.60, 0.90, 0.90 ) ; 
 #ifdef DOAMC
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
@@ -493,8 +493,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
+//TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU","unweightedMLLJJ"};
 
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") ){
+  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") ){
+  if(fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
