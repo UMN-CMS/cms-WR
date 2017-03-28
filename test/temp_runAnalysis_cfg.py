@@ -154,7 +154,10 @@ process.load('ExoAnalysis.cmsWR.genDYJetsElectronChannelModules_cff')
 process.wrPdfWeights = cms.EDProducer("PdfWeightProducer",
 		GenTag = cms.untracked.InputTag("prunedGenParticles"),
 		PdfInfoTag = cms.untracked.InputTag("generator"),
-		PdfSetNames = cms.untracked.vstring("NNPDF30_lo_as_0130.LHgrid")
+		PdfSetNames = cms.untracked.vstring(
+			"NNPDF30_lo_as_0130.LHgrid",
+			"cteq66.LHgrid"
+			)
 		)
 
 #################################

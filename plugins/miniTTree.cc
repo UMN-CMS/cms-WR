@@ -11,7 +11,7 @@
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
-#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "../interface/miniTreeEvent.h"
@@ -28,7 +28,7 @@ public:
 
 private:
 	virtual void analyze(const edm::Event&, const edm::EventSetup&);
-	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+	virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
 	
 	edm::EDGetToken electronsMiniAODToken_;
 	edm::EDGetToken muonsMiniAODToken_;
@@ -62,7 +62,7 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
 	//lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
-	lheRunInfoToken_ ( consumes<LHERunInfoProduct>(edm::InputTag("externalLHEProducer"))),
+	//lheRunInfoToken_ ( consumes<LHERunInfoProduct>(edm::InputTag("externalLHEProducer"))),
 	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
@@ -77,14 +77,16 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 
 }
 
-// ------------ method called when starting to processes a run  ------------
+// ------------ method called when one run has finished processing  ------------
 void
-miniTTree::beginRun(edm::Run const& iRun, edm::EventSetup const&)
+miniTTree::endRun(edm::Run const& iRun, edm::EventSetup const&)
 {
+	/*
 	edm::Handle<LHERunInfoProduct> lheRunInfo; 
 	iRun.getByToken(lheRunInfoToken_ , lheRunInfo);
 	int pdfidx = lheRunInfo->heprup().PDFSUP.first;
 	std::cout<<"pdf id used to generate sample = " << pdfidx << std::endl;
+	*/
 
 	/*
 	//comment this out when processing collision data
@@ -164,15 +166,27 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 
 		/**/
 		///wgts only for WR signal samples
-		edm::InputTag pdfWgtTag("wrPdfWeights:NNPDF30");
-		edm::Handle<std::vector<double> > pdfWgtHandle;
-		event.getByLabel(pdfWgtTag, pdfWgtHandle);
+		edm::InputTag pdfWgtTagOne("wrPdfWeights:NNPDF30");
+		edm::Handle<std::vector<double> > pdfWgtHandleOne;
+		event.getByLabel(pdfWgtTagOne, pdfWgtHandleOne);
 
-		std::vector<double> wgts = *(pdfWgtHandle);
-		unsigned int nwgts = wgts.size();
-		for(unsigned int i=1; i<nwgts; i++){
-			myEvent.renormFactAndPdfWeights->push_back( wgts[i]/wgts[0] );
+		std::vector<double> wgtsOne = *(pdfWgtHandleOne);
+		unsigned int nwgtsOne = wgtsOne.size();
+		for(unsigned int i=1; i<nwgtsOne; i++){
+			myEvent.renormFactAndPdfWeights->push_back( wgtsOne[i]/wgtsOne[0] );
 		}
+		
+		//now do another set of weights
+		edm::InputTag pdfWgtTagThree("wrPdfWeights:cteq66");
+		edm::Handle<std::vector<double> > pdfWgtHandleThree;
+		event.getByLabel(pdfWgtTagThree, pdfWgtHandleThree);
+
+		std::vector<double> wgtsThree = *(pdfWgtHandleThree);
+		unsigned int nwgtsThree = wgtsThree.size();
+		for(unsigned int i=1; i<nwgtsThree; i++){
+			myEvent.renormFactAndPdfWeights->push_back( wgtsThree[i]/wgtsThree[0] );
+		}
+
 		/**/
 
 		///weights for estimating uncertainties due to pdf, renorm and fact scale variations only for DY, TTBar and WJets MC
