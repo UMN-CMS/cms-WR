@@ -61,6 +61,7 @@ do
 
 	for i in ${!inputFiles[*]}
 	do
+		
 		#echo $eosSkimPath${mcIdentifier[$j]}$skimProductionTAG/${inputFiles[$i]}
 		#replace NNN by a number and INPTFILE with a file path name from inputFiles in temp_runAnalysis_cfg.py
 		eval "cd test"
@@ -82,7 +83,7 @@ do
 
 		#submit the job to 1nh queue and request at least 2 GB of disk
 		#echo "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
-		eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
+		#eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier[$j]}_${startingCount}.sh"
 		#eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisDYMC_${mcIdentifier}_Part_${startingCount} < runAnalysisDYMC_${mcIdentifier}_${startingCount}.sh"
 
 		let startingCount=startingCount+1
