@@ -1,4 +1,5 @@
 #!/bin/bash
+#run this from cmsWR/.
 
 #import productionTAG and datasetFile
 source configs/2015-v1.conf
@@ -20,7 +21,9 @@ eosReadingTag='root://eoscms.cern.ch/'
 for j in ${!mcIdentifier[*]}
 do
 	#eos mkdir -p $eosTuplePath${mcIdentifier[$j]}$productionTAG
-	hadd -k -O unmerged-allRange.root ${mcIdentifier[$j]}Part*.root
+	#only need hadd if there are multiple skim files from one dataset
+	#hadd -k -O unmerged-allRange.root ${mcIdentifier[$j]}Part*.root
+	cp ${mcIdentifier[$j]}Part1.root unmerged-allRange.root
 	xrdcp unmerged-allRange.root $eosReadingTag$eosTuplePath${mcIdentifier[$j]}$productionTAG/.
 	rm unmerged-allRange.root
 	#echo "hadd -k -O unmerged-allRange.root ${mcIdentifier[$j]}Part*.root"
