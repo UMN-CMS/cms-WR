@@ -23,13 +23,13 @@ muonIDIso=' isolationR03().sumPt/pt < 0.1 && userInt("highPtID") == 1'
 
 
 ############################################################ Jets
-from ExoAnalysis.cmsWR.JEC_cff import *
+#from ExoAnalysis.cmsWR.JEC_cff import *
 
 #patJetsReapplyJEC
 
 ### select tight-ID jets
 wRtightJets = cms.EDFilter("PATJetSelector",
-                          src = cms.InputTag("patJetsReapplyJEC"),
+                          src = cms.InputTag("slimmedJets"), #default patJetsReapplyJEC
                           cut = cms.string(jetID),
                           )
 
@@ -39,9 +39,9 @@ wRJets = cms.EDFilter("PATJetSelector",
 		)
 
 
-wRJECUncert = JECUnc.clone(
-    src = cms.InputTag('wRJets')
-    )
+#wRJECUncert = JECUnc.clone(
+#    src = cms.InputTag('wRJets')
+#    )
 
 wRJetFilter = cms.EDFilter("CandViewCountFilter",
                                  src = cms.InputTag("wRJets"),
@@ -57,7 +57,9 @@ wRdiJetCandidate = cms.EDProducer("CandViewShallowCloneCombiner",
                                   cut = cms.string("mass > 0 && daughter(0).pt>daughter(1).pt"),
 )
 
-jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert ) #* wRdiJetCandidate)
+#default jetSelectionSeq = cms.Sequence( wRtightJets * wRJets * wRJECUncert ) #* wRdiJetCandidate)
+jetSelectionSeq = cms.Sequence( wRtightJets * wRJets) #* wRdiJetCandidate)
+
 
 ############################################################ Electrons
 
@@ -86,8 +88,8 @@ wRHEEPElectronRefiner = cms.EDFilter("CandViewSelector",
 #DEFAULT fill wRminiTreeElectron with objects after applying HEEP ID
 #the requirement that two objects pass HEEP ID is applied later, when a di-electron object must be found with mass greater than 0 GeV
 wRminiTreeElectron = cms.EDFilter("PATElectronSelector",
-                                    src = cms.InputTag("wRHEEPElectron"), 
-                                    cut = cms.string(''),
+                                    src = cms.InputTag("slimmedElectrons"), 
+                                    cut = cms.string('pt>35'),
                                   )
 
 
@@ -108,7 +110,9 @@ wRdiElectronCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            )
 
 
-electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
+#electronSelectionSeq = cms.Sequence(wRIsolatedElectrons *  wRHEEPElectron * wRHEEPElectronRefiner * wRminiTreeElectron * wRdiElectronCandidate)
+electronSelectionSeq = cms.Sequence(wRIsolatedElectrons * wRminiTreeElectron * wRdiElectronCandidate)
+
 
 ############################################################ Muons
 
@@ -148,7 +152,7 @@ scaleCorrectedMuonsRefiner = cms.EDFilter("CandViewSelector",
 #dont require ID or iso here, but store an extra integer in minitree indicating
 #if muon passed combined isHighPt ID and iso cut
 wRminiTreeMuon = cms.EDFilter("PATMuonSelector",
-                              src = cms.InputTag("tunePMuons"),
+                              src = cms.InputTag("tunePIDIsoMuons"),
                                 cut = wRminiTreeElectron.cut,
                                 )
 
@@ -173,7 +177,9 @@ wRdiMuonCandidateFilter = cms.EDFilter("CandViewCountFilter",
                                            minNumber = cms.uint32(1)
                                            )
 
-muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRminiTreeMuon *  muonIdIsoSF * wRdiMuonCandidate)
+muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * wRminiTreeMuon * wRdiMuonCandidate)
+#muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * wRminiTreeMuon *  muonIdIsoSF * wRdiMuonCandidate)
+#muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * scaleCorrectedMuonsRefiner  * wRminiTreeMuon *  muonIdIsoSF * wRdiMuonCandidate)
 #muonSelectionSeq = cms.Sequence(tunePMuons * tunePIDIsoMuons * scaleCorrectedMuons * wRleadingMuon * wRsubleadingMuon * muonIdIsoSF * wRdiMuonCandidate)
 ############################################################ E-Mu candidate
 #mixed flavour candidates

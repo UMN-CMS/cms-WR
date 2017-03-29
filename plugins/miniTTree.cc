@@ -60,13 +60,13 @@ miniTTree::miniTTree(const edm::ParameterSet& cfg):
 	muonsMiniAODToken_ ( consumes<edm::View<pat::Muon> >(cfg.getParameter<edm::InputTag>("muons_src"))),
 	jetsMiniAODToken_ ( consumes<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("jets_src"))),
 	pileUpInfoToken_ ( consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"))),
-	pileUpReweightToken_ ( consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"))),
+	//pileUpReweightToken_ ( consumes<float >(cfg.getParameter<edm::InputTag>("PUWeights_src"))),
 	primaryVertexToken_ ( consumes<edm::View<reco::Vertex> >(edm::InputTag("offlineSlimmedPrimaryVertices"))),
 	evinfoToken_ ( consumes<GenEventInfoProduct>(edm::InputTag("generator"))),
-	lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
+	//lheEvInfoToken_ ( consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer"))),
 	//lheRunInfoToken_ ( consumes<LHERunInfoProduct>(edm::InputTag("externalLHEProducer"))),
 	rhoToken_ (consumes<double >(edm::InputTag("fixedGridRhoFastjetAll"))),
-	jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
+	//jec_unc_src ( consumes<JECUnc_Map >(cfg.getParameter<edm::InputTag>("jec_unc_src"))),
 	muon_IDSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_central_src"))),
 	muon_IsoSF_central_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IsoSF_central_src"))),
 	muon_IDSF_error_src ( consumes<edm::ValueMap<float> >(cfg.getParameter<edm::InputTag>("muon_IDSF_error_src"))),
@@ -126,16 +126,16 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 	event.getByToken(jetsMiniAODToken_, jets);
 
 	edm::Handle<JECUnc_Map > jec_unc;
-	event.getByToken(jec_unc_src, jec_unc);
+	//event.getByToken(jec_unc_src, jec_unc);
 
 	edm::Handle< edm::ValueMap<float> > muon_IDSF;
-	event.getByToken(muon_IDSF_central_src, muon_IDSF);
+	//event.getByToken(muon_IDSF_central_src, muon_IDSF);
 	edm::Handle< edm::ValueMap<float> > muon_IsoSF;
-	event.getByToken(muon_IsoSF_central_src, muon_IsoSF);
+	//event.getByToken(muon_IsoSF_central_src, muon_IsoSF);
 	edm::Handle< edm::ValueMap<float> > muon_IDSF_error;
-	event.getByToken(muon_IDSF_error_src, muon_IDSF_error);
+	//event.getByToken(muon_IDSF_error_src, muon_IDSF_error);
 	edm::Handle< edm::ValueMap<float> > muon_IsoSF_error;
-	event.getByToken(muon_IsoSF_error_src, muon_IsoSF_error);
+	//event.getByToken(muon_IsoSF_error_src, muon_IsoSF_error);
 
 	edm::Handle<LHEEventProduct> lheEvInfo;
 	edm::Handle<GenEventInfoProduct> evinfo;
@@ -165,18 +165,20 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 			if(BX == 0)
 				myEvent.nPU = p.getTrueNumInteractions();
 		}
-		event.getByToken(pileUpReweightToken_, PU_Weights);
-		myEvent.PU_reweight = *PU_Weights;
+		//event.getByToken(pileUpReweightToken_, PU_Weights);
+		//myEvent.PU_reweight = *PU_Weights;
+		myEvent.PU_reweight = 1.0;
 
 		//weights for estimating uncertainties due to pdf, renorm and fact scale variations
-		event.getByToken(lheEvInfoToken_, lheEvInfo);
+		//event.getByToken(lheEvInfoToken_, lheEvInfo);
 		//std::cout<<"GenEventInfoProduct weights size = " << evinfo->weights().size() <<std::endl;
 		//std::cout<<"LHEEventProduct weights size = " << lheEvInfo->weights().size() <<std::endl;
-		
+		/*
 		for (size_t i = 0; i < lheEvInfo->weights().size() ; i++) {
 			//std::cout<<"weight " << i << " = " << lheEvInfo->weights()[i].wgt << std::endl;
 			myEvent.renormFactAndPdfWeights->push_back( lheEvInfo->weights()[i].wgt/lheEvInfo->originalXWGTUP() );
 		}
+		*/
 
 	}
 
@@ -257,10 +259,10 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		Int_t passedIDIso = 0;	//change this to 1 if muon passes isHighPtID and iso cuts
 		if(mu->userInt("highPtID") == 1 && (mu->trackIso()/mu->pt()) < 0.1) passedIDIso = 1;
 		myEvent.muon_passedIDIso->push_back(passedIDIso);
-		myEvent.muon_IDSF_central->push_back((*muon_IDSF)[mu]);
-		myEvent.muon_IsoSF_central->push_back((*muon_IsoSF)[mu]);
-		myEvent.muon_IDSF_error->push_back((*muon_IDSF_error)[mu]);
-		myEvent.muon_IsoSF_error->push_back((*muon_IsoSF_error)[mu]);
+		myEvent.muon_IDSF_central->push_back(1.0);
+		myEvent.muon_IsoSF_central->push_back(1.0);
+		myEvent.muon_IDSF_error->push_back(0.01);
+		myEvent.muon_IsoSF_error->push_back(0.01);
 	}
 
 	for (size_t i = 0; i < jets->size(); ++i) {
@@ -268,7 +270,7 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		TLorentzVector p4;
 		p4.SetPtEtaPhiM(jet->pt(), jet->eta(), jet->phi(), jet->mass());
 		myEvent.jets_p4->push_back(p4);
-		myEvent.jec_uncertainty->push_back((*jec_unc)[jet]);
+		myEvent.jec_uncertainty->push_back(0.01);
 	}
 
 	tree->Fill();

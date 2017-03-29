@@ -27,6 +27,7 @@ wReejjHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = [
         'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v*', ### \ingroup hlt_Group electron channel trigger
+		'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v*',
     ]
 )
 
@@ -48,15 +49,15 @@ wRemujjHLTFilter =  HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
 tagAndProbeDoubleEleHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = [
-        'HLT_Ele*WP60_Ele8_Mass55_v*',  ## \ingroup hlt_Group electron tagAndProbe trigger
-        'HLT_Ele*WP60_SC4_Mass55_v*',
+        'HLT_Ele*_eta2p1_WPTight_Gsf_v*',  ## \ingroup hlt_Group electron tagAndProbe trigger
+        #'HLT_Ele*WP60_SC4_Mass55_v*',
     ]
 )
 
 tagAndProbeDoubleMuHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
     HLTPaths = [
-        'HLT_IsoMu22_v*', ## \ingroup hlt_Group muon tagAndProbe trigger
+        'HLT_IsoMu24_v*', ## \ingroup hlt_Group muon tagAndProbe trigger
         'HLT_IsoMu27_v*' 
     ]
 )

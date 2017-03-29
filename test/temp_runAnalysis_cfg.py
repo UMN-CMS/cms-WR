@@ -58,9 +58,10 @@ elif(options.test==2):
 	options.isMC=1
 	options.datasetTag='TAGNAME'
 elif(options.test==1):
-    options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
-    options.maxEvents=200
-    options.isMC=1
+	#options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
+	options.files='file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRMiniAod/eejj/WR_M-2400_ToLNu_M-1200_miniAOD_13TeV-2016_1.root'
+	options.maxEvents=-1
+	options.isMC=1
 
 print options
 
@@ -77,7 +78,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.load('ExoAnalysis.cmsWR.produceStringTag_cfi')
-process.load('ExoAnalysis.cmsWR.pileupWeight_cff')
+#process.load('ExoAnalysis.cmsWR.pileupWeight_cff')
 
 process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.datasetTag)
 
@@ -143,7 +144,7 @@ SelectEventsPSet = cms.untracked.PSet(
 
 # here the full set of sequences and hlt paths used to make the first step
 process.load('ExoAnalysis.cmsWR.selections_cff')
-from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
+#from ExoAnalysis.cmsWR.JEC_cff import * # \todo check if this is needed
 process.load('ExoAnalysis.cmsWR.treeMaker_cff')
 process.load('ExoAnalysis.cmsWR.minitree_cfi')
 process.load('ExoAnalysis.cmsWR.hltFilters_cff')
@@ -157,8 +158,8 @@ process.genHTFilter = cms.EDFilter('htFilter',
 		inputCollection = cms.InputTag("dyJetsMergeGenMatchedPartons")
 		)
 
-from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
-loadHEEPIDSelector(process)
+#from ExoAnalysis.cmsWR.heepSelector_cfi import loadHEEPIDSelector
+#loadHEEPIDSelector(process)
 
 process.load('ExoAnalysis.cmsWR.dataMcAnalyzers_cfi')
 
@@ -167,11 +168,10 @@ process.blindSeq = cms.Sequence()
 #process.dumperSeq = cms.Sequence(process.MakeTTree_Muons)
 process.miniTTreeSeq = cms.Sequence(process.MiniTTree)
 
-#standard producer and filter sequence for signal ee and mumu, flavoursideband, lowdileptonmasssideband, and dytagandprobe minitrees WITH GEN HT filter. only applicable to MC
-#process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence * process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter)
-
 #standard producer and filter sequence for signal ee and mumu, flavoursideband, lowdileptonmasssideband, and dytagandprobe minitrees WITH NO GEN HT filter
-process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
+#process.fullSeq = cms.Sequence(process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence  * process.filterSequence)
+process.fullSeq = cms.Sequence(process.addStringIdentifier * process.selectionSequence  * process.filterSequence)
+
 
 
 #standard five minitrees. lepton information is only saved if an event has two leptons passing ID and preselection pT cuts
@@ -191,7 +191,9 @@ process.LowDiLeptonSideband = cms.Path(process.signalHltSequence * process.fullS
 #use this path to make dytagandprobe minitree with a GEN HT cut applied, only applicable to MC
 #process.DYtagAndProbe = cms.Path(process.dyJetsBareMatchedGenGluon * process.dyJetsBareMatchedGenQuark * process.dyJetsMergeGenMatchedPartons * process.genHTFilter * process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
 
-process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+#process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.egmGsfElectronIDSequence * process.addStringIdentifier * process.PUWeightsSequence * process.jecSequence * process.selectionSequence * process.miniTree_dytagandprobe * process.zToEEAnalyzer * process.zToMuMuAnalyzer)
+process.DYtagAndProbe = cms.Path(process.tagAndProbeHLTFilter * process.addStringIdentifier * process.selectionSequence * process.miniTree_dytagandprobe)
+
 
 
 #process.microAODoutput_step = cms.EndPath(process.microAOD_output)
@@ -217,6 +219,6 @@ CMSSW_BASE=os.getenv("CMSSW_BASE")
 
 pathPrefix=CMSSW_BASE+'/src/ExoAnalysis/cmsWR/'
 
-process.PUWeights.PileupMCFilename = cms.string(pathPrefix + "data/MCPileup.root")
-process.PUWeights.PileupDataFilename = cms.string(pathPrefix + "data/DataPileup.root")
+#process.PUWeights.PileupMCFilename = cms.string(pathPrefix + "data/MCPileup.root")
+#process.PUWeights.PileupDataFilename = cms.string(pathPrefix + "data/DataPileup.root")
 
