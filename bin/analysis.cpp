@@ -671,7 +671,7 @@ int main(int ac, char* av[])
 						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
 							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
 						}
-						if(mode.find("signal") != _ENDSTRING && pdfWeight != -1){
+						if(mode.find("WR") != _ENDSTRING && pdfWeight != -1){
 							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[pdfWeight];
 						}
 #ifdef DEBUGG
@@ -722,8 +722,10 @@ int main(int ac, char* av[])
 						if(mode.find("DY") != _ENDSTRING && pdfWeight != -1){
 							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[9+pdfWeight];
 						}
-
-						if(mode.find("signal") != _ENDSTRING && pdfWeight != -1){
+	
+						if(mode.find("WR") != _ENDSTRING && pdfWeight != -1){
+							//std::cout<<"pdfWeight index = "<< pdfWeight << std::endl;
+							//std::cout<<"renorm and pdf weight value = "<< (*myEventIt.renormFactAndPdfWeights)[pdfWeight] << std::endl; 
 							selEvent.weight *= (*myEventIt.renormFactAndPdfWeights)[pdfWeight];
 						}
 

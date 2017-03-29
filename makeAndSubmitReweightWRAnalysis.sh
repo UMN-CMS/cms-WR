@@ -4,13 +4,15 @@ workingDir=$PWD
 
 ##WR signal
 mode='signal'
-mass_n=$(seq 1 25)
+#mass_n=$(seq 1 25)  #1 is MWR 1 TeV, 25 is MWR 800 GeV
+mass_n=$(seq 1 16)
+
 
 for j in $mass_n
 do
 
-	#default max is 100
-	for i in {0..100}
+	#only minitrees with WR mass up to 4.2 TeV have 200 different pdf and fact/renorm weights per evt
+	for i in {0..200}
 	do
 		#replace WGTNUM by an integer, MODE by a string, WORKDIR by abs path, MMAASS by an integer, and CHNL by a string
 		eval "sed 's@WGTNUM@$i@g' runAnalysisReweightWRMC.sh > tempOne.sh"

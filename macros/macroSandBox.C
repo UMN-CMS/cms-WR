@@ -3445,26 +3445,32 @@ void macroSandBox(){
 
 #ifdef WRPdfUnc
 	
-	int numDiffPdfs = 100;
-	Double_t numPdfs = 100;	//equal to numDiffPdfs
+	int numDiffPdfs = 143;
+	Double_t numPdfs = 143;	//equal to numDiffPdfs
 	TString treeName = "central_value_tree";
 	std::string fileMiddle = "_signal_";
 	
-	//std::string leptChnl = "mumuMuMu";
-	//std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
+	std::string leptChnl = "mumuMuMu";
+	std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
 	
-	std::string leptChnl = "eeEE";
-	std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
+	//std::string leptChnl = "eeEE";
+	//std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
 	
 	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
 	std::string fileEnd = ".root";
 	//use std::string to facilitate use of to_string() method
-	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/wrPdfUncertFiles/";
+	//std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/WRPdfUncertFiles/";
+
+
+	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/wrDevelopment/CMSSW_7_4_15_patch1/src/ExoAnalysis/cmsWR/";
+	
 	std::string nonDefaultPdfFileMiddle = "_pdfWeight_";
 
-	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,5000,5200,5600,5800,6000};
-	int wrMassArr[] = {800,1000,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
-	//int wrMassArr[] = {800,1000,1400,1600,2600,2800,3000,3800,4000};
+	//int wrMassArr[] = {1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
+	//int wrMassArr[] = {1000,1600,2000,3000,4000};
+	//int wrMassArr[] = {4000};
+	//int wrMassArr[] = {1200,1400,1800,2200,2400,2600,2800,3200,3600,3800};
+	int wrMassArr[] = {2200};
 	
 	vector<int> wrMassVect(wrMassArr, wrMassArr + sizeof(wrMassArr)/sizeof(int) );
 	unsigned int wrPts = wrMassVect.size();
@@ -3481,9 +3487,9 @@ void macroSandBox(){
 		//loop over different pdf files, calculate the total number of weighted evts, and put that number into a vector
 		for(int i=0; i<numDiffPdfs ; i++){
 			if((i==55 || i==70 || i==81 ) && wrMassVect[m]==3000 && leptChnl=="mumuMuMu") continue;
-			if((i==44 || i==94) && wrMassVect[m]==4000 && leptChnl=="mumuMuMu") continue;
+			if((i==23) && wrMassVect[m]==4000 && leptChnl=="mumuMuMu") continue;
 			if(i==71 && wrMassVect[m]==3800 && leptChnl=="mumuMuMu") continue;
-			if((i==23 || i==94) && wrMassVect[m]==4000 && leptChnl=="eeEE") continue;
+			if((i==0 || i==23 || i==94) && wrMassVect[m]==4000 && leptChnl=="eeEE") continue;
 			if((i==33 || i==48 || i==96 ) && wrMassVect[m]==3000 && leptChnl=="eeEE") continue;
 
 
@@ -3492,7 +3498,7 @@ void macroSandBox(){
 			if(wrMassVect[m] == 1800) nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
 
 			numWeightedEvtsDiffPdfs[i] = calcTotalNumWeightedEvts(nonDefaultPdfChain);
-			//std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;	///<sanity check
+			std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;	///<sanity check
 			meanNumEvts += numWeightedEvtsDiffPdfs[i];
 
 			delete nonDefaultPdfChain;
