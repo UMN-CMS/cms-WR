@@ -26,13 +26,13 @@
 #include <boost/program_options.hpp>
 #include "FitRooDataSet.h"
 #include "rooFitFxns.h"
-#include "ToyThrower.h"
+//#include "ToyThrower.h"
 #include "analysisTools.h"
 #include "configReader.h"
 
 #include <unordered_set>
 
-#include "Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
+//#include "Calibration/ZFitter/interface/EnergyScaleCorrection_class.hh"
 
 #include <TStopwatch.h>
 #define _ENDSTRING std::string::npos
@@ -461,18 +461,19 @@ int main(int ac, char* av[])
 #endif
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
 					if(isData && !(channel == Selector::MuMu) ) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0., skip this step if the channel is not EE or EMu
-						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
-						//(*myEvent.electron_scale)[iEle] = 1.0;
+						//(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
+						(*myEvent.electron_scale)[iEle] = 1.0;
 						(*myEvent.electron_smearing)[iEle] = 0.;
 					} else if(!isData && !(channel == Selector::MuMu) ) { // only the smearings are corrected, skip this step if the channel != EE or EMu (this could be entered when running over DYToLL samples)
 						(*myEvent.electron_scale)[iEle] = 1.;
-						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
+						(*myEvent.electron_smearing)[iEle] = 0.;
+						//(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
 					}
 				}
 				myEventVector.push_back(myEvent);
-			}
+			}//apply preselection and scale and smearing corrections to electrons
 			myEvent.clear();
-		}
+		}//end loop over all events in the minitree
 		nEntries = myEventVector.size();
 		nEntries_100 = nEntries / 100;
 		ts.Stop();
@@ -543,9 +544,10 @@ int main(int ac, char* av[])
 //#endif
 				for(int Rand_Smear_Iter = 0; Rand_Smear_Iter < Total_Number_of_Systematics_Smear; Rand_Smear_Iter++)
 					Random_Numbers_for_Systematics_Smear[Rand_Smear_Iter] = Rand.Gaus(0.0, 1.);
-				ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
+				//ToyThrower( &myEventIt, Random_Numbers_for_Systematics_Smear, Random_Numbers_for_Systematics_Up_Down, seed_i, List_Systematics, isData);
 
 
+				/*
 				unsigned int nEle = myEventIt.electrons_p4->size();
 				for(unsigned int iEle = 0; iEle < nEle; ++iEle) {
 					TLorentzVector& p4 = (*myEventIt.electrons_p4)[iEle];
@@ -572,7 +574,8 @@ int main(int ac, char* av[])
 #endif
 
 					}
-				}
+				}//end loop to estimate impact of scale and smearing uncertainties on electron p4
+				*/
 
 				Selector tmp_selEvent(myEventIt);
 				selEvent = tmp_selEvent;

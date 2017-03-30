@@ -67,18 +67,26 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	for(int i = 0; i < nele; i++) {
 		myElectron ele;
 		ele.p4 = myEvent.electrons_p4->at(i);
-		ele.scale = myEvent.electron_scale->at(i);
-		ele.smearing = myEvent.electron_smearing->at(i);
+		//ele.scale = myEvent.electron_scale->at(i);
+		//ele.smearing = myEvent.electron_smearing->at(i);
+		ele.scale = 1.0;
+		ele.smearing = 0.0;
 		ele.charge = myEvent.electron_charge->at(i);
 		ele.r9 = myEvent.electron_r9->at(i);
 		ele.smearing_error = 0.;	///<temporary
 		ele.scale_error = 0.;		///<temporary
-		ele.IDSF = myEvent.electron_IDSF_central->at(i);
-		ele.IDSF_error = myEvent.electron_IDSF_error->at(i);
-		ele.RecoSF = myEvent.electron_RecoSF_central->at(i);
-		ele.RecoSF_error = myEvent.electron_RecoSF_error->at(i);
-		ele.HltSF = myEvent.electron_HltSF_central->at(i);
-		ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
+		//ele.IDSF = myEvent.electron_IDSF_central->at(i);
+		//ele.IDSF_error = myEvent.electron_IDSF_error->at(i);
+		//ele.RecoSF = myEvent.electron_RecoSF_central->at(i);
+		//ele.RecoSF_error = myEvent.electron_RecoSF_error->at(i);
+		//ele.HltSF = myEvent.electron_HltSF_central->at(i);
+		//ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
+		ele.IDSF = 1.0;
+		ele.IDSF_error = 0.0;
+		ele.RecoSF = 1.0;
+		ele.RecoSF_error = 0.0;
+		ele.HltSF = 1.0;
+		ele.HltSF_error = 0.0;
 		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
 		electrons.push_back(ele);
 	}
