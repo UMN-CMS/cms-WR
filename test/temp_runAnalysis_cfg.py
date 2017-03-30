@@ -41,25 +41,26 @@ options.output = defaultFileOutput
 #
 
 options.parseArguments()
+print options.files
 if(options.test==3):
     options.files="file:skim_test.root"   
     #options.maxEvents=100
     options.isMC=1
 elif(options.test==0):
 	#options.files=['root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/MuEG_RunC_SHv12/MuEG_RunC_1_1_n0i.root']
-	options.files='INPTFILE'
+	#options.files='null'
 	options.maxEvents= -1 
 	options.isMC=0
-	options.datasetTag='TAGNAME'
+	options.datasetTag='null'
 elif(options.test==2):
 	#original options.files="file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/puReweightingFiles/dyJetsAmcNloInclusiveM50MiniAodSim_1.root"
-	options.files='INPTFILE'
+	options.files=["IPTFILE"]
 	options.maxEvents= -1 
 	options.isMC=1
 	options.datasetTag='TAGNAME'
 elif(options.test==1):
 	#options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
-	options.files='file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRMiniAod/eejj/WR_M-2400_ToLNu_M-1200_miniAOD_13TeV-2016_1.root'
+	options.files=['file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRMiniAod/eejj/WR_M-2400_ToLNu_M-1200_miniAOD_13TeV-2016_1.root','file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRMiniAod/eejj/WR_M-2400_ToLNu_M-1200_miniAOD_13TeV-2016_2.root']
 	options.maxEvents=-1
 	options.isMC=1
 
