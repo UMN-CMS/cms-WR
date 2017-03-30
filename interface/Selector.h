@@ -44,6 +44,8 @@ public:
 	Float_t sublead_lepton_eta;
 	Float_t lead_lepton_phi;
 	Float_t sublead_lepton_phi;
+	Int_t lead_lepton_passedID;
+	Int_t sublead_lepton_passedID;
 	Float_t lead_jet_pt;
 	Float_t sublead_jet_pt;
 	Float_t lead_jet_eta;

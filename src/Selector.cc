@@ -88,18 +88,25 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.HltSF = 1.0;
 		ele.HltSF_error = 0.0;
 		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
+		ele.passedID = myEvent.electron_passedHEEP->at(i);
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
 	for(int i = 0; i < nmu; i++) {
 		myMuon mu;
 		mu.p4 = myEvent.muons_p4->at(i);
-		mu.IDSF = myEvent.muon_IDSF_central->at(i);
-		mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
-		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
-		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
+		//mu.IDSF = myEvent.muon_IDSF_central->at(i);
+		//mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
+		//mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
+		//mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
+		mu.IDSF = 1.0;
+		mu.IsoSF = 1.0;
+		mu.IDSF_error = 0.0;
+		mu.IsoSF_error = 0.0;
+		
 		mu.charge = myEvent.muon_charge->at(i);
 		mu.weight = mu.IDSF * mu.IsoSF;
+		mu.passedID = myEvent.muon_passedIDIso->at(i);
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
@@ -421,6 +428,8 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	sublead_jet_phi = jets[1].p4.Phi();
 	lead_jet_weight = 1.0;
 
+	Int_t sumPassingID = 0;
+	
 	if(tag == EE) { // EEJJ Channel
 		// Assert at least 2 good leptons
 		if (makeHists) sel::hists("nlep", 10, 0, 10)->Fill(electrons.size());
@@ -429,8 +438,16 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		}
 		if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(electrons.size());
 
+		for(unsigned int n=0; n<electrons.size(); n++){
+			if(electrons[n].passedID > 0) sumPassingID++;	//increment sumPassingID for each lepton passing ID with pt>50
+		}
+
 		lead_lepton_p4 = electrons[0].p4;
 		sublead_lepton_p4 = electrons[1].p4;
+
+		lead_lepton_passedID = electrons[0].passedID;
+		sublead_lepton_passedID = electrons[1].passedID;
+		//if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
 
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
@@ -457,8 +474,19 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		}
 		if (makeHists) sel::hists("nlep_cut", 10, 0, 10)->Fill(muons.size());
 
+		for(unsigned int n=0; n<muons.size(); n++){
+			if(muons[n].passedID > 0) sumPassingID++;	//increment sumPassingID for each lepton passing ID with pt>50
+		}
+		//if(sumPassingID > 1) return false;
+
+
 		lead_lepton_p4 = muons[0].p4;
 		sublead_lepton_p4 = muons[1].p4;
+
+		//temp comment to work with DoubleEG minitrees which dont have this info saved
+		lead_lepton_passedID = muons[0].passedID;
+		sublead_lepton_passedID = muons[1].passedID;
+		//if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
 
 		lead_lepton_IDSF_error = muons[0].IDSF_error;
 		lead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -517,6 +545,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			sublead_lepton_r9 = electrons[0].r9;
 		}
 	}
+
 	if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
 	else if(fabs(lead_lepton_p4.Eta()) > 1.4222) lead_det = DET_GAP;
 	else lead_det = DET_BARREL;
@@ -534,7 +563,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	if(lead_lepton_p4.Pt() < 60) return false;
 	if (makeHists) sel::hists("lead_lepton_pt_cut", 100, 0, 200)->Fill(lead_lepton_p4.Pt());
 	if (makeHists) sel::hists("sublead_lepton_pt", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
-	if(sublead_lepton_p4.Pt() < 50) return false;
+	if(sublead_lepton_p4.Pt() < 53) return false;
 	if (makeHists) sel::hists("sublead_lepton_pt_cut", 100, 0, 200)->Fill(sublead_lepton_p4.Pt());
 
 	if (makeHists) sel::hists("dr", 100, 0, 5)->Fill(dR_TLV(lead_lepton_p4, gJets[0].p4));
