@@ -60,7 +60,13 @@ configReader::configReader(std::string filename)
 TChain *configReader::getMiniTreeChain(std::string datasetName, std::string tag)
 {
 	TChain *chain = new TChain((tag + "/t").c_str(), "");
-	chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
+	//////////standard minitrees stored in shervin's user area
+	//chain->Add(("root://eoscms.cern.ch//store/user/shervin/ntuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
+		
+	///////////other bkgnd minitrees (WW, single top, t+W, QCD), DYMadIncl gen HT < 100 with pdf weights, and DYMadHT and DYAMC with pdf weights all stored in WR group space on CERN EOS
+	///////////also the inclusive WJetToLNu (GEN HT < 100) and HT binned WJetToLNu datasets stored in WR group space on CERN EOS
+	////and the unblinded DoubleEG and SingleMu minitrees made with loose lepton ID to estimate QCD bkgnd with collision data
+	chain->Add(("root://eoscms.cern.ch//store/group/phys_exotica/leptonsPlusJets/WR/tuples/" + datasetName + configFile["productionTAG"] + unblindTag() + "/unmerged-allRange.root").c_str());
 	chain->GetEntries();
 	return chain;
 }
