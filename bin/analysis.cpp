@@ -59,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL","lowWRlowestNu","lowWRlowNu","lowWRhalfNu","lowWRhighNu","highWRlowestNu","highWRlowNu","highWRhalfNu","highWRhighNu", "signal"
 	}
 	)
 	{
@@ -134,6 +134,15 @@ public:
 		if(mode.find("WRto") != _ENDSTRING) {
 			TTchainNames.push_back(mode);
 		}
+		if(mode == "lowWRlowestNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_160_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_160_PrivReco");
+		if(mode == "lowWRlowNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_800_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_800_PrivReco");
+		if(mode == "lowWRhalfNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_1200_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_1200_PrivReco");
+		if(mode == "lowWRhighNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_1600_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_1600_PrivReco");
+		if(mode == "highWRlowestNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_267_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_267_PrivReco");
+		if(mode == "highWRlowNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_1333_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_1333_PrivReco");
+		if(mode == "highWRhalfNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_2000_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_2000_PrivReco");
+		if(mode == "highWRhighNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_2667_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_2667_PrivReco");
+		
 		return TTchainNames;
 	};
 
@@ -247,7 +256,7 @@ int main(int ac, char* av[])
 	}
 
 
-	EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
+	//EnergyScaleCorrection_class eSmearer("Calibration/ZFitter/data/scales_smearings/74X_Prompt_2015");
 
 	//------------------------------ check if modes given in the command line are allowed
 	for(auto s : modes ) {
@@ -307,8 +316,8 @@ int main(int ac, char* av[])
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
-		if(isData) eSmearer.doScale = true;
-		else eSmearer.doSmearings = true;
+		//if(isData) eSmearer.doScale = true;
+		//else eSmearer.doSmearings = true;
 
 		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
 #ifdef DEBUG
@@ -459,7 +468,7 @@ int main(int ac, char* av[])
 #ifdef DEBUGG
 					std::cout << "looping over reco electrons in the event passing preselection" << std::endl;
 #endif
-					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
+					//TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
 					if(isData && !(channel == Selector::MuMu) ) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0., skip this step if the channel is not EE or EMu
 						//(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
 						(*myEvent.electron_scale)[iEle] = 1.0;
