@@ -13,7 +13,8 @@ eosReadingTag='root://eoscms.cern.ch/'
 #now loop over all datasets
 for j in ${!mcIdentifier[*]}
 do
-	hadd -k -O unmerged-allRange.root ${mcIdentifier[$j]}Part*.root
+	#hadd -k -O unmerged-allRange.root ${mcIdentifier[$j]}Part*.root
+	cp ${mcIdentifier[$j]}Part1.root unmerged-allRange.root
 	xrdcp unmerged-allRange.root $eosReadingTag$eosTuplePath${mcIdentifier[$j]}$productionTAG/.
 	rm unmerged-allRange.root
 	#echo "hadd -k -O unmerged-allRange.root ${mcIdentifier[$j]}Part*.root"
