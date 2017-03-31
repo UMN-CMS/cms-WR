@@ -3450,11 +3450,11 @@ void macroSandBox(){
 	TString treeName = "central_value_tree";
 	std::string fileMiddle = "_signal_";
 	
-	std::string leptChnl = "mumuMuMu";
-	std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
+	//std::string leptChnl = "mumuMuMu";
+	//std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
 	
-	//std::string leptChnl = "eeEE";
-	//std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
+	std::string leptChnl = "eeEE";
+	std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
 	
 	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
 	std::string fileEnd = ".root";
@@ -3466,11 +3466,7 @@ void macroSandBox(){
 	
 	std::string nonDefaultPdfFileMiddle = "_pdfWeight_";
 
-	//int wrMassArr[] = {1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
-	//int wrMassArr[] = {1000,1600,2000,3000,4000};
-	//int wrMassArr[] = {4000};
-	//int wrMassArr[] = {1200,1400,1800,2200,2400,2600,2800,3200,3600,3800};
-	int wrMassArr[] = {2200};
+	int wrMassArr[] = {1000,1400,1800,2200,2600,3000,3600,4000};
 	
 	vector<int> wrMassVect(wrMassArr, wrMassArr + sizeof(wrMassArr)/sizeof(int) );
 	unsigned int wrPts = wrMassVect.size();
@@ -3498,7 +3494,7 @@ void macroSandBox(){
 			if(wrMassVect[m] == 1800) nonDefaultPdfChain->Add( (nonDefaultPdfFileDir+defaultPdfFileBegin+"1800_1400"+fileMiddle+leptChnl+nonDefaultPdfFileMiddle+to_string(i)+fileEnd).c_str() );
 
 			numWeightedEvtsDiffPdfs[i] = calcTotalNumWeightedEvts(nonDefaultPdfChain);
-			std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;	///<sanity check
+			//std::cout<<"using pdf set "<< i << " mean num weighted evts =\t" << numWeightedEvtsDiffPdfs[i] <<std::endl;	///<sanity check
 			meanNumEvts += numWeightedEvtsDiffPdfs[i];
 
 			delete nonDefaultPdfChain;
