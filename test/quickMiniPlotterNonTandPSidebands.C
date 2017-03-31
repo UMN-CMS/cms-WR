@@ -145,7 +145,7 @@ void quickMiniPlotterNonTandPSidebands(){
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  Int_t nbins = 20;
+  Int_t nbins = 15;
   TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nbins,0,500);
   TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nbins,-3,4);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nbins,-3.15,3.15);
@@ -179,7 +179,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted_varBins","",binnum, bins);
 #endif 
 
-  float dilepton_max = 210.;
+  float dilepton_max = 200.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
   TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nbins,50,dilepton_max);
@@ -447,6 +447,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	maxYratioRange = 2.15;
 #endif
 
+  if(fname.EqualTo("Mll")) maxYratioRange = 1.8;
 
   ratio->GetYaxis()->SetRangeUser(0.51,maxYratioRange);	//upper limit 3. for mu, 2. for ele
   ratio->GetYaxis()->SetNdivisions(505);
@@ -495,8 +496,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 //TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU","unweightedMLLJJ"};
 
-  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") ){
-  if(fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") ){
+  //if(fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
