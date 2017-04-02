@@ -21,6 +21,7 @@
 #include <memory>
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
+#define highMlljj
 
 #define fixedBinWidths
 //#define variableBinWidths
@@ -146,6 +147,9 @@ void quickMiniPlotterNonTandPSidebands(){
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   Int_t nbins = 15;
+#ifdef highMlljj
+  nBins = 8;
+#endif
   TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",nbins,0,500);
   TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",nbins,-3,4);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",nbins,-3.15,3.15);
@@ -182,7 +186,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   float dilepton_max = 200.;
   if(channel == Selector::EMu)
     dilepton_max = 1000;
-  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",nbins,50,dilepton_max);
+  TH1F *h_dilepton_mass = new TH1F("h_dilepton_mass","",15,50,dilepton_max);
   TH1F *h_nPV = new TH1F("h_nPV","",nbins,0,50);
   TH1F *h_nPU = new TH1F("h_nPU","",nbins,0,50);
 
@@ -207,6 +211,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	if(myEvent->sublead_lepton_pt < 53.) continue;
 #ifdef doMllAboveZpeak
 	if(myEvent->dilepton_mass < 120. || myEvent->dilepton_mass > 180.) continue;
+#endif
+
+#ifdef highMlljj
+	if(myEvent->WR_mass < 1000) continue;
 #endif
 
     h_lepton_pt0->Fill(myEvent->lead_lepton_pt,(myEvent->weight)*ttScaleFactor);
@@ -340,7 +348,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj")){
-	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+	  th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+#ifdef variableBinWidths
+	  th->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+#endif
 	  Int_t maxBin = hs_data->GetNbinsX();
   }
   th->GetYaxis()->SetTitleOffset(1.2);
@@ -470,9 +481,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef fixedBinWidths
-  fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonMuMuChannel";	//for ratio plot
+  fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonMuMuChannel";
   if(channel == Selector::EE) fn = fname + "_fixedbinwidths_rescaledTTBarMC_lowdileptonEEChannel";
 #endif 
+
+#ifdef highMlljj
+  fn += "_highMlljj";
+#endif
 
 #ifdef DOAMC
   fn += "DYAMC";
@@ -496,7 +511,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 //TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU","unweightedMLLJJ"};
 
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") ){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("l1_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_pt") || fname.EqualTo("l2_eta") ){
   //if(fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
