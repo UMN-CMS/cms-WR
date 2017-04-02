@@ -22,7 +22,7 @@
 #define unblindedData
 #define plotRatio
 //#define showRescaledRunOneEEJJExcess
-#define useHtBinnedWJets
+//#define useHtBinnedWJets
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -38,7 +38,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -49,7 +49,7 @@ void quickSignalRegionMiniPlotter(){
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
-  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","QCD");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFiles/";
@@ -75,7 +75,7 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 #ifndef showRescaledRunOneEEJJExcess
-	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_qcdData_signal_eeEE.root");
 #endif
 
 	//there must be a file linked with the data chain, otherwise this macro will not produce any plots.
@@ -104,7 +104,7 @@ void quickSignalRegionMiniPlotter(){
 
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
-    zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_mumuMuMu.root");
+    zz = chain_ZZ->Add(localDir+"selected_tree_qcdData_signal_mumuMuMu.root");
 
 #ifndef unblindedData	
     data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
@@ -427,6 +427,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   }
 #endif
 
+#ifndef showRescaledRunOneEEJJExcess
+  leg->AddEntry( hs_ZZ, "QCD data driven");
+#endif
+
 #ifdef unblindedData 
   leg->AddEntry( hs_data, "Unblinded data");
 #endif
@@ -453,6 +457,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->SetFillColor(kBlue);
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
+#ifndef showRescaledRunOneEEJJExcess
+  th->Add(hs_ZZ); 	//add QCD data driven bkgnd
+#endif
   th->Add(hs_WZ);
   th->Add(hs_WJets);
   th->Add(hs_DY);
