@@ -23,6 +23,8 @@
 #define plotRatio
 //#define showRescaledRunOneEEJJExcess
 //#define useHtBinnedWJets
+//#define showQCD //dont enable this and showRescaledRunOneEEJJExcess simultaneously
+#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -38,7 +40,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -74,7 +76,11 @@ void quickSignalRegionMiniPlotter(){
 	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2000_1000_signal_eeEE.root");
 #endif
 
-#ifndef showRescaledRunOneEEJJExcess
+#ifdef showWR
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+#endif
+
+#ifdef showQCD
 	zz = chain_ZZ->Add(localDir+"selected_tree_qcdData_signal_eeEE.root");
 #endif
 
@@ -104,7 +110,13 @@ void quickSignalRegionMiniPlotter(){
 
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+#ifdef showQCD
     zz = chain_ZZ->Add(localDir+"selected_tree_qcdData_signal_mumuMuMu.root");
+#endif
+
+#ifdef showWR
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+#endif
 
 #ifndef unblindedData	
     data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
@@ -153,9 +165,9 @@ void quickSignalRegionMiniPlotter(){
 
   unsigned int nPlots = hs_DY.size();
 
-  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LJJ} using lead lepton [GeV]","M_{LJJ} using sublead lepton [GeV]","M_{LLJJ}"};
+  TString xtitles[] = {"leading lepton p_{T}","subleading lepton p_{T}","leading jet p_{T}","subleading jet p_{T}","leading lepton #eta","subleading lepton #eta","leading jet #eta","subleading jet #eta","leading lepton #phi","subleading lepton #phi","leading jet #phi","subleading jet #phi","Mlljj","dilepton mass","nPV","Z p_{T}","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LLJJ} (GeV)","M_{LJJ} using lead lepton [GeV]","M_{LJJ} using sublead lepton [GeV]","M_{LLJJ}","M_{LJJ} using lead lepton [GeV]","M_{LJJ} using sublead lepton [GeV]"};
 
-  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt","Mlljj_varBins","Mlljj_2012Bins","Mljj_leadLept","Mljj_subleadLept","Mlljj_thinBins"};
+  TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","Z_pt","Mlljj_lowZpt","Mlljj_varBins","Mlljj_2012Bins","Mljj_leadLept","Mljj_subleadLept","Mlljj_thinBins","Mljj_leadLept_varBins","Mljj_subleadLept_varBins"};
 
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
@@ -194,6 +206,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   Float_t runOneBins[] = { 600, 800, 1000, 1200, 1400, 1600, 1800, 2200, 4000};	//MLLJJ bins used in 2012 search
   Int_t  runOneBinnum = sizeof(runOneBins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass_2012bins = new TH1F("h_WR_mass_2012bins","", runOneBinnum, runOneBins);
+
+  Float_t runTwoBins[] = { 600, 800, 1000, 1200, 1600, 2400};
+  Int_t  runTwoBinnum = sizeof(runTwoBins)/sizeof(Float_t) - 1;
+  TH1F *h_Nu_mass_leadLept_varBins = new TH1F("h_Nu_mass_leadLept_varBins","", runTwoBinnum, runTwoBins);
+  TH1F *h_Nu_mass_subleadLept_varBins = new TH1F("h_Nu_mass_subleadLept_varBins","", runTwoBinnum, runTwoBins);
+
 
   Float_t bins[] = { 600, 750, 900, 1050, 1200, 1500, 1800, 2100, 4000};	//MLLJJ variable bins
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
@@ -256,6 +274,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	//plot lepton + dijet mass using leading or subleading lepton
 	h_Nu_mass_leadLept->Fill(leadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
   	h_Nu_mass_subleadLept->Fill(subleadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
+	h_Nu_mass_leadLept_varBins->Fill(leadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
+  	h_Nu_mass_subleadLept_varBins->Fill(subleadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
    
 	h_WR_mass_thinBins->Fill(myEvent->WR_mass, (myEvent->weight)*scaleFactor);
   
@@ -361,6 +381,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_Nu_mass_leadLept);
   hs->push_back(h_Nu_mass_subleadLept);
   hs->push_back(h_WR_mass_thinBins);
+  hs->push_back(h_Nu_mass_leadLept_varBins);
+  hs->push_back(h_Nu_mass_subleadLept_varBins);
+
+
+  //h_Nu_mass_leadLept_varBins->Fill(leadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
+  //h_Nu_mass_subleadLept_varBins->Fill(subleadLeptDijetFourMom.M(), (myEvent->weight)*scaleFactor);
 
   //rescale bin contents by bin width, and add overflow evts to last bin in two WR mass histos with variable bin widths
   //also add overflow events to last bin in fixed-bin-width MLLJJ and M_LJJ plots
@@ -427,8 +453,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   }
 #endif
 
-#ifndef showRescaledRunOneEEJJExcess
+#ifdef showQCD
   leg->AddEntry( hs_ZZ, "QCD data driven");
+#endif
+
+#ifdef showWR
+  leg->AddEntry( hs_ZZ, "WR signal");
+  leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{Nu}=1.1 TeV","");
 #endif
 
 #ifdef unblindedData 
@@ -456,8 +487,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ttbar->SetFillColor(kGreen);
   hs_WJets->SetFillColor(kBlue);
   hs_WZ->SetFillColor(kCyan);
+#ifdef showQCD
   hs_ZZ->SetFillColor(kMagenta);
-#ifndef showRescaledRunOneEEJJExcess
   th->Add(hs_ZZ); 	//add QCD data driven bkgnd
 #endif
   th->Add(hs_WZ);
@@ -473,6 +504,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->Add(hs_ttbar);
   hs_ZZ->Add(hs_WJets);
   hs_ZZ->Add(hs_WZ);
+  hs_ZZ->SetLineColor(kRed);
+  hs_ZZ->SetLineWidth(3);
+  hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
+#endif
+
+#ifdef showWR
   hs_ZZ->SetLineColor(kRed);
   hs_ZZ->SetLineWidth(3);
   hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
@@ -502,7 +539,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE) hs_ZZ->Draw("HIST same");
 #endif
- 
+
+#ifdef showWR
+  hs_ZZ->Draw("HIST same");
+#endif
+
   TString ytitle = "Events";
   th->GetYaxis()->SetTitle(ytitle.Data());
   th->GetXaxis()->SetTitle(xtitle.Data());
@@ -587,13 +628,17 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   fn += "_withHTBinnedWJets"; 
 #endif
 
+#ifdef showWR
+  fn += "_MWR2200MNu1100Signal";
+#endif
+
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE) fn += "_withRescaledRunOneEEJJExcess";
 #endif
   
   //plots with fixed bin widths
-  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
-  if(fname.EqualTo("Mlljj")){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
+  //if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
@@ -610,8 +655,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  mycanvas->Print((fn+"_log.C").Data());
   }
 
+
   //plots with variable bin widths (the bin contents are divided by the bin widths)
-  if(fname.EqualTo("Mlljj_2012Bins")){
+  if(fname.EqualTo("Mlljj_2012Bins") || fname.EqualTo("Mljj_leadLept_varBins") || fname.EqualTo("Mljj_subleadLept_varBins") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
