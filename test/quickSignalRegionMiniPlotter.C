@@ -19,12 +19,12 @@
 #include <cstdio>
 #include <memory>
 
-#define unblindedData
-#define plotRatio
+//#define unblindedData
+//#define plotRatio
 //#define showRescaledRunOneEEJJExcess
 //#define useHtBinnedWJets
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess simultaneously
-#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
+//#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -40,7 +40,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -85,9 +85,8 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 	//there must be a file linked with the data chain, otherwise this macro will not produce any plots.
-	//if unblindedData is not defined, then a histogram will not be made with the TChain named chain_data
 #ifndef unblindedData
-	data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	data = chain_data->Add(localDir+"selected_tree_WRtoEEJJ_1000_500_signal_eeEE.root");
 #endif
 
 #ifdef unblindedData	
@@ -119,7 +118,7 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 #ifndef unblindedData	
-    data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+    data = chain_data->Add(localDir+"selected_tree_WRtoMuMuJJ_1000_500_signal_mumuMuMu.root");
 #endif
 
 #ifdef unblindedData
@@ -133,7 +132,7 @@ void quickSignalRegionMiniPlotter(){
   }
 
   std::cout<<"data = "<< data <<"\tdy = "<< dy << std::endl;
-  if(data==0 || dy==0 || tt==0 || wjets==0 || wz==0 || zz==0) exit(-1);
+  //if(data==0 || dy==0 || tt==0 || wjets==0 || wz==0 || zz==0) exit(-1);
 
   Selector myEvent_DY;
   Selector myEvent_ttbar;
@@ -462,6 +461,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{Nu}=1.1 TeV","");
 #endif
 
+#ifndef unblindedData
+  leg->AddEntry(hs_data, "WR signal");
+  leg->AddEntry( (TObject*)0, "M_{WR}=1.0 TeV M_{Nu}=0.5 TeV","");
+#endif
+
 #ifdef unblindedData 
   leg->AddEntry( hs_data, "Unblinded data");
 #endif
@@ -534,6 +538,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->Draw("histo");
 #ifdef unblindedData
   hs_data->Draw("EPsame");
+#endif
+
+#ifndef unblindedData
+  hs_ZZ->SetLineColor(kRed);
+  hs_ZZ->SetLineWidth(3);
+  hs_ZZ->SetFillColor(kWhite);
+  hs_data->Draw("HIST same");
 #endif
 
 #ifdef showRescaledRunOneEEJJExcess
@@ -611,8 +622,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TString fn = fname;
 
 #ifndef unblindedData
-  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
-  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
+  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
 #endif
 
 #ifdef unblindedData
