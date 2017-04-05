@@ -40,7 +40,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -462,7 +462,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifndef unblindedData
-  leg->AddEntry(hs_data, "WR signal");
+  leg->AddEntry(hs_data, "WR signal x 0.3");
   leg->AddEntry( (TObject*)0, "M_{WR}=1.0 TeV M_{Nu}=0.5 TeV","");
 #endif
 
@@ -541,9 +541,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifndef unblindedData
-  hs_ZZ->SetLineColor(kRed);
-  hs_ZZ->SetLineWidth(3);
-  hs_ZZ->SetFillColor(kWhite);
+  hs_data->SetLineColor(kRed);
+  hs_data->SetLineWidth(3);
+  hs_data->SetFillColor(kWhite);
+  hs_data->Scale(0.3);
   hs_data->Draw("HIST same");
 #endif
 
