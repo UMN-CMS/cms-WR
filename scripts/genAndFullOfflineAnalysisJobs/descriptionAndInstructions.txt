@@ -1,3 +1,5 @@
+NOT VALID FOR RUNNING JOBS AT LXPLUS
+
 this collection of code is used to generate WR->ENu->EEQQ events at GEN level, and subject the generated events to
 a sequence of cuts which are representative of the RECO level eejj signal region (M_LL>200, M_LLJJ>600) cuts.  Running
 this code will create two sets of output files: one set of GEN events in .root files, and one set of TTrees in .root

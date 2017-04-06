@@ -58,6 +58,9 @@ string getMassWindowCuts(string branchNameForCut, string desiredWrMass, string d
 		massWindowReader >> channelFromFile >> wrMassForMassWindow >> massWindowLowerBound >> massWindowUpperBound;
 		if(wrMassForMassWindow == "0") continue;	//skip any lines in which the wrMass is zero
 		if(!wrMassIsNotEven){
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//////////////NOTE the following values must be adjusted by hand, as the MWR 3400 and 5400 datasets were not present in 2015
+			//////////////IF these datasets are present in 2016, the following lines of code can be commented out
 			//there are several even value mass points which are not present in the mass_cuts.txt file in the configs directory
 			//hard code the mass window cut for those mass points here
 			//calculate the upper and lower bounds by hand using a linear interpolation between the point below and point above the desired wr mass point
@@ -170,16 +173,17 @@ void genWrEfficienciesWithMassWindowCuts(){
 	///pass all offline cuts at each point in the (MWR, MNu) space
 	///also print a table of these values
 	///also apply the mass window cuts before calculating the efficiency
+	///to switch lepton channels, change all instances of MuMu to EE using sed
 
 	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
-	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
+	string dir= "/path/name/to/wrEvents/after/cuts/";
 	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
 	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
-	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
+	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesWithMassWindowCuts.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
@@ -209,21 +213,6 @@ void genWrEfficienciesWithMassWindowCuts(){
 			///calculate percentage of evts which pass GEN cuts and mass window cuts, and store this percentage along with the nu and wr mass values in a txt file
 			passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( (getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt")).c_str() )/genInfo->GetEntries());
 
-			////////////////////////////////////
-			//only for MuMu channel
-			if(wrMass > 3050 && wrMass < 3150) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 2600.000000 && fourObjectMass < 4100.000000000" )/genInfo->GetEntries());
-			if(wrMass > 1250 && wrMass < 1350) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 1200.000000 && fourObjectMass < 1750.000000000" )/genInfo->GetEntries());
-			if(wrMass > 1450 && wrMass < 1550) passingPercentage = (100)*((Float_t) afterOfflineCuts->GetEntries( "fourObjectMass > 1400.000000 && fourObjectMass < 1975.000000000" )/genInfo->GetEntries());
-			////////////////////////////////////
-	
-
-			/*
-			if(wrMass > 1150 && wrMass < 1650 && nuMass > 450){
-				std::cout<<"wrMass "<< wrMass <<" nuMass "<< nuMass <<"   mass window cut   "<< getMassWindowCuts("fourObjectMass",to_string(wrMass), "MuMu","../../configs/mass_cuts.txt") <<std::endl;
-
-			}
-			*/
-			
 			///calculate percentage of evts which pass all GEN cuts before mass window cut
 			passingAllGenCuts = (100)*((Float_t) afterOfflineCuts->GetEntries()/genInfo->GetEntries());
 

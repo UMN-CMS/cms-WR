@@ -188,7 +188,7 @@ etaRestrictedMatchedGenQuarkFilter = cms.EDFilter("CandViewCountFilter",
 
 etaRestrictedMatchedGenLeadingLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("bareMatchedLeadingGenEle"),
-		cut = cms.string("abs(eta) < 2.5")
+		cut = cms.string("abs(eta) < 2.4")
 		)
 etaRestrictedMatchedGenLeadingLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("etaRestrictedMatchedGenLeadingLepton"),
@@ -197,7 +197,7 @@ etaRestrictedMatchedGenLeadingLeptonFilter = cms.EDFilter("CandViewCountFilter",
 
 etaRestrictedMatchedGenSubleadingLepton = cms.EDFilter("CandViewSelector",
 		src = cms.InputTag("bareMatchedSubleadingGenEle"),
-		cut = cms.string("abs(eta) < 2.5")
+		cut = cms.string("abs(eta) < 2.4")
 		)
 etaRestrictedMatchedGenSubleadingLeptonFilter = cms.EDFilter("CandViewCountFilter",
 		src = cms.InputTag("etaRestrictedMatchedGenSubleadingLepton"),
