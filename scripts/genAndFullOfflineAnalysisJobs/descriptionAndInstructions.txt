@@ -5,7 +5,7 @@ files representing the GEN events which have been subjected to the offline cuts.
 to run on the FNAL LPC cluster with condor, and store the two sets of output files in FNAL /eos/uscms/store/user
 space.
 
-This code will generate a fixed number of GEN events at many points in a 2D (MWR, MNu) space.  The number of events
+This code will generate a fixed number of GEN events at many points in a 2D (MWR, MNu) space.  Defined in The number of events
 generated at each point, the distance (in GeV) between neighboring points in the MWR or MNu directions, the minimum
 MNu and maximum MWR values, path names to the directories which will store the output TTree and GEN event files, and
 the absolute path name of the directory which contains the job run .csh scripts are all defined in
