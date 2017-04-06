@@ -180,9 +180,9 @@ void printSystStdDevToFile(){
 	///user defined low, medium, and high WR mass points
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
+	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
 	//int wrMassPoints[] = {1600,2200,2800};
-	//int wrMassPoints[] = {1400,2000};
+	int wrMassPoints[] = {2200};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -190,10 +190,10 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	//string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/", "3200toysJetSystNewMassWindows/","3200toysAllLeptSystNewMassWindows/"};
-	//string uncertTagNames[] = {"all sources","jet syst","mixed lepton"};
-	string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/"};
-	string uncertTagNames[] = {"all sources"};
+	string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/", "3200toysJetSystNewMassWindows/","3200toysAllLeptSystNewMassWindows/"};
+	string uncertTagNames[] = {"all sources","jet syst","mixed lepton"};
+	//string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/"};
+	//string uncertTagNames[] = {"all sources"};
 	vector<string> relDirPathsVect(relDirPaths, relDirPaths + sizeof(relDirPaths)/sizeof(string) );
 	vector<string> uncertTagNamesVect(uncertTagNames, uncertTagNames + sizeof(uncertTagNames)/sizeof(string) );
 	string treeName = "syst_tree", eeChannelInFileNames = "eeEE", mumuChannelInFileNames = "mumuMuMu";
