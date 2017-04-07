@@ -57,9 +57,10 @@ elif(options.test==2):
 	options.isMC=1
 	options.datasetTag='TAGNAME'
 elif(options.test==1):
-    options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
-    options.maxEvents=200
-    options.isMC=1
+	#options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
+	options.files='file:/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRMiniAod/eejj/WR_M-2400_ToLNu_M-1200_miniAOD_13TeV-2016_1.root'
+	options.maxEvents=-1
+	options.isMC=1
 
 print options
 
@@ -102,7 +103,7 @@ process.source = cms.Source("PoolSource",
                             secondaryFileNames = cms.untracked.vstring(options.secondaryFiles)
 )
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 5000
+process.MessageLogger.cerr.FwkReport.reportEvery = 50
 
 
 process.TFileService = cms.Service('TFileService', fileName = cms.string(options.output))
