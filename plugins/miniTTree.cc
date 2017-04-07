@@ -177,7 +177,18 @@ void miniTTree::analyze(const edm::Event& event, const edm::EventSetup&)
 		}
 		
 		//now do another set of weights
-		edm::InputTag pdfWgtTagThree("wrPdfWeights:cteq66");
+		edm::InputTag pdfWgtTagTwo("wrPdfWeights:cteq66");
+		edm::Handle<std::vector<double> > pdfWgtHandleTwo;
+		event.getByLabel(pdfWgtTagTwo, pdfWgtHandleTwo);
+
+		std::vector<double> wgtsTwo = *(pdfWgtHandleTwo);
+		unsigned int nwgtsTwo = wgtsTwo.size();
+		for(unsigned int i=1; i<nwgtsTwo; i++){
+			myEvent.renormFactAndPdfWeights->push_back( wgtsTwo[i]/wgtsTwo[0] );
+		}
+	
+		//now do another set of weights
+		edm::InputTag pdfWgtTagThree("wrPdfWeights:NNPDF23");
 		edm::Handle<std::vector<double> > pdfWgtHandleThree;
 		event.getByLabel(pdfWgtTagThree, pdfWgtHandleThree);
 

@@ -57,9 +57,9 @@ elif(options.test==2):
 	options.isMC=1
 	options.datasetTag='TAGNAME'
 elif(options.test==1):
-    options.files='root://eoscms//eos/cms/store/user/shervin/WRToNuMuToMuMuJJ_MW-2600_MNu-1300_TuneCUETP8M1_13TeV-pythia8/WRtoMuMuJJ_2600_1300_SHv2/160124_160701/0000/output_1.root'
-    options.maxEvents=200
-    options.isMC=1
+	options.files='root://eoscms.cern.ch//eos/cms/store/user/shervin/skims/WRtoMuMuJJ_2000_1000_SHv12/WRtoMuMuJJ_2000_1000_1_2_Z0T.root'
+	options.maxEvents=200
+	options.isMC=1
 
 print options
 
@@ -156,7 +156,8 @@ process.wrPdfWeights = cms.EDProducer("PdfWeightProducer",
 		PdfInfoTag = cms.untracked.InputTag("generator"),
 		PdfSetNames = cms.untracked.vstring(
 			"NNPDF30_lo_as_0130.LHgrid",
-			"cteq66.LHgrid"
+			"cteq66.LHgrid",
+			"NNPDF23_lo_as_0130_qed.LHgrid"
 			)
 		)
 
