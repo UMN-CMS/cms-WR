@@ -3445,28 +3445,26 @@ void macroSandBox(){
 
 #ifdef WRPdfUnc
 	
-	int numDiffPdfs = 143;
-	Double_t numPdfs = 143;	//equal to numDiffPdfs
+	int numDiffPdfs = 243;
+	Double_t numPdfs = 243;	//equal to numDiffPdfs
 	TString treeName = "central_value_tree";
 	std::string fileMiddle = "_signal_";
 	
-	//std::string leptChnl = "mumuMuMu";
-	//std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
+	std::string leptChnl = "mumuMuMu";
+	std::string defaultPdfFileBegin = "selected_tree_WRtoMuMuJJ_";
 	
-	std::string leptChnl = "eeEE";
-	std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
+	//std::string leptChnl = "eeEE";
+	//std::string defaultPdfFileBegin = "selected_tree_WRtoEEJJ_";
 	
-	std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
+	//std::string defaultPdfFileDir = "../analysisCppOutputRootFiles/";
 	std::string fileEnd = ".root";
 	//use std::string to facilitate use of to_string() method
-	//std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/WRPdfUncertFiles/";
-
-
-	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/wrDevelopment/CMSSW_7_4_15_patch1/src/ExoAnalysis/cmsWR/";
+	std::string nonDefaultPdfFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/WRPdfUncertFiles/";
 	
 	std::string nonDefaultPdfFileMiddle = "_pdfWeight_";
 
-	int wrMassArr[] = {1000,1400,1800,2200,2600,3000,3600,4000};
+	//int wrMassArr[] = {1000,1400,1800,2200,2600,3000,3600,4000};
+	int wrMassArr[] = {1000};
 	
 	vector<int> wrMassVect(wrMassArr, wrMassArr + sizeof(wrMassArr)/sizeof(int) );
 	unsigned int wrPts = wrMassVect.size();
@@ -3485,7 +3483,7 @@ void macroSandBox(){
 			if((i==55 || i==70 || i==81 ) && wrMassVect[m]==3000 && leptChnl=="mumuMuMu") continue;
 			if((i==23) && wrMassVect[m]==4000 && leptChnl=="mumuMuMu") continue;
 			if(i==71 && wrMassVect[m]==3800 && leptChnl=="mumuMuMu") continue;
-			if((i==0 || i==23 || i==94) && wrMassVect[m]==4000 && leptChnl=="eeEE") continue;
+			//if((i==0 || i==23 || i==94) && wrMassVect[m]==4000 && leptChnl=="eeEE") continue;
 			if((i==33 || i==48 || i==96 ) && wrMassVect[m]==3000 && leptChnl=="eeEE") continue;
 
 
