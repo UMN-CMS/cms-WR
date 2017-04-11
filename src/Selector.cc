@@ -30,8 +30,14 @@ void goodJetsLooseCuts(myJetCollection *evJets, myJetCollection *selJets)
 void goodEles(myElectronCollection *evEles, myElectronCollection *selEles)
 {
 	for(auto e : *evEles) {
+		//dont require full HEEP ID
 		if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
 			selEles->push_back(e);
+		
+		//require full HEEP ID
+		//if(e.p4.Pt() > 40 && fabs(e.p4.Eta()) < 2.4 && e.passedID > 0 && (fabs(e.p4.Eta()) < 1.4222 || fabs(e.p4.Eta()) > 1.566))
+		//	selEles->push_back(e);
+	
 	}
 }
 
@@ -45,8 +51,13 @@ void goodElesLooseCuts(myElectronCollection *evEles, myElectronCollection *selEl
 void goodMuons(myMuonCollection *evMuons, myMuonCollection *selMuons)
 {
 	for(auto m : *evMuons) {
+		//dont require full isHighPt ID
 		if(m.p4.Pt() > 40 && fabs(m.p4.Eta()) < 2.4)
 			selMuons->push_back(m);
+		
+		//require full isHighPt ID
+		//if(m.p4.Pt() > 40 && m.passedID > 0 && fabs(m.p4.Eta()) < 2.4)
+		//	selMuons->push_back(m);
 	}
 }
 
