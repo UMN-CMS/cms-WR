@@ -87,7 +87,7 @@ process.addStringIdentifier.stringStoredInOutputCollection = cms.string(options.
 if(options.isMC==0):
     process.GlobalTag.globaltag = '74X_dataRun2_v5'
 else:
-    process.GlobalTag.globaltag = '74X_mcRun2_asymptotic_v4'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
 
 
 process.maxEvents = cms.untracked.PSet(
