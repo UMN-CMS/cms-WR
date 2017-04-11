@@ -20,15 +20,21 @@ options.register('doWR',
 		"enable filters for WR skims")
 
 options.register('GT',
-		'74X_mcRun2_asymptotic_v4',
+		'80X_mcRun2_asymptotic_2016_miniAODv2_v1',
 		VarParsing.VarParsing.multiplicity.singleton,
 		VarParsing.VarParsing.varType.string,
 		"global tag name")
 
 #default options
 options.maxEvents = -1
-options.files='root://xrootd-cms.infn.it/INPTFILE'
-options.output = "TAGNAME_skimPartNNN.root"
+
+#use this option for accessing files published with CRAB
+#options.files='root://xrootd-cms.infn.it/INPTFILE'
+
+#use this option for accessing a local file
+#options.files='file:WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_CHNL_NNN.root'
+
+#options.output = "TAGNAME_skimPartNNN.root"
 #
 
 options.parseArguments()
