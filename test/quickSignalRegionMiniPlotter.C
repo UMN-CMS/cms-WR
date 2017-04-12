@@ -19,12 +19,12 @@
 #include <cstdio>
 #include <memory>
 
-//#define unblindedData
+#define unblindedData
 //#define plotRatio
 //#define showRescaledRunOneEEJJExcess
 //#define useHtBinnedWJets
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess simultaneously
-//#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
+#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -77,7 +77,8 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 #ifdef showWR
-	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	//zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_800_400_signal_eeEE.root");
 #endif
 
 #ifdef showQCD
@@ -114,7 +115,8 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 #ifdef showWR
-	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	//zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_800_400_signal_mumuMuMu.root");
 #endif
 
 #ifndef unblindedData	
@@ -178,17 +180,17 @@ void quickSignalRegionMiniPlotter(){
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",50,0,700);
+  TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",14,0,700);
   TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",50,-3,3);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",50,-3.15,3.15);
-  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",50,0,700);
+  TH1F *h_lepton_pt1 = new TH1F("h_lepton_pt1","",10,0,500);
   TH1F *h_lepton_eta1 = new TH1F("h_lepton_eta1","",50,-3,3);
   TH1F *h_lepton_phi1 = new TH1F("h_lepton_phi1","",50,-3.15,3.15);
 
-  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",50,0,700);
+  TH1F *h_jet_pt0 = new TH1F("h_jet_pt0","",14,0,700);
   TH1F *h_jet_eta0 = new TH1F("h_jet_eta0","",50,-3,3);
   TH1F *h_jet_phi0 = new TH1F("h_jet_phi0","",50,-3.15,3.15);
-  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",50,0,700);
+  TH1F *h_jet_pt1 = new TH1F("h_jet_pt1","",14,0,700);
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",50,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",50,-3.15,3.15);
   TH1F *h_WR_mass = new TH1F("h_WR_mass_fixedBinWidth","",17,600,4000);	//200 GeV wide bins. DO NOT change this binning
@@ -457,8 +459,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef showWR
-  leg->AddEntry( hs_ZZ, "WR signal");
-  leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{Nu}=1.1 TeV","");
+  leg->AddEntry( hs_ZZ, "WR signal x 0.1");
+  //leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{Nu}=1.1 TeV","");
+  leg->AddEntry( (TObject*)0, "M_{WR}=0.8 TeV M_{Nu}=0.4 TeV","");
 #endif
 
 #ifndef unblindedData
@@ -516,6 +519,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef showWR
   hs_ZZ->SetLineColor(kRed);
   hs_ZZ->SetLineWidth(3);
+  hs_ZZ->Scale(0.1);
   hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
 #endif
 
@@ -641,7 +645,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef showWR
-  fn += "_MWR2200MNu1100Signal";
+  //fn += "_MWR2200MNu1100Signal";
+  fn += "_MWR800MNu400Signal";
 #endif
 
 #ifdef showRescaledRunOneEEJJExcess
@@ -649,8 +654,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
   
   //plots with fixed bin widths
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
+  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
   //if(fname.EqualTo("Mlljj")){
+  if(fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
