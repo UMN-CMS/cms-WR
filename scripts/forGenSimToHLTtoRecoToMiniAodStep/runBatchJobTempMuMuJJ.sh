@@ -12,32 +12,36 @@ eval "cmsenv"
 
 #make the GEN-SIM root file, then delete GEN-SIM python file
 eval "cmsRun WR_M-MASSWR_ToLNu_M-MASSNU_GEN-SIM_MuMuJJ_NUM.py"
+#eval "cp WR_M-MASSWR_ToLNu_M-MASSNU_GEN-SIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/."
 mv WR_M-MASSWR_ToLNu_M-MASSNU_GEN-SIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/.
 rm WR_M-MASSWR_ToLNu_M-MASSNU_GEN-SIM_MuMuJJ_NUM.py
 
 #run HLT on GEN-SIM root file, then delete HLT py file and GENSIM root file made in previous step
 eval "cmsRun WR_M-MASSWR_ToLNu_M-MASSNU_HLT_MuMuJJ_NUM.py"
+#eval "cp WR_M-MASSWR_ToLNu_M-MASSNU_RAWSIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/."
+#rm WR_M-MASSWR_ToLNu_M-MASSNU_HLT_MuMuJJ_NUM.py
 mv WR_M-MASSWR_ToLNu_M-MASSNU_RAWSIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/.
-rm WR_M-MASSWR_ToLNu_M-MASSNU_HLT_MuMuJJ_NUM.py
-#rm WR_M-MASSWR_ToLNu_M-MASSNU_HLT_MuMuJJ_NUM.py /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_GEN-SIM_13TeV-2016_MuMuJJ_NUM.root
+rm WR_M-MASSWR_ToLNu_M-MASSNU_HLT_MuMuJJ_NUM.py /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_GEN-SIM_13TeV-2016_MuMuJJ_NUM.root
 
-##run RECO on RAW-SIM root file, then delete RECO py file and HLT root file made in previous step
-#eval "cmsRun WR_M-MASSWR_ToLNu_M-MASSNU_RECO_MuMuJJ_NUM.py"
-#mv WR_M-MASSWR_ToLNu_M-MASSNU_AODSIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/.
-#rm WR_M-MASSWR_ToLNu_M-MASSNU_RECO_MuMuJJ_NUM.py /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_RAWSIM_13TeV-2016_MuMuJJ_NUM.root
-#
-##run miniAODSIM compression on AODSIM root file, then delete miniAOD py file and AODSIM root file made in previous step
-#eval "cmsRun WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_MuMuJJ_NUM.py"
-#mv WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/.
-#rm WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_MuMuJJ_NUM.py /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_AODSIM_13TeV-2016_MuMuJJ_NUM.root
-#
-##run WR skim on miniAODSIM file produced by previous step
-#eval "cd ../../"
-#eval "cmsRun test/temp_skims_cfg.py files=file:/tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_MuMuJJ_NUM.root output=WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root"
-#mv WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root /tmp/skalafut/.
-#rm /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_MuMuJJ_NUM.root
-#
-##process WR skim file into WR minitrees
-#eval "cmsRun test/temp_runAnalysis_cfg.py isMC=1 datasetTag=WRtoMuMuJJ_MASSWR_MASSNU_PrivReco files=file:/tmp/skalafut/WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root output=WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_PartNUM.root"
-#rm /tmp/skalafut/WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root
-#
+#run RECO on RAW-SIM root file, then delete RECO py file and HLT root file made in previous step
+eval "cmsRun WR_M-MASSWR_ToLNu_M-MASSNU_RECO_MuMuJJ_NUM.py"
+mv WR_M-MASSWR_ToLNu_M-MASSNU_AODSIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/.
+#eval "cp WR_M-MASSWR_ToLNu_M-MASSNU_AODSIM_13TeV-2016_MuMuJJ_NUM.root /tmp/skalafut/."
+rm WR_M-MASSWR_ToLNu_M-MASSNU_RECO_MuMuJJ_NUM.py /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_RAWSIM_13TeV-2016_MuMuJJ_NUM.root
+
+#run miniAODSIM compression on AODSIM root file, then delete miniAOD py file and AODSIM root file made in previous step
+#move the miniAOD .root file two directories up to facilitate skimming and minitree production on lxplus batch system
+eval "cmsRun WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_MuMuJJ_NUM.py"
+mv WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_MuMuJJ_NUM.root ../../.
+rm WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_MuMuJJ_NUM.py /tmp/skalafut/WR_M-MASSWR_ToLNu_M-MASSNU_AODSIM_13TeV-2016_MuMuJJ_NUM.root
+
+#run WR skim on miniAODSIM file produced by previous step
+#dont move skim file to tmp directory, jobs running on lxplus batch system cant find /tmp/skalafut/WR_M...root
+eval "cd ../../"
+eval "cmsRun test/temp_skims_cfg.py files=file:WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_MuMuJJ_NUM.root output=WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root"
+rm WR_M-MASSWR_ToLNu_M-MASSNU_miniAOD_13TeV-2016_MuMuJJ_NUM.root
+
+#process WR skim file into WR minitrees
+eval "cmsRun test/temp_runAnalysis_cfg.py test=5 isMC=1 datasetTag=WRtoMuMuJJ_MASSWR_MASSNU_PrivReco files=file:WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root output=WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_PartNUM.root"
+rm WRtoMuMuJJ_MASSWR_MASSNU_PrivReco_skimPartNUM.root
+

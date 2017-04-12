@@ -1,17 +1,17 @@
 #!/bin/bash
 #execute this script in its local directory
 
-#WrMasses=(2400 2400 4000 4000)
-#NuMasses=(2200 500 3800 800)
-WrMasses=(2400)
-NuMasses=(2200)
+WrMasses=(2400 2400 4000 4000)
+NuMasses=(2200 500 3800 800)
 jobStartingDir="$PWD"
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
-nJobs=1	#each job produces 250 events
-jobId=1	#increment by 1 after submitting each job
+nJobs=500	#each job produces 100 events, 250 evts takes too long for 1nd queue
 
 for h in ${!WrMasses[*]}
 do
+
+	jobId=1	#increment by 1 after submitting one job to both lepton channels
+
 	while [ $jobId -le $nJobs ]
 	do
 
@@ -51,7 +51,7 @@ do
 
 		#submit job to queue
 		#echo "bsub -R 'rusage[mem=1500] && pool>2000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
-		eval "bsub -R 'rusage[mem=1500] && pool>2000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
+		eval "bsub -R 'rusage[mem=1500] && pool>3000' -q 1nd -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
 
 
 		#############MuMuJJ#################3
@@ -90,7 +90,7 @@ do
 
 		#submit job to queue
 		#echo "bsub -R 'rusage[mem=1500] && pool>2000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
-		eval "bsub -R 'rusage[mem=1500] && pool>2000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
+		eval "bsub -R 'rusage[mem=1500] && pool>3000' -q 1nd -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
 
 
 		#increment jobId number
