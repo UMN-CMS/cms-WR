@@ -6,11 +6,15 @@ NuMasses=(2200 500 3800 800)
 jobStartingDir="$PWD"
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
 nJobs=500	#each job produces 100 events, 250 evts takes too long for 1nd queue
+maxRunning=25
+nuMassIncrement=0.00001
 
 for h in ${!WrMasses[*]}
 do
 
 	jobId=1	#increment by 1 after submitting one job to both lepton channels
+	sleepIndex=1	#clone of jobId
+	updateNuMass=${NuMasses[$h]}
 
 	while [ $jobId -le $nJobs ]
 	do
@@ -19,6 +23,7 @@ do
 		#make python config file for GEN-SIM step                     
 		eval "sed 's/MASSWR/${WrMasses[$h]}/g'  WR_M-UNDEF_ToLNu_M-UNDEF_GEN-SIM_EEJJ.py > WR_tempEEJJ.py"   
 		eval "sed -i 's@NUM@$jobId@g' WR_tempEEJJ.py"
+		eval "sed -i 's@MMAASSNU@$updateNuMass@g' WR_tempEEJJ.py"
 		eval "sed 's/MASSNU/${NuMasses[$h]}/g'  WR_tempEEJJ.py > WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_GEN-SIM_EEJJ_${jobId}.py"
 		rm WR_tempEEJJ.py
 
@@ -50,14 +55,15 @@ do
 		rm jobOneEEJJ.sh jobTwoEEJJ.sh jobThreeEEJJ.sh
 
 		#submit job to queue
-		#echo "bsub -R 'rusage[mem=1500] && pool>2000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
-		eval "bsub -R 'rusage[mem=1500] && pool>3000' -q 1nd -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
+		#echo "bsub -R 'rusage[mem=2000] && pool>3000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
+		eval "bsub -R 'rusage[mem=2000] && pool>3000' -q 1nd -J genSimToHltToRecoToMiniAodToSkimToMinitree_EEJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_EEJJ_${jobId}.sh"
 
 
 		#############MuMuJJ#################3
 		#make python config file for GEN-SIM step                     
 		eval "sed 's/MASSWR/${WrMasses[$h]}/g'  WR_M-UNDEF_ToLNu_M-UNDEF_GEN-SIM_MuMuJJ.py > WR_tempMuMuJJ.py"   
 		eval "sed -i 's@NUM@$jobId@g' WR_tempMuMuJJ.py"
+		eval "sed -i 's@MMAASSNU@$updateNuMass@g' WR_tempMuMuJJ.py"
 		eval "sed 's/MASSNU/${NuMasses[$h]}/g'  WR_tempMuMuJJ.py > WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_GEN-SIM_MuMuJJ_${jobId}.py"
 		rm WR_tempMuMuJJ.py
 
@@ -89,12 +95,20 @@ do
 		rm jobOneMuMuJJ.sh jobTwoMuMuJJ.sh jobThreeMuMuJJ.sh
 
 		#submit job to queue
-		#echo "bsub -R 'rusage[mem=1500] && pool>2000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
-		eval "bsub -R 'rusage[mem=1500] && pool>3000' -q 1nd -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
+		#echo "bsub -R 'rusage[mem=2000] && pool>3000' -q 1nh -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
+		eval "bsub -R 'rusage[mem=2000] && pool>3000' -q 1nd -J genSimToHltToRecoToMiniAodToSkimToMinitree_MuMuJJ_${jobId}_${WrMasses[$h]}_${NuMasses[$h]} < runBatchJob_WR_M-${WrMasses[$h]}_ToLNu_M-${NuMasses[$h]}_MuMuJJ_${jobId}.sh"
 
-
-		#increment jobId number
+		#increment jobId, sleepIndex, and updateNuMass numbers
 		let jobId=jobId+1
+		let sleepIndex=sleepIndex+1
+		updateNuMass=`echo $updateNuMass + $nuMassIncrement | bc -l`
+
+		#delay job submission for a few minutes after submitting many jobs to queue
+		if [ $sleepIndex -ge $maxRunning ]; then
+			let sleepIndex=1
+			eval "sleep 5m"
+		fi
+
 	done
 
 
