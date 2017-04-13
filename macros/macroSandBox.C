@@ -19,6 +19,7 @@
 #include <TPad.h>
 #include <TObjArray.h>
 #include "TCollection.h"
+#include "TBranchElement.h"
 #include <TCut.h>
 #include <cmath>
 #include <string>
@@ -63,7 +64,8 @@ using namespace std;
 //#define DYPdfUnc
 //#define TTScaleFactorSystematic
 //#define WRPdfUnc
-#define expAndObsInMassWindows
+//#define expAndObsInMassWindows
+#define printTnPTreeBranches
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -3706,6 +3708,30 @@ void macroSandBox(){
 
 #endif
 	//end expAndObsInMassWindows
+
+	//begin printTnPTreeBranches
+#ifdef printTnPTreeBranches
+	//print the long list of branches stored in the tpTree within the TnP root files produced by the MuonPOG for estimating data and MC trigger, ID and other efficiencies
+	TChain * tnpTree = new TChain("tpTree/fitter_tree");
+	tnpTree->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/tnpFilesForMuTriggerEff/TnP_trees_aod747_DY_LOmadgraph_25ns_withFixes.root");
+
+	//make a txt file which will hold names of all branches
+	string pathToBranchNameFile = "tnpMuonBranchNames.txt";
+	ofstream writeToBranchFile(pathToBranchNameFile.c_str(),ofstream::trunc);
+	
+	writeToBranchFile<<"#branch name"<< std::endl;
+	writeToBranchFile<<"    "<< std::endl;
+	
+	TObjArray *branches = tnpTree->GetListOfBranches();
+	TIter brItr(branches);
+	//now loop over all branches in tree, and print their names to a txt file
+	for(TBranchElement *brEle = (TBranchElement*) brItr.Next(); brEle != NULL; brEle = (TBranchElement*) brItr.Next()){
+		writeToBranchFile << brEle->GetName() << std::endl;
+	}//end loop over all branches
+
+
+#endif
+	//end printTnPTreeBranches
 
 
 }///end macroSandBox()
