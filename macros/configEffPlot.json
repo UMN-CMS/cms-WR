@@ -1,0 +1,81 @@
+{
+	"example1"   :
+	{
+		"comment"   : "Look at example2 to understand the config parameters.",
+		"inputs"    :
+		{
+			"input_1"   :
+			{
+				"label"             : "Data",
+				"legendEntry"       : "Data",
+				"filename"          : "examples/TnPData.root",
+				"directory"         : "tpTree/MuonEfficiency/",
+				"binnedVariable"    : "abseta"
+			},
+			"input_2"   :
+			{
+				"label"             : "MC",
+				"legendEntry"       : "MC",
+				"filename"          : "examples/TnPMC.root",
+				"directory"         : "tpTree/MuonEfficiency/",
+				"binnedVariable"    : "abseta"
+			}
+		},
+		"plot"      :
+		{
+			"x"                 : [0.0, 2.4, "Muon abseta"],
+			"y"                 : [0.65, 1.15, "Efficiency"],
+			"legendTitle"       : "Mu50 HLT, p_{T} > 55 GeV",
+			"caption"           : "7.6 fb^{-1} (13 TeV, 2016)",
+			"logo"              : ["CMS", "Preliminary"],
+			"colorMap"          : [1, 4, 2, 3, 5, 6, 7, 8, 9],
+			"markerMap"         : [20, 21, 22, 23, 24, 25, 26]
+		},
+		"output"    :
+		{
+			"directory"         : "examplePlots/plot_1",
+			"filenamePlot"     : "plot",
+			"fileType"          : ["png", "pdf"]
+		}
+	},
+
+	"example2"   :
+	{
+		"comment"   : "This is an copy of the first example with more understandable config parameters.",
+		"inputs"    :
+		{
+			"input_1"   :
+			{
+				"label"             : "Label input 1",
+				"legendEntry"       : "Legend input 1",
+				"filename"          : "examples/TnPData.root",
+				"directory"         : "tpTree/MuonEfficiency/",
+				"binnedVariable"    : "abseta"
+			},
+			"input_2"   :
+			{
+				"label"             : "Label input 2",
+				"legendEntry"       : "Legend input 2",
+				"filename"          : "examples/TnPMC.root",
+				"directory"         : "tpTree/MuonEfficiency/",
+				"binnedVariable"    : "abseta"
+			}
+		},
+		"plot"      :
+		{
+			"x"                 : [0.0, 1.0, "Label X"],
+			"y"                 : [0.75, 1.15, "Label y"],
+			"legendTitle"       : "Legend title",
+			"caption"           : "Caption in upper right corner",
+			"logo"              : ["Logo text", "Logo additional text"],
+			"colorMap"          : [1, 4],
+			"markerMap"         : [20, 21]
+		},
+		"output"    :
+		{
+			"directory"         : "examplePlots/plot_2",
+			"filenamePlot"     : "plot",
+			"fileType"          : ["png", "pdf"]
+		}
+	}
+}
