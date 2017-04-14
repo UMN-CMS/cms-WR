@@ -1,8 +1,10 @@
 #!/bin/bash
 #execute this script in its local directory
 
-WrMasses=(2400 2400 4000 4000)
-NuMasses=(2200 500 3800 800)
+#WrMasses=(2400 2400 4000 4000)
+#NuMasses=(2200 500 3800 800)
+WrMasses=(2400)
+NuMasses=(500)
 jobStartingDir="$PWD"
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
 nJobs=500	#each job produces 100 events, 250 evts takes too long for 1nd queue
@@ -106,7 +108,13 @@ do
 		#delay job submission for a few minutes after submitting many jobs to queue
 		if [ $sleepIndex -ge $maxRunning ]; then
 			let sleepIndex=1
-			eval "sleep 5m"
+			eval "sleep 7m"
+		fi
+
+		#routinely run a script in the local job submission directory to remove any core dumps and root files created by failed jobs
+		#run the cleanup script when sleepIndex hits a value less than maxRunning, otherwise this script will never be run
+		if [ $sleepIndex -eq 20 ]; then
+			eval "./regularCleanup.sh"
 		fi
 
 	done
