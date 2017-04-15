@@ -3,5 +3,5 @@
 #in local job submission directory from negatively affecting other running jobs
 
 eval "rm core.*"
-eval "rm WR_M-*.root"
+eval "rm ../../core.*"
 

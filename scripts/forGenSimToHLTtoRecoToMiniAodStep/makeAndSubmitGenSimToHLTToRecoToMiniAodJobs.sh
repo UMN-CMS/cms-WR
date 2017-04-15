@@ -3,8 +3,8 @@
 
 #WrMasses=(2400 2400 4000 4000)
 #NuMasses=(2200 500 3800 800)
-WrMasses=(2400)
-NuMasses=(500)
+WrMasses=(4000)
+NuMasses=(800)
 jobStartingDir="$PWD"
 gridProxyPath="/afs/cern.ch/user/s/skalafut/x509up_u38430"
 nJobs=500	#each job produces 100 events, 250 evts takes too long for 1nd queue
