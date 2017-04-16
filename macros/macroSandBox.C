@@ -65,7 +65,9 @@ using namespace std;
 //#define TTScaleFactorSystematic
 //#define WRPdfUnc
 //#define expAndObsInMassWindows
-#define printTnPTreeBranches
+//#define printTnPTreeBranches
+#define wrSignalEffTurnOn
+
 
 //#define DEBUG
 //#define DEBUGEVTWEIGHTMTHD
@@ -3732,6 +3734,14 @@ void macroSandBox(){
 
 #endif
 	//end printTnPTreeBranches
+
+#ifdef wrSignalEffTurnOn
+	//plot the WR signal efficiency for one WR mass point versus the threshold of the MLLJJ cut
+
+
+#endif
+	//end wrSignalEffTurnOn
+
 
 
 }///end macroSandBox()
