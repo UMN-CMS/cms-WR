@@ -80,7 +80,8 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		ele.RecoSF_error = myEvent.electron_RecoSF_error->at(i);
 		ele.HltSF = myEvent.electron_HltSF_central->at(i);
 		ele.HltSF_error = myEvent.electron_HltSF_error->at(i);
-		ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
+		//ele.weight = (ele.IDSF) * (ele.RecoSF) * (ele.HltSF);
+		ele.weight = 1.0;
 		electrons.push_back(ele);
 	}
 	int nmu = myEvent.muons_p4->size();
@@ -92,7 +93,8 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
 		mu.charge = myEvent.muon_charge->at(i);
-		mu.weight = mu.IDSF * mu.IsoSF;
+		//mu.weight = mu.IDSF * mu.IsoSF;
+		mu.weight = 1.0;
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
