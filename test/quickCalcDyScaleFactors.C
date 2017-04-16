@@ -31,7 +31,7 @@
  *
  */
 
-#define showAMC
+//#define showAMC
 //#define doReweight
 //#define includeOtherBkgnds
 
@@ -50,7 +50,7 @@ Float_t leadJetPtCut = -10;
 Float_t subLeadJetPtCut = -10;
 Float_t globalLeadingLeptonPtCut = 35;
 Float_t globalSubLeadingLeptonPtCut = 35;
-TString dir = "../analysisCppOutputRootFiles/", mcFileTag = "", dataFileTag = "";
+TString dir = "../analysisCppOutputRootFiles/", mcFileTag = "_NoLeptCorrections", dataFileTag = "_NoLeptCorrections";
 
 TFile fData("DataPileup.root","recreate");
 TFile fMC("MCPileup.root","recreate");
@@ -80,9 +80,9 @@ void quickCalculateDyScaleFactors()
 	TChain * chain_DYAmcInclMuMu = new TChain(treeName,"DYAMCInclusiveMuMu");
 	TChain * chain_dataMuMu = new TChain(treeName,"DataMuMu");
 
-	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE.root");
 	chain_DYMadInclEE->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE.root");
 	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
 #ifdef includeOtherBkgnds
 	//add other SM backgrounds to TChains
@@ -102,7 +102,7 @@ void quickCalculateDyScaleFactors()
 	chain_DYAmcInclEE->Add(dir+"selected_tree_ZZ_dytagandprobeEE"+mcFileTag+".root");
 #endif
 	
-	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu.root");
 	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
 	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	
@@ -130,8 +130,7 @@ void quickCalculateDyScaleFactors()
 	chain_dataMuMu->Add(dir+"selected_tree_data_dytagandprobeMuMu"+dataFileTag+".root");
 
 	Selector myEvent_DYPowhegEE;
-	Selector myEvent_DYMadInclEE;
-	Selector myEvent_DYAmcInclEE;
+	Selector myEvent_DYMadInclEE; Selector myEvent_DYAmcInclEE;
 	Selector myEvent_dataEE;
 	Selector myEvent_DYPowhegMuMu;
 	Selector myEvent_DYMadInclMuMu;
@@ -501,7 +500,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 {
 
 #ifndef includeOtherBkgnds
-	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
+	//if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
 #endif
 
 	//gStyle->SetOptStat("eou");
@@ -679,6 +678,9 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
 	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
+
+	//for no lepton corrections
+	cuts += "_noLeptCorrections";
 
 #ifdef doReweight
 	cuts += "_mcIsMllReweighted";
