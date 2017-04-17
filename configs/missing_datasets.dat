@@ -49,18 +49,26 @@
 #name	dataset	cross_sxn(pb)	cross_sxn_err	total_evts	skimmed_dataset	skimmed_events
 WRtoEEJJ_2400_1200_PrivReco	-	2.396e-02	-	35000	-	-
 WRtoEEJJ_2400_1600_PrivReco	-	2.396e-02	-	50000	-	-
+WRtoEEJJ_2400_2200_PrivReco	-	2.396e-02	-	22700	-	-
 WRtoEEJJ_2400_160_PrivReco	-	2.396e-02	-	50000	-	-
+WRtoEEJJ_2400_500_PrivReco	-	2.396e-02	-	26500	-	-
 WRtoEEJJ_2400_800_PrivReco	-	2.396e-02	-	50000	-	-
 WRtoEEJJ_4000_2000_PrivReco	-	7.242e-04	-	35000	-	-
 WRtoEEJJ_4000_2667_PrivReco	-	7.242e-04	-	50000	-	-
 WRtoEEJJ_4000_267_PrivReco	-	7.242e-04	-	50000	-	-
+WRtoEEJJ_4000_800_PrivReco	-	7.242e-04	-	16200	-	-
 WRtoEEJJ_4000_1333_PrivReco	-	7.242e-04	-	50000	-	-
-#
+WRtoEEJJ_4000_3800_PrivReco	-	7.242e-04	-	26800	-	-
+##
 WRtoMuMuJJ_2400_1200_PrivReco	-	2.396e-02	-	15000	-	-
 WRtoMuMuJJ_2400_1600_PrivReco	-	2.396e-02	-	50000	-	-
+WRtoMuMuJJ_2400_2200_PrivReco	-	2.396e-02	-	28200	-	-
 WRtoMuMuJJ_2400_160_PrivReco	-	2.396e-02	-	50000	-	-
+WRtoMuMuJJ_2400_500_PrivReco	-	2.396e-02	-	32400	-	-
 WRtoMuMuJJ_2400_800_PrivReco	-	2.396e-02	-	50000	-	-
 WRtoMuMuJJ_4000_2000_PrivReco	-	7.242e-04	-	15000	-	-
 WRtoMuMuJJ_4000_2667_PrivReco	-	7.242e-04	-	50000	-	-
 WRtoMuMuJJ_4000_267_PrivReco	-	7.242e-04	-	50000	-	-
+WRtoMuMuJJ_4000_800_PrivReco	-	7.242e-04	-	26600	-	-
 WRtoMuMuJJ_4000_1333_PrivReco	-	7.242e-04	-	50000	-	-
+WRtoMuMuJJ_4000_3800_PrivReco	-	7.242e-04	-	32700	-	-
