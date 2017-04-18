@@ -3742,7 +3742,5 @@ void macroSandBox(){
 #endif
 	//end wrSignalEffTurnOn
 
-
-
 }///end macroSandBox()
 
