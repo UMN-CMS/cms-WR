@@ -21,10 +21,10 @@
 #include <memory>
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
-#define highMlljj
+//#define highMlljj
 
-#define fixedBinWidths
-//#define variableBinWidths
+//#define fixedBinWidths
+#define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
 //#define DOAMC
@@ -301,12 +301,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
 #ifndef DOAMC
-  leg->AddEntry( hs_DY, "DY MadHT+Incl" ) ; 
+  leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
 #endif
-  leg->AddEntry( hs_ttbar, "TTbar MC" ) ;
+  leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
+  leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
   leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_ZZ, "Other" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -447,11 +447,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->SetLabelSize(labelSize - 0.07,"y");
   Float_t maxYratioRange = 3.2;
 #ifdef DOAMC
-  if(channel == Selector::EE) maxYratioRange = 1.62;
+  //if(channel == Selector::EE) maxYratioRange = 1.62;	//use same range for ele and mu channels to simplify comparison of ratio plots
 #endif
 
 #ifndef DOAMC
-  maxYratioRange = 1.13;
+  //maxYratioRange = 1.13;	//use same ratio range for AMC and Madgraph
 #endif
 
 #ifdef doMllAboveZpeak
