@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <memory>
 
-#define doNarrowMlljj
+//#define doNarrowMlljj
 //#define doNarrowLeadLeptEta
 #define useDYMAD
 
@@ -142,13 +142,13 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_jet_eta1 = new TH1F("h_jet_eta1","",nBins,-3,3);
   TH1F *h_jet_phi1 = new TH1F("h_jet_phi1","",nBins,-3.15,3.15);
 
-  TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
+  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",nBins,0,2500);	//fixed bin width
 
   /**/
-  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
-  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
+  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
-  //TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
+  TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
   TH1F *h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",binnum, bins);
 
 
@@ -314,7 +314,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   hs->push_back(h_ele_pt);
   hs->push_back(h_WR_mass_unweighted);
 	
-  /*
+  /**/
   //normalize histo bins of WR mass histos
   unsigned int max = hs->size();
   for(unsigned int i=0; i<max; i++){
@@ -333,22 +333,22 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 	  }
   }//end loop over histos in vector
-  */ 
+  /**/ 
 }
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
+  leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
+  leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
+  leg->AddEntry( hs_WJets, "WJets" ) ; 
 #ifndef useDYMAD 
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
 #ifdef useDYMAD
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
 #endif
-  leg->AddEntry( hs_ttbar, "TT MC" ) ;
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_ZZ, "Other MC" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -483,8 +483,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef useDYMAD
-  //TString fn = fname + "_eMuChannelRescaledTTBarMC_DYMadHTAndIncl_NoLLJJCutVariableBinWidth";
-  TString fn = fname + "_eMuChannelRescaledTTBarMC_DYMadHTAndIncl_NoLLJJCutVariableBinWidthSixTeVMax";
+  TString fn = fname + "_eMuChannelRescaledTTBarMC_DYMadHTAndIncl_NoLLJJCutVariableBinWidth";
+  //TString fn = fname + "_eMuChannelRescaledTTBarMC_DYMadHTAndIncl_NoLLJJCutVariableBinWidthSixTeVMax";
 #endif
 
 #ifdef doNarrowMlljj
@@ -494,8 +494,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef doNarrowLeadLeptEta
 	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjAndLeadLeptEtaFixedBinWidth";
 #endif
-
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("mu_eta") || fname.EqualTo("mu_pt") || fname.EqualTo("ele_eta") || fname.EqualTo("ele_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("j2_pt")){
+  
+  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("mu_eta") || fname.EqualTo("mu_pt") || fname.EqualTo("ele_eta") || fname.EqualTo("ele_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("j2_pt")){
+  if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
