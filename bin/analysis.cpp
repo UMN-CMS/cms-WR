@@ -383,8 +383,8 @@ int main(int ac, char* av[])
 
 	for(auto mode : modes) {
 		bool isData = chainNames_.isData(mode);
-		if(isData) eSmearer.doScale = false;
-		else eSmearer.doSmearings = false;
+		if(isData) eSmearer.doScale = true;
+		else eSmearer.doSmearings = true;
 
 		TChain *c = myReader.getMiniTreeChain(chainNames_.getChainNames(mode, channel, isTagAndProbe), treeName);
 #ifdef DEBUG
@@ -573,13 +573,13 @@ int main(int ac, char* av[])
 #endif
 					TLorentzVector& p4 = (*myEvent.electrons_p4)[iEle];
 					if(isData && !(channel_str == "MuMu") ) { //only scales are corrected  HEEP and Reco ID SFs set to 1.0, errors set to 0., skip this step if the channel is not EE or EMu
-						//(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
-						(*myEvent.electron_scale)[iEle] = 1.0;
+						(*myEvent.electron_scale)[iEle] = eSmearer.ScaleCorrection(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et());
+						//(*myEvent.electron_scale)[iEle] = 1.0;
 						(*myEvent.electron_smearing)[iEle] = 0.;
 					} else if(!isData && !(channel_str == "MuMu") ) { // only the smearings are corrected, skip this step if the channel != EE or EMu (this could be entered when running over DYToLL samples)
 						(*myEvent.electron_scale)[iEle] = 1.;
-						//(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
-						(*myEvent.electron_smearing)[iEle] = 0.;
+						(*myEvent.electron_smearing)[iEle] = eSmearer.getSmearingSigma(myEvent.run, fabs(p4.Eta()) < 1.479, (*myEvent.electron_r9)[iEle], p4.Eta(), p4.Et(), EnergyScaleCorrection_class::kRho, 0);
+						//(*myEvent.electron_smearing)[iEle] = 0.;
 					
 					}
 				}
