@@ -81,9 +81,9 @@ void quickCalculateDyScaleFactors()
 	TChain * chain_dataMuMu = new TChain(treeName,"DataMuMu");
 
 	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE.root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE_OnlyEleScaleSmearingCorrections.root");
 	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE.root");
-	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
+	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE_OnlyEleScaleSmearingCorrections.root");
 #ifdef includeOtherBkgnds
 	//add other SM backgrounds to TChains
 	chain_DYPowhegEE->Add(dir+"selected_tree_TT_dytagandprobeEE"+mcFileTag+".root");
@@ -680,7 +680,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
 
 	//for no lepton corrections
-	cuts += "_noLeptCorrections";
+	cuts += "_onlyEleScaleSmearingCorrections";
 
 #ifdef doReweight
 	cuts += "_mcIsMllReweighted";

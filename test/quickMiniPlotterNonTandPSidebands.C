@@ -21,10 +21,10 @@
 #include <memory>
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
-#define highMlljj
+//#define highMlljj
 
-#define fixedBinWidths
-//#define variableBinWidths
+//#define fixedBinWidths
+#define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
 //#define DOAMC
@@ -35,7 +35,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -390,11 +390,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  Int_t nbins = hs_data->GetNbinsX();
 	  std::cout<<"\t"<<std::endl;
 	  std::cout<<"MC evts\tData evts"<<std::endl;
+	  Float_t dyEvts=0;
 	  for(Int_t i = 1; i<=nbins; i++){
+		  dyEvts += (hs_DY->GetBinContent(i))*(hs_DY->GetBinWidth(i));
 		  std::cout<< (hs_DY->GetBinContent(i))*(hs_DY->GetBinWidth(i)) <<"\t" << (hs_data->GetBinContent(i))*(hs_data->GetBinWidth(i)) <<std::endl;
 		  std::cout<<"low bin edge\t" << hs_DY->GetBinLowEdge(i) <<"\thas data/MC=\t"<< hs_data->GetBinContent(i)/hs_DY->GetBinContent(i) <<std::endl;
 	  }//end loop over bins in MLLJJ
 	  std::cout<<"\t"<<std::endl;
+	  std::cout<<"total DY events = "<< dyEvts <<std::endl;
   }
 
   /*
