@@ -34,7 +34,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -59,7 +59,7 @@ void quickLowFourObjMassMiniPlotter(){
 #endif
 
 #ifdef useDYMAD
-	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_signal_eeEE_withMllWeight.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
 #endif
 
 #ifndef doDataDrivenTT
@@ -80,7 +80,7 @@ void quickLowFourObjMassMiniPlotter(){
 #endif
 
 #ifdef useDYMAD
-	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_signal_mumuMuMu_withMllWeight.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_mumuMuMu_withMllWeight.root");
 #endif
 
 #ifndef doDataDrivenTT
@@ -264,21 +264,22 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
-  TString ttbarLegEntry = "TTbar MC";
+  TString ttbarLegEntry = "TTBar MC";
 #ifdef doDataDrivenTT
   ttbarLegEntry = "TT Data Driven";
 #endif
   TLegend *leg = new TLegend( 0.72, 0.50, 0.98, 0.80 ) ; 
+  leg->AddEntry( hs_ttbar, ttbarLegEntry ) ;
+ 
 #ifndef useDYMAD
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ;
 #endif
 #ifdef useDYMAD
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ;
 #endif 
-  leg->AddEntry( hs_ttbar, ttbarLegEntry ) ;
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
+  leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_ZZ, "Other" ) ; 
+  leg->AddEntry( hs_WJets, "WJets" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
 
@@ -315,6 +316,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   p1->cd();
   /**/
   hs_data->SetStats(0);
+
+  //reset vertical scale in MLLJJ and MLL plots to harmonize plot scales between lepton channels
+  hs_data->SetMinimum(0.02);
+  th->SetMinimum(0.02);
+
 
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
@@ -356,14 +362,14 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
-  ratio->GetYaxis()->SetTitle("data/MC    ");
+  ratio->GetYaxis()->SetTitle("data/MC   ");
   ratio->GetYaxis()->SetTitleSize(0.19);
   ratio->GetYaxis()->SetTitleOffset(0.2);
   //std::cout<<"y axis ratio title size=\t" << ratio->GetYaxis()->GetTitleSize()<<std::endl;
   //std::cout<<"y axis ratio title offset=\t" << ratio->GetYaxis()->GetTitleOffset()<<std::endl;
   ratio->SetLabelSize(labelSize - 0.07,"y");
   Float_t maxYratioRange = 1.98;
-  if(channel == Selector::EE) maxYratioRange = 2.4;
+  //if(channel == Selector::EE) maxYratioRange = 2.4;
   ratio->GetYaxis()->SetRangeUser(0.5,maxYratioRange);
   ratio->GetYaxis()->SetNdivisions(505);
   /*for ratio plot*/
