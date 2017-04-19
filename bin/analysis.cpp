@@ -487,6 +487,7 @@ int main(int ac, char* av[])
 
 #ifdef DEBUGG
 			std::cout << "the number of reco electrons in the event =\t" << nEle << std::endl;
+			std::cout << "the number of reco muons in the event =\t" << nMu << std::endl;
 #endif
 				TString amcDatasetName = "DYJets_amctnlo", madInclDatasetName = "DYJets_madgraph", madHt100to200Name = "DYJets_madgraph_ht100to200";
 				TString madHt200to400Name = "DYJets_madgraph_ht200to400", madHt400to600Name = "DYJets_madgraph_ht400to600", madHt600toInfName = "DYJets_madgraph_ht600toInf";
@@ -524,6 +525,10 @@ int main(int ac, char* av[])
 						if(isTagAndProbe == true && channel_str == "EE") {
 							///apply SF to bring efficiency of HLT_Ele30WP60_SC4_Mass55 in MC into agreement with this trigger's efficiency in data
 							//note only one SF is needed per event
+							if( eleP4.Pt() <= 35){	//these will be killed by Selector class cuts
+								(*myEvent.electron_HltSF_central).push_back(1.0);
+								(*myEvent.electron_HltSF_error).push_back(0.);
+							}
 							if(eleP4.Pt() > 35 && eleP4.Pt() < 40){
 								(*myEvent.electron_HltSF_central).push_back(0.939);
 								(*myEvent.electron_HltSF_error).push_back(0.050);
@@ -575,6 +580,10 @@ int main(int ac, char* av[])
 						if(isTagAndProbe == true && channel_str == "MuMu") {
 							///apply SF to bring efficiency of HLT_IsoMu27 in MC into agreement with this trigger's efficiency in data
 							///note only one application of the SF is needed per event
+							if( muP4.Pt() <= 35){	//these will be killed by Selector class cuts
+								(*myEvent.muon_HltSF_central).push_back(1.0);
+								(*myEvent.muon_HltSF_error).push_back(0.);
+							}
 							if(fabs(muP4.Eta()) < 0.9){
 								if(muP4.Pt() > 35 && muP4.Pt() < 40){
 									(*myEvent.muon_HltSF_central).push_back(0.990);
@@ -667,40 +676,44 @@ int main(int ac, char* av[])
 									(*myEvent.muon_HltSF_error).push_back(0.011);
 								}
 							}//end abs(muon eta) >= 1.5
-						} else { ///not MuMu tagandprobe, so muon HLT selection is done with high pT Mu30 or Mu50 trigger
+						} else { 
 							//apply SF to bring efficiency of HLT Mu30 or HLT Mu50 in MC into agreement with the same trigger's efficiency in data
-							if( muP4.Pt() > 53 && muP4.Pt() < 140 ){
+							if( muP4.Pt() < 53){	//these will be killed by Selector class cuts
+								(*myEvent.muon_HltSF_central).push_back(1.0);
+								(*myEvent.muon_HltSF_error).push_back(0.);
+							}
+							if( muP4.Pt() >= 53 && muP4.Pt() < 140 ){
 								if( fabs(muP4.Eta()) < 0.9 ){
 									(*myEvent.muon_HltSF_central).push_back(0.9706);
 									(*myEvent.muon_HltSF_error).push_back(0.0008);
 								}
-								if( fabs(muP4.Eta()) > 0.9 && fabs(muP4.Eta()) < 1.2 ){
+								if( fabs(muP4.Eta()) >= 0.9 && fabs(muP4.Eta()) < 1.2 ){
 									(*myEvent.muon_HltSF_central).push_back(0.964);
 									(*myEvent.muon_HltSF_error).push_back(0.002);
 								}
-								if( fabs(muP4.Eta()) > 1.2 && fabs(muP4.Eta()) < 2.1 ){
+								if( fabs(muP4.Eta()) >= 1.2 && fabs(muP4.Eta()) < 2.1 ){
 									(*myEvent.muon_HltSF_central).push_back(0.9608);
 									(*myEvent.muon_HltSF_error).push_back(0.001);
 								}
-								if( fabs(muP4.Eta()) > 2.1 && fabs(muP4.Eta()) < 2.4 ){
+								if( fabs(muP4.Eta()) >= 2.1){
 									(*myEvent.muon_HltSF_central).push_back(0.9512);
 									(*myEvent.muon_HltSF_error).push_back(0.004);
 								}
 							}//end if muon pt is above 53 and below 140
-							if( muP4.Pt() > 140){
+							if( muP4.Pt() >= 140){
 								if( fabs(muP4.Eta()) < 0.9 ){
 									(*myEvent.muon_HltSF_central).push_back(0.9708);
 									(*myEvent.muon_HltSF_error).push_back(0.0008);
 								}
-								if( fabs(muP4.Eta()) > 0.9 && fabs(muP4.Eta()) < 1.2 ){
+								if( fabs(muP4.Eta()) >= 0.9 && fabs(muP4.Eta()) < 1.2 ){
 									(*myEvent.muon_HltSF_central).push_back(0.9986);
 									(*myEvent.muon_HltSF_error).push_back(0.025);
 								}
-								if( fabs(muP4.Eta()) > 1.2 && fabs(muP4.Eta()) < 2.1 ){
-									(*myEvent.muon_HltSF_central).push_back(0..9989);
+								if( fabs(muP4.Eta()) >= 1.2 && fabs(muP4.Eta()) < 2.1 ){
+									(*myEvent.muon_HltSF_central).push_back(0.9989);
 									(*myEvent.muon_HltSF_error).push_back(0.015);
 								}
-								if( fabs(muP4.Eta()) > 2.1 && fabs(muP4.Eta()) < 2.4 ){
+								if( fabs(muP4.Eta()) >= 2.1){
 									(*myEvent.muon_HltSF_central).push_back(1.039);
 									(*myEvent.muon_HltSF_error).push_back(0.051);
 								}
@@ -722,7 +735,7 @@ int main(int ac, char* av[])
 			std::cout << "made a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
 #endif
 			if((isTagAndProbe == true && ( (channel_str == "EE" && myEvent.electrons_p4->size() > 1) || (channel_str == "MuMu" && myEvent.muons_p4->size() > 1) ) ) || sel.isPassingPreselect(makeSelectorPlots)) {
-				//unsigned int nEle = myEvent.electrons_p4->size();
+				unsigned int nEle = myEvent.electrons_p4->size();
 #ifdef DEBUGG
 				std::cout << "found an event passing preselection" << std::endl;
 #endif
