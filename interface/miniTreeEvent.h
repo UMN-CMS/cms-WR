@@ -46,7 +46,11 @@ public:
 	std::vector<Float_t> * muon_IsoSF_central;
 	std::vector<Float_t> * muon_IDSF_error;
 	std::vector<Float_t> * muon_IsoSF_error;
-
+	
+	//these muon HLT SFs and errors are not stored in minitrees, but are added to miniTreeEvent class objects in analysis.cpp
+	std::vector<Float_t> * muon_HltSF_central;
+	std::vector<Float_t> * muon_HltSF_error;
+	
 	std::vector<TLorentzVector> * jets_p4;
 	std::vector<Float_t> * jec_uncertainty;
 

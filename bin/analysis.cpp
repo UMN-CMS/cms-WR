@@ -483,6 +483,8 @@ int main(int ac, char* av[])
 #endif
 			c->GetEntry(ev);
 			unsigned int nEle = myEvent.electrons_p4->size();
+			unsigned int nMu = myEvent.muons_p4->size();
+
 #ifdef DEBUGG
 			std::cout << "the number of reco electrons in the event =\t" << nEle << std::endl;
 #endif
@@ -502,6 +504,8 @@ int main(int ac, char* av[])
 						(*myEvent.electron_HltSF_error).push_back(0.);
 					}//end if(isData)
 					else {
+						TLorentzVector& eleP4 = (*myEvent.electrons_p4)[ele];
+	
 						//apply the DYMadIncl SF to DYMadIncl and HT binned samples
 						if(madInclDatasetName.Contains(myEvent.datasetName) || madHt100to200Name.Contains(myEvent.datasetName)  || madHt200to400Name.Contains(myEvent.datasetName)  || madHt400to600Name.Contains(myEvent.datasetName)  || madHt600toInfName.Contains(myEvent.datasetName) ){
 							(*myEvent.electron_IDSF_central).push_back(0.98928);
@@ -509,31 +513,6 @@ int main(int ac, char* av[])
 							(*myEvent.electron_RecoSF_central).push_back(0.98236);
 							(*myEvent.electron_RecoSF_error).push_back(0.001686);
 						}
-						//if(madHt100to200Name.Contains(myEvent.datasetName) ){
-						//	(*myEvent.electron_IDSF_central).push_back(1.0032);
-						//	(*myEvent.electron_IDSF_error).push_back(0.0034);
-						//	(*myEvent.electron_RecoSF_central).push_back(0.9938);
-						//	(*myEvent.electron_RecoSF_error).push_back(0.0036);
-						//}
-						//if(madHt200to400Name.Contains(myEvent.datasetName)){
-						//	(*myEvent.electron_IDSF_central).push_back(1.0198);
-						//	(*myEvent.electron_IDSF_error).push_back(0.0049);
-						//	(*myEvent.electron_RecoSF_central).push_back(0.9988);
-						//	(*myEvent.electron_RecoSF_error).push_back(0.0054);
-						//}
-						//if(madHt400to600Name.Contains(myEvent.datasetName)){
-						//	(*myEvent.electron_IDSF_central).push_back(1.04608);
-						//	(*myEvent.electron_IDSF_error).push_back(0.00446);
-						//	(*myEvent.electron_RecoSF_central).push_back(1.00214);
-						//	(*myEvent.electron_RecoSF_error).push_back(0.00514);
-						//}
-						//if(madHt600toInfName.Contains(myEvent.datasetName)){
-						//	(*myEvent.electron_IDSF_central).push_back(1.09028);
-						//	(*myEvent.electron_IDSF_error).push_back(0.00470);
-						//	(*myEvent.electron_RecoSF_central).push_back(1.00726);
-						//	(*myEvent.electron_RecoSF_error).push_back(0.00542);
-						//}
-						
 						
 						//for AMC, Powheg and other electron channel datasets
 						if(!madInclDatasetName.Contains(myEvent.datasetName) && !madHt100to200Name.Contains(myEvent.datasetName) && !madHt200to400Name.Contains(myEvent.datasetName) && !madHt400to600Name.Contains(myEvent.datasetName) && !madHt600toInfName.Contains(myEvent.datasetName) ){
@@ -543,10 +522,38 @@ int main(int ac, char* av[])
 							(*myEvent.electron_RecoSF_error).push_back(0.001686);
 						}
 						if(isTagAndProbe == true && channel_str == "EE") {
-							///only apply non unity HltSF to DY MC used for ee tagandprobe
-							(*myEvent.electron_HltSF_central).push_back(0.960473);
-							(*myEvent.electron_HltSF_error).push_back(0.002551);
-						} else { ///not EE tagandprobe
+							///apply SF to bring efficiency of HLT_Ele30WP60_SC4_Mass55 in MC into agreement with this trigger's efficiency in data
+							//note only one SF is needed per event
+							if(eleP4.Pt() > 35 && eleP4.Pt() < 40){
+								(*myEvent.electron_HltSF_central).push_back(0.939);
+								(*myEvent.electron_HltSF_error).push_back(0.050);
+							}
+							if(eleP4.Pt() >= 40 && eleP4.Pt() < 45){
+								(*myEvent.electron_HltSF_central).push_back(0.978);
+								(*myEvent.electron_HltSF_error).push_back(0.045);
+							}
+							if(eleP4.Pt() >= 45 && eleP4.Pt() < 50){
+								(*myEvent.electron_HltSF_central).push_back(0.959);
+								(*myEvent.electron_HltSF_error).push_back(0.043);
+							}
+							if(eleP4.Pt() >= 50 && eleP4.Pt() < 60){
+								(*myEvent.electron_HltSF_central).push_back(0.946);
+								(*myEvent.electron_HltSF_error).push_back(0.041);
+							}
+							if(eleP4.Pt() >= 60 && eleP4.Pt() < 75){
+								(*myEvent.electron_HltSF_central).push_back(0.877);
+								(*myEvent.electron_HltSF_error).push_back(0.047);
+							}
+							if(eleP4.Pt() >= 75 && eleP4.Pt() < 95){
+								(*myEvent.electron_HltSF_central).push_back(0.862);
+								(*myEvent.electron_HltSF_error).push_back(0.047);
+							}
+							if(eleP4.Pt() >= 95){
+								(*myEvent.electron_HltSF_central).push_back(0.841);
+								(*myEvent.electron_HltSF_error).push_back(0.051);
+							}
+						} else {
+							///apply SF to bring efficiency of HLT_DoubleEle33_CaloIdL_GsfTrkIdVL in MC into agreement with this trigger's efficiency in data
 							(*myEvent.electron_HltSF_central).push_back(1.0);
 							(*myEvent.electron_HltSF_error).push_back(0.);
 						}
@@ -555,6 +562,158 @@ int main(int ac, char* av[])
 				}//end loop over reco electrons in the event
 
 			}//end if there are reco electrons in the event, and the channel is EE or EMu
+
+			if(nMu > 0){//in each event, apply a muon trigger SF to the muon which fired the muon trigger
+				//this must be done before making an instance of the Selector class
+				for(unsigned int mu = 0; mu < nMu; ++mu) {
+					if(isData) {
+						(*myEvent.muon_HltSF_central).push_back(1.0);
+						(*myEvent.muon_HltSF_error).push_back(0.);
+					}//end if(isData)
+					else {
+						TLorentzVector& muP4 = (*myEvent.muons_p4)[mu];
+						if(isTagAndProbe == true && channel_str == "MuMu") {
+							///apply SF to bring efficiency of HLT_IsoMu27 in MC into agreement with this trigger's efficiency in data
+							///note only one application of the SF is needed per event
+							if(fabs(muP4.Eta()) < 0.9){
+								if(muP4.Pt() > 35 && muP4.Pt() < 40){
+									(*myEvent.muon_HltSF_central).push_back(0.990);
+									(*myEvent.muon_HltSF_error).push_back(0.0015);
+								}
+								if(muP4.Pt() >= 40 && muP4.Pt() < 45){
+									(*myEvent.muon_HltSF_central).push_back(0.986);
+									(*myEvent.muon_HltSF_error).push_back(0.0012);
+								}
+								if(muP4.Pt() >= 45 && muP4.Pt() < 50){
+									(*myEvent.muon_HltSF_central).push_back(0.982);
+									(*myEvent.muon_HltSF_error).push_back(0.0015);
+								}
+								if(muP4.Pt() >= 50 && muP4.Pt() < 60){
+									(*myEvent.muon_HltSF_central).push_back(0.982);
+									(*myEvent.muon_HltSF_error).push_back(0.0018);
+								}
+								if(muP4.Pt() >= 60 && muP4.Pt() < 75){
+									(*myEvent.muon_HltSF_central).push_back(0.977);
+									(*myEvent.muon_HltSF_error).push_back(0.0028);
+								}
+								if(muP4.Pt() >= 75 && muP4.Pt() < 95){
+									(*myEvent.muon_HltSF_central).push_back(0.981);
+									(*myEvent.muon_HltSF_error).push_back(0.0044);
+								}
+								if(muP4.Pt() >= 95){
+									(*myEvent.muon_HltSF_central).push_back(0.975);
+									(*myEvent.muon_HltSF_error).push_back(0.0056);
+								}
+							}//end abs(muon eta) < 0.9
+
+							if(fabs(muP4.Eta()) >= 0.9 && fabs(muP4.Eta()) < 1.5){
+								if(muP4.Pt() > 35 && muP4.Pt() < 40){
+									(*myEvent.muon_HltSF_central).push_back(0.995);
+									(*myEvent.muon_HltSF_error).push_back(0.0022);
+								}
+								if(muP4.Pt() >= 40 && muP4.Pt() < 45){
+									(*myEvent.muon_HltSF_central).push_back(0.989);
+									(*myEvent.muon_HltSF_error).push_back(0.0018);
+								}
+								if(muP4.Pt() >= 45 && muP4.Pt() < 50){
+									(*myEvent.muon_HltSF_central).push_back(1.01);
+									(*myEvent.muon_HltSF_error).push_back(0.0019);
+								}
+								if(muP4.Pt() >= 50 && muP4.Pt() < 60){
+									(*myEvent.muon_HltSF_central).push_back(0.983);
+									(*myEvent.muon_HltSF_error).push_back(0.0026);
+								}
+								if(muP4.Pt() >= 60 && muP4.Pt() < 75){
+									(*myEvent.muon_HltSF_central).push_back(0.979);
+									(*myEvent.muon_HltSF_error).push_back(0.0040);
+								}
+								if(muP4.Pt() >= 75 && muP4.Pt() < 95){
+									(*myEvent.muon_HltSF_central).push_back(0.974);
+									(*myEvent.muon_HltSF_error).push_back(0.0066);
+								}
+								if(muP4.Pt() >= 95){
+									(*myEvent.muon_HltSF_central).push_back(0.987);
+									(*myEvent.muon_HltSF_error).push_back(0.0081);
+								}
+							}//end abs(muon eta) between 0.9 and 1.5
+	
+							if(fabs(muP4.Eta()) >= 1.5){
+								if(muP4.Pt() > 35 && muP4.Pt() < 40){
+									(*myEvent.muon_HltSF_central).push_back(0.956);
+									(*myEvent.muon_HltSF_error).push_back(0.0028);
+								}
+								if(muP4.Pt() >= 40 && muP4.Pt() < 45){
+									(*myEvent.muon_HltSF_central).push_back(0.961);
+									(*myEvent.muon_HltSF_error).push_back(0.0023);
+								}
+								if(muP4.Pt() >= 45 && muP4.Pt() < 50){
+									(*myEvent.muon_HltSF_central).push_back(0.958);
+									(*myEvent.muon_HltSF_error).push_back(0.0027);
+								}
+								if(muP4.Pt() >= 50 && muP4.Pt() < 60){
+									(*myEvent.muon_HltSF_central).push_back(0.966);
+									(*myEvent.muon_HltSF_error).push_back(0.0033);
+								}
+								if(muP4.Pt() >= 60 && muP4.Pt() < 75){
+									(*myEvent.muon_HltSF_central).push_back(0.965);
+									(*myEvent.muon_HltSF_error).push_back(0.0050);
+								}
+								if(muP4.Pt() >= 75 && muP4.Pt() < 95){
+									(*myEvent.muon_HltSF_central).push_back(0.975);
+									(*myEvent.muon_HltSF_error).push_back(0.0082);
+								}
+								if(muP4.Pt() >= 95){
+									(*myEvent.muon_HltSF_central).push_back(0.969);
+									(*myEvent.muon_HltSF_error).push_back(0.011);
+								}
+							}//end abs(muon eta) >= 1.5
+						} else { ///not MuMu tagandprobe, so muon HLT selection is done with high pT Mu30 or Mu50 trigger
+							//apply SF to bring efficiency of HLT Mu30 or HLT Mu50 in MC into agreement with the same trigger's efficiency in data
+							if( muP4.Pt() > 53 && muP4.Pt() < 140 ){
+								if( fabs(muP4.Eta()) < 0.9 ){
+									(*myEvent.muon_HltSF_central).push_back(0.9706);
+									(*myEvent.muon_HltSF_error).push_back(0.0008);
+								}
+								if( fabs(muP4.Eta()) > 0.9 && fabs(muP4.Eta()) < 1.2 ){
+									(*myEvent.muon_HltSF_central).push_back(0.964);
+									(*myEvent.muon_HltSF_error).push_back(0.002);
+								}
+								if( fabs(muP4.Eta()) > 1.2 && fabs(muP4.Eta()) < 2.1 ){
+									(*myEvent.muon_HltSF_central).push_back(0.9608);
+									(*myEvent.muon_HltSF_error).push_back(0.001);
+								}
+								if( fabs(muP4.Eta()) > 2.1 && fabs(muP4.Eta()) < 2.4 ){
+									(*myEvent.muon_HltSF_central).push_back(0.9512);
+									(*myEvent.muon_HltSF_error).push_back(0.004);
+								}
+							}//end if muon pt is above 53 and below 140
+							if( muP4.Pt() > 140){
+								if( fabs(muP4.Eta()) < 0.9 ){
+									(*myEvent.muon_HltSF_central).push_back(0.9708);
+									(*myEvent.muon_HltSF_error).push_back(0.0008);
+								}
+								if( fabs(muP4.Eta()) > 0.9 && fabs(muP4.Eta()) < 1.2 ){
+									(*myEvent.muon_HltSF_central).push_back(0.9986);
+									(*myEvent.muon_HltSF_error).push_back(0.025);
+								}
+								if( fabs(muP4.Eta()) > 1.2 && fabs(muP4.Eta()) < 2.1 ){
+									(*myEvent.muon_HltSF_central).push_back(0..9989);
+									(*myEvent.muon_HltSF_error).push_back(0.015);
+								}
+								if( fabs(muP4.Eta()) > 2.1 && fabs(muP4.Eta()) < 2.4 ){
+									(*myEvent.muon_HltSF_central).push_back(1.039);
+									(*myEvent.muon_HltSF_error).push_back(0.051);
+								}
+							}//end if muon pt is above 140
+					
+						}//end MuMu and EMu MC that was selected with Mu30 or Mu50 trigger requirements
+					
+					}//end if(!isData)
+
+				}//end loop over reco muons in the event
+
+			}//end if there are reco muons in the event, and the channel is MuMu or EMu
+
 #ifdef DEBUGG
 			std::cout << "about to make a Selector class object named sel using a miniTreeEvent object named myEvent" << std::endl;
 #endif

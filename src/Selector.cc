@@ -85,14 +85,16 @@ Selector::Selector(const miniTreeEvent& myEvent) :
 	}
 	int nmu = myEvent.muons_p4->size();
 	for(int i = 0; i < nmu; i++) {
-		myMuon mu;
+		myMuon mu;	//instance of Object class defined in interface/Object.h
 		mu.p4 = myEvent.muons_p4->at(i);
 		mu.IDSF = myEvent.muon_IDSF_central->at(i);
 		mu.IsoSF = myEvent.muon_IsoSF_central->at(i);
 		mu.IDSF_error = myEvent.muon_IDSF_error->at(i);
 		mu.IsoSF_error = myEvent.muon_IsoSF_error->at(i);
+		mu.HltSF = myEvent.muon_HltSF_central->at(i);
+		mu.HltSF_error = myEvent.muon_HltSF_error->at(i);
 		mu.charge = myEvent.muon_charge->at(i);
-		mu.weight = mu.IDSF * mu.IsoSF;
+		mu.weight = mu.IDSF * mu.IsoSF * mu.HltSF;
 		muons.push_back(mu);
 	}
 	int njet = myEvent.jets_p4->size();
@@ -194,6 +196,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 		lead_lepton_r9 = electrons[0].r9;
 		sublead_lepton_r9 = electrons[1].r9;
+		if(electrons[0].HltSF != 1.0 && electrons[1].HltSF != 1.0) sublead_lepton_weight = sublead_lepton_weight/electrons[1].HltSF;	//only one ele in TnP CR EE evts should be weighted with HLT SF
 	} else if(tag == MuMu) { // MuMuJJ Channel
 		// Assert at least 2 good leptons
 		if(muons.size() < 2) {
@@ -211,6 +214,7 @@ bool Selector::isPassingLooseCuts(tag_t tag)
 
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
+		if(muons[0].HltSF != 1.0 && muons[1].HltSF != 1.0) sublead_lepton_weight = sublead_lepton_weight/muons[1].HltSF;	//only one muon in MuMu evts should be weighted with HLT SF
 	} else if(tag == EMu) { // EMuJJ Channel
 		// Assert at least 2 good leptons
 		if(electrons.size() < 1 || muons.size() < 1) {
@@ -467,7 +471,8 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 		lead_lepton_weight = muons[0].weight;
 		sublead_lepton_weight = muons[1].weight;
-
+		if(muons[0].HltSF != 1.0 && muons[1].HltSF != 1.0) sublead_lepton_weight = sublead_lepton_weight/muons[1].HltSF;	//only one muon in MuMu evts should be weighted with HLT SF
+	
 	} else if(tag == EMu) { // EMuJJ Channel
 		// Assert at least 2 good leptons
 		if (makeHists) sel::hists("nlep", 10, 0, 10)->Fill(muons.size() + electrons.size());

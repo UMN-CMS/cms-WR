@@ -13,6 +13,8 @@ miniTreeEvent::miniTreeEvent():
 	electron_RecoSF_error(new std::vector<Float_t>),
 	electron_HltSF_central(new std::vector<Float_t>),
 	electron_HltSF_error(new std::vector<Float_t>),
+	muon_HltSF_central(new std::vector<Float_t>),
+	muon_HltSF_error(new std::vector<Float_t>),
 	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
 	muon_IDSF_central(new std::vector<Float_t>),
@@ -41,6 +43,8 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	electron_RecoSF_error(new std::vector<Float_t>),
 	electron_HltSF_central(new std::vector<Float_t>),
 	electron_HltSF_error(new std::vector<Float_t>),
+	muon_HltSF_central(new std::vector<Float_t>),
+	muon_HltSF_error(new std::vector<Float_t>),
 	muons_p4(new std::vector<TLorentzVector>),
 	muon_charge(new std::vector<Int_t>),
 	muon_IDSF_central(new std::vector<Float_t>),
@@ -68,6 +72,8 @@ miniTreeEvent::miniTreeEvent(const miniTreeEvent& otherEvent):
 	*electron_RecoSF_error = *(otherEvent.electron_RecoSF_error);
 	*electron_HltSF_central = *(otherEvent.electron_HltSF_central);
 	*electron_HltSF_error = *(otherEvent.electron_HltSF_error);
+	*muon_HltSF_central = *(otherEvent.muon_HltSF_central);
+	*muon_HltSF_error = *(otherEvent.muon_HltSF_error);
 	*muon_charge = *(otherEvent.muon_charge);
 	*muon_IDSF_central = *(otherEvent.muon_IDSF_central);
 	*muon_IsoSF_central = *(otherEvent.muon_IsoSF_central);
@@ -108,6 +114,8 @@ void miniTreeEvent::clear()
 	electron_RecoSF_error->clear();
 	electron_HltSF_central->clear();
 	electron_HltSF_error->clear();
+	muon_HltSF_central->clear();
+	muon_HltSF_error->clear();
 	muon_charge->clear();
 	muon_IDSF_central->clear();
 	muon_IsoSF_central->clear();
@@ -134,6 +142,8 @@ miniTreeEvent::~miniTreeEvent()
 	delete electron_RecoSF_error;
 	delete electron_HltSF_central;
 	delete electron_HltSF_error;
+	delete muon_HltSF_central;
+	delete muon_HltSF_error;
 	delete muons_p4;
 	delete muon_charge;
 	delete muon_IDSF_central;

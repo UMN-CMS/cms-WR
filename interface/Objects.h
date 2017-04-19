@@ -34,6 +34,8 @@ public:
 	Float_t IsoSF;
 	Float_t IDSF_error;
 	Float_t IsoSF_error;
+	Float_t HltSF;
+	Float_t HltSF_error;
 	Int_t charge;
 	Float_t weight;
 
