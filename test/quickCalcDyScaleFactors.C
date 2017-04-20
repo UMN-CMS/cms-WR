@@ -32,7 +32,7 @@
  */
 
 #define showAMC
-//#define doReweight
+#define doReweight
 //#define includeOtherBkgnds
 
 #ifdef __CINT__
@@ -50,7 +50,7 @@ Float_t leadJetPtCut = -10;
 Float_t subLeadJetPtCut = -10;
 Float_t globalLeadingLeptonPtCut = 35;
 Float_t globalSubLeadingLeptonPtCut = 35;
-TString dir = "../analysisCppOutputRootFiles/", mcFileTag = "", dataFileTag = "";
+TString dir = "../analysisCppOutputRootFilesNewHltSf/", mcFileTag = "", dataFileTag = "";
 
 TFile fData("DataPileup.root","recreate");
 TFile fMC("MCPileup.root","recreate");
@@ -103,13 +103,13 @@ void quickCalculateDyScaleFactors()
 #endif
 	
 	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
-	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
-	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 	
 	//temporary change to save disk space
 	//chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
+	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
 #ifdef includeOtherBkgnds
 	//add other SM backgrounds to TChains
 	chain_DYPowhegMuMu->Add(dir+"selected_tree_TT_dytagandprobeMuMu"+mcFileTag+".root");
@@ -340,15 +340,15 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	Double_t hltCorrFactor=1.0;
 #ifdef doReweight
 	if(chTitle.Contains("AMC") ){
-		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.964348 : 0.938398;
-		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.990071 : 0.93932;
-		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.00925 : 0.95735;
+		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.986774 : 0.971798;
+		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.01235 : 0.9533;
+		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.02978 : 0.928796;
 	}
 
 	if(chTitle.Contains("Madgraph") ){
-		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.12849 : 1.09673;
-		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.10363 : 1.060322;
-		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 0.984198 : 0.943194;
+		if(leadJetPtCut == 40) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.15695 : 1.19912;
+		if(leadJetPtCut == 20) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.12944 : 1.13228;
+		if(leadJetPtCut == -10) hltCorrFactor = (chTitle.Contains("MuMu")) ? 1.0043 : 0.939813;
 	}
 #endif
 	for(int ev = 0; ev < nEntries; ++ev) {
@@ -681,7 +681,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	if(useMllReweighted) cuts += "_mcIsMllReweighted";
 
 #ifdef doReweight
-	cuts += "_mcIsMllReweighted";
+	cuts += "_mllScale";
 #endif
 
 #ifdef  includeOtherBkgnds
