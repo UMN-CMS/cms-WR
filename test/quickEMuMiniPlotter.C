@@ -50,7 +50,7 @@ void quickEMuMiniPlotter(){
   TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
-  TString localDir = "../analysisCppOutputRootFiles/";
+  TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EMu:
@@ -58,10 +58,10 @@ void quickEMuMiniPlotter(){
 	dy = chain_DY->Add(localDir+"selected_tree_DYAMC_flavoursidebandEMu.root");
 #endif
 #ifdef useDYMAD
-	dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_flavoursidebandEMu_withMllWeight.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_flavoursidebandEMu_withMllWeightEE.root");
 #endif
-	tt = chain_ttbar->Add(localDir+"selected_tree_TT_flavoursidebandEMu.root");
-    wjets = chain_WJets->Add(localDir+"selected_tree_W_flavoursidebandEMu.root");
+	tt = chain_ttbar->Add(localDir+"selected_tree_TT_flavoursidebandEMuEE.root");
+    wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_flavoursidebandEMuEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
   	zz = chain_ZZ->Add(localDir+"selected_tree_topW_flavoursidebandEMuEE.root");
@@ -146,7 +146,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   /**/
   //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800, 6000};	//show out to 6 TeV without mass cut without overflow
-  Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  //Float_t bins[] = { 210, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1800};	//standard bins without 600 GeV mass cut, with overflow events
+  Float_t bins[] = { 210, 300, 410, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000, identical to binning used in flavorSideband.C for figures in AN
+ 
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass = new TH1F("h_WR_mass","",binnum, bins);
   TH1F *h_WR_mass_unweighted = new TH1F("h_WR_mass_unweighted","",binnum, bins);
@@ -192,7 +194,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TString chainTitle(chain->GetTitle());
   Float_t ttScaleFactor = 1.0;
   if( chainTitle.EqualTo("TTMC") ){
-	  ttScaleFactor = 0.959;	//to account for slightly higher number of ttbar EMu MC events relative to EMu data evts
+  	  ttScaleFactor = 1.;
   }
 
   for(int ev = 0; ev<nEntries; ++ev){
@@ -323,6 +325,12 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  TString histName = hs->at(i)->GetName();
 	  if( histName.Contains("WR_mass") ){
 		  for(Int_t j=1; j<=nBins; j++){
+			  //include the overflows in the very last bin shown on the plot
+			  if(j==nBins){
+				  Double_t origBinContents = (hs->at(i))->GetBinContent(j);
+				  Double_t overflowContents = (hs->at(i))->GetBinContent(j+1);
+				  (hs->at(i))->SetBinContent(j, origBinContents+overflowContents);
+			  }//end work to include overflows in last bin shown on plot
 			  //in each bin, divide the bin contents by the bin width
 			  Double_t oldBinContents = (hs->at(i))->GetBinContent(j);
 			  Double_t oldBinErrors = (hs->at(i))->GetBinError(j);
@@ -341,7 +349,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
   leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
   leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
+  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
 #ifndef useDYMAD 
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
@@ -368,8 +376,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
   th->Add(hs_WZ);
-  th->Add(hs_WJets);
   th->Add(hs_DY);
+  th->Add(hs_WJets);
   th->Add(hs_ZZ);
   th->Add(hs_ttbar);
   hs_data->SetMarkerStyle(20);
@@ -381,6 +389,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   p2->SetTopMargin(0);   
   p1->cd();
   hs_data->SetStats(0);
+  
+  //reset vertical scale in MLLJJ and MLL plots to harmonize plot scales between lepton channels
+  hs_data->SetMinimum(0.0005);
+  th->SetMinimum(0.0005);
+  
   TH1F *ratio = (TH1F*)hs_data->Clone();
   th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
   hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
@@ -461,11 +474,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
-  ratio->GetYaxis()->SetTitle("data/MC    ");
+  ratio->GetYaxis()->SetTitle("data/MC  ");
   ratio->GetYaxis()->SetTitleSize(0.19);
   ratio->GetYaxis()->SetTitleOffset(0.2);
   ratio->SetLabelSize(labelSize - 0.07,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,2.4);
+  ratio->GetYaxis()->SetRangeUser(0.61,1.35);	//match this range to the range used in variable bin width plots with ratios in flavorSideband.C
   ratio->GetYaxis()->SetNdivisions(505);
   ratio->Draw("p");
   float xmax = ratio->GetXaxis()->GetXmax();
@@ -476,8 +489,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->cd();
   mycanvas->Update();
 
-  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutFixedBinWidth";
-  //TString fn = fname + "_eMuChannelRescaledTTBarMCNoLLJJCutVariableBinWidthSixTeVMax";
 #ifndef useDYMAD
   TString fn = fname + "_eMuChannelRescaledTTBarMC_DYAMC_NoLLJJCutVariableBinWidth";
 #endif
