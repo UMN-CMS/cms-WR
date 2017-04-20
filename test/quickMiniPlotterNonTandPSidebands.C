@@ -21,10 +21,10 @@
 #include <memory>
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
-//#define highMlljj
+#define highMlljj
 
-//#define fixedBinWidths
-#define variableBinWidths
+#define fixedBinWidths
+//#define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
 //#define DOAMC
@@ -35,7 +35,7 @@
 
 //to change from lowdilepton to lowfourobj, simply search for all instances of lowdilepton, and replace them with lowfourobj
 //to change from MuMu to EE, switch the Selector channel in the next line
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 /**
  * this macro is designed to read several TChains, representing data and MC, apply no cuts, and plot
@@ -58,7 +58,7 @@ void quickMiniPlotterNonTandPSidebands(){
   TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
-  TString localDir = "../analysisCppOutputRootFiles/";
+  TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
 	  case Selector::MuMu:
@@ -66,13 +66,11 @@ void quickMiniPlotterNonTandPSidebands(){
 		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandMuMu_withMllWeight.root");
 #endif
 #ifndef DOAMC
-		  dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_lowdileptonsidebandMuMu_withMllWeight.root");
+		  dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_lowdileptonsidebandMuMu_withMllWeight.root");
 #endif
 		  
 		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandMuMu.root");
-		  //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
-		  
-		  wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandMuMu.root");
+		  wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_lowdileptonsidebandMuMu.root");
 		  wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandMuMu.root");
 		  wz = chain_WZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandMuMu.root");
 		  zz = chain_ZZ->Add(localDir+"selected_tree_topW_lowdileptonsidebandMuMu.root");
@@ -83,13 +81,11 @@ void quickMiniPlotterNonTandPSidebands(){
 		  dy = chain_DY->Add(localDir+"selected_tree_DYAMC_lowdileptonsidebandEE_withMllWeight.root");
 #endif
 #ifndef DOAMC
-		  dy = chain_DY->Add(localDir+"selected_tree_DYMADInclAndHT_lowdileptonsidebandEE_withMllWeight.root");
+		  dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_lowdileptonsidebandEE_withMllWeight.root");
 #endif
 		  
 		  tt = chain_ttbar->Add(localDir+"selected_tree_TT_lowdileptonsidebandEE.root");
-		  //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMu.root");
-		  
-		  wjets = chain_WJets->Add(localDir+"selected_tree_W_lowdileptonsidebandEE.root");
+		  wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_lowdileptonsidebandEE.root");
 		  wz = chain_WZ->Add(localDir+"selected_tree_WZ_lowdileptonsidebandEE.root");
 		  wz = chain_WZ->Add(localDir+"selected_tree_ZZ_lowdileptonsidebandEE.root");
 		  zz = chain_ZZ->Add(localDir+"selected_tree_topW_lowdileptonsidebandEE.root");
@@ -175,7 +171,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 #ifdef variableBinWidths
   //variable bin widths only for WR mass plot
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};	//original
-  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
+  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
+  Float_t bins[] = { 200, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2600};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
+  
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500, 6000};	//wider bins, out to 6000 GeV
   
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
@@ -305,7 +303,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
   leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
   leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
+  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
@@ -445,7 +443,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(labelSize - 0.07,"y");
-  Float_t maxYratioRange = 3.2;
+  Float_t maxYratioRange = 1.4;
 #ifdef DOAMC
   //if(channel == Selector::EE) maxYratioRange = 1.62;	//use same range for ele and mu channels to simplify comparison of ratio plots
 #endif
@@ -504,6 +502,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   fn += "_MLL120to200";
 #endif
 
+  //fn += "_experBins";
 
   //fn = fname + "_variablebinwidths_rescaledEMuData_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_noRatio_variablebinwidths_lowdileptonMuMuChannelDyAmc";	//only needed when no ratio plot is drawn
@@ -511,8 +510,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 //TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU","unweightedMLLJJ"};
 
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("l1_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_pt") || fname.EqualTo("l2_eta") ){
-  //if(fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
+  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("l1_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_pt") || fname.EqualTo("l2_eta") ){
+  if(fname.EqualTo("l2_pt") || fname.EqualTo("l2_eta") || fname.EqualTo("l1_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());

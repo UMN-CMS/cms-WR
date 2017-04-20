@@ -35,14 +35,7 @@ std::string chiSquaredNdofString(TF1 * fit);
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h);
 void flavorSideband(){
 
-  //default SFs with chi^2/nDOF near 1
-  //Float_t mumuEmuSF = 0.6563, eeEmuSF = 0.4194;	///<used for plotting and chi^2 calculation
-  //if eeEmuSF = 0.441 then chi^2/nDOF =  32.0/10
-  //if eeEmuSF = 0.3905 then chi^2/nDOF =  31.9/10
-  //if mumuEmuSF = 0.6942 then chi^2/nDOF =  31.9/10
-  //if mumuEmuSF = 0.6145 then chi^2/nDOF =  32.1/10
-  
-  Float_t mumuEmuSF = 0.6563, eeEmuSF = 0.4194;	///<used for plotting and chi^2 calculation
+  Float_t mumuEmuSF = 0.6592, eeEmuSF = 0.4315;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
   std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
@@ -55,8 +48,8 @@ void flavorSideband(){
   TChain * chain_MuMu = new TChain("Tree_Iter0");
   TChain * chain_EMuData = new TChain("Tree_Iter0");
  
-  TString dir = "../analysisCppOutputRootFiles/";
-  chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMu.root");
+  TString dir = "../analysisCppOutputRootFilesNewHltSf/";
+  chain_EMu->Add(dir+"selected_tree_TT_flavoursidebandEMuEE.root");
   chain_EMu->Add(dir+"selected_tree_topW_flavoursidebandEMuEE.root");
   chain_EE->Add(dir+"selected_tree_TT_signal_eeEE.root");
   chain_EE->Add(dir+"selected_tree_topW_signal_eeEE.root");
@@ -84,10 +77,10 @@ void flavorSideband(){
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
 
   ////fixed bin width MLLJJ plots with standard domain
-  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",12,1400,2600);
-  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",12,1400,2600);
-  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",12,1400,2600);
-  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",12,1400,2600);
+  TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",12,400,6000);
+  TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",12,400,6000);
+  TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",12,400,6000);
+  TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",12,400,6000);
   
   ////variable bin width MLLJJ plots
   //TH1F *h_WR_mass_EMu = new TH1F("h_WR_mass_EMu","",binnum, bins);
@@ -107,33 +100,8 @@ void flavorSideband(){
   h_WR_mass_EE->SetTitle(stdTitle);
   h_WR_mass_MuMu->SetTitle(stdTitle);
 
-  /*
-  gStyle->SetOptStat("");
-  TCanvas* canvasTT_to_TopW = new TCanvas("canvasTT_to_TopW","",0,0,600,600);
-  TH1F* h_WR_mass_EMu_clone = (TH1F*) h_WR_mass_EMu->Clone();
-  //h_WR_mass_EMu_clone->Divide((TH1*) h_WR_mass_TopW_EMu->Add(h_WR_mass_EMu) );
-  Int_t emuBins = h_WR_mass_EMu_clone->GetNbinsX();
-  std::cout<<"\t"<<std::endl;
-  for(Int_t i=1; i<=emuBins; i++){
-	  Float_t topWcontent = h_WR_mass_TopW_EMu->GetBinContent(i);
-	  Float_t TTcontent = h_WR_mass_EMu_clone->GetBinContent(i);
-	  if(i<5) h_WR_mass_EMu_clone->SetBinContent(i, 0.);
-	  else h_WR_mass_EMu_clone->SetBinContent(i, TTcontent/(TTcontent + topWcontent));
-	  std::cout<<"bin number  "<< i <<"  has TT fraction  "<< h_WR_mass_EMu_clone->GetBinContent(i) << std::endl;
-  }
-  std::cout<<"\t"<<std::endl;
-  h_WR_mass_EMu_clone->GetXaxis()->SetTitle("M_{EMuJJ} [GeV]");
-  h_WR_mass_EMu_clone->GetYaxis()->SetRangeUser(0.75,1.1);
-  h_WR_mass_EMu_clone->GetYaxis()->SetTitle("TTBar fraction in EMu Sideband");
-  h_WR_mass_EMu_clone->GetYaxis()->SetTitleOffset(1.55);
-  h_WR_mass_EMu_clone->SetLineColor(kRed);
-  h_WR_mass_EMu_clone->SetLineWidth(3);
-  h_WR_mass_EMu_clone->Draw();
-  canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.pdf"));
-  canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.png"));
-  canvasTT_to_TopW->Print(("ttFractionInEMuSideband_variablebinwidth.C"));
-  */
 
+  /*
   TCanvas* mycanvas_EE = new TCanvas( "mycanvas_EE", "", 0, 0, 600, 600 ) ;
   h_WR_mass_EMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_WR_mass_EMu->DrawNormalized();
@@ -517,6 +485,7 @@ void flavorSideband(){
   canvEMuDataTwoRescaledMCs->SaveAs("emujj_data_and_MC_and_rescaled_eejj_and_mumujj_MC_signal_region_log_fixedbinwidth.png","recreate");
   canvEMuDataTwoRescaledMCs->Close();
 
+  */
 }
 
 void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
@@ -531,14 +500,14 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
     if(myEvent->WR_mass > 600. && myEvent->dilepton_mass > 200.) 
       h->Fill(myEvent->WR_mass,myEvent->weight);
   }
-  Int_t lowBinOne = h->FindBin(1450.), lowBinTwo = h->FindBin(1700.), lowBinThree = h->FindBin(1850.), lowBinFour = h->FindBin(2150.);
-  Int_t highBinOne = h->FindBin(2000.), highBinTwo = h->FindBin(2200.), highBinThree = h->FindBin(2550.), highBinFour = h->FindBin(3050.);
+  //Int_t lowBinOne = h->FindBin(1450.), lowBinTwo = h->FindBin(1700.), lowBinThree = h->FindBin(1850.), lowBinFour = h->FindBin(2150.);
+  //Int_t highBinOne = h->FindBin(2000.), highBinTwo = h->FindBin(2200.), highBinThree = h->FindBin(2550.), highBinFour = h->FindBin(3050.);
   std::cout<<"\t"<<std::endl;
   std::cout<<"histo named\t"<< h->GetName() <<"\thas integral\t"<< h->Integral() <<std::endl;
-  std::cout<<"histo named\t"<< h->GetName() <<"\thas in 1.8 TeV window\t"<< h->Integral(lowBinOne, highBinOne) <<std::endl;
-  std::cout<<"histo named\t"<< h->GetName() <<"\thas in 2.0 TeV window\t"<< h->Integral(lowBinTwo, highBinTwo) <<std::endl;
-  std::cout<<"histo named\t"<< h->GetName() <<"\thas in 2.2 TeV window\t"<< h->Integral(lowBinThree, highBinThree) <<std::endl;
-  std::cout<<"histo named\t"<< h->GetName() <<"\thas in 2.4 TeV window\t"<< h->Integral(lowBinFour, highBinFour) <<std::endl;
+  //std::cout<<"histo named\t"<< h->GetName() <<"\thas in 1.8 TeV window\t"<< h->Integral(lowBinOne, highBinOne) <<std::endl;
+  //std::cout<<"histo named\t"<< h->GetName() <<"\thas in 2.0 TeV window\t"<< h->Integral(lowBinTwo, highBinTwo) <<std::endl;
+  //std::cout<<"histo named\t"<< h->GetName() <<"\thas in 2.2 TeV window\t"<< h->Integral(lowBinThree, highBinThree) <<std::endl;
+  //std::cout<<"histo named\t"<< h->GetName() <<"\thas in 2.4 TeV window\t"<< h->Integral(lowBinFour, highBinFour) <<std::endl;
   std::cout<<"\t"<<std::endl;
 
 
