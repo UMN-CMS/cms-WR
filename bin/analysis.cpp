@@ -204,6 +204,13 @@ public:
 				TTchainNames.push_back(qcdDataTag + "_RunD_v4_NoLeptId");
 			}//MuMu channel data driven QCD
 
+			if(channel == Selector::EMu){
+				qcdDataTag = "MuEG";
+				TTchainNames.push_back(qcdDataTag + "_RunC_NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunD_v3_NoLeptId");
+				TTchainNames.push_back(qcdDataTag + "_RunD_v4_NoLeptId");
+			}//EMu channel data driven QCD
+
 		} else if(mode == "WZ") {
 			TTchainNames.push_back("WZ");
 		} else if(mode == "ZZ") {

@@ -30,14 +30,14 @@ void Selector::updateLeptIdWeight(TLorentzVector leptp4, tag_t tag, Float_t & le
 			if(et >= 245.7) leptWeight *= 0.0506;	//high ET
 		}//end high eta endcap ele
 
-	}//end EE channel
+	}//end input lepton is an electron
 	
-	else{
-		//MuMu channel
+	if(tag == MuMu){
+		//input lepton is a muon
 		if(fabs(eta) < 1.422 && et > 50.0) leptWeight *= (0.0222 + exp(-3.16 + 0.0028*et));	//low ET barrel
 		if(fabs(eta) >= 1.422 && et <= 110.0) leptWeight *= (0.0883 + exp(5.93 - 0.133*et));	//low ET endcap
 		if(fabs(eta) >= 1.422 && et > 110.0) leptWeight *= (-2.91 + exp(1.09 + 0.000132*et));	//high ET endcap
-	}//end MuMu channel
+	}//end input lepton is a muon
 
 	leptWeight *= 1/(1.0 - leptWeight);
 
@@ -486,7 +486,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 		lead_lepton_passedID = electrons[0].passedID;
 		sublead_lepton_passedID = electrons[1].passedID;
-		if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
+		if(lead_lepton_passedID > 0 || sublead_lepton_passedID > 0) return false;	//skip evt if either selected lepton passed ID
 
 		lead_lepton_weight = electrons[0].weight;
 		sublead_lepton_weight = electrons[1].weight;
@@ -525,7 +525,7 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		//temp comment to work with DoubleEG minitrees which dont have this info saved
 		lead_lepton_passedID = muons[0].passedID;
 		sublead_lepton_passedID = muons[1].passedID;
-		if(lead_lepton_passedID > 0 && sublead_lepton_passedID > 0) return false;	//skip evt if both selected leptons passed ID
+		if(lead_lepton_passedID > 0 || sublead_lepton_passedID > 0) return false;	//skip evt if either selected lepton passed ID
 
 		lead_lepton_IDSF_error = muons[0].IDSF_error;
 		lead_lepton_IsoSF_error = muons[0].IsoSF_error;
@@ -551,6 +551,10 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 		if(electrons[0].p4.Pt() > muons[0].p4.Pt()) { // e > mu
 			lead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_p4 = muons[0].p4;
+			
+			lead_lepton_passedID = electrons[0].passedID;
+			sublead_lepton_passedID = muons[0].passedID;
+			if(lead_lepton_passedID > 0 || sublead_lepton_passedID > 0) return false;	//skip evt if either selected lepton passed ID
 
 			lead_lepton_IDSF_error = electrons[0].IDSF_error;
 			lead_lepton_RecoSF_error = electrons[0].RecoSF_error;
@@ -564,8 +568,15 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 			lead_lepton_weight = electrons[0].weight;
 			sublead_lepton_weight = muons[0].weight;
 
+			updateLeptIdWeight(sublead_lepton_p4, MuMu, sublead_lepton_weight);	//sublead lepton is a muon
+			updateLeptIdWeight(lead_lepton_p4, EE, lead_lepton_weight);	//lead lepton is an electron
+
 			lead_lepton_r9 = electrons[0].r9;
 		} else { // mu > e
+	
+			lead_lepton_passedID = muons[0].passedID;
+			sublead_lepton_passedID = electrons[0].passedID;
+			if(lead_lepton_passedID > 0 || sublead_lepton_passedID > 0) return false;	//skip evt if either selected lepton passed ID
 
 			sublead_lepton_p4 = electrons[0].p4;
 			sublead_lepton_weight = electrons[0].weight;
@@ -580,6 +591,9 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 
 			lead_lepton_p4 = muons[0].p4;
 			lead_lepton_weight = muons[0].weight;
+			
+			updateLeptIdWeight(sublead_lepton_p4, EE, sublead_lepton_weight);	//sublead lepton is an electron
+			updateLeptIdWeight(lead_lepton_p4, MuMu, lead_lepton_weight);	//lead lepton is a muon
 
 			sublead_lepton_r9 = electrons[0].r9;
 		}
@@ -589,14 +603,13 @@ bool Selector::isPassing(tag_t tag, bool makeHists)
 	//to fake a lepton which passes full ID
 	//dont count evts which have 1 lepton passing ID, these are likely WJets evts in data
 	//only count evts which have 0 leptons passing default, full ID
-	if(lead_lepton_passedID > 0) sublead_lepton_weight = 0.;
-	else if(sublead_lepton_passedID > 0) lead_lepton_weight = 0.;
-	else{
+	//if(lead_lepton_passedID > 0) sublead_lepton_weight = 0.;
+	//else if(sublead_lepton_passedID > 0) lead_lepton_weight = 0.;
+	if(tag == EE || tag == MuMu){
 		//lead and sublead leptons were reconstructed from jets which passed loose ID but failed default, full ID
 		updateLeptIdWeight(sublead_lepton_p4, tag, sublead_lepton_weight);
 		updateLeptIdWeight(lead_lepton_p4, tag, lead_lepton_weight);
 	}
-
 
 	/**/
 	if(fabs(lead_lepton_p4.Eta()) > 1.566) lead_det = DET_ENDCAP;
