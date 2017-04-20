@@ -17,6 +17,9 @@ SingleMu_RunD_v4_NoLeptId	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	6106630
 MuEG_RunC	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
 MuEG_RunD_v3	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
 MuEG_RunD_v4	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v4_SHv12/	-
+MuEG_RunC_NoLeptId	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
+MuEG_RunD_v3_NoLeptId	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunD_v4_NoLeptId	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v4_SHv12/	-
 #####
 singleAntiTop	/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	80.95	-	1680200	-	-
 singleTop	/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM	136.02	-	3299800	-	-
