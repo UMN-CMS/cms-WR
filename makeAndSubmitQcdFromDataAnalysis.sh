@@ -40,7 +40,7 @@ do
 
 		#submit the job to 1nh queue and request at least 2 GB of disk
 		#echo "bsub -R 'pool>2000' -q 1nh -J runAnalysisQcdFromData_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisQcdFromData_${mcIdentifier[$j]}_${startingCount}.sh"
-		eval "bsub -R 'pool>2000' -q 8nh -J runAnalysisQcdFromData_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisQcdFromData_${mcIdentifier[$j]}_${startingCount}.sh"
+		eval "bsub -R 'pool>2000' -q 1nh -J runAnalysisQcdFromData_${mcIdentifier[$j]}_Part_${startingCount} < runAnalysisQcdFromData_${mcIdentifier[$j]}_${startingCount}.sh"
 
 		let startingCount=startingCount+1
 	done

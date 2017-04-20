@@ -43,5 +43,10 @@
 #DoubleEG_RunD_v4	/DoubleEG/Run2015D-PromptReco-v4/MINIAOD	-	-	55019948	root://eoscms//eos/cms/store//user/shervin/skims/DoubleEG_RunD_v4_SHv12/	-
 #####
 #SingleMu_RunC	/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	1341179	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunC_SHv12/	-
-SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	31822683	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
-SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v4_SHv12/	-
+#SingleMu_RunD_v3	/SingleMuon/Run2015D-PromptReco-v3/MINIAOD	-	-	31822683	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v3_SHv12/	-
+#SingleMu_RunD_v4	/SingleMuon/Run2015D-PromptReco-v4/MINIAOD	-	-	61066301	root://eoscms//eos/cms/store//user/shervin/skims/SingleMu_RunD_v4_SHv12/	-
+####
+MuEG_RunC	/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD	-	-	111545	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunC_SHv12/	-
+MuEG_RunD_v3	/MuonEG/Run2015D-PromptReco-v3/MINIAOD	-	-	4825579	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v3_SHv12/	-
+MuEG_RunD_v4	/MuonEG/Run2015D-PromptReco-v4/MINIAOD	-	-	8617876	root://eoscms//eos/cms/store//user/shervin/skims/MuEG_RunD_v4_SHv12/	-
+#
