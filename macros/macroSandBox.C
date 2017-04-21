@@ -2135,9 +2135,9 @@ void macroSandBox(){
 	
 	//input TChains
 	TChain * genWR = new TChain("genMatchedParticleAnalyzerFive/genLeptonsAndJetsWithAllCuts");
-	genWR->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_2400_NU_150_1.root");
+	genWR->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/analyzed_genWrToEEJJFullOfflineAnalysis_WR_4000_NU_300_1.root");
 	TChain * recoWR = new TChain("Tree_Iter0");
-	recoWR->Add("../processedRootFiles/selected_tree_wr2400nu160_signal_mumuMuMu.root");
+	recoWR->Add("../processedRootFiles/selected_tree_wr4000nu267_signal_eeEE.root");
 
 	//vary dR cut btwn sublead lepton (lepton from Nu) and both jets
 	TString dRthreshold = "0.7";
