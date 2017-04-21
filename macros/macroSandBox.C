@@ -38,7 +38,7 @@
 using namespace std;
 
 //#define studyGenWrKinematicsVsWrAndNuMasses
-#define genAndRecoWrPlotsMinimalCuts
+//#define genAndRecoWrPlotsMinimalCuts
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
 //#define genPlotsUsingWRDecayProducts
@@ -53,7 +53,7 @@ using namespace std;
 //#define bkgndOverlaidOnMatchedSignal
 //#define DEBUGEVTWEIGHTMTHD
 //#define DEBUGVECTOR
-
+#define privGenAndRecoWrComparison
 
 //calculate four object mass given pt, eta, phi of four objects
 //cannot get this function to work within a TTree Draw call
@@ -2128,5 +2128,80 @@ void macroSandBox(){
 
 #endif
 	//end genAndRecoWrPlotsMinimalCuts
+
+#ifdef privGenAndRecoWrComparison
+	//make plots showing jet and lepton kinematics in privately produced GEN WR and RECO WR signal MC
+	//using events which pass the full event selection (with HLT and ID in RECO events)
+	
+	//input TChains
+	TChain * genWR = new TChain("genMatchedParticleAnalyzerFive/genLeptonsAndJetsWithAllCuts");
+	genWR->Add("/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_2400_NU_150_1.root");
+	TChain * recoWR = new TChain("Tree_Iter0");
+	recoWR->Add("../processedRootFiles/selected_tree_wr2400nu160_signal_mumuMuMu.root");
+
+	//vary dR cut btwn sublead lepton (lepton from Nu) and both jets
+	TString dRthreshold = "0.7";
+	TString intDrThreshold = "7";
+
+	//make a txt file where the selection efficiency of the dR cut relative to the dR > 0.4 cut is printed out
+	Float_t initialRecoEvts = recoWR->GetEntries("lead_lepton_passedID>0 && sublead_lepton_passedID>0"), initialGenEvts = genWR->GetEntries();
+	ofstream genAndRecoDrEfficiencies("genAndRecoDrSubleadLeptonEfficiencies.txt",ofstream::app);
+	//genAndRecoDrEfficiencies << "#given GEN and RECO WR evts passing full selection"<<std::endl;
+	//genAndRecoDrEfficiencies << "#calculate the RECO/GEN efficiency for these events to pass a tighter dR cut between both leptons and both jets"<<std::endl;
+	//genAndRecoDrEfficiencies << "#dR\tRECO/GEN\tUNC"<<std::endl;
+	//genAndRecoDrEfficiencies << "#EEJJ"<<std::endl;
+
+	//write RECO/GEN efficiency ratio to the txt file
+	Float_t recoEff = (recoWR->GetEntries("lead_lepton_passedID > 0 && sublead_lepton_passedID>0 && dR_leadlepton_leadjet > "+dRthreshold+ " && dR_leadlepton_subleadjet > " +dRthreshold+ " && dR_subleadlepton_leadjet > "+dRthreshold +" && dR_subleadlepton_subleadjet > "+dRthreshold)/initialRecoEvts);
+	Float_t recoEffUnc = sqrt(recoEff*(1-recoEff)/initialRecoEvts);
+	Float_t genEff = (genWR->GetEntries("dR_leadingLeptonLeadingJet > "+dRthreshold + " && dR_leadingLeptonSubleadingJet > "+dRthreshold + " && dR_subleadingLeptonLeadingJet > "+dRthreshold +" && dR_subleadingLeptonSubleadingJet > "+dRthreshold + " && dR_leadingJetSubleadingJet > "+dRthreshold)/initialGenEvts);
+	Float_t genEffUnc = sqrt(genEff*(1-genEff)/initialGenEvts);
+	Float_t recoOverGenUnc = sqrt((recoEffUnc*recoEffUnc/(genEff*genEff)) + (recoEff*recoEff/(genEff*genEff*genEff*genEff))*(genEffUnc*genEffUnc));
+
+	genAndRecoDrEfficiencies << dRthreshold <<"\t" << recoEff/genEff << "\t" << recoOverGenUnc << std::endl;
+
+
+	/*
+	//turn TBranch plots into TH1Fs, normalize TH1F areas to 1 and set line colors and widths
+	recoWR->Draw("lead_jet_pt>>leadRecoJetPtHist(20,0,1200)","dR_leadlepton_leadjet > "+dRthreshold+ " && dR_leadlepton_subleadjet > " +dRthreshold+ " && dR_subleadlepton_leadjet > "+dRthreshold +" && dR_subleadlepton_subleadjet > "+dRthreshold);
+	TH1F * recoLeadJetPt = (TH1F*) gROOT->FindObject("leadRecoJetPtHist");
+	recoLeadJetPt->Scale(1.0/recoLeadJetPt->Integral());
+	recoLeadJetPt->SetLineColor(kBlack);
+	recoLeadJetPt->SetLineWidth(3);
+	recoLeadJetPt->SetTitle("");
+	recoLeadJetPt->GetYaxis()->SetTitle("Arbitrary Units");
+	recoLeadJetPt->GetYaxis()->SetTitleOffset(1.4);
+	recoLeadJetPt->GetXaxis()->SetTitle("lead jet p_{T} [GeV]");
+	genWR->Draw("ptJet[0]>>leadGenJetPtHist(20,0,1200)","dR_leadingLeptonLeadingJet > "+dRthreshold + " && dR_leadingLeptonSubleadingJet > "+dRthreshold + " && dR_subleadingLeptonLeadingJet > "+dRthreshold +" && dR_subleadingLeptonSubleadingJet > "+dRthreshold + " && dR_leadingJetSubleadingJet > "+dRthreshold);
+	TH1F * genLeadJetPt = (TH1F*) gROOT->FindObject("leadGenJetPtHist");
+	genLeadJetPt->Scale(1.0/genLeadJetPt->Integral());
+	genLeadJetPt->SetTitle("");
+	genLeadJetPt->SetLineColor(kRed);
+	genLeadJetPt->SetLineWidth(3);
+	genLeadJetPt->GetYaxis()->SetTitle("Arbitrary Units");
+	genLeadJetPt->GetYaxis()->SetTitleOffset(1.4);
+	genLeadJetPt->GetXaxis()->SetTitle("lead jet p_{T} [GeV]");
+
+	//overlay TH1Fs on same canvas
+	gStyle->SetOptStat("");
+	TLegend * legOver = new TLegend(0.6,0.6,0.9,0.9);
+	legOver->AddEntry(recoLeadJetPt,"RECO     ");
+	legOver->AddEntry(genLeadJetPt,"GEN     ");
+	legOver->AddEntry( (TObject*)0 , "MWR2400 MNu160","");
+	TCanvas * cOver = new TCanvas("cOver","cOver",800,800);
+	cOver->cd();
+	genLeadJetPt->Draw("histo");
+	recoLeadJetPt->Draw("histo same");
+	legOver->Draw();
+	cOver->Print("wrLeadJetPtEEJJRecoVsGen_dRthreshold_"+intDrThreshold+".png");
+	cOver->Print("wrLeadJetPtEEJJRecoVsGen_dRthreshold_"+intDrThreshold+".pdf");
+	cOver->Print("wrLeadJetPtEEJJRecoVsGen_dRthreshold_"+intDrThreshold+".C");
+	cOver->Close();
+	*/
+
+#endif
+	//end privGenAndRecoWrComparison
+
+
 }///end macroSandBox()
 

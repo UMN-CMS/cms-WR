@@ -59,7 +59,7 @@ class chainNames
 public:
 	chainNames(): ///< default constructor
 		all_modes(  // list of all possible modes
-	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL","lowWRlowestNu","lowWRlowNu","lowWRhalfNu","lowWRhighNu","highWRlowestNu","highWRlowNu","highWRhalfNu","highWRhighNu","wr2400nu500","wr2400nu2200","wr4000nu800","wr4000nu3800", "signal"
+	{"TT", "W", "WZ", "ZZ", "data", "DYPOWHEG", "DYMADHT", "DYAMC", "DYMAD", "DYPOWINCL","wr2400nu160","lowWRlowNu","lowWRhalfNu","lowWRhighNu","wr4000nu267","highWRlowNu","highWRhalfNu","highWRhighNu","wr2400nu500","wr2400nu2200","wr4000nu800","wr4000nu3800", "signal"
 	}
 	)
 	{
@@ -134,11 +134,11 @@ public:
 		if(mode.find("WRto") != _ENDSTRING) {
 			TTchainNames.push_back(mode);
 		}
-		if(mode == "lowWRlowestNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_160_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_160_PrivReco");
+		if(mode == "wr2400nu160") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_160_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_160_PrivReco");
 		if(mode == "lowWRlowNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_800_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_800_PrivReco");
 		if(mode == "lowWRhalfNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_1200_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_1200_PrivReco");
 		if(mode == "lowWRhighNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_2400_1600_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_2400_1600_PrivReco");
-		if(mode == "highWRlowestNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_267_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_267_PrivReco");
+		if(mode == "wr4000nu267") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_267_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_267_PrivReco");
 		if(mode == "highWRlowNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_1333_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_1333_PrivReco");
 		if(mode == "highWRhalfNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_2000_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_2000_PrivReco");
 		if(mode == "highWRhighNu") channel == Selector::EE ? TTchainNames.push_back("WRtoEEJJ_4000_2667_PrivReco") : TTchainNames.push_back("WRtoMuMuJJ_4000_2667_PrivReco");
