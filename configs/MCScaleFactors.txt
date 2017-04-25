@@ -1,8 +1,8 @@
 #TT uncerts are divided by SF then added to datacard
 #mode  channel  SF      stat_unc  syst_unc
-DYAMC  EE       1.0000  0.0006    0.4028
-DYAMC  MuMu     1.0000  0.0005    0.4034
-TT     EE       0.4194  0.0013    0.0210
-TT     MuMu     0.6563  0.0029    0.0328
+DYAMC  EE       1.0000  0.0006    0.4128
+DYAMC  MuMu     1.0000  0.0005    0.4134
+TT     EE       0.4194  0.0013    0.0420
+TT     MuMu     0.6563  0.0029    0.0656
 #OTHER	EE	1.0000	0.0000	0.0000
 #OTHER	MuMu	1.0000	0.0000	0.0000
