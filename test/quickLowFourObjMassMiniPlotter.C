@@ -50,7 +50,7 @@ void quickLowFourObjMassMiniPlotter(){
   TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
-  TString localDir = "../analysisCppOutputRootFiles/";
+  TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EE:
@@ -68,7 +68,7 @@ void quickLowFourObjMassMiniPlotter(){
 #ifdef doDataDrivenTT
 	tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
 #endif
-	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
+	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
   	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_eeEE.root");
@@ -89,7 +89,7 @@ void quickLowFourObjMassMiniPlotter(){
 #ifdef doDataDrivenTT
    	tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuMuMu.root");
 #endif
-	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
+	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
 	zz = chain_ZZ->Add(localDir+"selected_tree_topW_signal_mumuMuMu.root");
@@ -279,7 +279,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif 
   leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
+  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
 
@@ -318,8 +318,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->SetStats(0);
 
   //reset vertical scale in MLLJJ and MLL plots to harmonize plot scales between lepton channels
-  hs_data->SetMinimum(0.02);
-  th->SetMinimum(0.02);
+  hs_data->SetMinimum(0.007);
+  th->SetMinimum(0.007);
 
 
   TH1F *ratio = (TH1F*)hs_data->Clone();
