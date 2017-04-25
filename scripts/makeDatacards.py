@@ -87,5 +87,5 @@ for channel in ["ee", "mumu"]:
 		
 		#the third argument in makeDataCardSingleBin sets the number of observed events in the datacard
 		#use nObs for observed limits, and nBG for expected limits
-		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nObs,
+		sig, bgs = combineTools.makeDataCardSingleBin(datacard_file, channel + "jj", nBG,
 				signal_tuple, bg_tuples, systematics=systematics_list[i])
