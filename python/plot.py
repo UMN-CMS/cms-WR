@@ -154,11 +154,13 @@ class limit1d:
 		leg.Draw("same")
 
 
-		text = ROOT.TText(0.72,0.97,"CMS Preliminary")
-		text.SetNDC();
-		text.SetTextFont(42);
-		text.SetTextSize(0.04);
-		text.Draw()
+		#text = ROOT.TText(0.32,0.97,"CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}")
+		#text.SetNDC();
+		text = ROOT.TLatex()
+		text.SetTextFont(42)
+		text.SetTextSize(0.04)
+		text.DrawLatexNDC(0.22,0.97,"CMS Preliminary #surds = 13 TeV  2.6/fb")
+		#text.Draw()
 
 		c1.RedrawAxis()
 		c1.SaveAs(filename + ".png")
