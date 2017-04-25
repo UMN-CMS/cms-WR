@@ -158,8 +158,8 @@ class limit1d:
 		#text.SetNDC();
 		text = ROOT.TLatex()
 		text.SetTextFont(42)
-		text.SetTextSize(0.04)
-		text.DrawLatexNDC(0.22,0.97,"CMS Preliminary #surds = 13 TeV  2.6/fb")
+		text.SetTextSize(0.043)
+		text.DrawLatexNDC(0.22,0.96,"CMS Preliminary        2.6 fb^{-1} (13 TeV)")
 		#text.Draw()
 
 		c1.RedrawAxis()
