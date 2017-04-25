@@ -19,12 +19,11 @@
 #include <cstdio>
 #include <memory>
 
-#define unblindedData
+//#define unblindedData
 //#define plotRatio
 //#define showRescaledRunOneEEJJExcess
-//#define useHtBinnedWJets
-//#define showQCD //dont enable this and showRescaledRunOneEEJJExcess simultaneously
-#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
+#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
+//#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -40,7 +39,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -54,19 +53,14 @@ void quickSignalRegionMiniPlotter(){
   TChain * chain_ZZ = new TChain("Tree_Iter0","QCD");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
-  TString localDir = "../analysisCppOutputRootFiles/";
+  TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
   Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
   switch (channel) {
   case Selector::EE:
 	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
-#ifndef useHtBinnedWJets
-	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_eeEE.root");
-#endif
-#ifdef useHtBinnedWJets
 	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_eeEE.root");
-#endif
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
 
@@ -77,8 +71,8 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 #ifdef showWR
-	//zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
-	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_800_400_signal_eeEE.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_2200_1100_signal_eeEE.root");
+	//zz = chain_ZZ->Add(localDir+"selected_tree_WRtoEEJJ_800_400_signal_eeEE.root");
 #endif
 
 #ifdef showQCD
@@ -100,14 +94,7 @@ void quickSignalRegionMiniPlotter(){
 	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_mumuMuMu_withMllWeight.root");
 	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_mumuMuMu.root");
     tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
-
-#ifndef useHtBinnedWJets
-	wjets = chain_WJets->Add(localDir+"selected_tree_W_signal_mumuMuMu.root");
-#endif
-#ifdef useHtBinnedWJets
 	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_mumuMuMu.root");
-#endif
-
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
 #ifdef showQCD
@@ -115,8 +102,8 @@ void quickSignalRegionMiniPlotter(){
 #endif
 
 #ifdef showWR
-	//zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
-	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_800_400_signal_mumuMuMu.root");
+	zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_2200_1100_signal_mumuMuMu.root");
+	//zz = chain_ZZ->Add(localDir+"selected_tree_WRtoMuMuJJ_800_400_signal_mumuMuMu.root");
 #endif
 
 #ifndef unblindedData	
@@ -437,15 +424,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
-  leg->AddEntry( hs_ttbar, "TT+TopW Data Driven" ) ;
-
-#ifndef useHtBinnedWJets
-  leg->AddEntry( hs_WJets, "WJets" ) ; 
-#endif
-#ifdef useHtBinnedWJets
-  leg->AddEntry( hs_WJets, "WJets H_{T} binned" ) ; 
-#endif
-
+  leg->AddEntry( hs_ttbar, "TTBar+TopW Data Driven" ) ;
+  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE){
@@ -455,13 +435,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef showQCD
-  leg->AddEntry( hs_ZZ, "QCD data driven");
+  leg->AddEntry( hs_ZZ, "QCD Data Driven");
 #endif
 
 #ifdef showWR
-  leg->AddEntry( hs_ZZ, "WR signal x 0.1");
-  //leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{Nu}=1.1 TeV","");
-  leg->AddEntry( (TObject*)0, "M_{WR}=0.8 TeV M_{Nu}=0.4 TeV","");
+  leg->AddEntry( hs_ZZ, "WR signal");
+  leg->AddEntry( (TObject*)0, "M_{WR}=2.2 TeV M_{Nu}=1.1 TeV","");
+  //leg->AddEntry( (TObject*)0, "M_{WR}=0.8 TeV M_{Nu}=0.4 TeV","");
 #endif
 
 #ifndef unblindedData
@@ -545,6 +525,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifndef unblindedData
+  //draw a low WR mass signal as a line
   hs_data->SetLineColor(kRed);
   hs_data->SetLineWidth(3);
   hs_data->SetFillColor(kWhite);
@@ -640,13 +621,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   fn += "_withRatio";
 #endif
 
-#ifdef useHtBinnedWJets
-  fn += "_withHTBinnedWJets"; 
-#endif
 
 #ifdef showWR
-  //fn += "_MWR2200MNu1100Signal";
-  fn += "_MWR800MNu400Signal";
+  fn += "_MWR2200MNu1100Signal";
+  //fn += "_MWR800MNu400Signal";
 #endif
 
 #ifdef showRescaledRunOneEEJJExcess
@@ -675,11 +653,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
 
   //plots with variable bin widths (the bin contents are divided by the bin widths)
-  if(fname.EqualTo("Mlljj_2012Bins") || fname.EqualTo("Mljj_leadLept_varBins") || fname.EqualTo("Mljj_subleadLept_varBins") ){
+  if(fname.EqualTo("Mlljj_2012Bins") || fname.EqualTo("Mlljj") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
-	  th->SetMinimum(0.0005);
+	  if(fname.EqualTo("Mlljj_2012Bins")) th->SetMinimum(0.0005);
+	  if(fname.EqualTo("Mlljj")) th->SetMinimum(0.05);
 	  mycanvas->Update();
 #ifdef plotRatio
 	  p1->SetLogy();	//for ratio plot
