@@ -21,10 +21,10 @@
 #include <memory>
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
-#define highMlljj
+//#define highMlljj
 
-#define fixedBinWidths
-//#define variableBinWidths
+//#define fixedBinWidths
+#define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
 //#define DOAMC
@@ -171,8 +171,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 #ifdef variableBinWidths
   //variable bin widths only for WR mass plot
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1375, 1450, 1550, 1680, 1900, 2500};	//original
-  //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
-  Float_t bins[] = { 200, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2600};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
+  Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
+  //Float_t bins[] = { 200, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2600};	//wider bins work better at high WR mass, include overflow evts in last bin shown on plot
   
   //Float_t bins[] = { 150, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500, 6000};	//wider bins, out to 6000 GeV
   
@@ -510,8 +510,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 //TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU","unweightedMLLJJ"};
 
-  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("l1_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("l2_pt") || fname.EqualTo("l2_eta") ){
-  if(fname.EqualTo("l2_pt") || fname.EqualTo("l2_eta") || fname.EqualTo("l1_pt") || fname.EqualTo("l1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") ){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
