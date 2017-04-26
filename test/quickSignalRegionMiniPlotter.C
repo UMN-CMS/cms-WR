@@ -23,7 +23,7 @@
 #define plotRatio
 //#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
-#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
+//#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -50,7 +50,7 @@ void quickSignalRegionMiniPlotter(){
   TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
-  TChain * chain_ZZ = new TChain("Tree_Iter0","QCD");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
@@ -215,7 +215,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 	  scaleFactor = (channel == Selector::MuMu) ? 0.958 : 0.954;	//to account for slightly higher number of rescaled ttbar MC events relative to rescaled emu data evts
   }
   if( chainTitle.EqualTo("TTData") ){
-	  scaleFactor = (channel == Selector::MuMu) ? 0.6563 : 0.4194;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
+	  scaleFactor = (channel == Selector::MuMu) ? 0.66 : 0.43;	//to rescale emu data evts to estimates of ttbar in ele and mu channels
   }
 
 

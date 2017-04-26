@@ -64,9 +64,9 @@ using namespace std;
 //#define DYPdfUnc
 //#define TTScaleFactorSystematic
 //#define WRPdfUnc
-//#define expAndObsInMassWindows
+#define expAndObsInMassWindows
 //#define printTnPTreeBranches
-#define wrSignalEffTurnOn
+//#define wrSignalEffTurnOn
 
 
 //#define DEBUG
@@ -3535,8 +3535,8 @@ void macroSandBox(){
 
 	//declare pointers to input TTrees and emu weights which should be applied to EMu data to estimate TTBar
 	TString treeName = "syst_tree";
-  	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystSmoothedWindowsFebrTwentyOne/";
-	Double_t EEWgt = 0.4194, MuMuWgt = 0.6563;	//weights to apply to EMu data to estimate top bkgnd
+  	TString localDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystAprilTwentyThree/";
+	Double_t EEWgt = 0.4315, MuMuWgt = 0.6592;	//weights to apply to EMu data to estimate top bkgnd
 
 	//electron channel
 	TChain * TopEE = new TChain(treeName);
@@ -3592,7 +3592,7 @@ void macroSandBox(){
 		Double_t dyEEShapeUnc = calculateBranchStdDev(DYEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);
 
 		yExpEle[i] = expectedTopEEevents + expectedDYEEevents;	//expected bkgnds
-		yErrExpEle[i] = sqrt((expectedTopEEevents*.05)*(expectedTopEEevents*.05) + (expectedDYEEevents*.4)*(expectedDYEEevents*.4) + topEEStatUnc*topEEStatUnc + topEEShapeUnc*topEEShapeUnc + dyEEStatUnc*dyEEStatUnc + dyEEShapeUnc*dyEEShapeUnc);	//total uncertainty on expected bkgnds
+		yErrExpEle[i] = sqrt((expectedTopEEevents*.1)*(expectedTopEEevents*.1) + (expectedDYEEevents*.41)*(expectedDYEEevents*.41) + topEEStatUnc*topEEStatUnc + topEEShapeUnc*topEEShapeUnc + dyEEStatUnc*dyEEStatUnc + dyEEShapeUnc*dyEEShapeUnc);	//total uncertainty on expected bkgnds
 		yObsEle[i] = calculateBranchMean(obsEE, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
 
 		//muon channel
@@ -3604,7 +3604,7 @@ void macroSandBox(){
 		Double_t dyMuMuShapeUnc = calculateBranchStdDev(DYMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);
 
 		yExpMuon[i] = expectedTopMuMuevents + expectedDYMuMuevents;	//expected bkgnds
-		yErrExpMuon[i] = sqrt((expectedTopMuMuevents*.05)*(expectedTopMuMuevents*.05) + (expectedDYMuMuevents*.4)*(expectedDYMuMuevents*.4) + topMuMuStatUnc*topMuMuStatUnc + topMuMuShapeUnc*topMuMuShapeUnc + dyMuMuStatUnc*dyMuMuStatUnc + dyMuMuShapeUnc*dyMuMuShapeUnc);	//total uncertainty on expected bkgnds
+		yErrExpMuon[i] = sqrt((expectedTopMuMuevents*.1)*(expectedTopMuMuevents*.1) + (expectedDYMuMuevents*.41)*(expectedDYMuMuevents*.41) + topMuMuStatUnc*topMuMuStatUnc + topMuMuShapeUnc*topMuMuShapeUnc + dyMuMuStatUnc*dyMuMuStatUnc + dyMuMuShapeUnc*dyMuMuShapeUnc);	//total uncertainty on expected bkgnds
 		yObsMuon[i] = calculateBranchMean(obsMuMu, "NEventsInRange["+to_string(massIndices[i])+"]", 1);	//observed data
 
 	}//end loop over different mass windows
