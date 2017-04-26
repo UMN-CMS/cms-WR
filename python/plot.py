@@ -176,8 +176,10 @@ class limit1d:
 		c1.SaveAs(filename + ".C")
 
 from collections import defaultdict
+#default mwr range is 27, 800, 6200: 200 GeV wide bins
+#default mnu range is 124, 0, 6200: 50 GeV wide bins
 class limit2d:
-	def __init__(self, ratio_file, name,channelname,  mwr_range=(27 , 800, 6200) , mnu_range = (124, 0, 6200 ), xs=None):
+	def __init__(self, ratio_file, name,channelname,  mwr_range=(54 , 800, 6200) , mnu_range = (248, 0, 6200 ), xs=None):
 		self.eff = defaultdict(dict)
 		self.effratio = ROOT.TH2F(name + "_eff_ratio", name + " eff ratio" , *(mwr_range + mnu_range))
 		self.limits = ROOT.TH2F(name + "_limits", name + " limits", *(mwr_range + mnu_range))
@@ -299,11 +301,12 @@ class limit2d:
 		hTwo.GetZaxis().SetTitleOffset(1.7)
 
 		#set the legend box size
-		#yw of 550 worked well when showing expected limit, observed limit, and expected +/- 1 sigma limit curves
+		#use yw 200, y1 2600 for expected limit overlaid on observed limit and latex2.DrawLatex(1000,2400,...)
+		#use yw 550, y1 2300 for expected limit and expected +/- 1 sigma limit overlaid on observed limit and latex2.DrawLatex(1000,2200,...)
 		x1 = 900
-		y1 = 2600
+		y1 = 2300
 		xw = 1200
-		yw = 200
+		yw = 550
 
 		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
 	
@@ -322,7 +325,7 @@ class limit2d:
 			latex2 = ROOT.TLatex()
 			latex2.SetTextSize(0.045)  #original value was 0.05 when X and Y axes extended to 4.0 TeV
 			#specify the lower left corner in x, y coordinates
-			latex2.DrawLatex(1000,2400, "M_{N_{l}} > M_{W_{R}} ")
+			latex2.DrawLatex(1000,2200, "M_{N_{l}} > M_{W_{R}} ")
 			
 			#update style of expected limit line, then draw it
 			contOne.SetLineStyle(7)  #small dashes
@@ -506,12 +509,12 @@ class limit2d:
 		#the first histo arg must be the expected curve, and the second must be the observed limit curve (exclusionTwo)
 		
 		#with +/- 1sigma expected limit curves
-		#graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
-		#graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
-		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
+		graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
+		graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
 		
 		#without +/- 1sigma expected limit curves
-		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
+		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
 		
 	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
