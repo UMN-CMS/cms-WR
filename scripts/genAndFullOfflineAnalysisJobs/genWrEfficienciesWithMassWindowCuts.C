@@ -173,13 +173,13 @@ void genWrEfficienciesWithMassWindowCuts(){
 
 	///all input .root files should be in the same directory, and have file names which differ only in the WR and Nu mass values
 	string dir= "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/";
-	string fileBegin = "analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_";
+	string fileBegin = "analyzed_genWrToEEJJFullOfflineAnalysis_WR_";
 	string fileEnd = "_1.root";
 	string fileMiddle = "_NU_";
 	gStyle->SetTitleOffset(1.6,"Y");
 	gStyle->SetOptStat("");
 
-	string cutEfficiencyVsMassFile = "offlineMuMuEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
+	string cutEfficiencyVsMassFile = "offlineEEEfficienciesVsMassesNoGenNuFilterWithMassWindowCuts.txt";
 	ofstream writeToEfficiencyFile(cutEfficiencyVsMassFile.c_str(),ofstream::trunc);
 	writeToEfficiencyFile <<"#WR mass\tNu mass\tefficiencyFraction"<< std::endl;
 	Float_t passingPercentage=-1;
@@ -192,14 +192,14 @@ void genWrEfficienciesWithMassWindowCuts(){
 	//starting value for wrMass equals the minimum wr mass
 	for(int wrMass=minWrMass; wrMass<=maxWrMass ; wrMass+=wrIncrement){
 		///loop over WR mass values
-		if(wrMass > 2001) minNuMass = 100, nuIncrement = 100;
+		if(wrMass > 2401) minNuMass = 100, nuIncrement = 100;
 		bool doLowReset = false;
 		bool doHighReset = false;
 
 		for(int nuMass=minNuMass; nuMass<wrMass ; nuMass+=nuIncrement){
 			//std::cout<<"WR mass\t"<< wrMass<<"\tNu mass\t"<< nuMass << std::endl;
 			///loop over Nu mass values
-			if(wrMass <= 2000) {
+			if(wrMass <= 2400) {
 				if(nuMass > 310 && !doLowReset){
 					doLowReset = true;
 					nuMass = 300;
