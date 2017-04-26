@@ -19,11 +19,11 @@
 #include <cstdio>
 #include <memory>
 
-//#define unblindedData
-//#define plotRatio
+#define unblindedData
+#define plotRatio
 //#define showRescaledRunOneEEJJExcess
-#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
-//#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
+//#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
+#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -39,7 +39,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -499,7 +499,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef showWR
   hs_ZZ->SetLineColor(kRed);
   hs_ZZ->SetLineWidth(3);
-  hs_ZZ->Scale(0.1);
+  //hs_ZZ->Scale(0.1);
   hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
 #endif
 
@@ -632,9 +632,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
   
   //plots with fixed bin widths
-  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") || fname.EqualTo("Mlljj_thinBins") ){
+  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") ){
   //if(fname.EqualTo("Mlljj")){
-  if(fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
@@ -653,12 +652,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
 
   //plots with variable bin widths (the bin contents are divided by the bin widths)
-  if(fname.EqualTo("Mlljj_2012Bins") || fname.EqualTo("Mlljj") ){
+  if(fname.EqualTo("Mlljj_2012Bins") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
 	  if(fname.EqualTo("Mlljj_2012Bins")) th->SetMinimum(0.0005);
-	  if(fname.EqualTo("Mlljj")) th->SetMinimum(0.05);
 	  mycanvas->Update();
 #ifdef plotRatio
 	  p1->SetLogy();	//for ratio plot
