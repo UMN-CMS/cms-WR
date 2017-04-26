@@ -188,14 +188,32 @@ void genWrEfficienciesWithMassWindowCuts(){
 	TH2F * twoDimAccHistNoWindows = new TH2F("twoDimAccHistNoWindows","Percentage of events passing all GEN cuts without mass windows",32,800,4000,38,100,4000);
 
 
-	int maxWrMass = 4000, increment = 100, minWrMass = 800, minNuMass = 100;
+	int maxWrMass = 4000, wrIncrement = 100, nuIncrement = 25, minWrMass = 800, minNuMass = 25;
 	//starting value for wrMass equals the minimum wr mass
-	for(int wrMass=minWrMass; wrMass<=maxWrMass ; wrMass+=increment){
+	for(int wrMass=minWrMass; wrMass<=maxWrMass ; wrMass+=wrIncrement){
 		///loop over WR mass values
-		
-		for(int nuMass=minNuMass; nuMass<wrMass ; nuMass+=increment){
-			///loop over Nu mass values
+		if(wrMass > 2001) minNuMass = 100, nuIncrement = 100;
+		bool doLowReset = false;
+		bool doHighReset = false;
 
+		for(int nuMass=minNuMass; nuMass<wrMass ; nuMass+=nuIncrement){
+			//std::cout<<"WR mass\t"<< wrMass<<"\tNu mass\t"<< nuMass << std::endl;
+			///loop over Nu mass values
+			if(wrMass <= 2000) {
+				if(nuMass > 310 && !doLowReset){
+					doLowReset = true;
+					nuMass = 300;
+					nuIncrement = 100;
+					continue;
+				}
+				if(nuMass > (wrMass-198) && !doHighReset){
+					doHighReset = true;
+					nuMass = wrMass-200;
+					nuIncrement = 25;
+					continue;
+				}
+			}
+			
 			///define input root file name
 			string pfn = dir+fileBegin+to_string(wrMass)+fileMiddle+to_string(nuMass)+fileEnd;
 			
@@ -245,6 +263,7 @@ void genWrEfficienciesWithMassWindowCuts(){
 	writeToEfficiencyFile.close();
 
 
+	/*
 	///set axis labels and draw the histo, save an image of it (both pdf and png formats), and close the txt file
 	twoDimAcceptanceHist->GetXaxis()->SetTitle("WR Mass [GeV]");
 	twoDimAcceptanceHist->GetYaxis()->SetTitle("Nu Mass [GeV]");
@@ -265,6 +284,7 @@ void genWrEfficienciesWithMassWindowCuts(){
 	c1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsWithoutMassWindows_13TeV.pdf","recreate");
 	c1->SaveAs("twoDimGenWrAcceptancesMuMu_afterAllCutsWithoutMassWindows_13TeV.C","recreate");
 
+	*/
 
 }///end genWrEfficienciesWithMassWindowCuts()
 
