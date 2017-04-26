@@ -508,10 +508,10 @@ class limit2d:
 		#with +/- 1sigma expected limit curves
 		#graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
 		#graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
-		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
+		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
 		
 		#without +/- 1sigma expected limit curves
-		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq)" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
 		
 	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
