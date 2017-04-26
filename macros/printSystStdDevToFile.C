@@ -181,8 +181,8 @@ void printSystStdDevToFile(){
 	///make sure each mass point is listed in the mass cuts file
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
 	//int wrMassPoints[] = {800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3600,3800,4000};
-	//int wrMassPoints[] = {1600,2200,2800};
-	int wrMassPoints[] = {2200};
+	int wrMassPoints[] = {1600,2200,2800};
+	//int wrMassPoints[] = {2200};
 	vector<int> wrMassVect(wrMassPoints, wrMassPoints + sizeof(wrMassPoints)/sizeof(int) );
 
 	///user defined paths to root file dirs     the combination absPath + relPath must be an existing directory
@@ -190,7 +190,7 @@ void printSystStdDevToFile(){
 	string absPathToMainRootFileDir = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/";
 	
 	//relDirPathsVect and uncertTagNamesVect must have the same size
-	string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/", "3200toysJetSystNewMassWindows/","3200toysAllLeptSystNewMassWindows/"};
+	string relDirPaths[] = {"3200toysAllSystAprilTwentyThree/", "3200toysJetSystNewMassWindows/","3200toysAllLeptSystNewMassWindows/"};
 	string uncertTagNames[] = {"all sources","jet syst","mixed lepton"};
 	//string relDirPaths[] = {"3200toysAllSystSmoothedWindowsFebrTwentyOne/"};
 	//string uncertTagNames[] = {"all sources"};
@@ -342,7 +342,7 @@ void printSystStdDevToFile(){
 
 				if((chMapIt->first).find("Top") != string::npos){
 					//rescale mean, unweighted evts and uncertainties by the emu data scale factor
-					Double_t rescale = ((chMapIt->first).find("EE") != string::npos) ? 0.4194 : 0.6563;
+					Double_t rescale = ((chMapIt->first).find("EE") != string::npos) ? 0.4315 : 0.6592;
 					mean *= rescale;
 					systDevSqd *= (rescale*rescale);
 					statDevSqd *= (rescale*rescale);
