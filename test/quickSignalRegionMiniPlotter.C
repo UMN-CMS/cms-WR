@@ -423,10 +423,19 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
   TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
-  leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
-  leg->AddEntry( hs_ttbar, "TTBar+TopW Data Driven" ) ;
-  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
+  
+  //PAS plot legend entries
+  leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
+  leg->AddEntry( hs_ttbar, "Top bkgnds from data" ) ;
+  leg->AddEntry( hs_WJets, "W+jets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
+
+  //AN plot legend entries
+  //leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
+  //leg->AddEntry( hs_ttbar, "Top Backgrounds Data Driven" ) ;
+  //leg->AddEntry( hs_WJets, "W+jets" ) ; 
+  //leg->AddEntry( hs_WZ, "Diboson" ) ; 
+
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE){
 	  leg->AddEntry( hs_ZZ, "RunI Excess+Backgrounds");
