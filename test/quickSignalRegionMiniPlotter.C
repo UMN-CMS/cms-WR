@@ -422,7 +422,7 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
-  TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
+  TLegend *leg = new TLegend( 0.55, 0.50, 0.90, 0.90 ) ; 
   
   //PAS plot legend entries
   leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
