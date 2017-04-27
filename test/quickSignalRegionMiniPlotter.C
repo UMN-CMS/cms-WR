@@ -21,7 +21,7 @@
 
 #define unblindedData
 #define plotRatio
-//#define showRescaledRunOneEEJJExcess
+#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
@@ -39,7 +39,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
@@ -517,8 +517,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
+  hs_data->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
   th->Draw("histo");
 #ifdef unblindedData
   hs_data->Draw("EPsame");

@@ -94,7 +94,7 @@ void flavorSideband(){
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
  
   ///use this title for all plots
-  TString stdTitle = "CMS Private           #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
+  TString stdTitle = "CMS Preliminary               2.6 fb^{-1} (13 TeV)";
   h_WR_mass_EMu->SetTitle(stdTitle);
   h_WR_mass_EMuData->SetTitle(stdTitle);
   h_WR_mass_EE->SetTitle(stdTitle);
@@ -138,7 +138,7 @@ void flavorSideband(){
   h_ratio_EE->Divide(h_WR_mass_EMu);
   h_ratio_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_ratio_EE->GetYaxis()->SetRangeUser(0.31,0.59);
-  h_ratio_EE->GetYaxis()->SetTitle("ratio M_{EEJJ} / M_{EMuJJ}");
+  h_ratio_EE->GetYaxis()->SetTitle("ratio M_{eejj} / M_{e#mujj}");
   h_ratio_EE->SetTitleOffset(1.55,"Y");
   h_ratio_EE->SetTitle(stdTitle);
   h_ratio_EE->SetFillColor(kWhite);
@@ -146,7 +146,7 @@ void flavorSideband(){
   h_ratio_MuMu->SetTitle(stdTitle);
   h_ratio_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_ratio_MuMu->GetYaxis()->SetRangeUser(0.51,0.79);
-  h_ratio_MuMu->GetYaxis()->SetTitle("ratio M_{MuMuJJ} / M_{EMuJJ}");
+  h_ratio_MuMu->GetYaxis()->SetTitle("ratio M_{#mu#mujj} / M_{e#mujj}");
   h_ratio_MuMu->SetTitleOffset(1.55,"Y");
   h_ratio_MuMu->SetFillColor(kWhite);
   
