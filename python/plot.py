@@ -179,7 +179,7 @@ from collections import defaultdict
 #default mwr range is 27, 800, 6200: 200 GeV wide bins
 #default mnu range is 124, 0, 6200: 50 GeV wide bins
 class limit2d:
-	def __init__(self, ratio_file, name,channelname,  mwr_range=(54 , 800, 6200) , mnu_range = (248, 0, 6200 ), xs=None):
+	def __init__(self, ratio_file, name,channelname,  mwr_range=(27 , 800, 6200) , mnu_range = (124, 0, 6200 ), xs=None):
 		self.eff = defaultdict(dict)
 		self.effratio = ROOT.TH2F(name + "_eff_ratio", name + " eff ratio" , *(mwr_range + mnu_range))
 		self.limits = ROOT.TH2F(name + "_limits", name + " limits", *(mwr_range + mnu_range))
