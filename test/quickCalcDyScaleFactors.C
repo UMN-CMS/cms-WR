@@ -31,9 +31,9 @@
  *
  */
 
-#define showAMC
-#define doReweight
-//#define includeOtherBkgnds
+//#define showAMC
+//#define doReweight
+#define includeOtherBkgnds
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -46,8 +46,8 @@ Bool_t useMllReweighted = false;
 Bool_t requireSeparatedLeptonsAndJets = true;
 Float_t idealLeadJetPt = 40;
 Float_t idealSubleadJetPt = 40;
-Float_t leadJetPtCut = -10;
-Float_t subLeadJetPtCut = -10;
+Float_t leadJetPtCut = 40;
+Float_t subLeadJetPtCut = 40;
 Float_t globalLeadingLeptonPtCut = 35;
 Float_t globalSubLeadingLeptonPtCut = 35;
 TString dir = "../analysisCppOutputRootFilesNewHltSf/", mcFileTag = "", dataFileTag = "";
@@ -500,9 +500,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, Float_t minMll, Float_t maxMll, Float_t minSubleadLeptonPt, Float_t minLeadLeptonPt, Float_t maxLeptonEta, Int_t writeAction, std::string channel)
 {
 
-#ifndef includeOtherBkgnds
+//#ifndef includeOtherBkgnds
 	if(fname.EqualTo("Mll") == true) writeScaleFactorsToFile(hs_DYPowheg,hs_DYMadIncl,hs_DYAmcIncl,hs_data,writeAction,channel);
-#endif
+//#endif
 
 	//gStyle->SetOptStat("eou");
 	gStyle->SetOptStat("");
