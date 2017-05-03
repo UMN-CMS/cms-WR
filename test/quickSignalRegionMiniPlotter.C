@@ -39,10 +39,10 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
-void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
+void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname);
 void quickSignalRegionMiniPlotter(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DYMC");
@@ -51,10 +51,11 @@ void quickSignalRegionMiniPlotter(){
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
   TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
+  TChain * chain_Other = new TChain("Tree_Iter0","HighMassWR");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
-  Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0;
+  Int_t data=0, dy=0, tt=0, wjets=0, wz=0, zz=0, other=0;
   switch (channel) {
   case Selector::EE:
 	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
@@ -63,6 +64,7 @@ void quickSignalRegionMiniPlotter(){
 	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+	other = chain_Other->Add(localDir+"selected_tree_WRtoEEJJ_3000_1500_signal_eeEE.root");
 
 	//use the ZZ chain to show the WRtoEEJJ signal rescaled to match the normalization of the expected RunI EEJJ excess in 2015 operating conditions
 	//show nothing if showRescaledRunOneEEJJExcess is not defined
@@ -97,6 +99,8 @@ void quickSignalRegionMiniPlotter(){
 	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_mumuMuMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_mumuMuMu.root");
+	other = chain_Other->Add(localDir+"selected_tree_WRtoMuMuJJ_3000_1500_signal_mumuMuMu.root");
+
 #ifdef showQCD
     zz = chain_ZZ->Add(localDir+"selected_tree_qcdData_signal_mumuMuMu.root");
 #endif
@@ -121,13 +125,14 @@ void quickSignalRegionMiniPlotter(){
   }
 
   std::cout<<"data = "<< data <<"\tdy = "<< dy << std::endl;
-  //if(data==0 || dy==0 || tt==0 || wjets==0 || wz==0 || zz==0) exit(-1);
+  //if(data==0 || dy==0 || tt==0 || wjets==0 || wz==0 || zz==0 || other==0) exit(-1);
 
   Selector myEvent_DY;
   Selector myEvent_ttbar;
   Selector myEvent_WJets;
   Selector myEvent_WZ;
   Selector myEvent_ZZ;
+  Selector myEvent_Other;
   Selector myEvent_data;
 
   myEvent_DY.SetBranchAddresses(chain_DY);
@@ -135,6 +140,7 @@ void quickSignalRegionMiniPlotter(){
   myEvent_WJets.SetBranchAddresses(chain_WJets);
   myEvent_WZ.SetBranchAddresses(chain_WZ);
   myEvent_ZZ.SetBranchAddresses(chain_ZZ);
+  myEvent_Other.SetBranchAddresses(chain_Other);
   myEvent_data.SetBranchAddresses(chain_data);
 
   std::vector<TH1F*> hs_DY;
@@ -147,6 +153,9 @@ void quickSignalRegionMiniPlotter(){
   MakeHistos(chain_WZ, &myEvent_WZ, &hs_WZ);
   std::vector<TH1F*> hs_ZZ;
   MakeHistos(chain_ZZ, &myEvent_ZZ, &hs_ZZ);
+  std::vector<TH1F*> hs_Other;
+  MakeHistos(chain_Other, &myEvent_Other, &hs_Other);
+
 
   std::vector<TH1F*> hs_data;
   MakeHistos(chain_data, &myEvent_data, &hs_data);
@@ -160,7 +169,7 @@ void quickSignalRegionMiniPlotter(){
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
     std::string s = std::to_string(i);
-    drawPlots(hs_DY[i],hs_ttbar[i],hs_WJets[i],hs_WZ[i],hs_ZZ[i],hs_data[i],xtitles[i],fnames[i]);
+    drawPlots(hs_DY[i],hs_ttbar[i],hs_WJets[i],hs_WZ[i],hs_ZZ[i],hs_data[i],hs_Other[i],xtitles[i],fnames[i]);
   }
   
 }//end quickSignalRegionMiniPlotter()
@@ -420,15 +429,16 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
  
 }
 
-void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
+void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname){
 
-  TLegend *leg = new TLegend( 0.55, 0.50, 0.90, 0.90 ) ; 
+  TLegend *leg = new TLegend( 0.5, 0.45, 0.90, 0.90 ) ; 
   
   //PAS plot legend entries
   leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
   leg->AddEntry( hs_ttbar, "Top bkgnds from data" ) ;
   leg->AddEntry( hs_WJets, "W+jets" ) ; 
-  leg->AddEntry( hs_WZ, "Diboson" ) ; 
+  leg->AddEntry( hs_WZ, "Diboson" ) ;
+  leg->AddEntry(hs_Other, "WR signal M_{WR}=3.0 TeV");
 
   //AN plot legend entries
   //leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
@@ -453,13 +463,17 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //leg->AddEntry( (TObject*)0, "M_{WR}=0.8 TeV M_{Nu}=0.4 TeV","");
 #endif
 
+#ifdef showUpperLimitWR
+
+#endif
+
 #ifndef unblindedData
   leg->AddEntry(hs_data, "WR signal x 0.3");
   leg->AddEntry( (TObject*)0, "M_{WR}=1.0 TeV M_{Nu}=0.5 TeV","");
 #endif
 
 #ifdef unblindedData 
-  leg->AddEntry( hs_data, "Unblinded data");
+  leg->AddEntry( hs_data, "Data");
 #endif
   leg->AddEntry( (TObject*)0, "Overflows in last bin","");
   leg->SetFillColor( kWhite );
@@ -472,6 +486,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->Sumw2();
   hs_WZ->Sumw2();
   hs_ZZ->Sumw2();
+  hs_Other->Sumw2();
   hs_DY->Sumw2();
   
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
@@ -504,6 +519,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->SetLineWidth(3);
   hs_ZZ->SetFillColor(kWhite);	//kWhite is 100 percent transparent, so it will not block out filled bins drawn behind it
 #endif
+
+  hs_Other->SetFillColor(kWhite);
+  hs_Other->SetLineColor(kBlue);
+  hs_Other->SetLineStyle(7);
+  hs_Other->SetLineWidth(3);
 
 #ifdef showWR
   hs_ZZ->SetLineColor(kRed);
@@ -545,6 +565,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE) hs_ZZ->Draw("HIST same");
 #endif
+
+  hs_Other->Draw("HIST same");	//draw the distribution found in high mass WR signal events
 
 #ifdef showWR
   hs_ZZ->Draw("HIST same");
@@ -614,7 +636,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->Update();
 #endif
 
-  TString fn = fname;
+  TString fn = fname + "_MWR3000Signal";
 
 #ifndef unblindedData
   if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
