@@ -40,7 +40,7 @@ Float_t mcUnweightedEntriesInExcessBin=0;
  */
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
-void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname);
+void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_Other,TH1F* hs_data, TString xtitle, TString fname);
 void quickEMuMiniPlotter(){
 
   TChain * chain_DY = new TChain("Tree_Iter0","DY");
@@ -48,6 +48,7 @@ void quickEMuMiniPlotter(){
   TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
   TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
   TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
+  TChain * chain_Other = new TChain("Tree_Iter0","QCD");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
@@ -65,7 +66,8 @@ void quickEMuMiniPlotter(){
     wz = chain_WZ->Add(localDir+"selected_tree_WZ_flavoursidebandEMu.root");
     wz = chain_WZ->Add(localDir+"selected_tree_ZZ_flavoursidebandEMu.root");
   	zz = chain_ZZ->Add(localDir+"selected_tree_topW_flavoursidebandEMuEE.root");
-    data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+   	chain_Other->Add(localDir+"selected_tree_qcdData_flavoursidebandEMuEE.root");
+	data = chain_data->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
     break;
   default:
     std::cout << "Unknown tag" << std::endl;
@@ -79,6 +81,7 @@ void quickEMuMiniPlotter(){
   Selector myEvent_WJets;
   Selector myEvent_WZ;
   Selector myEvent_ZZ;
+  Selector myEvent_Other;
   Selector myEvent_data;
 
   myEvent_DY.SetBranchAddresses(chain_DY);
@@ -86,6 +89,7 @@ void quickEMuMiniPlotter(){
   myEvent_WJets.SetBranchAddresses(chain_WJets);
   myEvent_WZ.SetBranchAddresses(chain_WZ);
   myEvent_ZZ.SetBranchAddresses(chain_ZZ);
+  myEvent_Other.SetBranchAddresses(chain_Other);
   myEvent_data.SetBranchAddresses(chain_data);
 
   std::vector<TH1F*> hs_DY;
@@ -98,6 +102,9 @@ void quickEMuMiniPlotter(){
   MakeHistos(chain_WZ, &myEvent_WZ, &hs_WZ);
   std::vector<TH1F*> hs_ZZ;
   MakeHistos(chain_ZZ, &myEvent_ZZ, &hs_ZZ);
+  std::vector<TH1F*> hs_Other;
+  MakeHistos(chain_Other, &myEvent_Other, &hs_Other);
+
 
   std::vector<TH1F*> hs_data;
   MakeHistos(chain_data, &myEvent_data, &hs_data);
@@ -111,7 +118,7 @@ void quickEMuMiniPlotter(){
   int i = 0;
   for(unsigned int i = 0; i < nPlots; i++){
     std::string s = std::to_string(i);
-    drawPlots(hs_DY[i],hs_ttbar[i],hs_WJets[i],hs_WZ[i],hs_ZZ[i],hs_data[i],xtitles[i],fnames[i]);
+    drawPlots(hs_DY[i],hs_ttbar[i],hs_WJets[i],hs_WZ[i],hs_ZZ[i],hs_Other[i],hs_data[i],xtitles[i],fnames[i]);
   }
   
 }//end quickEMuMiniPlotter()
@@ -344,9 +351,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   /**/ 
 }
 
-void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
+void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_Other,TH1F* hs_data, TString xtitle, TString fname){
 
-  TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ; 
+  TLegend *leg = new TLegend( 0.60, 0.50, 0.90, 0.90 ) ; 
   leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
   leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
   leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
@@ -357,6 +364,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
 #endif
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
+  leg->AddEntry( hs_Other, "QCD data driven" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -375,6 +383,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_WJets->SetFillColor(kBlue);
   hs_WZ->SetFillColor(kCyan);
   hs_ZZ->SetFillColor(kMagenta);
+  hs_Other->SetFillColor(kRed);
+  th->Add(hs_Other);
   th->Add(hs_WZ);
   th->Add(hs_DY);
   th->Add(hs_WJets);
@@ -391,6 +401,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->SetStats(0);
   
   //reset vertical scale in MLLJJ and MLL plots to harmonize plot scales between lepton channels
+  hs_data->SetMaximum(13);
+  th->SetMaximum(13);
   hs_data->SetMinimum(0.0005);
   th->SetMinimum(0.0005);
   
@@ -431,6 +443,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Sumw2();
   ratio->SetStats(0);
 
+  hs_ttbar->Add(hs_Other);
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
   hs_ttbar->Add(hs_ZZ);
