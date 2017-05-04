@@ -249,7 +249,7 @@ class limit2d:
 	#end add method, only for expected 2D limits
 
 	#draw multiple 2D limit curves on one canvas
-	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, contOne=None, contTwo=None, contExpMinusOneSigma=None, contExpPlusOneSigma=None, hExpMinusOneSigma=None, hExpPlusOneSigma=None):
+	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, doShading=False, contOne=None, contTwo=None, contExpMinusOneSigma=None, contExpPlusOneSigma=None, hExpMinusOneSigma=None, hExpPlusOneSigma=None):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
 		ROOT.gROOT.SetBatch(True)
@@ -266,47 +266,92 @@ class limit2d:
 		#c1.SetLogz()
 
 		c1.SetLogz(logz)
-		hOne.Draw("colz")
-		hOne.SetAxisRange(zrange[0], zrange[1],"Z")
+
+		#use these options to draw the 2D histogram with shaded fill using the color palette chosen a few lines earlier
+		#hOne.Draw("colz")
+		#hOne.SetAxisRange(zrange[0], zrange[1],"Z")
+		#hOne.SetXTitle("W_{R} Mass [GeV]")
+		#hOne.SetYTitle("N_{l} Mass [GeV]")
+		#hOne.SetZTitle(ztitle)
+		#hOne.GetYaxis().SetTitleOffset(2)
+		#hOne.GetZaxis().SetTitleOffset(1.7)
+
+		#use these options to draw the 2D histogram with solid white fill, no shading
+		hOne.SetFillColor(ROOT.kWhite)
+		hOne.SetMarkerColor(ROOT.kWhite)
+		hOne.Draw()
 		hOne.SetXTitle("W_{R} Mass [GeV]")
 		hOne.SetYTitle("N_{l} Mass [GeV]")
-		hOne.SetZTitle(ztitle)
 		hOne.GetYaxis().SetTitleOffset(2)
-		hOne.GetZaxis().SetTitleOffset(1.7)
+	
 	
 		if hExpMinusOneSigma:
-			hExpMinusOneSigma.Draw("colzsame")
-			hExpMinusOneSigma.SetAxisRange(zrange[0], zrange[1],"Z")
+			#draw the 2D histogram with shaded fill
+			#hExpMinusOneSigma.Draw("colzsame")
+			#hExpMinusOneSigma.SetAxisRange(zrange[0], zrange[1],"Z")
+			#hExpMinusOneSigma.SetXTitle("W_{R} Mass [GeV]")
+			#hExpMinusOneSigma.SetYTitle("N_{l} Mass [GeV]")
+			#hExpMinusOneSigma.SetZTitle(ztitle)
+			#hExpMinusOneSigma.GetYaxis().SetTitleOffset(2)
+			#hExpMinusOneSigma.GetZaxis().SetTitleOffset(1.7)
+
+			#draw the 2D histo with white markers and white background fill color
+			hExpMinusOneSigma.SetFillColor(ROOT.kWhite)
+			hExpMinusOneSigma.SetMarkerColor(ROOT.kWhite)
+			hExpMinusOneSigma.Draw()
 			hExpMinusOneSigma.SetXTitle("W_{R} Mass [GeV]")
 			hExpMinusOneSigma.SetYTitle("N_{l} Mass [GeV]")
-			hExpMinusOneSigma.SetZTitle(ztitle)
 			hExpMinusOneSigma.GetYaxis().SetTitleOffset(2)
-			hExpMinusOneSigma.GetZaxis().SetTitleOffset(1.7)
+
 		
 		if hExpPlusOneSigma:
-			hExpPlusOneSigma.Draw("colzsame")
-			hExpPlusOneSigma.SetAxisRange(zrange[0], zrange[1],"Z")
+			#draw the 2D histogram with shaded fill
+			#hExpPlusOneSigma.Draw("colzsame")
+			#hExpPlusOneSigma.SetAxisRange(zrange[0], zrange[1],"Z")
+			#hExpPlusOneSigma.SetXTitle("W_{R} Mass [GeV]")
+			#hExpPlusOneSigma.SetYTitle("N_{l} Mass [GeV]")
+			#hExpPlusOneSigma.SetZTitle(ztitle)
+			#hExpPlusOneSigma.GetYaxis().SetTitleOffset(2)
+			#hExpPlusOneSigma.GetZaxis().SetTitleOffset(1.7)
+
+			#draw the 2D histo with white markers and white background fill color
+			hExpPlusOneSigma.SetFillColor(ROOT.kWhite)
+			hExpPlusOneSigma.SetMarkerColor(ROOT.kWhite)
+			hExpPlusOneSigma.Draw()
 			hExpPlusOneSigma.SetXTitle("W_{R} Mass [GeV]")
 			hExpPlusOneSigma.SetYTitle("N_{l} Mass [GeV]")
-			hExpPlusOneSigma.SetZTitle(ztitle)
 			hExpPlusOneSigma.GetYaxis().SetTitleOffset(2)
-			hExpPlusOneSigma.GetZaxis().SetTitleOffset(1.7)
-		
-		hTwo.Draw("colzsame")
-		hTwo.SetAxisRange(zrange[0], zrange[1],"Z")
+
+	
+		#use these options to draw the 2D histogram with shaded fill using the color palette chosen earlier
+		#hTwo.Draw("colzsame")
+		#hTwo.SetAxisRange(zrange[0], zrange[1],"Z")
+		#hTwo.SetXTitle("W_{R} Mass [GeV]")
+		#hTwo.SetYTitle("N_{l} Mass [GeV]")
+		#hTwo.SetZTitle(ztitle)
+		#hTwo.GetYaxis().SetTitleOffset(2)
+		#hTwo.GetZaxis().SetTitleOffset(1.7)
+
+		#use these options to draw the 2D histogram with solid white fill, no shading
+		hTwo.SetFillColor(ROOT.kWhite)
+		hTwo.SetMarkerColor(ROOT.kWhite)
+		hTwo.Draw()
 		hTwo.SetXTitle("W_{R} Mass [GeV]")
 		hTwo.SetYTitle("N_{l} Mass [GeV]")
-		hTwo.SetZTitle(ztitle)
 		hTwo.GetYaxis().SetTitleOffset(2)
-		hTwo.GetZaxis().SetTitleOffset(1.7)
+
 
 		#set the legend box size
-		#use yw 200, y1 2600 for expected limit overlaid on observed limit and latex2.DrawLatex(1000,2400,...)
-		#use yw 550, y1 2300 for expected limit and expected +/- 1 sigma limit overlaid on observed limit and latex2.DrawLatex(1000,2200,...)
 		x1 = 900
-		y1 = 2300
 		xw = 1200
-		yw = 550
+		
+		#use yw 200, y1 2600 for expected limit overlaid on observed limit
+		#use yw 550, y1 2300 for expected limit and expected +/- 1 sigma limit overlaid on observed limit
+		y1 = 2600
+		yw = 200
+		#y1 = 2300
+		#yw = 550
+
 
 		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
 	
@@ -330,7 +375,7 @@ class limit2d:
 			#update style of expected limit line, then draw it
 			contOne.SetLineStyle(7)  #small dashes
 			contOne.SetLineColor(ROOT.kRed)
-			contOne.SetLineWidth(3)
+			contOne.SetLineWidth(5)
 			contOne.Draw("Lsame")
 
 			leg.AddEntry(contOne, "Expected","l")
@@ -339,8 +384,8 @@ class limit2d:
 
 		if contExpMinusOneSigma:
 			contExpMinusOneSigma.SetLineStyle(7)   #small dashes
-			contExpMinusOneSigma.SetLineColor(ROOT.kViolet)
-			contExpMinusOneSigma.SetLineWidth(3)
+			contExpMinusOneSigma.SetLineColor(8)
+			contExpMinusOneSigma.SetLineWidth(5)
 			contExpMinusOneSigma.Draw("Lsame")
 
 			leg.AddEntry(contExpMinusOneSigma, "Expected-1#sigma","l")
@@ -349,8 +394,8 @@ class limit2d:
 
 		if contExpPlusOneSigma:
 			contExpPlusOneSigma.SetLineStyle(7)   #small dashes
-			contExpPlusOneSigma.SetLineColor(ROOT.kGreen)
-			contExpPlusOneSigma.SetLineWidth(3)
+			contExpPlusOneSigma.SetLineColor(ROOT.kBlack)
+			contExpPlusOneSigma.SetLineWidth(5)
 			contExpPlusOneSigma.Draw("Lsame")
 
 			leg.AddEntry(contExpPlusOneSigma, "Expected+1#sigma","l")
@@ -361,7 +406,7 @@ class limit2d:
 		if contTwo:
 			contTwo.SetLineStyle(1)  #solid
 			contTwo.SetLineColor(ROOT.kBlue)
-			contTwo.SetLineWidth(3)
+			contTwo.SetLineWidth(5)
 			contTwo.Draw("Lsame")
 
 			leg.AddEntry(contTwo, "Observed","l")
@@ -508,13 +553,14 @@ class limit2d:
 		#draw several exclusion limits overlaid on each other
 		#the first histo arg must be the expected curve, and the second must be the observed limit curve (exclusionTwo)
 		
+		#use doShading=False for PAS plots, and doShading=True for AN plots
 		#with +/- 1sigma expected limit curves
-		graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
-		graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
-		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
+		#graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
+		#graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
+		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, doShading=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
 		
 		#without +/- 1sigma expected limit curves
-		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, doShading=False, contOne = graphs[0], contTwo = graphsTwo[0])
 		
 	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
