@@ -299,11 +299,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
 #ifndef DOAMC
-  leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
+  leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
 #endif
   leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
   leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
-  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
+  leg->AddEntry( hs_WJets, "W+jets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
@@ -335,8 +335,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
+  hs_data->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
   th->Draw("e1histo");
   hs_data->Draw("epsame");
   //TString ytitle = "Events/(";

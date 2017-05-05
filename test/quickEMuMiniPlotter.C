@@ -356,15 +356,15 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TLegend *leg = new TLegend( 0.60, 0.50, 0.90, 0.90 ) ; 
   leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
   leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
-  leg->AddEntry( hs_WJets, "WJetsIncl+HT" ) ; 
+  leg->AddEntry( hs_WJets, "W+jets" ) ; 
 #ifndef useDYMAD 
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
 #ifdef useDYMAD
-  leg->AddEntry( hs_DY, "DYMadHT+Incl" ) ; 
+  leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
 #endif
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_Other, "QCD data driven" ) ; 
+  leg->AddEntry( hs_Other, "QCD from data" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -407,8 +407,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->SetMinimum(0.0005);
   
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
-  hs_data->SetTitle("CMS Private #surds = 13 TeV #int lumi = 2.6 fb^{-1}");
+  th->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
+  hs_data->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
   hs_data->Draw("ep");
   th->Draw("histo same");
   hs_data->Draw("epsame");
