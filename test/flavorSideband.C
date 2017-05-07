@@ -38,9 +38,9 @@ void flavorSideband(){
   Float_t mumuEmuSF = 0.6592, eeEmuSF = 0.4315;	///<used for plotting and chi^2 calculation
 
   std::string longMuMuEmuSF = to_string(mumuEmuSF);
-  std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,4);
+  std::string shortMuMuEmuSF = longMuMuEmuSF.substr(0,5);
   std::string longEEEmuSF = to_string(eeEmuSF);
-  std::string shortEEEmuSF = longEEEmuSF.substr(0,4);
+  std::string shortEEEmuSF = longEEEmuSF.substr(0,5);
   gStyle->SetOptFit(0);	///<show nothing
   TChain * chain_EMu = new TChain("Tree_Iter0");
   TChain * chain_TopW_EMu = new TChain("Tree_Iter0");
@@ -138,30 +138,32 @@ void flavorSideband(){
   h_ratio_EE->Divide(h_WR_mass_EMu);
   h_ratio_EE->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_ratio_EE->GetYaxis()->SetRangeUser(0.31,0.59);
-  h_ratio_EE->GetYaxis()->SetTitle("ratio M_{eejj} / M_{e#mujj}");
-  h_ratio_EE->SetTitleOffset(1.55,"Y");
+  h_ratio_EE->GetYaxis()->SetTitle("M_{EEJJ} / M_{EMuJJ}    ");
+  h_ratio_EE->SetTitleOffset(1.5,"Y");
   h_ratio_EE->SetTitle(stdTitle);
   h_ratio_EE->SetFillColor(kWhite);
   h_ratio_MuMu->Divide(h_WR_mass_EMu);
   h_ratio_MuMu->SetTitle(stdTitle);
   h_ratio_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_ratio_MuMu->GetYaxis()->SetRangeUser(0.51,0.79);
-  h_ratio_MuMu->GetYaxis()->SetTitle("ratio M_{#mu#mujj} / M_{e#mujj}");
-  h_ratio_MuMu->SetTitleOffset(1.55,"Y");
+  h_ratio_MuMu->GetYaxis()->SetTitle("M_{MuMuJJ} / M_{EMuJJ}    ");
+  h_ratio_MuMu->SetTitleOffset(1.5,"Y");
   h_ratio_MuMu->SetFillColor(kWhite);
   
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);
-  TPaveText* chiSqdBoxEE = new TPaveText(475.,0.54,1975.,0.585);	///< for xmax 2000
+  TPaveText* chiSqdBoxEE = new TPaveText(475.,0.53,1975.,0.585);	///< for xmax 2000
   chiSqdBoxEE->SetFillColorAlpha(kWhite, 1.0);
-  TF1 *f_EE = new TF1("f_EE","[0]",600,1500);
+  TF1 *f_EE = new TF1("f_EE","[0]",400,2000);
   f_EE->FixParameter(0,eeEmuSF);
   h_ratio_EE->Fit("f_EE");
+  chiSqdBoxEE->AddText( "Simulation" );
   chiSqdBoxEE->AddText( TString( chiSquaredNdofString(f_EE) ) );
-  chiSqdBoxEE->AddText( TString("ratio = " + shortEEEmuSF) );
-  h_ratio_EE->Draw();
+  chiSqdBoxEE->AddText( TString("SF = " + shortEEEmuSF) );
+  chiSqdBoxEE->SetTextColor(1);
+  h_ratio_EE->Draw("ep");
   chiSqdBoxEE->Draw("same");
-  f_EE->SetLineColor(kBlue);
+  f_EE->SetLineColor(kBlack);
   f_EE->Draw("same");
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.pdf"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
@@ -183,15 +185,17 @@ void flavorSideband(){
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);
-  TPaveText* chiSqdBoxMuMu = new TPaveText(475.,0.74,1975.,0.785);	///< for xmax 2000
+  TPaveText* chiSqdBoxMuMu = new TPaveText(475.,0.73,1975.,0.785);	///< for xmax 2000
   chiSqdBoxMuMu->SetFillColorAlpha(kWhite, 1.0);
-  TF1 *f_MuMu = new TF1("f_MuMu","[0]",600,1500);
+  TF1 *f_MuMu = new TF1("f_MuMu","[0]",400,2000);
   f_MuMu->FixParameter(0,mumuEmuSF);
   h_ratio_MuMu->Fit("f_MuMu");
+  chiSqdBoxMuMu->AddText( "Simulation" );
   chiSqdBoxMuMu->AddText( TString( chiSquaredNdofString(f_MuMu) ) );
-  chiSqdBoxMuMu->AddText( TString("ratio = " + shortMuMuEmuSF) );
+  chiSqdBoxMuMu->AddText( TString("SF = " + shortMuMuEmuSF) );
+  chiSqdBoxMuMu->SetTextColor(1);
   h_ratio_MuMu->Draw();
-  f_MuMu->SetLineColor(kBlue);
+  f_MuMu->SetLineColor(kBlack);
   chiSqdBoxMuMu->Draw("same");
   f_MuMu->Draw("same");
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.pdf"));
@@ -380,7 +384,7 @@ void flavorSideband(){
   gStyle->SetOptStat("");
   TCanvas* canvEMuDataTwoRescaledMCs = new TCanvas("canvEMuDataTwoRescaledMCs","",600,600);
   canvEMuDataTwoRescaledMCs->cd();
-  TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.6,0.55,0.94,0.9);
+  TLegend * legEMuDataTwoRescaledMCs = new TLegend(0.5,0.45,0.9,0.9);
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EMuData,"EMu Data");	
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_EE,"Rescaled TTBar+TopW EE MC");
   legEMuDataTwoRescaledMCs->AddEntry(h_WR_mass_MuMu,"Rescaled TTBar+TopW MuMu MC");
@@ -540,7 +544,7 @@ void fillHisto(TChain * chain, Selector *myEvent, TH1F * h){
 std::string chiSquaredNdofString(TF1 * fit){
   std::string tempchiSqd = "#chi^{2}  =  ";
   std::string chiSqdVal = to_string(fit->GetChisquare());
-  std::string ndof = to_string(fit->GetNDF());
+  std::string ndof = to_string(fit->GetNDF()-1);
   tempchiSqd += chiSqdVal.substr(0,4);
   tempchiSqd += " / ";
   tempchiSqd += ndof.substr(0,2);
