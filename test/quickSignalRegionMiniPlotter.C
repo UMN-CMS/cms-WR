@@ -19,10 +19,10 @@
 #include <cstdio>
 #include <memory>
 
-//#define unblindedData
-//#define plotRatio
-//#define showRescaledRunOneEEJJExcess
-#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
+#define unblindedData
+#define plotRatio
+#define showRescaledRunOneEEJJExcess
+//#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
@@ -39,7 +39,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname);
@@ -597,19 +597,20 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Sumw2();
   ratio->SetStats(0);
 
-  /* old check
-  if(fname.EqualTo("Mlljj")){
+  /* old check*/
+  if(fname.EqualTo("Mlljj_2012Bins")){
 	  //print number of evts passing all cuts
-	  std::cout<<"in MLLJJ distribution there are"<<std::endl;
-	  std::cout<< hs_DY->Integral() <<"\tDY weighted evts"<<std::endl;
-	  std::cout<< hs_ttbar->Integral() <<"\tttbar weighted evts"<<std::endl;
+	  std::cout<<"in MLLJJ distribution bin 7 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(7)*hs_DY->GetBinWidth(7)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(7)*hs_ttbar->GetBinWidth(7) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(7)*hs_data->GetBinWidth(7) << std::endl;
 	  std::cout<<"in e chnl 1000 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(3,11) <<std::endl;	//670 to 1210
 	  std::cout<<"in e chnl 2200 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(14,29) <<std::endl;	//1450 to 2450
 	  std::cout<<"in e chnl 3600 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(27,47) <<std::endl;	//2300 to 3870
-	  std::cout<< hs_WJets->Integral() <<"\tWJets weighted evts"<<std::endl;
-	  std::cout<< hs_WZ->Integral() <<"\tWZ weighted evts"<<std::endl;
-	  std::cout<< hs_ZZ->Integral() <<"\tZZ weighted evts"<<std::endl;
-  }*/
+	  //std::cout<< hs_WJets->Integral() <<"\tWJets weighted evts"<<std::endl;
+	  //std::cout<< hs_WZ->Integral() <<"\tWZ weighted evts"<<std::endl;
+	  //std::cout<< hs_ZZ->Integral() <<"\tZZ weighted evts"<<std::endl;
+  }/**/
 
   hs_ttbar->Add(hs_WJets);
   hs_ttbar->Add(hs_WZ);
