@@ -21,7 +21,7 @@
 
 #define unblindedData
 #define plotRatio
-#define showRescaledRunOneEEJJExcess
+//#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
@@ -438,7 +438,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_ttbar, "Top bkgnds from data" ) ;
   leg->AddEntry( hs_WJets, "W+jets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ;
-  //leg->AddEntry(hs_Other, "WR signal M_{WR}=3.0 TeV");
+  leg->AddEntry(hs_Other, "WR signal M_{WR}=3.0 TeV");
 
   //AN plot legend entries
   //leg->AddEntry( hs_DY, "DY" ) ; 
@@ -542,10 +542,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  //th->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
-  //hs_data->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
-  th->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
-  hs_data->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
+  th->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
+  hs_data->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
+  //th->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
+  //hs_data->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
   th->Draw("histo");
 #ifdef unblindedData
   hs_data->Draw("EPsame");
@@ -564,7 +564,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(channel == Selector::EE) hs_ZZ->Draw("HIST same");
 #endif
 
-  //hs_Other->Draw("HIST same");	//draw the distribution found in high mass WR signal events
+  hs_Other->Draw("HIST same");	//draw the distribution found in high mass WR signal events
 
 #ifdef showWR
   hs_ZZ->Draw("HIST same");
@@ -619,9 +619,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_ttbar);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(0.18,"y");
-  ratio->GetYaxis()->SetRangeUser(0.5,2.4);
-  if(channel == Selector::EE) ratio->GetYaxis()->SetRangeUser(0.5,1.9);
-  if(fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") ) ratio->GetYaxis()->SetRangeUser(0.5,1.6);
+  ratio->GetYaxis()->SetRangeUser(0.,2.4);
+  if(channel == Selector::EE) ratio->GetYaxis()->SetRangeUser(0.,1.9);
+  if(fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") ) ratio->GetYaxis()->SetRangeUser(0.,1.6);
   ratio->GetYaxis()->SetNdivisions(505);
   
 #ifdef plotRatio 
@@ -635,8 +635,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->Update();
 #endif
 
-  //TString fn = fname + "_MWR3000Signal";
-  TString fn = fname;
+  TString fn = fname + "_MWR3000Signal";
+  //TString fn = fname;
 
 
 #ifndef unblindedData
