@@ -249,7 +249,7 @@ class limit2d:
 	#end add method, only for expected 2D limits
 
 	#draw multiple 2D limit curves on one canvas
-	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, doShading=False, contOne=None, contTwo=None, contExpMinusOneSigma=None, contExpPlusOneSigma=None, hExpMinusOneSigma=None, hExpPlusOneSigma=None):
+	def drawOverlay(self, hOne, hTwo, filename, zrange, ztitle, logz=False, contOne=None, contTwo=None, contExpMinusOneSigma=None, contExpPlusOneSigma=None, hExpMinusOneSigma=None, hExpPlusOneSigma=None):
 		customROOTstyle()
 		ROOT.gStyle.SetOptTitle(0)
 		ROOT.gROOT.SetBatch(True)
@@ -347,10 +347,10 @@ class limit2d:
 		
 		#use yw 200, y1 2600 for expected limit overlaid on observed limit
 		#use yw 550, y1 2300 for expected limit and expected +/- 1 sigma limit overlaid on observed limit
-		y1 = 2600
-		yw = 200
-		#y1 = 2300
-		#yw = 550
+		#y1 = 2600
+		#yw = 200
+		y1 = 2300
+		yw = 550
 
 
 		leg = ROOT.TLegend(x1, y1, x1 + xw, y1 + yw,"","")
@@ -384,7 +384,7 @@ class limit2d:
 
 		if contExpMinusOneSigma:
 			contExpMinusOneSigma.SetLineStyle(7)   #small dashes
-			contExpMinusOneSigma.SetLineColor(8)
+			contExpMinusOneSigma.SetLineColor(9)
 			contExpMinusOneSigma.SetLineWidth(5)
 			contExpMinusOneSigma.Draw("Lsame")
 
@@ -553,14 +553,13 @@ class limit2d:
 		#draw several exclusion limits overlaid on each other
 		#the first histo arg must be the expected curve, and the second must be the observed limit curve (exclusionTwo)
 		
-		#use doShading=False for PAS plots, and doShading=True for AN plots
 		#with +/- 1sigma expected limit curves
-		#graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
-		#graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
-		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, doShading=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
+		graphsExpMinusOneSigma = contourFromTH2(self.exclusionExpMinusOneSigma, 1)
+		graphsExpPlusOneSigma = contourFromTH2(self.exclusionExpPlusOneSigma, 1)
+		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlayWithExpPlusMinusOneSigma", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0], contExpMinusOneSigma = graphsExpMinusOneSigma[0], contExpPlusOneSigma = graphsExpPlusOneSigma[0], hExpMinusOneSigma = self.exclusionExpMinusOneSigma, hExpPlusOneSigma = self.exclusionExpPlusOneSigma)
 		
 		#without +/- 1sigma expected limit curves
-		self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, doShading=False, contOne = graphs[0], contTwo = graphsTwo[0])
+		#self.drawOverlay(self.exclusion, self.exclusionTwo,    filename + "_exclusionOverlay", (0   , 3), "Limit / #sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sqq')" % self.channelname, logz=False, contOne = graphs[0], contTwo = graphsTwo[0])
 		
 	
 		#self.draw(self.limits,       filename + "_limit",     (1e-3, 1), "#sigma(pp#rightarrow W_{R}) #times BR(W_{R}#rightarrow %sjj) [pb]" % self.channelname,    logz=True,  cont = graphs[0])
