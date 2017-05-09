@@ -280,9 +280,10 @@ class limit2d:
 		hOne.SetFillColor(ROOT.kWhite)
 		hOne.SetMarkerColor(ROOT.kWhite)
 		hOne.Draw()
-		hOne.SetXTitle("W_{R} Mass [GeV]")
-		hOne.SetYTitle("N_{l} Mass [GeV]")
-		hOne.GetYaxis().SetTitleOffset(2)
+		hOne.SetXTitle("M_{W_{R}} [GeV]")
+		hOne.SetYTitle("M_{N_{l}} [GeV]")
+		hOne.GetYaxis().SetTitleOffset(1.8)
+		hOne.GetXaxis().SetTitleOffset(1.05)
 	
 	
 		if hExpMinusOneSigma:
@@ -292,16 +293,18 @@ class limit2d:
 			#hExpMinusOneSigma.SetXTitle("W_{R} Mass [GeV]")
 			#hExpMinusOneSigma.SetYTitle("N_{l} Mass [GeV]")
 			#hExpMinusOneSigma.SetZTitle(ztitle)
-			#hExpMinusOneSigma.GetYaxis().SetTitleOffset(2)
+			#hExpMinusOneSigma.GetYaxis().SetTitleOffset(1.8)
 			#hExpMinusOneSigma.GetZaxis().SetTitleOffset(1.7)
 
 			#draw the 2D histo with white markers and white background fill color
 			hExpMinusOneSigma.SetFillColor(ROOT.kWhite)
 			hExpMinusOneSigma.SetMarkerColor(ROOT.kWhite)
 			hExpMinusOneSigma.Draw()
-			hExpMinusOneSigma.SetXTitle("W_{R} Mass [GeV]")
-			hExpMinusOneSigma.SetYTitle("N_{l} Mass [GeV]")
-			hExpMinusOneSigma.GetYaxis().SetTitleOffset(2)
+			hExpMinusOneSigma.SetXTitle("M_{W_{R}} [GeV]")
+			hExpMinusOneSigma.SetYTitle("M_{N_{l}} [GeV]")
+			hExpMinusOneSigma.GetYaxis().SetTitleOffset(1.8)
+			hExpMinusOneSigma.GetXaxis().SetTitleOffset(1.05)
+
 
 		
 		if hExpPlusOneSigma:
@@ -311,16 +314,18 @@ class limit2d:
 			#hExpPlusOneSigma.SetXTitle("W_{R} Mass [GeV]")
 			#hExpPlusOneSigma.SetYTitle("N_{l} Mass [GeV]")
 			#hExpPlusOneSigma.SetZTitle(ztitle)
-			#hExpPlusOneSigma.GetYaxis().SetTitleOffset(2)
+			#hExpPlusOneSigma.GetYaxis().SetTitleOffset(1.8)
 			#hExpPlusOneSigma.GetZaxis().SetTitleOffset(1.7)
 
 			#draw the 2D histo with white markers and white background fill color
 			hExpPlusOneSigma.SetFillColor(ROOT.kWhite)
 			hExpPlusOneSigma.SetMarkerColor(ROOT.kWhite)
 			hExpPlusOneSigma.Draw()
-			hExpPlusOneSigma.SetXTitle("W_{R} Mass [GeV]")
-			hExpPlusOneSigma.SetYTitle("N_{l} Mass [GeV]")
-			hExpPlusOneSigma.GetYaxis().SetTitleOffset(2)
+			hExpPlusOneSigma.SetXTitle("M_{W_{R}} [GeV]")
+			hExpPlusOneSigma.SetYTitle("M_{N_{l}} [GeV]")
+			hExpPlusOneSigma.GetYaxis().SetTitleOffset(1.8)
+			hExpPlusOneSigma.GetXaxis().SetTitleOffset(1.05)
+
 
 	
 		#use these options to draw the 2D histogram with shaded fill using the color palette chosen earlier
@@ -329,16 +334,17 @@ class limit2d:
 		#hTwo.SetXTitle("W_{R} Mass [GeV]")
 		#hTwo.SetYTitle("N_{l} Mass [GeV]")
 		#hTwo.SetZTitle(ztitle)
-		#hTwo.GetYaxis().SetTitleOffset(2)
+		#hTwo.GetYaxis().SetTitleOffset(1.8)
 		#hTwo.GetZaxis().SetTitleOffset(1.7)
 
 		#use these options to draw the 2D histogram with solid white fill, no shading
 		hTwo.SetFillColor(ROOT.kWhite)
 		hTwo.SetMarkerColor(ROOT.kWhite)
 		hTwo.Draw()
-		hTwo.SetXTitle("W_{R} Mass [GeV]")
-		hTwo.SetYTitle("N_{l} Mass [GeV]")
-		hTwo.GetYaxis().SetTitleOffset(2)
+		hTwo.SetXTitle("M_{W_{R}} [GeV]")
+		hTwo.SetYTitle("M_{N_{l}} [GeV]")
+		hTwo.GetYaxis().SetTitleOffset(1.8)
+		hTwo.GetXaxis().SetTitleOffset(1.05)
 
 
 		#set the legend box size
@@ -368,9 +374,10 @@ class limit2d:
 			area.SetLineWidth(0)
 			area.Draw("F")
 			latex2 = ROOT.TLatex()
+			latex2.SetTextFont(42)
 			latex2.SetTextSize(0.045)  #original value was 0.05 when X and Y axes extended to 4.0 TeV
 			#specify the lower left corner in x, y coordinates
-			latex2.DrawLatex(1000,2200, "M_{N_{l}} > M_{W_{R}} ")
+			latex2.DrawLatex(1000,2100, "M_{N_{l}} > M_{W_{R}} ")
 			
 			#update style of expected limit line, then draw it
 			contOne.SetLineStyle(7)  #small dashes
@@ -423,9 +430,9 @@ class limit2d:
 		latex.SetNDC(True)
 		latex.SetTextSize(0.03)
 		latex.SetTextFont(42)
-		latex.DrawLatex(0.62, 0.96, "2.6 fb^{-1} (13 TeV)")
+		latex.DrawLatex(0.57, 0.96, "2.6 fb^{-1} (13 TeV)")
 
-		text = ROOT.TText(0.2,0.96,"CMS Preliminary")
+		text = ROOT.TText(0.24,0.96,"CMS Preliminary")
 		text.SetNDC();
 		text.SetTextFont(42);
 		text.SetTextSize(0.03);
@@ -457,8 +464,8 @@ class limit2d:
 		c1.SetLogz(logz)
 		h.Draw("colz")
 		h.SetAxisRange(zrange[0], zrange[1],"Z")
-		h.SetXTitle("W_{R} Mass [GeV]")
-		h.SetYTitle("N_{l} Mass [GeV]")
+		h.SetXTitle("M_{W_{R}} [GeV]")
+		h.SetYTitle("M_{N_{l}} [GeV]")
 		h.SetZTitle(ztitle)
 		h.GetYaxis().SetTitleOffset(2)
 		h.GetZaxis().SetTitleOffset(1.7)
