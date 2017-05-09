@@ -16,6 +16,7 @@
 #include <string>
 #include "../src/Selector.cc"
 #include "../src/miniTreeEvent.cc"
+//#include "tdrStyle.C"
 #include <cstdio>
 #include <memory>
 
@@ -70,7 +71,7 @@ void flavorSideband(){
   myEvent_EE.SetBranchAddresses(chain_EE);
   myEvent_MuMu.SetBranchAddresses(chain_MuMu);
 
-  Float_t bins[] = { 410, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000 };	//for xMax of 2000
+  Float_t bins[] = { 410, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 1999 };	//for xMax of 2000
   //Float_t bins[] = { 200, 400, 450, 500, 550, 600, 625, 652, 683, 718, 760, 812, 877, 975, 1160, 2000, 6000 };	//for xMax of 6000
   //Float_t bins[] = { 1400, 1600, 1800, 2000, 2200, 2400, 2600};
   
@@ -87,11 +88,12 @@ void flavorSideband(){
   TH1F *h_WR_mass_EE = new TH1F("h_WR_mass_EE","",binnum, bins);
   TH1F *h_WR_mass_MuMu = new TH1F("h_WR_mass_MuMu","",binnum, bins);
   TH1F *h_WR_mass_EMuData = new TH1F("h_WR_mass_EMuData","",binnum, bins);
-  
+
   fillHisto(chain_EMu, &myEvent_EMu, h_WR_mass_EMu);
   fillHisto(chain_EMuData, &myEvent_EMuData, h_WR_mass_EMuData);
   fillHisto(chain_EE, &myEvent_EE, h_WR_mass_EE);
   fillHisto(chain_MuMu, &myEvent_MuMu, h_WR_mass_MuMu);
+
  
   ///use this title for all plots
   TString stdTitle = "CMS Preliminary               2.6 fb^{-1} (13 TeV)";
@@ -149,18 +151,56 @@ void flavorSideband(){
   h_ratio_MuMu->GetYaxis()->SetTitle("M_{MuMuJJ} / M_{EMuJJ}    ");
   h_ratio_MuMu->SetTitleOffset(1.5,"Y");
   h_ratio_MuMu->SetFillColor(kWhite);
-  
+
+  //TDR style formatting
+  gStyle->SetOptTitle(1);
+  gStyle->SetPadTopMargin(0.06);
+  gStyle->SetPadBottomMargin(0.13);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(.15);
+  gStyle->SetLabelColor(1, "XYZ");
+  gStyle->SetLabelFont(42, "XYZ");
+  gStyle->SetLabelOffset(0.007, "XYZ");
+  gStyle->SetLabelSize(0.05, "XYZ");
+  gStyle->SetTitleSize(0.05, "XYZ");
+  gStyle->SetTitleOffset(1.0, "X");
+  gStyle->SetTitleOffset(1.1, "Y");
+  gStyle->SetTitleOffset(1.0, "Z");
+  gStyle->SetAxisColor(1, "XYZ");
+  gStyle->SetTickLength(0.03, "XYZ");
+  gStyle->SetNdivisions(510, "XYZ");
+  gStyle->SetPadTickX(0);
+  gStyle->SetPadTickY(0);
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetHistLineColor(1);
+  gStyle->SetHistLineStyle(1);
+  gStyle->SetHistLineWidth(3);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetFrameBorderSize(1);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetFrameFillStyle(0);
+  gStyle->SetFrameLineColor(1);
+  gStyle->SetFrameLineStyle(1);
+  gStyle->SetFrameLineWidth(1);
+
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);
-  TPaveText* chiSqdBoxEE = new TPaveText(475.,0.53,1975.,0.585);	///< for xmax 2000
+  TPaveText* chiSqdBoxEE = new TPaveText(475.,0.54,1975.,0.585);	///< for xmax 2000
   chiSqdBoxEE->SetFillColorAlpha(kWhite, 1.0);
-  TF1 *f_EE = new TF1("f_EE","[0]",400,2000);
+  chiSqdBoxEE->SetTextFont(42);
+  //chiSqdBoxEE->SetTextSize(0.05);
+  TF1 *f_EE = new TF1("f_EE","[0]",400,1999);
   f_EE->FixParameter(0,eeEmuSF);
   h_ratio_EE->Fit("f_EE");
   chiSqdBoxEE->AddText( "Simulation" );
   chiSqdBoxEE->AddText( TString( chiSquaredNdofString(f_EE) ) );
   chiSqdBoxEE->AddText( TString("SF = " + shortEEEmuSF) );
   chiSqdBoxEE->SetTextColor(1);
+  h_ratio_EE->SetTitleFont(42);
+  //h_ratio_EE->SetTitleColor(1);
+  //h_ratio_EE->SetTitleTextColor(1);
+  //h_ratio_EE->SetTitleFillColor(10);
+  //h_ratio_EE->SetTitleFontSize(0.05);
   h_ratio_EE->Draw("ep");
   chiSqdBoxEE->Draw("same");
   f_EE->SetLineColor(kBlack);
@@ -185,9 +225,10 @@ void flavorSideband(){
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);
-  TPaveText* chiSqdBoxMuMu = new TPaveText(475.,0.73,1975.,0.785);	///< for xmax 2000
+  TPaveText* chiSqdBoxMuMu = new TPaveText(475.,0.74,1975.,0.785);	///< for xmax 2000
   chiSqdBoxMuMu->SetFillColorAlpha(kWhite, 1.0);
-  TF1 *f_MuMu = new TF1("f_MuMu","[0]",400,2000);
+  chiSqdBoxMuMu->SetTextFont(42);
+  TF1 *f_MuMu = new TF1("f_MuMu","[0]",400,1999);
   f_MuMu->FixParameter(0,mumuEmuSF);
   h_ratio_MuMu->Fit("f_MuMu");
   chiSqdBoxMuMu->AddText( "Simulation" );
