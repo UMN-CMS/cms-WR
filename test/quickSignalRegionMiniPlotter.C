@@ -39,7 +39,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname);
@@ -431,7 +431,39 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname){
 
-  TLegend *leg = new TLegend( 0.55, 0.5, 0.90, 0.90 ) ; 
+  //TDR style formatting
+  gStyle->SetOptTitle(1);
+  gStyle->SetPadTopMargin(0.07);
+  gStyle->SetPadBottomMargin(0.13);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(.15);
+  gStyle->SetLabelColor(1, "XYZ");
+  gStyle->SetLabelFont(42, "XYZ");
+  gStyle->SetLabelOffset(0.007, "XYZ");
+  gStyle->SetLabelSize(0.05, "XYZ");
+  gStyle->SetTitleSize(0.05, "XYZ");
+  gStyle->SetTitleOffset(1.0, "X");
+  gStyle->SetTitleOffset(1.1, "Y");
+  gStyle->SetTitleOffset(1.0, "Z");
+  gStyle->SetAxisColor(1, "XYZ");
+  gStyle->SetTickLength(0.03, "XYZ");
+  gStyle->SetNdivisions(510, "XYZ");
+  gStyle->SetPadTickX(0);
+  gStyle->SetPadTickY(0);
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetHistLineColor(1);
+  gStyle->SetHistLineStyle(1);
+  gStyle->SetHistLineWidth(3);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetFrameBorderSize(1);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetFrameFillStyle(0);
+  gStyle->SetFrameLineColor(1);
+  gStyle->SetFrameLineStyle(1);
+  gStyle->SetFrameLineWidth(1);
+
+
+  TLegend *leg = new TLegend( 0.49, 0.5, 0.84, 0.90 ) ; 
   
   //PAS plot legend entries
   leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
@@ -472,7 +504,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_data, "Data");
 #endif
   leg->AddEntry( (TObject*)0, "Overflows in last bin","");
-  leg->SetFillColor( kWhite );
+  //leg->SetFillColor( kWhite );
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->SetTextFont(42);
+
+
 
   //NOTE. if showRescaledRunOneEEJJExcess is defined, then the hs_ZZ histo should not be added to the THStack of all SM
   //backgrounds, nor should it be used in any way in the ratio plot
@@ -484,7 +521,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->Sumw2();
   hs_Other->Sumw2();
   hs_DY->Sumw2();
-  
+
   TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
 #ifndef plotRatio
   mycanvas->cd();	//only needed when no ratio plot is drawn
@@ -542,8 +579,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
-  hs_data->SetTitle("CMS Preliminary         2.6 fb^{-1} (13 TeV)");
+  th->SetTitle("CMS Preliminary               2.6 fb^{-1} (13 TeV)");
+  hs_data->SetTitle("CMS Preliminary               2.6 fb^{-1} (13 TeV)");
   //th->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
   //hs_data->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
   th->Draw("histo");
