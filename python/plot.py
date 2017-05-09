@@ -82,7 +82,7 @@ class limit1d:
 		#for muon channel 1D limit plot
 		#latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
 		#for ele channel 1D limit plot
-		latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{e}}}}= M_{#scale[1.25]{W_{R}}}/2");
+		latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
 		latex.SetNDC();
 		latex.SetTextSize(0.032);
 		latex.SetTextFont(42);
