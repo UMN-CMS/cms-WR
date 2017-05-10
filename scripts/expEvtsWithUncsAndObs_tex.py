@@ -33,7 +33,9 @@ with open("configs/mass_cuts.txt") as f:
 		#now split the iterator named line into four strings, two of which (low and hi) will not be used
 		ch, mass, low, hi = line.split()
 		intMass = int(mass)
-		if mass == "0": continue
+		if mass == "0":
+			index += 1
+			continue
 
 		#initialize floating point variables to hold the number of mean expected and observed evts, and uncertainties in a mass window
 		numWREvts = 0.0
@@ -63,7 +65,7 @@ with open("configs/mass_cuts.txt") as f:
 			dySystUnc = math.sqrt(pow(0.41*numDYEvts, 2) + pow(combineTools.getBranchStdDev(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) )
 			numTopEvts = (0.4315)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
 			topStatUnc = (0.4315)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "ErrorEventsInRange["+str(index)+"]"))
-			topSystUnc = math.sqrt( pow(0.1*(0.4315)*numTopEvts, 2)  + pow((0.4315)*(combineTools.getBranchStdDev(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
+			topSystUnc = math.sqrt( pow(0.104*numTopEvts, 2)  + pow((0.4315)*(combineTools.getBranchStdDev(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
 			if numTopEvts < 0.1 : topStatUnc = 0.4315
 			numExpEvts = numDYEvts + numTopEvts
 			expEvtStatUnc = math.sqrt(pow(dyStatUnc,2) + pow(topStatUnc,2) )
@@ -79,7 +81,7 @@ with open("configs/mass_cuts.txt") as f:
 			dySystUnc = math.sqrt(pow(0.41*numDYEvts, 2) + pow(combineTools.getBranchStdDev(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) )
 			numTopEvts = (0.6592)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
 			topStatUnc = (0.6592)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]"))
-			topSystUnc = math.sqrt( pow(0.1*(0.6592)*numTopEvts, 2)  + pow((0.6592)*(combineTools.getBranchStdDev(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
+			topSystUnc = math.sqrt( pow(0.104*numTopEvts, 2)  + pow((0.6592)*(combineTools.getBranchStdDev(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]")), 2) )
 			if numTopEvts < 0.1 : topStatUnc = 0.6592
 			numExpEvts = numDYEvts + numTopEvts
 			expEvtStatUnc = math.sqrt(pow(dyStatUnc,2) + pow(topStatUnc,2) )
@@ -96,8 +98,11 @@ with open("configs/mass_cuts.txt") as f:
 		#now add a new key and value to the dictionary. the key is a pair containing the mass and lepton channel, and the value is a string containing the number of expected and observed events
 		#the numbers 6 and 7 control how many digits and white space are shown in each dict value
 		#round controls the number of decimal points shown
-		if mass != "4400" and mass != "4600" and mass != "4800" and mass != "5000" and mass != "5200" and mass != "5600" and mass != "5800" and mass != "6000": table[(mass , ch)] = "& {sig:<6} & {dy:<6} & {top:<6} & {total:<6} & {obs:<7}".format(sig = (str(round(numWREvts,2))+" +/- "+str(round(wrStatUnc,2))+" +/- "+str(round(wrSystUnc,2)) ), dy = (str(round(numDYEvts,2))+" +/- "+str(round(dyStatUnc,2))+" +/- "+str(round(dySystUnc,2))), top = (str(round(numTopEvts,2))+" +/- "+str(round(topStatUnc,2))+" +/- "+str(round(topSystUnc,2))), total = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtStatUnc,2))+" +/- "+str(round(expEvtSystUnc,2))), obs=str(numObsEvts))
-		if mass == "4400" or mass == "4600" or mass == "4800" or mass == "5000" or mass == "5200" or mass == "5600" or mass == "5800" or mass == "6000": table[(mass , ch)] = "& {sig:<6} & {dy:<6} & {top:<6} & {total:<6} & {obs:<7}".format(sig = (str(round(numWREvts,3))+" +/- "+str(round(wrStatUnc,4))+" +/- "+str(round(wrSystUnc,4)) ), dy = (str(round(numDYEvts,2))+" +/- "+str(round(dyStatUnc,2))+" +/- "+str(round(dySystUnc,2))), top = (str(round(numTopEvts,2))+" +/- "+str(round(topStatUnc,2))+" +/- "+str(round(topSystUnc,2))), total = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtStatUnc,2))+" +/- "+str(round(expEvtSystUnc,2))), obs=str(numObsEvts))
+		if mass == "800" or mass == "1000" or mass == "1200" or mass == "1400" or mass == "1600" or mass == "1800" or mass == "2000" or mass == "2200": table[(mass , ch)] = "& {sig:<6} & {dy:<6} & {top:<6} & {total:<6} & {obs:<7}".format(sig = (str(round(numWREvts,0))+" +/- "+str(round(wrStatUnc,1))+" +/- "+str(round(wrSystUnc,1)) ), dy = (str(round(numDYEvts,2))+" +/- "+str(round(dyStatUnc,2))+" +/- "+str(round(dySystUnc,2))), top = (str(round(numTopEvts,2))+" +/- "+str(round(topStatUnc,2))+" +/- "+str(round(topSystUnc,2))), total = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtStatUnc,2))+" +/- "+str(round(expEvtSystUnc,2))), obs=str(numObsEvts))
+		
+		if mass == "2400" or mass == "2600" or mass == "2800" or mass == "3000" or mass == "3200" or mass == "3600" or mass == "3800" or mass == "4000" or mass == "4200": table[(mass , ch)] = "& {sig:<6} & {dy:<6} & {top:<6} & {total:<6} & {obs:<7}".format(sig = (str(round(numWREvts,1))+" +/- "+str(round(wrStatUnc,2))+" +/- "+str(round(wrSystUnc,2)) ), dy = (str(round(numDYEvts,2))+" +/- "+str(round(dyStatUnc,2))+" +/- "+str(round(dySystUnc,2))), top = (str(round(numTopEvts,2))+" +/- "+str(round(topStatUnc,2))+" +/- "+str(round(topSystUnc,2))), total = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtStatUnc,2))+" +/- "+str(round(expEvtSystUnc,2))), obs=str(numObsEvts))
+
+		if mass == "4400" or mass == "4600" or mass == "4800" or mass == "5000" or mass == "5200" or mass == "5600" or mass == "5800" or mass == "6000": table[(mass , ch)] = "& {sig:<6} & {dy:<6} & {top:<6} & {total:<6} & {obs:<7}".format(sig = (str(round(numWREvts,2))+" +/- "+str(round(wrStatUnc,4))+" +/- "+str(round(wrSystUnc,4)) ), dy = (str(round(numDYEvts,2))+" +/- "+str(round(dyStatUnc,2))+" +/- "+str(round(dySystUnc,2))), top = (str(round(numTopEvts,2))+" +/- "+str(round(topStatUnc,2))+" +/- "+str(round(topSystUnc,2))), total = (str(round(numExpEvts,2))+" +/- "+str(round(expEvtStatUnc,2))+" +/- "+str(round(expEvtSystUnc,2))), obs=str(numObsEvts))
 		
 		masses.add(mass)
 #end reading mass_cuts.txt
