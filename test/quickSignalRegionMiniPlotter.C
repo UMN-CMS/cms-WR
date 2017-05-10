@@ -21,7 +21,7 @@
 
 #define unblindedData
 #define plotRatio
-//#define showRescaledRunOneEEJJExcess
+#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
