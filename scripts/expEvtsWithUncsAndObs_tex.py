@@ -8,6 +8,7 @@ import math
 #change fileDir to point to the directory from which expected bkgnd and signal, and observed files should be read
 #then everything else will run correctly
 treeName="syst_tree"
+statTreeName="central_value_tree"
 fileDir="/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystAprilTwentyThree/"
 
 expTopMuMuFile = "selected_tree_data_flavoursidebandEMuMuMu.root"
@@ -58,10 +59,10 @@ with open("configs/mass_cuts.txt") as f:
 		if ch == 'EE':
 			wrEEFile = ("selected_tree_WRtoEEJJ_%i_%i_signal_eeEE.root" % (intMass, intMass/2) )
 			numWREvts = combineTools.getBranchMean(fileDir+wrEEFile, treeName, "NEventsInRange["+str(index)+"]")
-			wrStatUnc = combineTools.getBranchMean(fileDir+wrEEFile, treeName, "ErrorEventsInRange["+str(index)+"]")
+			wrStatUnc = combineTools.getBranchMean(fileDir+wrEEFile, statTreeName, "ErrorEventsInRange["+str(index)+"]")
 			wrSystUnc = math.sqrt(pow(0.037*numWREvts, 2) + pow(combineTools.getBranchStdDev(fileDir+wrEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) )
 			numDYEvts = combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]")
-			dyStatUnc = combineTools.getBranchMean(fileDir+expDyEEFile, treeName, "ErrorEventsInRange["+str(index)+"]")
+			dyStatUnc = combineTools.getBranchMean(fileDir+expDyEEFile, statTreeName, "ErrorEventsInRange["+str(index)+"]")
 			dySystUnc = math.sqrt(pow(0.41*numDYEvts, 2) + pow(combineTools.getBranchStdDev(fileDir+expDyEEFile, treeName, "NEventsInRange["+str(index)+"]"), 2) )
 			numTopEvts = (0.4315)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "NEventsInRange["+str(index)+"]"))
 			topStatUnc = (0.4315)*(combineTools.getBranchMean(fileDir+expTopEEFile, treeName, "ErrorEventsInRange["+str(index)+"]"))
@@ -74,10 +75,10 @@ with open("configs/mass_cuts.txt") as f:
 		if ch == 'MuMu':
 			wrMuMuFile = ("selected_tree_WRtoMuMuJJ_%i_%i_signal_mumuMuMu.root" % (intMass, intMass/2) )
 			numWREvts = combineTools.getBranchMean(fileDir+wrMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
-			wrStatUnc = combineTools.getBranchMean(fileDir+wrMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]")
+			wrStatUnc = combineTools.getBranchMean(fileDir+wrMuMuFile, statTreeName, "ErrorEventsInRange["+str(index)+"]")
 			wrSystUnc = math.sqrt(pow(0.037*numWREvts, 2) + pow(combineTools.getBranchStdDev(fileDir+wrMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) )
 			numDYEvts = combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]")
-			dyStatUnc = combineTools.getBranchMean(fileDir+expDyMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]")
+			dyStatUnc = combineTools.getBranchMean(fileDir+expDyMuMuFile, statTreeName, "ErrorEventsInRange["+str(index)+"]")
 			dySystUnc = math.sqrt(pow(0.41*numDYEvts, 2) + pow(combineTools.getBranchStdDev(fileDir+expDyMuMuFile, treeName, "NEventsInRange["+str(index)+"]"), 2) )
 			numTopEvts = (0.6592)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "NEventsInRange["+str(index)+"]"))
 			topStatUnc = (0.6592)*(combineTools.getBranchMean(fileDir+expTopMuMuFile, treeName, "ErrorEventsInRange["+str(index)+"]"))
