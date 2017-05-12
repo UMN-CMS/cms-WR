@@ -2,6 +2,7 @@
 import numpy as np
 from ExoAnalysis.cmsWR.PlotUtils import customROOTstyle
 import ROOT 
+import CMS_lumi
 
 class limit1d:
 	def __init__(self,xs=None):
@@ -75,6 +76,7 @@ class limit1d:
 		dummy.GetYaxis().SetTitle(y_title)
 
 		dummy.GetYaxis().SetTitleOffset(1.1)
+		dummy.GetYaxis().SetTitleSize(0.05)
 		dummy.Draw("HIST")
 		leg_w = .44
 		leg_h = .21
@@ -82,7 +84,7 @@ class limit1d:
 		#for muon channel 1D limit plot
 		#latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
 		#for ele channel 1D limit plot
-		latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{#mu}}}}= M_{#scale[1.25]{W_{R}}}/2");
+		latex = ROOT.TLatex(leg_x + 0.02, leg_y + 0.23, "M_{#scale[1.25]{N_{#scale[1.5]{e}}}}= M_{#scale[1.25]{W_{R}}}/2");
 		latex.SetNDC();
 		latex.SetTextSize(0.032);
 		latex.SetTextFont(42);
@@ -99,12 +101,12 @@ class limit1d:
 		#g_twosig.SetLineWidth(2)
 		#g_twosig.SetLineColor(ROOT.kBlack)
 		#g_twosig.Draw("L SAME")
-		g_twosig.SetFillColor(ROOT.kYellow)
+		g_twosig.SetFillColor(ROOT.kOrange)
 		g_twosig.Draw("F SAME")
 
 		#comment this to remove 1sigma band
 		g_onesig = ROOT.TGraph(n*2+1, mass_band_array, onesig_array)
-		g_onesig.SetFillColor(ROOT.kGreen)
+		g_onesig.SetFillColor(ROOT.kGreen+1)
 		g_onesig.SetLineWidth(0)
 		g_onesig.Draw("F SAME")
 
@@ -146,25 +148,30 @@ class limit1d:
 			g_obs.SetFillStyle(3002);
 			g_obs.SetFillColor(ROOT.kBlue+2);
 			g_obs.Draw("L SAME")
+	
 		
-		if self.observed:
-			leg.AddEntry(g_obs,"Observed limit","L")
-		leg.AddEntry(g_exp, "Expected limit","L")
-		leg.AddEntry(g_onesig, "Expected #pm 1 #sigma", "F")
-		leg.AddEntry(g_twosig, "Expected #pm 2 #sigma", "F")
 		if self.theory:
 			leg.AddEntry(g_theory,"Theory (g_{R}= g_{L})","L")
+		leg.AddEntry(0,"95% CL upper limits","")
+		if self.observed:
+			leg.AddEntry(g_obs,"Observed","L")
+		leg.AddEntry(g_exp, "Expected","L")
+		leg.AddEntry(g_onesig, "#pm 1 std. deviation", "F")
+		leg.AddEntry(g_twosig, "#pm 2 std. deviation", "F")
 		leg.Draw("same")
 
 
-		#text = ROOT.TText(0.32,0.97,"CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}")
-		#text.SetNDC();
-		text = ROOT.TLatex()
-		text.SetTextFont(42)
-		text.SetTextSize(0.043)
-		text.DrawLatexNDC(0.22,0.96,"CMS Preliminary        2.6 fb^{-1} (13 TeV)")
-		#text.Draw()
+		##text = ROOT.TText(0.32,0.97,"CMS Preliminary #surds = 13 TeV #int lumi = 2.6 fb^{-1}")
+		##text.SetNDC();
+		#text = ROOT.TLatex()
+		#text.SetTextFont(42)
+		#text.SetTextSize(0.043)
+		#text.DrawLatexNDC(0.22,0.96,"CMS Preliminary        2.6 fb^{-1} (13 TeV)")
+		##text.Draw()
+		CMS_lumi.CMS_lumi(c1, 4, 0)
 
+		c1.cd()
+		c1.Update()
 		c1.RedrawAxis()
 		c1.SaveAs(filename + ".png")
 		c1.SaveAs(filename + ".pdf")
