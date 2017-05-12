@@ -23,7 +23,7 @@
 
 #define unblindedData
 #define plotRatio
-//#define showRescaledRunOneEEJJExcess
+#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
@@ -41,7 +41,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::MuMu;
+Selector::tag_t channel = Selector::EE;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname);
@@ -616,6 +616,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(fname.EqualTo("Mlljj") || fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins") ) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   if(fname.EqualTo("Mlljj_lowZpt")) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV] for Z P_{T}<150"), th->GetXaxis()->SetTitle("M_{LLJJ} [GeV] for Z P_{T}<150");
   if(fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins") ) hs_data->GetYaxis()->SetTitle("Events/GeV"), th->GetYaxis()->SetTitle("Events/GeV");
+  if(fname.EqualTo("Mlljj") ) hs_data->GetYaxis()->SetTitle("Events / 200 GeV"), th->GetYaxis()->SetTitle("Events / 200 GeV");
  
   ratio->GetXaxis()->SetTitle(xtitle.Data());
   if(fname.EqualTo("Mlljj") || fname.EqualTo("Mlljj_varBins") || fname.EqualTo("Mlljj_2012Bins") ) ratio->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
@@ -707,7 +708,6 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   CMS_lumi(mycanvas, 4, 0);
   mycanvas->Update();
   mycanvas->RedrawAxis();
-  mycanvas->GetFrame()->Draw();
  
   //plots with fixed bin widths
   //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") ){
