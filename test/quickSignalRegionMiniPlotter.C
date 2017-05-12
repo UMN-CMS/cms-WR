@@ -18,10 +18,12 @@
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>
+#include "CMS_lumi.C"
+
 
 #define unblindedData
 #define plotRatio
-#define showRescaledRunOneEEJJExcess
+//#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
@@ -39,7 +41,7 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname);
@@ -433,7 +435,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   //TDR style formatting
   gStyle->SetOptTitle(1);
-  gStyle->SetPadTopMargin(0.07);
+  gStyle->SetPadTopMargin(0.06);
   gStyle->SetPadBottomMargin(0.13);
   gStyle->SetPadLeftMargin(0.12);
   gStyle->SetPadRightMargin(.15);
@@ -463,7 +465,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   gStyle->SetFrameLineWidth(1);
 
 
-  TLegend *leg = new TLegend( 0.49, 0.5, 0.84, 0.90 ) ; 
+  TLegend *leg = new TLegend( 0.49, 0.5, 0.84, 0.91 ) ; 
   
   //PAS plot legend entries
   leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
@@ -579,8 +581,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Preliminary               2.6 fb^{-1} (13 TeV)");
-  hs_data->SetTitle("CMS Preliminary               2.6 fb^{-1} (13 TeV)");
+  //th->SetTitle("CMS Preliminary               2.6 fb^{-1} (13 TeV)");
+  //hs_data->SetTitle("CMS Preliminary               2.6 fb^{-1} (13 TeV)");
   //th->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
   //hs_data->SetTitle("CMS Private         2.6 fb^{-1} (13 TeV)");
   th->Draw("histo");
@@ -702,6 +704,11 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(channel == Selector::EE) fn += "_withRescaledRunOneEEJJExcess";
 #endif
   
+  CMS_lumi(mycanvas, 4, 0);
+  mycanvas->Update();
+  mycanvas->RedrawAxis();
+  mycanvas->GetFrame()->Draw();
+ 
   //plots with fixed bin widths
   //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") ){
   if(fname.EqualTo("Mlljj")){
