@@ -19,6 +19,7 @@
 //#include "tdrStyle.C"
 #include <cstdio>
 #include <memory>
+#include "CMS_lumi.C"
 
 /**
  * this macro runs on EMu data and TTBar MC minitrees which have been processed by analysis.cpp
@@ -96,7 +97,8 @@ void flavorSideband(){
 
  
   ///use this title for all plots
-  TString stdTitle = "CMS Preliminary               2.6 fb^{-1} (13 TeV)";
+  //TString stdTitle = "CMS Preliminary               2.6 fb^{-1} (13 TeV)";
+  TString stdTitle = "";
   h_WR_mass_EMu->SetTitle(stdTitle);
   h_WR_mass_EMuData->SetTitle(stdTitle);
   h_WR_mass_EE->SetTitle(stdTitle);
@@ -142,10 +144,10 @@ void flavorSideband(){
   h_ratio_EE->GetYaxis()->SetRangeUser(0.31,0.59);
   h_ratio_EE->GetYaxis()->SetTitle("M_{EEJJ} / M_{EMuJJ}    ");
   h_ratio_EE->SetTitleOffset(1.5,"Y");
-  h_ratio_EE->SetTitle(stdTitle);
+  //h_ratio_EE->SetTitle(stdTitle);
   h_ratio_EE->SetFillColor(kWhite);
   h_ratio_MuMu->Divide(h_WR_mass_EMu);
-  h_ratio_MuMu->SetTitle(stdTitle);
+  //h_ratio_MuMu->SetTitle(stdTitle);
   h_ratio_MuMu->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
   h_ratio_MuMu->GetYaxis()->SetRangeUser(0.51,0.79);
   h_ratio_MuMu->GetYaxis()->SetTitle("M_{MuMuJJ} / M_{EMuJJ}    ");
@@ -185,26 +187,25 @@ void flavorSideband(){
 
   TCanvas* mycanvas_ratio_EE = new TCanvas( "mycanvas_ratio_EE", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxEE = new TPaveText(1500.,0.54,2000.,0.58);
-  TPaveText* chiSqdBoxEE = new TPaveText(475.,0.54,1975.,0.585);	///< for xmax 2000
+  TPaveText* chiSqdBoxEE = new TPaveText(1275.,0.54,1975.,0.585);	///< for xmax 2000
   chiSqdBoxEE->SetFillColorAlpha(kWhite, 1.0);
   chiSqdBoxEE->SetTextFont(42);
-  //chiSqdBoxEE->SetTextSize(0.05);
+  chiSqdBoxEE->SetTextSize(0.04);
   TF1 *f_EE = new TF1("f_EE","[0]",400,1999);
   f_EE->FixParameter(0,eeEmuSF);
   h_ratio_EE->Fit("f_EE");
-  chiSqdBoxEE->AddText( "Simulation" );
   chiSqdBoxEE->AddText( TString( chiSquaredNdofString(f_EE) ) );
   chiSqdBoxEE->AddText( TString("SF = " + shortEEEmuSF) );
   chiSqdBoxEE->SetTextColor(1);
-  h_ratio_EE->SetTitleFont(42);
-  //h_ratio_EE->SetTitleColor(1);
-  //h_ratio_EE->SetTitleTextColor(1);
-  //h_ratio_EE->SetTitleFillColor(10);
-  //h_ratio_EE->SetTitleFontSize(0.05);
   h_ratio_EE->Draw("ep");
   chiSqdBoxEE->Draw("same");
   f_EE->SetLineColor(kBlack);
   f_EE->Draw("same");
+  CMS_lumi(mycanvas_ratio_EE, 4, 11);
+  mycanvas_ratio_EE->Update();
+  mycanvas_ratio_EE->RedrawAxis();
+  mycanvas_ratio_EE->GetFrame()->Draw();
+   
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.pdf"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_fixedbinwidth.png"));
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_largeXmax.pdf"));
@@ -221,24 +222,28 @@ void flavorSideband(){
   //mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx_largeXmax.png"));
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.pdf"));
   mycanvas_ratio_EE->Print(("flavor_ratio_EE_variablebinwidth_logx.png"));
-
+ 
 
   TCanvas* mycanvas_ratio_MuMu = new TCanvas( "mycanvas_ratio_MuMu", "", 0, 0, 600, 600 ) ;
   //TPaveText* chiSqdBoxMuMu = new TPaveText(1500.,0.73,2000.,0.79);
-  TPaveText* chiSqdBoxMuMu = new TPaveText(475.,0.74,1975.,0.785);	///< for xmax 2000
+  TPaveText* chiSqdBoxMuMu = new TPaveText(1275.,0.74,1975.,0.785);	///< for xmax 2000
   chiSqdBoxMuMu->SetFillColorAlpha(kWhite, 1.0);
   chiSqdBoxMuMu->SetTextFont(42);
+  chiSqdBoxMuMu->SetTextSize(0.04);
   TF1 *f_MuMu = new TF1("f_MuMu","[0]",400,1999);
   f_MuMu->FixParameter(0,mumuEmuSF);
   h_ratio_MuMu->Fit("f_MuMu");
-  chiSqdBoxMuMu->AddText( "Simulation" );
   chiSqdBoxMuMu->AddText( TString( chiSquaredNdofString(f_MuMu) ) );
   chiSqdBoxMuMu->AddText( TString("SF = " + shortMuMuEmuSF) );
   chiSqdBoxMuMu->SetTextColor(1);
-  h_ratio_MuMu->Draw();
+  h_ratio_MuMu->Draw("ep");
   f_MuMu->SetLineColor(kBlack);
   chiSqdBoxMuMu->Draw("same");
   f_MuMu->Draw("same");
+  CMS_lumi(mycanvas_ratio_MuMu, 4, 11);
+  mycanvas_ratio_MuMu->Update();
+  mycanvas_ratio_MuMu->RedrawAxis();
+  mycanvas_ratio_MuMu->GetFrame()->Draw();
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.pdf"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_fixedbinwidth.png"));
   //mycanvas_ratio_MuMu->Print(("flavor_ratio_MuMu_variablebinwidth_largeXmax.pdf"));
