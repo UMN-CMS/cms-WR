@@ -4,6 +4,10 @@ import numpy as np
 import math
 
 ##################
+#THIS SCRIPT IS NO LONGER NEEDED
+#the table produced by this script has been replaced by the table produced by expEvtsWithUncsAndObs_tex.py
+#
+#
 #this script makes a table showing the expected number of bkgnd and signal events, and the errors on these expectations due to
 #due to uncertainties in the MLLJJ normalization and shape
 #this script prints the table to stdout, and this should be directed to a file named uncertainty_table.tex
