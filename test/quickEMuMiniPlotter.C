@@ -19,6 +19,8 @@
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>
+#include "CMS_lumi.C"
+
 
 //#define doNarrowMlljj
 //#define doNarrowLeadLeptEta
@@ -353,18 +355,50 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_Other,TH1F* hs_data, TString xtitle, TString fname){
 
+  //TDR style formatting
+  gStyle->SetOptTitle(1);
+  gStyle->SetPadTopMargin(0.06);
+  gStyle->SetPadBottomMargin(0.13);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(.15);
+  gStyle->SetLabelColor(1, "XYZ");
+  gStyle->SetLabelFont(42, "XYZ");
+  gStyle->SetLabelOffset(0.007, "XYZ");
+  gStyle->SetLabelSize(0.05, "XYZ");
+  gStyle->SetTitleSize(0.05, "XYZ");
+  gStyle->SetTitleOffset(1.0, "X");
+  gStyle->SetTitleOffset(1.1, "Y");
+  gStyle->SetTitleOffset(1.0, "Z");
+  gStyle->SetAxisColor(1, "XYZ");
+  gStyle->SetTickLength(0.03, "XYZ");
+  gStyle->SetNdivisions(510, "XYZ");
+  gStyle->SetPadTickX(0);
+  gStyle->SetPadTickY(0);
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetHistLineColor(1);
+  gStyle->SetHistLineStyle(1);
+  gStyle->SetHistLineWidth(3);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetFrameBorderSize(1);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetFrameFillStyle(0);
+  gStyle->SetFrameLineColor(1);
+  gStyle->SetFrameLineStyle(1);
+  gStyle->SetFrameLineWidth(1);
+
+
   TLegend *leg = new TLegend( 0.60, 0.50, 0.90, 0.90 ) ; 
-  leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
-  leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
+  leg->AddEntry( hs_ttbar, "Top Anti-Top Quark Pair" ) ;
+  leg->AddEntry( hs_ZZ, "Top+W" ) ; 
   leg->AddEntry( hs_WJets, "W+jets" ) ; 
 #ifndef useDYMAD 
   leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
 #endif
 #ifdef useDYMAD
-  leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
+  leg->AddEntry( hs_DY, "DY" ) ; 
 #endif
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
-  leg->AddEntry( hs_Other, "QCD from data" ) ; 
+  leg->AddEntry( hs_Other, "QCD" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
   leg->AddEntry( hs_data, "Data");
   leg->SetFillColor( kWhite ) ; 
@@ -376,7 +410,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_ZZ->Sumw2();
   hs_DY->Sumw2();
   
-  TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 900, 900 ) ;
+  TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
   THStack* th = new THStack();
   hs_DY->SetFillColor(kYellow);
   hs_ttbar->SetFillColor(kGreen);
@@ -407,8 +441,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   th->SetMinimum(0.0005);
   
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
-  hs_data->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
+  //th->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
+  //hs_data->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
   hs_data->Draw("ep");
   th->Draw("histo same");
   hs_data->Draw("epsame");
@@ -519,6 +553,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	fn = fname + "_eMuChannelRescaledTTBarMCNarrowMlljjAndLeadLeptEtaFixedBinWidth";
 #endif
   
+  CMS_lumi(mycanvas, 4, 0);  //to set correct title for plots
+  mycanvas->Update();
+  mycanvas->RedrawAxis();
+ 
+
+
   //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("mu_eta") || fname.EqualTo("mu_pt") || fname.EqualTo("ele_eta") || fname.EqualTo("ele_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_eta") || fname.EqualTo("j2_pt")){
   if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
