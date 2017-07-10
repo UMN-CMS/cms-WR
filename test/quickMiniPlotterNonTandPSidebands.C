@@ -19,6 +19,8 @@
 #include "../src/miniTreeEvent.cc"
 #include <cstdio>
 #include <memory>
+#include "CMS_lumi.C"
+
 
 //#define doMllAboveZpeak	//restrict MLL to be between 120 and 200 GeV
 //#define highMlljj
@@ -27,7 +29,7 @@
 #define variableBinWidths
 
 //switch btwn DY AMCNLO and DY MADHT samples
-//#define DOAMC
+#define DOAMC
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
@@ -287,6 +289,38 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data, TString xtitle, TString fname){
 
+  //TDR style formatting
+  gStyle->SetOptTitle(1);
+  gStyle->SetPadTopMargin(0.06);
+  gStyle->SetPadBottomMargin(0.13);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(.15);
+  gStyle->SetLabelColor(1, "XYZ");
+  gStyle->SetLabelFont(42, "XYZ");
+  gStyle->SetLabelOffset(0.007, "XYZ");
+  gStyle->SetLabelSize(0.05, "XYZ");
+  gStyle->SetTitleSize(0.05, "XYZ");
+  gStyle->SetTitleOffset(1.0, "X");
+  gStyle->SetTitleOffset(1.1, "Y");
+  gStyle->SetTitleOffset(1.0, "Z");
+  gStyle->SetAxisColor(1, "XYZ");
+  gStyle->SetTickLength(0.03, "XYZ");
+  gStyle->SetNdivisions(510, "XYZ");
+  gStyle->SetPadTickX(0);
+  gStyle->SetPadTickY(0);
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetHistLineColor(1);
+  gStyle->SetHistLineStyle(1);
+  gStyle->SetHistLineWidth(3);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetFrameBorderSize(1);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetFrameFillStyle(0);
+  gStyle->SetFrameLineColor(1);
+  gStyle->SetFrameLineStyle(1);
+  gStyle->SetFrameLineWidth(1);
+
+
   hs_DY->Sumw2();
   hs_ttbar->Sumw2();
   hs_WJets->Sumw2();
@@ -296,13 +330,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
   TLegend *leg = new TLegend( 0.63, 0.60, 0.90, 0.90 ) ; 
 #ifdef DOAMC
-  leg->AddEntry( hs_DY, "DY AMCNLO" ) ; 
+  leg->AddEntry( hs_DY, "DY Higher Order" ) ; 
 #endif
 #ifndef DOAMC
-  leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
+  leg->AddEntry( hs_DY, "DY" ) ; 
 #endif
-  leg->AddEntry( hs_ttbar, "TTBar MC" ) ;
-  leg->AddEntry( hs_ZZ, "TopW MC" ) ; 
+  leg->AddEntry( hs_ttbar, "Top Anti-Top Quark Pair" ) ;
+  leg->AddEntry( hs_ZZ, "Top+W" ) ; 
   leg->AddEntry( hs_WJets, "W+jets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ; 
   //leg->AddEntry( histos[2][0], "10 x WR 2600" ) ; 
@@ -335,8 +369,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /**/
   hs_data->SetStats(0);
   TH1F *ratio = (TH1F*)hs_data->Clone();
-  th->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
-  hs_data->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
+  //th->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
+  //hs_data->SetTitle("CMS Private        2.6 fb^{-1} (13 TeV)");
   th->Draw("e1histo");
   hs_data->Draw("epsame");
   //TString ytitle = "Events/(";
@@ -509,8 +543,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyMadHt";	//for ratio plot
   //fn = fname + "_100GeVbinsFromMLLJJ700_variablebinwidths_onlyDY_MLLJJbtwn700and1400_lowdileptonMuMuChannelDyAmc";	//for ratio plot
 //TString fnames[] = {"l1_pt","l2_pt","j1_pt","j2_pt","l1_eta","l2_eta","j1_eta","j2_eta","l1_phi","l2_phi","j1_phi","j2_phi","Mlljj","Mll","nPV","nPU","unweightedMLLJJ"};
-
-  if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
+  
+  CMS_lumi(mycanvas, 4, 0);  //to set correct title for plots
+  mycanvas->Update();
+  mycanvas->RedrawAxis();
+ 
+  //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mll") || fname.EqualTo("j1_pt") || fname.EqualTo("j1_eta") || fname.EqualTo("j2_pt") || fname.EqualTo("j2_eta") ){
+  if(fname.EqualTo("Mlljj")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
