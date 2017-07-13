@@ -21,6 +21,8 @@
 #include <cstdlib>
 #include <sstream>
 #include <cmath>
+#include "CMS_lumi.C"
+
 
 /**
  * this macro is derived from quickCalcDyScaleFactors.C, and is a generic plotting macro used to overlay up 
@@ -34,6 +36,9 @@
 #ifdef __CINT__
 #pragma link C++ class std::vector<TLorentzVector>+;
 #endif
+
+//#define plotData
+#define normalizePlotArea
 
 TString dir = "../analysisCppOutputRootFilesNewHltSf/";
 
@@ -53,20 +58,15 @@ void noStackMiniPlotter()
 	TChain * chain_DYAmcInclMuMu = new TChain(treeName,"DYAMCInclusiveMuMu");
 	TChain * chain_dataMuMu = new TChain(treeName,"DataMuMu");
 
-	chain_DYPowhegEE->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYMadInclEE->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeEE"+mcFileTag+".root");
-	chain_DYAmcInclEE->Add(dir+"selected_tree_DYAMC_dytagandprobeEE"+mcFileTag+".root");
-	chain_dataEE->Add(dir+"selected_tree_data_dytagandprobeEE"+dataFileTag+".root");
-	
-	chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYAMC_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYPowhegMuMu->Add(dir+"selected_tree_DYPOWHEG_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	
-	//temporary change to save disk space
-	//chain_DYAmcInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	//chain_DYPowhegMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	//chain_DYMadInclMuMu->Add(dir+"selected_tree_DYMadInclAndHT_dytagandprobeMuMu"+mcFileTag+".root");
-	chain_dataMuMu->Add(dir+"selected_tree_data_dytagandprobeMuMu"+dataFileTag+".root");
+	chain_DYPowhegEE->Add(dir+"selected_tree_WRtoEEJJ_1000_500_signal_eeEE.root");
+	chain_DYMadInclEE->Add(dir+"selected_tree_WRtoEEJJ_2000_1000_signal_eeEE.root");
+	chain_DYAmcInclEE->Add(dir+"selected_tree_WRtoEEJJ_3000_1500_signal_eeEE.root");
+	chain_dataEE->Add(dir+"selected_tree_data_signal_eeEE.root");
+
+	chain_DYPowhegMuMu->Add(dir+"selected_tree_WRtoMuMuJJ_1000_500_signal_mumuMuMu.root");
+	chain_DYMadInclMuMu->Add(dir+"selected_tree_WRtoMuMuJJ_2000_1000_signal_mumuMuMu.root");
+	chain_DYAmcInclMuMu->Add(dir+"selected_tree_WRtoMuMuJJ_3000_1500_signal_mumuMuMu.root");
+	chain_dataMuMu->Add(dir+"selected_tree_data_signal_mumuMuMu.root");
 
 	Selector myEvent_DYPowhegEE;
 	Selector myEvent_DYMadInclEE;
@@ -158,10 +158,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	TH1D *h_dilepton_massBothEB = new TH1D("h_dilepton_massBothEB", "", 280, 55., 125.);
 	TH1D *h_dilepton_massBothEE = new TH1D("h_dilepton_massBothEE", "", 280, 55., 125.);
 	TH1D *h_dilepton_massEBEE = new TH1D("h_dilepton_massEBEE", "", 280, 55., 125.);
-	
-	Float_t binsWR[] = { 100, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider binsWR work better at high WR mass, include overflow evts in last bin shown on plot
-	Int_t  binnumWR = sizeof(binsWR)/sizeof(Float_t) - 1;
-	TH1D * h_WR_mass = new TH1D("h_WR_mass","",binnumWR, binsWR);
+
+	//variable width bins
+	//Float_t binsWR[] = { 100, 200, 250, 300, 350, 400, 450, 525, 600, 675, 755, 850, 950, 1050, 1150, 1250, 1350, 1510, 1640, 1900, 2500};	//wider binsWR work better at high WR mass, include overflow evts in last bin shown on plot
+	//Int_t  binnumWR = sizeof(binsWR)/sizeof(Float_t) - 1;
+	//TH1D * h_WR_mass = new TH1D("h_WR_mass","",binnumWR, binsWR);
+
+	//fixed width bins, 200 GeV wide from 600 to 4000. last bin includes overflow
+	TH1D * h_WR_mass = new TH1D("h_WR_mass","", 17, 600., 4000.);
 	
 	Long64_t nEntries = chain->GetEntries();
 
@@ -173,9 +177,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 	
 	for(int ev = 0; ev < nEntries; ++ev) {
 		chain->GetEntry(ev);
-		if(myEvent->dilepton_mass > upperMllCut || myEvent->dilepton_mass < lowerMllCut) continue;
-		if(myEvent->lead_lepton_pt < leadLeptonPtCut || myEvent->sublead_lepton_pt < subleadLeptonPtCut || std::fabs(myEvent->sublead_lepton_eta) > leptonEtaCut || std::fabs(myEvent->lead_lepton_eta) > leptonEtaCut) continue;
-		if(myEvent->lead_jet_pt < leadJetPtCut || myEvent->sublead_jet_pt < subLeadJetPtCut) continue;
+		if(myEvent->dilepton_mass < 200.) continue;
+		if(myEvent->sublead_lepton_pt < 53.) continue;
+		if(myEvent->WR_mass < 600.) continue;
+	
 
 		TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
 		leadLeptonFourMom.SetPtEtaPhiE(myEvent->lead_lepton_pt, myEvent->lead_lepton_eta, myEvent->lead_lepton_phi, myEvent->lead_lepton_pt);
@@ -211,11 +216,15 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 		if(std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) h_dilepton_massBothEE->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 		if( (std::fabs(myEvent->lead_lepton_eta) > 1.56 && std::fabs(myEvent->sublead_lepton_eta) < 1.44) || (std::fabs(myEvent->lead_lepton_eta) < 1.44 && std::fabs(myEvent->sublead_lepton_eta) > 1.56) ) h_dilepton_massEBEE->Fill(myEvent->dilepton_mass, (myEvent->weight)*hltCorrFactor);
 
-		TLorentzVector leadJetFourMom, subleadJetFourMom, wrCandFourMom;
-		leadJetFourMom.SetPtEtaPhiE(myEvent->lead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->lead_jet_pt);
-		subleadJetFourMom.SetPtEtaPhiE(myEvent->sublead_jet_pt, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->sublead_jet_pt);
-		wrCandFourMom = leadJetFourMom + subleadJetFourMom + leadLeptonFourMom + subleadLeptonFourMom;
-		h_WR_mass->Fill(wrCandFourMom.M(), (myEvent->weight)*hltCorrFactor);
+		//for minitrees processed with dytagandprobe = true
+		//TLorentzVector leadJetFourMom, subleadJetFourMom, wrCandFourMom;
+		//leadJetFourMom.SetPtEtaPhiE(myEvent->lead_jet_pt, myEvent->lead_jet_eta, myEvent->lead_jet_phi, myEvent->lead_jet_pt);
+		//subleadJetFourMom.SetPtEtaPhiE(myEvent->sublead_jet_pt, myEvent->sublead_jet_eta, myEvent->sublead_jet_phi, myEvent->sublead_jet_pt);
+		//wrCandFourMom = leadJetFourMom + subleadJetFourMom + leadLeptonFourMom + subleadLeptonFourMom;
+		//h_WR_mass->Fill(wrCandFourMom.M(), (myEvent->weight)*hltCorrFactor);
+		
+		//for non-DYTnP
+		h_WR_mass->Fill(myEvent->WR_mass, (myEvent->weight)*hltCorrFactor);
 	
 	}
 
@@ -303,12 +312,14 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 			h_WR_mass->SetBinContent(j, origBinContents+overflowContents);
 		}//end including overflows in last bin shown on plot
 
+		/*only for Mlljj plot with variable width bins
 		//in each bin, divide the bin contents by the bin width
 		Double_t oldBinContents = h_WR_mass->GetBinContent(j);
 		Double_t oldBinErrors = h_WR_mass->GetBinError(j);
 		Double_t binWidth = h_WR_mass->GetBinWidth(j);
 		h_WR_mass->SetBinContent(j, oldBinContents/binWidth);
 		h_WR_mass->SetBinError(j, oldBinErrors/binWidth);
+		*/
 	}//end loop over bins in h_WR_mass
 
 	hs->push_back(h_Z_ptVariableBinning);
@@ -319,17 +330,58 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1D*> *hs, Float
 void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* hs_data, TString xtitle, TString fname, std::string channel)
 {
 
+	//TDR style formatting
+	gStyle->SetOptTitle(1);
+	gStyle->SetPadTopMargin(0.06);
+	gStyle->SetPadBottomMargin(0.13);
+	gStyle->SetPadLeftMargin(0.12);
+	gStyle->SetPadRightMargin(.15);
+	gStyle->SetLabelColor(1, "XYZ");
+	gStyle->SetLabelFont(42, "XYZ");
+	gStyle->SetLabelOffset(0.007, "XYZ");
+	gStyle->SetLabelSize(0.05, "XYZ");
+	gStyle->SetTitleSize(0.05, "XYZ");
+	gStyle->SetTitleOffset(1.0, "X");
+	gStyle->SetTitleOffset(1.1, "Y");
+	gStyle->SetTitleOffset(1.0, "Z");
+	gStyle->SetAxisColor(1, "XYZ");
+	gStyle->SetTickLength(0.03, "XYZ");
+	gStyle->SetNdivisions(510, "XYZ");
+	gStyle->SetPadTickX(0);
+	gStyle->SetPadTickY(0);
+	gStyle->SetMarkerStyle(20);
+	gStyle->SetHistLineColor(1);
+	gStyle->SetHistLineStyle(1);
+	gStyle->SetHistLineWidth(3);
+	gStyle->SetFrameBorderMode(0);
+	gStyle->SetFrameBorderSize(1);
+	gStyle->SetFrameFillColor(0);
+	gStyle->SetFrameFillStyle(0);
+	gStyle->SetFrameLineColor(1);
+	gStyle->SetFrameLineStyle(1);
+	gStyle->SetFrameLineWidth(1);
 
-	//gStyle->SetOptStat("eou");
+
 	gStyle->SetOptStat("");
-	TLegend *leg = new TLegend( 0.60, 0.60, 0.90, 0.90 ) ;
-	leg->AddEntry( hs_DYPowheg, "DY Powheg" ) ;
-	leg->AddEntry( hs_DYMadIncl, "ABC" ) ;
-	leg->AddEntry( hs_DYAmcIncl, "DEF" ) ;
+	TLegend *leg = new TLegend( 0.50, 0.60, 0.83, 0.90 );
+#ifdef plotData	
 	leg->AddEntry( hs_data, "Data");
-	leg->SetFillColor( kWhite ) ;
+#endif
+	leg->AddEntry( (TObject*)0, "WR signal","");
+	leg->AddEntry( hs_DYPowheg, "M_{WR}=1 TeV M_{Nu}=0.5 TeV" );
+	leg->AddEntry( hs_DYMadIncl, "M_{WR}=2 TeV M_{Nu}=1 TeV" );
+	leg->AddEntry( hs_DYAmcIncl, "M_{WR}=3 TeV M_{Nu}=1.5 TeV" );
+	leg->AddEntry( (TObject*)0, "Overflows in last bin","");
+#ifdef normalizePlotArea
+	leg->AddEntry( (TObject*)0, "Integrals normalized to 1","");
+	hs_DYPowheg->Scale(1/hs_DYPowheg->Integral());
+	hs_DYMadIncl->Scale(1/hs_DYMadIncl->Integral());
+	hs_DYAmcIncl->Scale(1/hs_DYAmcIncl->Integral());
+	hs_data->Scale(1/hs_data->Integral());
+#endif
+	leg->SetFillColor( kWhite );
 
-	TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 ) ;
+	TCanvas* mycanvas = new TCanvas( "mycanvas", "", 0, 0, 600, 600 );
 	mycanvas->cd();
 	hs_DYPowheg->SetLineColor(kRed);
 	hs_DYPowheg->SetLineWidth(3);
@@ -341,7 +393,7 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	hs_data->SetMarkerSize(1);
 	hs_data->SetMarkerColor(kBlack);
 
-	/*for ratio plot*/
+	/*for ratio plot
 	Double_t eps = 0.001;
 	TPad* p1 = new TPad("p1", "p1", 0, 0.25, 1, 1, 0);
 	p1->Draw();
@@ -350,27 +402,31 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	p1->SetBottomMargin(0);
 	p2->SetTopMargin(0);
 	p1->cd();
-	/**/
-	hs_data->SetStats(1);
-	hs_DYPowheg->SetStats(1);
+	*/
+	hs_data->SetStats(0);
+	hs_DYPowheg->SetStats(0);
+	hs_DYMadIncl->SetStats(0);
+	hs_DYAmcIncl->SetStats(0);
 	TH1D *ratio_Powheg = (TH1D*)hs_data->Clone();
 	TH1D *ratio_Mad = (TH1D*)hs_data->Clone();
 	TH1D *ratio_Amc = (TH1D*)hs_data->Clone();
 	//TString plotTitle = "CMS Private   #surds = 13 TeV #int lumi = 2.6 fb^{-1}";
-	TString plotTitle = "CMS Private          2.6 fb^{-1} (13 TeV)";
-	hs_DYPowheg->SetTitle(plotTitle);
-	hs_data->SetTitle(plotTitle);
-	TString ytitle = "Events";
-	//TString ytitle = "Events/(";
-	//ytitle += (hs_data->GetXaxis()->GetNbins());
-	//ytitle += (hs_data->GetXaxis()->GetBinWidth(2));
-	//ytitle += " GeV)";
+	//TString plotTitle = "CMS Private          2.6 fb^{-1} (13 TeV)";
+	//hs_DYPowheg->SetTitle(plotTitle);
+	//hs_data->SetTitle(plotTitle);
+	
+	TString ytitle = "Events/(";
+	ytitle += (hs_DYPowheg->GetXaxis()->GetBinWidth(2));
+	ytitle += " GeV)";
+#ifdef normalizePlotArea
+	ytitle = "Arbitrary Units";
+#endif
 	hs_DYAmcIncl->GetYaxis()->SetTitle(ytitle.Data());
 	hs_DYPowheg->GetYaxis()->SetTitle(ytitle.Data());
 	hs_DYMadIncl->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitle(ytitle.Data());
 	hs_data->GetYaxis()->SetTitleOffset(1.5);
-	if(fname.EqualTo("Mlljj")) hs_DYMadIncl->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");
+	//if(fname.EqualTo("Mlljj")) hs_DYMadIncl->GetYaxis()->SetTitle("Events/GeV"), hs_data->GetYaxis()->SetTitle("Events/GeV");  //for variable width bins
 	hs_DYAmcIncl->GetYaxis()->SetTitleOffset(1.5);
 	hs_DYMadIncl->GetYaxis()->SetTitleOffset(1.5);
 	hs_DYPowheg->GetYaxis()->SetTitleOffset(1.5);
@@ -392,14 +448,15 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	hs_DYMadIncl->SetLabelSize(0.04, "x");
 	hs_DYMadIncl->GetXaxis()->SetTitle(xtitle.Data());
 	if(fname.EqualTo("Z_pt") ) hs_data->GetXaxis()->SetTitle("Z P_{T} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("Z P_{T} [GeV]");
-	
-	hs_data->Draw("ep");
+	if(fname.EqualTo("Mlljj") ) hs_data->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_DYAmcIncl->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_DYMadIncl->GetXaxis()->SetTitle("M_{LLJJ} [GeV]"), hs_DYPowheg->GetXaxis()->SetTitle("M_{LLJJ} [GeV]");
+
+	hs_DYPowheg->Draw("histo");
 	hs_DYMadIncl->Draw("histo same");
-#ifdef showAMC	
 	hs_DYAmcIncl->Draw("histo same");
-#endif
+#ifdef plotData	
 	hs_data->Draw("epsame");
-	hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
+#endif
+	//hs_DYAmcIncl->GetXaxis()->SetTitle(xtitle.Data());
 	ratio_Amc->GetXaxis()->SetTitle(xtitle.Data());
 	if(fname.EqualTo("Mll")) ratio_Amc->GetXaxis()->SetTitle("M_{LL} [GeV]"), ratio_Mad->GetXaxis()->SetTitle("M_{LL} [GeV]");
 	if(fname.EqualTo("Z_pt")) ratio_Amc->GetXaxis()->SetTitle("Z P_{T} [GeV]"), ratio_Mad->GetXaxis()->SetTitle("Z P_{T} [GeV]");
@@ -421,8 +478,8 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Powheg->GetXaxis()->SetTitleSize(labelSize);
 	ratio_Powheg->SetLabelSize(labelSize - 0.07, "x");
 	leg->Draw();
-	//mycanvas->cd();
-	p2->cd();	//for ratio plot
+	mycanvas->cd();
+	//p2->cd();	//for ratio plot
 	ratio_Powheg->Sumw2();
 	ratio_Powheg->SetStats(0);
 	ratio_Mad->Sumw2();
@@ -451,123 +508,45 @@ void drawPlots(TH1D* hs_DYPowheg, TH1D* hs_DYMadIncl, TH1D* hs_DYAmcIncl, TH1D* 
 	ratio_Amc->GetYaxis()->SetRangeUser(0.95, 1.05);
 	ratio_Amc->GetYaxis()->SetNdivisions(505);
 
+	/*for ratio plot
 	ratio_Mad->Draw("p");
-#ifdef showAMC	
 	ratio_Amc->Draw("p");
-#endif
-	//ratio_Powheg->Draw("p");	//comment if only plotting AMC
+	ratio_Powheg->Draw("p");	//comment if only plotting AMC
 	float xmax = ratio_Amc->GetXaxis()->GetXmax();
 	float xmin = ratio_Amc->GetXaxis()->GetXmin();
 	TF1 *f1 = new TF1("f1", "1", xmin, xmax);
-	//ratio_Powheg->Draw("p");
+	ratio_Powheg->Draw("p");
 	ratio_Mad->Draw("psame");
 
-#ifdef showAMC	
 	ratio_Amc->Draw("psame");
-#endif
 	f1->Draw("same");
 	mycanvas->cd();
-	/**/
+	*/
 
 	//no Ratio
-	//TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_noRatioPlot_" + channel;
-
-	//only MadHT ratio
-	TString cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut)+"_onlyMadRatioPlot_" + channel;
-
-#ifdef showAMC
-	//only MadHT and AMC ratios
-	cuts = "_minLeadLeptPt_" + to_string(minLeadLeptonPt) +"_minSubleadLeptPt_" + to_string(minSubleadLeptonPt) + "_minLeadJetPt_" + to_string(leadJetPtCut) + "_minSubleadJetPt_" + to_string(subLeadJetPtCut) + "_onlyAMCandMadHtRatioPlots_" + channel;
+	TString cuts = "_signalRegionCuts_severalWrSignals_" + channel;
+#ifdef plotData
+	cuts += "_withData";
 #endif
 
-	if(requireSeparatedLeptonsAndJets) cuts += "_withLeptonJetDrCuts";
-	if(!requireSeparatedLeptonsAndJets) cuts += "_withoutLeptonJetDrCuts";
-	if(useMllReweighted) cuts += "_mcIsMllReweighted";
-
-
 	TString fn = fname + cuts;
+	
+	CMS_lumi(mycanvas, 4, 0);  //set correct plot titles
+	mycanvas->Update();
+	mycanvas->RedrawAxis();
 
-	/**/
-	if(fname.EqualTo("Mll") == true){
-		//if(fname.EqualTo("nPV") == true || fname.EqualTo("nPU") == true) fn = fname + "_DYTagAndProbeNoJetCuts_noRatio_" + channel;
-		/*
-		mycanvas->Print((fn + "_highestZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_highestZoomRatio.png").Data());
+	if(fname.EqualTo("Mlljj") == true){
+		mycanvas->Print((fn + ".pdf").Data());
+		mycanvas->Print((fn + ".png").Data());
+		mycanvas->Print((fn + ".C").Data());
 
-		///do the zoomed plots only for Z_pt and M_ll distributions
-
-		if(fname.EqualTo("Mll") == true){
-			//reset the Y axis scale on the ratio plot
-			ratio_Powheg->GetYaxis()->SetRangeUser(0.9, 1.1);
-			ratio_Mad->GetYaxis()->SetRangeUser(0.9, 1.1);
-			ratio_Amc->GetYaxis()->SetRangeUser(0.9, 1.1);
-
-			mycanvas->Update();
-			mycanvas->Print((fn + "_highZoomRatio.pdf").Data());
-			mycanvas->Print((fn + "_highZoomRatio.png").Data());
-
-			//reset the Y axis scale on the ratio plot
-			ratio_Powheg->GetYaxis()->SetRangeUser(0.85, 1.15);
-			ratio_Mad->GetYaxis()->SetRangeUser(0.85, 1.15);
-			ratio_Amc->GetYaxis()->SetRangeUser(0.85, 1.15);
-
-			mycanvas->Update();
-			mycanvas->Print((fn + "_mediumZoomRatio.pdf").Data());
-			mycanvas->Print((fn + "_mediumZoomRatio.png").Data());
-
-			//reset the Y axis scale on the ratio plot
-			ratio_Powheg->GetYaxis()->SetRangeUser(0.8, 1.2);
-			ratio_Mad->GetYaxis()->SetRangeUser(0.8, 1.2);
-			ratio_Amc->GetYaxis()->SetRangeUser(0.8, 1.2);
-
-			mycanvas->Update();
-			mycanvas->Print((fn + "_lowZoomRatio.pdf").Data());
-			mycanvas->Print((fn + "_lowZoomRatio.png").Data());
-
-			//reset the Y axis scale on the ratio plot
-			ratio_Powheg->GetYaxis()->SetRangeUser(0.7, 1.3);
-			ratio_Mad->GetYaxis()->SetRangeUser(0.7, 1.3);
-			ratio_Amc->GetYaxis()->SetRangeUser(0.7, 1.3);
-
-			mycanvas->Update();
-			mycanvas->Print((fn + "_lowestZoomRatio.pdf").Data());
-			mycanvas->Print((fn + "_lowestZoomRatio.png").Data());
-		}///end zoom ratio plots for Mll and Zpt distributions
-		*/
-
-		//reset the Y axis scale on the ratio plot
-		ratio_Powheg->GetYaxis()->SetRangeUser(0.61, 1.39);
-		ratio_Mad->GetYaxis()->SetRangeUser(0.61, 1.39);
-		ratio_Amc->GetYaxis()->SetRangeUser(0.61, 1.39);
-
-		if(fname.EqualTo("Z_pt_variableBinning") == true) fn += "_overflowsAddedToLastBin";
-		mycanvas->Update();
-		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_noZoomRatio.png").Data());
-		mycanvas->Print((fn + "_noZoomRatio.C").Data());
-
-		p1->SetLogy();	//for plotting ratio plot
-		//mycanvas->SetLogy();	//when not plotting ratio plot
+		//p1->SetLogy();	//for plotting ratio plot
+		mycanvas->SetLogy();	//when not plotting ratio plot
 		mycanvas->Print((fn + "_log.pdf").Data());
 		mycanvas->Print((fn + "_log.png").Data());
 		mycanvas->Print((fn + "_log.C").Data());
 
 	}
-	/**/
-	
-	/*
-	mycanvas->Update();
-
-	if(fname.EqualTo("Z_pt") == true || fname.EqualTo("nPV") == true){
-		mycanvas->Print((fn + "_noZoomRatio.pdf").Data());
-		mycanvas->Print((fn + "_noZoomRatio.png").Data());
-
-		mycanvas->SetLogy();	//when not plotting ratio plot
-		//p1->SetLogy();	//for plotting ratio plot
-		mycanvas->Print((fn + "_log.pdf").Data());
-		mycanvas->Print((fn + "_log.png").Data());
-	}
-	*/
 	
 	mycanvas->Close();
 
