@@ -23,7 +23,7 @@
 
 #define unblindedData
 #define plotRatio
-#define showRescaledRunOneEEJJExcess
+//#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
@@ -468,15 +468,16 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   TLegend *leg = new TLegend( 0.49, 0.5, 0.84, 0.91 ) ; 
   
   //PAS plot legend entries
-  leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
-  leg->AddEntry( hs_ttbar, "Top bkgnds from data" ) ;
+  //leg->AddEntry( hs_DY, "Z/#gamma*+jets" ) ; 
+  leg->AddEntry( hs_ttbar, "Top Quark Backgrounds" ) ;
+  leg->AddEntry( hs_DY, "DY" ) ; 
   leg->AddEntry( hs_WJets, "W+jets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ;
   leg->AddEntry(hs_Other, "WR signal M_{WR}=3.0 TeV");
 
   //AN plot legend entries
   //leg->AddEntry( hs_DY, "DY" ) ; 
-  //leg->AddEntry( hs_ttbar, "Top Backgrounds Data Driven" ) ;
+  //leg->AddEntry( hs_ttbar, "Top Quark Backgrounds" ) ;
   //leg->AddEntry( hs_WJets, "W+jets" ) ; 
   //leg->AddEntry( hs_WZ, "Diboson" ) ; 
 
@@ -488,7 +489,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifdef showQCD
-  leg->AddEntry( hs_ZZ, "QCD from data");
+  leg->AddEntry( hs_ZZ, "QCD");
 #endif
 
 #ifdef showWR
@@ -498,8 +499,8 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #endif
 
 #ifndef unblindedData
-  //leg->AddEntry(hs_data, "WR signal x 0.3");
-  //leg->AddEntry( (TObject*)0, "M_{WR}=1.0 TeV M_{Nu}=0.5 TeV","");
+  leg->AddEntry(hs_data, "WR signal x 0.3");
+  leg->AddEntry( (TObject*)0, "M_{WR}=1.0 TeV M_{Nu}=0.5 TeV","");
 #endif
 
 #ifdef unblindedData 
@@ -596,7 +597,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   hs_data->SetLineWidth(3);
   hs_data->SetFillColor(kWhite);
   hs_data->Scale(0.3);
-  //hs_data->Draw("HIST same");
+  hs_data->Draw("HIST same");
 #endif
 
 #ifdef showRescaledRunOneEEJJExcess
@@ -680,10 +681,10 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
 
 #ifndef unblindedData
-  //if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
-  //if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
-  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
-  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
+  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
+  //if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
+  //if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
 #endif
 
 #ifdef unblindedData
@@ -705,7 +706,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   if(channel == Selector::EE) fn += "_withRescaledRunOneEEJJExcess";
 #endif
   
-  CMS_lumi(mycanvas, 4, 0);
+  CMS_lumi(mycanvas, 4, 0);  //to set correct title for plots
   mycanvas->Update();
   mycanvas->RedrawAxis();
  

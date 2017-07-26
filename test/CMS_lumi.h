@@ -12,7 +12,11 @@ TString cmsText     = "CMS";
 float cmsTextFont   = 61;  // default is helvetic-bold
 
 bool writeExtraText = true;
-TString extraText   = "  Preliminary";
+TString extraText   = "  Preliminary";  //for PAS plots
+//TString extraText   = "  Unpublished";  //for thesis plots with real data that were not in public PAS
+//TString extraText   = "  Simulation Unpublished";  //for thesis plots without real data that were not in public PAS
+
+
 float extraTextFont = 52;  // default is helvetica-italics
 
 // text sizes and text offsets with respect to the top frame
