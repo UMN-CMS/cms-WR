@@ -36,6 +36,8 @@
 #include <TEntryListArray.h>
 #include "dumpTreePlots.C"
 #include "printSystStdDevToFile.C"
+#include "../test/CMS_lumi.C"
+
 
 using namespace std;
 
@@ -43,8 +45,8 @@ using namespace std;
 //#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
 //#define nMinusOneCutEffsGenAndReco
-#define studyGenWrKinematicsVsWrAndNuMasses
-//#define genAndRecoWrPlotsMinimalCuts
+//#define studyGenWrKinematicsVsWrAndNuMasses
+#define genAndRecoWrPlotsMinimalCuts
 //#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
@@ -213,7 +215,40 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 	cout<<"  "<<endl;
 	cout<<"in makeAndSaveSingleHistoFromTreeWithCuts fxn"<<endl;
 #endif
-	gStyle->SetOptStat("");
+	//gStyle->SetOptStat(""); //original formatting
+
+	//CMS TDR formatting
+	gStyle->SetOptTitle(1);
+	gStyle->SetPadTopMargin(0.06);
+	gStyle->SetPadBottomMargin(0.13);
+	gStyle->SetPadLeftMargin(0.12);
+	gStyle->SetPadRightMargin(.15);
+	gStyle->SetLabelColor(1, "XYZ");
+	gStyle->SetLabelFont(42, "XYZ");
+	gStyle->SetLabelOffset(0.007, "XYZ");
+	gStyle->SetLabelSize(0.05, "XYZ");
+	gStyle->SetTitleSize(0.05, "XYZ");
+	gStyle->SetTitleOffset(1.0, "X");
+	gStyle->SetTitleOffset(1.1, "Y");
+	gStyle->SetTitleOffset(1.0, "Z");
+	gStyle->SetAxisColor(1, "XYZ");
+	gStyle->SetTickLength(0.03, "XYZ");
+	gStyle->SetNdivisions(510, "XYZ");
+	gStyle->SetPadTickX(0);
+	gStyle->SetPadTickY(0);
+	gStyle->SetMarkerStyle(20);
+	gStyle->SetHistLineColor(1);
+	gStyle->SetHistLineStyle(1);
+	gStyle->SetHistLineWidth(3);
+	gStyle->SetFrameBorderMode(0);
+	gStyle->SetFrameBorderSize(1);
+	gStyle->SetFrameFillColor(0);
+	gStyle->SetFrameFillStyle(0);
+	gStyle->SetFrameLineColor(1);
+	gStyle->SetFrameLineStyle(1);
+	gStyle->SetFrameLineWidth(1);
+
+
 	TCanvas * cc = new TCanvas(canvName.c_str(),canvName.c_str(),750,700);
 	cc->cd();
 #ifdef DEBUG
@@ -228,6 +263,8 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 	TH1F * tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
 	tempHist->SetTitle(histTitle.c_str());
 	tempHist->GetXaxis()->SetTitle(xAxisTitle.c_str());
+	tempHist->GetYaxis()->SetTitle("Arb. Units");
+	tempHist->GetYaxis()->SetTitleOffset(1.3);
 	tempHist->SetLineWidth(3);
 	tempHist->SetLineColor(1);
 
@@ -263,6 +300,12 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 #ifdef DEBUG
 	cout<<"drew histo"<<endl;
 #endif
+
+	//apply CMS formatting to plot title
+	CMS_lumi(cc, 4, 0);  //to set correct title for plots
+	cc->Update();
+	cc->RedrawAxis();
+
 	cc->SaveAs((outputFileName+".png").c_str(),"recreate");
 	cc->SaveAs((outputFileName+".pdf").c_str(),"recreate");
 	tempHist->Delete();
@@ -2093,31 +2136,33 @@ void macroSandBox(){
 	string barrelAndEndcapFractionFile = "fractionOfEventsInBarrelAndEndcaps.txt";
 	ofstream writeToBarrelEndcapFile(barrelAndEndcapFractionFile.c_str(), ofstream::trunc);
 	gStyle->SetTitleOffset(1.4,"Y");
-	Int_t nBins = 5;	///max is 24
+	Int_t nBins = 1;	///max is 24
 	Float_t wrMassVals[nBins], genMatchedPtEtaEff[nBins], genLeadAndSubleadPtEtaEff[nBins];
 	gStyle->SetOptStat("");
 
-	int wrMassArr[] = {800,1600,2600,3400,5000};
+	//int wrMassArr[] = {800,1600,2600,3400,5000};
 	//int wrMassArr[] = {800,1000,1200,1400,1600,1800,2000,2400,2600,2800,3000,3200,3600,3800,4000,4200,4400,4600,4800,5000,5200,5600,5800,6000};
-	//int wrMassArr[] = {2200};
+	int wrMassArr[] = {2200};
 
 
 	//element number i in plotArg is linked to element number i in plotCut   don't change the order
 	//gen and reco branches
 	//to make plots without cuts
-	//string plotArg[] = {"numGenFstHvyPtcl","numGenScdHvyPtcl","numGenLeptons","numGenQuarks","leadGenLeptonNotFromFstHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","leadGenQuarkNotFromScdHvyPtcl","subleadGenQuarkNotFromScdHvyPtcl","etaGenFstHvyPtcl", "ptGenFstHvyPtcl", "massGenFstHvyPtcl", "etaGenScdHvyPtcl", "ptGenScdHvyPtcl", "massGenScdHvyPtcl", "etaGenLeptFromFstHvyPtcl", "ptGenLeptFromFstHvyPtcl", "phiGenLeptFromFstHvyPtcl", "etaGenLeptFromScdHvyPtcl", "ptGenLeptFromScdHvyPtcl", "phiGenLeptFromScdHvyPtcl", "etaGenQuarkOneFromScdHvyPtcl", "ptGenQuarkOneFromScdHvyPtcl", "phiGenQuarkOneFromScdHvyPtcl", "etaGenQuarkTwoFromScdHvyPtcl", "ptGenQuarkTwoFromScdHvyPtcl", "phiGenQuarkTwoFromScdHvyPtcl","ptLeadGenLepton", "etaLeadGenLepton", "phiLeadGenLepton", "ptSubleadGenLepton", "etaSubleadGenLepton", "phiSubleadGenLepton", "ptLeadGenQuark", "etaLeadGenQuark", "phiLeadGenQuark", "ptSubleadGenQuark", "etaSubleadGenQuark", "phiSubleadGenQuark","ptRecoLeptMatchedToWrDau", "etaRecoLeptMatchedToWrDau", "phiRecoLeptMatchedToWrDau", "ptRecoLeptMatchedToNuDau", "etaRecoLeptMatchedToNuDau", "phiRecoLeptMatchedToNuDau", "ptRecoJetOneMatchedToNuDau", "etaRecoJetOneMatchedToNuDau", "phiRecoJetOneMatchedToNuDau", "ptRecoJetTwoMatchedToNuDau", "etaRecoJetTwoMatchedToNuDau", "phiRecoJetTwoMatchedToNuDau", "ptGenJetFromMatchedRecoJetOne", "etaGenJetFromMatchedRecoJetOne", "phiGenJetFromMatchedRecoJetOne", "ptGenJetFromMatchedRecoJetTwo", "etaGenJetFromMatchedRecoJetTwo", "phiGenJetFromMatchedRecoJetTwo", "ptLeadRecoLept", "etaLeadRecoLept", "phiLeadRecoLept", "ptSubleadRecoLept", "etaSubleadRecoLept", "phiSubleadRecoLept", "ptLeadRecoJet", "etaLeadRecoJet", "phiLeadRecoJet", "ptSubleadRecoJet", "etaSubleadRecoJet", "phiSubleadRecoJet"};
-	//string plotCut[] = {"numGenFstHvyPtcl>-1","numGenScdHvyPtcl>-1","numGenLeptons>-1","numGenQuarks>-1","leadGenLeptonNotFromFstHvyPtcl>-1","subleadGenLeptonNotFromScdHvyPtcl>-1","leadGenQuarkNotFromScdHvyPtcl>-1","subleadGenQuarkNotFromScdHvyPtcl>-1","etaGenFstHvyPtcl>-9", "ptGenFstHvyPtcl>-9", "massGenFstHvyPtcl>-9", "etaGenScdHvyPtcl>-9", "ptGenScdHvyPtcl>-9", "massGenScdHvyPtcl>-9", "etaGenLeptFromFstHvyPtcl>-9", "ptGenLeptFromFstHvyPtcl>-9", "phiGenLeptFromFstHvyPtcl>-9", "etaGenLeptFromScdHvyPtcl>-9", "ptGenLeptFromScdHvyPtcl>-9", "phiGenLeptFromScdHvyPtcl>-9", "etaGenQuarkOneFromScdHvyPtcl>-9", "ptGenQuarkOneFromScdHvyPtcl>-9", "phiGenQuarkOneFromScdHvyPtcl>-9", "etaGenQuarkTwoFromScdHvyPtcl>-9", "ptGenQuarkTwoFromScdHvyPtcl>-9", "phiGenQuarkTwoFromScdHvyPtcl>-9","ptLeadGenLepton>-9", "etaLeadGenLepton>-9", "phiLeadGenLepton>-9", "ptSubleadGenLepton>-9", "etaSubleadGenLepton>-9", "phiSubleadGenLepton>-9", "ptLeadGenQuark>-9", "etaLeadGenQuark>-9", "phiLeadGenQuark>-9", "ptSubleadGenQuark>-9", "etaSubleadGenQuark>-9", "phiSubleadGenQuark>-9","ptRecoLeptMatchedToWrDau>-9", "etaRecoLeptMatchedToWrDau>-9", "phiRecoLeptMatchedToWrDau>-9", "ptRecoLeptMatchedToNuDau>-9", "etaRecoLeptMatchedToNuDau>-9", "phiRecoLeptMatchedToNuDau>-9", "ptRecoJetOneMatchedToNuDau>-9", "etaRecoJetOneMatchedToNuDau>-9", "phiRecoJetOneMatchedToNuDau>-9", "ptRecoJetTwoMatchedToNuDau>-9", "etaRecoJetTwoMatchedToNuDau>-9", "phiRecoJetTwoMatchedToNuDau>-9", "ptGenJetFromMatchedRecoJetOne>-9", "etaGenJetFromMatchedRecoJetOne>-9", "phiGenJetFromMatchedRecoJetOne>-9", "ptGenJetFromMatchedRecoJetTwo>-9", "etaGenJetFromMatchedRecoJetTwo>-9", "phiGenJetFromMatchedRecoJetTwo>-9", "ptLeadRecoLept>-9", "etaLeadRecoLept>-9", "phiLeadRecoLept>-9", "ptSubleadRecoLept>-9", "etaSubleadRecoLept>-9", "phiSubleadRecoLept>-9", "ptLeadRecoJet>-9", "etaLeadRecoJet>-9", "phiLeadRecoJet>-9", "ptSubleadRecoJet>-9", "etaSubleadRecoJet>-9", "phiSubleadRecoJet>-9"};
-	//string plotTitle[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","Leading GEN Lepton is not W_{R} daughter","Subleading GEN Lepton is not Nu daughter","Leading GEN quark is not Nu daughter","Subleading GEN quark is not Nu daughter","GEN W_{R} #eta","GEN W_{R} P_{T}","GEN W_{R} Mass","GEN Nu #eta","GEN Nu P_{T}","GEN Nu Mass","#eta of GEN Lepton from W_{R}","P_{T} of GEN Lepton from W_{R}","#phi of GEN Lepton from W_{R}","#eta of GEN Lepton from Nu","P_{T} of GEN Lepton from Nu","#phi of GEN Lepton from Nu","#eta of first GEN Quark from Nu","P_{T} of first GEN Quark from Nu","#phi of first GEN Quark from Nu","#eta of second GEN Quark from Nu","P_{T} of second GEN Quark from Nu","#phi of second GEN Quark from Nu","Leading GEN Lepton P_{T}","Leading GEN Lepton #eta","Leading GEN Lepton #phi","Subleading GEN Lepton P_{T}","Subleading GEN Lepton #eta","Subleading GEN Lepton #phi","Leading GEN Quark P_{T}","Leading GEN Quark #eta","Leading GEN Quark #phi","Subleading GEN Quark P_{T}","Subleading GEN Quark #eta","Subleading GEN Quark #phi","P_{T} of RECO Lepton matched to W_{R} daughter","#eta of RECO Lepton matched to W_{R} daughter","#phi of RECO Lepton matched to W_{R} daughter","P_{T} of RECO Lepton matched to Nu daughter","#eta of RECO Lepton matched to Nu daughter","#phi of RECO Lepton matched to Nu daughter","P_{T} of first RECO Jet matched to Nu daughter","#eta of first RECO Jet matched to Nu daughter","#phi of first RECO Jet matched to Nu daughter","P_{T} of second RECO Jet matched to Nu daughter","#eta of second RECO Jet matched to Nu daughter","#phi of second RECO Jet matched to Nu daughter","P_{T} of first GEN Jet matched to Nu daughter","#eta of first GEN Jet matched to Nu daughter","#phi of first GEN Jet matched to Nu daughter","P_{T} of second GEN Jet matched to Nu daughter","#eta of second GEN Jet matched to Nu daughter","#phi of second GEN Jet matched to Nu daughter","Leading RECO Lepton P_{T}","Leading RECO Lepton #eta","Leading RECO Lepton #phi","Subleading RECO Lepton P_{T}","Subleading RECO Lepton #eta","Subleading RECO Lepton #phi","Leading RECO Jet P_{T}","Leading RECO Jet #eta","Leading RECO Jet #phi","Subleading RECO Jet P_{T}","Subleading RECO Jet #eta","Subleading RECO Jet #phi","GEN W_{R} Rapidity","GEN Nu Rapidity"};
+	string plotArg[] = {"numGenFstHvyPtcl","numGenScdHvyPtcl","numGenLeptons","numGenQuarks","leadGenLeptonNotFromFstHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","leadGenQuarkNotFromScdHvyPtcl","subleadGenQuarkNotFromScdHvyPtcl","etaGenFstHvyPtcl", "ptGenFstHvyPtcl", "massGenFstHvyPtcl", "etaGenScdHvyPtcl", "ptGenScdHvyPtcl", "massGenScdHvyPtcl", "etaGenLeptFromFstHvyPtcl", "ptGenLeptFromFstHvyPtcl", "phiGenLeptFromFstHvyPtcl", "etaGenLeptFromScdHvyPtcl", "ptGenLeptFromScdHvyPtcl", "phiGenLeptFromScdHvyPtcl", "etaGenQuarkOneFromScdHvyPtcl", "ptGenQuarkOneFromScdHvyPtcl", "phiGenQuarkOneFromScdHvyPtcl", "etaGenQuarkTwoFromScdHvyPtcl", "ptGenQuarkTwoFromScdHvyPtcl", "phiGenQuarkTwoFromScdHvyPtcl","ptLeadGenLepton", "etaLeadGenLepton", "phiLeadGenLepton", "ptSubleadGenLepton", "etaSubleadGenLepton", "phiSubleadGenLepton", "ptLeadGenQuark", "etaLeadGenQuark", "phiLeadGenQuark", "ptSubleadGenQuark", "etaSubleadGenQuark", "phiSubleadGenQuark","ptRecoLeptMatchedToWrDau", "etaRecoLeptMatchedToWrDau", "phiRecoLeptMatchedToWrDau", "ptRecoLeptMatchedToNuDau", "etaRecoLeptMatchedToNuDau", "phiRecoLeptMatchedToNuDau", "ptRecoJetOneMatchedToNuDau", "etaRecoJetOneMatchedToNuDau", "phiRecoJetOneMatchedToNuDau", "ptRecoJetTwoMatchedToNuDau", "etaRecoJetTwoMatchedToNuDau", "phiRecoJetTwoMatchedToNuDau", "ptGenJetFromMatchedRecoJetOne", "etaGenJetFromMatchedRecoJetOne", "phiGenJetFromMatchedRecoJetOne", "ptGenJetFromMatchedRecoJetTwo", "etaGenJetFromMatchedRecoJetTwo", "phiGenJetFromMatchedRecoJetTwo", "ptLeadRecoLept", "etaLeadRecoLept", "phiLeadRecoLept", "ptSubleadRecoLept", "etaSubleadRecoLept", "phiSubleadRecoLept", "ptLeadRecoJet", "etaLeadRecoJet", "phiLeadRecoJet", "ptSubleadRecoJet", "etaSubleadRecoJet", "phiSubleadRecoJet"};
+	string plotCut[] = {"numGenFstHvyPtcl>-1","numGenScdHvyPtcl>-1","numGenLeptons>-1","numGenQuarks>-1","leadGenLeptonNotFromFstHvyPtcl>-1","subleadGenLeptonNotFromScdHvyPtcl>-1","leadGenQuarkNotFromScdHvyPtcl>-1","subleadGenQuarkNotFromScdHvyPtcl>-1","etaGenFstHvyPtcl>-9", "ptGenFstHvyPtcl>-9", "massGenFstHvyPtcl>-9", "etaGenScdHvyPtcl>-9", "ptGenScdHvyPtcl>-9", "massGenScdHvyPtcl>-9", "etaGenLeptFromFstHvyPtcl>-9", "ptGenLeptFromFstHvyPtcl>-9", "phiGenLeptFromFstHvyPtcl>-9", "etaGenLeptFromScdHvyPtcl>-9", "ptGenLeptFromScdHvyPtcl>-9", "phiGenLeptFromScdHvyPtcl>-9", "etaGenQuarkOneFromScdHvyPtcl>-9", "ptGenQuarkOneFromScdHvyPtcl>-9", "phiGenQuarkOneFromScdHvyPtcl>-9", "etaGenQuarkTwoFromScdHvyPtcl>-9", "ptGenQuarkTwoFromScdHvyPtcl>-9", "phiGenQuarkTwoFromScdHvyPtcl>-9","ptLeadGenLepton>-9", "etaLeadGenLepton>-9", "phiLeadGenLepton>-9", "ptSubleadGenLepton>-9", "etaSubleadGenLepton>-9", "phiSubleadGenLepton>-9", "ptLeadGenQuark>-9", "etaLeadGenQuark>-9", "phiLeadGenQuark>-9", "ptSubleadGenQuark>-9", "etaSubleadGenQuark>-9", "phiSubleadGenQuark>-9","ptRecoLeptMatchedToWrDau>-9", "etaRecoLeptMatchedToWrDau>-9", "phiRecoLeptMatchedToWrDau>-9", "ptRecoLeptMatchedToNuDau>-9", "etaRecoLeptMatchedToNuDau>-9", "phiRecoLeptMatchedToNuDau>-9", "ptRecoJetOneMatchedToNuDau>-9", "etaRecoJetOneMatchedToNuDau>-9", "phiRecoJetOneMatchedToNuDau>-9", "ptRecoJetTwoMatchedToNuDau>-9", "etaRecoJetTwoMatchedToNuDau>-9", "phiRecoJetTwoMatchedToNuDau>-9", "ptGenJetFromMatchedRecoJetOne>-9", "etaGenJetFromMatchedRecoJetOne>-9", "phiGenJetFromMatchedRecoJetOne>-9", "ptGenJetFromMatchedRecoJetTwo>-9", "etaGenJetFromMatchedRecoJetTwo>-9", "phiGenJetFromMatchedRecoJetTwo>-9", "ptLeadRecoLept>-9", "etaLeadRecoLept>-9", "phiLeadRecoLept>-9", "ptSubleadRecoLept>-9", "etaSubleadRecoLept>-9", "phiSubleadRecoLept>-9", "ptLeadRecoJet>-9", "etaLeadRecoJet>-9", "phiLeadRecoJet>-9", "ptSubleadRecoJet>-9", "etaSubleadRecoJet>-9", "phiSubleadRecoJet>-9"};
+	string plotTitle[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","Leading GEN Lepton is not W_{R} daughter","Subleading GEN Lepton is not Nu daughter","Leading GEN quark is not Nu daughter","Subleading GEN quark is not Nu daughter","GEN W_{R} #eta","GEN W_{R} P_{T}","GEN W_{R} Mass","GEN Nu #eta","GEN Nu P_{T}","GEN Nu Mass","#eta of GEN Lepton from W_{R}","P_{T} of GEN Lepton from W_{R}","#phi of GEN Lepton from W_{R}","#eta of GEN Lepton from Nu","P_{T} of GEN Lepton from Nu","#phi of GEN Lepton from Nu","#eta of first GEN Quark from Nu","P_{T} of first GEN Quark from Nu","#phi of first GEN Quark from Nu","#eta of second GEN Quark from Nu","P_{T} of second GEN Quark from Nu","#phi of second GEN Quark from Nu","Leading GEN Lepton P_{T}","Leading GEN Lepton #eta","Leading GEN Lepton #phi","Subleading GEN Lepton P_{T}","Subleading GEN Lepton #eta","Subleading GEN Lepton #phi","Leading GEN Quark P_{T}","Leading GEN Quark #eta","Leading GEN Quark #phi","Subleading GEN Quark P_{T}","Subleading GEN Quark #eta","Subleading GEN Quark #phi","P_{T} of RECO Lepton matched to W_{R} daughter","#eta of RECO Lepton matched to W_{R} daughter","#phi of RECO Lepton matched to W_{R} daughter","P_{T} of RECO Lepton matched to Nu daughter","#eta of RECO Lepton matched to Nu daughter","#phi of RECO Lepton matched to Nu daughter","P_{T} of first RECO Jet matched to Nu daughter","#eta of first RECO Jet matched to Nu daughter","#phi of first RECO Jet matched to Nu daughter","P_{T} of second RECO Jet matched to Nu daughter","#eta of second RECO Jet matched to Nu daughter","#phi of second RECO Jet matched to Nu daughter","P_{T} of first GEN Jet matched to Nu daughter","#eta of first GEN Jet matched to Nu daughter","#phi of first GEN Jet matched to Nu daughter","P_{T} of second GEN Jet matched to Nu daughter","#eta of second GEN Jet matched to Nu daughter","#phi of second GEN Jet matched to Nu daughter","Leading RECO Lepton P_{T}","Leading RECO Lepton #eta","Leading RECO Lepton #phi","Subleading RECO Lepton P_{T}","Subleading RECO Lepton #eta","Subleading RECO Lepton #phi","Leading RECO Jet P_{T}","Leading RECO Jet #eta","Leading RECO Jet #phi","Subleading RECO Jet P_{T}","Subleading RECO Jet #eta","Subleading RECO Jet #phi","GEN W_{R} Rapidity","GEN Nu Rapidity"};
 	//string plotXaxisLabel[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","1 = lead GEN lepton not W_{R} dau","1 = sublead GEN lepton not Nu dau","1 = lead GEN quark not Nu dau","1 = sublead GEN quark not Nu dau","GEN W_{R} #eta","GEN W_{R} P_{T} [GeV]","GEN W_{R} Mass [GeV]","GEN Nu #eta","GEN Nu P_{T} [GeV]","GEN Nu Mass [GeV]","#eta of GEN Lepton from W_{R}","P_{T} [GeV]","#phi","#eta","P_{T} [GeV]","#phi","#eta","P_{T} [GeV]","#phi","#eta","P_{T} [GeV]","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","Lepton P_{T} [GeV]","Lepton #eta","Lepton #phi","Lepton P_{T} [GeV]","Lepton #eta","Lepton #phi","Lead Jet P_{T} [GeV]","Lead Jet #eta","Lead Jet #phi","Sublead Jet P_{T} [GeV]","Sublead Jet #eta","Sublead Jet #phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi"};
+	string plotXaxisLabel[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","1 = lead GEN lepton not W_{R} dau","1 = sublead GEN lepton not Nu dau","1 = lead GEN quark not Nu dau","1 = sublead GEN quark not Nu dau","GEN W_{R} #eta","GEN W_{R} P_{T} [GeV]","GEN W_{R} Mass [GeV]","GEN Nu #eta","GEN Nu P_{T} [GeV]","GEN Nu Mass [GeV]","#eta of GEN Lepton from W_{R}","P_{T} [GeV]","#phi","#eta","P_{T} [GeV]","#phi","#eta","P_{T} [GeV]","#phi","#eta","P_{T} [GeV]","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi","P_{T} [GeV]","#eta","#phi"};
 
-	//default list of all gen branches
-	string plotArg[] = {"numGenFstHvyPtcl","numGenScdHvyPtcl","numGenLeptons","numGenQuarks","leadGenLeptonNotFromFstHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","leadGenQuarkNotFromScdHvyPtcl","subleadGenQuarkNotFromScdHvyPtcl","etaGenFstHvyPtcl", "ptGenFstHvyPtcl", "massGenFstHvyPtcl", "etaGenScdHvyPtcl", "ptGenScdHvyPtcl", "massGenScdHvyPtcl", "etaGenLeptFromFstHvyPtcl", "ptGenLeptFromFstHvyPtcl", "phiGenLeptFromFstHvyPtcl", "etaGenLeptFromScdHvyPtcl", "ptGenLeptFromScdHvyPtcl", "phiGenLeptFromScdHvyPtcl", "etaGenQuarkOneFromScdHvyPtcl", "ptGenQuarkOneFromScdHvyPtcl", "phiGenQuarkOneFromScdHvyPtcl", "etaGenQuarkTwoFromScdHvyPtcl", "ptGenQuarkTwoFromScdHvyPtcl", "phiGenQuarkTwoFromScdHvyPtcl","ptLeadGenLepton", "etaLeadGenLepton", "phiLeadGenLepton", "ptSubleadGenLepton", "etaSubleadGenLepton", "phiSubleadGenLepton", "ptLeadGenQuark", "etaLeadGenQuark", "phiLeadGenQuark", "ptSubleadGenQuark", "etaSubleadGenQuark", "phiSubleadGenQuark", "fourObjMassFromGenObjsFromFstAndScdHvyPtcl", "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl", "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl", "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl", "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl", "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
 
-	//standard plotting cuts to ensure existence of GEN particles
-	string plotCut[] = {"numGenFstHvyPtcl>-1","numGenScdHvyPtcl>-1","numGenLeptons>-1","numGenQuarks>-1","leadGenLeptonNotFromFstHvyPtcl>-1","subleadGenLeptonNotFromScdHvyPtcl>-1","leadGenQuarkNotFromScdHvyPtcl>-1","subleadGenQuarkNotFromScdHvyPtcl>-1","etaGenFstHvyPtcl>-9", "ptGenFstHvyPtcl>-9", "massGenFstHvyPtcl>-9", "etaGenScdHvyPtcl>-9", "ptGenScdHvyPtcl>-9", "massGenScdHvyPtcl>-9", "etaGenLeptFromFstHvyPtcl>-9", "ptGenLeptFromFstHvyPtcl>-9", "phiGenLeptFromFstHvyPtcl>-9", "etaGenLeptFromScdHvyPtcl>-9", "ptGenLeptFromScdHvyPtcl>-9", "phiGenLeptFromScdHvyPtcl>-9", "etaGenQuarkOneFromScdHvyPtcl>-9", "ptGenQuarkOneFromScdHvyPtcl>-9", "phiGenQuarkOneFromScdHvyPtcl>-9", "etaGenQuarkTwoFromScdHvyPtcl>-9", "ptGenQuarkTwoFromScdHvyPtcl>-9", "phiGenQuarkTwoFromScdHvyPtcl>-9","ptLeadGenLepton>-9", "etaLeadGenLepton>-9", "phiLeadGenLepton>-9", "ptSubleadGenLepton>-9", "etaSubleadGenLepton>-9", "phiSubleadGenLepton>-9", "ptLeadGenQuark>-9", "etaLeadGenQuark>-9", "phiLeadGenQuark>-9", "ptSubleadGenQuark>-9", "etaSubleadGenQuark>-9", "phiSubleadGenQuark>-9", "fourObjMassFromGenObjsFromFstAndScdHvyPtcl>-9", "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl>-9", "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl>-9", "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl>-9", "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl>-9", "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl>-9"};
+	////default list of all gen branches
+	//string plotArg[] = {"numGenFstHvyPtcl","numGenScdHvyPtcl","numGenLeptons","numGenQuarks","leadGenLeptonNotFromFstHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","leadGenQuarkNotFromScdHvyPtcl","subleadGenQuarkNotFromScdHvyPtcl","etaGenFstHvyPtcl", "ptGenFstHvyPtcl", "massGenFstHvyPtcl", "etaGenScdHvyPtcl", "ptGenScdHvyPtcl", "massGenScdHvyPtcl", "etaGenLeptFromFstHvyPtcl", "ptGenLeptFromFstHvyPtcl", "phiGenLeptFromFstHvyPtcl", "etaGenLeptFromScdHvyPtcl", "ptGenLeptFromScdHvyPtcl", "phiGenLeptFromScdHvyPtcl", "etaGenQuarkOneFromScdHvyPtcl", "ptGenQuarkOneFromScdHvyPtcl", "phiGenQuarkOneFromScdHvyPtcl", "etaGenQuarkTwoFromScdHvyPtcl", "ptGenQuarkTwoFromScdHvyPtcl", "phiGenQuarkTwoFromScdHvyPtcl","ptLeadGenLepton", "etaLeadGenLepton", "phiLeadGenLepton", "ptSubleadGenLepton", "etaSubleadGenLepton", "phiSubleadGenLepton", "ptLeadGenQuark", "etaLeadGenQuark", "phiLeadGenQuark", "ptSubleadGenQuark", "etaSubleadGenQuark", "phiSubleadGenQuark", "fourObjMassFromGenObjsFromFstAndScdHvyPtcl", "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl", "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl", "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl", "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl", "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
 
-	//standard X axis labels when all GEN branches are being drawn
-	string plotXaxisLabel[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","1 = lead GEN lepton not W_{R} dau","1 = sublead GEN lepton not Nu dau","1 = lead GEN quark not Nu dau","1 = sublead GEN quark not Nu dau","GEN W_{R} #eta","GEN W_{R} P_{T} [GeV]","GEN W_{R} Mass [GeV]","GEN Nu #eta","GEN Nu P_{T} [GeV]","GEN Nu Mass [GeV]","#eta of GEN Lepton from W_{R}","P_{T} of GEN Lepton from W_{R} [GeV]","#phi of GEN Lepton from W_{R}","#eta of GEN Lepton from Nu","P_{T} of GEN Lepton from Nu [GeV]","#phi of GEN Lepton from Nu","#eta of GEN quark one from Nu","P_{T} of GEN quark one from Nu [GeV]","#phi of GEN quark one from Nu","#eta of GEN quark two from Nu","P_{T} of GEN quark two from Nu [GeV]","#phi of GEN quark two from Nu","P_{T} of leading GEN lepton [GeV]","#eta of leading GEN lepton","#phi of leading GEN lepton","P_{T} of subleading GEN lepton [GeV]","#eta of subleading GEN lepton","#phi of subleading GEN lepton","P_{T} of leading GEN quark [GeV]","#eta of leading GEN quark","#phi of leading GEN quark","P_{T} of subleading GEN quark [GeV]","#eta of subleading GEN quark","#phi of subleading GEN quark", "GEN M_{LLJJ} [GeV]", "GEN M_{LL} [GeV]", "#DeltaR[Gen Lept from WR, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from WR, Gen Qrk Two from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk Two from Nu]"};
+	////standard plotting cuts to ensure existence of GEN particles
+	//string plotCut[] = {"numGenFstHvyPtcl>-1","numGenScdHvyPtcl>-1","numGenLeptons>-1","numGenQuarks>-1","leadGenLeptonNotFromFstHvyPtcl>-1","subleadGenLeptonNotFromScdHvyPtcl>-1","leadGenQuarkNotFromScdHvyPtcl>-1","subleadGenQuarkNotFromScdHvyPtcl>-1","etaGenFstHvyPtcl>-9", "ptGenFstHvyPtcl>-9", "massGenFstHvyPtcl>-9", "etaGenScdHvyPtcl>-9", "ptGenScdHvyPtcl>-9", "massGenScdHvyPtcl>-9", "etaGenLeptFromFstHvyPtcl>-9", "ptGenLeptFromFstHvyPtcl>-9", "phiGenLeptFromFstHvyPtcl>-9", "etaGenLeptFromScdHvyPtcl>-9", "ptGenLeptFromScdHvyPtcl>-9", "phiGenLeptFromScdHvyPtcl>-9", "etaGenQuarkOneFromScdHvyPtcl>-9", "ptGenQuarkOneFromScdHvyPtcl>-9", "phiGenQuarkOneFromScdHvyPtcl>-9", "etaGenQuarkTwoFromScdHvyPtcl>-9", "ptGenQuarkTwoFromScdHvyPtcl>-9", "phiGenQuarkTwoFromScdHvyPtcl>-9","ptLeadGenLepton>-9", "etaLeadGenLepton>-9", "phiLeadGenLepton>-9", "ptSubleadGenLepton>-9", "etaSubleadGenLepton>-9", "phiSubleadGenLepton>-9", "ptLeadGenQuark>-9", "etaLeadGenQuark>-9", "phiLeadGenQuark>-9", "ptSubleadGenQuark>-9", "etaSubleadGenQuark>-9", "phiSubleadGenQuark>-9", "fourObjMassFromGenObjsFromFstAndScdHvyPtcl>-9", "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl>-9", "dRgenLeptonFromFstHvyPtclGenQuarkOneFromScdHvyPtcl>-9", "dRgenLeptonFromFstHvyPtclGenQuarkTwoFromScdHvyPtcl>-9", "dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl>-9", "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl>-9"};
+
+	////standard X axis labels when all GEN branches are being drawn
+	//string plotXaxisLabel[] = {"GEN W_{R} Multiplicity","GEN Nu Multiplicity","GEN Lepton Multiplicity","GEN Quark Multiplicity","1 = lead GEN lepton not W_{R} dau","1 = sublead GEN lepton not Nu dau","1 = lead GEN quark not Nu dau","1 = sublead GEN quark not Nu dau","GEN W_{R} #eta","GEN W_{R} P_{T} [GeV]","GEN W_{R} Mass [GeV]","GEN Nu #eta","GEN Nu P_{T} [GeV]","GEN Nu Mass [GeV]","#eta of GEN Lepton from W_{R}","P_{T} of GEN Lepton from W_{R} [GeV]","#phi of GEN Lepton from W_{R}","#eta of GEN Lepton from Nu","P_{T} of GEN Lepton from Nu [GeV]","#phi of GEN Lepton from Nu","#eta of GEN quark one from Nu","P_{T} of GEN quark one from Nu [GeV]","#phi of GEN quark one from Nu","#eta of GEN quark two from Nu","P_{T} of GEN quark two from Nu [GeV]","#phi of GEN quark two from Nu","P_{T} of leading GEN lepton [GeV]","#eta of leading GEN lepton","#phi of leading GEN lepton","P_{T} of subleading GEN lepton [GeV]","#eta of subleading GEN lepton","#phi of subleading GEN lepton","P_{T} of leading GEN quark [GeV]","#eta of leading GEN quark","#phi of leading GEN quark","P_{T} of subleading GEN quark [GeV]","#eta of subleading GEN quark","#phi of subleading GEN quark", "GEN M_{LLJJ} [GeV]", "GEN M_{LL} [GeV]", "#DeltaR[Gen Lept from WR, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from WR, Gen Qrk Two from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk Two from Nu]"};
 
 	//plotting cuts, arguments, and X axis labels for N-1 efficiencies of lepton and jet pT cuts, dilepton mass cut, dR lepton jet cuts, and four obj mass cut at GEN lvl
 	//string cutEffOutputFilePath = "nMinusOneCutEfficienciesGENWR.txt";
@@ -2131,7 +2176,8 @@ void macroSandBox(){
 	//string plotXaxisLabel[] = {"P_{T} of GEN Lepton from W_{R} [GeV]","P_{T} of GEN Lepton from Nu [GeV]","P_{T} of GEN quark one from Nu [GeV]","P_{T} of GEN quark two from Nu [GeV]", "GEN M_{LLJJ} [GeV]", "GEN dilepton mass [GeV]", "#DeltaR[Gen Lept from WR, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from WR, Gen Qrk Two from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk One from Nu]", "#DeltaR[Gen Lept from Nu, Gen Qrk Two from Nu]"};
 
 
-	string stdPlotTitle = "CMS Private                      #surds = 13 TeV";
+	//string stdPlotTitle = "CMS Private                      #surds = 13 TeV";
+	string stdPlotTitle = "";
 	
 	vector<string> vectForNEntries(plotCut,plotCut + sizeof(plotCut)/sizeof(string));
 	int nBranches = vectForNEntries.size();
@@ -2176,16 +2222,20 @@ void macroSandBox(){
 			if(plotArg[j] == "dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j]+stdNMinusOneEffPlotCut,plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.4,true,cutEffOutputFilePath,"dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl",false);
 			*/
 			
-			//RETURN
 			//make and save plots from each branch of the input tree
-			if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 800) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,850.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 2600) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,2600.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 5000) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,5000.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			//if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 800) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,850.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			//if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 2600) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,2600.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			//if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 5000) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,5000.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
 	
-			//if(plotArg[j] == "ptRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,1100.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			//if(plotArg[j] == "ptRecoLeptMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,1100.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			//if(plotArg[j] == "ptRecoJetOneMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,1100.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			//if(plotArg[j] == "ptRecoJetTwoMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(40,0.,600.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoLeptMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoJetOneMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoJetTwoMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,800.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+	
+			if(plotArg[j] == "etaRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(120,-3.,3.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "etaRecoLeptMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(120,-3.,3.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "etaRecoJetOneMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(120,-3.,3.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "etaRecoJetTwoMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(120,-3.,3.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
 
 
 			//else if(plotArg[j] != "ptRecoJetTwoMatchedToNuDau" && plotArg[j] != "ptRecoJetOneMatchedToNuDau" && plotArg[j] != "ptRecoLeptMatchedToNuDau" && plotArg[j] != "ptRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist()",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, true);
