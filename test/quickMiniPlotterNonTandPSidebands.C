@@ -477,7 +477,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   ratio->Divide(hs_DY);
   ratio->SetMarkerStyle(21);
   ratio->SetLabelSize(labelSize - 0.07,"y");
-  Float_t maxYratioRange = 1.4;
+  Float_t maxYratioRange = 3.;//1.4 for ee channel, 3. for mumu channel
 #ifdef DOAMC
   //if(channel == Selector::EE) maxYratioRange = 1.62;	//use same range for ele and mu channels to simplify comparison of ratio plots
 #endif
