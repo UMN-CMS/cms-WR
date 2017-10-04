@@ -308,6 +308,9 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 
 	cc->SaveAs((outputFileName+".png").c_str(),"recreate");
 	cc->SaveAs((outputFileName+".pdf").c_str(),"recreate");
+	cc->SetLogx();
+	cc->SaveAs((outputFileName+"_log.png").c_str(),"recreate");
+	cc->SaveAs((outputFileName+"_log.pdf").c_str(),"recreate");
 	tempHist->Delete();
 	cc->Close();
 
@@ -2227,10 +2230,10 @@ void macroSandBox(){
 			//if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 2600) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,2600.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
 			//if(plotArg[j] == "dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl" && wrMassArr[i] == 5000) makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(50,0.,5000.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
 	
-			if(plotArg[j] == "ptRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			if(plotArg[j] == "ptRecoLeptMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			if(plotArg[j] == "ptRecoJetOneMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
-			if(plotArg[j] == "ptRecoJetTwoMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,800.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1000.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoLeptMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1000.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoJetOneMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,1000.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
+			if(plotArg[j] == "ptRecoJetTwoMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(100,0.,500.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
 	
 			if(plotArg[j] == "etaRecoLeptMatchedToWrDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(120,-3.,3.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
 			if(plotArg[j] == "etaRecoLeptMatchedToNuDau") makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c"+to_string(j),plotCut[j],plotArg[j]+">>"+plotArg[j]+"Hist(120,-3.,3.)",plotArg[j]+"Hist",stdPlotTitle,plotXaxisLabel[j],plotDir+"_"+plotArg[j],0.,false,"","",false, false);
