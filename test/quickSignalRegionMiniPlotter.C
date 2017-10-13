@@ -24,7 +24,7 @@
 //#define unblindedData
 //#define plotRatio
 //#define showRescaledRunOneEEJJExcess
-//#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
+#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
 
 #ifdef __CINT__
@@ -48,12 +48,12 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 void quickSignalRegionMiniPlotter(){
 
 	//delete this line, and replace treeDyCheck with Tree_Iter0
-  TChain * chain_DY = new TChain("treeDyCheck","DYMC");
-  //TChain * chain_ttbar = new TChain("treeDyCheck","TTMC");
-  TChain * chain_ttbar = new TChain("treeDyCheck","TTData");
-  TChain * chain_WJets = new TChain("treeDyCheck","WJets");
-  TChain * chain_WZ = new TChain("treeDyCheck","Diboson");
-  TChain * chain_ZZ = new TChain("treeDyCheck","Other");
+  TChain * chain_DY = new TChain("Tree_Iter0","DYMC");
+  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+  TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
+  TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
   TChain * chain_Other = new TChain("Tree_Iter0","HighMassWR");
   TChain * chain_data = new TChain("Tree_Iter0","Data");
 
@@ -63,21 +63,21 @@ void quickSignalRegionMiniPlotter(){
   switch (channel) {
   case Selector::EE:
 	//only loose trigger selection applied, and 2 leptons and jets required
-	dy = chain_DY->Add(altLocalDir+"selected_tree_DYAMC_dytagandprobeEE.root");
-    tt = chain_ttbar->Add(altLocalDir+"selected_tree_TT_dytagandprobeEE.root");
-	wjets = chain_WJets->Add(altLocalDir+"selected_tree_W_dytagandprobeEE.root");
-    wz = chain_WZ->Add(altLocalDir+"selected_tree_WZ_dytagandprobeEE.root");
-    wz = chain_WZ->Add(altLocalDir+"selected_tree_ZZ_dytagandprobeEE.root");
-	other = chain_Other->Add(localDir+"selected_tree_WRtoEEJJ_3000_1500_signal_eeEE.root");
+	//dy = chain_DY->Add(altLocalDir+"selected_tree_DYAMC_dytagandprobeEE.root");
+    //tt = chain_ttbar->Add(altLocalDir+"selected_tree_TT_dytagandprobeEE.root");
+	//wjets = chain_WJets->Add(altLocalDir+"selected_tree_W_dytagandprobeEE.root");
+    //wz = chain_WZ->Add(altLocalDir+"selected_tree_WZ_dytagandprobeEE.root");
+    //wz = chain_WZ->Add(altLocalDir+"selected_tree_ZZ_dytagandprobeEE.root");
+	//other = chain_Other->Add(localDir+"selected_tree_WRtoEEJJ_3000_1500_signal_eeEE.root");
 
 	//signal selection applied
-	//dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
-	////tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
-    //tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
-	//wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_eeEE.root");
-    //wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
-    //wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
-	//other = chain_Other->Add(localDir+"selected_tree_WRtoEEJJ_3000_1500_signal_eeEE.root");
+	dy = chain_DY->Add(localDir+"selected_tree_DYMadInclAndHT_signal_eeEE_withMllWeight.root");
+	//tt = chain_ttbar->Add(localDir+"selected_tree_TT_signal_eeEE.root");
+    tt = chain_ttbar->Add(localDir+"selected_tree_data_flavoursidebandEMuEE.root");
+	wjets = chain_WJets->Add(localDir+"selected_tree_WInclAndHT_signal_eeEE.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_WZ_signal_eeEE.root");
+    wz = chain_WZ->Add(localDir+"selected_tree_ZZ_signal_eeEE.root");
+	other = chain_Other->Add(localDir+"selected_tree_WRtoEEJJ_3000_1500_signal_eeEE.root");
 
 
 	//use the ZZ chain to show the WRtoEEJJ signal rescaled to match the normalization of the expected RunI EEJJ excess in 2015 operating conditions
@@ -190,7 +190,7 @@ void quickSignalRegionMiniPlotter(){
 
 void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
-  Float_t minPt = 33;  //delete this line
+  Float_t minPt = 50;  //delete this line
   TH1F *h_lepton_pt0 = new TH1F("h_lepton_pt0","",40,minPt,500); //revert range to 14, 0, 700
   TH1F *h_lepton_eta0 = new TH1F("h_lepton_eta0","",50,-3,3);
   TH1F *h_lepton_phi0 = new TH1F("h_lepton_phi0","",50,-3.15,3.15);
@@ -225,7 +225,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_Nu_mass_subleadLept_varBins = new TH1F("h_Nu_mass_subleadLept_varBins","", runTwoBinnum, runTwoBins);
 
 
-  Float_t bins[] = { 600, 750, 900, 1050, 1200, 1500, 1800, 2100, 4000};	//MLLJJ variable bins
+  //Float_t bins[] = { 600, 750, 900, 1050, 1200, 1500, 1800, 2100, 4000};	//MLLJJ variable bins going to 4 TeV
+  Float_t bins[] = { 300,400,450,500,550,600,700,990};	//MLLJJ variable bins showing low Mlljj range
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass_varBins = new TH1F("h_WR_mass_varBins","",binnum, bins);
 
@@ -246,9 +247,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
 	//uncomment this if(myEvent->WR_mass < 600.) continue;
-	//uncomment this if(myEvent->dilepton_mass < 200.) continue;
-	//uncomment this if(myEvent->sublead_lepton_pt < 53.) continue;
-	if(myEvent->lead_lepton_pt < minPt || myEvent->sublead_lepton_pt < minPt) continue;  //delete this line
+	if(myEvent->dilepton_mass < 200.) continue;
+	if(myEvent->sublead_lepton_pt < 53.) continue;
+	//if(myEvent->lead_lepton_pt < minPt || myEvent->sublead_lepton_pt < minPt) continue;  //delete this line
 
 
 	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
@@ -495,7 +496,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   leg->AddEntry( hs_ttbar, "Top Quark Backgrounds" ) ;
   leg->AddEntry( hs_WJets, "W+jets" ) ; 
   leg->AddEntry( hs_WZ, "Diboson" ) ;
-  leg->AddEntry( (TObject*)0, " ","");
+  //leg->AddEntry( (TObject*)0, " ","");
 
 #ifdef showRescaledRunOneEEJJExcess
   if(channel == Selector::EE){
@@ -522,7 +523,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifdef unblindedData 
   leg->AddEntry( hs_data, "Data");
 #endif
-  //uncomment this leg->AddEntry( (TObject*)0, "Overflows in last bin","");
+  leg->AddEntry( (TObject*)0, "Overflows in last bin","");
   //leg->SetFillColor( kWhite );
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
@@ -700,9 +701,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 #ifndef unblindedData
   //if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
   //if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData_MWR1000Signal";
-  //if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
-  //if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
-  if(channel == Selector::EE) fn += "_LooseSelection_TwoLeptsAndJets_EEChannelBkgndMC";
+  if(channel == Selector::EE) fn += "_SignalRegion_EEChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
+  if(channel == Selector::MuMu) fn += "_SignalRegion_MuMuChannelBkgndMC_DYMadHTAndIncl_TTBarFromData";
+  //if(channel == Selector::EE) fn += "_LooseSelection_TwoLeptsAndJets_EEChannelBkgndMC";
 #endif
 
 #ifdef unblindedData
@@ -729,8 +730,9 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   mycanvas->RedrawAxis();
  
   //plots with fixed bin widths
+  if(fname.EqualTo("ABCD")){
   //if(fname.EqualTo("Mlljj") || fname.EqualTo("Mljj_leadLept") || fname.EqualTo("Mljj_subleadLept") ){
-  if(fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_pt")){
+  //if(fname.EqualTo("l1_pt") || fname.EqualTo("l2_pt") || fname.EqualTo("j1_pt") || fname.EqualTo("j2_pt")){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
@@ -749,12 +751,13 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 
 
   //plots with variable bin widths (the bin contents are divided by the bin widths)
-  /*
-  if(fname.EqualTo("Mlljj_2012Bins") ){
+  /**/
+  if(fname.EqualTo("Mlljj_varBins") ){
 	  mycanvas->Print((fn+".pdf").Data());
 	  mycanvas->Print((fn+".png").Data());
 	  mycanvas->Print((fn+".C").Data());
-	  if(fname.EqualTo("Mlljj_2012Bins")) th->SetMinimum(0.0005);
+	  //if(fname.EqualTo("Mlljj_2012Bins") || fname.EqualTo("Mlljj_varBins")) th->SetMinimum(0.0005);
+	  if(fname.EqualTo("Mlljj_varBins")) th->SetMaximum(9);
 	  mycanvas->Update();
 #ifdef plotRatio
 	  p1->SetLogy();	//for ratio plot
@@ -766,7 +769,7 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
 	  mycanvas->Print((fn+"_log.png").Data());
 	  mycanvas->Print((fn+"_log.C").Data());
   }
-  */
+  /**/
 
   mycanvas->Close();
 }
