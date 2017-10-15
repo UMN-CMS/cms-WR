@@ -1007,9 +1007,12 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			}
 		}//end if to skip drawing special fxn
 		if(doSpecialFxn){//TTree Draw arg contains a TMath fxn call, and thus more than one set of parentheses exist in the Draw arg
-			//(chMapIt->second)->Draw( ("TMath::Sqrt(ptGenLeptFromFstHvyPtcl*TMath::CosH(etaGenLeptFromFstHvyPtcl)*ptGenLeptFromScdHvyPtcl*TMath::CosH(etaGenLeptFromScdHvyPtcl))"+chMapIt->first ).c_str() );
+			//(chMapIt->second)->Draw( ("TMath::Sqrt(ptGenLeptFromFstHvyPtcl*TMath::CosH(etaGenLeptFromFstHvyPtcl)*ptGenLeptFromScdHvyPtcl*TMath::CosH(etaGenLeptFromScdHvyPtcl))"+chMapIt->first ).c_str() );	//sqrt of the product of the two Gen WR lepton momentum magnitudes
 			
-			(chMapIt->second)->Draw( ("TMath::ACos(1-( (TMath::CosH(etaGenLeptFromFstHvyPtcl-etaGenLeptFromScdHvyPtcl) - TMath::Cos(phiGenLeptFromFstHvyPtcl-phiGenLeptFromScdHvyPtcl))/(TMath::CosH(etaGenLeptFromFstHvyPtcl)*TMath::CosH(etaGenLeptFromScdHvyPtcl)) ) )"+chMapIt->first ).c_str() );
+			//(chMapIt->second)->Draw( ("TMath::ACos(1-( (TMath::CosH(etaGenLeptFromFstHvyPtcl-etaGenLeptFromScdHvyPtcl) - TMath::Cos(phiGenLeptFromFstHvyPtcl-phiGenLeptFromScdHvyPtcl))/(TMath::CosH(etaGenLeptFromFstHvyPtcl)*TMath::CosH(etaGenLeptFromScdHvyPtcl)) ) )"+chMapIt->first ).c_str() );	//angle btwn the two Gen WR leptons
+
+			(chMapIt->second)->Draw( ("ptGenScdHvyPtcl*TMath::CosH(etaGenScdHvyPtcl)"+chMapIt->first ).c_str() );	//Gen Nu momentum magnitude
+	
 		}//end making a histo when TTree Draw arg contains a TMath fxn call
 		//std::cout<<"oneHistoName = "<< oneHistoName <<std::endl;
 
@@ -1079,7 +1082,7 @@ void makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TSt
 			(hIt->second)->Draw();
 			size_t firstChevron = (hIt->first).find_first_of('>');
 			if(!doSpecialFxn) outputFile = (hIt->first).substr(0,firstChevron);
-			if(doSpecialFxn) outputFile = "angleBtwnGenLepts";
+			if(doSpecialFxn) outputFile = "genNuMomMag";
 			size_t badFwdSlash = outputFile.find_first_of('/');
 			if(badFwdSlash != string::npos) outputFile.replace(badFwdSlash,1,"Over");
 			outputFile += outputFileNameModifier;
@@ -1741,7 +1744,6 @@ void macroSandBox(){
 
 	//compare distributions of the gen WR mass using the WR particle itself between centrally produced WR->eejj datasets
 	//and privately produced WR->eejj datasets
-	//use makeAndSaveMultipleCurveOverlayHisto(map<string,TChain *> inputChainMap,TString canvName,Float_t legXmin,Float_t legYmin,Float_t legXmax,Float_t legYmax,Bool_t doNormalizationByArea,string title,string xLabel,string outputFileNameModifier,Bool_t specialGrouping)
 
 	TString dirAndTreeName = "wrDecayChainAnalyzer/genAndMatchedRecoWrDecayNoCuts";
 	TString privateDirName = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/";
@@ -1794,24 +1796,26 @@ void macroSandBox(){
 	//and MWR = 2200 with several MNu
 	/**/
 	//string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl","dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
-	//string branchNames[] = {"dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl"};
-	//vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
+	string branchNames[] = {""};
+	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
 	//Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
+	Float_t cutVals[] = {-1};
+	string xAxisLabels[] = {"|P| [GeV]"};
+	bool doSpecFxn[] = {true};
+	
 	//string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta","#DeltaR quarks from Nu","|P_{1}||P_{2}| [GeV]"};
 
-	//"(ptGenLeptFromFstHvyPtcl*TMath::CosH(etaGenLeptFromFstHvyPtcl)*ptGenLeptFromScdHvyPtcl*TMath::CosH(etaGenLeptFromScdHvyPtcl))"; //put this command into plotting function manually
-	string branchNames[] = {""};  //use this for branchNames vector when a custom fxn is being plotted, like the one above
-	
-	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
+	//string branchNames[] = {""};  //use this for branchNames vector when a custom fxn is being plotted, like angle btwn two leptons
+	//vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
 	//Float_t cutVals[] = {-1};	//cut values for different distributions synched with branchNames
 	//string xAxisLabels[] = {"#surd(|P_{1}||P_{2}|) [GeV]"};
 	//bool doSpecFxn[] = {true};
 	//string xAxisLabels[] = {"M_{LL} [GeV]"};
 	//bool doSpecFxn[] = {false};
 	
-	Float_t cutVals[] = {-0.01};
-	string xAxisLabels[] = {"#theta_{12} [rad]"};
-	bool doSpecFxn[] = {true};
+	//Float_t cutVals[] = {-0.01};
+	//string xAxisLabels[] = {"#theta_{12} [rad]"};
+	//bool doSpecFxn[] = {true};
 	/**/
 
 
@@ -1846,10 +1850,9 @@ void macroSandBox(){
 	//string histoBeginnings[] = {"800 GeV WR","1600 GeV WR","2200 GeV WR"};	//several MWR, MNu is MWR/2
 		
 	//string histoEndings[] = {"_genLeptPtFromWR(80,0.,1200.)","_genLeptPtFromNu(80,0.,1200.)","_genQrkOnePtFromNu(80,0.,1200.)","_genQrkTwoPtFromNu(80,0.,1200.)","_dileptonMassGenLeptsFromWRandNu(80,0.,2200.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)","_genLeptEtaFromWR(40,-2.5,2.5)","_genLeptEtaFromNu(40,-2.5,2.5)","_deltaRgenQrkOneAndQrkTwoFromNu(100,0.,4.5)"};	//medium mass
-	//string histoEndings[] = {"_dileptonMassGenLeptsFromWRandNu(30,0.,2600.)"};	//medium mass
-	//string histoBeginnings[] = {"MNu = 1.8 TeV","MNu = 1.1 TeV","MNu = 0.3 TeV"};	//medium mass
-	string histoEndings[] = {"_angleBtwnGenLepts(30,0.,3.14)"};	//medium mass
+	string histoEndings[] = {"_genNuMomMag(20,0.,2500.)"};	//medium mass
 	string histoBeginnings[] = {"MNu = 1.8 TeV","MNu = 1.1 TeV","MNu = 0.3 TeV"};	//medium mass
+	//string histoEndings[] = {"_angleBtwnGenLepts(30,0.,3.14)"};	//medium mass
 
 	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
 	map<string,TChain*> placeHolderMap;
@@ -1881,9 +1884,8 @@ void macroSandBox(){
 		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2200MNu300Private;
 
 
-		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.6,0.65,0.90,0.90,true,"",xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i],"MWR = 2.2 TeV", doSpecFxn[i]);  //legend located on right side
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.2,0.65,0.50,0.90,true,"",xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i],"MWR = 2.2 TeV", doSpecFxn[i]);  //legend located on left side
-		
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.6,0.65,0.90,0.90,true,"",xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i],"MWR = 2.2 TeV", doSpecFxn[i]);  //legend located on right side
+		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.2,0.65,0.50,0.90,true,"",xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i],"MWR = 2.2 TeV", doSpecFxn[i]);  //legend located on left side
 		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.6,0.65,0.90,0.90,true,title,xAxisLabels[i],"_MNu_800_several_MWR_private",true,cutVals[i],"MNu = 0.8 TeV",false);
 		
 		placeHolderMap.clear();
