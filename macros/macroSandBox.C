@@ -1796,12 +1796,12 @@ void macroSandBox(){
 	//and MWR = 2200 with several MNu
 	/**/
 	//string branchNames[] = {"ptGenLeptFromFstHvyPtcl","ptGenLeptFromScdHvyPtcl","ptGenQuarkOneFromScdHvyPtcl","ptGenQuarkTwoFromScdHvyPtcl","dileptonMassFromGenLeptonsFromFstAndScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkOneFromScdHvyPtcl","dRgenLeptonFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl","subleadGenLeptonNotFromScdHvyPtcl","etaGenLeptFromFstHvyPtcl","etaGenLeptFromScdHvyPtcl","dRgenQuarkOneFromScdHvyPtclGenQuarkTwoFromScdHvyPtcl"};
-	string branchNames[] = {""};
+	string branchNames[] = {"massGenFstHvyPtcl"};
 	vector<string> brNamesVect(branchNames,branchNames + sizeof(branchNames)/sizeof(string));
 	//Float_t cutVals[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//cut values for different distributions synched with branchNames
 	Float_t cutVals[] = {-1};
-	string xAxisLabels[] = {"|P| [GeV]"};
-	bool doSpecFxn[] = {true};
+	string xAxisLabels[] = {"M_{LLJJ} [GeV]"};
+	bool doSpecFxn[] = {false};
 	
 	//string xAxisLabels[] = {"P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","P_{T} [GeV]","M_{LL} [GeV]","#DeltaR lepton and quark","#DeltaR lepton and quark","1 = events in which subleading GEN lepton does not have Nu mother","Lepton #eta","Lepton #eta","#DeltaR quarks from Nu","|P_{1}||P_{2}| [GeV]"};
 
@@ -1850,8 +1850,11 @@ void macroSandBox(){
 	//string histoBeginnings[] = {"800 GeV WR","1600 GeV WR","2200 GeV WR"};	//several MWR, MNu is MWR/2
 		
 	//string histoEndings[] = {"_genLeptPtFromWR(80,0.,1200.)","_genLeptPtFromNu(80,0.,1200.)","_genQrkOnePtFromNu(80,0.,1200.)","_genQrkTwoPtFromNu(80,0.,1200.)","_dileptonMassGenLeptsFromWRandNu(80,0.,2200.)","_deltaRgenLeptAndQrkOneFromNu(100,0.,4.5)","_deltaRgenLeptAndQrkTwoFromNu(100,0.,4.5)","_subleadGenLeptNotFromNu(2,0.,2.)","_genLeptEtaFromWR(40,-2.5,2.5)","_genLeptEtaFromNu(40,-2.5,2.5)","_deltaRgenQrkOneAndQrkTwoFromNu(100,0.,4.5)"};	//medium mass
-	string histoEndings[] = {"_genNuMomMag(20,0.,2500.)"};	//medium mass
-	string histoBeginnings[] = {"MNu = 1.8 TeV","MNu = 1.1 TeV","MNu = 0.3 TeV"};	//medium mass
+	//string histoEndings[] = {"_genNuMomMag(20,0.,2500.)"};	//medium mass
+	string histoEndings[] = {"_genWrMass(25,1450.,2850.)"};	//medium mass
+	
+	string histoBeginnings[] = {"MWR = 2.2 TeV","MWR = 2.4 TeV"};	//medium mass
+	//string histoBeginnings[] = {"MNu = 1.8 TeV","MNu = 1.1 TeV","MNu = 0.3 TeV"};	//medium mass
 	//string histoEndings[] = {"_angleBtwnGenLepts(30,0.,3.14)"};	//medium mass
 
 	vector<string> histoBeginningsVect(histoBeginnings,histoBeginnings + sizeof(histoBeginnings)/sizeof(string));
@@ -1879,12 +1882,15 @@ void macroSandBox(){
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR1600MNu800Private;
 		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1100Private;
 
-		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1800Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1100Private;
-		placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2200MNu300Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1800Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1100Private;
+		//placeHolderMap[branchNames[i]+link+histoBeginnings[2]+histoEndings[i]] = genWRtoEEJJMWR2200MNu300Private;
 
+		placeHolderMap[branchNames[i]+link+histoBeginnings[0]+histoEndings[i]] = genWRtoEEJJMWR2200MNu1100Private;
+		placeHolderMap[branchNames[i]+link+histoBeginnings[1]+histoEndings[i]] = genWRtoEEJJMWR2400MNu800Private;
+	
 
-		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.6,0.65,0.90,0.90,true,"",xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i],"MWR = 2.2 TeV", doSpecFxn[i]);  //legend located on right side
+		makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.6,0.65,0.90,0.90,true,"",xAxisLabels[i],"_several_MWR_and_MNu_private",true,cutVals[i],"MNu = MWR/2", doSpecFxn[i]);  //legend located on right side
 		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.2,0.65,0.50,0.90,true,"",xAxisLabels[i],"_MWR_2200_several_MNu_private",true,cutVals[i],"MWR = 2.2 TeV", doSpecFxn[i]);  //legend located on left side
 		//makeAndSaveMultipleCurveOverlayHisto(placeHolderMap,cName.c_str(),0.6,0.65,0.90,0.90,true,title,xAxisLabels[i],"_MNu_800_several_MWR_private",true,cutVals[i],"MNu = 0.8 TeV",false);
 		
