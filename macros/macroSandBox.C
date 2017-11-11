@@ -45,8 +45,9 @@ using namespace std;
 //#define multiStepCutEffsWRandBkgnds
 //#define makeShiftedMCPileupFiles
 //#define nMinusOneCutEffsGenAndReco
-#define studyGenWrKinematicsVsWrAndNuMasses
+//#define studyGenWrKinematicsVsWrAndNuMasses
 //#define genAndRecoWrPlotsMinimalCuts
+#define wrSystUncPlot
 //#define privateGenEff
 //#define twoDimPlotGenWrAcceptance
 //#define recoAndGenHLTEfficiency
@@ -215,7 +216,7 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 	cout<<"  "<<endl;
 	cout<<"in makeAndSaveSingleHistoFromTreeWithCuts fxn"<<endl;
 #endif
-	//gStyle->SetOptStat(""); //original formatting
+	gStyle->SetOptStat(""); //original formatting
 
 	//CMS TDR formatting
 	gStyle->SetOptTitle(1);
@@ -263,7 +264,7 @@ void makeAndSaveSingleHistoFromTreeWithCuts(TChain * chain,string canvName,strin
 	TH1F * tempHist = (TH1F*) gROOT->FindObject(histName.c_str());
 	tempHist->SetTitle(histTitle.c_str());
 	tempHist->GetXaxis()->SetTitle(xAxisTitle.c_str());
-	tempHist->GetYaxis()->SetTitle("Arb. Units");
+	tempHist->GetYaxis()->SetTitle("Occurrences");
 	tempHist->GetYaxis()->SetTitleOffset(1.3);
 	tempHist->SetLineWidth(3);
 	tempHist->SetLineColor(1);
@@ -2376,6 +2377,23 @@ void macroSandBox(){
 #endif
 	//end genAndRecoWrPlotsMinimalCuts
 
+#ifdef wrSystUncPlot
+	//use this ifdef to make individual plots from one input file that contains TTrees, no overlays
+	
+	//identify the input file and TTree branch
+	TString dirName = "/afs/cern.ch/work/s/skalafut/public/WR_starting2015/processedWithAnalysisCpp/3200toysAllSystAprilTwentyThree/";
+	TString fileName = "selected_tree_WRtoMuMuJJ_2000_1000_signal_mumuMuMu.root";
+	TString treeName = "syst_tree";
+	
+	TChain * wrChain = new TChain(treeName);
+	wrChain->Add(dirName+fileName);
+
+	string brName = "NEventsInRange[33]";
+
+	makeAndSaveSingleHistoFromTreeWithCuts(wrChain,"c0","",brName+">>"+"NEventsInRangeHist(25,70.,95.)","NEventsInRangeHist","","Number of Events","nEvtsInRangeEnrgyIdSysts_WRMuMuJJ_MWR2000_3200toys",0.,false,"","",false, false);
+
+#endif
+	//end wrSystUncPlot
 
 // /afs/cern.ch/work/s/skalafut/public/WR_starting2015/privateWRGen/analyzedGen/withoutGenNuFilter/8TeV/analyzed_genWrToMuMuJJFullOfflineAnalysis_WR_2200_NU_1100_1.root	
 #ifdef privateGenEff
