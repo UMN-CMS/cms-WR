@@ -21,8 +21,8 @@
 #include "CMS_lumi.C"
 
 
-//#define unblindedData
-//#define plotRatio
+#define unblindedData
+#define plotRatio
 //#define showRescaledRunOneEEJJExcess
 //#define showQCD //dont enable this and showRescaledRunOneEEJJExcess or showWR simultaneously
 //#define showWR	//show the distribution for a WR signal mass point as a histogram drawn as a line
@@ -41,21 +41,21 @@
  */
 
 //switch Selector tag here, and everything else will change accordingly
-Selector::tag_t channel = Selector::EE;
+Selector::tag_t channel = Selector::MuMu;
 
 void MakeHistos(TChain* chain, Selector *myEvent, std::vector<TH1F*> *hs);
 void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ,TH1F* hs_data,TH1F* hs_Other, TString xtitle, TString fname);
 void quickSignalRegionMiniPlotter(){
 
 	//delete this line, and replace treeDyCheck with Tree_Iter0
-  TChain * chain_DY = new TChain("treeDyCheck","DYMC");
-  //TChain * chain_ttbar = new TChain("treeDyCheck","TTMC");
-  TChain * chain_ttbar = new TChain("treeDyCheck","TTData");
-  TChain * chain_WJets = new TChain("treeDyCheck","WJets");
-  TChain * chain_WZ = new TChain("treeDyCheck","Diboson");
-  TChain * chain_ZZ = new TChain("treeDyCheck","Other");
-  TChain * chain_Other = new TChain("treeDyCheck","HighMassWR");
-  TChain * chain_data = new TChain("treeDyCheck","Data");
+  TChain * chain_DY = new TChain("Tree_Iter0","DYMC");
+  //TChain * chain_ttbar = new TChain("Tree_Iter0","TTMC");
+  TChain * chain_ttbar = new TChain("Tree_Iter0","TTData");
+  TChain * chain_WJets = new TChain("Tree_Iter0","WJets");
+  TChain * chain_WZ = new TChain("Tree_Iter0","Diboson");
+  TChain * chain_ZZ = new TChain("Tree_Iter0","Other");
+  TChain * chain_Other = new TChain("Tree_Iter0","HighMassWR");
+  TChain * chain_data = new TChain("Tree_Iter0","Data");
 
   TString localDir = "../analysisCppOutputRootFilesNewHltSf/";
   TString altLocalDir = "../tagAndProbeReqTwoJetsNoLeptJetPtCuts/";
@@ -215,7 +215,9 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_Z_pt = new TH1F("h_Z_pt", "", 40, 0., 1200.);
   TH1F *h_WR_mass_lowZpt = new TH1F("h_WR_mass_lowZpt","",40,500,3000);
 
-  Float_t runOneBins[] = { 600, 800, 1000, 1200, 1400, 1600, 1800, 2200, 4000};	//MLLJJ bins used in 2012 search
+  //Float_t runOneBins[] = { 600, 800, 1000, 1200, 1400, 1600, 1800, 2200, 4000};	//MLLJJ bins used in 2012 search
+  Float_t runOneBins[] = { 600, 800, 1000, 1200, 1400, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 4000};	//temp, delete later
+  
   Int_t  runOneBinnum = sizeof(runOneBins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass_2012bins = new TH1F("h_WR_mass_2012bins","", runOneBinnum, runOneBins);
 
@@ -225,8 +227,8 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
   TH1F *h_Nu_mass_subleadLept_varBins = new TH1F("h_Nu_mass_subleadLept_varBins","", runTwoBinnum, runTwoBins);
 
 
-  //Float_t bins[] = { 600, 750, 900, 1050, 1200, 1500, 1800, 2100, 4000};	//MLLJJ variable bins going to 4 TeV
-  Float_t bins[] = { 300,400,450,500,550,600,700,990};	//MLLJJ variable bins showing low Mlljj range
+  Float_t bins[] = { 600, 750, 900, 1050, 1200, 1500, 1800, 2100, 4000};	//MLLJJ variable bins going to 4 TeV
+  //Float_t bins[] = { 300,400,450,500,550,600,700,990};	//MLLJJ variable bins showing low Mlljj range
   Int_t  binnum = sizeof(bins)/sizeof(Float_t) - 1;
   TH1F *h_WR_mass_varBins = new TH1F("h_WR_mass_varBins","",binnum, bins);
 
@@ -246,10 +248,10 @@ void MakeHistos(TChain * chain, Selector *myEvent, std::vector<TH1F*> *hs){
 
   for(int ev = 0; ev<nEntries; ++ev){
     chain->GetEntry(ev);
-	//uncomment this if(myEvent->WR_mass < 600.) continue;
-	//uncomment this if(myEvent->dilepton_mass < 200.) continue;
-	//uncomment this if(myEvent->sublead_lepton_pt < 53.) continue;
-	if(myEvent->lead_lepton_pt < minPt || myEvent->sublead_lepton_pt < minPt) continue;  //delete this line
+	if(myEvent->WR_mass < 600.) continue;
+	if(myEvent->dilepton_mass < 200.) continue;
+	if(myEvent->sublead_lepton_pt < 53.) continue;
+	//if(myEvent->lead_lepton_pt < minPt || myEvent->sublead_lepton_pt < minPt) continue;  //delete this line
 
 
 	TLorentzVector leadLeptonFourMom, subleadLeptonFourMom, zFourMom;
@@ -659,13 +661,57 @@ void drawPlots(TH1F* hs_DY,TH1F* hs_ttbar,TH1F* hs_WJets,TH1F* hs_WZ,TH1F* hs_ZZ
   /* old check*/
   if(fname.EqualTo("Mlljj_2012Bins")){
 	  //print number of evts passing all cuts
+	  std::cout<<"in MLLJJ distribution bin 6 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(6)*hs_DY->GetBinWidth(6)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(6)*hs_ttbar->GetBinWidth(6) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(6)*hs_data->GetBinWidth(6) << std::endl;
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(6) <<std::endl;
+	
 	  std::cout<<"in MLLJJ distribution bin 7 there are"<<std::endl;
 	  std::cout<< hs_DY->GetBinContent(7)*hs_DY->GetBinWidth(7)<<"\t DY background events"<<std::endl;
 	  std::cout<< hs_ttbar->GetBinContent(7)*hs_ttbar->GetBinWidth(7) <<"\t top background events"<<std::endl;
 	  std::cout<<"data events\t"<< hs_data->GetBinContent(7)*hs_data->GetBinWidth(7) << std::endl;
-	  std::cout<<"in e chnl 1000 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(3,11) <<std::endl;	//670 to 1210
-	  std::cout<<"in e chnl 2200 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(14,29) <<std::endl;	//1450 to 2450
-	  std::cout<<"in e chnl 3600 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(27,47) <<std::endl;	//2300 to 3870
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(7) <<std::endl;
+	
+	  std::cout<<"in MLLJJ distribution bin 8 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(8)*hs_DY->GetBinWidth(8)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(8)*hs_ttbar->GetBinWidth(8) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(8)*hs_data->GetBinWidth(8) << std::endl;
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(8) <<std::endl;
+
+	  std::cout<<"in MLLJJ distribution bin 9 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(9)*hs_DY->GetBinWidth(9)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(9)*hs_ttbar->GetBinWidth(9) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(9)*hs_data->GetBinWidth(9) << std::endl;
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(9) <<std::endl;
+
+	  std::cout<<"in MLLJJ distribution bin 10 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(10)*hs_DY->GetBinWidth(10)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(10)*hs_ttbar->GetBinWidth(10) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(10)*hs_data->GetBinWidth(10) << std::endl;
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(10) <<std::endl;
+	
+	  std::cout<<"in MLLJJ distribution bin 11 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(11)*hs_DY->GetBinWidth(11)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(11)*hs_ttbar->GetBinWidth(11) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(11)*hs_data->GetBinWidth(11) << std::endl;
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(11) <<std::endl;
+
+	  std::cout<<"in MLLJJ distribution bin 12 there are"<<std::endl;
+	  std::cout<< hs_DY->GetBinContent(12)*hs_DY->GetBinWidth(12)<<"\t DY background events"<<std::endl;
+	  std::cout<< hs_ttbar->GetBinContent(12)*hs_ttbar->GetBinWidth(12) <<"\t top background events"<<std::endl;
+	  std::cout<<"data events\t"<< hs_data->GetBinContent(12)*hs_data->GetBinWidth(12) << std::endl;
+	  std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(12) <<std::endl;
+	
+	  //std::cout<<"in MLLJJ distribution bin 7 there are"<<std::endl;
+	  //std::cout<< hs_DY->GetBinContent(7)*hs_DY->GetBinWidth(7)<<"\t DY background events"<<std::endl;
+	  //std::cout<< hs_ttbar->GetBinContent(7)*hs_ttbar->GetBinWidth(7) <<"\t top background events"<<std::endl;
+	  //std::cout<<"data events\t"<< hs_data->GetBinContent(7)*hs_data->GetBinWidth(7) << std::endl;
+	  //std::cout<<"lower bin edge\t"<< hs_data->GetBinLowEdge(7) <<std::endl;
+	  
+	  //std::cout<<"in e chnl 1000 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(3,11) <<std::endl;	//670 to 1210
+	  //std::cout<<"in e chnl 2200 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(14,29) <<std::endl;	//1450 to 2450
+	  //std::cout<<"in e chnl 3600 GeV WR window TTBar has this many evts\t"<< hs_ttbar->Integral(27,47) <<std::endl;	//2300 to 3870
 	  //std::cout<< hs_WJets->Integral() <<"\tWJets weighted evts"<<std::endl;
 	  //std::cout<< hs_WZ->Integral() <<"\tWZ weighted evts"<<std::endl;
 	  //std::cout<< hs_ZZ->Integral() <<"\tZZ weighted evts"<<std::endl;
